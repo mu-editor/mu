@@ -3,6 +3,8 @@ Mu - a "micro" editor
 
 Hacked together in a matter of hours.
 
+PYTHON 3!
+
 Needs docs. :-)
 
 Relies on QT5. On Debian it's an apt-get away. Will document setup procedure in
