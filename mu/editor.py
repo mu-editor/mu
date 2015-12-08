@@ -1,5 +1,7 @@
 import sys
 import os
+import keyword
+
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QTabWidget, QToolBar, QAction, QScrollArea,
     QSplitter
