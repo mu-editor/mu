@@ -21,9 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
 
-from PyQt4.QtWidgets import (QApplication, QSplashScreen, QStackedWidget,
+from PyQt5.QtWidgets import (QApplication, QSplashScreen, QStackedWidget,
                              QDesktopWidget)
-from resources import load_icon, load_pixmap, load_stylesheet
+from mu.resources import load_icon, load_pixmap, load_stylesheet
+from mu.ui.editor import Editor
+from mu.ui.replpane import find_microbit, REPLPane
 
 class Mu(QStackedWidget):
     """
@@ -36,6 +38,8 @@ class Mu(QStackedWidget):
 
         # Ensure we have a sensible size for the application.
         self.setMinimumSize(800, 600)
+
+        self.setup_editor()
 
     def update_title(self, project=None):
         """
@@ -60,8 +64,23 @@ class Mu(QStackedWidget):
             (screen.height() - size.height()) / 2
         )
 
+    def setup_editor(self):
+        """
+        Adds the editor to the window.
+        """
+        ed = Editor(self, None)
+        ed.add_tab('hello.py')
+        mb_port = find_microbit()
+        if mb_port:
+            port = '/dev/{}'.format(mb_port)
+            print(port)
+            replpane = REPLPane(port=port, parent=ed)
+            ed.add_pane(replpane)
+        self.addWidget(ed)
+        self.setCurrentWidget(ed)
 
-if __name__ == '__main__':
+
+def main():
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
     app.setStyleSheet(load_stylesheet('mu.css'))
