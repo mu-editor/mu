@@ -1,3 +1,3 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 from . import app
 app.main()
