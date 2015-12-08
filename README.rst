@@ -40,10 +40,10 @@ been adapted from previous work done with Damien George and Dan Pope on the
 MVP of sorts.
 
 The code is also simple and monolithic - it's commented and mostly found in a
-single Python file. This has been done on purpose: we want teachers and kids to
-take ownership of this project and organising the code in this way aids the
-first steps required to get involved (everything you need to know is in one
-obvious file).
+a few obviously named Python files. This has been done on purpose: we want
+teachers and kids to take ownership of this project and organising the code in
+this way aids the first steps required to get involved (everything you need to
+know is in three obvious files).
 
 In terms of features - it's a case of less is more with regard to the following features:
 
@@ -52,6 +52,8 @@ In terms of features - it's a case of less is more with regard to the following 
 * Save the existing Python script.
 * Use code snippets (both via a menu and hotkey).
 * Flash the device with the current script.
-* Connect to the device via the REPL.
+* Connect to the device via the REPL (will only work if a device is connected).
 * Zoom in/out.
 * Quit.
+
+That's it!

@@ -20,12 +20,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-
 from PyQt5.QtWidgets import (QApplication, QSplashScreen, QStackedWidget,
                              QDesktopWidget)
 from mu.resources import load_icon, load_pixmap, load_stylesheet
-from mu.ui.editor import Editor
-from mu.ui.replpane import find_microbit, REPLPane
+from mu.editor import Editor
+from mu.repl import find_microbit, REPLPane
+
 
 class Mu(QStackedWidget):
     """
