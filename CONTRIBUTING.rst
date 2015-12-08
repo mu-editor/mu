@@ -14,7 +14,7 @@ with respect, humour and intelligence wins every time.
 * If your day job isn't code, get involved.
 * This isn't a group of experts, just people. Get involved!
 * We are interested in educational, social and technical problems. If you are too, get involved.
-* This is a new community. *No-one knows what they are doing*, so, get involved
+* This is a new community. *No-one knows what they are doing*, so, get involved.
 
 We expect contributors to follow the Python Software Foundation's Code of
 Conduct: https://www.python.org/psf/codeofconduct/
