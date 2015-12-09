@@ -1,12 +1,25 @@
 # -*- mode: python -*-
+import os
+from glob import glob
 
 block_cipher = None
 
+# Adding all css and images as part of additional resources
+data_files_glob = glob(os.path.join('mu','resources', 'css', '*.css'))
+data_files_glob += glob(os.path.join('mu', 'resources', 'images', '*.*'))
+data_files = []
+# Path are a bit tricky: glob works on cwd (project root), pyinstaller relative
+# starts on spec file location, and packed application relative starts on
+# project root directory  
+for x in data_files_glob:
+    data_files += [(os.path.join('..', x), os.path.dirname(x))]
+
+print('Spec file resources selected: %s' % data_files)
 
 a = Analysis(['../run.py'],
              pathex=['../'],
              binaries=None,
-             datas=None,
+             datas=data_files,
              hiddenimports = ['sip'],
              hookspath=[],
              runtime_hooks=[],
@@ -25,8 +38,19 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           name='mu',
-          debug=True,
           strip=False,
           upx=True,
-          console=True,
+          # False hides the cli window, useful ON to debug
+          console=False,
+          debug=False,
           icon='mu/resources/icons/win_icon.ico')
+
+# For debugging you can uncomment COLLECT and it will package to a folder
+# instead of a single executable (also comment out the "a" arguments in EXE)
+#coll = COLLECT(exe,
+#               a.binaries,
+#               a.zipfiles,
+#               a.datas,
+#               strip=None,
+#               upx=True,
+#               name='run')
