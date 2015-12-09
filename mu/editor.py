@@ -220,36 +220,6 @@ class ButtonBar(QToolBar):
         self.addAction(self.zoom_in_act)
         self.addAction(self.zoom_out_act)
 
-    def _new_python_file():
-        """
-        Handle the creation of a new Python file.
-        """
-        pass
-
-    def _open_python_file():
-        """
-        Handle opening an existing Python file.
-        """
-        pass
-
-    def _save_python_file():
-        """
-        Save the current Python file.
-        """
-        pass
-
-    def _run_python_file():
-        """
-        Attempt to run the current file.
-        """
-        pass
-
-    def _build_python_file():
-        """
-        Generate a .hex file to flash onto a micro:bit.
-        """
-        pass
-
 
 class TabPane(QTabWidget):
     def __len__(self):
