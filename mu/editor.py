@@ -196,42 +196,29 @@ class ButtonBar(QToolBar):
             "REPL", self,
             statusTip="Connect to the MicroPython REPL for live coding of the micro:bit.",
             triggered=self.editor.repl)
-        #self.run_python_file_act = QAction(
-        #    load_icon("run"),
-        #    "Run", self,
-        #    statusTip="Run your Python file",
-        #    triggered=self.editor.project.run)
-        # self.build_python_file_act = QAction(
-        #     load_icon("build"),
-        #     "Build", self,
-        #     statusTip="Build Python into Hex file",
-        #     triggered=self._build_python_file)
-        """
+
         self.zoom_in_act = QAction(
             load_icon("zoom-in"),
-            "Zoom in", self,
-            statusTip="Make the text bigger",
+            "Zoom In", self,
+            statusTip="Zoom in (to make the text bigger).",
             triggered=self.editor.zoom_in)
+
         self.zoom_out_act = QAction(
             load_icon("zoom-out"),
-            "Zoom out", self,
-            statusTip="Make the text smaller",
+            "Zoom Out", self,
+            statusTip="Zoom out (to make the text smaller).",
             triggered=self.editor.zoom_out)
-        """
         # Add the actions to the button bar.
         self.addAction(self.new_script_act)
         self.addAction(self.load_python_file_act)
         self.addAction(self.save_python_file_act)
+        self.addSeparator()
         self.addAction(self.snippets_act)
         self.addAction(self.flash_act)
         self.addAction(self.repl_act)
-        #self.addAction(self.run_python_file_act)
-        # self.addAction(self.build_python_file_act)
-        """
         self.addSeparator()
         self.addAction(self.zoom_in_act)
         self.addAction(self.zoom_out_act)
-        """
 
     def _new_python_file():
         """
