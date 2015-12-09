@@ -299,8 +299,13 @@ class Editor(QWidget):
         filename, filetype = QFileDialog.getOpenFileName(self, 'Open file',
                                                          MICROPYTHON_DIRECTORY,
                                                          '*.py')
-        with open(filename) as f:
-            self.add_tab(filename, f.read())
+        try:
+            with open(filename) as f:
+                data = f.read()
+        except FileNotFoundError:
+            pass
+        else:
+            self.add_tab(filename, data)
 
     def snippets(self):
         """Use code snippets."""
