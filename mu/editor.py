@@ -1,15 +1,23 @@
 import sys
 import os
+import os.path
 import keyword
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QTabWidget, QToolBar, QAction, QScrollArea,
-    QSplitter
+    QSplitter, QFileDialog
 )
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5.QtGui import QColor, QFont
 from mu.resources import load_icon
+
+
+# Directories
+HOME_DIRECTORY = os.path.expanduser('~')
+MICROPYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'micropython')
+if not os.path.exists(MICROPYTHON_DIRECTORY):
+    os.mkdir(MICROPYTHON_DIRECTORY)
 
 
 # FONT related constants:
@@ -293,8 +301,7 @@ class Editor(QWidget):
     def add_pane(self, pane):
         self.splitter.addWidget(pane)
 
-    def add_tab(self, path):
-        text = "Some Python" #self.project.read_file(path)
+    def add_tab(self, path, text):
         editor = EditorPane(path, text)
         self.tabs.addTab(editor, path)
 
@@ -332,7 +339,11 @@ class Editor(QWidget):
 
     def load(self):
         """Load a Python script."""
-        pass
+        filename, filetype = QFileDialog.getOpenFileName(self, 'Open file',
+                                                         MICROPYTHON_DIRECTORY,
+                                                         '*.py')
+        with open(filename) as f:
+            self.add_tab(filename, f.read())
 
     def snippets(self):
         """Use code snippets."""
