@@ -69,7 +69,6 @@ class Mu(QStackedWidget):
         Adds the editor to the window.
         """
         ed = Editor(self, None)
-        ed.add_tab('hello.py')
         mb_port = find_microbit()
         if mb_port:
             port = '/dev/{}'.format(mb_port)

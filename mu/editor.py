@@ -1,15 +1,23 @@
 import sys
 import os
+import os.path
 import keyword
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QTabWidget, QToolBar, QAction, QScrollArea,
-    QSplitter
+    QSplitter, QFileDialog
 )
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5.QtGui import QColor, QFont
 from mu.resources import load_icon
+
+
+# Directories
+HOME_DIRECTORY = os.path.expanduser('~')
+MICROPYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'micropython')
+if not os.path.exists(MICROPYTHON_DIRECTORY):
+    os.mkdir(MICROPYTHON_DIRECTORY)
 
 
 # FONT related constants:
@@ -188,72 +196,29 @@ class ButtonBar(QToolBar):
             "REPL", self,
             statusTip="Connect to the MicroPython REPL for live coding of the micro:bit.",
             triggered=self.editor.repl)
-        #self.run_python_file_act = QAction(
-        #    load_icon("run"),
-        #    "Run", self,
-        #    statusTip="Run your Python file",
-        #    triggered=self.editor.project.run)
-        # self.build_python_file_act = QAction(
-        #     load_icon("build"),
-        #     "Build", self,
-        #     statusTip="Build Python into Hex file",
-        #     triggered=self._build_python_file)
-        """
+
         self.zoom_in_act = QAction(
             load_icon("zoom-in"),
-            "Zoom in", self,
-            statusTip="Make the text bigger",
+            "Zoom In", self,
+            statusTip="Zoom in (to make the text bigger).",
             triggered=self.editor.zoom_in)
+
         self.zoom_out_act = QAction(
             load_icon("zoom-out"),
-            "Zoom out", self,
-            statusTip="Make the text smaller",
+            "Zoom Out", self,
+            statusTip="Zoom out (to make the text smaller).",
             triggered=self.editor.zoom_out)
-        """
         # Add the actions to the button bar.
         self.addAction(self.new_script_act)
         self.addAction(self.load_python_file_act)
         self.addAction(self.save_python_file_act)
+        self.addSeparator()
         self.addAction(self.snippets_act)
         self.addAction(self.flash_act)
         self.addAction(self.repl_act)
-        #self.addAction(self.run_python_file_act)
-        # self.addAction(self.build_python_file_act)
-        """
         self.addSeparator()
         self.addAction(self.zoom_in_act)
         self.addAction(self.zoom_out_act)
-        """
-
-    def _new_python_file():
-        """
-        Handle the creation of a new Python file.
-        """
-        pass
-
-    def _open_python_file():
-        """
-        Handle opening an existing Python file.
-        """
-        pass
-
-    def _save_python_file():
-        """
-        Save the current Python file.
-        """
-        pass
-
-    def _run_python_file():
-        """
-        Attempt to run the current file.
-        """
-        pass
-
-    def _build_python_file():
-        """
-        Generate a .hex file to flash onto a micro:bit.
-        """
-        pass
 
 
 class TabPane(QTabWidget):
@@ -293,8 +258,7 @@ class Editor(QWidget):
     def add_pane(self, pane):
         self.splitter.addWidget(pane)
 
-    def add_tab(self, path):
-        text = "Some Python" #self.project.read_file(path)
+    def add_tab(self, path, text):
         editor = EditorPane(path, text)
         self.tabs.addTab(editor, path)
 
@@ -332,7 +296,16 @@ class Editor(QWidget):
 
     def load(self):
         """Load a Python script."""
-        pass
+        filename, filetype = QFileDialog.getOpenFileName(self, 'Open file',
+                                                         MICROPYTHON_DIRECTORY,
+                                                         '*.py')
+        try:
+            with open(filename) as f:
+                data = f.read()
+        except FileNotFoundError:
+            pass
+        else:
+            self.add_tab(filename, data)
 
     def snippets(self):
         """Use code snippets."""
