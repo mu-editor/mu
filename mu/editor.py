@@ -255,6 +255,10 @@ class Editor(QWidget):
         # Ensure we have a minimal sensible size for the application.
         self.setMinimumSize(800, 600)
 
+    def add_repl(self, repl):
+        self.repl = repl
+        self.add_pane(repl)
+
     def add_pane(self, pane):
         self.splitter.addWidget(pane)
 
@@ -279,12 +283,16 @@ class Editor(QWidget):
         for tab in self.tabs:
             if hasattr(tab, 'zoomIn'):
                 tab.zoomIn(2)
+        if self.repl:
+            self.repl.zoomIn(2)
 
     def zoom_out(self):
         """Make the text smaller."""
         for tab in self.tabs:
             if hasattr(tab, 'zoomOut'):
                 tab.zoomOut(2)
+        if self.repl:
+            self.repl.zoomOut(2)
 
     def new(self):
         """New Python script."""

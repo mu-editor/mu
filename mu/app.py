@@ -35,11 +35,9 @@ class Mu(QStackedWidget):
         super().__init__(parent)
         self.setWindowIcon(load_icon('icon'))
         self.update_title()
-
         # Ensure we have a sensible size for the application.
         self.setMinimumSize(800, 600)
-
-        self.setup_editor()
+        self.setup()
 
     def update_title(self, project=None):
         """
@@ -64,9 +62,9 @@ class Mu(QStackedWidget):
             (screen.height() - size.height()) / 2
         )
 
-    def setup_editor(self):
+    def setup(self):
         """
-        Adds the editor to the window.
+        Sets up the application.
         """
         ed = Editor(self, None)
         mb_port = find_microbit()
@@ -74,7 +72,7 @@ class Mu(QStackedWidget):
             port = '/dev/{}'.format(mb_port)
             print(port)
             replpane = REPLPane(port=port, parent=ed)
-            ed.add_pane(replpane)
+            ed.add_repl(replpane)
         self.addWidget(ed)
         self.setCurrentWidget(ed)
 
