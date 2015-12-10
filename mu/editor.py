@@ -208,6 +208,13 @@ class ButtonBar(QToolBar):
             "Zoom Out", self,
             statusTip="Zoom out (to make the text smaller).",
             triggered=self.editor.zoom_out)
+
+        self.quit_act = QAction(
+            load_icon("quit"),
+            "Quit", self,
+            statusTip="Quit the application.",
+            triggered=self.editor.quit)
+
         # Add the actions to the button bar.
         self.addAction(self.new_script_act)
         self.addAction(self.load_python_file_act)
@@ -219,6 +226,8 @@ class ButtonBar(QToolBar):
         self.addSeparator()
         self.addAction(self.zoom_in_act)
         self.addAction(self.zoom_out_act)
+        self.addSeparator()
+        self.addAction(self.quit_act)
 
 
 class TabPane(QTabWidget):
@@ -318,3 +327,9 @@ class Editor(QWidget):
     def repl(self):
         """Toggle the REPL pane."""
         pass
+
+    def quit(self):
+        """Exit the application."""
+        # TODO: check for unsaved work and prompt to save if required. Fix once
+        # we can actually save the work!
+        sys.exit(0)
