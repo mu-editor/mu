@@ -4,10 +4,6 @@ from PyQt5.QtCore import QIODevice
 from PyQt5.QtCore import Qt
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 
-# TODO:
-#   - shutdown serial port cleanly on exit
-#   - use monospace font
-#   - get backspace and arrow keys working
 
 MICROBIT_PID = 516
 MICROBIT_VID = 3368
