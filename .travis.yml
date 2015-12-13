@@ -1,0 +1,77 @@
+# Because PyQt is a pain with virtualenvs, indicate non-python environment and manually configure python
+language: cpp
+
+# Travis can be used to build for both Linux and OS X (linux still WIP)
+os:
+  - osx
+  - linux
+
+# Ensure we are using the Travis instead of 12.04
+sudo: required
+dist: trusty
+
+before_install:
+  # OS extra info
+  - uname -a
+  - python --version
+  - python -c "import struct; print(struct.calcsize('P') * 8)"
+
+  # Install Python 3 in OS X (brew latest will be 3.5 or later) and check for correctness
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install python3; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo pip3 install --upgrade pip setuptools; fi
+
+  # Ubuntu Python 3 install latest, including pip3 accessible from sudo
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install python3; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install python3-pip -y; fi
+
+  # Check that Python and pip are correctly installed
+  - PATH=/usr/local/bin:$PATH
+  - echo $PATH
+  - python3 --version
+  - python3 -c "import struct; print(struct.calcsize('P') * 8)"
+  - pip3 --version
+
+  # PyInstaller
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pip3 install pyinstaller; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo pip3 install pyinstaller; fi
+  - pyinstaller --version
+
+  # Install PyQt5 in OS X or linux and check
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pyqt5 --with-python3; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install python3-pyqt5 -y; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install python3-pyqt5.qsci -y; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install python3-pyqt5.qtserialport -y; fi
+  #- python3 -c "import PyQt5"
+
+# Build Mu and time stamp it
+install:
+  - pyinstaller package/pyinstaller.spec
+  - ls
+  - du -sk dist/
+  - mv dist/mu dist/mu-$(date '+%Y-%m-%d_%H_%M_%S')
+
+# Dummy "script" run to stop default build script from travis, unit test should go here
+script:
+  - ls dist/
+
+# Deploy the build version in an S3 bucket
+deploy:
+  provider: s3
+  access_key_id: AKIAJYJV7NN6HVHCX5NQ
+  secret_access_key:
+    secure: gTy5x7D8J+6VTwR4CY+cxsnV5lGsMYFPoU9kSIwQNvNviZyQDR0Qan+VjUzUa3kvOEVxpBjiA6KkRPtvXslZNgJI8aVzm2GVzEh+9kyDIY3k9LLLy6xpK1q4jFscup+yAhLpgeIVjudp4ClxZy6Q4M28DM/ylAdd3JqiLzwtZr1wYfCa1L075SBqAj+Nj8nP02G2s5kF2hTC5MiQPfAic9jGdiuoFnIs3vN2HpojqZ5sQHBnyeZWX4OWoCSdJdwitdORl25HnFYBzV1vwhqRSgGrW5ssxaF6FEf9nVQMSmxRRvYVRU0lFAmWaTmPNbujsT4/oITXIHnblCD/d3oop5D5clMKkScC7r2v7oF+TcKEJc8IJRQ5eYwhaVhSLIjQmf+P8bZZUhLGHfKUxCl2IC9UjUDwrH7oCy14Le16wVQ+x+tFQKgK4jdZjpT65uRm2bfW+odvxRUiQw2NXoVW9TbXkGmpn7unnlcGB65RVp23oT4gkq2IuGxf+nRa56+N4BybMGxguiT1KG+/lu8P04bjskbrT5SxHQBIpmDRLwSPCZdlTM7+u+ywHxIbl9dhAmSwkqvOYah75VIt4d1PAmPP7pW48hIYIQLSc7ygWoPvZFww+qH8alkmyaHjtUvAe4HHvrQrjvREsYgK3694FBdIsN/BWWUT7rB5Qz/fzF4=
+  bucket: ardublockly-builds
+  skip_cleanup: true
+  local-dir: dist/
+  upload-dir: microbit/$TRAVIS_OS_NAME
+  acl: public_read
+  on:
+    repo: carlosperate/mu
+    branch: [master, travis]
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
