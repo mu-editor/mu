@@ -6,7 +6,7 @@
 
 * Install Python 3 from the [official website](https://www.python.org/downloads/).
 * Install the PyQt5 binary package from [riverbankcomputing](https://riverbankcomputing.com/software/pyqt/download).
-* Install PyiIstaller (includes pypiwin32):
+* Install PyInstaller using pip or pip3 (includes pypiwin32):
     ```
     pip install pyinstaller
     ```
@@ -24,7 +24,8 @@ Assuming you have the [Homebrew](http://brew.sh/) package manager installed.
   ```
   brew install pyqt5 --with-python3
   ```
-* Install pyinstaller:
+  TODO: There are more steps required
+* Install PyInstaller:
   ```
   pip3 install pyinstaller
   ```
@@ -41,8 +42,10 @@ Assuming you are running a Linux distribution with apt.
 * Install PyQt5:
   ```
   sudo apt-get install python3-pyqt5
+  sudo apt-get install python3-pyqt5.qsci
+  sudo apt-get install python3-pyqt5.qtserialport
   ```
-* Install pyinstalle:
+* Install PyInstaller:
   ```
   pip3 install pyinstaller
   ```
@@ -50,19 +53,31 @@ Assuming you are running a Linux distribution with apt.
 
 ## Package MU
 
-Run from the project root directory:
+From the project root directory, run:
 
 ```
-pyinstaller package\pyinstaller.spec
+pyinstaller package/pyinstaller.spec
 ```
 
-The single file executable should be saved in `/dist/mu` or `/dist/mu`.
+The single file executable should be saved in `/dist/mu` or `/dist/mu.exe`.
 
 The spec file `package/pyinstaller.spec` can be edited to simplify packaging debugging.
 
+
+## Run the executable
+
+On Windows you can simply double-click the `mu.exe` file.
+
+On Linux or OS X, ensure the file permissions are set to executable and, from the file location, run:
+
+```
+./mu
+```
+
+
 ## Download the Mu executable [![Windows Build status](https://ci.appveyor.com/api/projects/status/ngt8780him9hlgch?svg=true)](https://ci.appveyor.com/project/carlosperate/mu) [![Linux and OS X Build status](https://travis-ci.org/carlosperate/mu.svg)](https://travis-ci.org/carlosperate/mu)
 
-You can download the latest executable of Mu for your operating system:
+You can download the latest executable build of Mu for your respective operating system from the following links:
 
 * [Windows](http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/windows/)
 * [Mac OS X](http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/osx/)
