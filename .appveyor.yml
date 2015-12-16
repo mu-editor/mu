@@ -1,7 +1,5 @@
 environment:
-#  nodejs_version: "0.12.7"
   matrix:
-    # First group is 32 bit python 3.4
     - PYTHON: "C:\\Python34"
       PYTHON_VERSION: "3.4.3"
       PYTHON_ARCH: "32"
@@ -19,20 +17,20 @@ init:
   - cmd: python --version
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
 
-  # Set the relevant python and pip location to the path 
+  # Set the relevant python and pip location to the path
   - cmd: set PATH=%PYTHON%;%PYTHON%\scripts;%PATH%
   - cmd: ECHO Path - %PATH%
-  
+
   # Verify the new default python
   - cmd: python --version
   - cmd: python -c "import struct; print(struct.calcsize('P') * 8)"
   - cmd: pip --version
-  
+
   # Check out installed python packages
   - cmd: pip freeze
 
 install:
-  # Temporary fix for PyQt not being installed in right directory: https://github.com/appveyor/ci/issues/363
+  # Temporary fix for PyQt not being installed in correct directory: https://github.com/appveyor/ci/issues/363
   - REG ADD HKCU\Software\Python\PythonCore\3.4\InstallPath /f /ve /t REG_SZ /d C:\Python34
 
   # Download PyQt5 with 10min timeout, rename to pyqt5_installer.exe, and install
@@ -42,7 +40,7 @@ install:
 
   # Install python dependencies
   - cmd: pip install pyinstaller
-  
+
   # Check installed packages again
   - cmd: pip freeze
 
