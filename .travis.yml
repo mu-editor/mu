@@ -1,12 +1,12 @@
-# Because PyQt is a pain with virtualenvs, indicate non-python environment and manually configure python
+# Due to PyQt complexity within virtualenvs, indicate non-python environment and manually configure it
 language: cpp
 
-# Travis can be used to build for both Linux and OS X (linux still WIP)
+# Travis can be used to build for both Linux and OS X (OS X still WIP)
 os:
-  - osx
+#  - osx
   - linux
 
-# Ensure we are using the Travis instead of 12.04
+# Ensure we are running on 14.04 instead of 12.04 on the Ubuntu side
 sudo: required
 dist: trusty
 
@@ -16,43 +16,26 @@ before_install:
   - python --version
   - python -c "import struct; print(struct.calcsize('P') * 8)"
 
-  # Install Python 3 in OS X (brew latest will be 3.5 or later) and check for correctness
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install python3; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo pip3 install --upgrade pip setuptools; fi
+  # Install Python 3, pip3, PyQt and PyInstaller in the respective OS
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_linux.sh; fi
 
-  # Ubuntu Python 3 install latest, including pip3 accessible from sudo
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install python3; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install python3-pip -y; fi
-
-  # Check that Python and pip are correctly installed
-  - PATH=/usr/local/bin:$PATH
+  # Check everything was correctly installed (linux python path from sudo env)
   - echo $PATH
-  - python3 --version
-  - python3 -c "import struct; print(struct.calcsize('P') * 8)"
-  - pip3 --version
-
-  # PyInstaller
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pip3 install pyinstaller; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo pip3 install pyinstaller; fi
+  - sudo echo $PATH
+  - sudo python3 --version
+  - sudo python3 -c "import struct; print(struct.calcsize('P') * 8)"
+  - sudo pip3 --version
+  - sudo python3 -c "import PyQt5"
   - pyinstaller --version
-
-  # Install PyQt5 in OS X or linux and check
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pyqt5 --with-python3; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install python3-pyqt5 -y; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install python3-pyqt5.qsci -y; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install python3-pyqt5.qtserialport -y; fi
-  #- python3 -c "import PyQt5"
 
 # Build Mu and time stamp it
 install:
   - pyinstaller package/pyinstaller.spec
-  - ls
   - du -sk dist/
   - mv dist/mu dist/mu-$(date '+%Y-%m-%d_%H_%M_%S')
 
-# Dummy "script" run to stop default build script from travis, unit test should go here
+# Dummy "script" run to stop default trvais build script, unit test should go here
 script:
   - ls dist/
 
