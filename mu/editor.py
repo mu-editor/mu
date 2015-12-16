@@ -106,6 +106,7 @@ class EditorPane(QsciScintilla):
         super().__init__()
         self.path = path
         self.setText(text)
+        self.setModified(False)
         self.configure()
 
     def configure(self):
@@ -126,17 +127,25 @@ class EditorPane(QsciScintilla):
         self.setMarginWidth(0, 50)
         self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
         # Use the lexer defined above (and must save a reference to it)
-        self.lexer = self.choose_lexer()
+        self.lexer = self.python_lexer()
         self.setLexer(self.lexer)
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
 
-    def choose_lexer(self):
-        _, ext = os.path.splitext(self.path)
-        if ext == '.py':
-            lex = PythonLexer()
-            PythonTheme.apply_to(lex)
-            return lex
-        return None
+    def python_lexer(self):
+        lex = PythonLexer()
+        PythonTheme.apply_to(lex)
+        return lex
+
+    def get_label(self):
+        if self.path:
+            label = os.path.basename(self.path)
+        else:
+            label = 'untitled'
+
+        if self.isModified():
+            return label + ' *'
+        else:
+            return label
 
     def needs_write(self):
         return self.isModified()
@@ -273,7 +282,14 @@ class Editor(QWidget):
 
     def add_tab(self, path, text):
         editor = EditorPane(path, text)
-        self.tabs.addTab(editor, path)
+        tab_ix = self.tabs.addTab(editor, editor.get_label())
+        editor.modificationChanged.connect(lambda: self.mark_tab_modified(tab_ix))
+        self.tabs.setCurrentIndex(tab_ix)
+
+    def mark_tab_modified(self, tab_ix):
+        assert tab_ix == self.tabs.currentIndex()
+        ed = self.tabs.currentWidget()
+        self.tabs.setTabText(tab_ix, ed.get_label())
 
     def add_svg(self, title, data):
         svg = QSvgWidget()
@@ -305,24 +321,36 @@ class Editor(QWidget):
 
     def new(self):
         """New Python script."""
-        pass
+        self.add_tab(None, '')
 
     def save(self):
         """Save the Python script."""
-        pass
+        ed = self.tabs.currentWidget()
+
+        if ed is None:
+            return
+
+        if ed.path is None:
+            path, _ = QFileDialog.getSaveFileName(self, 'Save file',
+                                                  MICROPYTHON_DIRECTORY)
+            ed.path = path
+
+        with open(ed.path, 'w') as f:
+            f.write(ed.text())
+
+        ed.setModified(False)
 
     def load(self):
         """Load a Python script."""
-        filename, filetype = QFileDialog.getOpenFileName(self, 'Open file',
-                                                         MICROPYTHON_DIRECTORY,
-                                                         '*.py')
+        path, _ = QFileDialog.getOpenFileName(self, 'Open file',
+                                              MICROPYTHON_DIRECTORY, '*.py')
         try:
-            with open(filename) as f:
-                data = f.read()
+            with open(path) as f:
+                text = f.read()
         except FileNotFoundError:
             pass
         else:
-            self.add_tab(filename, data)
+            self.add_tab(path, text)
 
     def snippets(self):
         """Use code snippets."""
