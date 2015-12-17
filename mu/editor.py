@@ -5,11 +5,11 @@ import keyword
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QTabWidget, QToolBar, QAction, QScrollArea,
-    QSplitter, QFileDialog
+    QSplitter, QFileDialog, QShortcut
 )
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
-from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtGui import QColor, QFont, QKeySequence
 from mu.resources import load_icon
 
 
@@ -270,6 +270,17 @@ class Editor(QWidget):
         self.buttons = ButtonBar(self)
         self.tabs = TabPane(parent=self)
 
+        # Implement keyboard shortcuts.
+        self.new_shortcut = QShortcut(QKeySequence("Ctrl+N"), self)
+        self.new_shortcut.activated.connect(self.new)
+
+        self.save_shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
+        self.save_shortcut.activated.connect(self.save)
+
+        self.save_shortcut = QShortcut(QKeySequence("Ctrl+O"), self)
+        self.save_shortcut.activated.connect(self.load)
+
+
         self.splitter = QSplitter(Qt.Vertical)
         # Add the buttons and editor to the user inteface.
         self.layout.addWidget(self.buttons)
@@ -314,7 +325,8 @@ class Editor(QWidget):
             if hasattr(tab, 'zoomIn'):
                 tab.zoomIn(2)
         if self.repl:
-            self.repl.zoomIn(2)
+            if hasattr(self.repl, 'zoomIn'):
+                self.repl.zoomIn(2)
 
     def zoom_out(self):
         """Make the text smaller."""
@@ -322,7 +334,8 @@ class Editor(QWidget):
             if hasattr(tab, 'zoomOut'):
                 tab.zoomOut(2)
         if self.repl:
-            self.repl.zoomOut(2)
+            if hasattr(self.repl, 'zoomOut'):
+                self.repl.zoomOut(2)
 
     def new(self):
         """New Python script."""
