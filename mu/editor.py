@@ -5,11 +5,11 @@ import keyword
 
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QTabWidget, QToolBar, QAction, QScrollArea,
-    QSplitter, QFileDialog
+    QSplitter, QFileDialog, QShortcut
 )
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
-from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtGui import QColor, QFont, QKeySequence
 from mu.resources import load_icon
 
 
@@ -269,6 +269,23 @@ class Editor(QWidget):
         # The application has two aspects to it: buttons and the editor.
         self.buttons = ButtonBar(self)
         self.tabs = TabPane(parent=self)
+
+        # Implement keyboard shortcuts.
+        self.new_shortcut = QShortcut(QKeySequence("Ctrl+N"), self)
+        self.new_shortcut.activated.connect(self.new)
+
+        self.save_shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
+        self.save_shortcut.activated.connect(self.save)
+
+        self.save_shortcut = QShortcut(QKeySequence("Ctrl+O"), self)
+        self.save_shortcut.activated.connect(self.load)
+
+        self.save_shortcut = QShortcut(QKeySequence("Ctrl++"), self)
+        self.save_shortcut.activated.connect(self.zoom_in)
+
+        self.save_shortcut = QShortcut(QKeySequence("Ctrl-+"), self)
+        self.save_shortcut.activated.connect(self.zoom_out)
+
 
         self.splitter = QSplitter(Qt.Vertical)
         # Add the buttons and editor to the user inteface.
