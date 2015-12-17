@@ -240,6 +240,11 @@ class ButtonBar(QToolBar):
 
 
 class TabPane(QTabWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTabsClosable(True)
+        self.tabCloseRequested.connect(self.removeTab)
+
     def __len__(self):
         return self.count()
 
