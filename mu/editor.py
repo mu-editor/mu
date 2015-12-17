@@ -280,12 +280,6 @@ class Editor(QWidget):
         self.save_shortcut = QShortcut(QKeySequence("Ctrl+O"), self)
         self.save_shortcut.activated.connect(self.load)
 
-        self.save_shortcut = QShortcut(QKeySequence("Ctrl++"), self)
-        self.save_shortcut.activated.connect(self.zoom_in)
-
-        self.save_shortcut = QShortcut(QKeySequence("Ctrl-+"), self)
-        self.save_shortcut.activated.connect(self.zoom_out)
-
 
         self.splitter = QSplitter(Qt.Vertical)
         # Add the buttons and editor to the user inteface.
