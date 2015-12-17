@@ -325,7 +325,8 @@ class Editor(QWidget):
             if hasattr(tab, 'zoomIn'):
                 tab.zoomIn(2)
         if self.repl:
-            self.repl.zoomIn(2)
+            if hasattr(self.repl, 'zoomIn'):
+                self.repl.zoomIn(2)
 
     def zoom_out(self):
         """Make the text smaller."""
@@ -333,7 +334,8 @@ class Editor(QWidget):
             if hasattr(tab, 'zoomOut'):
                 tab.zoomOut(2)
         if self.repl:
-            self.repl.zoomOut(2)
+            if hasattr(self.repl, 'zoomOut'):
+                self.repl.zoomOut(2)
 
     def new(self):
         """New Python script."""
