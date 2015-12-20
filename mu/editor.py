@@ -1,389 +1,233 @@
-import sys
+"""
+Copyright (c) 2015 Nicholas H.Tollervey and others (see the AUTHORS file).
+
+Based upon work done for Puppy IDE by Dan Pope, Nicholas Tollervey and Damien
+George.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
 import os
 import os.path
-import keyword
-
-from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QTabWidget, QToolBar, QAction, QScrollArea,
-    QSplitter, QFileDialog, QShortcut
-)
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.Qsci import QsciScintilla, QsciLexerPython
-from PyQt5.QtGui import QColor, QFont, QKeySequence
-from mu.resources import load_icon
+import sys
+import json
+from PyQt5.QtWidgets import QMessageBox
+from mu.repl import find_microbit
+from mu.contrib import uflash, appdirs
 
 
-# Directories
 HOME_DIRECTORY = os.path.expanduser('~')
 MICROPYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'micropython')
 if not os.path.exists(MICROPYTHON_DIRECTORY):
     os.mkdir(MICROPYTHON_DIRECTORY)
+DATA_DIR = appdirs.user_data_dir('mu', 'python')
+if not os.path.exists(DATA_DIR):
+    os.mkdir(DATA_DIR)
+SESSION_FILE = os.path.join(DATA_DIR, 'tabs.json')
 
 
-# FONT related constants:
-DEFAULT_FONT_SIZE = 11
-DEFAULT_FONT = 'Bitstream Vera Sans Mono'
-# Platform specific alternatives...
-if sys.platform == 'win32':
-    DEFAULT_FONT = 'Consolas'
-elif sys.platform == 'darwin':
-    DEFAULT_FONT = 'Monaco'
+class REPL:
+    """
+    Read, Evaluate, Print, Loop.
+
+    Represents the REPL. Since the logic for the REPL is simply a USB/serial
+    based widget this class only contains a reference to the associated port.
+    """
+
+    def __init__(self, port):
+        if os.name == 'posix':
+            # If we're on Linux or OSX reference the port like this...
+            self.port = "/dev/{}".format(port)
+        elif os.name == 'nt':
+            # On Windows do something related to an appropriate port name.
+            self.port = port  # COMsomething-or-other.
+        else:
+            # No idea how to deal with other OS's so fail.
+            raise NotImplementedError('OS not supported.')
 
 
-class Font:
-    def __init__(self, color='black', paper='white', bold=False, italic=False):
-        self.color = color
-        self.paper = paper
-        self.bold = bold
-        self.italic = italic
+class Editor:
+    """
+    Application logic for the editor itself.
+    """
 
+    def __init__(self, view):
+        self._view = view
+        self.repl = None
 
-ALL_STYLES = -1
-
-
-class Theme:
-    @classmethod
-    def apply_to(cls, lexer):
-        # Apply a font for all styles
-        font = QFont(DEFAULT_FONT, DEFAULT_FONT_SIZE)
-        font.setBold(False)
-        font.setItalic(False)
-        lexer.setFont(font, ALL_STYLES)
-
-        for name, font in cls.__dict__.items():
-            if not isinstance(font, Font):
-                continue
-
-            style_num = getattr(lexer, name)
-            lexer.setColor(QColor(font.color), style_num)
-            lexer.setEolFill(True, style_num)
-            lexer.setPaper(QColor(font.paper), style_num)
-            if font.bold or font.italic:
-                f = QFont(DEFAULT_FONT, DEFAULT_FONT_SIZE)
-                f.setBold(font.bold)
-                f.setItalic(font.italic)
-                lexer.setFont(f, style_num)
-
-
-class PythonTheme(Theme):
-    FunctionMethodName = ClassName = Font(color='#0000a0')
-    UnclosedString = Font(paper='#00fd00')
-    Comment = CommentBlock = Font(color='gray')
-    Keyword = Font(color='#008080', bold=True)
-    SingleQuotedString = DoubleQuotedString = Font(color='#800000')
-    TripleSingleQuotedString = TripleDoubleQuotedString = Font(color='#060')
-    Number = Font(color='#00008B')
-    Decorator = Font(color='#cc6600')
-    Default = Identifier = Font()
-    Operator = Font(color='#400040')
-    HighlightedIdentifier = Font(color='#0000a0')
-
-
-class PythonLexer(QsciLexerPython):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setHighlightSubidentifiers(False)
-
-    def keywords(self, flag):
+    def restore_session(self):
         """
-        Returns a list of Python keywords.
+        Attempts to recreate the tab state from the last time the editor was
+        run.
         """
-        if flag == 1:
-            kws = keyword.kwlist + ['self', 'cls']
-        elif flag == 2:
-            kws = __builtins__.keys()
+        if os.path.exists(SESSION_FILE):
+            with open(SESSION_FILE) as f:
+                tabs = json.load(f)
+                if tabs:
+                    for tab in tabs:
+                        try:
+                            with open(tab) as f:
+                                text = f.read()
+                        except FileNotFoundError:
+                            pass
+                        else:
+                            self._view.add_tab(tab, text)
+                else:
+                    py = 'from microbit import *\n\n# Write code here :-)'
+                    self._view.add_tab(None, py)
+
+    def flash(self):
+        """
+        Takes the currently active tab, compiles the Python script therein into
+        a hex file and flashes it all onto the connected device.
+        """
+        # Grab the Python script.
+        tab = self._view.current_tab
+        if tab is None:
+            # There is no active text editor
+            return
+        python_script = tab.text().encode('utf-8')
+        #Generate a hex file
+        python_hex = uflash.hexlify(python_script)
+        micropython_hex = uflash.embed_hex(uflash._RUNTIME, python_hex)
+        path_to_microbit = uflash.find_microbit()
+        if path_to_microbit:
+            hex_file = os.path.join(path_to_microbit, 'micropython.hex')
+            uflash.save_hex(micropython_hex, hex_file)
+            message = 'Flashing "{}" onto the micro:bit.'.format(tab.label)
+            information = ("When the yellow LED stops flashing the device"
+                           " will restart and your script will run. If there"
+                           " is an error, you'll see a helpful message scroll"
+                           " across the device's display.")
+            self._view.show_message(message, information, 'Information')
         else:
-            return None
-        return ' '.join(kws)
+            message = 'Could not find an attached BBC micro:bit.'
+            self._view.show_message(message)
 
-
-class EditorPane(QsciScintilla):
-    """
-    Represents the text editor.
-    """
-
-    def __init__(self, path, text):
-        super().__init__()
-        self.path = path
-        self.setText(text)
-        self.setModified(False)
-        self.configure()
-
-    def configure(self):
-        """Set up the editor component."""
-        # Font information
-        font = QFont(DEFAULT_FONT)
-        font.setFixedPitch(True)
-        font.setPointSize(DEFAULT_FONT_SIZE)
-        self.setFont(font)
-        # Generic editor settings
-        self.setUtf8(True)
-        self.setAutoIndent(True)
-        self.setIndentationsUseTabs(False)
-        self.setIndentationWidth(4)
-        self.setTabWidth(4)
-        self.setEdgeColumn(79)
-        self.setMarginLineNumbers(0, True)
-        self.setMarginWidth(0, 50)
-        self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
-        # Use the lexer defined above (and must save a reference to it)
-        self.lexer = self.python_lexer()
-        self.setLexer(self.lexer)
-        self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
-
-    def python_lexer(self):
-        lex = PythonLexer()
-        PythonTheme.apply_to(lex)
-        return lex
-
-    def get_label(self):
-        if self.path:
-            label = os.path.basename(self.path)
+    def add_repl(self):
+        """
+        Detect a connected BBC micro:bit and if found, connect to the
+        MicroPython REPL and display it to the user.
+        """
+        if self.repl is not None:
+            raise RuntimeError("REPL already running")
+        mb_port = find_microbit()
+        if mb_port:
+            try:
+                self.repl = REPL(port=mb_port)
+                self._view.add_repl(self.repl)
+            except IOError as ex:
+                self.repl = None
+                information = ("Click the device's reset button, wait a few"
+                               " seconds and then try again.")
+                self._view.show_message(str(ex), information)
         else:
-            label = 'untitled'
+            message = 'Could not find an attached BBC micro:bit.'
+            information = ("Please make sure the device is plugged into this"
+                " computer.\n\nThe device must have MicroPython flashed onto it"
+                " before the REPL will work.\n\nFinally, press the device's"
+                " reset button and wait a few seconds before trying again.")
+            self._view.show_message(message, information)
 
-        if self.isModified():
-            return label + ' *'
+    def remove_repl(self):
+        """
+        If there's an active REPL, disconnect and hide it.
+        """
+        if self.repl is None:
+            raise RuntimeError("REPL not running")
+        self._view.remove_repl()
+        self.repl = None
+
+    def toggle_repl(self):
+        """
+        If the REPL is active, close it; otherwise open the REPL.
+        """
+        if self.repl is None:
+            self.add_repl()
         else:
-            return label
-
-    def needs_write(self):
-        return self.isModified()
-
-
-class ButtonBar(QToolBar):
-    """
-    Represents the bar of buttons across the top of the editor and defines
-    their behaviour.
-    """
-
-    def __init__(self, editor):
-        super().__init__(editor)
-        self.editor = editor
-        self.configure()
-
-    def configure(self):
-        """Set up the buttons"""
-        self.setMovable(False)
-        self.setIconSize(QSize(64, 64))
-        self.setToolButtonStyle(3)
-        self.setContextMenuPolicy(Qt.PreventContextMenu)
-        self.setObjectName("StandardToolBar")
-        # Create actions to be added to the button bar.
-        self.new_script_act = QAction(
-            load_icon("new"),
-            "New", self,
-            statusTip="Create a new MicroPython script.",
-            triggered=self.editor.new)
-
-        self.load_python_file_act = QAction(
-            load_icon("load"),
-            "Load", self,
-            statusTip="Load a MicroPython script.",
-            triggered=self.editor.load)
-
-        self.save_python_file_act = QAction(
-            load_icon("save"),
-            "Save", self,
-            statusTip="Save the current MicroPython script.",
-            triggered=self.editor.save)
-
-        self.snippets_act = QAction(
-            load_icon("snippets"),
-            "Snippets", self,
-            statusTip="Use code snippets to help you program.",
-            triggered=self.editor.snippets)
-
-        self.flash_act = QAction(
-            load_icon("flash"),
-            "Flash", self,
-            statusTip="Flash your MicroPython script onto the micro:bit.",
-            triggered=self.editor.flash)
-
-        self.repl_act = QAction(
-            load_icon("repl"),
-            "REPL", self,
-            statusTip="Connect to the MicroPython REPL for live coding of the micro:bit.",
-            triggered=self.editor.repl)
-
-        self.zoom_in_act = QAction(
-            load_icon("zoom-in"),
-            "Zoom In", self,
-            statusTip="Zoom in (to make the text bigger).",
-            triggered=self.editor.zoom_in)
-
-        self.zoom_out_act = QAction(
-            load_icon("zoom-out"),
-            "Zoom Out", self,
-            statusTip="Zoom out (to make the text smaller).",
-            triggered=self.editor.zoom_out)
-
-        self.quit_act = QAction(
-            load_icon("quit"),
-            "Quit", self,
-            statusTip="Quit the application.",
-            triggered=self.editor.quit)
-
-        # Add the actions to the button bar.
-        self.addAction(self.new_script_act)
-        self.addAction(self.load_python_file_act)
-        self.addAction(self.save_python_file_act)
-        self.addSeparator()
-        self.addAction(self.snippets_act)
-        self.addAction(self.flash_act)
-        self.addAction(self.repl_act)
-        self.addSeparator()
-        self.addAction(self.zoom_in_act)
-        self.addAction(self.zoom_out_act)
-        self.addSeparator()
-        self.addAction(self.quit_act)
-
-
-class TabPane(QTabWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setTabsClosable(True)
-        self.tabCloseRequested.connect(self.removeTab)
-
-    def __len__(self):
-        return self.count()
-
-    def __getitem__(self, index):
-        t = self.widget(index)
-        if not t:
-            raise IndexError(index)
-        return t
-
-
-class Editor(QWidget):
-    """
-    Represents the application.
-    """
-    def __init__(self, project, parent=None):
-        super().__init__(parent)
-        self.project = project
-
-        # Vertical box layout.
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-        # The application has two aspects to it: buttons and the editor.
-        self.buttons = ButtonBar(self)
-        self.tabs = TabPane(parent=self)
-
-        # Implement keyboard shortcuts.
-        self.new_shortcut = QShortcut(QKeySequence("Ctrl+N"), self)
-        self.new_shortcut.activated.connect(self.new)
-
-        self.save_shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
-        self.save_shortcut.activated.connect(self.save)
-
-        self.save_shortcut = QShortcut(QKeySequence("Ctrl+O"), self)
-        self.save_shortcut.activated.connect(self.load)
-
-
-        self.splitter = QSplitter(Qt.Vertical)
-        # Add the buttons and editor to the user inteface.
-        self.layout.addWidget(self.buttons)
-        self.layout.addWidget(self.splitter)
-        self.splitter.addWidget(self.tabs)
-        # Ensure we have a minimal sensible size for the application.
-        self.setMinimumSize(800, 600)
-
-    def add_repl(self, repl):
-        self.repl = repl
-        self.add_pane(repl)
-
-    def add_pane(self, pane):
-        self.splitter.addWidget(pane)
-
-    def add_tab(self, path, text):
-        editor = EditorPane(path, text)
-        tab_ix = self.tabs.addTab(editor, editor.get_label())
-        editor.modificationChanged.connect(lambda: self.mark_tab_modified(tab_ix))
-        self.tabs.setCurrentIndex(tab_ix)
-
-    def mark_tab_modified(self, tab_ix):
-        assert tab_ix == self.tabs.currentIndex()
-        ed = self.tabs.currentWidget()
-        self.tabs.setTabText(tab_ix, ed.get_label())
-
-    def add_svg(self, title, data):
-        svg = QSvgWidget()
-        svg.load(data)
-        scrollpane = QScrollArea()
-        scrollpane.setWidget(svg)
-        self.tabs.addTab(scrollpane, title)
-
-    def close(self):
-        """Close this project."""
-        self.save_all()
-        self.parentWidget().close_project(self.project)
-
-    def zoom_in(self):
-        """Make the text BIGGER."""
-        for tab in self.tabs:
-            if hasattr(tab, 'zoomIn'):
-                tab.zoomIn(2)
-        if self.repl:
-            if hasattr(self.repl, 'zoomIn'):
-                self.repl.zoomIn(2)
-
-    def zoom_out(self):
-        """Make the text smaller."""
-        for tab in self.tabs:
-            if hasattr(tab, 'zoomOut'):
-                tab.zoomOut(2)
-        if self.repl:
-            if hasattr(self.repl, 'zoomOut'):
-                self.repl.zoomOut(2)
+            self.remove_repl()
 
     def new(self):
-        """New Python script."""
-        self.add_tab(None, '')
-
-    def save(self):
-        """Save the Python script."""
-        ed = self.tabs.currentWidget()
-
-        if ed is None:
-            return
-
-        if ed.path is None:
-            path, _ = QFileDialog.getSaveFileName(self, 'Save file',
-                                                  MICROPYTHON_DIRECTORY)
-            ed.path = path
-
-        with open(ed.path, 'w') as f:
-            f.write(ed.text())
-
-        ed.setModified(False)
+        """
+        Adds a new tab to the editor.
+        """
+        self._view.add_tab(None, '')
 
     def load(self):
-        """Load a Python script."""
-        path, _ = QFileDialog.getOpenFileName(self, 'Open file',
-                                              MICROPYTHON_DIRECTORY, '*.py')
+        """
+        Loads a Python file from the file system.
+        """
+        path = self._view.get_load_path(MICROPYTHON_DIRECTORY)
         try:
             with open(path) as f:
                 text = f.read()
         except FileNotFoundError:
             pass
         else:
-            self.add_tab(path, text)
+            self._view.add_tab(path, text)
 
-    def snippets(self):
-        """Use code snippets."""
-        pass
+    def save(self):
+        """
+        Save the content of the currently active editor tab.
+        """
+        tab = self._view.current_tab
+        if tab is None:
+            # There is no active text editor so abort.
+            return
+        if tab.path is None:
+            # Unsaved file.
+            tab.path = self._view.get_save_path(MICROPYTHON_DIRECTORY)
+        if tab.path:
+            # The user specified a path to a file.
+            with open(tab.path, 'w') as f:
+                f.write(tab.text())
+            tab.modified = False
+        else:
+            # The user cancelled the filename selection.
+            tab.path = None
 
-    def flash(self):
-        """Flash the micro:bit."""
-        pass
+    def zoom_in(self):
+        """
+        Make the editor's text bigger
+        """
+        self._view.zoom_in()
 
-    def repl(self):
-        """Toggle the REPL pane."""
-        pass
+    def zoom_out(self):
+        """
+        Make the editor's text smaller.
+        """
+        self._view.zoom_out()
 
     def quit(self):
-        """Exit the application."""
-        # TODO: check for unsaved work and prompt to save if required. Fix once
-        # we can actually save the work!
+        """
+        Exit the application.
+        """
+        pending_save = False
+        tabs = [self._view.tabs.widget(i)
+                for i in range(self._view.tabs.count())]
+        for tab in tabs:
+            if tab.modified:
+                pending_save = True
+                break
+        if pending_save:
+            # Alert the user to handle unsaved work.
+            result = self._view.show_confirmation('You have un-saved work!')
+            if result == QMessageBox.Cancel:
+                return
+        open_tabs = []
+        for tab in tabs:
+            if tab.path:
+                open_tabs.append(tab.path)
+        with open(SESSION_FILE, 'w') as out:
+            json.dump(open_tabs, out, indent=2)
         sys.exit(0)

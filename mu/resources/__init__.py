@@ -1,7 +1,26 @@
-from pkg_resources import resource_filename, resource_string
+"""
+Copyright (c) 2015 Nicholas H.Tollervey and others (see the AUTHORS file).
 
+Based upon work done for Puppy IDE by Dan Pope, Nicholas Tollervey and Damien
+George.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+from pkg_resources import resource_filename, resource_string
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import QDir
+
 
 QDir.addSearchPath('images', resource_filename(__name__, 'images'))
 QDir.addSearchPath('css', resource_filename(__name__, 'css'))
@@ -9,6 +28,7 @@ QDir.addSearchPath('svg', resource_filename(__name__, 'svg'))
 
 
 def path(name):
+    """Return the filename for the referenced image."""
     return resource_filename(__name__, "images/" + name)
 
 
