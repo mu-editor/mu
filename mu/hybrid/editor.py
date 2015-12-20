@@ -3,14 +3,19 @@ import os
 import os.path
 import keyword
 
+from PyQt5.QtSvg import QSvgWidget
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QTabWidget, QToolBar, QAction, QScrollArea,
-    QSplitter, QFileDialog, QShortcut
+    QSplitter, QFileDialog
 )
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
-from PyQt5.QtGui import QColor, QFont, QKeySequence
+from PyQt5.QtGui import QColor, QFont
+
+from mu.hybrid.repl import REPLPane
+from mu.hybrid.repl import find_microbit
 from mu.resources import load_icon
+from mu.views import chrome
 
 
 # Directories
@@ -151,7 +156,7 @@ class EditorPane(QsciScintilla):
         return self.isModified()
 
 
-class ButtonBar(QToolBar):
+class ButtonBar(chrome.ButtonBar):
     """
     Represents the bar of buttons across the top of the editor and defines
     their behaviour.
@@ -159,92 +164,22 @@ class ButtonBar(QToolBar):
 
     def __init__(self, editor):
         super().__init__(editor)
-        self.editor = editor
-        self.configure()
 
-    def configure(self):
-        """Set up the buttons"""
-        self.setMovable(False)
-        self.setIconSize(QSize(64, 64))
-        self.setToolButtonStyle(3)
-        self.setContextMenuPolicy(Qt.PreventContextMenu)
-        self.setObjectName("StandardToolBar")
-        # Create actions to be added to the button bar.
-        self.new_script_act = QAction(
-            load_icon("new"),
-            "New", self,
-            statusTip="Create a new MicroPython script.",
-            triggered=self.editor.new)
+        self.connect("new", editor.new)
+        self.connect("load", editor.load)
+        self.connect("save", editor.save)
 
-        self.load_python_file_act = QAction(
-            load_icon("load"),
-            "Load", self,
-            statusTip="Load a MicroPython script.",
-            triggered=self.editor.load)
+        self.connect("snippets", editor.snippets)
+        self.connect("flash", editor.flash)
+        self.connect("repl", editor.repl)
 
-        self.save_python_file_act = QAction(
-            load_icon("save"),
-            "Save", self,
-            statusTip="Save the current MicroPython script.",
-            triggered=self.editor.save)
+        self.connect("zoom-in", editor.zoom_in)
+        self.connect("zoom-out", editor.zoom_out)
 
-        self.snippets_act = QAction(
-            load_icon("snippets"),
-            "Snippets", self,
-            statusTip="Use code snippets to help you program.",
-            triggered=self.editor.snippets)
-
-        self.flash_act = QAction(
-            load_icon("flash"),
-            "Flash", self,
-            statusTip="Flash your MicroPython script onto the micro:bit.",
-            triggered=self.editor.flash)
-
-        self.repl_act = QAction(
-            load_icon("repl"),
-            "REPL", self,
-            statusTip="Connect to the MicroPython REPL for live coding of the micro:bit.",
-            triggered=self.editor.repl)
-
-        self.zoom_in_act = QAction(
-            load_icon("zoom-in"),
-            "Zoom In", self,
-            statusTip="Zoom in (to make the text bigger).",
-            triggered=self.editor.zoom_in)
-
-        self.zoom_out_act = QAction(
-            load_icon("zoom-out"),
-            "Zoom Out", self,
-            statusTip="Zoom out (to make the text smaller).",
-            triggered=self.editor.zoom_out)
-
-        self.quit_act = QAction(
-            load_icon("quit"),
-            "Quit", self,
-            statusTip="Quit the application.",
-            triggered=self.editor.quit)
-
-        # Add the actions to the button bar.
-        self.addAction(self.new_script_act)
-        self.addAction(self.load_python_file_act)
-        self.addAction(self.save_python_file_act)
-        self.addSeparator()
-        self.addAction(self.snippets_act)
-        self.addAction(self.flash_act)
-        self.addAction(self.repl_act)
-        self.addSeparator()
-        self.addAction(self.zoom_in_act)
-        self.addAction(self.zoom_out_act)
-        self.addSeparator()
-        self.addAction(self.quit_act)
+        self.connect("quit", editor.quit)
 
 
 class TabPane(QTabWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setTabsClosable(True)
-        self.tabCloseRequested.connect(self.removeTab)
-
     def __len__(self):
         return self.count()
 
@@ -255,39 +190,22 @@ class TabPane(QTabWidget):
         return t
 
 
-class Editor(QWidget):
+class Editor:
     """
     Represents the application.
     """
-    def __init__(self, project, parent=None):
-        super().__init__(parent)
-        self.project = project
 
-        # Vertical box layout.
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-        # The application has two aspects to it: buttons and the editor.
-        self.buttons = ButtonBar(self)
-        self.tabs = TabPane(parent=self)
+    project = None
 
-        # Implement keyboard shortcuts.
-        self.new_shortcut = QShortcut(QKeySequence("Ctrl+N"), self)
-        self.new_shortcut.activated.connect(self.new)
+    def __init__(self, splitter):
+        self.splitter = splitter
 
-        self.save_shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
-        self.save_shortcut.activated.connect(self.save)
-
-        self.save_shortcut = QShortcut(QKeySequence("Ctrl+O"), self)
-        self.save_shortcut.activated.connect(self.load)
-
-
-        self.splitter = QSplitter(Qt.Vertical)
-        # Add the buttons and editor to the user inteface.
-        self.layout.addWidget(self.buttons)
-        self.layout.addWidget(self.splitter)
-        self.splitter.addWidget(self.tabs)
-        # Ensure we have a minimal sensible size for the application.
-        self.setMinimumSize(800, 600)
+        mb_port = find_microbit()
+        if mb_port:
+            port = '/dev/{}'.format(mb_port)
+            # Todo - Refactor some of this to model and controller
+            replpane = REPLPane(port=port, parent=self)
+            self.add_repl(replpane)
 
     def add_repl(self, repl):
         self.repl = repl
@@ -325,8 +243,7 @@ class Editor(QWidget):
             if hasattr(tab, 'zoomIn'):
                 tab.zoomIn(2)
         if self.repl:
-            if hasattr(self.repl, 'zoomIn'):
-                self.repl.zoomIn(2)
+            self.repl.zoomIn(2)
 
     def zoom_out(self):
         """Make the text smaller."""
@@ -334,8 +251,7 @@ class Editor(QWidget):
             if hasattr(tab, 'zoomOut'):
                 tab.zoomOut(2)
         if self.repl:
-            if hasattr(self.repl, 'zoomOut'):
-                self.repl.zoomOut(2)
+            self.repl.zoomOut(2)
 
     def new(self):
         """New Python script."""
