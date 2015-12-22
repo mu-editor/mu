@@ -76,10 +76,10 @@ class Mu(QStackedWidget):
                 port = '/dev/{}'.format(mb_port)
             elif os.name == 'nt':
                 # On Windows do something related to an appropriate port name.
-                port = ''  # COMsomething-or-other at a guess..?
+                port = mb_port  # COMsomething-or-other.
             else:
                 # No idea how to deal with other OS's so fail.
-                raise NotImplementedError('OS not supported :(')
+                raise NotImplementedError('OS not supported.')
             replpane = REPLPane(port=port, parent=ed)
             ed.add_repl(replpane)
         self.addWidget(ed)
