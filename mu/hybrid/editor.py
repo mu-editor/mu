@@ -156,29 +156,6 @@ class EditorPane(QsciScintilla):
         return self.isModified()
 
 
-class ButtonBar(chrome.ButtonBar):
-    """
-    Represents the bar of buttons across the top of the editor and defines
-    their behaviour.
-    """
-
-    def __init__(self, editor):
-        super().__init__(editor)
-
-        self.connect("new", editor.new)
-        self.connect("load", editor.load)
-        self.connect("save", editor.save)
-
-        self.connect("snippets", editor.snippets)
-        self.connect("flash", editor.flash)
-        self.connect("repl", editor.repl)
-
-        self.connect("zoom-in", editor.zoom_in)
-        self.connect("zoom-out", editor.zoom_out)
-
-        self.connect("quit", editor.quit)
-
-
 class TabPane(QTabWidget):
     def __len__(self):
         return self.count()
@@ -196,9 +173,19 @@ class Editor:
     """
 
     project = None
+    
+    @property
+    def iter_tabs(self):
+        for index in range(self.tabs.count):
+            tab = self.tabs.widget(index)
+            if not tab:
+                raise IndexError(index)
+            else:
+                yield tab
 
-    def __init__(self, splitter):
+    def __init__(self, splitter, tabs):
         self.splitter = splitter
+        self.tabs = tabs
 
         mb_port = find_microbit()
         if mb_port:
@@ -239,7 +226,7 @@ class Editor:
 
     def zoom_in(self):
         """Make the text BIGGER."""
-        for tab in self.tabs:
+        for tab in self.iter_tabs:
             if hasattr(tab, 'zoomIn'):
                 tab.zoomIn(2)
         if self.repl:

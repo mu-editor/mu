@@ -83,9 +83,6 @@ class Window(QStackedWidget):
     title = "Mu Editor"
     icon = "icon"
 
-    splash_image = load_pixmap(icon)
-    window_icon = load_icon(icon)
-
     def update_title(self, project=None):
         """
         Updates the title bar of the application.
@@ -116,11 +113,11 @@ class Window(QStackedWidget):
         Sets up the application.
         """
 
-        self.setWindowIcon(self.window_icon)
+        self.setWindowIcon(load_icon(self.icon))
         self.update_title()
         self.setMinimumSize(800, 600)
 
-        splash = QSplashScreen(Window.splash_image)
+        splash = QSplashScreen(load_pixmap(self.icon))
         splash.show()
 
         widget = QWidget()
@@ -129,9 +126,12 @@ class Window(QStackedWidget):
         widget_layout = QVBoxLayout()
         widget.setLayout(widget_layout)
 
-        widget_layout.addWidget(ButtonBar(widget))
+        self.button_bar = ButtonBar(widget)
+        self.tabs = QTabWidget(widget)
+
+        widget_layout.addWidget(self.button_bar)
         widget_layout.addWidget(splitter)
-        splitter.addWidget(QTabWidget(widget))
+        splitter.addWidget(self.tabs)
 
         self.addWidget(widget)
         self.setCurrentWidget(widget)
