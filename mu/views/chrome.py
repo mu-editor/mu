@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtWidgets import (
     QToolBar,
     QAction,
@@ -9,9 +9,10 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QSplitter,
     QTabWidget,
-)
+    QFileDialog)
 
 from mu.resources import load_icon, load_pixmap
+from mu.views.editor_pane import EditorPane
 
 
 class ButtonBar(QToolBar):
@@ -83,6 +84,46 @@ class Window(QStackedWidget):
     title = "Mu Editor"
     icon = "icon"
 
+    _zoom_in = pyqtSignal(int)
+    _zoom_out = pyqtSignal(int)
+
+    def zoom_in(self):
+        self._zoom_in.emit(2)
+
+    def zoom_out(self):
+        self._zoom_out.emit(2)
+
+    def connect_zoom(self, widget):
+        self._zoom_in.connect(widget.zoomIn)
+        self._zoom_out.connect(widget.zoomOut)
+
+    @property
+    def current_tab(self):
+        return self.tabs.currentWidget()
+
+    def get_load_path(self, folder):
+        path, _ = QFileDialog.getOpenFileName(self.widget,
+                                              'Open file', folder, "*.py")
+        return path
+
+    def get_save_path(self, folder):
+        path, _ = QFileDialog.getSaveFileName(self.widget,
+                                              'Save file', folder)
+        return path
+
+    def add_tab(self, path, text):
+        # Separate this out a bit more
+
+        new_tab = EditorPane(path, text)
+        new_tab_index = self.tabs.addTab(new_tab, new_tab.label)
+
+        @new_tab.modificationChanged.connect
+        def on_modified():
+            self.tabs.setTabText(new_tab_index, new_tab.label)
+
+        self.tabs.setCurrentIndex(new_tab_index)
+        self.connect_zoom(new_tab)
+
     def update_title(self, project=None):
         """
         Updates the title bar of the application.
@@ -120,23 +161,33 @@ class Window(QStackedWidget):
         splash = QSplashScreen(load_pixmap(self.icon))
         splash.show()
 
-        widget = QWidget()
+        self.widget = QWidget()
         splitter = QSplitter(Qt.Vertical)
 
         widget_layout = QVBoxLayout()
-        widget.setLayout(widget_layout)
+        self.widget.setLayout(widget_layout)
 
-        self.button_bar = ButtonBar(widget)
-        self.tabs = QTabWidget(widget)
+        self.button_bar = ButtonBar(self.widget)
+        self.tabs = QTabWidget()
 
         widget_layout.addWidget(self.button_bar)
         widget_layout.addWidget(splitter)
+
         splitter.addWidget(self.tabs)
 
-        self.addWidget(widget)
-        self.setCurrentWidget(widget)
+        self.addWidget(self.widget)
+        self.setCurrentWidget(self.widget)
 
         self.show()
         self.autosize_window()
 
         return (lambda: splash.finish(self)), splitter
+
+
+class Splitter(QSplitter):
+
+    orientation = Qt.Vertical
+
+    def __init__(self):
+        super().__init__(self.orientation)
+        self.tabs = QTabWidget
