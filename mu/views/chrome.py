@@ -79,6 +79,13 @@ class ButtonBar(QToolBar):
         self.addAction(name="quit", tool_text="Quit the application.")
 
 
+def tab_widget():
+    tabs = QTabWidget()
+    tabs.setTabsClosable(True)
+    tabs.tabCloseRequested.connect(tabs.removeTab)
+    return tabs
+
+
 class Window(QStackedWidget):
 
     title = "Mu Editor"
@@ -168,7 +175,7 @@ class Window(QStackedWidget):
         self.widget.setLayout(widget_layout)
 
         self.button_bar = ButtonBar(self.widget)
-        self.tabs = QTabWidget()
+        self.tabs = tab_widget()
 
         widget_layout.addWidget(self.button_bar)
         widget_layout.addWidget(splitter)
