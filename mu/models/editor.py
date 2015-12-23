@@ -19,10 +19,10 @@ class REPL:
             self.device = "/dev/{}".format(port)
         elif os.name == 'nt':
             # On Windows do something related to an appropriate port name.
-            self.device = ""
+            self.device = port  # COMsomething-or-other.
         else:
             # No idea how to deal with other OS's so fail.
-            raise NotImplementedError('OS not supported :(')
+            raise NotImplementedError('OS not supported.')
 
     def disconnect(self):
         # Todo some teardown
