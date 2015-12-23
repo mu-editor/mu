@@ -7,9 +7,12 @@ from PyQt5.QtWidgets import (
     QDesktopWidget,
     QWidget,
     QVBoxLayout,
+    QShortcut,
     QSplitter,
     QTabWidget,
-    QFileDialog)
+    QFileDialog,
+)
+from PyQt5.QtGui import QKeySequence
 
 from mu.resources import load_icon, load_pixmap
 from mu.views.editor_pane import EditorPane
@@ -32,8 +35,14 @@ class ButtonBar(QToolBar):
         super().addAction(action)
         self.slots[name] = action
 
-    def connect(self, name, slot):
+    def connect(self, name, slot, *shortcuts):
         self.slots[name].pyqtConfigure(triggered=slot)
+
+        for shortcut in shortcuts:
+            QShortcut(
+                QKeySequence(shortcut),
+                self.parentWidget()
+            ).activated.connect(slot)
     
     def __init__(self, parent):
         super().__init__(parent)

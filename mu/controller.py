@@ -19,9 +19,9 @@ def run():
 
     button_bar = editor_window.button_bar
 
-    button_bar.connect("new", editor.new)
-    button_bar.connect("load", editor.load)
-    button_bar.connect("save", editor.save)
+    button_bar.connect("new", editor.new, "Ctrl+N")
+    button_bar.connect("load", editor.load, "Ctrl+O")
+    button_bar.connect("save", editor.save, "Ctrl+S")
 
     # button_bar.connect("snippets", editor.snippets)
     # button_bar.connect("flash", editor.flash)
