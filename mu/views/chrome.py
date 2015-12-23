@@ -140,6 +140,10 @@ class Window(QStackedWidget):
         self.tabs.setCurrentIndex(new_tab_index)
         self.connect_zoom(new_tab)
 
+    def addREPL(self):
+        # Todo - create REPL view
+        return
+
     def update_title(self, project=None):
         """
         Updates the title bar of the application.

@@ -1,3 +1,4 @@
+import os
 import os.path
 
 import sys
@@ -13,9 +14,18 @@ if not os.path.exists(MICROPYTHON_DIRECTORY):
 class REPL:
     def __init__(self, view, port):
         self._view = view
-        self.device = "/dev/{}".format(port)
+        if os.name == 'posix':
+            # If we're on Linux or OSX reference the port like this...
+            self.device = "/dev/{}".format(port)
+        elif os.name == 'nt':
+            # On Windows do something related to an appropriate port name.
+            self.device = ""
+        else:
+            # No idea how to deal with other OS's so fail.
+            raise NotImplementedError('OS not supported :(')
 
     def disconnect(self):
+        # Todo some teardown
         pass
 
 
