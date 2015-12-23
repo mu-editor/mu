@@ -75,7 +75,7 @@ On Linux or OS X, ensure the file permissions are set to executable and, from th
 ```
 
 
-## Download the Mu executable [![Windows Build status](https://ci.appveyor.com/api/projects/status/ngt8780him9hlgch?svg=true)](https://ci.appveyor.com/project/carlosperate/mu) [![Linux and OS X Build status](https://travis-ci.org/carlosperate/mu.svg)](https://travis-ci.org/carlosperate/mu)
+## Download the Mu executable [![Windows Build status](https://ci.appveyor.com/api/projects/status/ngt8780him9hlgch?svg=true)](https://ci.appveyor.com/project/carlosperate/mu) [![Linux and OS X Build status](https://travis-ci.org/ntoll/mu.svg)](https://travis-ci.org/ntoll/mu)
 
 You can download the latest executable build of Mu for your respective operating system from the following links:
 
