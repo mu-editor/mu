@@ -1,0 +1,60 @@
+# Due to PyQt complexity within virtualenvs, indicate non-python environment and manually configure it
+language: cpp
+
+# Travis can be used to build for both Linux and OS X (OS X still WIP)
+os:
+#  - osx
+  - linux
+
+# Ensure we are running on 14.04 instead of 12.04 on the Ubuntu side
+sudo: required
+dist: trusty
+
+before_install:
+  # OS extra info
+  - uname -a
+  - python --version
+  - python -c "import struct; print(struct.calcsize('P') * 8)"
+
+  # Install Python 3, pip3, PyQt and PyInstaller in the respective OS
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_linux.sh; fi
+
+  # Check everything was correctly installed (linux python path from sudo env)
+  - echo $PATH
+  - sudo echo $PATH
+  - sudo python3 --version
+  - sudo python3 -c "import struct; print(struct.calcsize('P') * 8)"
+  - sudo pip3 --version
+  - sudo python3 -c "import PyQt5"
+  - pyinstaller --version
+
+# Build Mu and time stamp it
+install:
+  - pyinstaller package/pyinstaller.spec
+  - du -sk dist/
+  - mv dist/mu dist/mu-$(date '+%Y-%m-%d_%H_%M_%S')
+
+# Dummy "script" run to stop default trvais build script, unit test should go here
+script:
+  - ls dist/
+
+# Deploy the build version in an S3 bucket
+deploy:
+  provider: s3
+  access_key_id: AKIAJYJV7NN6HVHCX5NQ
+  secret_access_key:
+  secure: QbXuXL++zQ5ErurkOOsApzwRnRnCwbwA8YVbl5CtkGKuhO9BP7PvJesEbKzIwq3U45uhTpbJ+1kbsCM/4BGlr2z143FsN+s8thieiWR+puJX26tcCDxNl9eFF06tyxvBuXPUWGPaKAX3KwYgangbnk65lSNdaCOfbIRHkhTGRjfPBiPBC+1/rtj3wHcQZq0MWZ9MMBR0SLzlZGY1ENhUHI3kKEmb8ZflFWB1a+Va/SxlieOwncl7LLLxRCkUZfl+bH3yz55C/1ppZ0DRjde5HQWWAGKrfKMpxeqFGx7dz+ZeMWrVGbir+VSXxCPljyn9OXT2t1fA+j9toSxiHpEkmqtDs8Eeoiv36QC6qPHJ6Wq/7QcL8QkMPb/Gvm/9Azl/hWSQkx52IJC83JbIQUU1U2bIDBW/djWNkxbPm7xv1V61rPYUOxXEvp8B+6w7kiT4CW8mDcoNHyrhzkhsWOay3uOvULgWPGAOvWwWDQFH51WPGJxxiNkDJuvqYzAmVE9jZnhHHdwU8uj/8Fplg/eUdeH/WICs4LlEjdT51uYy1fE7JUbHEKmke8leSOiEOaVYzEtHDs346X133CYIOnnyHNgjWylocg4IcxuIiW6LBcygu5qUttHzw0P9WBaE7wa+hg+MXzQiNDsVwOewk+pybyUfUDGqwfebuam2cEzsYpo=
+  bucket: ardublockly-builds
+  skip_cleanup: true
+  local-dir: dist/
+  upload-dir: microbit/$TRAVIS_OS_NAME
+  acl: public_read
+  on:
+    repo: carlosperate/mu
+    branch: [master, travis]
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
