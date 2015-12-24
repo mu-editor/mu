@@ -1,20 +1,13 @@
 Mu - a "micro" editor
 =====================
 
-Hacked together in a matter of hours.
-
-PYTHON 3!
-
-Needs docs. :-)
-
-Relies on QT5. On Debian it's an apt-get away. Will document setup procedure in
-due course.
+**This project works with Python 3 and the Qt UI library.**
 
 What?
 -----
 
 Mu is a a very simple code editor for kids. It's written in Python and uses the
-QT GUI framework. This means it'll work on Windows, OSX and Linux. It should
+Qt GUI framework. This means it'll work on Windows, OSX and Linux. It should
 also work on a Raspberry Pi.
 
 Why?
