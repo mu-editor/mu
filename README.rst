@@ -14,9 +14,9 @@ Why?
 ----
 
 The BBC's micro:bit project is aimed at 11-year old children. It consists of a
-small and simple programmable device that can be programmed in various
-different ways. One way is with the remarkable work of Damien George in the
-form of MicroPython, a full re-implementation of Python 3 for microcontrollers.
+small and simple programmable device. One option is the remarkable work of
+Damien George in the form of MicroPython, a full re-implementation of Python 3
+for microcontrollers including the BBC micro:bit.
 
 The BBC's "blessed" solution for programming tools is web-based. However, we
 have observed that this doesn't provide the optimum experience:
@@ -24,6 +24,11 @@ have observed that this doesn't provide the optimum experience:
 * It requires you to be connected to the internet to get the tools you need.
 * You need to download the .hex file to flash onto the device and then drag it to the device's mount point on the filesystem. A rather clunky multi-part process.
 * It doesn't allow you to connect to the device in order to live code in Python via the REPL.
+
+The Mu editor addresses each of these problems: it is a native application so
+does not need to be connected to the internet to work. It makes it easy to
+flash your code onto the device (it's only a click of a button). It has a built
+in REPL client that automatically connects to the device.
 
 How?
 ----
