@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
+import os
 from PyQt5.QtWidgets import (QApplication, QSplashScreen, QStackedWidget,
                              QDesktopWidget)
 from mu.resources import load_icon, load_pixmap, load_stylesheet
@@ -69,8 +70,16 @@ class Mu(QStackedWidget):
         ed = Editor(self, None)
         mb_port = find_microbit()
         if mb_port:
-            port = '/dev/{}'.format(mb_port)
-            print(port)
+            # Qt has found a device.
+            if os.name == 'posix':
+                # If we're on Linux or OSX reference the port like this...
+                port = '/dev/{}'.format(mb_port)
+            elif os.name == 'nt':
+                # On Windows do something related to an appropriate port name.
+                port = mb_port  # COMsomething-or-other.
+            else:
+                # No idea how to deal with other OS's so fail.
+                raise NotImplementedError('OS not supported.')
             replpane = REPLPane(port=port, parent=ed)
             ed.add_repl(replpane)
         self.addWidget(ed)
