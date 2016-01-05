@@ -277,8 +277,8 @@ class Editor(QWidget):
         self.save_shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
         self.save_shortcut.activated.connect(self.save)
 
-        self.save_shortcut = QShortcut(QKeySequence("Ctrl+O"), self)
-        self.save_shortcut.activated.connect(self.load)
+        self.load_shortcut = QShortcut(QKeySequence("Ctrl+O"), self)
+        self.load_shortcut.activated.connect(self.load)
 
 
         self.splitter = QSplitter(Qt.Vertical)
