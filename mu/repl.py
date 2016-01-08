@@ -1,3 +1,22 @@
+"""
+Copyright (c) 2015 Nicholas H.Tollervey and others (see the AUTHORS file).
+
+Based upon work done for Puppy IDE by Dan Pope, Nicholas Tollervey and Damien
+George.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
 from PyQt5.QtWidgets import QTextEdit
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtCore import QIODevice
@@ -29,27 +48,38 @@ class REPLPane(QTextEdit):
 
     This widget represents a REPL client connected to a BBC micro:bit.
     """
+
     def __init__(self, port, parent=None):
         super().__init__(parent)
         self.setAcceptRichText(False)
         self.setReadOnly(False)
         self.setLineWrapMode(QTextEdit.NoWrap)
         self.setObjectName('replpane')
-
         # open the serial port
         self.serial = QSerialPort(self)
         self.serial.setPortName(port)
         self.serial.setBaudRate(115200)
-        print(self.serial.open(QIODevice.ReadWrite))
-        self.serial.readyRead.connect(self.on_serial_read)
-
-        # clear the text
-        self.clear()
+        if self.serial.open(QIODevice.ReadWrite):
+            self.serial.readyRead.connect(self.on_serial_read)
+            # clear the text
+            self.clear()
+            # Send a Control-C
+            self.serial.write(b'\x03')
+        else:
+            raise IOError("Cannot connect to device on port {}".format(port))
 
     def on_serial_read(self):
+        """
+        Called when the application gets data from the connected device.
+        """
         self.process_bytes(bytes(self.serial.readAll()))
 
     def keyPressEvent(self, data):
+        """
+        Called when the user types something in the REPL.
+
+        Correctly encodes it and sends it to the connected device.
+        """
         key = data.key()
         msg = bytes(data.text(), 'utf8')
 
@@ -74,20 +104,25 @@ class REPLPane(QTextEdit):
         self.serial.write(msg)
 
     def process_bytes(self, bs):
+        """
+        Given some incoming bytes of data, works out how to handle / display
+        them in the REPL widget.
+        """
         tc = self.textCursor()
-
         for b in bs:
-            if b == 8: # \b
+            if b == 8:  # \b
                 tc.movePosition(QTextCursor.Left)
                 self.setTextCursor(tc)
-            elif b == 13: # \r
+            elif b == 13:  # \r
                 pass
             else:
                 tc.deleteChar()
                 self.setTextCursor(tc)
                 self.insertPlainText(chr(b))
-
         self.ensureCursorVisible()
 
     def clear(self):
+        """
+        Clears the text of the REPL.
+        """
         self.setText('')

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from mu.controller import run
+from mu.app import run
 
 
 if __name__ == "__main__":
