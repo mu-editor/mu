@@ -1,7 +1,7 @@
 """
-Mu.py - a "micro" editor and exploration of a problem space.
+Mu - a "micro" Python editor for everyone.
 
-Copyright (c) 2015 Nicholas H.Tollervey.
+Copyright (c) 2015 Nicholas H.Tollervey and others (see the AUTHORS file).
 
 Based upon work done for Puppy IDE by Dan Pope, Nicholas Tollervey and Damien
 George.
@@ -20,90 +20,41 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-import os
-from PyQt5.QtWidgets import (QApplication, QSplashScreen, QStackedWidget,
-                             QDesktopWidget)
-from mu.resources import load_icon, load_pixmap, load_stylesheet
+from PyQt5.QtWidgets import QApplication, QSplashScreen
 from mu.editor import Editor
-from mu.repl import find_microbit, REPLPane
+from mu.resources import load_stylesheet, load_pixmap
+from mu.interface import Window
 
 
-class Mu(QStackedWidget):
+def run():
     """
-    Represents the main application window.
+    Creates all the top-level assets for the application, sets things up and
+    then runs the application.
     """
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowIcon(load_icon('icon'))
-        self.update_title()
-        # Ensure we have a sensible size for the application.
-        self.setMinimumSize(800, 600)
-        self.setup()
-
-    def update_title(self, project=None):
-        """
-        Updates the title bar of the application.
-        """
-        title = "Mu Editor"
-        if project:
-            title += ' - ' + project
-        self.setWindowTitle(title)
-
-    def autosize_window(self):
-        """
-        Makes the editor 80% of the width*height of the screen and centres it.
-        """
-        screen = QDesktopWidget().screenGeometry()
-        w = int(screen.width() * 0.8)
-        h = int(screen.height() * 0.8)
-        self.resize(w, h)
-        size = self.geometry()
-        self.move(
-            (screen.width() - size.width()) / 2,
-            (screen.height() - size.height()) / 2
-        )
-
-    def setup(self):
-        """
-        Sets up the application.
-        """
-        ed = Editor(self, None)
-        mb_port = find_microbit()
-        if mb_port:
-            # Qt has found a device.
-            if os.name == 'posix':
-                # If we're on Linux or OSX reference the port like this...
-                port = '/dev/{}'.format(mb_port)
-            elif os.name == 'nt':
-                # On Windows do something related to an appropriate port name.
-                port = mb_port  # COMsomething-or-other.
-            else:
-                # No idea how to deal with other OS's so fail.
-                raise NotImplementedError('OS not supported.')
-            replpane = REPLPane(port=port, parent=ed)
-            ed.add_repl(replpane)
-        self.addWidget(ed)
-        self.setCurrentWidget(ed)
-
-
-def main():
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
     app.setStyleSheet(load_stylesheet('mu.css'))
-
-    # A splash screen is a logo that appears when you start up the application.
-    # The image to be "splashed" on your screen is in the resources/images
-    # directory.
+    # Display a friendly "splash" icon.
     splash = QSplashScreen(load_pixmap('icon'))
     splash.show()
-
-    # Make the editor with the Mu class defined above.
-    the_editor = Mu()
-    the_editor.show()
-    the_editor.autosize_window()
-
-    # Remove the splash when the_editor has finished setting itself up.
-    splash.finish(the_editor)
-
+    # Create the "window" we'll be looking at.
+    editor_window = Window()
+    # Create the "editor" that'll control the "window".
+    editor = Editor(view=editor_window)
+    # Setup the window.
+    editor_window.setup()
+    editor.restore_session()
+    # Connect the various buttons in the window to the editor.
+    button_bar = editor_window.button_bar
+    button_bar.connect("new", editor.new, "Ctrl+N")
+    button_bar.connect("load", editor.load, "Ctrl+O")
+    button_bar.connect("save", editor.save, "Ctrl+S")
+    button_bar.connect("flash", editor.flash)
+    button_bar.connect("repl", editor.toggle_repl)
+    button_bar.connect("zoom-in", editor.zoom_in)
+    button_bar.connect("zoom-out", editor.zoom_out)
+    button_bar.connect("quit", editor.quit)
+    # Finished starting up the application, so hide the splash icon.
+    splash.finish(editor_window)
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
