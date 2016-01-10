@@ -189,6 +189,11 @@ class Editor:
             tab.path = self._view.get_save_path(MICROPYTHON_DIRECTORY)
         if tab.path:
             # The user specified a path to a file.
+
+            if '.' not in tab.path.split('/')[-1]:
+                # No extension given, default to .py
+                tab.path += '.py'
+
             with open(tab.path, 'w') as f:
                 f.write(tab.text())
             tab.modified = False
