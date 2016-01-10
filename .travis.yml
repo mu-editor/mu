@@ -17,7 +17,7 @@ before_install:
   - python -c "import struct; print(struct.calcsize('P') * 8)"
 
   # Install Python 3, pip3, PyQt and PyInstaller in the respective OS
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then travis_wait bash package/install_osx.sh; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_linux.sh; fi
 
   # Check everything was correctly installed (linux python path from sudo env)
