@@ -351,12 +351,17 @@ class Editor(QWidget):
         if ed.path is None:
             path, _ = QFileDialog.getSaveFileName(self, 'Save file',
                                                   MICROPYTHON_DIRECTORY)
+
+        if path:
+            if '.' not in path.split('/')[-1]:
+                path += '.py'
+
             ed.path = path
 
-        with open(ed.path, 'w') as f:
-            f.write(ed.text())
+            with open(path, 'w') as f:
+                f.write(ed.text())
 
-        ed.setModified(False)
+            ed.setModified(False)
 
     def load(self):
         """Load a Python script."""
