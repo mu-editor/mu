@@ -1,1 +1,6 @@
+pytest
+pep8
+pyflakes
+coverage
 sphinx
+pytest-cov

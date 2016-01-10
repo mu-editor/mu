@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-from mu.app import main
+from mu.app import run
 
 
-main()
+if __name__ == "__main__":
+    run()
