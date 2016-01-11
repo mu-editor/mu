@@ -32,7 +32,7 @@ if not os.path.exists(MICROPYTHON_DIRECTORY):
     os.mkdir(MICROPYTHON_DIRECTORY)
 DATA_DIR = appdirs.user_data_dir('mu', 'python')
 if not os.path.exists(DATA_DIR):
-    os.mkdir(DATA_DIR)
+    os.makedirs(DATA_DIR)
 SESSION_FILE = os.path.join(DATA_DIR, 'tabs.json')
 
 
