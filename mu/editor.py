@@ -190,7 +190,7 @@ class Editor:
         if tab.path:
             # The user specified a path to a file.
 
-            if '.' not in tab.path.split('/')[-1]:
+            if not os.path.basename(tab.path).endswith('.py'):
                 # No extension given, default to .py
                 tab.path += '.py'
 
