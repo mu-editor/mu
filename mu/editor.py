@@ -82,9 +82,9 @@ class Editor:
                             pass
                         else:
                             self._view.add_tab(tab, text)
-                else:
-                    py = 'from microbit import *\n\n# Write code here :-)'
-                    self._view.add_tab(None, py)
+        if not self._view.tab_count:
+            py = 'from microbit import *\n\n# Write code here :-)'
+            self._view.add_tab(None, py)
 
     def flash(self):
         """
