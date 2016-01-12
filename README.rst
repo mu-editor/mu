@@ -3,6 +3,10 @@ Mu - a "micro" editor
 
 **This project works with Python 3 and the Qt UI library.**
 
+Currently, the latest builds for Windows, OSX and Linux x86 can be found here:
+
+http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/?prefix=microbit
+
 What?
 -----
 
