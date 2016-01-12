@@ -109,6 +109,10 @@ class REPLPane(QTextEdit):
         them in the REPL widget.
         """
         tc = self.textCursor()
+        # The text cursor must be on the last line of the document. If it isn't
+        # then move it there.
+        while tc.movePosition(QTextCursor.Down):
+            pass
         for b in bs:
             if b == 8:  # \b
                 tc.movePosition(QTextCursor.Left)
