@@ -295,6 +295,10 @@ class Window(QStackedWidget):
         self.connect_zoom(new_tab)
         new_tab.setFocus()
 
+    @property
+    def tab_count(self):
+        return self.tabs.count()
+
     def add_repl(self, repl):
         """
         Adds the REPL pane to the application.

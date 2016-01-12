@@ -32,7 +32,7 @@ if not os.path.exists(MICROPYTHON_DIRECTORY):
     os.mkdir(MICROPYTHON_DIRECTORY)
 DATA_DIR = appdirs.user_data_dir('mu', 'python')
 if not os.path.exists(DATA_DIR):
-    os.mkdir(DATA_DIR)
+    os.makedirs(DATA_DIR)
 SESSION_FILE = os.path.join(DATA_DIR, 'tabs.json')
 
 
@@ -82,9 +82,9 @@ class Editor:
                             pass
                         else:
                             self._view.add_tab(tab, text)
-                else:
-                    py = 'from microbit import *\n\n# Write code here :-)'
-                    self._view.add_tab(None, py)
+        if not self._view.tab_count:
+            py = 'from microbit import *\n\n# Write code here :-)'
+            self._view.add_tab(None, py)
 
     def flash(self):
         """
@@ -189,6 +189,11 @@ class Editor:
             tab.path = self._view.get_save_path(MICROPYTHON_DIRECTORY)
         if tab.path:
             # The user specified a path to a file.
+
+            if not os.path.basename(tab.path).endswith('.py'):
+                # No extension given, default to .py
+                tab.path += '.py'
+
             with open(tab.path, 'w') as f:
                 f.write(tab.text())
             tab.modified = False
