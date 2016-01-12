@@ -166,16 +166,28 @@ class Editor:
 
     def load(self):
         """
-        Loads a Python file from the file system.
+        Loads a Python file from the file system or extracts a Python sccript
+        from a hex file.
         """
         path = self._view.get_load_path(MICROPYTHON_DIRECTORY)
         try:
-            with open(path) as f:
-                text = f.read()
+            if path.endswith('.py'):
+                # Open the file, read the textual content and set the name as
+                # the path to the file.
+                with open(path) as f:
+                    text = f.read()
+                name = path
+            else:
+                # Open the hex, extract the Python script therein and set the
+                # name to None, thus forcing the user to work out what to name
+                # the recovered script.
+                with open(path) as f:
+                    text = uflash.extract_script(f.read())
+                name = None
         except FileNotFoundError:
             pass
         else:
-            self._view.add_tab(path, text)
+            self._view.add_tab(name, text)
 
     def save(self):
         """

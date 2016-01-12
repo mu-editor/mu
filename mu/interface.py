@@ -274,7 +274,8 @@ class Window(QStackedWidget):
 
     def get_load_path(self, folder):
         path, _ = QFileDialog.getOpenFileName(self.widget,
-                                              'Open file', folder, "*.py")
+                                              'Open file', folder,
+                                              '*.py *.hex')
         return path
 
     def get_save_path(self, folder):
