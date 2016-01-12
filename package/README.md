@@ -13,7 +13,7 @@
 
 ### Mac OS X
 
-Assuming you have the [Homebrew](http://brew.sh/) package manager installed.
+Assuming you have the [Homebrew](http://brew.sh/) package manager installed:
 
 * Install Python 3
   ```
@@ -24,7 +24,10 @@ Assuming you have the [Homebrew](http://brew.sh/) package manager installed.
   ```
   brew install pyqt5 --with-python3
   ```
-  TODO: There are more steps required
+* Install the QScintilla2 package using the formula in the `extras` directory
+  ```
+  brew install extras/qscintilla2.rb
+  ```
 * Install PyInstaller:
   ```
   pip3 install pyinstaller

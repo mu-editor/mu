@@ -1,9 +1,9 @@
 # Due to PyQt complexity within virtualenvs, indicate non-python environment and manually configure it
 language: cpp
 
-# Travis can be used to build for both Linux and OS X (OS X still WIP)
+# Travis can be used to build for both Linux and OS X
 os:
-#  - osx
+  - osx
   - linux
 
 # Ensure we are running on 14.04 instead of 12.04 on the Ubuntu side
@@ -17,7 +17,7 @@ before_install:
   - python -c "import struct; print(struct.calcsize('P') * 8)"
 
   # Install Python 3, pip3, PyQt and PyInstaller in the respective OS
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then travis_wait bash package/install_osx.sh; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_linux.sh; fi
 
   # Check everything was correctly installed (linux python path from sudo env)
