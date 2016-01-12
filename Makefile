@@ -22,16 +22,16 @@ clean:
 	find . \( -name '*.tgz' -o -name dropin.cache \) -print0 | $(XARGS) rm
 
 pyflakes:
-	find . \( -name _build -o -name var -o -path ./docs \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
+	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
 
 pep8:
-	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pep8 --repeat --exclude=build/*,docs/* --ignore=E731,E402
+	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pep8 --repeat --exclude=build/*,docs/*,mu/contrib* --ignore=E731,E402
 
 test: clean
 	py.test
 
 coverage: clean
-	py.test --cov-report term-missing --cov=mu tests/
+	py.test --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
 check: clean pep8 pyflakes coverage
 

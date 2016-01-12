@@ -97,7 +97,7 @@ class Editor:
             # There is no active text editor
             return
         python_script = tab.text().encode('utf-8')
-        #Generate a hex file
+        # Generate a hex file
         python_hex = uflash.hexlify(python_script)
         micropython_hex = uflash.embed_hex(uflash._RUNTIME, python_hex)
         path_to_microbit = uflash.find_microbit()
@@ -134,9 +134,10 @@ class Editor:
         else:
             message = 'Could not find an attached BBC micro:bit.'
             information = ("Please make sure the device is plugged into this"
-                " computer.\n\nThe device must have MicroPython flashed onto it"
-                " before the REPL will work.\n\nFinally, press the device's"
-                " reset button and wait a few seconds before trying again.")
+                           " computer.\n\nThe device must have MicroPython"
+                           " flashed onto it before the REPL will work.\n\n"
+                           "Finally, press the device's reset button and wait"
+                           " a few seconds before trying again.")
             self._view.show_message(message, information)
 
     def remove_repl(self):

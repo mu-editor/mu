@@ -247,7 +247,6 @@ class ButtonBar(QToolBar):
                       self.parentWidget()).activated.connect(slot)
 
 
-
 class Window(QStackedWidget):
     """
     Defines the look and characteristics of the application's main window.
