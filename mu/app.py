@@ -42,6 +42,7 @@ def run():
     # Create the "editor" that'll control the "window".
     editor = Editor(view=editor_window)
     # Setup the window.
+    editor_window.closeEvent = editor.quit
     editor_window.setup()
     editor.restore_session()
     # Connect the various buttons in the window to the editor.

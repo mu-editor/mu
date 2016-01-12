@@ -213,7 +213,7 @@ class Editor:
         """
         self._view.zoom_out()
 
-    def quit(self):
+    def quit(self, *args, **kwargs):
         """
         Exit the application.
         """
@@ -228,6 +228,9 @@ class Editor:
             # Alert the user to handle unsaved work.
             result = self._view.show_confirmation('You have un-saved work!')
             if result == QMessageBox.Cancel:
+                if args and hasattr(args[0], 'ignore'):
+                    # The function is handling an event, so ignore it.
+                    args[0].ignore()
                 return
         open_tabs = []
         for tab in tabs:
