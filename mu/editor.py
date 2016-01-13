@@ -64,6 +64,7 @@ class Editor:
     def __init__(self, view):
         self._view = view
         self.repl = None
+        self.theme = 'day'
 
     def restore_session(self):
         """
@@ -158,6 +159,16 @@ class Editor:
         else:
             self.remove_repl()
 
+    def toggle_theme(self):
+        """
+        Switches between themes (night or day).
+        """
+        if self.theme == 'day':
+            self.theme = 'night'
+        else:
+            self.theme = 'day'
+        self._view.set_theme(self.theme)
+
     def new(self):
         """
         Adds a new tab to the editor.
@@ -230,14 +241,7 @@ class Editor:
         """
         Exit the application.
         """
-        pending_save = False
-        tabs = [self._view.tabs.widget(i)
-                for i in range(self._view.tabs.count())]
-        for tab in tabs:
-            if tab.modified:
-                pending_save = True
-                break
-        if pending_save:
+        if self._view.modified:
             # Alert the user to handle unsaved work.
             result = self._view.show_confirmation('You have un-saved work!')
             if result == QMessageBox.Cancel:
@@ -245,10 +249,10 @@ class Editor:
                     # The function is handling an event, so ignore it.
                     args[0].ignore()
                 return
-        open_tabs = []
-        for tab in tabs:
-            if tab.path:
-                open_tabs.append(tab.path)
+        widgets = []
+        for widget in self._view.widgets:
+            if widget.path:
+                widgets.append(widget.path)
         with open(SESSION_FILE, 'w') as out:
-            json.dump(open_tabs, out, indent=2)
+            json.dump(widgets, out, indent=2)
         sys.exit(0)

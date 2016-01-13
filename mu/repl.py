@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from PyQt5.QtWidgets import QTextEdit
-from PyQt5.QtGui import QTextCursor
+from PyQt5.QtGui import QTextCursor, QFont, QColor, QPalette
 from PyQt5.QtCore import QIODevice
 from PyQt5.QtCore import Qt
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
@@ -26,6 +26,10 @@ from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 
 MICROBIT_PID = 516
 MICROBIT_VID = 3368
+
+
+LIGHT_THEME = "QTextEdit { background-color: white; color: black }"
+DARK_THEME= "QTextEdit { background-color: black; color: white}"
 
 
 def find_microbit():
@@ -49,8 +53,9 @@ class REPLPane(QTextEdit):
     This widget represents a REPL client connected to a BBC micro:bit.
     """
 
-    def __init__(self, port, parent=None):
+    def __init__(self, port, theme='day', parent=None):
         super().__init__(parent)
+        self.setFont(QFont('Courier', 14))
         self.setAcceptRichText(False)
         self.setReadOnly(False)
         self.setLineWrapMode(QTextEdit.NoWrap)
@@ -67,6 +72,16 @@ class REPLPane(QTextEdit):
             self.serial.write(b'\x03')
         else:
             raise IOError("Cannot connect to device on port {}".format(port))
+        self.set_theme(theme)
+
+    def set_theme(self, theme):
+        """
+        Sets the theme / look for the REPL pane.
+        """
+        if theme == 'day':
+            self.setStyleSheet(LIGHT_THEME)
+        else:
+            self.setStyleSheet(DARK_THEME)
 
     def on_serial_read(self):
         """

@@ -43,7 +43,7 @@ def run():
     editor = Editor(view=editor_window)
     # Setup the window.
     editor_window.closeEvent = editor.quit
-    editor_window.setup()
+    editor_window.setup(editor.theme)
     editor.restore_session()
     # Connect the various buttons in the window to the editor.
     button_bar = editor_window.button_bar
@@ -54,6 +54,7 @@ def run():
     button_bar.connect("repl", editor.toggle_repl)
     button_bar.connect("zoom-in", editor.zoom_in)
     button_bar.connect("zoom-out", editor.zoom_out)
+    button_bar.connect("theme", editor.toggle_theme)
     button_bar.connect("quit", editor.quit)
     # Finished starting up the application, so hide the splash icon.
     splash.finish(editor_window)

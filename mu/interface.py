@@ -40,6 +40,34 @@ elif sys.platform == 'darwin':
     DEFAULT_FONT = 'Monaco'
 
 
+DARK_STYLE = """QStackedWidget, QWidget
+{
+    background-color: black;
+    color: white;
+}
+
+QToolButton {
+    min-width: 72px;
+}
+
+QToolButton:hover {
+    color: red;
+}
+"""
+
+
+LIGHT_STYLE = """QStackedWidget, QWidget
+{
+    background-color: #EEE;
+    color: black;
+}
+
+QToolButton {
+    min-width: 72px;
+}
+"""
+
+
 class Font:
     """
     Utility class that makes it easy to set font related values within the
@@ -50,10 +78,6 @@ class Font:
         self.paper = paper
         self.bold = bold
         self.italic = italic
-
-
-# TODO: Work out what the hell this indicates and why it's set to -1. :-/
-ALL_STYLES = -1
 
 
 class Theme:
@@ -67,7 +91,7 @@ class Theme:
         font = QFont(DEFAULT_FONT, DEFAULT_FONT_SIZE)
         font.setBold(False)
         font.setItalic(False)
-        lexer.setFont(font, ALL_STYLES)
+        lexer.setFont(font)
 
         for name, font in cls.__dict__.items():
             if not isinstance(font, Font):
@@ -83,13 +107,13 @@ class Theme:
                 lexer.setFont(f, style_num)
 
 
-class PythonTheme(Theme):
+class DayTheme(Theme):
     """
     Defines a Python related theme including the various font colours for
     syntax highlighting.
     """
     FunctionMethodName = ClassName = Font(color='#0000a0')
-    UnclosedString = Font(paper='#00fd00')
+    UnclosedString = Font(paper='#FFDDDD')
     Comment = CommentBlock = Font(color='gray')
     Keyword = Font(color='#008080', bold=True)
     SingleQuotedString = DoubleQuotedString = Font(color='#800000')
@@ -99,6 +123,30 @@ class PythonTheme(Theme):
     Default = Identifier = Font()
     Operator = Font(color='#400040')
     HighlightedIdentifier = Font(color='#0000a0')
+    Paper = QColor('white')
+    Caret = QColor('black')
+    Margin = QColor('#EEE')
+
+
+class NightTheme(Theme):
+    """
+    Defines a Python related theme including the various font colours for
+    syntax highlighting.
+    """
+    FunctionMethodName = ClassName = Font(color='#AAA', paper='black')
+    UnclosedString = Font(paper='#666')
+    Comment = CommentBlock = Font(color='#AAA', paper='black')
+    Keyword = Font(color='#EEE', bold=True, paper='black')
+    SingleQuotedString = DoubleQuotedString = Font(color='#AAA', paper='black')
+    TripleSingleQuotedString = TripleDoubleQuotedString = Font(color='#AAA', paper='black')
+    Number = Font(color='#AAA', paper='black')
+    Decorator = Font(color='#cccccc', paper='black')
+    Default = Identifier = Font(color='#fff', paper='black')
+    Operator = Font(color='#CCC', paper='black')
+    HighlightedIdentifier = Font(color='#ffffff', paper='black')
+    Paper = QColor('black')
+    Caret = QColor('white')
+    Margin = QColor('#111')
 
 
 class PythonLexer(QsciLexerPython):
@@ -169,19 +217,21 @@ class EditorPane(QsciScintilla):
         self.setMarginLineNumbers(0, True)
         self.setMarginWidth(0, 50)
         self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
-        # Use the lexer defined above (and must save a reference to it)
-        self.lexer = self.python_lexer()
-        self.setLexer(self.lexer)
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
+        self.set_theme()
 
-    def python_lexer(self):
+    def set_theme(self, theme=DayTheme):
         """
         Connect the theme and lexer and return the lexer for the editor to
         apply to the text in the editor.
         """
-        lex = PythonLexer()
-        PythonTheme.apply_to(lex)
-        return lex
+        self.lexer = PythonLexer()
+        theme.apply_to(self.lexer)
+        self.lexer.setDefaultPaper(theme.Paper)
+        self.setCaretForegroundColor(theme.Caret)
+        self.setMarginsBackgroundColor(theme.Margin)
+        self.setMarginsForegroundColor(theme.Caret)
+        self.setLexer(self.lexer)
 
     @property
     def label(self):
@@ -231,6 +281,8 @@ class ButtonBar(QToolBar):
                        tool_text="Zoom in (to make the text bigger).")
         self.addAction(name="zoom-out",
                        tool_text="Zoom out (to make the text smaller).")
+        self.addAction(name="theme",
+                       tool_text="Change theme between day or night.")
         self.addSeparator()
         self.addAction(name="quit", tool_text="Quit the application.")
 
@@ -293,17 +345,29 @@ class Window(QStackedWidget):
 
         self.tabs.setCurrentIndex(new_tab_index)
         self.connect_zoom(new_tab)
+        self.set_theme(self.theme)
         new_tab.setFocus()
 
     @property
     def tab_count(self):
         return self.tabs.count()
 
+    @property
+    def widgets(self):
+        return [self.tabs.widget(i) for i in range(self.tab_count)]
+
+    @property
+    def modified(self):
+        for widget in self.widgets:
+            if widget.modified:
+                return True
+        return False
+
     def add_repl(self, repl):
         """
         Adds the REPL pane to the application.
         """
-        replpane = REPLPane(port=repl.port)
+        replpane = REPLPane(port=repl.port, theme=self.theme)
         self.repl = replpane
         self.splitter.addWidget(replpane)
         self.splitter.setSizes([66, 33])
@@ -317,6 +381,24 @@ class Window(QStackedWidget):
         self.repl.setParent(None)
         self.repl.deleteLater()
         self.repl = None
+
+    def set_theme(self, theme):
+        """
+        Sets the theme for the REPL and editor tabs.
+        """
+        self.setStyleSheet(LIGHT_STYLE)
+        self.theme = theme
+        new_theme = DayTheme
+        new_icon = 'theme'
+        if theme == 'night':
+            new_theme = NightTheme
+            new_icon = 'theme_day'
+            self.setStyleSheet(DARK_STYLE)
+        for widget in self.widgets:
+            widget.set_theme(new_theme)
+        self.button_bar.slots['theme'].setIcon(load_icon(new_icon))
+        if hasattr(self, 'repl') and self.repl:
+            self.repl.set_theme(theme)
 
     def show_message(self, message, information=None, icon=None):
         """
@@ -390,13 +472,14 @@ class Window(QStackedWidget):
         self.move((screen.width() - size.width()) / 2,
                   (screen.height() - size.height()) / 2)
 
-    def setup(self):
+    def setup(self, theme):
         """
         Sets up the window.
 
         Defines the various attributes of the window and defines how the user
         interface is laid out.
         """
+        self.theme = theme
         # Give the window a default icon, title and minimum size.
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
@@ -421,5 +504,6 @@ class Window(QStackedWidget):
         self.addWidget(self.widget)
         self.setCurrentWidget(self.widget)
 
+        self.set_theme(theme)
         self.show()
         self.autosize_window()
