@@ -5,7 +5,7 @@ class Qscintilla2 < Formula
   sha256 "9b7b2d7440cc39736bbe937b853506b3bd218af3b79095d4f710cccb0fabe80f"
 
   depends_on :python3
-  depends_on "pyqt5" => "with-python3"
+  depends_on "pyqt5"
 
   def install
     cd "Qt4Qt5" do
