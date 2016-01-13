@@ -138,7 +138,8 @@ class NightTheme(Theme):
     Comment = CommentBlock = Font(color='#AAA', paper='black')
     Keyword = Font(color='#EEE', bold=True, paper='black')
     SingleQuotedString = DoubleQuotedString = Font(color='#AAA', paper='black')
-    TripleSingleQuotedString = TripleDoubleQuotedString = Font(color='#AAA', paper='black')
+    TripleSingleQuotedString = TripleDoubleQuotedString = Font(color='#AAA',
+                                                               paper='black')
     Number = Font(color='#AAA', paper='black')
     Decorator = Font(color='#cccccc', paper='black')
     Default = Identifier = Font(color='#fff', paper='black')

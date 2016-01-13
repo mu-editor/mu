@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from PyQt5.QtWidgets import QTextEdit
-from PyQt5.QtGui import QTextCursor, QFont, QColor, QPalette
+from PyQt5.QtGui import QTextCursor, QFont
 from PyQt5.QtCore import QIODevice
 from PyQt5.QtCore import Qt
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
@@ -29,7 +29,7 @@ MICROBIT_VID = 3368
 
 
 LIGHT_THEME = "QTextEdit { background-color: white; color: black }"
-DARK_THEME= "QTextEdit { background-color: black; color: white}"
+DARK_THEME = "QTextEdit { background-color: black; color: white}"
 
 
 def find_microbit():
