@@ -45,7 +45,7 @@ exe = EXE(pyz,
           # False hides the cli window, useful ON to debug
           console=False,
           debug=False,
-          icon='mu/package/icons/win_icon.ico')
+          icon='package/icons/win_icon.ico')
 
 app = BUNDLE(exe,
          name='mu.app',
