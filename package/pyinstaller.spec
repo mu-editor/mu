@@ -4,6 +4,7 @@ from glob import glob
 
 block_cipher = None
 
+
 # Adding all css and images as part of additional resources
 data_files_glob = glob(os.path.join('mu','resources', 'css', '*.css'))
 data_files_glob += glob(os.path.join('mu', 'resources', 'images', '*.*'))
@@ -15,6 +16,7 @@ for x in data_files_glob:
     data_files += [(os.path.join('..', x), os.path.dirname(x))]
 
 print('Spec file resources selected: %s' % data_files)
+
 
 a = Analysis(['../run.py'],
              pathex=['../'],
@@ -43,7 +45,14 @@ exe = EXE(pyz,
           # False hides the cli window, useful ON to debug
           console=False,
           debug=False,
-          icon='mu/resources/icons/win_icon.ico')
+          icon='package/icons/win_icon.ico')
+
+app = BUNDLE(exe,
+         name='mu.app',
+         icon='package/icons/mac_icon.icns',
+         bundle_identifier=None,
+         info_plist={
+            'NSHighResolutionCapable': 'True'})
 
 # For debugging you can uncomment COLLECT and it will package to a folder
 # instead of a single executable (also comment out the "a" arguments in EXE)
