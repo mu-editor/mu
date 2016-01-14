@@ -33,7 +33,8 @@ before_install:
 install:
   - pyinstaller package/pyinstaller.spec
   - du -sk dist/
-  - mv dist/mu dist/mu-$(date '+%Y-%m-%d_%H_%M_%S')
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mv dist/mu dist/mu-$(date '+%Y-%m-%d_%H_%M_%S'); fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cd dist && zip --symlinks -r mu-$(date '+%Y-%m-%d_%H_%M_%S').zip mu.app && rm -r mu.app && rm mu && cd ..; fi
 
 # Dummy "script" run to stop default trvais build script, unit test should go here
 script:
