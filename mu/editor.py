@@ -244,7 +244,9 @@ class Editor:
         """
         if self._view.modified:
             # Alert the user to handle unsaved work.
-            result = self._view.show_confirmation('You have un-saved work!')
+            msg = ('There is un-saved work, exiting the application will'
+                   ' cause you to lose it.')
+            result = self._view.show_confirmation(msg)
             if result == QMessageBox.Cancel:
                 if args and hasattr(args[0], 'ignore'):
                     # The function is handling an event, so ignore it.
