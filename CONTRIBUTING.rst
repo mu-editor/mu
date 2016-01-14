@@ -31,4 +31,8 @@ Checklist
   already, add yourself to the AUTHORS file following the convention found
   therein.
 * Try to include tests!
+* Before submitting code ensure coding standards and test coverage by running::
+
+    $ make check
+
 * Have fun!

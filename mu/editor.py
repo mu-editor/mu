@@ -28,12 +28,8 @@ from mu.contrib import uflash, appdirs
 
 HOME_DIRECTORY = os.path.expanduser('~')
 MICROPYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'micropython')
-if not os.path.exists(MICROPYTHON_DIRECTORY):
-    os.mkdir(MICROPYTHON_DIRECTORY)
 DATA_DIR = appdirs.user_data_dir('mu', 'python')
-if not os.path.exists(DATA_DIR):
-    os.makedirs(DATA_DIR)
-SESSION_FILE = os.path.join(DATA_DIR, 'tabs.json')
+SETTINGS_FILE = os.path.join(DATA_DIR, 'settings.json')
 
 
 class REPL:
@@ -65,27 +61,34 @@ class Editor:
         self._view = view
         self.repl = None
         self.theme = 'day'
+        if not os.path.exists(MICROPYTHON_DIRECTORY):
+            os.makedirs(MICROPYTHON_DIRECTORY)
+        if not os.path.exists(DATA_DIR):
+            os.makedirs(DATA_DIR)
 
     def restore_session(self):
         """
         Attempts to recreate the tab state from the last time the editor was
         run.
         """
-        if os.path.exists(SESSION_FILE):
-            with open(SESSION_FILE) as f:
-                tabs = json.load(f)
-                if tabs:
-                    for tab in tabs:
+        if os.path.exists(SETTINGS_FILE):
+            with open(SETTINGS_FILE) as f:
+                old_session = json.load(f)
+                if 'theme' in old_session:
+                    self.theme = old_session['theme']
+                if 'paths' in old_session:
+                    for path in old_session['paths']:
                         try:
-                            with open(tab) as f:
+                            with open(path) as f:
                                 text = f.read()
                         except FileNotFoundError:
                             pass
                         else:
-                            self._view.add_tab(tab, text)
+                            self._view.add_tab(path, text)
         if not self._view.tab_count:
-            py = 'from microbit import *\n\n# Write code here :-)'
+            py = 'from microbit import *\n\n# Write your code here :-)'
             self._view.add_tab(None, py)
+        self._view.set_theme(self.theme)
 
     def flash(self):
         """
@@ -213,11 +216,9 @@ class Editor:
             tab.path = self._view.get_save_path(MICROPYTHON_DIRECTORY)
         if tab.path:
             # The user specified a path to a file.
-
             if not os.path.basename(tab.path).endswith('.py'):
                 # No extension given, default to .py
                 tab.path += '.py'
-
             with open(tab.path, 'w') as f:
                 f.write(tab.text())
             tab.modified = False
@@ -249,10 +250,14 @@ class Editor:
                     # The function is handling an event, so ignore it.
                     args[0].ignore()
                 return
-        widgets = []
+        paths = []
         for widget in self._view.widgets:
             if widget.path:
-                widgets.append(widget.path)
-        with open(SESSION_FILE, 'w') as out:
-            json.dump(widgets, out, indent=2)
+                paths.append(widget.path)
+        session = {
+            'theme': self.theme,
+            'paths': paths
+        }
+        with open(SETTINGS_FILE, 'w') as out:
+            json.dump(session, out, indent=2)
         sys.exit(0)
