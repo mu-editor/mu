@@ -40,7 +40,7 @@ elif sys.platform == 'darwin':
     DEFAULT_FONT = 'Monaco'
 
 
-DARK_STYLE = """QStackedWidget, QWidget
+NIGHT_STYLE = """QStackedWidget, QWidget
 {
     background-color: black;
     color: white;
@@ -61,7 +61,7 @@ QTextEdit {
 """
 
 
-LIGHT_STYLE = """QStackedWidget, QWidget
+DAY_STYLE = """QStackedWidget, QWidget
 {
     background-color: #EEE;
     color: black;
@@ -397,14 +397,14 @@ class Window(QStackedWidget):
         """
         Sets the theme for the REPL and editor tabs.
         """
-        self.setStyleSheet(LIGHT_STYLE)
+        self.setStyleSheet(DAY_STYLE)
         self.theme = theme
         new_theme = DayTheme
         new_icon = 'theme'
         if theme == 'night':
             new_theme = NightTheme
             new_icon = 'theme_day'
-            self.setStyleSheet(DARK_STYLE)
+            self.setStyleSheet(NIGHT_STYLE)
         for widget in self.widgets:
             widget.set_theme(new_theme)
         self.button_bar.slots['theme'].setIcon(load_icon(new_icon))
@@ -555,9 +555,9 @@ class REPLPane(QTextEdit):
         Sets the theme / look for the REPL pane.
         """
         if theme == 'day':
-            self.setStyleSheet(LIGHT_STYLE)
+            self.setStyleSheet(DAY_STYLE)
         else:
-            self.setStyleSheet(DARK_STYLE)
+            self.setStyleSheet(NIGHT_STYLE)
 
     def on_serial_read(self):
         """
