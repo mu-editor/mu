@@ -5,7 +5,7 @@ Tests for the Editor and REPL logic.
 import os.path
 import json
 import pytest
-import mu.editor
+import mu.logic
 from PyQt5.QtWidgets import QMessageBox
 from unittest import mock
 
@@ -23,10 +23,50 @@ def test_CONSTANTS():
     """
     Ensure the expected constants exist.
     """
-    assert mu.editor.HOME_DIRECTORY
-    assert mu.editor.MICROPYTHON_DIRECTORY
-    assert mu.editor.DATA_DIR
-    assert mu.editor.SETTINGS_FILE
+    assert mu.logic.HOME_DIRECTORY
+    assert mu.logic.MICROPYTHON_DIRECTORY
+    assert mu.logic.DATA_DIR
+    assert mu.logic.SETTINGS_FILE
+    # These should NEVER change.
+    assert mu.logic.MICROBIT_PID == 516
+    assert mu.logic.MICROBIT_VID == 3368
+
+
+def test_find_microbit_no_ports():
+    """
+    There are no connected devices so return None.
+    """
+    with mock.patch('mu.logic.QSerialPortInfo.availablePorts',
+                    return_value=[]):
+        assert mu.logic.find_microbit() is None
+
+
+def test_find_microbit_no_device():
+    """
+    None of the connected devices is a micro:bit so return None.
+    """
+    mock_port = mock.MagicMock()
+    mock_port.productIdentifier = mock.MagicMock(return_value=666)
+    mock_port.vendorIdentifier = mock.MagicMock(return_value=999)
+    with mock.patch('mu.logic.QSerialPortInfo.availablePorts',
+                    return_value=[mock_port, ]):
+        assert mu.logic.find_microbit() is None
+
+
+def test_find_microbit_with_device():
+    """
+    If a device is found, return the port name.
+    """
+    mock_port = mock.MagicMock()
+    mock_port.vid = mu.logic.MICROBIT_VID
+    mock_port.productIdentifier = mock.MagicMock()
+    mock_port.productIdentifier.return_value = mu.logic.MICROBIT_PID
+    mock_port.vendorIdentifier = mock.MagicMock()
+    mock_port.vendorIdentifier.return_value = mu.logic.MICROBIT_VID
+    mock_port.portName = mock.MagicMock(return_value='COM0')
+    with mock.patch('mu.logic.QSerialPortInfo.availablePorts',
+                    return_value=[mock_port, ]):
+        assert mu.logic.find_microbit() == 'COM0'
 
 
 def test_REPL_posix():
@@ -34,7 +74,7 @@ def test_REPL_posix():
     The port is set correctly in a posix environment.
     """
     with mock.patch('os.name', 'posix'):
-        r = mu.editor.REPL('ttyACM0')
+        r = mu.logic.REPL('ttyACM0')
         assert r.port == '/dev/ttyACM0'
 
 
@@ -43,7 +83,7 @@ def test_REPL_nt():
     The port is set correctly in an nt (Windows) environment.
     """
     with mock.patch('os.name', 'nt'):
-        r = mu.editor.REPL('COM0')
+        r = mu.logic.REPL('COM0')
         assert r.port == 'COM0'
 
 
@@ -53,7 +93,7 @@ def test_REPL_unsupported():
     """
     with mock.patch('os.name', 'SPARC'):
         with pytest.raises(NotImplementedError):
-            mu.editor.REPL('tty0')
+            mu.logic.REPL('tty0')
 
 
 def test_editor_init():
@@ -65,13 +105,13 @@ def test_editor_init():
     # already exist.
     with mock.patch('os.path.exists', return_value=False), \
             mock.patch('os.makedirs', return_value=None) as mkd:
-        e = mu.editor.Editor(view)
+        e = mu.logic.Editor(view)
         assert e._view == view
         assert e.repl is None
         assert e.theme == 'day'
         assert mkd.call_count == 2
-        assert mkd.call_args_list[0][0][0] == mu.editor.MICROPYTHON_DIRECTORY
-        assert mkd.call_args_list[1][0][0] == mu.editor.DATA_DIR
+        assert mkd.call_args_list[0][0][0] == mu.logic.MICROPYTHON_DIRECTORY
+        assert mkd.call_args_list[1][0][0] == mu.logic.DATA_DIR
 
 
 def test_editor_restore_session():
@@ -80,7 +120,7 @@ def test_editor_restore_session():
     """
     view = mock.MagicMock()
     view.set_theme = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
@@ -101,11 +141,11 @@ def test_editor_restore_session_missing_files():
     ignored when attempting to restore them.
     """
     view = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
     fake_settings = os.path.join(os.path.dirname(__file__), 'settings.json')
     with mock.patch('os.path.exists', return_value=True), \
-            mock.patch('mu.editor.SETTINGS_FILE', fake_settings):
+            mock.patch('mu.logic.SETTINGS_FILE', fake_settings):
         ed.restore_session()
     assert ed._view.add_tab.call_count == 0
 
@@ -117,7 +157,7 @@ def test_editor_restore_session_no_session_file():
     """
     view = mock.MagicMock()
     view.tab_count = 0
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
     with mock.patch('os.path.exists', return_value=False):
         ed.restore_session()
@@ -131,7 +171,7 @@ def test_flash_no_tab():
     """
     view = mock.MagicMock()
     view.current_tab = None
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     assert ed.flash() is None
 
 
@@ -140,14 +180,14 @@ def test_flash_with_attached_device():
     Ensure the expected calls are made to uFlash and a helpful status message
     is enacted.
     """
-    with mock.patch('mu.editor.uflash.hexlify', return_value=''), \
-            mock.patch('mu.editor.uflash.embed_hex', return_value='foo'), \
-            mock.patch('mu.editor.uflash.find_microbit', return_value='bar'),\
-            mock.patch('mu.editor.uflash.save_hex', return_value=None) as s:
+    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
+            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
+            mock.patch('mu.logic.uflash.find_microbit', return_value='bar'),\
+            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
         view = mock.MagicMock()
         view.current_tab.text = mock.MagicMock(return_value='')
         view.show_message = mock.MagicMock()
-        ed = mu.editor.Editor(view)
+        ed = mu.logic.Editor(view)
         ed.flash()
         assert view.show_message.call_count == 1
         hex_file_path = os.path.join('bar', 'micropython.hex')
@@ -158,14 +198,14 @@ def test_flash_without_device():
     """
     If no device is found then ensure a helpful status messgae is enacted.
     """
-    with mock.patch('mu.editor.uflash.hexlify', return_value=''), \
-            mock.patch('mu.editor.uflash.embed_hex', return_value='foo'), \
-            mock.patch('mu.editor.uflash.find_microbit', return_value=''), \
-            mock.patch('mu.editor.uflash.save_hex', return_value=None) as s:
+    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
+            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
+            mock.patch('mu.logic.uflash.find_microbit', return_value=''), \
+            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
         view = mock.MagicMock()
         view.current_tab.text = mock.MagicMock(return_value='')
         view.show_message = mock.MagicMock()
-        ed = mu.editor.Editor(view)
+        ed = mu.logic.Editor(view)
         ed.flash()
         message = 'Could not find an attached BBC micro:bit.'
         view.show_message.assert_called_once_with(message)
@@ -177,7 +217,7 @@ def test_add_repl_already_exists():
     Ensure the editor raises a RuntimeError if the repl already exists.
     """
     view = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.repl = True
     with pytest.raises(RuntimeError):
         ed.add_repl()
@@ -190,8 +230,8 @@ def test_add_repl_no_port():
     """
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
-    ed = mu.editor.Editor(view)
-    with mock.patch('mu.editor.find_microbit', return_value=False):
+    ed = mu.logic.Editor(view)
+    with mock.patch('mu.logic.find_microbit', return_value=False):
         ed.add_repl()
     assert view.show_message.call_count == 1
     message = 'Could not find an attached BBC micro:bit.'
@@ -208,8 +248,8 @@ def test_add_repl_ioerror():
     view.show_message = mock.MagicMock()
     ex = IOError('BOOM')
     view.add_repl = mock.MagicMock(side_effect=ex)
-    ed = mu.editor.Editor(view)
-    with mock.patch('mu.editor.find_microbit', return_value='COM0'):
+    ed = mu.logic.Editor(view)
+    with mock.patch('mu.logic.find_microbit', return_value='COM0'):
         ed.add_repl()
     assert view.show_message.call_count == 1
     assert view.show_message.call_args[0][0] == str(ex)
@@ -222,8 +262,8 @@ def test_add_repl():
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     view.add_repl = mock.MagicMock()
-    ed = mu.editor.Editor(view)
-    with mock.patch('mu.editor.find_microbit', return_value='COM0'), \
+    ed = mu.logic.Editor(view)
+    with mock.patch('mu.logic.find_microbit', return_value='COM0'), \
             mock.patch('os.name', 'nt'):
         ed.add_repl()
     assert view.show_message.call_count == 0
@@ -235,7 +275,7 @@ def test_remove_repl_is_none():
     If there's no repl to remove raise a RuntimeError.
     """
     view = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.repl = None
     with pytest.raises(RuntimeError):
         ed.remove_repl()
@@ -248,7 +288,7 @@ def test_remove_repl():
     """
     view = mock.MagicMock()
     view.remove_repl = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.repl = True
     ed.remove_repl()
     assert view.remove_repl.call_count == 1
@@ -260,7 +300,7 @@ def test_toggle_repl_on():
     There is no repl, so toggle on.
     """
     view = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.add_repl = mock.MagicMock()
     ed.repl = None
     ed.toggle_repl()
@@ -272,7 +312,7 @@ def test_toggle_repl_off():
     There is a repl, so toggle off.
     """
     view = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.remove_repl = mock.MagicMock()
     ed.repl = True
     ed.toggle_repl()
@@ -286,7 +326,7 @@ def test_toggle_theme_to_night():
     """
     view = mock.MagicMock()
     view.set_theme = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.theme = 'day'
     ed.toggle_theme()
     assert ed.theme == 'night'
@@ -300,7 +340,7 @@ def test_toggle_theme_to_day():
     """
     view = mock.MagicMock()
     view.set_theme = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.theme = 'night'
     ed.toggle_theme()
     assert ed.theme == 'day'
@@ -313,7 +353,7 @@ def test_new():
     """
     view = mock.MagicMock()
     view.add_tab = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.new()
     view.add_tab.assert_called_once_with(None, '')
 
@@ -326,7 +366,7 @@ def test_load_python_file():
     view = mock.MagicMock()
     view.get_load_path = mock.MagicMock(return_value='foo.py')
     view.add_tab = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
@@ -345,14 +385,14 @@ def test_load_hex_file():
     view = mock.MagicMock()
     view.get_load_path = mock.MagicMock(return_value='foo.hex')
     view.add_tab = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
     mock_open.return_value.read.return_value = 'PYTHON'
     hex_file = 'RECOVERED'
     with mock.patch('builtins.open', mock_open), \
-            mock.patch('mu.editor.uflash.extract_script',
+            mock.patch('mu.logic.uflash.extract_script',
                        return_value=hex_file) as s:
         ed.load()
     assert view.get_load_path.call_count == 1
@@ -367,7 +407,7 @@ def test_load_error():
     view = mock.MagicMock()
     view.get_load_path = mock.MagicMock(return_value='foo.py')
     view.add_tab = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock(side_effect=FileNotFoundError())
     with mock.patch('builtins.open', mock_open):
         ed.load()
@@ -381,7 +421,7 @@ def test_save_no_tab():
     """
     view = mock.MagicMock()
     view.current_tab = None
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.save()
     # If the code fell through then the tab state would be modified.
     assert view.current_tab is None
@@ -401,13 +441,13 @@ def test_save_no_path():
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
     mock_open.return_value.write = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     with mock.patch('builtins.open', mock_open):
         ed.save()
     assert view.current_tab.modified is False
     mock_open.assert_called_once_with('foo.py', 'w')
     mock_open.return_value.write.assert_called_once_with('foo')
-    view.get_save_path.assert_called_once_with(mu.editor.MICROPYTHON_DIRECTORY)
+    view.get_save_path.assert_called_once_with(mu.logic.MICROPYTHON_DIRECTORY)
 
 
 def test_save_no_path_no_path_give():
@@ -419,7 +459,7 @@ def test_save_no_path_no_path_give():
     view.current_tab = mock.MagicMock()
     view.current_tab.path = None
     view.get_save_path = mock.MagicMock(return_value='')
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.save()
     # The path isn't the empty string returned from get_save_path.
     assert view.current_tab.path is None
@@ -439,7 +479,7 @@ def test_save_python_file():
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
     mock_open.return_value.write = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     with mock.patch('builtins.open', mock_open):
         ed.save()
     assert view.current_tab.modified is False
@@ -461,7 +501,7 @@ def test_save_with_no_file_extension():
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
     mock_open.return_value.write = mock.MagicMock()
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     with mock.patch('builtins.open', mock_open):
         ed.save()
     assert view.current_tab.modified is False
@@ -476,7 +516,7 @@ def test_zoom_in():
     """
     view = mock.MagicMock()
     view.zoom_in = mock.MagicMock(return_value=None)
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.zoom_in()
     assert view.zoom_in.call_count == 1
 
@@ -487,7 +527,7 @@ def test_zoom_out():
     """
     view = mock.MagicMock()
     view.zoom_out = mock.MagicMock(return_value=None)
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.zoom_out()
     assert view.zoom_out.call_count == 1
 
@@ -500,7 +540,7 @@ def test_quit_modified_cancelled_from_button():
     view = mock.MagicMock()
     view.modified = True
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
@@ -520,7 +560,7 @@ def test_quit_modified_cancelled_from_event():
     view = mock.MagicMock()
     view.modified = True
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
@@ -543,7 +583,7 @@ def test_quit_modified_ok():
     view = mock.MagicMock()
     view.modified = True
     view.show_confirmation = mock.MagicMock(return_value=True)
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
@@ -570,7 +610,7 @@ def test_quit_save_tabs_with_paths():
     w1 = mock.MagicMock()
     w1.path = 'foo.py'
     view.widgets = [w1, ]
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
@@ -600,7 +640,7 @@ def test_quit_save_theme():
     w1 = mock.MagicMock()
     w1.path = 'foo.py'
     view.widgets = [w1, ]
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.theme = 'night'
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
@@ -631,7 +671,7 @@ def test_quit_calls_sys_exit():
     w1 = mock.MagicMock()
     w1.path = 'foo.py'
     view.widgets = [w1, ]
-    ed = mu.editor.Editor(view)
+    ed = mu.logic.Editor(view)
     ed.theme = 'night'
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s

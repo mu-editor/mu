@@ -21,9 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
 from PyQt5.QtWidgets import QApplication, QSplashScreen
-from mu.editor import Editor
-from mu.resources import load_stylesheet, load_pixmap
+from mu.logic import Editor
 from mu.interface import Window
+from mu.resources import load_stylesheet, load_pixmap
 
 
 def run():

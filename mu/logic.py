@@ -22,14 +22,30 @@ import os.path
 import sys
 import json
 from PyQt5.QtWidgets import QMessageBox
-from mu.repl import find_microbit
+from PyQt5.QtSerialPort import QSerialPortInfo
 from mu.contrib import uflash, appdirs
 
 
+MICROBIT_PID = 516
+MICROBIT_VID = 3368
 HOME_DIRECTORY = os.path.expanduser('~')
 MICROPYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'micropython')
 DATA_DIR = appdirs.user_data_dir('mu', 'python')
 SETTINGS_FILE = os.path.join(DATA_DIR, 'settings.json')
+
+
+def find_microbit():
+    """
+    Returns the port for the first microbit it finds connected to the host
+    computer. If no microbit is found, returns None.
+    """
+    available_ports = QSerialPortInfo.availablePorts()
+    for port in available_ports:
+        pid = port.productIdentifier()
+        vid = port.vendorIdentifier()
+        if pid == MICROBIT_PID and vid == MICROBIT_VID:
+            return port.portName()
+    return None
 
 
 class REPL:
