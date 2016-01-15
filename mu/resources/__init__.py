@@ -45,8 +45,3 @@ def load_pixmap(name):
 def load_stylesheet(name):
     """Load a CSS stylesheet from the resources directory."""
     return resource_string(__name__, "css/" + name).decode('utf8')
-
-
-def load_svg(name):
-    """Load SVG text from the resources directory."""
-    return resource_string(__name__, "svg/" + name)
