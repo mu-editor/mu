@@ -1,0 +1,26 @@
+from setuptools import setup
+
+
+setup(
+    name='mu',
+    version='0.1',
+    description='A micro editor for MicroPython and the BBC micro:bit.',
+    author='Nicholas Tollervey',
+    author_email='ntoll@ntoll.org',
+    url='https://github.com/ntoll/mu',
+    packages=['mu'],
+    include_package_data=True,
+    zip_safe=False,
+    classifiers=[
+        'Environment :: X11 Applications :: Qt',
+        'Intended Audience :: Education',
+        'Topic :: Education',
+        'Intended Audience :: Developers',
+        'Programming Language :: Python :: 3',
+    ],
+    entry_points={
+        'console_scripts': [
+            "mu = mu.app.run",
+        ],
+    },
+)
