@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=mu
+GenericName=A micro Python editor for microbit
+Comment=A micro Python editor
+Icon=mu
+TryExec=mu
+Exec=mu
+Terminal=false
+Categories=Application;Editor;Qt;
+Keywords=Python;Editor;microbit;micro:bit;
+
