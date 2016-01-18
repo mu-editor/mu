@@ -23,7 +23,7 @@ setup(
             "mu = mu.app.run",
         ],
     },
-    data_files = [('/etc/udev/rules.d', ['conf/90-usb-microbit.rule',]),
-                  ('/usr/share/pixmaps', ['conf/mu.png',]),
-                  ('/usr/share/applications', ['conf/mu.desktop',])],
+    data_files=[('/etc/udev/rules.d', ['conf/90-usb-microbit.rule', ]),
+                ('/usr/share/pixmaps', ['conf/mu.png', ]),
+                ('/usr/share/applications', ['conf/mu.desktop', ])],
 )
