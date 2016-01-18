@@ -210,7 +210,7 @@ def test_ButtonBar_init():
         mock_icon_size.assert_called_once_with(QSize(64, 64))
         mock_tool_button_size.assert_called_once_with(3)
         mock_context_menu_policy.assert_called_once_with(Qt.PreventContextMenu)
-        mock_object_name.assert_called_once('StandardToolBar')
+        mock_object_name.assert_called_once_with('StandardToolBar')
         assert mock_add_action.call_count == 9
         assert mock_add_separator.call_count == 3
 
