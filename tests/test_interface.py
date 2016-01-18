@@ -110,7 +110,7 @@ def test_EditorPane_init():
         mu.interface.EditorPane(path, text)
         mock_text.assert_called_once_with(text)
         mock_modified.assert_called_once_with(False)
-        mock_configure.assert_called_once()
+        mock_configure.assert_called_once_with()
 
 
 def test_EditorPane_configure():
@@ -134,18 +134,18 @@ def test_EditorPane_configure():
     ep.SendScintilla = mock.MagicMock()
     ep.set_theme = mock.MagicMock()
     ep.configure()
-    ep.setFont.assert_called_once()
-    ep.setUtf8.assert_called_once()
-    ep.setAutoIndent.assert_called_once()
-    ep.setIndentationsUseTabs.assert_called_once()
-    ep.setIndentationWidth.assert_called_once()
-    ep.setTabWidth.assert_called_once()
-    ep.setEdgeColumn.assert_called_once()
-    ep.setMarginLineNumbers.assert_called_once()
-    ep.setMarginWidth.assert_called_once()
-    ep.setBraceMatching.assert_called_once()
-    ep.SendScintilla.assert_called_once()
-    ep.set_theme.assert_called_once()
+    assert ep.setFont.call_count == 1
+    assert ep.setUtf8.call_count == 1
+    assert ep.setAutoIndent.call_count == 1
+    assert ep.setIndentationsUseTabs.call_count == 1
+    assert ep.setIndentationWidth.call_count == 1
+    assert ep.setTabWidth.call_count == 1
+    assert ep.setEdgeColumn.call_count == 1
+    assert ep.setMarginLineNumbers.call_count == 1
+    assert ep.setMarginWidth.call_count == 1
+    assert ep.setBraceMatching.call_count == 1
+    assert ep.SendScintilla.call_count == 1
+    assert ep.set_theme.call_count == 1
 
 
 def test_EditorPane_set_theme():
@@ -159,10 +159,10 @@ def test_EditorPane_set_theme():
     ep.setMarginsForegroundColor = mock.MagicMock()
     ep.setLexer = mock.MagicMock()
     ep.set_theme()
-    ep.setCaretForegroundColor.assert_called_once()
-    ep.setMarginsBackgroundColor.assert_called_once()
-    ep.setMarginsForegroundColor.assert_called_once()
-    ep.setLexer.assert_called_once()
+    assert ep.setCaretForegroundColor.call_count == 1
+    assert ep.setMarginsBackgroundColor.call_count == 1
+    assert ep.setMarginsForegroundColor.call_count == 1
+    assert ep.setLexer.call_count == 1
 
 
 def test_EditorPane_label():
@@ -223,7 +223,7 @@ def test_ButtonBar_add_action():
     bb = mu.interface.ButtonBar(None)
     with mock.patch('builtins.super') as mock_s:
         bb.addAction('save', 'save stuff')
-        mock_s.assert_called_once()
+        mock_s.assert_called_once_with()
     assert 'save' in bb.slots
     assert isinstance(bb.slots['save'], QAction)
 
@@ -240,7 +240,7 @@ def test_ButtonBar_connect():
     mock_shortcut = mock.MagicMock()
     with mock.patch('mu.interface.QShortcut', mock_shortcut):
         bb.connect('save', mock_handler, 'Ctrl+S')
-    mock_shortcut.assert_called_once()
+    assert mock_shortcut.call_count == 1
     slot = bb.slots['save']
     slot.pyqtConfigure.assert_called_once_with(triggered=mock_handler)
 
@@ -363,7 +363,7 @@ def test_Window_add_tab():
     w.tabs.setCurrentIndex.assert_called_once_with(new_tab_index)
     w.connect_zoom.assert_called_once_with(ep)
     w.set_theme.assert_called_once_with(w.theme)
-    ep.setFocus.assert_called_once()
+    ep.setFocus.assert_called_once_with()
     on_modified = ep.modificationChanged.connect.call_args[0][0]
     on_modified()
     w.tabs.setTabText.assert_called_once_with(new_tab_index, ep.label)
@@ -377,7 +377,7 @@ def test_Window_tab_count():
     w.tabs = mock.MagicMock()
     w.tabs.count = mock.MagicMock(return_value=2)
     assert w.tab_count == 2
-    w.tabs.count.assert_called_once()
+    w.tabs.count.assert_called_once_with()
 
 
 def test_Window_widgets():
@@ -392,7 +392,7 @@ def test_Window_widgets():
     w.tabs.widget = mock.MagicMock(side_effect=[tab1, tab2])
     result = w.widgets
     assert result == [tab1, tab2]
-    w.tabs.count.assert_called_once()
+    w.tabs.count.assert_called_once_with()
 
 
 def test_Window_modified():
@@ -436,7 +436,7 @@ def test_Window_add_repl():
     assert w.repl == mock_repl
     w.splitter.addWidget.assert_called_once_with(mock_repl)
     w.splitter.setSizes.assert_called_once_with([66, 33])
-    mock_repl.setFocus.assert_called_once()
+    mock_repl.setFocus.assert_called_once_with()
     w.connect_zoom.assert_called_once_with(mock_repl)
 
 
@@ -451,7 +451,7 @@ def test_Window_remove_repl():
     w.repl = mock_repl
     w.remove_repl()
     mock_repl.setParent.assert_called_once_with(None)
-    mock_repl.deleteLater.assert_called_once()
+    mock_repl.deleteLater.assert_called_once_with()
     assert w.repl is None
     w = mu.interface.Window()
 
@@ -510,7 +510,7 @@ def test_Window_show_message():
     mock_qmb.setWindowTitle.assert_called_once_with('Mu')
     mock_qmb.setInformativeText.assert_called_once_with(information)
     mock_qmb.setIcon.assert_called_once_with(mock_qmb.Information)
-    mock_qmb.exec.assert_called_once()
+    mock_qmb.exec.assert_called_once_with()
 
 
 def test_Window_show_message_default():
@@ -534,7 +534,7 @@ def test_Window_show_message_default():
     mock_qmb.setWindowTitle.assert_called_once_with('Mu')
     assert mock_qmb.setInformativeText.call_count == 0
     mock_qmb.setIcon.assert_called_once_with(mock_qmb.Warning)
-    mock_qmb.exec.assert_called_once()
+    mock_qmb.exec.assert_called_once_with()
 
 
 def test_Window_show_confirmation():
@@ -567,7 +567,7 @@ def test_Window_show_confirmation():
     mock_qmb.setStandardButtons.assert_called_once_with(mock_qmb.Cancel |
                                                         mock_qmb.Ok)
     mock_qmb.setDefaultButton.assert_called_once_with(mock_qmb.Cancel)
-    mock_qmb.exec.assert_called_once()
+    mock_qmb.exec.assert_called_once_with()
 
 
 def test_Window_show_confirmation_default():
@@ -598,7 +598,7 @@ def test_Window_show_confirmation_default():
     mock_qmb.setStandardButtons.assert_called_once_with(mock_qmb.Cancel |
                                                         mock_qmb.Ok)
     mock_qmb.setDefaultButton.assert_called_once_with(mock_qmb.Cancel)
-    mock_qmb.exec.assert_called_once()
+    mock_qmb.exec.assert_called_once_with()
 
 
 def test_Window_update_title():
@@ -632,10 +632,9 @@ def test_Window_autosize_window():
     w.move = mock.MagicMock(return_value=None)
     with mock.patch('mu.interface.QDesktopWidget', mock_qdw):
         w.autosize_window()
-    mock_qdw.assert_called_once()
-    mock_sg.assert_called_once()
+    mock_qdw.assert_called_once_with()
     w.resize.assert_called_once_with(int(1024 * 0.8), int(768 * 0.8))
-    w.geometry.assert_called_once()
+    w.geometry.assert_called_once_with()
     x = (1024 - 819) / 2
     y = (768 - 614) / 2
     w.move.assert_called_once_with(x, y)
@@ -680,9 +679,9 @@ def test_Window_setup():
             mock.patch('mu.interface.QTabWidget', mock_qtw_class):
         w.setup(theme)
     assert w.theme == theme
-    w.setWindowIcon.assert_called_once()
+    assert w.setWindowIcon.call_count == 1
     assert isinstance(w.setWindowIcon.call_args[0][0], QIcon)
-    w.update_title.assert_called_once()
+    w.update_title.assert_called_once_with()
     w.setMinimumSize.assert_called_once_with(800, 600)
     assert w.widget == mock_widget
     assert w.splitter == mock_splitter
@@ -697,8 +696,8 @@ def test_Window_setup():
     w.addWidget.assert_called_once_with(mock_widget)
     w.setCurrentWidget.assert_called_once_with(mock_widget)
     w.set_theme.assert_called_once_with(theme)
-    w.show.assert_called_once()
-    w.autosize_window.assert_called_once()
+    w.show.assert_called_once_with()
+    w.autosize_window.assert_called_once_with()
 
 
 def test_REPLPane_init_default_args():
@@ -943,7 +942,7 @@ def test_REPLPane_process_bytes():
         rp.ensureCursorVisible = mock.MagicMock(return_value=None)
         bs = [8, 13, 65]  # \b, \r, 'A'
         rp.process_bytes(bs)
-        rp.textCursor.assert_called_once()
+        rp.textCursor.assert_called_once_with()
         assert mock_tc.movePosition.call_count == 3
         assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
         assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Down
@@ -952,7 +951,7 @@ def test_REPLPane_process_bytes():
         assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
         assert rp.setTextCursor.call_args_list[1][0][0] == mock_tc
         rp.insertPlainText.assert_called_once_with(chr(65))
-        rp.ensureCursorVisible.assert_called_once()
+        rp.ensureCursorVisible.assert_called_once_with()
 
 
 def test_REPLPane_clear():
