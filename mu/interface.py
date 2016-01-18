@@ -46,17 +46,13 @@ NIGHT_STYLE = """QStackedWidget, QWidget
     color: white;
 }
 
-QToolButton {
-    min-width: 72px;
-}
-
 QToolButton:hover {
     color: red;
 }
 
 QTextEdit {
-    background-color: white;
-    color: black
+    background-color: black;
+    color: white
 }
 """
 
@@ -67,13 +63,9 @@ DAY_STYLE = """QStackedWidget, QWidget
     color: black;
 }
 
-QToolButton {
-    min-width: 72px;
-}
-
 QTextEdit {
-    background-color: black;
-    color: white
+    background-color: white;
+    color: black
 }
 """
 
@@ -195,20 +187,6 @@ class EditorPane(QsciScintilla):
         self.setModified(False)
         self.configure()
 
-    @property
-    def modified(self):
-        """
-        Returns if the code in the editor has been modified since last save.
-        """
-        return self.isModified()
-
-    @modified.setter
-    def modified(self, value):
-        """
-        Sets the modified flag.
-        """
-        self.setModified(value)
-
     def configure(self):
         """
         Set up the editor component.
@@ -298,16 +276,24 @@ class ButtonBar(QToolBar):
         self.addAction(name="quit", tool_text="Quit the application.")
 
     def addAction(self, name, tool_text):
+        """
+        Creates an action associated with an icon and name and adds it to the
+        widget's slots.
+        """
         action = QAction(load_icon(name), name.capitalize(), self,
                          statusTip=tool_text)
         super().addAction(action)
         self.slots[name] = action
 
-    def connect(self, name, slot, *shortcuts):
-        self.slots[name].pyqtConfigure(triggered=slot)
+    def connect(self, name, handler, *shortcuts):
+        """
+        Connects a named slot to a handler function and optional hot-key
+        shortcuts.
+        """
+        self.slots[name].pyqtConfigure(triggered=handler)
         for shortcut in shortcuts:
             QShortcut(QKeySequence(shortcut),
-                      self.parentWidget()).activated.connect(slot)
+                      self.parentWidget()).activated.connect(handler)
 
 
 class Window(QStackedWidget):
@@ -336,14 +322,12 @@ class Window(QStackedWidget):
         return self.tabs.currentWidget()
 
     def get_load_path(self, folder):
-        path, _ = QFileDialog.getOpenFileName(self.widget,
-                                              'Open file', folder,
+        path, _ = QFileDialog.getOpenFileName(self.widget, 'Open file', folder,
                                               '*.py *.hex')
         return path
 
     def get_save_path(self, folder):
-        path, _ = QFileDialog.getSaveFileName(self.widget,
-                                              'Save file', folder)
+        path, _ = QFileDialog.getSaveFileName(self.widget, 'Save file', folder)
         return path
 
     def add_tab(self, path, text):
@@ -370,7 +354,7 @@ class Window(QStackedWidget):
     @property
     def modified(self):
         for widget in self.widgets:
-            if widget.modified:
+            if widget.isModified():
                 return True
         return False
 
@@ -378,9 +362,8 @@ class Window(QStackedWidget):
         """
         Adds the REPL pane to the application.
         """
-        replpane = REPLPane(port=repl.port, theme=self.theme)
-        self.repl = replpane
-        self.splitter.addWidget(replpane)
+        self.repl = REPLPane(port=repl.port, theme=self.theme)
+        self.splitter.addWidget(self.repl)
         self.splitter.setSizes([66, 33])
         self.repl.setFocus()
         self.connect_zoom(self.repl)

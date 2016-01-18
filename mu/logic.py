@@ -237,7 +237,7 @@ class Editor:
                 tab.path += '.py'
             with open(tab.path, 'w') as f:
                 f.write(tab.text())
-            tab.modified = False
+            tab.setModified(False)
         else:
             # The user cancelled the filename selection.
             tab.path = None
