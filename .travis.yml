@@ -31,14 +31,15 @@ before_install:
 
 # Build Mu and time stamp it
 install:
+  - sudo pip3 install -r requirements.txt
+
+# Run the test suit and build the executable with the time stamp in its file name
+script:
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make check; fi
   - pyinstaller package/pyinstaller.spec
   - du -sk dist/
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mv dist/mu dist/mu-$(date '+%Y-%m-%d_%H_%M_%S'); fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cd dist && zip --symlinks -r mu-$(date '+%Y-%m-%d_%H_%M_%S').zip mu.app && rm -r mu.app && rm mu && cd ..; fi
-
-# Dummy "script" run to stop default trvais build script, unit test should go here
-script:
-  - ls dist/
 
 # Deploy the build version in an S3 bucket
 deploy:
