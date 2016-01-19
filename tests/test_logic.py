@@ -24,7 +24,7 @@ def test_CONSTANTS():
     Ensure the expected constants exist.
     """
     assert mu.logic.HOME_DIRECTORY
-    assert mu.logic.MICROPYTHON_DIRECTORY
+    assert mu.logic.PYTHON_DIRECTORY
     assert mu.logic.DATA_DIR
     assert mu.logic.SETTINGS_FILE
     # These should NEVER change.
@@ -110,7 +110,7 @@ def test_editor_init():
         assert e.repl is None
         assert e.theme == 'day'
         assert mkd.call_count == 2
-        assert mkd.call_args_list[0][0][0] == mu.logic.MICROPYTHON_DIRECTORY
+        assert mkd.call_args_list[0][0][0] == mu.logic.PYTHON_DIRECTORY
         assert mkd.call_args_list[1][0][0] == mu.logic.DATA_DIR
 
 
@@ -446,7 +446,7 @@ def test_save_no_path():
         ed.save()
     mock_open.assert_called_once_with('foo.py', 'w')
     mock_open.return_value.write.assert_called_once_with('foo')
-    view.get_save_path.assert_called_once_with(mu.logic.MICROPYTHON_DIRECTORY)
+    view.get_save_path.assert_called_once_with(mu.logic.PYTHON_DIRECTORY)
 
 
 def test_save_no_path_no_path_give():

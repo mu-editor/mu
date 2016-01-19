@@ -22,9 +22,9 @@ from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import QDir
 
 
+# The following lines add the images and css directories to the search path.
 QDir.addSearchPath('images', resource_filename(__name__, 'images'))
 QDir.addSearchPath('css', resource_filename(__name__, 'css'))
-QDir.addSearchPath('svg', resource_filename(__name__, 'svg'))
 
 
 def path(name):

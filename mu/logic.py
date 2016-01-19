@@ -26,11 +26,17 @@ from PyQt5.QtSerialPort import QSerialPortInfo
 from mu.contrib import uflash, appdirs
 
 
+#: USB product ID.
 MICROBIT_PID = 516
+#: USB vendor ID.
 MICROBIT_VID = 3368
+#: The user's home directory.
 HOME_DIRECTORY = os.path.expanduser('~')
-MICROPYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'micropython')
+#: The default directory for Python scripts.
+PYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'python')
+#: The default directory for application data.
 DATA_DIR = appdirs.user_data_dir('mu', 'python')
+#: The path to the JSON file containing application settings.
 SETTINGS_FILE = os.path.join(DATA_DIR, 'settings.json')
 
 
@@ -58,11 +64,11 @@ class REPL:
 
     def __init__(self, port):
         if os.name == 'posix':
-            # If we're on Linux or OSX reference the port like this...
+            # If we're on Linux or OSX reference the port is like this...
             self.port = "/dev/{}".format(port)
         elif os.name == 'nt':
-            # On Windows do something related to an appropriate port name.
-            self.port = port  # COMsomething-or-other.
+            # On Windows simply return the port (e.g. COM0).
+            self.port = port
         else:
             # No idea how to deal with other OS's so fail.
             raise NotImplementedError('OS not supported.')
@@ -77,8 +83,8 @@ class Editor:
         self._view = view
         self.repl = None
         self.theme = 'day'
-        if not os.path.exists(MICROPYTHON_DIRECTORY):
-            os.makedirs(MICROPYTHON_DIRECTORY)
+        if not os.path.exists(PYTHON_DIRECTORY):
+            os.makedirs(PYTHON_DIRECTORY)
         if not os.path.exists(DATA_DIR):
             os.makedirs(DATA_DIR)
 
@@ -114,10 +120,10 @@ class Editor:
         # Grab the Python script.
         tab = self._view.current_tab
         if tab is None:
-            # There is no active text editor
+            # There is no active text editor.
             return
         python_script = tab.text().encode('utf-8')
-        # Generate a hex file
+        # Generate a hex file.
         python_hex = uflash.hexlify(python_script)
         micropython_hex = uflash.embed_hex(uflash._RUNTIME, python_hex)
         path_to_microbit = uflash.find_microbit()
@@ -199,7 +205,7 @@ class Editor:
         Loads a Python file from the file system or extracts a Python sccript
         from a hex file.
         """
-        path = self._view.get_load_path(MICROPYTHON_DIRECTORY)
+        path = self._view.get_load_path(PYTHON_DIRECTORY)
         try:
             if path.endswith('.py'):
                 # Open the file, read the textual content and set the name as
@@ -229,7 +235,7 @@ class Editor:
             return
         if tab.path is None:
             # Unsaved file.
-            tab.path = self._view.get_save_path(MICROPYTHON_DIRECTORY)
+            tab.path = self._view.get_save_path(PYTHON_DIRECTORY)
         if tab.path:
             # The user specified a path to a file.
             if not os.path.basename(tab.path).endswith('.py'):

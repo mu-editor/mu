@@ -30,8 +30,9 @@ from PyQt5.QtSerialPort import QSerialPort
 from mu.resources import load_icon, load_stylesheet
 
 
-# FONT related constants:
+#: The default font size.
 DEFAULT_FONT_SIZE = 14
+#: The default fallback font.
 DEFAULT_FONT = 'Bitstream Vera Sans Mono'
 # Platform specific alternatives...
 if sys.platform == 'win32':
@@ -41,7 +42,9 @@ elif sys.platform == 'darwin':
 
 
 # Load the two themes from resources/css/[night|day].css
+#: NIGHT_STYLE is a dark high contrast theme.
 NIGHT_STYLE = load_stylesheet('night.css')
+#: DAY_STYLE is a light conventional theme.
 DAY_STYLE = load_stylesheet('day.css')
 
 
@@ -60,7 +63,7 @@ class Font:
 
 class Theme:
     """
-    Defines a font and other theme related information.
+    Defines a font and other theme specific related information.
     """
 
     @classmethod
@@ -193,8 +196,8 @@ class EditorPane(QsciScintilla):
 
     def set_theme(self, theme=DayTheme):
         """
-        Connect the theme and lexer and return the lexer for the editor to
-        apply to the text in the editor.
+        Connect the theme to a lexer and return the lexer for the editor to
+        apply to the script text.
         """
         self.lexer = PythonLexer()
         theme.apply_to(self.lexer)
@@ -209,6 +212,9 @@ class EditorPane(QsciScintilla):
         """
         The label associated with this editor widget (usually the filename of
         the script we're editing).
+
+        If the script has been modified since it was last saved, the label will
+        end with an asterisk.
         """
         if self.path:
             label = os.path.basename(self.path)
@@ -523,7 +529,10 @@ class REPLPane(QTextEdit):
     """
     REPL = Read, Evaluate, Print, Loop.
 
-    This widget represents a REPL client connected to a BBC micro:bit.
+    This widget represents a REPL client connected to a BBC micro:bit running
+    MicroPython.
+
+    The device MUST be flashed with MicroPython for this to work.
     """
 
     def __init__(self, port, theme='day', parent=None):
@@ -595,7 +604,7 @@ class REPLPane(QTextEdit):
 
     def process_bytes(self, bs):
         """
-        Given some incoming bytes of data, works out how to handle / display
+        Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
         """
         tc = self.textCursor()
