@@ -40,6 +40,7 @@ elif sys.platform == 'darwin':
     DEFAULT_FONT = 'Monaco'
 
 
+# Load the two themes from resources/css/[night|day].css
 NIGHT_STYLE = load_stylesheet('night.css')
 DAY_STYLE = load_stylesheet('day.css')
 
@@ -49,6 +50,7 @@ class Font:
     Utility class that makes it easy to set font related values within the
     editor.
     """
+
     def __init__(self, color='black', paper='white', bold=False, italic=False):
         self.color = color
         self.paper = paper
@@ -87,7 +89,10 @@ class DayTheme(Theme):
     """
     Defines a Python related theme including the various font colours for
     syntax highlighting.
+
+    This is a light theme.
     """
+
     FunctionMethodName = ClassName = Font(color='#0000a0')
     UnclosedString = Font(paper='#FFDDDD')
     Comment = CommentBlock = Font(color='gray')
@@ -108,7 +113,10 @@ class NightTheme(Theme):
     """
     Defines a Python related theme including the various font colours for
     syntax highlighting.
+
+    This is the dark / high contrast theme.
     """
+
     FunctionMethodName = ClassName = Font(color='#AAA', paper='black')
     UnclosedString = Font(paper='#666')
     Comment = CommentBlock = Font(color='#AAA', paper='black')
@@ -282,29 +290,52 @@ class Window(QStackedWidget):
     _zoom_out = pyqtSignal(int)
 
     def zoom_in(self):
+        """
+        Handles zooming in.
+        """
         self._zoom_in.emit(2)
 
     def zoom_out(self):
+        """
+        Handles zooming out.
+        """
         self._zoom_out.emit(2)
 
     def connect_zoom(self, widget):
+        """
+        Connects a referenced widget to the zoom related signals.
+        """
         self._zoom_in.connect(widget.zoomIn)
         self._zoom_out.connect(widget.zoomOut)
 
     @property
     def current_tab(self):
+        """
+        Returns the currently focussed tab.
+        """
         return self.tabs.currentWidget()
 
     def get_load_path(self, folder):
+        """
+        Displays a dialog for selecting a file to load. Returns the selected
+        path. Defaults to start in the referenced folder.
+        """
         path, _ = QFileDialog.getOpenFileName(self.widget, 'Open file', folder,
                                               '*.py *.hex')
         return path
 
     def get_save_path(self, folder):
+        """
+        Displays a dialog for selecting a file to save. Returns the selected
+        path. Defaults to start in the referenced folder.
+        """
         path, _ = QFileDialog.getSaveFileName(self.widget, 'Save file', folder)
         return path
 
     def add_tab(self, path, text):
+        """
+        Adds a tab with the referenced path and text to the editor.
+        """
         new_tab = EditorPane(path, text)
         new_tab_index = self.tabs.addTab(new_tab, new_tab.label)
 
@@ -319,14 +350,25 @@ class Window(QStackedWidget):
 
     @property
     def tab_count(self):
+        """
+        Returns the number of active tabs.
+        """
         return self.tabs.count()
 
     @property
     def widgets(self):
+        """
+        Returns a list of references to the widgets representing tabs in the
+        editor.
+        """
         return [self.tabs.widget(i) for i in range(self.tab_count)]
 
     @property
     def modified(self):
+        """
+        Returns a boolean indication if there are any modified tabs in the
+        editor.
+        """
         for widget in self.widgets:
             if widget.isModified():
                 return True
