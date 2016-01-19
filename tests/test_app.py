@@ -24,7 +24,6 @@ def test_run():
     with mock.patch('mu.app.QApplication') as qa, \
             mock.patch('mu.app.QSplashScreen') as qsp, \
             mock.patch('mu.app.Editor') as ed, \
-            mock.patch('mu.app.load_stylesheet'), \
             mock.patch('mu.app.load_pixmap'), \
             mock.patch('mu.app.Window') as win, \
             mock.patch('sys.exit') as ex:
@@ -32,7 +31,7 @@ def test_run():
         # foo.call_count is instantiating the class
         assert qa.call_count == 1
         # foo.mock_calls are method calls on the object
-        assert len(qa.mock_calls) == 3
+        assert len(qa.mock_calls) == 2
         assert qsp.call_count == 1
         assert len(qsp.mock_calls) == 3
         assert ed.call_count == 1

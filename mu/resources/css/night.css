@@ -1,0 +1,33 @@
+QStackedWidget, QWidget {
+    background-color: black;
+    color: white;
+}
+
+QToolButton:hover {
+    color: red;
+}
+
+QToolButton {
+    background-color: black;
+}
+
+QTextEdit {
+    background-color: black;
+    color: white
+}
+
+QTabBar::tab {
+    color: white;
+}
+
+QTabBar::tab:selected {
+    background: #333;
+}
+
+QTabBar::tab:!selected {
+    background: black;
+}
+
+QSplitter::handle:horizontal {
+    background: #333;
+}

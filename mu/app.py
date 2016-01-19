@@ -23,7 +23,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 from mu.logic import Editor
 from mu.interface import Window
-from mu.resources import load_stylesheet, load_pixmap
+from mu.resources import load_pixmap
 
 
 def run():
@@ -33,7 +33,6 @@ def run():
     """
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
-    app.setStyleSheet(load_stylesheet('mu.css'))
     # Display a friendly "splash" icon.
     splash = QSplashScreen(load_pixmap('icon'))
     splash.show()

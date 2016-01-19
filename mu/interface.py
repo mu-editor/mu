@@ -27,7 +27,7 @@ from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
 from PyQt5.QtGui import QKeySequence, QColor, QFont, QTextCursor
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5.QtSerialPort import QSerialPort
-from mu.resources import load_icon
+from mu.resources import load_icon, load_stylesheet
 
 
 # FONT related constants:
@@ -40,34 +40,8 @@ elif sys.platform == 'darwin':
     DEFAULT_FONT = 'Monaco'
 
 
-NIGHT_STYLE = """QStackedWidget, QWidget
-{
-    background-color: black;
-    color: white;
-}
-
-QToolButton:hover {
-    color: red;
-}
-
-QTextEdit {
-    background-color: black;
-    color: white
-}
-"""
-
-
-DAY_STYLE = """QStackedWidget, QWidget
-{
-    background-color: #EEE;
-    color: black;
-}
-
-QTextEdit {
-    background-color: white;
-    color: black
-}
-"""
+NIGHT_STYLE = load_stylesheet('night.css')
+DAY_STYLE = load_stylesheet('day.css')
 
 
 class Font:

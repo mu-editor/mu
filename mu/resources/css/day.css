@@ -1,0 +1,9 @@
+QStackedWidget, QWidget {
+    background-color: #EEE;
+    color: black;
+}
+
+QTextEdit {
+    background-color: white;
+    color: black;
+}
