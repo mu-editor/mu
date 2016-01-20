@@ -37,7 +37,7 @@ in REPL client that automatically connects to the device.
 How?
 ----
 
-Much of the work has been adapted from previous work done with Damien George
+Much of the work has been adapted from my previous work done with Damien George
 and Dan Pope on the "Puppy" editor for kids. "Mu" is an ultra-slimmed down
 version of Puppy - an MVP of sorts.
 

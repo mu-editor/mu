@@ -540,15 +540,12 @@ class REPLPane(QTextEdit):
         self.setFont(QFont('Courier', 14))
         self.setAcceptRichText(False)
         self.setReadOnly(False)
-        self.setLineWrapMode(QTextEdit.NoWrap)
         self.setObjectName('replpane')
         # open the serial port
         self.serial = QSerialPort(self)
         self.serial.setPortName(port)
         self.serial.setBaudRate(115200)
         if self.serial.open(QIODevice.ReadWrite):
-            # TODO: What if the device is not sending bytes because it's in
-            # an infinite loop..?
             self.serial.readyRead.connect(self.on_serial_read)
             # clear the text
             self.clear()
