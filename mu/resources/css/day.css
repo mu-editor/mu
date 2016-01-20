@@ -7,3 +7,7 @@ QTextEdit {
     background-color: white;
     color: black;
 }
+
+QToolBar, QToolButton {
+    background: transparent;
+}

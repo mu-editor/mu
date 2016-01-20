@@ -1,10 +1,10 @@
-QStackedWidget, QWidget {
+QStackedWidget, QWidget, QApplication {
     background-color: black;
     color: white;
 }
 
 QToolButton:hover {
-    color: red;
+    color: #FF0000;
 }
 
 QToolButton {
@@ -30,4 +30,9 @@ QTabBar::tab:!selected {
 
 QSplitter::handle:horizontal {
     background: #333;
+}
+
+QToolBar {
+    background: black;
+    border: 0px;
 }
