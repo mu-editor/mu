@@ -11,7 +11,7 @@ data_files_glob += glob(os.path.join('mu', 'resources', 'images', '*.*'))
 data_files = []
 # Path are a bit tricky: glob works on cwd (project root), pyinstaller relative
 # starts on spec file location, and packed application relative starts on
-# project root directory  
+# project root directory.
 for x in data_files_glob:
     data_files += [(os.path.join('..', x), os.path.dirname(x))]
 

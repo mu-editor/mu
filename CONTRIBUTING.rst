@@ -30,9 +30,10 @@ Checklist
 * If your contribution is for a major block of work and you've not done so
   already, add yourself to the AUTHORS file following the convention found
   therein.
-* Try to include tests!
+* We have 100% test coverage - include tests to maintain this!
 * Before submitting code ensure coding standards and test coverage by running::
 
     $ make check
 
+* If in doubt, ask a question. The only stupid question is the one that's never asked.
 * Have fun!

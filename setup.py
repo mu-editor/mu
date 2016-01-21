@@ -4,7 +4,7 @@ from setuptools import setup
 setup(
     name='mu',
     version='0.1',
-    description='A micro editor for MicroPython and the BBC micro:bit.',
+    description='A simple editor for kids, teachers and new programmers.',
     author='Nicholas Tollervey',
     author_email='ntoll@ntoll.org',
     url='https://github.com/ntoll/mu',

@@ -26,13 +26,13 @@ There isn't a cross platform Python code editor that is:
 * Currently maintained; and,
 * Thoroughly tested.
 
-Mu aims to simply address these needs.
+Mu addresses these needs.
 
 In the Python world, teachers, students and other beginner programmers are
 forced to use one of the following options:
 
 * IDLE - the long-in-the-tooth, unmaintained and eccentric editor that comes with Python.
-* An IDE (integrated development environment) for teaching. If "IDE" sounds complicated, that's because it is.
+* A third party IDE (integrated development environment) for teaching. If "IDE" sounds complicated, that's because it is.
 * A professional programmer's editor such as vi or emacs.
 
 Such tools are fiddly, complicated and full of distracting "features". They
@@ -45,7 +45,7 @@ How?
 Mu's outlook is:
 
 * Less is more (remove all unnecessary distractions);
-* KISS (Keep It Simple Stupid! Do the simplist thing);
+* Keep it simple (so Mu is easy to understand);
 * Walk the path of least resistance (Mu should be easy);
 * Have fun (learning should be a positive experience).
 
@@ -68,17 +68,16 @@ does not need to be connected to the internet to work. It makes it easy to
 flash your code onto the device (it's only a click of a button). It has a built
 in REPL client that automatically connects to the device.
 
-Much of the work has been adapted from my previous work done with Damien George
-and Dan Pope on the "Puppy" editor for kids. "Mu" is an ultra-slimmed down
-version of Puppy.
+Mu has been adapted from my previous work done with Damien George and Dan Pope
+on the "Puppy" editor for kids. Mu is an ultra-slimmed down version of Puppy.
 
-The code is also simple and monolithic - it's commented and mostly found in a
+The code is simple and monolithic - it's commented and mostly found in a
 a few obviously named Python files. This has been done on purpose: we want
 teachers and kids to take ownership of this project and organising the code in
 this way aids the first steps required to get involved (everything you need to
 know is in four obvious files).
 
-In terms of features - it's a case of less is more with regard to the following features:
+In terms of features - it's a case of less is more:
 
 * Create a new Python script.
 * Load an existing Python script.
@@ -87,7 +86,7 @@ In terms of features - it's a case of less is more with regard to the following 
 * Connect to the device via the REPL (will only work if a device is connected).
 * Zoom in/out.
 * Day / night (high contrast) modes.
-* Built in hope (HTML).
+* Built in help (HTML).
 * Quit.
 
 That's it!
@@ -95,8 +94,8 @@ That's it!
 Development
 -----------
 
-You only need to bother about this if you actually want to contribute to the
-development of the Mu editor itself.
+If you only want to use Mu then please ignore this section. If you'd like to
+contribute to the development of Mu read on...
 
 The source code is hosted on GitHub. Please feel free to fork the repository.
 Assuming you have Git installed you can download the code from the canonical

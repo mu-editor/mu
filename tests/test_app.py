@@ -12,11 +12,8 @@ def test_run():
 
     Why check this?
 
-    Well, we need to know if something fundamental has inadvertently changed
-    and these tests will highlight this problem.
-
-    I know, I know... nested with statements... but checked with @voidspace
-    and it's apparently idiomatic. :-/
+    We need to know if something fundamental has inadvertently changed and
+    these tests highlight such a case.
 
     Testing the call_count and mock_calls allows us to measure the expected
     number of instantiations and method calls.

@@ -98,7 +98,8 @@ def test_REPL_unsupported():
 
 def test_editor_init():
     """
-    Ensure a new instance is set-up correctly.
+    Ensure a new instance is set-up correctly and creates the required folders
+    upon first start.
     """
     view = mock.MagicMock()
     # Check the editor attempts to create required directories if they don't
@@ -335,7 +336,7 @@ def test_toggle_theme_to_night():
 
 def test_toggle_theme_to_day():
     """
-    The current theme is 'day' so toggle to night. Expect the state to be
+    The current theme is 'night' so toggle to day. Expect the state to be
     updated and the appropriate call to the UI layer is made.
     """
     view = mock.MagicMock()
@@ -449,10 +450,10 @@ def test_save_no_path():
     view.get_save_path.assert_called_once_with(mu.logic.PYTHON_DIRECTORY)
 
 
-def test_save_no_path_no_path_give():
+def test_save_no_path_no_path_given():
     """
     If there's no path associated with the tab and the user cancels providing
-    one ensure the path is correctly re-set.
+    one, ensure the path is correctly re-set.
     """
     view = mock.MagicMock()
     view.current_tab = mock.MagicMock()

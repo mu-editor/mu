@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Tests for the ui elements of Mu.
+Tests for the user interface elements of Mu.
 """
 from PyQt5.QtWidgets import QApplication, QAction, QWidget
 from PyQt5.QtCore import QIODevice, Qt, QSize
@@ -115,8 +115,8 @@ def test_EditorPane_init():
 
 def test_EditorPane_configure():
     """
-    Check the expected configuration takes place. NOTE - this is checking that
-    the expected attributes are configured, not what the actual configuration
+    Check the expected configuration takes place. NOTE - this is checking the
+    expected attributes are configured, not what the actual configuration
     values may be. I.e. we're checking that, say, setIndentationWidth is
     called.
     """
@@ -858,7 +858,7 @@ def test_REPLPane_keyPressEvent_down():
 
 def test_REPLPane_keyPressEvent_right():
     """
-    Ensure backspaces in the REPL are handled correctly.
+    Ensure right arrows in the REPL are handled correctly.
     """
     mock_serial = mock.MagicMock()
     mock_serial.setPortName = mock.MagicMock(return_value=None)
@@ -879,7 +879,7 @@ def test_REPLPane_keyPressEvent_right():
 
 def test_REPLPane_keyPressEvent_left():
     """
-    Ensure backspaces in the REPL are handled correctly.
+    Ensure left arrows in the REPL are handled correctly.
     """
     mock_serial = mock.MagicMock()
     mock_serial.setPortName = mock.MagicMock(return_value=None)
