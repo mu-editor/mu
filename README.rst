@@ -10,12 +10,46 @@ http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/?prefix=microbit
 What?
 -----
 
-Mu is a a very simple code editor for kids, teachers and beginner programmers.
-It's written in Python and uses the Qt GUI framework. This means it'll work on
-Windows, OSX, Linux and Raspberry Pi.
+Mu is a very simple code editor for kids, teachers and beginner programmers.
+It's written in Python and works on Windows, OSX, Linux and Raspberry Pi.
 
 Why?
 ----
+
+There isn't a cross platform Python code editor that is:
+
+* Easy to use;
+* Accessible to everyone;
+* Available on all major platforms;
+* Well documented (even for beginners);
+* Simply coded;
+* Currently maintained; and,
+* Thoroughly tested.
+
+Mu aims to simply address these needs.
+
+In the Python world, teachers, students and other beginner programmers are
+forced to use one of the following options:
+
+* IDLE - the long-in-the-tooth, unmaintained and eccentric editor that comes with Python.
+* An IDE (integrated development environment) for teaching. If "IDE" sounds complicated, that's because it is.
+* A professional programmer's editor such as vi or emacs.
+
+Such tools are fiddly, complicated and full of distracting "features". They
+are completely inappropriate for teaching and learning ~ complexity impedes a
+novice programmer's first steps.
+
+How?
+----
+
+Mu's outlook is:
+
+* Less is more (remove all unnecessary distractions);
+* KISS (Keep It Simple Stupid! Do the simplist thing);
+* Walk the path of least resistance (Mu should be easy);
+* Have fun (learning should be a positive experience).
+
+Our first iteration targets MicroPython on the BBC micro:bit.
 
 The BBC's micro:bit project is aimed at 11-year old children. It consists of a
 small and simple programmable device. One option is the remarkable work of
@@ -34,12 +68,9 @@ does not need to be connected to the internet to work. It makes it easy to
 flash your code onto the device (it's only a click of a button). It has a built
 in REPL client that automatically connects to the device.
 
-How?
-----
-
 Much of the work has been adapted from my previous work done with Damien George
 and Dan Pope on the "Puppy" editor for kids. "Mu" is an ultra-slimmed down
-version of Puppy - an MVP of sorts.
+version of Puppy.
 
 The code is also simple and monolithic - it's commented and mostly found in a
 a few obviously named Python files. This has been done on purpose: we want
@@ -56,12 +87,16 @@ In terms of features - it's a case of less is more with regard to the following 
 * Connect to the device via the REPL (will only work if a device is connected).
 * Zoom in/out.
 * Day / night (high contrast) modes.
+* Built in hope (HTML).
 * Quit.
 
 That's it!
 
 Development
 -----------
+
+You only need to bother about this if you actually want to contribute to the
+development of the Mu editor itself.
 
 The source code is hosted on GitHub. Please feel free to fork the repository.
 Assuming you have Git installed you can download the code from the canonical
