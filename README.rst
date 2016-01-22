@@ -7,6 +7,42 @@ Currently, the latest builds for Windows, OSX and Linux x86 can be found here:
 
 http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/?prefix=microbit
 
+Installation
+------------
+
+You could run Mu from source. Alternatively, go to the link above, choose the
+directory for your platform and download the latest build of the editor (HINT:
+they're ordered by date).
+
+Windows
++++++++
+
+You only need to copy the downloaded .exe file somewhere handy and double-click
+it to launch. Once you've got past all the Windows induced warnings and
+privilege requests you'll see the editor. Unfortunately, due to Windows more
+than anything else, to be able to use the REPL you'll need to install a driver
+for USB/serial connectivity to the BBC micro:bit. You can find the required
+driver and detailed instructions for installing it on ARM's website:
+
+https://developer.mbed.org/handbook/Windows-serial-configuration
+
+We're trying to find a way around this problem via Windows packaging.
+
+OS X
+++++
+
+OSX will probably ask you to confirm you want to run a program downloaded from
+the internet. You may need to right-click on the file and select `open` to make
+it work first time. You do not need to install any drivers.
+
+Linux
++++++
+
+Just make the file executable and run it! :-)
+
+We're in the process of creating official packages for both Debian and Fedora
+based flavours and Linux (including Raspbian).
+
 What?
 -----
 
