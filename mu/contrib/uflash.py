@@ -30,7 +30,7 @@ Documentation can be found here: http://uflash.readthedocs.org/en/latest/
 
 
 #: MAJOR, MINOR, RELEASE, STATUS [alpha, beta, final], VERSION
-_VERSION = (0, 9, 18, 'beta', 0)
+_VERSION = (1, 0, 0, 'beta', 0)
 
 
 def get_version():
@@ -38,6 +38,13 @@ def get_version():
     Returns a string representation of the version information of this project.
     """
     return '.'.join([str(i) for i in _VERSION])
+
+
+def strfunc(s):
+    """
+    Compatibility for 2 & 3 str()
+    """
+    return str(s) if sys.version_info[0] == 2 else str(s, 'utf-8')
 
 
 def hexlify(script):
@@ -54,18 +61,17 @@ def hexlify(script):
     script = script.replace(b'\r', b'\n')
     # Add header, pad to multiple of 16 bytes.
     data = b'MP' + struct.pack('<H', len(script)) + script
-    data = data + bytes(16 - len(data) % 16)
+    # Padding with null bytes in a 2/3 compatible way
+    data = data + (b'\x00' * (16 - len(data) % 16))
     assert len(data) <= 0x2000
     # Convert to .hex format.
-    output = []
+    output = [':020000040003F7']  # extended linear address, 0x0003.
     addr = _SCRIPT_ADDR
-    assert(_SCRIPT_ADDR >> 16 == 3)  # 0x0003 is hard coded in line below.
-    output.append(':020000040003F7')  # extended linear address, 0x0003.
     for i in range(0, len(data), 16):
         chunk = data[i:min(i + 16, len(data))]
         chunk = struct.pack('>BHB', len(chunk), addr & 0xffff, 0) + chunk
-        checksum = (-(sum(chunk))) & 0xff
-        hexline = ':%s%02X' % (str(binascii.hexlify(chunk), 'utf8').upper(),
+        checksum = (-(sum(bytearray(chunk)))) & 0xff
+        hexline = ':%s%02X' % (strfunc(binascii.hexlify(chunk)).upper(),
                                checksum)
         output.append(hexline)
         addr += 16
@@ -86,7 +92,14 @@ def unhexlify(blob):
     # and strip any null bytes from the end
     output[-1] = output[-1].strip(b'\x00')
     script = b''.join(output)
-    return script.decode('utf-8')
+    try:
+        result = script.decode('utf-8')
+        return result
+    except UnicodeDecodeError:
+        # Return an empty string because in certain rare circumstances (where
+        # the source hex doesn't include any embedded Python code) this
+        # function may be passed in "raw" bytes from MicroPython.
+        return ''
 
 
 def embed_hex(runtime_hex, python_hex=None):
@@ -123,13 +136,14 @@ def extract_script(embedded_hex):
     Returns a string containing the original embedded script.
     """
     hex_lines = embedded_hex.split('\n')
+    # Blob will hold the extracted hex values representing the embedded script.
+    blob = ''
     # Find the marker in the hex that comes just before the script
-    try:
-        start_line = hex_lines.index(':08058000193901005D150000AE') + 1
-    except ValueError as e:
-        raise ValueError('Bad input hex file:', e)
-    # Recombine the lines after that, but leave out the last 3 lines
-    blob = '\n'.join(hex_lines[start_line:-3])
+    if ':020000040003F7' in hex_lines:
+        start_line = max(loc for loc, val in enumerate(hex_lines)
+                         if val == ':020000040003F7')
+        # Recombine the lines after that, but leave out the last 3 lines
+        blob = '\n'.join(hex_lines[start_line:-3])
     if blob == '':
         # If the result is the empty string, there was no embedded script
         return ''
@@ -214,8 +228,9 @@ def flash(path_to_python=None, path_to_microbit=None):
     If the automatic discovery fails, then it will raise an IOError.
     """
     # Check for the correct version of Python.
-    if not (sys.version_info[0] == 3 and sys.version_info[1] >= 3):
-        raise RuntimeError('Will only run on Python 3.3 or later.')
+    if not ((sys.version_info[0] == 3 and sys.version_info[1] >= 3) or
+            (sys.version_info[0] == 2 and sys.version_info[1] >= 7)):
+        raise RuntimeError('Will only run on Python 2.7, or 3.3 and later.')
     # Grab the Python script (if needed).
     python_hex = ''
     if path_to_python:
