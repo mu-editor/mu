@@ -7,8 +7,8 @@ Install dependencies
 Windows
 +++++++
 
-* Install Python 3 from the [official website](https://www.python.org/downloads/).
-* Install the PyQt5 binary package from [riverbankcomputing](https://riverbankcomputing.com/software/pyqt/download).
+* Install Python 3 from the `official website <https://www.python.org/downloads/>`_.
+* Install the PyQt5 binary package from `riverbankcomputing <https://riverbankcomputing.com/software/pyqt/download>`_.
 * Install PyInstaller using pip or pip3 (includes pypiwin32)::
 
     $ pip install pyinstaller
@@ -16,7 +16,7 @@ Windows
 Mac OS X
 ++++++++
 
-Assuming you have the [Homebrew](http://brew.sh/) package manager installed:
+Assuming you have the `Homebrew <http://brew.sh/>`_ package manager installed:
 
 * Install Python 3::
 
@@ -85,6 +85,6 @@ Download the Mu executable
 
 You can download the latest executable build of Mu for your respective operating system from the following links:
 
-* [Windows](http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/windows/)
-* [Mac OS X](http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/osx/)
-* [Linux](http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/linux/)
+* `Windows <http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/windows/>`_
+* `Mac OS X <http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/osx/>`_
+* `Linux <http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/linux/>`_
