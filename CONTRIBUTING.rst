@@ -1,5 +1,5 @@
 Contributing to Mu
-==================
+------------------
 
 Hey! Many thanks for wanting to improve Mu.
 
