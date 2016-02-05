@@ -8,7 +8,7 @@ setup(
     author='Nicholas Tollervey',
     author_email='ntoll@ntoll.org',
     url='https://github.com/ntoll/mu',
-    packages=['mu'],
+    packages=['mu', 'mu.contrib', 'mu.resources'],
     include_package_data=True,
     zip_safe=False,
     classifiers=[
@@ -20,10 +20,10 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            "mu = mu.app.run",
+            "mu = mu.app:run",
         ],
     },
-    data_files=[('/etc/udev/rules.d', ['conf/90-usb-microbit.rule', ]),
+    data_files=[('/etc/udev/rules.d', ['conf/90-usb-microbit.rules', ]),
                 ('/usr/share/pixmaps', ['conf/mu.png', ]),
                 ('/usr/share/applications', ['conf/mu.desktop', ])],
 )
