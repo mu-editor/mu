@@ -544,8 +544,8 @@ class REPLPane(QTextEdit):
         # open the serial port
         self.serial = QSerialPort(self)
         self.serial.setPortName(port)
-        self.serial.setBaudRate(115200)
         if self.serial.open(QIODevice.ReadWrite):
+            self.serial.setBaudRate(115200)
             self.serial.readyRead.connect(self.on_serial_read)
             # clear the text
             self.clear()
