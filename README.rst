@@ -95,12 +95,10 @@ for microcontrollers including the BBC micro:bit.
 The BBC's "blessed" solution for programming this device is web-based. However,
 we have observed that this doesn't provide the optimum experience for Python:
 
-* It requires you to be connected to the internet to get the tools you need.
 * You need to download the .hex file to flash onto the device and then drag it to the device's mount point on the filesystem. A rather clunky multi-part process.
 * It doesn't allow you to connect to the device in order to live code in Python via the REPL.
 
-The Mu editor addresses each of these problems: it is a native application so
-does not need to be connected to the internet to work. It makes it easy to
+The Mu editor addresses each of these problems: it makes it easy to
 flash your code onto the device (it's only a click of a button). It has a built
 in REPL client that automatically connects to the device.
 
