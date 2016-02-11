@@ -30,6 +30,8 @@ from mu.contrib import uflash, appdirs
 MICROBIT_PID = 516
 #: USB vendor ID.
 MICROBIT_VID = 3368
+#: USB serial number
+MICROBIT_SN = '9900023431864e450003100e0000003b00000000cc4d28bd'
 #: The user's home directory.
 HOME_DIRECTORY = os.path.expanduser('~')
 #: The default directory for Python scripts.
@@ -50,6 +52,8 @@ def find_microbit():
         pid = port.productIdentifier()
         vid = port.vendorIdentifier()
         if pid == MICROBIT_PID and vid == MICROBIT_VID:
+            return port.portName()
+        elif port.serialNumber() == MICROBIT_SN:
             return port.portName()
     return None
 
