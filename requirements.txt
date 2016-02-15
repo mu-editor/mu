@@ -5,3 +5,4 @@ coverage
 sphinx
 pytest-cov
 setuptools==19.2
+fin>=2.1.6

@@ -19,27 +19,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import keyword
 import os
-import sys
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
                              QTabWidget, QFileDialog, QMessageBox, QTextEdit)
-from PyQt5.QtGui import QKeySequence, QColor, QFont, QTextCursor
+from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5.QtSerialPort import QSerialPort
-from mu.resources import load_icon, load_stylesheet
+from mu.resources import load_icon, load_stylesheet, load_font_data
 
+import fin.cache
 
 #: The default font size.
 DEFAULT_FONT_SIZE = 14
-#: The default fallback font.
-DEFAULT_FONT = 'Bitstream Vera Sans Mono'
-# Platform specific alternatives...
-if sys.platform == 'win32':
-    DEFAULT_FONT = 'Consolas'
-elif sys.platform == 'darwin':
-    DEFAULT_FONT = 'Monaco'
-
+#: All editor windows use the same font
+FONT_NAME = "Source Code Pro"
+FONT_VARIANTS = ("Bold", "BoldIt", "It", "Regular", "Semibold", "SemiboldIt")
 
 # Load the two themes from resources/css/[night|day].css
 #: NIGHT_STYLE is a dark high contrast theme.
@@ -60,6 +55,39 @@ class Font:
         self.bold = bold
         self.italic = italic
 
+    @fin.cache.classmethod
+    def font_database(self):
+        """
+        Create a font database and load the MU builtin fonts into it.
+        This is a cached classmethod so the font files aren't re-loaded
+        every time a font is refereced
+        """
+        db = QFontDatabase()
+        for variant in FONT_VARIANTS:
+            font_data = load_font_data("SourceCodePro-{}.otf".format(variant))
+            db.addApplicationFontFromData(font_data)
+        return db
+
+    def load(self, size=DEFAULT_FONT_SIZE):
+        """
+        Load the font from the font database, using the correct size and style
+        """
+        return Font.font_database().font(FONT_NAME, self.stylename, size)
+
+    @property
+    def stylename(self):
+        """
+        Map the bold and italic boolean flags here to a relevant
+        font style name.
+        """
+        if self.bold:
+            if self.italic:
+                return "Semibold Italic"
+            return "Semibold"
+        if self.italic:
+            return "Italic"
+        return "Regular"
+
 
 class Theme:
     """
@@ -69,10 +97,7 @@ class Theme:
     @classmethod
     def apply_to(cls, lexer):
         # Apply a font for all styles
-        font = QFont(DEFAULT_FONT, DEFAULT_FONT_SIZE)
-        font.setBold(False)
-        font.setItalic(False)
-        lexer.setFont(font)
+        lexer.setFont(Font().load())
 
         for name, font in cls.__dict__.items():
             if not isinstance(font, Font):
@@ -81,11 +106,7 @@ class Theme:
             lexer.setColor(QColor(font.color), style_num)
             lexer.setEolFill(True, style_num)
             lexer.setPaper(QColor(font.paper), style_num)
-            if font.bold or font.italic:
-                f = QFont(DEFAULT_FONT, DEFAULT_FONT_SIZE)
-                f.setBold(font.bold)
-                f.setItalic(font.italic)
-                lexer.setFont(f, style_num)
+            lexer.setFont(font.load(), style_num)
 
 
 class DayTheme(Theme):
@@ -177,9 +198,8 @@ class EditorPane(QsciScintilla):
         Set up the editor component.
         """
         # Font information
-        font = QFont(DEFAULT_FONT)
-        font.setFixedPitch(True)
-        font.setPointSize(DEFAULT_FONT_SIZE)
+
+        font = Font().load()
         self.setFont(font)
         # Generic editor settings
         self.setUtf8(True)
@@ -537,7 +557,7 @@ class REPLPane(QTextEdit):
 
     def __init__(self, port, theme='day', parent=None):
         super().__init__(parent)
-        self.setFont(QFont('Courier', 14))
+        self.setFont(Font().load())
         self.setAcceptRichText(False)
         self.setReadOnly(False)
         self.setObjectName('replpane')

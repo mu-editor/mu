@@ -41,3 +41,12 @@ def test_stylesheet():
     with mock.patch('mu.resources.resource_string', return_value=b'foo') as rs:
         assert 'foo' == mu.resources.load_stylesheet('foo')
         rs.assert_called_once_with(mu.resources.__name__, 'css/foo')
+
+
+def test_load_font_data():
+    """
+    Ensure font data can be loaded
+    """
+    with mock.patch('mu.resources.resource_string', return_value=b'foo') as rs:
+        assert b'foo' == mu.resources.load_font_data('foo')
+        rs.assert_called_once_with(mu.resources.__name__, 'fonts/foo')
