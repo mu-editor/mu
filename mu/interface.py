@@ -28,12 +28,11 @@ from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5.QtSerialPort import QSerialPort
 from mu.resources import load_icon, load_stylesheet, load_font_data
 
-import fin.cache
-
 #: The default font size.
 DEFAULT_FONT_SIZE = 14
 #: All editor windows use the same font
 FONT_NAME = "Source Code Pro"
+FONT_FILENAME_PATTERN = "SourceCodePro-{variant}.otf"
 FONT_VARIANTS = ("Bold", "BoldIt", "It", "Regular", "Semibold", "SemiboldIt")
 
 # Load the two themes from resources/css/[night|day].css
@@ -48,6 +47,7 @@ class Font:
     Utility class that makes it easy to set font related values within the
     editor.
     """
+    _DATABASE = None
 
     def __init__(self, color='black', paper='white', bold=False, italic=False):
         self.color = color
@@ -55,24 +55,26 @@ class Font:
         self.bold = bold
         self.italic = italic
 
-    @fin.cache.classmethod
-    def font_database(self):
+    @classmethod
+    def get_database(cls):
         """
         Create a font database and load the MU builtin fonts into it.
         This is a cached classmethod so the font files aren't re-loaded
         every time a font is refereced
         """
-        db = QFontDatabase()
-        for variant in FONT_VARIANTS:
-            font_data = load_font_data("SourceCodePro-{}.otf".format(variant))
-            db.addApplicationFontFromData(font_data)
-        return db
+        if cls._DATABASE is None:
+            cls._DATABASE = QFontDatabase()
+            for variant in FONT_VARIANTS:
+                filename = FONT_FILENAME_PATTERN.format(variant=variant)
+                font_data = load_font_data(filename)
+                cls._DATABASE.addApplicationFontFromData(font_data)
+        return cls._DATABASE
 
     def load(self, size=DEFAULT_FONT_SIZE):
         """
         Load the font from the font database, using the correct size and style
         """
-        return Font.font_database().font(FONT_NAME, self.stylename, size)
+        return Font.get_database().font(FONT_NAME, self.stylename, size)
 
     @property
     def stylename(self):

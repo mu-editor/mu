@@ -62,14 +62,21 @@ def test_theme_apply_to():
 
 
 def test_Font_loading():
-    with mu.interface.Font.font_database.temporary_cache(mu.interface.Font):
+    mu.interface.Font._DATABASE = None
+    try:
         with mock.patch("mu.interface.QFontDatabase") as db:
             mu.interface.Font().load()
             mu.interface.Font(bold=True).load()
+            mu.interface.Font(italic=True).load()
+            mu.interface.Font(bold=True, italic=True).load()
+    finally:
+        mu.interface.Font._DATABASE = None
     db.assert_called_once_with()
     db().font.assert_has_calls([
         mock.call('Source Code Pro', 'Regular', 14),
         mock.call('Source Code Pro', 'Semibold', 14),
+        mock.call('Source Code Pro', 'Italic', 14),
+        mock.call('Source Code Pro', 'Semibold Italic', 14),
     ])
 
 
