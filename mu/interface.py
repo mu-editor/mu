@@ -360,6 +360,17 @@ class Window(QStackedWidget):
         path, _ = QFileDialog.getSaveFileName(self.widget, 'Save file', folder)
         return path
 
+    def get_microbit_path(self, folder):
+        """
+        Displays a dialog for locating the location of the BBC micro:bit in the
+        host computer's filesystem. Returns the selected path. Defaults to
+        start in the referenced folder.
+        """
+        path = QFileDialog.getExistingDirectory(self.widget,
+                                                'Locate BBC micro:bit', folder,
+                                                QFileDialog.ShowDirsOnly)
+        return path
+
     def add_tab(self, path, text):
         """
         Adds a tab with the referenced path and text to the editor.

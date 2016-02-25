@@ -195,21 +195,48 @@ def test_flash_with_attached_device():
         s.assert_called_once_with('foo', hex_file_path)
 
 
-def test_flash_without_device():
+def test_flash_user_specified_device_path():
     """
-    If no device is found then ensure a helpful status messgae is enacted.
+    Ensure that if a micro:bit is not automatically found by uflash then it
+    prompts the user to locate the device and, assuming a path was given,
+    saves the hex in the expected location.
     """
     with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
             mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
-            mock.patch('mu.logic.uflash.find_microbit', return_value=''), \
+            mock.patch('mu.logic.uflash.find_microbit', return_value=None),\
             mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
         view = mock.MagicMock()
+        view.get_microbit_path = mock.MagicMock(return_value='bar')
+        view.current_tab.text = mock.MagicMock(return_value='')
+        view.show_message = mock.MagicMock()
+        ed = mu.logic.Editor(view)
+        ed.flash()
+        home = mu.logic.HOME_DIRECTORY
+        view.get_microbit_path.assert_called_once_with(home)
+        assert view.show_message.call_count == 1
+        hex_file_path = os.path.join('bar', 'micropython.hex')
+        s.assert_called_once_with('foo', hex_file_path)
+
+
+def test_flash_without_device():
+    """
+    If no device is found and the user doesn't provide a path then ensure a
+    helpful status message is enacted.
+    """
+    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
+            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
+            mock.patch('mu.logic.uflash.find_microbit', return_value=None), \
+            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
+        view = mock.MagicMock()
+        view.get_microbit_path = mock.MagicMock(return_value=None)
         view.current_tab.text = mock.MagicMock(return_value='')
         view.show_message = mock.MagicMock()
         ed = mu.logic.Editor(view)
         ed.flash()
         message = 'Could not find an attached BBC micro:bit.'
         view.show_message.assert_called_once_with(message)
+        home = mu.logic.HOME_DIRECTORY
+        view.get_microbit_path.assert_called_once_with(home)
         assert s.call_count == 0
 
 

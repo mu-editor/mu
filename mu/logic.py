@@ -126,7 +126,11 @@ class Editor:
         # Generate a hex file.
         python_hex = uflash.hexlify(python_script)
         micropython_hex = uflash.embed_hex(uflash._RUNTIME, python_hex)
+        # Determine the location of the BBC micro:bit. If it can't be found
+        # fall back to asking the user to locate it.
         path_to_microbit = uflash.find_microbit()
+        if path_to_microbit is None:
+            path_to_microbit = self._view.get_microbit_path(HOME_DIRECTORY)
         if path_to_microbit:
             hex_file = os.path.join(path_to_microbit, 'micropython.hex')
             uflash.save_hex(micropython_hex, hex_file)
