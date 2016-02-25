@@ -27,9 +27,9 @@ QDir.addSearchPath('images', resource_filename(__name__, 'images'))
 QDir.addSearchPath('css', resource_filename(__name__, 'css'))
 
 
-def path(name):
+def path(name, resource_dir="images/"):
     """Return the filename for the referenced image."""
-    return resource_filename(__name__, "images/" + name)
+    return resource_filename(__name__, resource_dir + name)
 
 
 def load_icon(name):
@@ -45,3 +45,10 @@ def load_pixmap(name):
 def load_stylesheet(name):
     """Load a CSS stylesheet from the resources directory."""
     return resource_string(__name__, "css/" + name).decode('utf8')
+
+
+def load_font_data(name):
+    """
+    Load the (binary) content of a font as bytes
+    """
+    return resource_string(__name__, "fonts/" + name)

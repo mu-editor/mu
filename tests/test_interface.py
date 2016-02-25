@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import QApplication, QAction, QWidget
 from PyQt5.QtCore import QIODevice, Qt, QSize
 from PyQt5.QtGui import QTextCursor, QIcon
 from unittest import mock
-from importlib import reload
 import mu.interface
 import pytest
 import keyword
@@ -24,24 +23,6 @@ def test_constants():
     """
     assert mu.interface.NIGHT_STYLE
     assert mu.interface.DAY_STYLE
-
-
-def test_Font_constants():
-    """
-    Check the platform specific font constants are applied.
-    """
-    with mock.patch('sys.platform', 'win32'):
-        reload(mu.interface)
-        assert mu.interface.DEFAULT_FONT_SIZE == 14
-        assert mu.interface.DEFAULT_FONT == 'Consolas'
-    with mock.patch('sys.platform', 'darwin'):
-        reload(mu.interface)
-        assert mu.interface.DEFAULT_FONT_SIZE == 14
-        assert mu.interface.DEFAULT_FONT == 'Monaco'
-    with mock.patch('sys.platform', 'posix'):
-        reload(mu.interface)
-        assert mu.interface.DEFAULT_FONT_SIZE == 14
-        assert mu.interface.DEFAULT_FONT == 'Bitstream Vera Sans Mono'
 
 
 def test_Font():
@@ -74,10 +55,29 @@ def test_theme_apply_to():
     lexer.setEolFill = mock.MagicMock(return_value=None)
     lexer.setPaper = mock.MagicMock(return_value=None)
     theme.apply_to(lexer)
-    assert lexer.setFont.call_count == 2
+    assert lexer.setFont.call_count == 17
     assert lexer.setColor.call_count == 16
     assert lexer.setEolFill.call_count == 16
     assert lexer.setPaper.call_count == 16
+
+
+def test_Font_loading():
+    mu.interface.Font._DATABASE = None
+    try:
+        with mock.patch("mu.interface.QFontDatabase") as db:
+            mu.interface.Font().load()
+            mu.interface.Font(bold=True).load()
+            mu.interface.Font(italic=True).load()
+            mu.interface.Font(bold=True, italic=True).load()
+    finally:
+        mu.interface.Font._DATABASE = None
+    db.assert_called_once_with()
+    db().font.assert_has_calls([
+        mock.call('Source Code Pro', 'Regular', 14),
+        mock.call('Source Code Pro', 'Semibold', 14),
+        mock.call('Source Code Pro', 'Italic', 14),
+        mock.call('Source Code Pro', 'Semibold Italic', 14),
+    ])
 
 
 def test_pythonlexer_keywords():
