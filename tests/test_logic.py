@@ -214,7 +214,31 @@ def test_flash_user_specified_device_path():
         home = mu.logic.HOME_DIRECTORY
         view.get_microbit_path.assert_called_once_with(home)
         assert view.show_message.call_count == 1
+        assert ed.user_defined_microbit_path == 'bar'
         hex_file_path = os.path.join('bar', 'micropython.hex')
+        s.assert_called_once_with('foo', hex_file_path)
+
+
+def test_flash_existing_user_specified_device_path():
+    """
+    Ensure that if a micro:bit is not automatically found by uflash and the
+    user has previously specified a path to the device, then the hex is save
+    in the specified location.
+    """
+    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
+            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
+            mock.patch('mu.logic.uflash.find_microbit', return_value=None),\
+            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
+        view = mock.MagicMock()
+        view.get_microbit_path = mock.MagicMock(return_value='bar')
+        view.current_tab.text = mock.MagicMock(return_value='')
+        view.show_message = mock.MagicMock()
+        ed = mu.logic.Editor(view)
+        ed.user_defined_microbit_path = 'baz'
+        ed.flash()
+        assert view.get_microbit_path.call_count == 0
+        assert view.show_message.call_count == 1
+        hex_file_path = os.path.join('baz', 'micropython.hex')
         s.assert_called_once_with('foo', hex_file_path)
 
 

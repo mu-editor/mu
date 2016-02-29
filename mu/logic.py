@@ -83,6 +83,7 @@ class Editor:
         self._view = view
         self.repl = None
         self.theme = 'day'
+        self.user_defined_microbit_path = None
         if not os.path.exists(PYTHON_DIRECTORY):
             os.makedirs(PYTHON_DIRECTORY)
         if not os.path.exists(DATA_DIR):
@@ -130,7 +131,14 @@ class Editor:
         # fall back to asking the user to locate it.
         path_to_microbit = uflash.find_microbit()
         if path_to_microbit is None:
-            path_to_microbit = self._view.get_microbit_path(HOME_DIRECTORY)
+            # Has the path to the device already been specified?
+            if self.user_defined_microbit_path:
+                path_to_microbit = self.user_defined_microbit_path
+            else:
+                # Ask the user to locate the device.
+                path_to_microbit = self._view.get_microbit_path(HOME_DIRECTORY)
+                # Store the user's specification of the path for future use.
+                self.user_defined_microbit_path = path_to_microbit
         if path_to_microbit:
             hex_file = os.path.join(path_to_microbit, 'micropython.hex')
             uflash.save_hex(micropython_hex, hex_file)
