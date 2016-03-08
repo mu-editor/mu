@@ -175,7 +175,7 @@ def test_EditorPane_label():
     If the text is modified append an asterisk.
     """
     ep = mu.interface.EditorPane(None, 'baz')
-    assert ep.label == 'untitled'
+    assert ep.label == 'untitled *'
     ep = mu.interface.EditorPane('/foo/bar.py', 'baz')
     assert ep.label == 'bar.py'
     ep.isModified = mock.MagicMock(return_value=True)
@@ -695,7 +695,7 @@ def test_Window_setup():
             mock.patch('mu.interface.QSplitter', mock_splitter_class), \
             mock.patch('mu.interface.QVBoxLayout', mock_layout_class), \
             mock.patch('mu.interface.ButtonBar', mock_button_bar_class), \
-            mock.patch('mu.interface.QTabWidget', mock_qtw_class):
+            mock.patch('mu.interface.RenameableQTabWidget', mock_qtw_class):
         w.setup(theme)
     assert w.theme == theme
     assert w.setWindowIcon.call_count == 1
