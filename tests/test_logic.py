@@ -560,6 +560,35 @@ def test_save_with_no_file_extension():
     mock_open.return_value.write.assert_called_once_with('foo')
     assert view.get_save_path.call_count == 0
 
+def test_rename():
+    view = mock.MagicMock()
+    mock_editorpane = mock.MagicMock()
+    mock_editorpane.path = 'path/test.py'
+    view.tabs.widget.return_value = mock_editorpane
+    ed = mu.logic.Editor(view)
+    with mock.patch('mu.logic.os.path.join') as mock_join:
+        mock_join.side_effect = lambda *args: '/'.join(args)
+        with mock.patch('mu.logic.shutil') as mock_shutil:
+            ed.rename(0, 'test2.py')
+    mock_shutil.move.assert_called_once_with('path/test.py', 'path/test2.py')
+    assert mock_editorpane.path == 'path/test2.py'
+    mock_editorpane.modificationChanged.emit.assert_called_once_with(False)
+
+def test_rename_no_py():
+    view = mock.MagicMock()
+    mock_editorpane = mock.MagicMock()
+    mock_editorpane.path = 'path/test.py'
+    view.tabs.widget.return_value = mock_editorpane
+    ed = mu.logic.Editor(view)
+    with mock.patch('mu.logic.os.path.join') as mock_join:
+        mock_join.side_effect = lambda *args: '/'.join(args)
+        with mock.patch('mu.logic.shutil') as mock_shutil:
+            ed.rename(0, 'test2')
+    mock_shutil.move.assert_called_once_with('path/test.py', 'path/test2.py')
+    assert mock_editorpane.path == 'path/test2.py'
+    mock_editorpane.modificationChanged.emit.assert_called_once_with(False)
+
+
 
 def test_zoom_in():
     """
