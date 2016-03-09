@@ -244,6 +244,26 @@ def test_ButtonBar_connect():
     slot = bb.slots['save']
     slot.pyqtConfigure.assert_called_once_with(triggered=mock_handler)
 
+def test_RenameableQTabWidget_connect():
+    """
+    Check the rename signal connected to the rename handler.
+    """
+    mock_handler = mock.MagicMock()
+    tabs = mu.interface.RenameableQTabWidget()
+    tabs._rename = mock.MagicMock()
+    tabs.connect_rename(mock_handler)
+    tabs._rename.connect.assert_called_once_with(mock_handler)
+
+def test_RenameableQTabWidget_finish_rename():
+    mock_editor = mock.MagicMock()
+    mock_editor.text.return_value = 'test.py'
+    tabs = mu.interface.RenameableQTabWidget()
+    tabs._rename = mock.MagicMock()
+    tabs.finish_rename(0, mock_editor)
+    print(tabs._rename.mock_calls)
+    tabs._rename.emit.assert_called_once_with(0, 'test.py')
+    mock_editor.deleteLater.assert_called_once_with()
+
 
 def test_Window_attributes():
     """
