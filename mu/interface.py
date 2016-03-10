@@ -570,7 +570,8 @@ class RenameableQTabWidget(QTabWidget):
         self.tabBarDoubleClicked.connect(self.rename_tab)
 
     def rename_tab(self, tab_index):
-        if self.widget(tab_index).path and not self.widget(tab_index).isModified():
+        editor = self.widget(tab_index)
+        if editor is not None and editor.path and not editor.isModified():
             tab_rect = self.tabBar().tabRect(tab_index)
             top_margin = 3
             left_margin = 6

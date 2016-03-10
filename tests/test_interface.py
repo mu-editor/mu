@@ -2,6 +2,8 @@
 """
 Tests for the user interface elements of Mu.
 """
+from functools import partial
+
 from PyQt5.QtWidgets import QApplication, QAction, QWidget, QFileDialog
 from PyQt5.QtCore import QIODevice, Qt, QSize
 from PyQt5.QtGui import QTextCursor, QIcon
@@ -260,10 +262,49 @@ def test_RenameableQTabWidget_finish_rename():
     tabs = mu.interface.RenameableQTabWidget()
     tabs._rename = mock.MagicMock()
     tabs.finish_rename(0, mock_editor)
-    print(tabs._rename.mock_calls)
     tabs._rename.emit.assert_called_once_with(0, 'test.py')
     mock_editor.deleteLater.assert_called_once_with()
 
+def test_RenameableQTabWidget_rename_saved_tab():
+    mock_editorpane = mock.MagicMock()
+    mock_editorpane.path = 'path/test.py'
+    mock_editorpane.isModified.return_value = False
+    tabs = mu.interface.RenameableQTabWidget()
+    tabs.widget = mock.MagicMock()
+    tabs.widget.return_value = mock_editorpane
+    with mock.patch('mu.interface.QLineEdit') as mock_lineedit:
+        tabs.rename_tab(0)
+    mock_lineedit.assert_called_once_with(tabs.tabBar())
+    assert mock_lineedit.return_value.editingFinished.connect.call_count ==1
+    # Why does following line not work?
+    #mock_lineedit.return_value.editingFinished.connect.assert_called_once_with(partial(tabs.finish_rename, 0, mock_lineedit.return_value))
+
+def test_RenameableQTabWidget_rename_new_tab():
+    mock_editorpane = mock.MagicMock()
+    mock_editorpane.path = None
+    tabs = mu.interface.RenameableQTabWidget()
+    tabs.widget = mock.MagicMock()
+    tabs.widget.return_value = mock_editorpane
+    with mock.patch('mu.interface.QLineEdit') as mock_lineedit:
+        tabs.rename_tab(0)
+    mock_lineedit.assert_not_called()
+
+def test_RenameableQTabWidget_rename_unsaved_tab():
+    mock_editorpane = mock.MagicMock()
+    mock_editorpane.path = 'path/test.py'
+    mock_editorpane.isModified.return_value = True
+    tabs = mu.interface.RenameableQTabWidget()
+    tabs.widget = mock.MagicMock()
+    tabs.widget.return_value = mock_editorpane
+    with mock.patch('mu.interface.QLineEdit') as mock_lineedit:
+        tabs.rename_tab(0)
+    mock_lineedit.assert_not_called()
+
+def test_RenameableQTabWidget_rename_missing_tab():
+    tabs = mu.interface.RenameableQTabWidget()
+    with mock.patch('mu.interface.QLineEdit') as mock_lineedit:
+        tabs.rename_tab(0)
+    mock_lineedit.assert_not_called()
 
 def test_Window_attributes():
     """
