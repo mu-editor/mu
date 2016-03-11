@@ -585,8 +585,12 @@ class RenameableQTabWidget(QTabWidget):
             tab_editor.editingFinished.connect( partial(self.finish_rename, tab_index, tab_editor))
 
     def finish_rename(self, tab_index, tab_editor):
-        self._rename.emit(tab_index, tab_editor.text())
-        tab_editor.deleteLater()
+        # Below is a workaround as editingFinished is called twice
+        # when using enter to finish editing the tab
+        if tab_editor.isEnabled():
+            tab_editor.setDisabled(True)
+            self._rename.emit(tab_index, tab_editor.text())
+            tab_editor.deleteLater()
 
     def connect_rename(self, handler):
         self._rename.connect(handler)

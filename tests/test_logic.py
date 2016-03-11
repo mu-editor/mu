@@ -560,34 +560,65 @@ def test_save_with_no_file_extension():
     mock_open.return_value.write.assert_called_once_with('foo')
     assert view.get_save_path.call_count == 0
 
+
 def test_rename():
+    """
+    Test renaming a file
+    """
     view = mock.MagicMock()
     mock_editorpane = mock.MagicMock()
     mock_editorpane.path = 'path/test.py'
     view.tabs.widget.return_value = mock_editorpane
     ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.os.path.join') as mock_join:
+    with mock.patch('mu.logic.os.path.join') as mock_join, \
+         mock.patch('mu.logic.os.rename') as mock_rename, \
+         mock.patch('mu.logic.os.path.exists') as mock_exists:
+        mock_exists.return_value = False
         mock_join.side_effect = lambda *args: '/'.join(args)
-        with mock.patch('mu.logic.shutil') as mock_shutil:
-            ed.rename(0, 'test2.py')
-    mock_shutil.move.assert_called_once_with('path/test.py', 'path/test2.py')
+        ed.rename(0, 'test2.py')
+    mock_rename.assert_called_once_with('path/test.py', 'path/test2.py')
     assert mock_editorpane.path == 'path/test2.py'
     mock_editorpane.modificationChanged.emit.assert_called_once_with(False)
+
 
 def test_rename_no_py():
+    """
+    Test renaimng a file without the .py suffix
+    """
     view = mock.MagicMock()
     mock_editorpane = mock.MagicMock()
     mock_editorpane.path = 'path/test.py'
     view.tabs.widget.return_value = mock_editorpane
     ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.os.path.join') as mock_join:
+    with mock.patch('mu.logic.os.path.join') as mock_join, \
+         mock.patch('mu.logic.os.rename') as mock_rename, \
+         mock.patch('mu.logic.os.path.exists') as mock_exists:
+        mock_exists.return_value = False
         mock_join.side_effect = lambda *args: '/'.join(args)
-        with mock.patch('mu.logic.shutil') as mock_shutil:
-            ed.rename(0, 'test2')
-    mock_shutil.move.assert_called_once_with('path/test.py', 'path/test2.py')
+        ed.rename(0, 'test2')
+    mock_rename.assert_called_once_with('path/test.py', 'path/test2.py')
     assert mock_editorpane.path == 'path/test2.py'
     mock_editorpane.modificationChanged.emit.assert_called_once_with(False)
 
+
+def test_rename_file_exists():
+    """
+    Test reanimg a file that already exists
+    """
+    view = mock.MagicMock()
+    mock_editorpane = mock.MagicMock()
+    mock_editorpane.path = 'path/test.py'
+    view.tabs.widget.return_value = mock_editorpane
+    ed = mu.logic.Editor(view)
+    with mock.patch('mu.logic.os.path.join') as mock_join, \
+         mock.patch('mu.logic.os.rename') as mock_rename, \
+         mock.patch('mu.logic.os.path.exists') as mock_exists:
+        mock_exists.return_value = True
+        mock_join.side_effect = lambda *args: '/'.join(args)
+        ed.rename(0, 'test2.py')
+    mock_rename.assert_not_called()
+    assert mock_editorpane.path == 'path/test.py'
+    mock_editorpane.modificationChanged.emit.assert_not_called()
 
 
 def test_zoom_in():

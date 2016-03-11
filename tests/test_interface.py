@@ -256,7 +256,11 @@ def test_RenameableQTabWidget_connect():
     tabs.connect_rename(mock_handler)
     tabs._rename.connect.assert_called_once_with(mock_handler)
 
+
 def test_RenameableQTabWidget_finish_rename():
+    """
+    Check that the rename signal is called
+    """
     mock_editor = mock.MagicMock()
     mock_editor.text.return_value = 'test.py'
     tabs = mu.interface.RenameableQTabWidget()
@@ -265,7 +269,34 @@ def test_RenameableQTabWidget_finish_rename():
     tabs._rename.emit.assert_called_once_with(0, 'test.py')
     mock_editor.deleteLater.assert_called_once_with()
 
+
+def test_RenameableQTabWidget_finish_rename_multicall():
+    """
+    Check that the rename signal is not called multiple times when enter is
+    used to trigger the rename
+    """
+    mock_editor = mock.MagicMock()
+    mock_editor.text.return_value = 'test.py'
+    mock_editor.isEnabled.return_value = True
+    tabs = mu.interface.RenameableQTabWidget()
+    tabs._rename = mock.MagicMock()
+    tabs.finish_rename(0, mock_editor)
+    tabs._rename.emit.assert_called_once_with(0, 'test.py')
+    mock_editor.deleteLater.assert_called_once_with()
+    mock_editor.setDisabled.assert_called_once_with(True)
+
+    mock_editor.reset_mock()
+    mock_editor.isEnabled.return_value = False
+    tabs.finish_rename(0, mock_editor)
+    tabs._rename.emit.assert_not_called()
+    mock_editor.deleteLater.assert_not_called()
+    mock_editor.setDisabled.assert_not_called()
+
+
 def test_RenameableQTabWidget_rename_saved_tab():
+    """
+    Check that you can't rename to a file that already exists
+    """
     mock_editorpane = mock.MagicMock()
     mock_editorpane.path = 'path/test.py'
     mock_editorpane.isModified.return_value = False
@@ -279,7 +310,11 @@ def test_RenameableQTabWidget_rename_saved_tab():
     # Why does following line not work?
     #mock_lineedit.return_value.editingFinished.connect.assert_called_once_with(partial(tabs.finish_rename, 0, mock_lineedit.return_value))
 
+
 def test_RenameableQTabWidget_rename_new_tab():
+    """
+    Check that you can't rename a new tab
+    """
     mock_editorpane = mock.MagicMock()
     mock_editorpane.path = None
     tabs = mu.interface.RenameableQTabWidget()
@@ -290,6 +325,9 @@ def test_RenameableQTabWidget_rename_new_tab():
     mock_lineedit.assert_not_called()
 
 def test_RenameableQTabWidget_rename_unsaved_tab():
+    """
+    Check that you can't rename an unsaved tab
+    """
     mock_editorpane = mock.MagicMock()
     mock_editorpane.path = 'path/test.py'
     mock_editorpane.isModified.return_value = True
@@ -300,11 +338,16 @@ def test_RenameableQTabWidget_rename_unsaved_tab():
         tabs.rename_tab(0)
     mock_lineedit.assert_not_called()
 
+
 def test_RenameableQTabWidget_rename_missing_tab():
+    """
+    Check that you can't save a non-existant tab
+    """
     tabs = mu.interface.RenameableQTabWidget()
     with mock.patch('mu.interface.QLineEdit') as mock_lineedit:
         tabs.rename_tab(0)
     mock_lineedit.assert_not_called()
+
 
 def test_Window_attributes():
     """
