@@ -246,6 +246,7 @@ def test_ButtonBar_connect():
     slot = bb.slots['save']
     slot.pyqtConfigure.assert_called_once_with(triggered=mock_handler)
 
+
 def test_RenameableQTabWidget_connect():
     """
     Check the rename signal connected to the rename handler.
@@ -306,9 +307,10 @@ def test_RenameableQTabWidget_rename_saved_tab():
     with mock.patch('mu.interface.QLineEdit') as mock_lineedit:
         tabs.rename_tab(0)
     mock_lineedit.assert_called_once_with(tabs.tabBar())
-    assert mock_lineedit.return_value.editingFinished.connect.call_count ==1
+    assert mock_lineedit.return_value.editingFinished.connect.call_count == 1
     # Why does following line not work?
-    #mock_lineedit.return_value.editingFinished.connect.assert_called_once_with(partial(tabs.finish_rename, 0, mock_lineedit.return_value))
+    # mock_lineedit.return_value.editingFinished.connect.assert_called_once_with(
+    # partial(tabs.finish_rename, 0, mock_lineedit.return_value))
 
 
 def test_RenameableQTabWidget_rename_new_tab():
@@ -323,6 +325,7 @@ def test_RenameableQTabWidget_rename_new_tab():
     with mock.patch('mu.interface.QLineEdit') as mock_lineedit:
         tabs.rename_tab(0)
     mock_lineedit.assert_not_called()
+
 
 def test_RenameableQTabWidget_rename_unsaved_tab():
     """
