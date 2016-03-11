@@ -139,7 +139,9 @@ class Editor:
                 path_to_microbit = self._view.get_microbit_path(HOME_DIRECTORY)
                 # Store the user's specification of the path for future use.
                 self.user_defined_microbit_path = path_to_microbit
-        if path_to_microbit:
+        # Check the path and that it exists simply because the path maybe based
+        # on stale data.
+        if path_to_microbit and os.path.exists(path_to_microbit):
             hex_file = os.path.join(path_to_microbit, 'micropython.hex')
             uflash.save_hex(micropython_hex, hex_file)
             message = 'Flashing "{}" onto the micro:bit.'.format(tab.label)
@@ -149,8 +151,20 @@ class Editor:
                            " across the device's display.")
             self._view.show_message(message, information, 'Information')
         else:
+            # Reset user defined path since it's incorrect.
+            self.user_defined_microbit_path = None
+            # Try to be helpful... essentially there is nothing Mu can do but
+            # prompt for patience while the device is mounted and/or do the
+            # classic "have you tried switching it off and on again?" trick.
+            # This one's for James at the Raspberry Pi Foundation. ;-)
             message = 'Could not find an attached BBC micro:bit.'
-            self._view.show_message(message)
+            information = ("Please ensure you leave enough time for the BBC"
+                           " micro:bit to be attached and configured correctly"
+                           " by your computer. This may take several seconds."
+                           " Alternatively, try removing and re-attaching the"
+                           " device or saving your work and restarting Mu if"
+                           " the device remains unfound.")
+            self._view.show_message(message, information)
 
     def add_repl(self):
         """

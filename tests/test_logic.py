@@ -184,6 +184,7 @@ def test_flash_with_attached_device():
     with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
             mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
             mock.patch('mu.logic.uflash.find_microbit', return_value='bar'),\
+            mock.patch('mu.logic.os.path.exists', return_value=True),\
             mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
         view = mock.MagicMock()
         view.current_tab.text = mock.MagicMock(return_value='')
@@ -204,6 +205,7 @@ def test_flash_user_specified_device_path():
     with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
             mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
             mock.patch('mu.logic.uflash.find_microbit', return_value=None),\
+            mock.patch('mu.logic.os.path.exists', return_value=True),\
             mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
         view = mock.MagicMock()
         view.get_microbit_path = mock.MagicMock(return_value='bar')
@@ -222,12 +224,13 @@ def test_flash_user_specified_device_path():
 def test_flash_existing_user_specified_device_path():
     """
     Ensure that if a micro:bit is not automatically found by uflash and the
-    user has previously specified a path to the device, then the hex is save
+    user has previously specified a path to the device, then the hex is saved
     in the specified location.
     """
     with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
             mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
             mock.patch('mu.logic.uflash.find_microbit', return_value=None),\
+            mock.patch('mu.logic.os.path.exists', return_value=True),\
             mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
         view = mock.MagicMock()
         view.get_microbit_path = mock.MagicMock(return_value='bar')
@@ -240,6 +243,36 @@ def test_flash_existing_user_specified_device_path():
         assert view.show_message.call_count == 1
         hex_file_path = os.path.join('baz', 'micropython.hex')
         s.assert_called_once_with('foo', hex_file_path)
+
+
+def test_flash_path_specified_does_not_exist():
+    """
+    Ensure that if a micro:bit is not automatically found by uflash and the
+    user has previously specified a path to the device, then the hex is saved
+    in the specified location.
+    """
+    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
+            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
+            mock.patch('mu.logic.uflash.find_microbit', return_value=None),\
+            mock.patch('mu.logic.os.path.exists', return_value=False),\
+            mock.patch('mu.logic.os.makedirs', return_value=None), \
+            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
+        view = mock.MagicMock()
+        view.current_tab.text = mock.MagicMock(return_value='')
+        view.show_message = mock.MagicMock()
+        ed = mu.logic.Editor(view)
+        ed.user_defined_microbit_path = 'baz'
+        ed.flash()
+        message = 'Could not find an attached BBC micro:bit.'
+        information = ("Please ensure you leave enough time for the BBC"
+                       " micro:bit to be attached and configured correctly"
+                       " by your computer. This may take several seconds."
+                       " Alternatively, try removing and re-attaching the"
+                       " device or saving your work and restarting Mu if"
+                       " the device remains unfound.")
+        view.show_message.assert_called_once_with(message, information)
+        assert s.call_count == 0
+        assert ed.user_defined_microbit_path is None
 
 
 def test_flash_without_device():
@@ -258,7 +291,13 @@ def test_flash_without_device():
         ed = mu.logic.Editor(view)
         ed.flash()
         message = 'Could not find an attached BBC micro:bit.'
-        view.show_message.assert_called_once_with(message)
+        information = ("Please ensure you leave enough time for the BBC"
+                       " micro:bit to be attached and configured correctly"
+                       " by your computer. This may take several seconds."
+                       " Alternatively, try removing and re-attaching the"
+                       " device or saving your work and restarting Mu if"
+                       " the device remains unfound.")
+        view.show_message.assert_called_once_with(message, information)
         home = mu.logic.HOME_DIRECTORY
         view.get_microbit_path.assert_called_once_with(home)
         assert s.call_count == 0
