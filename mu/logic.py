@@ -269,7 +269,9 @@ class Editor:
         if os.path.exists(new_path):
             self._view.show_message(
                 'Error renaming {}'.format(os.path.basename(tab.path)),
-                'A file called {} already exists, cannot rename {}'.format(new_path, os.path.basename(tab.path)),
+                'A file called {} already exists, cannot rename {}'.format(
+                    new_path, os.path.basename(tab.path)
+                ),
                 'Error'
             )
         else:

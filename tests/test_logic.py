@@ -571,8 +571,8 @@ def test_rename():
     view.tabs.widget.return_value = mock_editorpane
     ed = mu.logic.Editor(view)
     with mock.patch('mu.logic.os.path.join') as mock_join, \
-         mock.patch('mu.logic.os.rename') as mock_rename, \
-         mock.patch('mu.logic.os.path.exists') as mock_exists:
+            mock.patch('mu.logic.os.rename') as mock_rename, \
+            mock.patch('mu.logic.os.path.exists') as mock_exists:
         mock_exists.return_value = False
         mock_join.side_effect = lambda *args: '/'.join(args)
         ed.rename(0, 'test2.py')
@@ -591,8 +591,8 @@ def test_rename_no_py():
     view.tabs.widget.return_value = mock_editorpane
     ed = mu.logic.Editor(view)
     with mock.patch('mu.logic.os.path.join') as mock_join, \
-         mock.patch('mu.logic.os.rename') as mock_rename, \
-         mock.patch('mu.logic.os.path.exists') as mock_exists:
+            mock.patch('mu.logic.os.rename') as mock_rename, \
+            mock.patch('mu.logic.os.path.exists') as mock_exists:
         mock_exists.return_value = False
         mock_join.side_effect = lambda *args: '/'.join(args)
         ed.rename(0, 'test2')
@@ -611,8 +611,8 @@ def test_rename_file_exists():
     view.tabs.widget.return_value = mock_editorpane
     ed = mu.logic.Editor(view)
     with mock.patch('mu.logic.os.path.join') as mock_join, \
-         mock.patch('mu.logic.os.rename') as mock_rename, \
-         mock.patch('mu.logic.os.path.exists') as mock_exists:
+            mock.patch('mu.logic.os.rename') as mock_rename, \
+            mock.patch('mu.logic.os.path.exists') as mock_exists:
         mock_exists.return_value = True
         mock_join.side_effect = lambda *args: '/'.join(args)
         ed.rename(0, 'test2.py')

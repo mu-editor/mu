@@ -562,9 +562,9 @@ class Window(QStackedWidget):
 
 
 class RenameableQTabWidget(QTabWidget):
-    
+
     _rename = pyqtSignal(int, str)
-    
+
     def __init__(self):
         super(RenameableQTabWidget, self).__init__()
         self.tabBarDoubleClicked.connect(self.rename_tab)
@@ -576,13 +576,21 @@ class RenameableQTabWidget(QTabWidget):
             top_margin = 3
             left_margin = 6
             tab_editor = QLineEdit(self.tabBar())
-            tab_editor.move(tab_rect.left() + left_margin, tab_rect.top() + top_margin)
-            tab_editor.resize(tab_rect.width() - 2 * left_margin, tab_rect.height() - 2 * top_margin)
+            tab_editor.move(
+                tab_rect.left() + left_margin,
+                tab_rect.top() + top_margin,
+            )
+            tab_editor.resize(
+                tab_rect.width() - 2 * left_margin,
+                tab_rect.height() - 2 * top_margin,
+            )
             tab_editor.setText(self.tabBar().tabText(tab_index))
             tab_editor.show()
             tab_editor.selectAll()
             tab_editor.setFocus()
-            tab_editor.editingFinished.connect( partial(self.finish_rename, tab_index, tab_editor))
+            tab_editor.editingFinished.connect(
+                partial(self.finish_rename, tab_index, tab_editor)
+            )
 
     def finish_rename(self, tab_index, tab_editor):
         # Below is a workaround as editingFinished is called twice
@@ -594,6 +602,7 @@ class RenameableQTabWidget(QTabWidget):
 
     def connect_rename(self, handler):
         self._rename.connect(handler)
+
 
 class REPLPane(QTextEdit):
     """
