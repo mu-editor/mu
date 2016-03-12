@@ -2,7 +2,6 @@
 """
 Tests for the user interface elements of Mu.
 """
-from functools import partial
 
 from PyQt5.QtWidgets import QApplication, QAction, QWidget, QFileDialog
 from PyQt5.QtCore import QIODevice, Qt, QSize
