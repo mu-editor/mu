@@ -55,6 +55,7 @@ def run():
     button_bar.connect("zoom-out", editor.zoom_out)
     button_bar.connect("theme", editor.toggle_theme)
     button_bar.connect("quit", editor.quit)
+    editor_window.tabs.connect_rename(editor.rename)
     # Finished starting up the application, so hide the splash icon.
     splash.finish(editor_window)
     # Stop the program after the application finishes executing.

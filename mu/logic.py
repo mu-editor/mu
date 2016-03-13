@@ -21,6 +21,7 @@ import os
 import os.path
 import sys
 import json
+
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
 from mu.contrib import uflash, appdirs
@@ -273,6 +274,24 @@ class Editor:
         else:
             # The user cancelled the filename selection.
             tab.path = None
+
+    def rename(self, tab_index, new_name):
+        if not new_name.endswith('.py'):
+            new_name += '.py'
+        tab = self._view.tabs.widget(tab_index)
+        new_path = os.path.join(os.path.dirname(tab.path), new_name)
+        if os.path.exists(new_path):
+            self._view.show_message(
+                'Error renaming {}'.format(os.path.basename(tab.path)),
+                'A file called {} already exists, cannot rename {}'.format(
+                    new_path, os.path.basename(tab.path)
+                ),
+                'Error'
+            )
+        else:
+            os.rename(tab.path, new_path)
+            tab.path = new_path
+            tab.modificationChanged.emit(False)
 
     def zoom_in(self):
         """

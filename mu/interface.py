@@ -19,10 +19,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import keyword
 import os
+from functools import partial
+
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
-                             QTabWidget, QFileDialog, QMessageBox, QTextEdit)
+                             QTabWidget, QFileDialog, QMessageBox, QTextEdit,
+                             QLineEdit)
 from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5.QtSerialPort import QSerialPort
@@ -192,7 +195,7 @@ class EditorPane(QsciScintilla):
         super().__init__()
         self.path = path
         self.setText(text)
-        self.setModified(False)
+        self.setModified(False if path else True)
         self.configure()
 
     def configure(self):
@@ -541,7 +544,7 @@ class Window(QStackedWidget):
         self.widget.setLayout(widget_layout)
 
         self.button_bar = ButtonBar(self.widget)
-        self.tabs = QTabWidget()
+        self.tabs = RenameableQTabWidget()
         self.tabs.setTabsClosable(True)
         self.tabs.tabCloseRequested.connect(self.tabs.removeTab)
 
@@ -556,6 +559,49 @@ class Window(QStackedWidget):
         self.set_theme(theme)
         self.show()
         self.autosize_window()
+
+
+class RenameableQTabWidget(QTabWidget):
+
+    _rename = pyqtSignal(int, str)
+
+    def __init__(self):
+        super(RenameableQTabWidget, self).__init__()
+        self.tabBarDoubleClicked.connect(self.rename_tab)
+
+    def rename_tab(self, tab_index):
+        editor = self.widget(tab_index)
+        if editor is not None and editor.path and not editor.isModified():
+            tab_rect = self.tabBar().tabRect(tab_index)
+            top_margin = 3
+            left_margin = 6
+            tab_editor = QLineEdit(self.tabBar())
+            tab_editor.move(
+                tab_rect.left() + left_margin,
+                tab_rect.top() + top_margin,
+            )
+            tab_editor.resize(
+                tab_rect.width() - 2 * left_margin,
+                tab_rect.height() - 2 * top_margin,
+            )
+            tab_editor.setText(self.tabBar().tabText(tab_index))
+            tab_editor.show()
+            tab_editor.selectAll()
+            tab_editor.setFocus()
+            tab_editor.editingFinished.connect(
+                partial(self.finish_rename, tab_index, tab_editor)
+            )
+
+    def finish_rename(self, tab_index, tab_editor):
+        # Below is a workaround as editingFinished is called twice
+        # when using enter to finish editing the tab
+        if tab_editor.isEnabled():
+            tab_editor.setDisabled(True)
+            self._rename.emit(tab_index, tab_editor.text())
+            tab_editor.deleteLater()
+
+    def connect_rename(self, handler):
+        self._rename.connect(handler)
 
 
 class REPLPane(QTextEdit):
