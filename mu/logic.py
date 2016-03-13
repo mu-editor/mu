@@ -22,6 +22,7 @@ import os.path
 import sys
 import json
 import logging
+import webbrowser
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
 from mu.contrib import uflash, appdirs
@@ -326,6 +327,12 @@ class Editor:
         Make the editor's text smaller.
         """
         self._view.zoom_out()
+
+    def show_help(self):
+        """
+        Display browser based help about Mu.
+        """
+        webbrowser.open_new('http://codewith.mu/help')
 
     def quit(self, *args, **kwargs):
         """

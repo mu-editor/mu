@@ -287,6 +287,7 @@ class ButtonBar(QToolBar):
         self.addAction(name="theme",
                        tool_text="Change theme between day or night.")
         self.addSeparator()
+        self.addAction(name="help", tool_text="Show help about Mu.")
         self.addAction(name="quit", tool_text="Quit the application.")
 
     def addAction(self, name, tool_text):
