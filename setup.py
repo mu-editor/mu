@@ -1,9 +1,10 @@
 from setuptools import setup
+from mu import __version__
 
 
 setup(
     name='mu',
-    version='0.1',
+    version=__version__,
     description='A simple editor for kids, teachers and new programmers.',
     author='Nicholas Tollervey',
     author_email='ntoll@ntoll.org',
