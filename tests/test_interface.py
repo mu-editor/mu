@@ -286,6 +286,7 @@ def test_RenameableQTabWidget_finish_rename_multicall():
     mock_editor.setDisabled.assert_called_once_with(True)
 
     mock_editor.reset_mock()
+    tabs._rename.reset_mock()
     mock_editor.isEnabled.return_value = False
     tabs.finish_rename(0, mock_editor)
     tabs._rename.emit.assert_not_called()
