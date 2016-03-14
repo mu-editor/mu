@@ -19,11 +19,26 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 import sys
+import logging
 from PyQt5.QtWidgets import QApplication, QSplashScreen
-from mu.logic import Editor
+from mu import __version__
+from mu.logic import Editor, LOG_FILE, LOG_DIR
 from mu.interface import Window
 from mu.resources import load_pixmap
+
+
+def setup_logging():
+    """
+    Configure logging.
+    """
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
+    log_format = '%(name)s(%(funcName)s) %(levelname)s: %(message)s'
+    logging.basicConfig(filename=LOG_FILE, filemode='w', format=log_format,
+                        level=logging.DEBUG)
+    print('Logging to {}'.format(LOG_FILE))
 
 
 def run():
@@ -31,6 +46,8 @@ def run():
     Creates all the top-level assets for the application, sets things up and
     then runs the application.
     """
+    setup_logging()
+    logging.info('Starting Mu {}'.format(__version__))
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
     # Display a friendly "splash" icon.

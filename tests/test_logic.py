@@ -346,6 +346,20 @@ def test_add_repl_ioerror():
     assert view.show_message.call_args[0][0] == str(ex)
 
 
+def test_add_repl_exception():
+    """
+    Ensure that any non-IOError based exceptions are logged.
+    """
+    view = mock.MagicMock()
+    ex = Exception('BOOM')
+    view.add_repl = mock.MagicMock(side_effect=ex)
+    ed = mu.logic.Editor(view)
+    with mock.patch('mu.logic.find_microbit', return_value='COM0'), \
+            mock.patch('mu.logic.logger', return_value=None) as logger:
+        ed.add_repl()
+        logger.error.assert_called_once_with(ex)
+
+
 def test_add_repl():
     """
     Nothing goes wrong so check the _view.add_repl gets the expected argument.
