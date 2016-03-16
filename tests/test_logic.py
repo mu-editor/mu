@@ -636,6 +636,18 @@ def test_zoom_out():
     assert view.zoom_out.call_count == 1
 
 
+def test_show_help():
+    """
+    Help should attempt to open up the user's browser and point it to the
+    expected help documentation.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    with mock.patch('mu.logic.webbrowser.open_new', return_value=None) as wb:
+        ed.show_help()
+        wb.assert_called_once_with('http://codewith.mu/help')
+
+
 def test_quit_modified_cancelled_from_button():
     """
     If the user quits and there's unsaved work, and they cancel the "quit" then
