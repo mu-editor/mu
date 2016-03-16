@@ -544,7 +544,7 @@ class Window(QStackedWidget):
         # Give the window a default icon, title and minimum size.
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
-        self.setMinimumSize(800, 600)
+        self.setMinimumSize(804, 600)
 
         self.widget = QWidget()
         self.splitter = QSplitter(Qt.Vertical)
