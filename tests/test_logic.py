@@ -8,6 +8,7 @@ import pytest
 import mu.logic
 from PyQt5.QtWidgets import QMessageBox
 from unittest import mock
+from mu import __version__
 
 
 SESSION = json.dumps({
@@ -645,7 +646,8 @@ def test_show_help():
     ed = mu.logic.Editor(view)
     with mock.patch('mu.logic.webbrowser.open_new', return_value=None) as wb:
         ed.show_help()
-        wb.assert_called_once_with('http://codewith.mu/help')
+        wb.assert_called_once_with('http://codewith.mu/help/{}'.format(
+                                   __version__))
 
 
 def test_quit_modified_cancelled_from_button():

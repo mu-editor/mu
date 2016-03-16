@@ -26,6 +26,7 @@ import webbrowser
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
 from mu.contrib import uflash, appdirs
+from mu import __version__
 
 
 #: USB product ID.
@@ -332,7 +333,7 @@ class Editor:
         """
         Display browser based help about Mu.
         """
-        webbrowser.open_new('http://codewith.mu/help')
+        webbrowser.open_new('http://codewith.mu/help/{}'.format(__version__))
 
     def quit(self, *args, **kwargs):
         """
