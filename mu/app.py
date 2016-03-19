@@ -24,8 +24,8 @@ import sys
 import logging
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 from mu import __version__
-from mu.logic import Editor, LOG_FILE, LOG_DIR
-from mu.interface import Window
+from mu.logic import Editor, LOG_FILE, LOG_DIR, QuestLog
+from mu.interface import Window, QuestLogWindow
 from mu.resources import load_pixmap
 
 
@@ -55,8 +55,9 @@ def run():
     splash.show()
     # Create the "window" we'll be looking at.
     editor_window = Window()
+    quest_log = QuestLog(view=QuestLogWindow(editor_window))
     # Create the "editor" that'll control the "window".
-    editor = Editor(view=editor_window)
+    editor = Editor(view=editor_window, quest_log=quest_log)
     # Setup the window.
     editor_window.closeEvent = editor.quit
     editor_window.setup(editor.theme)
@@ -74,8 +75,6 @@ def run():
     button_bar.connect("quit", editor.quit)
     # Finished starting up the application, so hide the splash icon.
     splash.finish(editor_window)
-
-    editor.show_quests()
 
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())

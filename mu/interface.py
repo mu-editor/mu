@@ -20,12 +20,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import keyword
 import os
 import logging
+from PyQt5 import QtCore
 
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice, QRect
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
-                             QTabWidget, QFileDialog, QMessageBox, QTextEdit)
-from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
+                             QTabWidget, QFileDialog, QMessageBox, QTextEdit, QLabel, QPushButton, QHBoxLayout,
+                             QSizePolicy, QDialog, QLayout)
+from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase, QWindow
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5.QtSerialPort import QSerialPort
 from mu.resources import load_icon, load_stylesheet, load_font_data
@@ -673,11 +675,97 @@ class REPLPane(QTextEdit):
         self.setText('')
 
 
-class QuestLogWindow(QWidget):
-    pass
+class QuestLogWindow(QDialog):
+    
+    def __init__(self, parent):
+        super(QuestLogWindow, self).__init__(parent, flags= QtCore.Qt.Dialog|QtCore.Qt.MSWindowsFixedSizeDialogHint )
 
 
-if __name__ == '__main__':
-    w = QuestLogWindow()
-    w.setGeometry(QRect(100, 100, 400, 200))
-    w.show()
+    def setup(self):
+        self.setWindowTitle('MuQuests')
+
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+
+        label = QLabel("Welcome to Mu!\nWe see it's your first time using Mu.\n"
+                      "Here are a few quests to start you on your Python journey.\n"
+                      "You don't have to complate them in order but it will help.\n"
+                      "Lastly, if  you get really stuck you can hover over the quest for a hint!")
+
+        widget_layout.addWidget(label)
+        self.sections = QTabWidget()
+        widget_layout.addWidget(self.sections)
+
+    def update_quests(self, section_names, quests, objectives):
+        for tab in range(self.sections.count()):
+            self.sections.removeTab(0)
+
+        for section_id, section_name in enumerate(section_names):
+            quest_list = QWidget()
+            layout = QVBoxLayout()
+            for qid, quest in enumerate(quests[section_id]):
+                if len(quest.objectives) > 1:
+                    widget = MultiObjectiveQuestWidget(
+                        '{}. {}'.format(qid+1, quest.name),
+                        [objectives[objvid] for objvid in quest.objectives])
+                else:
+                    quest_name = '{}. {}'.format(
+                        qid+1,
+                        (objectives[quest.objectives[0]].description)
+                    )
+                    hint = objectives[quest.objectives[0]].hint
+                    widget = QLabel(quest_name)
+                    widget.setToolTip('Hint: {}'.format(hint))
+                hlayout = QHBoxLayout()
+                hlayout.addWidget(widget)
+                if quest.completed:
+                    l = QLabel('Complete!')
+                    hlayout.addWidget(l)
+                row = QWidget()
+                row.setLayout(hlayout)
+                layout.addWidget(row)
+            quest_list.setLayout(layout)
+            self.sections.addTab(quest_list, section_name)
+
+
+    def show(self):
+        super(QuestLogWindow, self).show()
+
+
+class MultiObjectiveQuestWidget(QWidget):
+
+    def __init__(self, quest_name, objectives):
+        super(MultiObjectiveQuestWidget, self).__init__()
+        quest_label = QLabel(quest_name)
+        quest_label.setToolTip(objectives[0].hint)
+        expand = QPushButton('v')
+        expand.setStyleSheet('padding: 0px 15px')
+        expand.clicked.connect(self.toggle_objectives)
+        self.expand = expand
+        top_bar = QWidget()
+        hlayout = QHBoxLayout()
+        hlayout.setContentsMargins(0,0,0,0)
+        hlayout.addWidget(quest_label)
+        hlayout.addWidget(expand)
+        top_bar.setLayout(hlayout)
+        layout = QVBoxLayout()
+        layout.addWidget(top_bar)
+        layout.setContentsMargins(0,0,0,0)
+
+        self.visible = False
+        self.objectives = []
+        for objective in objectives:
+            l = QLabel(objective.description)
+            l.setStyleSheet('padding-left: 25px')
+            l.setToolTip(objective.hint)
+            l.setVisible(self.visible)
+            self.objectives.append(l)
+            layout.addWidget(l)
+
+        self.setLayout(layout)
+
+    def toggle_objectives(self):
+        self.visible = False if self.visible else True
+        self.expand.setText('^' if self.visible else 'v')
+        for obj in self.objectives:
+            obj.setVisible(self.visible)

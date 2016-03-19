@@ -17,13 +17,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import collections
 import os
 import os.path
 import sys
 import json
 import logging
+from collections import namedtuple
+
+from PyQt5.QtGui import QScreen
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
+from pyatspi import collection
+
 from mu.contrib import uflash, appdirs
 
 
@@ -98,9 +104,10 @@ class Editor:
     Application logic for the editor itself.
     """
 
-    def __init__(self, view):
+    def __init__(self, view, quest_log):
         logger.info('Setting up editor.')
         self._view = view
+        self.quest_log = quest_log
         self.repl = None
         self.theme = 'day'
         self.user_defined_microbit_path = None
@@ -132,6 +139,8 @@ class Editor:
                             pass
                         else:
                             self._view.add_tab(path, text)
+        # else:
+        self.show_quests()
         if not self._view.tab_count:
             py = 'from microbit import *\n\n# Write your code here :-)'
             self._view.add_tab(None, py)
@@ -264,6 +273,7 @@ class Editor:
         Adds a new tab to the editor.
         """
         self._view.add_tab(None, '')
+        self.quest_log.complete_objective(0)
 
     def load(self):
         """
@@ -279,6 +289,7 @@ class Editor:
                 with open(path) as f:
                     text = f.read()
                 name = path
+                self.quest_log.complete_objective(2)
             else:
                 # Open the hex, extract the Python script therein and set the
                 # name to None, thus forcing the user to work out what to name
@@ -313,6 +324,7 @@ class Editor:
                 logger.debug(tab.text())
                 f.write(tab.text())
             tab.setModified(False)
+            self.quest_log.complete_objective(1)
         else:
             # The user cancelled the filename selection.
             tab.path = None
@@ -359,14 +371,65 @@ class Editor:
         sys.exit(0)
 
     def show_quests(self):
-        QuestLog().show()
+        self.quest_log.show()
 
+
+Objective = namedtuple('Objective', 'id description long_description hint completed')
+
+class MuObjective(Objective):
+    def complete(self):
+        return self._replace(completed=True)
+
+Quest = namedtuple('Quest', 'id name description objectives completed')
+
+class MuQuest(Quest):
+    def complete(self):
+        return self._replace(completed=True)
 
 class QuestLog:
 
+    OBJECTIVES = [
+        MuObjective(0, 'Create a new file', '', 'Check the toolbar', False),
+        MuObjective(1, 'Save a filee', '', 'That toolbar sure looks nice...', False),
+        MuObjective(2, 'Run a file', '', 'Tooolbaaaarrrrr....', False),
+    ]
 
-    def __init__(self):
-        self._view = QuestLogWindow()
+    QUESTS = [
+        [
+            MuQuest(0, '', '', [0], False),
+            MuQuest(1, '', '', [1], False),
+            MuQuest(2, '', '', [2], False),
+            MuQuest(3, 'A program', '', [0,1,2], False),
+        ],
+        [],
+        [],
+    ]
+
+    QUEST_SECTIONS = ['Beginner', 'Intermediate', 'Advanced']
+
+
+    def __init__(self, view):
+        self._view = view
+        self._view.setup()
+
+        self.objectives = dict((obj.id, obj) for obj in self.OBJECTIVES)
+        self.update_quest_status()
+
+    def update_quest_status(self):
+        self.quests = []
+        for section in self.QUESTS:
+            quests = []
+            for quest in section:
+                quests.append(
+                    quest.complete() if all(self.objectives[objv].completed for objv in quest.objectives) else quest
+                )
+            self.quests.append(quests)
+        self._view.update_quests(self.QUEST_SECTIONS, self.quests, self.objectives)
+
 
     def show(self):
         self._view.show()
+
+    def complete_objective(self, objective_id):
+        self.objectives[objective_id] = self.objectives[objective_id].complete()
+        self.update_quest_status()
