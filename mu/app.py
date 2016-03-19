@@ -74,5 +74,8 @@ def run():
     button_bar.connect("quit", editor.quit)
     # Finished starting up the application, so hide the splash icon.
     splash.finish(editor_window)
+
+    editor.show_quests()
+
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())

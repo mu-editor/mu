@@ -20,7 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import keyword
 import os
 import logging
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
+
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice, QRect
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
                              QTabWidget, QFileDialog, QMessageBox, QTextEdit)
@@ -670,3 +671,13 @@ class REPLPane(QTextEdit):
         Clears the text of the REPL.
         """
         self.setText('')
+
+
+class QuestLogWindow(QWidget):
+    pass
+
+
+if __name__ == '__main__':
+    w = QuestLogWindow()
+    w.setGeometry(QRect(100, 100, 400, 200))
+    w.show()

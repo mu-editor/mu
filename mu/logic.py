@@ -28,6 +28,8 @@ from mu.contrib import uflash, appdirs
 
 
 #: USB product ID.
+from mu.interface import QuestLogWindow
+
 MICROBIT_PID = 516
 #: USB vendor ID.
 MICROBIT_VID = 3368
@@ -355,3 +357,16 @@ class Editor:
             logger.debug('Saving session to: {}'.format(SETTINGS_FILE))
             json.dump(session, out, indent=2)
         sys.exit(0)
+
+    def show_quests(self):
+        QuestLog().show()
+
+
+class QuestLog:
+
+
+    def __init__(self):
+        self._view = QuestLogWindow()
+
+    def show(self):
+        self._view.show()
