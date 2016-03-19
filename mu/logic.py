@@ -21,6 +21,7 @@ import os
 import os.path
 import sys
 import json
+import logging
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
 from mu.contrib import uflash, appdirs
@@ -36,8 +37,15 @@ HOME_DIRECTORY = os.path.expanduser('~')
 PYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'python')
 #: The default directory for application data.
 DATA_DIR = appdirs.user_data_dir('mu', 'python')
+#: The default directory for application logs.
+LOG_DIR = appdirs.user_log_dir('mu', 'python')
 #: The path to the JSON file containing application settings.
 SETTINGS_FILE = os.path.join(DATA_DIR, 'settings.json')
+#: The path to the log file for the application.
+LOG_FILE = os.path.join(LOG_DIR, 'mu.log')
+
+
+logger = logging.getLogger(__name__)
 
 
 def find_microbit():
@@ -50,7 +58,15 @@ def find_microbit():
         pid = port.productIdentifier()
         vid = port.vendorIdentifier()
         if pid == MICROBIT_PID and vid == MICROBIT_VID:
-            return port.portName()
+            port_name = port.portName()
+            logger.info('Found micro:bit with portName: {}'.format(port_name))
+            return port_name
+    logger.warning('Could not find micro:bit.')
+    logger.debug('Available ports:')
+    logger.debug(['PID:{} VID:{} PORT:{}'.format(p.productIdentifier(),
+                                                 p.vendorIdentifier(),
+                                                 p.portName())
+                 for p in available_ports])
     return None
 
 
@@ -72,6 +88,7 @@ class REPL:
         else:
             # No idea how to deal with other OS's so fail.
             raise NotImplementedError('OS not supported.')
+        logger.info('Created new REPL object with port: {}'.format(self.port))
 
 
 class Editor:
@@ -80,13 +97,16 @@ class Editor:
     """
 
     def __init__(self, view):
+        logger.info('Setting up editor.')
         self._view = view
         self.repl = None
         self.theme = 'day'
         self.user_defined_microbit_path = None
         if not os.path.exists(PYTHON_DIRECTORY):
+            logger.debug('Creating directory: {}'.format(PYTHON_DIRECTORY))
             os.makedirs(PYTHON_DIRECTORY)
         if not os.path.exists(DATA_DIR):
+            logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
 
     def restore_session(self):
@@ -95,8 +115,10 @@ class Editor:
         run.
         """
         if os.path.exists(SETTINGS_FILE):
+            logger.info('Restoring session from: {}'.format(SETTINGS_FILE))
             with open(SETTINGS_FILE) as f:
                 old_session = json.load(f)
+                logger.debug(old_session)
                 if 'theme' in old_session:
                     self.theme = old_session['theme']
                 if 'paths' in old_session:
@@ -118,14 +140,19 @@ class Editor:
         Takes the currently active tab, compiles the Python script therein into
         a hex file and flashes it all onto the connected device.
         """
+        logger.info('Flashing script')
         # Grab the Python script.
         tab = self._view.current_tab
         if tab is None:
             # There is no active text editor.
             return
         python_script = tab.text().encode('utf-8')
+        logger.debug('Python script:')
+        logger.debug(python_script)
         # Generate a hex file.
         python_hex = uflash.hexlify(python_script)
+        logger.debug('Python hex:')
+        logger.debug(python_hex)
         micropython_hex = uflash.embed_hex(uflash._RUNTIME, python_hex)
         # Determine the location of the BBC micro:bit. If it can't be found
         # fall back to asking the user to locate it.
@@ -139,7 +166,13 @@ class Editor:
                 path_to_microbit = self._view.get_microbit_path(HOME_DIRECTORY)
                 # Store the user's specification of the path for future use.
                 self.user_defined_microbit_path = path_to_microbit
-        if path_to_microbit:
+                logger.debug('User defined path to micro:bit: {}'.format(
+                             self.user_defined_microbit_path))
+        # Check the path and that it exists simply because the path maybe based
+        # on stale data.
+        logger.debug('Path to micro:bit: {}'.format(path_to_microbit))
+        if path_to_microbit and os.path.exists(path_to_microbit):
+            logger.debug('Flashing to device.')
             hex_file = os.path.join(path_to_microbit, 'micropython.hex')
             uflash.save_hex(micropython_hex, hex_file)
             message = 'Flashing "{}" onto the micro:bit.'.format(tab.label)
@@ -149,14 +182,27 @@ class Editor:
                            " across the device's display.")
             self._view.show_message(message, information, 'Information')
         else:
+            # Reset user defined path since it's incorrect.
+            self.user_defined_microbit_path = None
+            # Try to be helpful... essentially there is nothing Mu can do but
+            # prompt for patience while the device is mounted and/or do the
+            # classic "have you tried switching it off and on again?" trick.
+            # This one's for James at the Raspberry Pi Foundation. ;-)
             message = 'Could not find an attached BBC micro:bit.'
-            self._view.show_message(message)
+            information = ("Please ensure you leave enough time for the BBC"
+                           " micro:bit to be attached and configured correctly"
+                           " by your computer. This may take several seconds."
+                           " Alternatively, try removing and re-attaching the"
+                           " device or saving your work and restarting Mu if"
+                           " the device remains unfound.")
+            self._view.show_message(message, information)
 
     def add_repl(self):
         """
         Detect a connected BBC micro:bit and if found, connect to the
         MicroPython REPL and display it to the user.
         """
+        logger.info('Starting REPL in UI.')
         if self.repl is not None:
             raise RuntimeError("REPL already running")
         mb_port = find_microbit()
@@ -164,11 +210,15 @@ class Editor:
             try:
                 self.repl = REPL(port=mb_port)
                 self._view.add_repl(self.repl)
+                logger.info('REPL on port: {}'.format(mb_port))
             except IOError as ex:
+                logger.error(ex)
                 self.repl = None
                 information = ("Click the device's reset button, wait a few"
                                " seconds and then try again.")
                 self._view.show_message(str(ex), information)
+            except Exception as ex:
+                logger.error(ex)
         else:
             message = 'Could not find an attached BBC micro:bit.'
             information = ("Please make sure the device is plugged into this"
@@ -204,6 +254,7 @@ class Editor:
             self.theme = 'night'
         else:
             self.theme = 'day'
+        logger.info('Toggle theme to: {}'.format(self.theme))
         self._view.set_theme(self.theme)
 
     def new(self):
@@ -218,6 +269,7 @@ class Editor:
         from a hex file.
         """
         path = self._view.get_load_path(PYTHON_DIRECTORY)
+        logger.info('Loading script from: {}'.format(path))
         try:
             if path.endswith('.py'):
                 # Open the file, read the textual content and set the name as
@@ -235,6 +287,7 @@ class Editor:
         except FileNotFoundError:
             pass
         else:
+            logger.debug(text)
             self._view.add_tab(name, text)
 
     def save(self):
@@ -254,6 +307,8 @@ class Editor:
                 # No extension given, default to .py
                 tab.path += '.py'
             with open(tab.path, 'w') as f:
+                logger.info('Saving script to: {}'.format(tab.path))
+                logger.debug(tab.text())
                 f.write(tab.text())
             tab.setModified(False)
         else:
@@ -276,6 +331,7 @@ class Editor:
         """
         Exit the application.
         """
+        logger.info('Quitting')
         if self._view.modified:
             # Alert the user to handle unsaved work.
             msg = ('There is un-saved work, exiting the application will'
@@ -294,6 +350,8 @@ class Editor:
             'theme': self.theme,
             'paths': paths
         }
+        logger.debug(session)
         with open(SETTINGS_FILE, 'w') as out:
+            logger.debug('Saving session to: {}'.format(SETTINGS_FILE))
             json.dump(session, out, indent=2)
         sys.exit(0)

@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import keyword
 import os
+import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
@@ -40,6 +41,9 @@ FONT_VARIANTS = ("Bold", "BoldIt", "It", "Regular", "Semibold", "SemiboldIt")
 NIGHT_STYLE = load_stylesheet('night.css')
 #: DAY_STYLE is a light conventional theme.
 DAY_STYLE = load_stylesheet('day.css')
+
+
+logger = logging.getLogger(__name__)
 
 
 class Font:
@@ -350,6 +354,7 @@ class Window(QStackedWidget):
         """
         path, _ = QFileDialog.getOpenFileName(self.widget, 'Open file', folder,
                                               '*.py *.hex')
+        logger.debug('Getting load path: {}'.format(path))
         return path
 
     def get_save_path(self, folder):
@@ -358,6 +363,7 @@ class Window(QStackedWidget):
         path. Defaults to start in the referenced folder.
         """
         path, _ = QFileDialog.getSaveFileName(self.widget, 'Save file', folder)
+        logger.debug('Getting save path: {}'.format(path))
         return path
 
     def get_microbit_path(self, folder):
@@ -369,6 +375,7 @@ class Window(QStackedWidget):
         path = QFileDialog.getExistingDirectory(self.widget,
                                                 'Locate BBC micro:bit', folder,
                                                 QFileDialog.ShowDirsOnly)
+        logger.debug('Getting micro:bit path: {}'.format(path))
         return path
 
     def add_tab(self, path, text):
@@ -470,6 +477,8 @@ class Window(QStackedWidget):
             message_box.setIcon(getattr(message_box, icon))
         else:
             message_box.setIcon(message_box.Warning)
+        logger.debug(message)
+        logger.debug(information)
         message_box.exec()
 
     def show_confirmation(self, message, information=None, icon=None):
@@ -496,6 +505,8 @@ class Window(QStackedWidget):
             message_box.setIcon(message_box.Warning)
         message_box.setStandardButtons(message_box.Cancel | message_box.Ok)
         message_box.setDefaultButton(message_box.Cancel)
+        logger.debug(message)
+        logger.debug(information)
         return message_box.exec()
 
     def update_title(self, filename=None):
