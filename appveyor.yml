@@ -1,4 +1,9 @@
 environment:
+  global:
+    CYG_ROOT: C:\cygwin
+    CYG_MIRROR: http://cygwin.mirror.constant.com
+    CYG_CACHE: C:\cygwin\var\cache\setup
+    CYG_BASH: C:\cygwin\bin\bash
   matrix:
     - PYTHON: "C:\\Python34"
       PYTHON_VERSION: "3.4.3"
@@ -11,6 +16,10 @@ configuration: Release
 init:
   - cmd: ECHO Processor architecture - %PROCESSOR_ARCHITECTURE%
   - cmd: wmic OS get OSArchitecture
+
+  # Utilise pre-installed MinGw for make
+  - ps: $env:PATH = 'C:\MinGW\bin;C:\MinGW\mingw32\bin;C:\MinGW\msys\1.0\bin;' + $env:PATH
+  - cmd: copy c:\MinGW\bin\mingw32-make.exe c:\MinGW\bin\make.exe
 
   # As AppVeyor has multiple python install, verify which one uses by default
   - cmd: ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
@@ -44,6 +53,9 @@ install:
 
   # Check installed packages again
   - cmd: pip freeze
+
+  # Run tests
+  - cmd: sh -c "make check"
 
   # Build mu using PyInstaller and rename executable with timestamp
   - cmd: pyinstaller package\pyinstaller.spec
