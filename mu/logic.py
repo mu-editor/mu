@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import collections
+import datetime
 import os
 import os.path
 import sys
@@ -334,12 +335,14 @@ class Editor:
         Make the editor's text bigger
         """
         self._view.zoom_in()
+        self.quest_log.complete_objective(9)
 
     def zoom_out(self):
         """
         Make the editor's text smaller.
         """
         self._view.zoom_out()
+        self.quest_log.complete_objective(10)
 
     def quit(self, *args, **kwargs):
         """
@@ -374,11 +377,11 @@ class Editor:
         self.quest_log.show()
 
 
-Objective = namedtuple('Objective', 'id description long_description hint completed')
+Objective = namedtuple('Objective', 'id description long_description hint completed completed_at')
 
 class MuObjective(Objective):
     def complete(self):
-        return self._replace(completed=True)
+        return self._replace(completed=True, completed_at=datetime.datetime.utcnow())
 
 Quest = namedtuple('Quest', 'id name description objectives completed')
 
@@ -389,9 +392,23 @@ class MuQuest(Quest):
 class QuestLog:
 
     OBJECTIVES = [
-        MuObjective(0, 'Create a new file', '', 'Check the toolbar', False),
-        MuObjective(1, 'Save a filee', '', 'That toolbar sure looks nice...', False),
-        MuObjective(2, 'Run a file', '', 'Tooolbaaaarrrrr....', False),
+        MuObjective(0, 'Create a new file', '', 'Check the toolbar', False, None),
+        MuObjective(1, 'Save a file', '', 'That toolbar sure looks nice...', False, None),
+        MuObjective(2, 'Open a file', '', 'Tooolbaaaarrrrr....', False, None),
+
+        MuObjective(3, 'Use print in a script', '', '', False, None),
+
+        MuObjective(4, 'Replace print with logging', '', '', False, None),
+
+        MuObjective(5, 'Checkout Mu from Github', '', '', False, None),
+        MuObjective(6, 'Install requirements', '', '', False, None),
+        MuObjective(7, 'Edit a file', '', '', False, None),
+        MuObjective(8, 'Run edited version', '', '', False, None),
+
+        MuObjective(9, 'Zoom In', '', '', False, None),
+        MuObjective(10, 'Zoom Out', '', '', False, None),
+
+        MuObjective(11, 'Use REPL', '', '', False, None),
     ]
 
     QUESTS = [
@@ -400,9 +417,12 @@ class QuestLog:
             MuQuest(1, '', '', [1], False),
             MuQuest(2, '', '', [2], False),
             MuQuest(3, 'A program', '', [0,1,2], False),
+            MuQuest(4, '', '', [3], False),
+            MuQuest(7, '', '', [9], False),
+            MuQuest(8, '', '', [10], False),
         ],
-        [],
-        [],
+        [MuQuest(5, '', '', [5], False),],
+        [MuQuest(6, 'Edit Mu in Mu!', '', [5,6,7,8], False),],
     ]
 
     QUEST_SECTIONS = ['Beginner', 'Intermediate', 'Advanced']
@@ -431,5 +451,6 @@ class QuestLog:
         self._view.show()
 
     def complete_objective(self, objective_id):
-        self.objectives[objective_id] = self.objectives[objective_id].complete()
-        self.update_quest_status()
+        if not self.objectives[objective_id].completed:
+            self.objectives[objective_id] = self.objectives[objective_id].complete()
+            self.update_quest_status()

@@ -26,7 +26,7 @@ from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice, QRect
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
                              QTabWidget, QFileDialog, QMessageBox, QTextEdit, QLabel, QPushButton, QHBoxLayout,
-                             QSizePolicy, QDialog, QLayout)
+                             QSizePolicy, QDialog, QLayout, QSpacerItem)
 from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase, QWindow
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5.QtSerialPort import QSerialPort
@@ -678,7 +678,7 @@ class REPLPane(QTextEdit):
 class QuestLogWindow(QDialog):
     
     def __init__(self, parent):
-        super(QuestLogWindow, self).__init__(parent, flags= QtCore.Qt.Dialog|QtCore.Qt.MSWindowsFixedSizeDialogHint )
+        super(QuestLogWindow, self).__init__(parent, flags=QtCore.Qt.Dialog | QtCore.Qt.MSWindowsFixedSizeDialogHint )
 
 
     def setup(self):
@@ -705,25 +705,30 @@ class QuestLogWindow(QDialog):
             layout = QVBoxLayout()
             for qid, quest in enumerate(quests[section_id]):
                 if len(quest.objectives) > 1:
-                    widget = MultiObjectiveQuestWidget(
+                    row = MultiObjectiveQuestWidget(
                         '{}. {}'.format(qid+1, quest.name),
-                        [objectives[objvid] for objvid in quest.objectives])
+                        [objectives[objvid] for objvid in quest.objectives],
+                        quest.completed
+                    )
                 else:
+                    hlayout = QHBoxLayout()
+                    hlayout.setContentsMargins(0,0,0,0)
+                    objective = objectives[quest.objectives[0]]
+                    row = QWidget()
                     quest_name = '{}. {}'.format(
                         qid+1,
-                        (objectives[quest.objectives[0]].description)
+                        objective.description
                     )
-                    hint = objectives[quest.objectives[0]].hint
+                    hint = objective.hint
                     widget = QLabel(quest_name)
                     widget.setToolTip('Hint: {}'.format(hint))
-                hlayout = QHBoxLayout()
-                hlayout.addWidget(widget)
-                if quest.completed:
-                    l = QLabel('Complete!')
-                    hlayout.addWidget(l)
-                row = QWidget()
-                row.setLayout(hlayout)
+                    hlayout.addWidget(widget)
+                    if quest.completed:
+                        l = QLabel('Completed at {}'.format(objective.completed_at))
+                        hlayout.addWidget(l)
+                    row.setLayout(hlayout)
                 layout.addWidget(row)
+            layout.addStretch(255)
             quest_list.setLayout(layout)
             self.sections.addTab(quest_list, section_name)
 
@@ -734,7 +739,7 @@ class QuestLogWindow(QDialog):
 
 class MultiObjectiveQuestWidget(QWidget):
 
-    def __init__(self, quest_name, objectives):
+    def __init__(self, quest_name, objectives, completed):
         super(MultiObjectiveQuestWidget, self).__init__()
         quest_label = QLabel(quest_name)
         quest_label.setToolTip(objectives[0].hint)
@@ -746,6 +751,9 @@ class MultiObjectiveQuestWidget(QWidget):
         hlayout = QHBoxLayout()
         hlayout.setContentsMargins(0,0,0,0)
         hlayout.addWidget(quest_label)
+        if completed:
+            l = QLabel('Complete at {}!'.format(max(obj.completed_at for obj in objectives)))
+            hlayout.addWidget(l)
         hlayout.addWidget(expand)
         top_bar.setLayout(hlayout)
         layout = QVBoxLayout()
@@ -755,12 +763,20 @@ class MultiObjectiveQuestWidget(QWidget):
         self.visible = False
         self.objectives = []
         for objective in objectives:
+            row = QWidget()
+            hlayout = QHBoxLayout()
+            hlayout.setContentsMargins(0,0,0,0)
             l = QLabel(objective.description)
-            l.setStyleSheet('padding-left: 25px')
-            l.setToolTip(objective.hint)
-            l.setVisible(self.visible)
-            self.objectives.append(l)
-            layout.addWidget(l)
+            hlayout.addWidget(l)
+            if objective.completed:
+                l = QLabel('Completed at {}!')
+                hlayout.addWidget(l)
+            row.setLayout(hlayout)
+            row.setStyleSheet('padding-left: 25px')
+            row.setToolTip(objective.hint)
+            row.setVisible(self.visible)
+            self.objectives.append(row)
+            layout.addWidget(row)
 
         self.setLayout(layout)
 

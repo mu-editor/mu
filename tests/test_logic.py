@@ -9,6 +9,7 @@ import mu.logic
 from PyQt5.QtWidgets import QMessageBox
 from unittest import mock
 
+from mu.logic import QuestLog
 
 SESSION = json.dumps({
     'theme': 'night',
@@ -787,3 +788,19 @@ def test_quit_calls_sys_exit():
             mock.patch('builtins.open', mock_open):
         ed.quit(mock_event)
     ex.assert_called_once_with(0)
+
+
+def test_not_dupliate_objective_ids():
+    log = QuestLog(view=mock.MagicMock())
+    seen = set()
+    for obj in log.OBJECTIVES:
+        assert obj.id not in seen
+        seen.add(obj.id)
+
+def test_not_dupliate_quests_ids():
+    log = QuestLog(view=mock.MagicMock())
+    seen = set()
+    for section in log.QUESTS:
+        for quest in section:
+            assert quest.id not in seen
+            seen.add(quest.id)
