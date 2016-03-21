@@ -17,7 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import collections
 import datetime
 import os
 import os.path
@@ -26,17 +25,13 @@ import json
 import logging
 from collections import namedtuple
 
-from PyQt5.QtGui import QScreen
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
-from pyatspi import collection
 
 from mu.contrib import uflash, appdirs
 
 
 #: USB product ID.
-from mu.interface import QuestLogWindow
-
 MICROBIT_PID = 516
 #: USB vendor ID.
 MICROBIT_VID = 3368
