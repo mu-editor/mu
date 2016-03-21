@@ -701,7 +701,7 @@ def test_Window_setup():
     assert w.setWindowIcon.call_count == 1
     assert isinstance(w.setWindowIcon.call_args[0][0], QIcon)
     w.update_title.assert_called_once_with()
-    w.setMinimumSize.assert_called_once_with(800, 600)
+    w.setMinimumSize.assert_called_once_with(804, 600)
     assert w.widget == mock_widget
     assert w.splitter == mock_splitter
     w.widget.setLayout.assert_called_once_with(mock_layout)
