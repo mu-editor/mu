@@ -20,14 +20,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import keyword
 import os
 import logging
-from PyQt5 import QtCore
 
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice, QRect
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
-                             QTabWidget, QFileDialog, QMessageBox, QTextEdit, QLabel, QPushButton, QHBoxLayout,
-                             QSizePolicy, QDialog, QLayout, QSpacerItem)
-from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase, QWindow
+                             QTabWidget, QFileDialog, QMessageBox, QTextEdit, QLabel,
+                             QPushButton, QHBoxLayout, QDialog)
+from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5.QtSerialPort import QSerialPort
 from mu.resources import load_icon, load_stylesheet, load_font_data
@@ -678,7 +677,7 @@ class REPLPane(QTextEdit):
 class QuestLogWindow(QDialog):
     
     def __init__(self, parent):
-        super(QuestLogWindow, self).__init__(parent, flags=QtCore.Qt.Dialog | QtCore.Qt.MSWindowsFixedSizeDialogHint )
+        super(QuestLogWindow, self).__init__(parent, flags=Qt.Dialog | Qt.MSWindowsFixedSizeDialogHint )
 
 
     def setup(self):
