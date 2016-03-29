@@ -737,6 +737,16 @@ class QuestLogWindow(QDialog):
         self.first_label.setHidden(not first_time)
         super(QuestLogWindow, self).show()
 
+    def quest_complete(self, newly_completed_quests, objectives):
+        message_box = QMessageBox()
+        message_box.setText('Quest Complete!')
+        message_box.setWindowTitle('Mu')
+        quest_names = '\n'.join(q.name if len(q.objectives) > 1 else objectives[q.objectives[0]].description for q in newly_completed_quests)
+        message_box.setInformativeText(quest_names)
+        message_box.setIcon(message_box.Information)
+        logger.debug('Quests complete: %s', quest_names)
+        message_box.exec()
+
 
 class MultiObjectiveQuestWidget(QWidget):
 

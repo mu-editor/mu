@@ -265,6 +265,7 @@ class Editor:
             self.theme = 'day'
         logger.info('Toggle theme to: {}'.format(self.theme))
         self._view.set_theme(self.theme)
+        self.quest_log.complete_objective(12)
 
     def new(self):
         """
@@ -393,6 +394,7 @@ class QuestLog:
         MuObjective(0, 'Create a new file', '', 'Check the toolbar', False, None),
         MuObjective(1, 'Save a file', '', 'That toolbar sure looks nice...', False, None),
         MuObjective(2, 'Open a file', '', 'Tooolbaaaarrrrr....', False, None),
+        MuObjective(12, 'Change theme', '', '', False, None),
 
         MuObjective(3, 'Use print in a script', '', '', False, None),
 
@@ -418,6 +420,7 @@ class QuestLog:
             MuQuest(4, '', '', [3], False),
             MuQuest(7, '', '', [9], False),
             MuQuest(8, '', '', [10], False),
+            MuQuest(9, '', '', [12], False)
         ],
         [MuQuest(5, '', '', [5], False),],
         [MuQuest(6, 'Edit Mu in Mu!', '', [5,6,7,8], False),],
@@ -431,30 +434,36 @@ class QuestLog:
         self._view.setup()
 
         self.objectives = dict((obj.id, obj) for obj in self.OBJECTIVES)
+        self.quests = []
         self.update_quest_status()
 
     def update_quest_status(self):
-        self.quests = []
-        for section in self.QUESTS:
+        newly_completed_quests = []
+        all_quests = []
+        for section in self.quests or self.QUESTS:
             quests = []
             for quest in section:
-                quests.append(
-                    quest.complete() if all(self.objectives[objv].completed for objv in quest.objectives) else quest
-                )
-            self.quests.append(quests)
+                if not quest.completed:
+                    if all(self.objectives[objv].completed for objv in quest.objectives):
+                        quest = quest.complete()
+                        newly_completed_quests.append(quest)
+                quests.append(quest)
+            all_quests.append(quests)
+        self.quests = all_quests
         self._view.update_quests(self.QUEST_SECTIONS, self.quests, self.objectives)
+        return newly_completed_quests
 
 
     def show(self, first_time):
         self._view.show(first_time)
 
     def complete_objective(self, objective_id, notify_complete=True):
+        newly_completed_quests = []
         if not self.objectives[objective_id].completed:
             self.objectives[objective_id] = self.objectives[objective_id].complete()
-            self.update_quest_status()
-        if notify_complete:
-            # TODO: Show a quest complete message
-            pass
+            newly_completed_quests = self.update_quest_status()
+        if notify_complete and newly_completed_quests:
+            self._view.quest_complete(newly_completed_quests, self.objectives)
 
     def load_completed_objectives(self, objectives):
         for objective_id in objectives:
