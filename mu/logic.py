@@ -135,8 +135,10 @@ class Editor:
                             pass
                         else:
                             self._view.add_tab(path, text)
-        # else:
-        self.show_quests()
+                if 'quests' in old_session:
+                    self.quest_log.load_completed_objectives(old_session['quests'])
+                else:
+                    self.show_quests(first_time=True)
         if not self._view.tab_count:
             py = 'from microbit import *\n\n# Write your code here :-)'
             self._view.add_tab(None, py)
@@ -360,7 +362,8 @@ class Editor:
                 paths.append(widget.path)
         session = {
             'theme': self.theme,
-            'paths': paths
+            'paths': paths,
+            'quests': self.quest_log.completed_objectives(),
         }
         logger.debug(session)
         with open(SETTINGS_FILE, 'w') as out:
@@ -368,8 +371,8 @@ class Editor:
             json.dump(session, out, indent=2)
         sys.exit(0)
 
-    def show_quests(self):
-        self.quest_log.show()
+    def show_quests(self, first_time=False):
+        self.quest_log.show(first_time)
 
 
 Objective = namedtuple('Objective', 'id description long_description hint completed completed_at')
@@ -442,10 +445,20 @@ class QuestLog:
         self._view.update_quests(self.QUEST_SECTIONS, self.quests, self.objectives)
 
 
-    def show(self):
-        self._view.show()
+    def show(self, first_time):
+        self._view.show(first_time)
 
-    def complete_objective(self, objective_id):
+    def complete_objective(self, objective_id, notify_complete=True):
         if not self.objectives[objective_id].completed:
             self.objectives[objective_id] = self.objectives[objective_id].complete()
             self.update_quest_status()
+        if notify_complete:
+            # TODO: Show a quest complete message
+            pass
+
+    def load_completed_objectives(self, objectives):
+        for objective_id in objectives:
+            self.complete_objective(objective_id, notify_complete=False)
+
+    def completed_objectives(self):
+        return [obj_id for obj_id, obj in self.objectives.items() if obj.completed]

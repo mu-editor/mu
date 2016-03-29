@@ -288,6 +288,8 @@ class ButtonBar(QToolBar):
                        tool_text="Zoom out (to make the text smaller).")
         self.addAction(name="theme",
                        tool_text="Change theme between day or night.")
+        self.addAction(name="quests",
+                       tool_text="Show the quest log.")
         self.addSeparator()
         self.addAction(name="quit", tool_text="Quit the application.")
 
@@ -677,6 +679,7 @@ class REPLPane(QTextEdit):
 class QuestLogWindow(QDialog):
     
     def __init__(self, parent):
+        self.first_time = False
         super(QuestLogWindow, self).__init__(parent, flags=Qt.Dialog | Qt.MSWindowsFixedSizeDialogHint )
 
 
@@ -686,12 +689,11 @@ class QuestLogWindow(QDialog):
         widget_layout = QVBoxLayout()
         self.setLayout(widget_layout)
 
-        label = QLabel("Welcome to Mu!\nWe see it's your first time using Mu.\n"
+        self.first_label = QLabel("Welcome to Mu!\nWe see it's your first time using Mu.\n"
                       "Here are a few quests to start you on your Python journey.\n"
                       "You don't have to complate them in order but it will help.\n"
                       "Lastly, if  you get really stuck you can hover over the quest for a hint!")
-
-        widget_layout.addWidget(label)
+        widget_layout.addWidget(self.first_label)
         self.sections = QTabWidget()
         widget_layout.addWidget(self.sections)
 
@@ -731,8 +733,8 @@ class QuestLogWindow(QDialog):
             quest_list.setLayout(layout)
             self.sections.addTab(quest_list, section_name)
 
-
-    def show(self):
+    def show(self, first_time):
+        self.first_label.setHidden(not first_time)
         super(QuestLogWindow, self).show()
 
 
