@@ -1,0 +1,12 @@
+Source: mu
+Maintainer: Nicholas Tollervey <ntoll@ntoll.org>
+Section: python
+Priority: optional
+Build-Depends: python3-setuptools, python3, debhelper (>= 9)
+Standards-Version: 3.9.1
+
+Package: mu
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}, python3-pyqt5, python3-pyqt5.qsci,
+         python3-pyqt5.qtserialport
+Description: A simple editor for kids, teachers and new programmers.
