@@ -382,11 +382,19 @@ class MuObjective(Objective):
     def complete(self):
         return self._replace(completed=True, completed_at=datetime.datetime.utcnow())
 
-Quest = namedtuple('Quest', 'id name description objectives completed')
+Quest = namedtuple('Quest', 'id name_ description_ objectives completed')
 
 class MuQuest(Quest):
     def complete(self):
         return self._replace(completed=True)
+
+    @property
+    def name(self):
+        return QuestLog.OBJECTIVES[self.objectives[0]].description if len(self.objectives) == 1 else self.name_
+
+    @property
+    def description(self):
+        return QuestLog.OBJECTIVES[self.objectives[0]].long_description if len(self.objectives) == 1 else self.description_
 
 class QuestLog:
 
@@ -452,7 +460,6 @@ class QuestLog:
         self.quests = all_quests
         self._view.update_quests(self.QUEST_SECTIONS, self.quests, self.objectives)
         return newly_completed_quests
-
 
     def show(self, first_time):
         self._view.show(first_time)

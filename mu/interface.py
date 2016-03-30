@@ -718,7 +718,7 @@ class QuestLogWindow(QDialog):
                     row = QWidget()
                     quest_name = '{}. {}'.format(
                         qid+1,
-                        objective.description
+                        quest.name
                     )
                     hint = objective.hint
                     widget = QLabel(quest_name)
@@ -741,7 +741,7 @@ class QuestLogWindow(QDialog):
         message_box = QMessageBox()
         message_box.setText('Quest Complete!')
         message_box.setWindowTitle('Mu')
-        quest_names = '\n'.join(q.name if len(q.objectives) > 1 else objectives[q.objectives[0]].description for q in newly_completed_quests)
+        quest_names = '\n'.join('{}. {}'.format(i+1, q.name) for i, q in enumerate(newly_completed_quests))
         message_box.setInformativeText(quest_names)
         message_box.setIcon(message_box.Information)
         logger.debug('Quests complete: %s', quest_names)
@@ -780,7 +780,7 @@ class MultiObjectiveQuestWidget(QWidget):
             l = QLabel(objective.description)
             hlayout.addWidget(l)
             if objective.completed:
-                l = QLabel('Completed at {}!')
+                l = QLabel('Completed at {}!'.format(objective.completed_at))
                 hlayout.addWidget(l)
             row.setLayout(hlayout)
             row.setStyleSheet('padding-left: 25px')
