@@ -7,6 +7,6 @@ Icon=mu
 TryExec=mu
 Exec=mu
 Terminal=false
-Categories=Application;Qt;
+Categories=Application;Development;
 Keywords=Python;Editor;microbit;micro:bit;
 
