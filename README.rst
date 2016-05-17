@@ -51,8 +51,11 @@ Until a package is created mu can be installed using the following commands.
 Open a Terminal (Menu > Accessories > Terminal):
 
     cd ~
+
     sudo apt-get install python3-pyqt5 python3-pyqt5.qtserialport python3-pyqt5.qcsi
+
     git clone https://github.com/ntoll/mu
+
     chmod +x ~/mu/run.py
 
 Run using the command:
