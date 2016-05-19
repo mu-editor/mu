@@ -41,7 +41,18 @@ Linux
 Just make the file executable and run it! :-)
 
 We're in the process of creating official packages for both Debian and Fedora
-based flavours and Linux (including Raspbian).
+based flavours of Linux.
+
+Raspberry Pi (Raspbian)
++++++++++++++++++++++++
+
+A package is available for Raspbian for mu can be installed using the following commands.
+
+Open a Terminal (Menu > Accessories > Terminal):
+
+    sudo apt-get update
+
+    sudo apt-get install mu
 
 What?
 -----
