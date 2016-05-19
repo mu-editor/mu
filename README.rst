@@ -41,26 +41,18 @@ Linux
 Just make the file executable and run it! :-)
 
 We're in the process of creating official packages for both Debian and Fedora
-based flavours and Linux (including Raspbian).
+based flavours of Linux.
 
 Raspberry Pi (Raspbian)
 +++++++++++++++++++++++
 
-Until a package is created mu can be installed using the following commands.
+A package is available for Raspbian for mu can be installed using the following commands.
 
 Open a Terminal (Menu > Accessories > Terminal):
 
-    cd ~
+    sudo apt-get update
 
-    sudo apt-get install python3-pyqt5 python3-pyqt5.qtserialport python3-pyqt5.qcsi
-
-    git clone https://github.com/ntoll/mu
-
-    chmod +x ~/mu/run.py
-
-Run using the command:
-
-    ~/mu/run.py
+    sudo apt-get install mu
 
 What?
 -----
