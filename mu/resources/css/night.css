@@ -8,11 +8,12 @@ QToolButton:hover {
 }
 
 QToolButton {
-    background-color: black;
+    background-color: #333;
 }
 
 QTextEdit {
     background-color: black;
+    border:3px solid #FFF;
     color: white
 }
 
@@ -33,6 +34,6 @@ QSplitter::handle:horizontal {
 }
 
 QToolBar {
-    background: black;
+    background: #333;
     border: 0px;
 }
