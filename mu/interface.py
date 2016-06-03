@@ -320,7 +320,8 @@ class FileTabs(QTabWidget):
     def removeTab(self, tab_id):
         """ask the user before closing the file"""
         window = self.nativeParentWidget()
-        if (window.modified):
+        modified = window.current_tab.isModified()
+        if (modified):
             reply = QMessageBox.warning(self,
                 'Mu',
                 'There is un-saved work, closing the tab will'
