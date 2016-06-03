@@ -590,7 +590,6 @@ class Window(QStackedWidget):
         self.autosize_window()
 
 
-
 class REPLPane(QTextEdit):
     """
     REPL = Read, Evaluate, Print, Loop.
