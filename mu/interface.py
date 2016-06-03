@@ -161,7 +161,7 @@ class NightTheme(Theme):
     HighlightedIdentifier = Font(color='#ffffff', paper='black')
     Paper = QColor('black')
     Caret = QColor('white')
-    Margin = QColor('#111')
+    Margin = QColor('#333')
 
 
 class PythonLexer(QsciLexerPython):
