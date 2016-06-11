@@ -3,6 +3,11 @@ QStackedWidget, QWidget {
     color: black;
 }
 
+QToolButton:hover {
+    background-color: #cccccc;
+    border: #999999;
+}
+
 QTextEdit {
     background-color: white;
     color: black;
