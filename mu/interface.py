@@ -277,6 +277,8 @@ class ButtonBar(QToolBar):
         self.addSeparator()
         self.addAction(name="flash",
                        tool_text="Flash your code onto the micro:bit.")
+        self.addAction(name="files",
+                       tool_text="Access the file system on the micro:bit.")
         self.addAction(name="repl",
                        tool_text="Use the REPL to live code the micro:bit.")
         self.addSeparator()
