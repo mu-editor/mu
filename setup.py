@@ -1,6 +1,13 @@
+import sys
 from setuptools import setup
 from mu import __version__
 
+
+data_files = []
+if sys.platform == 'linux':
+    data_files = [('/etc/udev/rules.d', ['conf/90-usb-microbit.rules', ]),
+                  ('/usr/share/pixmaps', ['conf/mu.png', ]),
+                  ('/usr/share/applications', ['conf/mu.desktop', ])]
 
 setup(
     name='mu',
@@ -12,6 +19,16 @@ setup(
     packages=['mu', 'mu.contrib', 'mu.resources'],
     include_package_data=True,
     zip_safe=False,
+    install_requires=[
+        # These deps are not pinned to a version. We aren't too demanding about
+        # what versions because we can more easily afford to build
+        # compatibility into mu than our users can source alternative versions
+        # of these packages. However, PyQt5/Qsci wheels are now available for
+        # Windows, Mac and manylinux1, so listing these could now allow mu to
+        # be pip-installable.
+        'PyQt5',
+        'QScintilla'
+    ],
     classifiers=[
         'Environment :: X11 Applications :: Qt',
         'Intended Audience :: Education',
@@ -20,11 +37,9 @@ setup(
         'Programming Language :: Python :: 3',
     ],
     entry_points={
-        'console_scripts': [
+        'gui_scripts': [
             "mu = mu.app:run",
         ],
     },
-    data_files=[('/etc/udev/rules.d', ['conf/90-usb-microbit.rules', ]),
-                ('/usr/share/pixmaps', ['conf/mu.png', ]),
-                ('/usr/share/applications', ['conf/mu.desktop', ])],
+    data_files=data_files,
 )
