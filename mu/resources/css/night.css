@@ -23,10 +23,12 @@ QTabBar::tab {
 
 QTabBar::tab:selected {
     background: #333;
+    font-weight: bold;
 }
 
 QTabBar::tab:!selected {
-    background: black;
+    color: black;
+    background: #CCC;
 }
 
 QSplitter::handle:horizontal {
@@ -35,5 +37,17 @@ QSplitter::handle:horizontal {
 
 QToolBar {
     background: #333;
-    border: 0px;
+    border: 0;
+}
+
+QMessageBox {
+    font-size: 14pt;
+    border: 3px solid white;
+}
+QPushButton {
+    background: #fff;
+    color: #000;
+    border: 3px #fff solid;
+    font-size: 14pt;
+    padding:1em;
 }

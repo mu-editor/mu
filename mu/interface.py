@@ -310,6 +310,30 @@ class ButtonBar(QToolBar):
                       self.parentWidget()).activated.connect(handler)
 
 
+class FileTabs(QTabWidget):
+    """extend the base class so we can override the removeTab behavior"""
+    def __init__(self):
+        super(FileTabs, self).__init__()
+        self.setTabsClosable(True)
+        self.tabCloseRequested.connect(self.removeTab)
+
+    def removeTab(self, tab_id):
+        """ask the user before closing the file"""
+        window = self.nativeParentWidget()
+        modified = window.current_tab.isModified()
+        if (modified):
+            reply = QMessageBox.warning(self,
+                'Mu',
+                'There is un-saved work, closing the tab will'
+                ' cause you to lose it.',
+                buttons=QMessageBox.Cancel | QMessageBox.Ok,
+                defaultButton=QMessageBox.Cancel
+            )
+            if reply == QMessageBox.Cancel:
+                return
+        super(FileTabs, self).removeTab(tab_id)
+
+
 class Window(QStackedWidget):
     """
     Defines the look and characteristics of the application's main window.
@@ -552,13 +576,10 @@ class Window(QStackedWidget):
         self.widget.setLayout(widget_layout)
 
         self.button_bar = ButtonBar(self.widget)
-        self.tabs = QTabWidget()
-        self.tabs.setTabsClosable(True)
-        self.tabs.tabCloseRequested.connect(self.tabs.removeTab)
 
         widget_layout.addWidget(self.button_bar)
         widget_layout.addWidget(self.splitter)
-
+        self.tabs = FileTabs()
         self.splitter.addWidget(self.tabs)
 
         self.addWidget(self.widget)
