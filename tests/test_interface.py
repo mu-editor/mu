@@ -2,7 +2,8 @@
 """
 Tests for the user interface elements of Mu.
 """
-from PyQt5.QtWidgets import QApplication, QAction, QWidget, QFileDialog
+from PyQt5.QtWidgets import (QApplication, QAction, QWidget, QFileDialog,
+                             QMessageBox)
 from PyQt5.QtCore import QIODevice, Qt, QSize
 from PyQt5.QtGui import QTextCursor, QIcon
 from unittest import mock
@@ -243,6 +244,57 @@ def test_ButtonBar_connect():
     assert mock_shortcut.call_count == 1
     slot = bb.slots['save']
     slot.pyqtConfigure.assert_called_once_with(triggered=mock_handler)
+
+
+def test_FileTabs_init():
+    """
+    Ensure a FileTabs instance is initialised as expected.
+    """
+    with mock.patch('mu.interface.FileTabs.setTabsClosable') as mstc, \
+            mock.patch('mu.interface.FileTabs.tabCloseRequested') as mtcr:
+        qtw = mu.interface.FileTabs()
+        mstc.assert_called_once_with(True)
+        mtcr.connect.assert_called_once_with(qtw.removeTab)
+
+
+def test_FileTabs_removeTab_cancel():
+    """
+    Ensure removeTab asks the user for confirmation if there is a modification
+    to the tab. If "cancel" is selected, the parent removeTab is NOT called.
+    """
+    qtw = mu.interface.FileTabs()
+    mock_window = mock.MagicMock()
+    mock_window.show_confirmation.return_value = QMessageBox.Cancel
+    mock_window.current_tab.isModified.return_value = True
+    qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
+    tab_id = 1
+    with mock.patch('mu.interface.QTabWidget.removeTab',
+                    return_value='foo') as rt:
+        qtw.removeTab(tab_id)
+        msg = 'There is un-saved work, closing the tab will cause you to ' \
+              'lose it.'
+        mock_window.show_confirmation.assert_called_once_with(msg)
+        assert rt.call_count == 0
+
+
+def test_FileTabs_removeTab_ok():
+    """
+    Ensure removeTab asks the user for confirmation if there is a modification
+    to the tab. If user responds with "OK", the parent removeTab IS called.
+    """
+    qtw = mu.interface.FileTabs()
+    mock_window = mock.MagicMock()
+    mock_window.show_confirmation.return_value = QMessageBox.Ok
+    mock_window.current_tab.isModified.return_value = True
+    qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
+    tab_id = 1
+    with mock.patch('mu.interface.QTabWidget.removeTab',
+                    return_value='foo') as rt:
+        qtw.removeTab(tab_id)
+        msg = 'There is un-saved work, closing the tab will cause you to ' \
+              'lose it.'
+        mock_window.show_confirmation.assert_called_once_with(msg)
+        rt.assert_called_once_with(tab_id)
 
 
 def test_Window_attributes():
@@ -695,7 +747,7 @@ def test_Window_setup():
             mock.patch('mu.interface.QSplitter', mock_splitter_class), \
             mock.patch('mu.interface.QVBoxLayout', mock_layout_class), \
             mock.patch('mu.interface.ButtonBar', mock_button_bar_class), \
-            mock.patch('mu.interface.QTabWidget', mock_qtw_class):
+            mock.patch('mu.interface.FileTabs', mock_qtw_class):
         w.setup(theme)
     assert w.theme == theme
     assert w.setWindowIcon.call_count == 1
@@ -707,9 +759,6 @@ def test_Window_setup():
     w.widget.setLayout.assert_called_once_with(mock_layout)
     assert w.button_bar == mock_button_bar
     assert w.tabs == mock_qtw
-    mock_qtw.setTabsClosable.assert_called_once_with(True)
-    mock_qtw.tabCloseRequested.connect.\
-        assert_called_once_with(mock_qtw.removeTab)
     assert mock_layout.addWidget.call_count == 2
     mock_splitter.addWidget.assert_called_once_with(mock_qtw)
     w.addWidget.assert_called_once_with(mock_widget)

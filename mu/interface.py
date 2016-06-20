@@ -311,25 +311,25 @@ class ButtonBar(QToolBar):
 
 
 class FileTabs(QTabWidget):
-    """extend the base class so we can override the removeTab behavior"""
+    """
+    Extend the base class so we can override the removeTab behaviour.
+    """
+
     def __init__(self):
         super(FileTabs, self).__init__()
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.removeTab)
 
     def removeTab(self, tab_id):
-        """ask the user before closing the file"""
+        """
+        Ask the user before closing the file.
+        """
         window = self.nativeParentWidget()
         modified = window.current_tab.isModified()
         if (modified):
-            reply = QMessageBox.warning(self,
-                'Mu',
-                'There is un-saved work, closing the tab will'
-                ' cause you to lose it.',
-                buttons=QMessageBox.Cancel | QMessageBox.Ok,
-                defaultButton=QMessageBox.Cancel
-            )
-            if reply == QMessageBox.Cancel:
+            msg = 'There is un-saved work, closing the tab will cause you ' \
+                  'to lose it.'
+            if window.show_confirmation(msg) == QMessageBox.Cancel:
                 return
         super(FileTabs, self).removeTab(tab_id)
 
