@@ -121,7 +121,8 @@ def test_EditorPane_configure():
     values may be. I.e. we're checking that, say, setIndentationWidth is
     called.
     """
-    ep = mu.interface.EditorPane('/foo/bar.py', 'baz')
+    api = ['api help text', ]
+    ep = mu.interface.EditorPane('/foo/bar.py', 'baz', api)
     ep.setFont = mock.MagicMock()
     ep.setUtf8 = mock.MagicMock()
     ep.setAutoIndent = mock.MagicMock()
@@ -135,6 +136,7 @@ def test_EditorPane_configure():
     ep.SendScintilla = mock.MagicMock()
     ep.set_theme = mock.MagicMock()
     ep.configure()
+    assert ep.api == api
     assert ep.setFont.call_count == 1
     assert ep.setUtf8.call_count == 1
     assert ep.setAutoIndent.call_count == 1
@@ -154,12 +156,17 @@ def test_EditorPane_set_theme():
     Check all the expected configuration calls are made to ensure the widget's
     theme is updated.
     """
-    ep = mu.interface.EditorPane('/foo/bar.py', 'baz')
+    api = ['api help text', ]
+    ep = mu.interface.EditorPane('/foo/bar.py', 'baz', api)
     ep.setCaretForegroundColor = mock.MagicMock()
     ep.setMarginsBackgroundColor = mock.MagicMock()
     ep.setMarginsForegroundColor = mock.MagicMock()
     ep.setLexer = mock.MagicMock()
-    ep.set_theme()
+    mock_api = mock.MagicMock()
+    with mock.patch('mu.interface.QsciAPIs', return_value=mock_api) as mapi:
+        ep.set_theme()
+        mapi.assert_called_once_with(ep.lexer)
+        mock_api.add.assert_called_once_with('api help text')
     assert ep.setCaretForegroundColor.call_count == 1
     assert ep.setMarginsBackgroundColor.call_count == 1
     assert ep.setMarginsForegroundColor.call_count == 1
@@ -212,7 +219,7 @@ def test_ButtonBar_init():
         mock_tool_button_size.assert_called_once_with(3)
         mock_context_menu_policy.assert_called_once_with(Qt.PreventContextMenu)
         mock_object_name.assert_called_once_with('StandardToolBar')
-        assert mock_add_action.call_count == 10
+        assert mock_add_action.call_count == 11
         assert mock_add_separator.call_count == 3
 
 
@@ -420,6 +427,7 @@ def test_Window_add_tab():
     w.connect_zoom = mock.MagicMock(return_value=None)
     w.set_theme = mock.MagicMock(return_value=None)
     w.theme = mock.MagicMock()
+    w.api = ['an api help text', ]
     ep = mu.interface.EditorPane('/foo/bar.py', 'baz')
     ep.modificationChanged = mock.MagicMock()
     ep.modificationChanged.connect = mock.MagicMock(return_value=None)
@@ -429,7 +437,7 @@ def test_Window_add_tab():
     text = 'print("Hello, World!")'
     with mock.patch('mu.interface.EditorPane', mock_ed):
         w.add_tab(path, text)
-    mock_ed.assert_called_once_with(path, text)
+    mock_ed.assert_called_once_with(path, text, w.api)
     w.tabs.addTab.assert_called_once_with(ep, ep.label)
     w.tabs.setCurrentIndex.assert_called_once_with(new_tab_index)
     w.connect_zoom.assert_called_once_with(ep)
@@ -743,13 +751,15 @@ def test_Window_setup():
     mock_qtw.removeTab = mock.MagicMock
     mock_qtw_class = mock.MagicMock(return_value=mock_qtw)
     theme = 'night'
+    api = ['some api docs', ]
     with mock.patch('mu.interface.QWidget', mock_widget_class), \
             mock.patch('mu.interface.QSplitter', mock_splitter_class), \
             mock.patch('mu.interface.QVBoxLayout', mock_layout_class), \
             mock.patch('mu.interface.ButtonBar', mock_button_bar_class), \
             mock.patch('mu.interface.FileTabs', mock_qtw_class):
-        w.setup(theme)
+        w.setup(theme, api)
     assert w.theme == theme
+    assert w.api == api
     assert w.setWindowIcon.call_count == 1
     assert isinstance(w.setWindowIcon.call_args[0][0], QIcon)
     w.update_title.assert_called_once_with()

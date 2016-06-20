@@ -25,7 +25,7 @@ from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
                              QTabWidget, QFileDialog, QMessageBox, QTextEdit)
 from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
-from PyQt5.Qsci import QsciScintilla, QsciLexerPython
+from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
 from PyQt5.QtSerialPort import QSerialPort
 from mu.resources import load_icon, load_stylesheet, load_font_data
 
@@ -192,10 +192,11 @@ class EditorPane(QsciScintilla):
     Represents the text editor.
     """
 
-    def __init__(self, path, text):
+    def __init__(self, path, text, api=None):
         super().__init__()
         self.path = path
         self.setText(text)
+        self.api = api if api else []
         self.setModified(False)
         self.configure()
 
@@ -231,6 +232,14 @@ class EditorPane(QsciScintilla):
         self.setCaretForegroundColor(theme.Caret)
         self.setMarginsBackgroundColor(theme.Margin)
         self.setMarginsForegroundColor(theme.Caret)
+
+        api = QsciAPIs(self.lexer)
+        for entry in self.api:
+            api.add(entry)
+        api.prepare()
+        self.setAutoCompletionThreshold(2)
+        self.setAutoCompletionSource(QsciScintilla.AcsAll)
+
         self.setLexer(self.lexer)
 
     @property
@@ -289,8 +298,9 @@ class ButtonBar(QToolBar):
         self.addAction(name="theme",
                        tool_text="Change theme between day or night.")
         self.addSeparator()
-        self.addAction(name="help", tool_text="Show help about Mu.")
-        self.addAction(name="quit", tool_text="Quit the application.")
+        self.addAction(name="help",
+                       tool_text="Show help about Mu in a browser.")
+        self.addAction(name="quit", tool_text="Quit Mu.")
 
     def addAction(self, name, tool_text):
         """
@@ -298,7 +308,7 @@ class ButtonBar(QToolBar):
         widget's slots.
         """
         action = QAction(load_icon(name), name.capitalize(), self,
-                         statusTip=tool_text)
+                         toolTip=tool_text)
         super().addAction(action)
         self.slots[name] = action
 
@@ -409,7 +419,7 @@ class Window(QStackedWidget):
         """
         Adds a tab with the referenced path and text to the editor.
         """
-        new_tab = EditorPane(path, text)
+        new_tab = EditorPane(path, text, self.api)
         new_tab_index = self.tabs.addTab(new_tab, new_tab.label)
 
         @new_tab.modificationChanged.connect
@@ -559,7 +569,7 @@ class Window(QStackedWidget):
         self.move((screen.width() - size.width()) / 2,
                   (screen.height() - size.height()) / 2)
 
-    def setup(self, theme):
+    def setup(self, theme, api=None):
         """
         Sets up the window.
 
@@ -567,6 +577,7 @@ class Window(QStackedWidget):
         interface is laid out.
         """
         self.theme = theme
+        self.api = api if api else []
         # Give the window a default icon, title and minimum size.
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()

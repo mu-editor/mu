@@ -25,7 +25,7 @@ pyflakes:
 	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
 
 pep8:
-	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pep8 --repeat --exclude=build/*,docs/*,mu/contrib* --ignore=E731,E402
+	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pep8 --repeat --exclude=build/*,docs/*,mu/contrib*,mu/resources/api.py --ignore=E731,E402
 
 test: clean
 	py.test

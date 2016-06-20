@@ -27,6 +27,7 @@ from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR
 from mu.interface import Window
 from mu.resources import load_pixmap
+from mu.resources.api import MICROPYTHON_APIS
 
 
 def setup_logging():
@@ -59,7 +60,7 @@ def run():
     editor = Editor(view=editor_window)
     # Setup the window.
     editor_window.closeEvent = editor.quit
-    editor_window.setup(editor.theme)
+    editor_window.setup(editor.theme, MICROPYTHON_APIS)
     editor.restore_session()
     # Connect the various buttons in the window to the editor.
     button_bar = editor_window.button_bar
