@@ -38,8 +38,8 @@ install:
   - cmd: pyqt5_installer.exe /S
   - cmd: python -c "import PyQt5"
 
-  # Install python dependencies
-  - cmd: pip install pyinstaller
+  # Install python dependencies (v3.2 has VC++ redistributable dependencies)
+  - cmd: pip install pyinstaller==3.1.1
   - cmd: pip install -r requirements.txt
 
   # Check installed packages again
