@@ -23,7 +23,8 @@ import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
-                             QTabWidget, QFileDialog, QMessageBox, QTextEdit)
+                             QTabWidget, QFileDialog, QMessageBox, QTextEdit,
+                             QFrame, QListWidget, QGridLayout, QLabel)
 from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
 from PyQt5.QtSerialPort import QSerialPort
@@ -457,6 +458,13 @@ class Window(QStackedWidget):
                 return True
         return False
 
+    def add_filesystem(self):
+        self.fs = FileSystemPane(self.splitter)
+        self.splitter.addWidget(self.fs)
+        self.splitter.setSizes([66, 33])
+        self.fs.setFocus()
+        self.connect_zoom(self.fs)
+
     def add_repl(self, repl):
         """
         Adds the REPL pane to the application.
@@ -705,3 +713,43 @@ class REPLPane(QTextEdit):
         Clears the text of the REPL.
         """
         self.setText('')
+
+
+class FileSystemPane(QFrame):
+    """
+    Contains two QListWidgets representing the micro:bit and the user's code
+    directory. Users transfer files by dragging and dropping. Highlighted files
+    can be selected for deletion.
+    """
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        font = Font().load()
+        microbit_fs = QListWidget()
+        microbit_fs.setFont(font)
+        microbit_fs.addItem('microbit')
+        local_fs = QListWidget()
+        local_fs.setFont(font)
+        local_fs.addItem('local')
+        layout = QGridLayout()
+        self.setLayout(layout)
+        microbit_label = QLabel()
+        microbit_label.setFont(font)
+        microbit_label.setText('Files on your micro:bit:')
+        local_label = QLabel()
+        local_label.setFont(font)
+        local_label.setText('Files on your computer:')
+        layout.addWidget(microbit_label, 0, 0)
+        layout.addWidget(local_label, 0, 1)
+        layout.addWidget(microbit_fs, 1, 0)
+        layout.addWidget(local_fs, 1, 1)
+
+    def set_theme(self, theme):
+        """
+        Sets the theme / look for the FileSystemPane.
+        """
+        if theme == 'day':
+            self.setStyleSheet(DAY_STYLE)
+        else:
+            self.setStyleSheet(NIGHT_STYLE)
+

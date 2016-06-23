@@ -44,10 +44,19 @@ QMessageBox {
     font-size: 14pt;
     border: 3px solid white;
 }
+
 QPushButton {
     background: #fff;
     color: #000;
     border: 3px #fff solid;
     font-size: 14pt;
     padding:1em;
+}
+
+QTabWidget::pane {
+    border: 1px solid white;
+}
+
+QListWidget {
+    border: 1px solid white;
 }

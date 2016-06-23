@@ -68,6 +68,7 @@ def run():
     button_bar.connect("load", editor.load, "Ctrl+O")
     button_bar.connect("save", editor.save, "Ctrl+S")
     button_bar.connect("flash", editor.flash)
+    button_bar.connect("files", editor.toggle_fs)
     button_bar.connect("repl", editor.toggle_repl)
     button_bar.connect("zoom-in", editor.zoom_in)
     button_bar.connect("zoom-out", editor.zoom_out)

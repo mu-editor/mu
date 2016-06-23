@@ -199,6 +199,11 @@ class Editor:
                            " the device remains unfound.")
             self._view.show_message(message, information)
 
+    def toggle_fs(self):
+        """
+        """
+        self._view.add_filesystem()
+
     def add_repl(self):
         """
         Detect a connected BBC micro:bit and if found, connect to the
