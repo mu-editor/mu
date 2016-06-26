@@ -81,7 +81,11 @@ On OS X double click on the `mu.app`, if trying to run the downloadable version,
 Download the Mu executable
 --------------------------
 
-[![Windows Build status](https://ci.appveyor.com/api/projects/status/agr9wmestx3t1tcl?svg=true)](https://ci.appveyor.com/project/carlosperate/mu) [![Linux and OS X Build status](https://travis-ci.org/ntoll/mu.svg)](https://travis-ci.org/ntoll/mu)
+.. image:: https://ci.appveyor.com/api/projects/status/agr9wmestx3t1tcl/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/carlosperate/mu
+
+.. image:: https://travis-ci.org/ntoll/mu.svg?branch=master
+    :target: https://travis-ci.org/ntoll/mu
 
 You can download the latest executable build of Mu for your respective operating system from the following links:
 
