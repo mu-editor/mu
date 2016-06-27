@@ -287,6 +287,7 @@ class ButtonBar(QToolBar):
         self.addAction(name="theme",
                        tool_text="Change theme between day or night.")
         self.addSeparator()
+        self.addAction(name="help", tool_text="Show help about Mu.")
         self.addAction(name="quit", tool_text="Quit the application.")
 
     def addAction(self, name, tool_text):
@@ -567,7 +568,7 @@ class Window(QStackedWidget):
         # Give the window a default icon, title and minimum size.
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
-        self.setMinimumSize(800, 600)
+        self.setMinimumSize(804, 600)
 
         self.widget = QWidget()
         self.splitter = QSplitter(Qt.Vertical)
