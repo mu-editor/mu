@@ -20,10 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import keyword
 import os
 import logging
+
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
-                             QTabWidget, QFileDialog, QMessageBox, QTextEdit)
+                             QTabWidget, QFileDialog, QMessageBox, QTextEdit, QLabel,
+                             QPushButton, QHBoxLayout, QDialog)
 from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5.QtSerialPort import QSerialPort
@@ -286,6 +288,8 @@ class ButtonBar(QToolBar):
                        tool_text="Zoom out (to make the text smaller).")
         self.addAction(name="theme",
                        tool_text="Change theme between day or night.")
+        self.addAction(name="quests",
+                       tool_text="Show the quest log.")
         self.addSeparator()
         self.addAction(name="quit", tool_text="Quit the application.")
 
@@ -691,3 +695,125 @@ class REPLPane(QTextEdit):
         Clears the text of the REPL.
         """
         self.setText('')
+
+
+class QuestLogWindow(QDialog):
+    
+    def __init__(self, parent):
+        self.first_time = False
+        super(QuestLogWindow, self).__init__(parent, flags=Qt.Dialog | Qt.MSWindowsFixedSizeDialogHint )
+
+
+    def setup(self):
+        self.setWindowTitle('MuQuests')
+
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+
+        self.first_label = QLabel("Welcome to Mu!\nWe see it's your first time using Mu.\n"
+                      "Here are a few quests to start you on your Python journey.\n"
+                      "You don't have to complate them in order but it will help.\n"
+                      "Lastly, if  you get really stuck you can hover over the quest for a hint!")
+        widget_layout.addWidget(self.first_label)
+        self.sections = QTabWidget()
+        widget_layout.addWidget(self.sections)
+
+    def update_quests(self, section_names, quests, objectives):
+        for tab in range(self.sections.count()):
+            self.sections.removeTab(0)
+
+        for section_id, section_name in enumerate(section_names):
+            quest_list = QWidget()
+            layout = QVBoxLayout()
+            for qid, quest in enumerate(quests[section_id]):
+                if len(quest.objectives) > 1:
+                    row = MultiObjectiveQuestWidget(
+                        '{}. {}'.format(qid+1, quest.name),
+                        [objectives[objvid] for objvid in quest.objectives],
+                        quest.completed
+                    )
+                else:
+                    hlayout = QHBoxLayout()
+                    hlayout.setContentsMargins(0,0,0,0)
+                    objective = objectives[quest.objectives[0]]
+                    row = QWidget()
+                    quest_name = '{}. {}'.format(
+                        qid+1,
+                        quest.name
+                    )
+                    hint = objective.hint
+                    widget = QLabel(quest_name)
+                    widget.setToolTip('Hint: {}'.format(hint))
+                    hlayout.addWidget(widget)
+                    if quest.completed:
+                        l = QLabel('Completed at {}'.format(objective.completed_at))
+                        hlayout.addWidget(l)
+                    row.setLayout(hlayout)
+                layout.addWidget(row)
+            layout.addStretch(255)
+            quest_list.setLayout(layout)
+            self.sections.addTab(quest_list, section_name)
+
+    def show(self, first_time):
+        self.first_label.setHidden(not first_time)
+        super(QuestLogWindow, self).show()
+
+    def quest_complete(self, newly_completed_quests, objectives):
+        message_box = QMessageBox()
+        message_box.setText('Quest Complete!')
+        message_box.setWindowTitle('Mu')
+        quest_names = '\n'.join('{}. {}'.format(i+1, q.name) for i, q in enumerate(newly_completed_quests))
+        message_box.setInformativeText(quest_names)
+        message_box.setIcon(message_box.Information)
+        logger.debug('Quests complete: %s', quest_names)
+        message_box.exec()
+
+
+class MultiObjectiveQuestWidget(QWidget):
+
+    def __init__(self, quest_name, objectives, completed):
+        super(MultiObjectiveQuestWidget, self).__init__()
+        quest_label = QLabel(quest_name)
+        quest_label.setToolTip(objectives[0].hint)
+        expand = QPushButton('v')
+        expand.setStyleSheet('padding: 0px 15px')
+        expand.clicked.connect(self.toggle_objectives)
+        self.expand = expand
+        top_bar = QWidget()
+        hlayout = QHBoxLayout()
+        hlayout.setContentsMargins(0,0,0,0)
+        hlayout.addWidget(quest_label)
+        if completed:
+            l = QLabel('Complete at {}!'.format(max(obj.completed_at for obj in objectives)))
+            hlayout.addWidget(l)
+        hlayout.addWidget(expand)
+        top_bar.setLayout(hlayout)
+        layout = QVBoxLayout()
+        layout.addWidget(top_bar)
+        layout.setContentsMargins(0,0,0,0)
+
+        self.visible = False
+        self.objectives = []
+        for objective in objectives:
+            row = QWidget()
+            hlayout = QHBoxLayout()
+            hlayout.setContentsMargins(0,0,0,0)
+            l = QLabel(objective.description)
+            hlayout.addWidget(l)
+            if objective.completed:
+                l = QLabel('Completed at {}!'.format(objective.completed_at))
+                hlayout.addWidget(l)
+            row.setLayout(hlayout)
+            row.setStyleSheet('padding-left: 25px')
+            row.setToolTip(objective.hint)
+            row.setVisible(self.visible)
+            self.objectives.append(row)
+            layout.addWidget(row)
+
+        self.setLayout(layout)
+
+    def toggle_objectives(self):
+        self.visible = False if self.visible else True
+        self.expand.setText('^' if self.visible else 'v')
+        for obj in self.objectives:
+            obj.setVisible(self.visible)

@@ -17,13 +17,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import datetime
 import os
 import os.path
 import sys
 import json
 import logging
+from collections import namedtuple
+
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
+
 from mu.contrib import uflash, appdirs
 
 
@@ -96,9 +100,10 @@ class Editor:
     Application logic for the editor itself.
     """
 
-    def __init__(self, view):
+    def __init__(self, view, quest_log):
         logger.info('Setting up editor.')
         self._view = view
+        self.quest_log = quest_log
         self.repl = None
         self.theme = 'day'
         self.user_defined_microbit_path = None
@@ -130,6 +135,10 @@ class Editor:
                             pass
                         else:
                             self._view.add_tab(path, text)
+                if 'quests' in old_session:
+                    self.quest_log.load_completed_objectives(old_session['quests'])
+                else:
+                    self.show_quests(first_time=True)
         if not self._view.tab_count:
             py = 'from microbit import *\n\n# Write your code here :-)'
             self._view.add_tab(None, py)
@@ -256,12 +265,14 @@ class Editor:
             self.theme = 'day'
         logger.info('Toggle theme to: {}'.format(self.theme))
         self._view.set_theme(self.theme)
+        self.quest_log.complete_objective(12)
 
     def new(self):
         """
         Adds a new tab to the editor.
         """
         self._view.add_tab(None, '')
+        self.quest_log.complete_objective(0)
 
     def load(self):
         """
@@ -277,6 +288,7 @@ class Editor:
                 with open(path) as f:
                     text = f.read()
                 name = path
+                self.quest_log.complete_objective(2)
             else:
                 # Open the hex, extract the Python script therein and set the
                 # name to None, thus forcing the user to work out what to name
@@ -311,6 +323,7 @@ class Editor:
                 logger.debug(tab.text())
                 f.write(tab.text())
             tab.setModified(False)
+            self.quest_log.complete_objective(1)
         else:
             # The user cancelled the filename selection.
             tab.path = None
@@ -320,12 +333,14 @@ class Editor:
         Make the editor's text bigger
         """
         self._view.zoom_in()
+        self.quest_log.complete_objective(9)
 
     def zoom_out(self):
         """
         Make the editor's text smaller.
         """
         self._view.zoom_out()
+        self.quest_log.complete_objective(10)
 
     def quit(self, *args, **kwargs):
         """
@@ -348,10 +363,118 @@ class Editor:
                 paths.append(widget.path)
         session = {
             'theme': self.theme,
-            'paths': paths
+            'paths': paths,
+            'quests': self.quest_log.completed_objectives(),
         }
         logger.debug(session)
         with open(SETTINGS_FILE, 'w') as out:
             logger.debug('Saving session to: {}'.format(SETTINGS_FILE))
             json.dump(session, out, indent=2)
         sys.exit(0)
+
+    def show_quests(self, first_time=False):
+        self.quest_log.show(first_time)
+
+
+Objective = namedtuple('Objective', 'id description long_description hint completed completed_at')
+
+class MuObjective(Objective):
+    def complete(self):
+        return self._replace(completed=True, completed_at=datetime.datetime.utcnow())
+
+Quest = namedtuple('Quest', 'id name_ description_ objectives completed')
+
+class MuQuest(Quest):
+    def complete(self):
+        return self._replace(completed=True)
+
+    @property
+    def name(self):
+        return QuestLog.OBJECTIVES[self.objectives[0]].description if len(self.objectives) == 1 else self.name_
+
+    @property
+    def description(self):
+        return QuestLog.OBJECTIVES[self.objectives[0]].long_description if len(self.objectives) == 1 else self.description_
+
+class QuestLog:
+
+    OBJECTIVES = [
+        MuObjective(0, 'Create a new file', '', 'Check the toolbar', False, None),
+        MuObjective(1, 'Save a file', '', 'That toolbar sure looks nice...', False, None),
+        MuObjective(2, 'Open a file', '', 'Tooolbaaaarrrrr....', False, None),
+        MuObjective(12, 'Change theme', '', '', False, None),
+
+        MuObjective(3, 'Use print in a script', '', '', False, None),
+
+        MuObjective(4, 'Replace print with logging', '', '', False, None),
+
+        MuObjective(5, 'Checkout Mu from Github', '', '', False, None),
+        MuObjective(6, 'Install requirements', '', '', False, None),
+        MuObjective(7, 'Edit a file', '', '', False, None),
+        MuObjective(8, 'Run edited version', '', '', False, None),
+
+        MuObjective(9, 'Zoom In', '', '', False, None),
+        MuObjective(10, 'Zoom Out', '', '', False, None),
+
+        MuObjective(11, 'Use REPL', '', '', False, None),
+    ]
+
+    QUESTS = [
+        [
+            MuQuest(0, '', '', [0], False),
+            MuQuest(1, '', '', [1], False),
+            MuQuest(2, '', '', [2], False),
+            MuQuest(3, 'A program', '', [0,1,2], False),
+            MuQuest(4, '', '', [3], False),
+            MuQuest(7, '', '', [9], False),
+            MuQuest(8, '', '', [10], False),
+            MuQuest(9, '', '', [12], False)
+        ],
+        [MuQuest(5, '', '', [5], False),],
+        [MuQuest(6, 'Edit Mu in Mu!', '', [5,6,7,8], False),],
+    ]
+
+    QUEST_SECTIONS = ['Beginner', 'Intermediate', 'Advanced']
+
+
+    def __init__(self, view):
+        self._view = view
+        self._view.setup()
+
+        self.objectives = dict((obj.id, obj) for obj in self.OBJECTIVES)
+        self.quests = []
+        self.update_quest_status()
+
+    def update_quest_status(self):
+        newly_completed_quests = []
+        all_quests = []
+        for section in self.quests or self.QUESTS:
+            quests = []
+            for quest in section:
+                if not quest.completed:
+                    if all(self.objectives[objv].completed for objv in quest.objectives):
+                        quest = quest.complete()
+                        newly_completed_quests.append(quest)
+                quests.append(quest)
+            all_quests.append(quests)
+        self.quests = all_quests
+        self._view.update_quests(self.QUEST_SECTIONS, self.quests, self.objectives)
+        return newly_completed_quests
+
+    def show(self, first_time):
+        self._view.show(first_time)
+
+    def complete_objective(self, objective_id, notify_complete=True):
+        newly_completed_quests = []
+        if not self.objectives[objective_id].completed:
+            self.objectives[objective_id] = self.objectives[objective_id].complete()
+            newly_completed_quests = self.update_quest_status()
+        if notify_complete and newly_completed_quests:
+            self._view.quest_complete(newly_completed_quests, self.objectives)
+
+    def load_completed_objectives(self, objectives):
+        for objective_id in objectives:
+            self.complete_objective(objective_id, notify_complete=False)
+
+    def completed_objectives(self):
+        return [obj_id for obj_id, obj in self.objectives.items() if obj.completed]
