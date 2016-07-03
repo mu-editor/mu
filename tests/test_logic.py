@@ -70,6 +70,99 @@ def test_find_microbit_with_device():
         assert mu.logic.find_microbit() == 'COM0'
 
 
+def test_check_flake():
+    """
+    Ensure the check_flake method calls PyFlakes with the expected code
+    reporter.
+    """
+    mock_r = mock.MagicMock()
+    mock_log = mock.MagicMock()
+    mock_r.log = mock_log
+    with mock.patch('mu.logic.MuFlakeCodeReporter', return_value=mock_r), \
+            mock.patch('mu.logic.check', return_value=None) as mock_check:
+        result = mu.logic.check_flake('foo.py', 'some code')
+        assert result == mock_log
+        mock_check.assert_called_once_with('some code', 'foo.py', mock_r)
+
+
+def test_check_pycodestyle():
+    """
+    Ensure the expected result if generated from the PEP8 style validator.
+    """
+    code = "import foo\n\n\n\n\n\ndef bar():\n    pass\n"  # Generate E303
+    result = mu.logic.check_pycodestyle(code)
+    assert len(result) == 1
+    assert result[0]['line_no'] == 7
+    assert result[0]['column'] == 0
+    assert ' above this line' in result[0]['message']
+    assert result[0]['code'] == 'E303'
+
+
+def test_MuFlakeCodeReporter_init():
+    """
+    Check state is set up as expected.
+    """
+    r = mu.logic.MuFlakeCodeReporter()
+    assert r.log == []
+
+
+def test_MuFlakeCodeReporter_unexpected_error():
+    """
+    Check the reporter handles unexpected errors.
+    """
+    r = mu.logic.MuFlakeCodeReporter()
+    r.unexpectedError('foo.py', 'Nobody expects the Spanish Inquisition!')
+    assert len(r.log) == 1
+    assert r.log[0]['line_no'] == 0
+    assert r.log[0]['filename'] == 'foo.py'
+    assert r.log[0]['message'] == 'Nobody expects the Spanish Inquisition!'
+
+
+def test_MuFlakeCodeReporter_syntax_error():
+    """
+    Check the reporter handles syntax errors in a humane and kid friendly
+    manner.
+    """
+    msg = ('Syntax error. Python cannot understand this line. Check for '
+           'missing characters!')
+    r = mu.logic.MuFlakeCodeReporter()
+    r.syntaxError('foo.py', 'something incomprehensible to kids', '2', 3,
+                  'source')
+    assert len(r.log) == 1
+    assert r.log[0]['line_no'] == 2
+    assert r.log[0]['message'] == msg
+    assert r.log[0]['column'] == 2
+    assert r.log[0]['source'] == 'source'
+
+
+def test_MuFlakeCodeReporter_flake_matched():
+    """
+    Check the reporter handles flake (regular) errors that match the expected
+    message structure.
+    """
+    r = mu.logic.MuFlakeCodeReporter()
+    err = "foo.py:4: something went wrong"
+    r.flake(err)
+    assert len(r.log) == 1
+    assert r.log[0]['line_no'] == 4
+    assert r.log[0]['column'] == 0
+    assert r.log[0]['message'] == 'something went wrong'
+
+
+def test_MuFlakeCodeReporter_flake_un_matched():
+    """
+    Check the reporter handles flake errors that do not conform to the expected
+    message structure.
+    """
+    r = mu.logic.MuFlakeCodeReporter()
+    err = "something went wrong"
+    r.flake(err)
+    assert len(r.log) == 1
+    assert r.log[0]['line_no'] == 0
+    assert r.log[0]['column'] == 0
+    assert r.log[0]['message'] == 'something went wrong'
+
+
 def test_REPL_posix():
     """
     The port is set correctly in a posix environment.
@@ -304,6 +397,102 @@ def test_flash_without_device():
         assert s.call_count == 0
 
 
+def test_add_fs_no_repl():
+    """
+    It's possible to add the file system pane if the REPL is inactive.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.add_fs()
+    view.add_filesystem.assert_called_once_with()
+    assert ed.fs
+
+
+def test_add_fs_with_repl():
+    """
+    If the REPL is active, you can't add the file system pane.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.repl = True
+    ed.add_fs()
+    assert view.add_filesystem.call_count == 0
+
+
+def test_remove_fs_no_fs():
+    """
+    Removing a non-existent file system raises a RuntimeError.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.fs = None
+    with pytest.raises(RuntimeError):
+        ed.remove_fs()
+
+
+def test_remove_fs():
+    """
+    Removing the file system results in the expected state.
+    """
+    view = mock.MagicMock()
+    view.remove_repl = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.fs = True
+    ed.remove_fs()
+    assert view.remove_filesystem.call_count == 1
+    assert ed.fs is None
+
+
+def test_toggle_fs_on():
+    """
+    If the fs is off, toggle it on.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.add_fs = mock.MagicMock()
+    ed.repl = None
+    ed.fs = None
+    ed.toggle_fs()
+    assert ed.add_fs.call_count == 1
+
+
+def test_toggle_fs_off():
+    """
+    If the fs is on, toggle if off.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.remove_fs = mock.MagicMock()
+    ed.repl = None
+    ed.fs = True
+    ed.toggle_fs()
+    assert ed.remove_fs.call_count == 1
+
+
+def test_toggle_fs_with_repl():
+    """
+    If the REPL is active, ensure a helpful message is displayed.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.add_repl = mock.MagicMock()
+    ed.repl = True
+    ed.fs = None
+    ed.toggle_fs()
+    assert view.show_message.call_count == 1
+
+
+def test_add_repl_with_fs():
+    """
+    Raise a RuntimeError if the file system exists to use the serial link.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.fs = True
+    with pytest.raises(RuntimeError):
+        ed.add_repl()
+
+
 def test_add_repl_already_exists():
     """
     Ensure the editor raises a RuntimeError if the repl already exists.
@@ -423,6 +612,19 @@ def test_toggle_repl_off():
     ed.repl = True
     ed.toggle_repl()
     assert ed.remove_repl.call_count == 1
+
+
+def test_toggle_repl_with_fs():
+    """
+    If the file system is active, show a helpful message instead.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.remove_repl = mock.MagicMock()
+    ed.repl = None
+    ed.fs = True
+    ed.toggle_repl()
+    assert view.show_message.call_count == 1
 
 
 def test_toggle_theme_to_night():
@@ -635,6 +837,40 @@ def test_zoom_out():
     ed = mu.logic.Editor(view)
     ed.zoom_out()
     assert view.zoom_out.call_count == 1
+
+
+def test_check_code():
+    """
+    Checking code correctly results in something the UI layer can parse.
+    """
+    view = mock.MagicMock()
+    tab = mock.MagicMock()
+    tab.path = 'foo.py'
+    tab.text.return_value = 'import this\n'
+    view.current_tab = tab
+    flake = [{'line_no': 2, 'message': 'a message', }, ]
+    pep8 = [{'line_no': 2, 'message': 'another message', },
+            {'line_no': 3, 'message': 'yet another message', }, ]
+    expected = {1: [{'line_no': 2, 'message': 'a message'},
+                    {'line_no': 2, 'message': 'another message'}, ],
+                2: [{'line_no': 3, 'message': 'yet another message'}]}
+    with mock.patch('mu.logic.check_flake', return_value=flake), \
+            mock.patch('mu.logic.check_pycodestyle', return_value=pep8):
+        ed = mu.logic.Editor(view)
+        ed.check_code()
+        view.reset_annotations.assert_called_once_with()
+        view.annotate_code.assert_called_once_with(expected)
+
+
+def test_check_code_no_tab():
+    """
+    Checking code when there is no tab containing code aborts the process.
+    """
+    view = mock.MagicMock()
+    view.current_tab = None
+    ed = mu.logic.Editor(view)
+    ed.check_code()
+    assert view.annotate_code.call_count == 0
 
 
 def test_show_help():

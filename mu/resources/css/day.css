@@ -16,3 +16,8 @@ QTextEdit {
 QToolBar, QToolButton {
     background: transparent;
 }
+
+QListWidget {
+    background-color: white;
+    color: black;
+}

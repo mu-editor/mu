@@ -1,5 +1,5 @@
 pytest
-pep8
+pycodestyle
 pyflakes
 coverage
 sphinx

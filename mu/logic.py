@@ -20,11 +20,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import os.path
 import sys
+import io
+import re
 import json
 import logging
+import tempfile
 import webbrowser
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
+from pyflakes.api import check
+from pycodestyle import StyleGuide, Checker
 from mu.contrib import uflash, appdirs
 from mu import __version__
 
@@ -45,6 +50,10 @@ LOG_DIR = appdirs.user_log_dir('mu', 'python')
 SETTINGS_FILE = os.path.join(DATA_DIR, 'settings.json')
 #: The path to the log file for the application.
 LOG_FILE = os.path.join(LOG_DIR, 'mu.log')
+#: Regex to match pycodestyle (PEP8) output.
+STYLE_REGEX = re.compile(r'.*:(\d+):(\d+):\s+(.*)')
+#: Regex to match flake8 output.
+FLAKE_REGEX = re.compile(r'.*:(\d+):\s+(.*)')
 
 
 logger = logging.getLogger(__name__)
@@ -70,6 +79,126 @@ def find_microbit():
                                                  p.portName())
                  for p in available_ports])
     return None
+
+
+def check_flake(filename, code):
+    """
+    Given a filename and some code to be checked, uses the PyFlakesmodule to
+    return a list of items describing issues of code quality. See:
+
+    https://github.com/PyCQA/pyflakes
+    """
+    reporter = MuFlakeCodeReporter()
+    check(code, filename, reporter)
+    return reporter.log
+
+
+def check_pycodestyle(code):
+    """
+    Given some code, uses the PyCodeStyle module (was PEP8) to return a list
+    of items describing issues of coding style. See:
+
+    https://pycodestyle.readthedocs.io/en/latest/intro.html
+    """
+    # PyCodeStyle reads input from files, so make a temporary file containing
+    # the code.
+    _, code_filename = tempfile.mkstemp()
+    with open(code_filename, 'w') as code_file:
+        code_file.write(code)
+    # Configure which PEP8 rules to ignore.
+    style = StyleGuide(parse_argv=False, config_file=False)
+    checker = Checker(code_filename, options=style.options)
+    # Re-route stdout to a temporary buffer to be parsed below.
+    temp_out = io.StringIO()
+    sys.stdout = temp_out
+    # Check the code.
+    checker.check_all()
+    # Put stdout back and read the content of the buffer. Remove the temporary
+    # file created at the start.
+    sys.stdout = sys.__stdout__
+    temp_out.seek(0)
+    results = temp_out.read()
+    temp_out.close()
+    code_file.close()
+    os.remove(code_filename)
+    # Parse the output from the tool into a list of usefully structured data.
+    style_feedback = []
+    for result in results.split('\n'):
+        matcher = STYLE_REGEX.match(result)
+        if matcher:
+            line_no, col, msg = matcher.groups()
+            code, description = msg.split(' ', 1)
+            if code == 'E303':
+                description += ' above this line'
+            style_feedback.append({
+                'line_no': int(line_no),
+                'column': int(col) - 1,
+                'message': description.capitalize(),
+                'code': code,
+            })
+    return style_feedback
+
+
+class MuFlakeCodeReporter:
+    """
+    The class instantiates a reporter that creates structured data about
+    code quality for Mu. Used by the PyFlakes module.
+    """
+
+    def __init__(self):
+        """
+        Set up the reporter object to be used to report PyFlake's results.
+        """
+        self.log = []
+
+    def unexpectedError(self, filename, message):
+        """
+        Called if an unexpected error occured while trying to process the file
+        called filename. The message parameter contains a description of the
+        problem.
+        """
+        self.log.append({
+            'line_no': 0,
+            'filename': filename,
+            'message': str(message)
+        })
+
+    def syntaxError(self, filename, message, line_no, column, source):
+        """
+        Records a syntax error in the file called filename.
+
+        The message argument contains an explanation of the syntax error,
+        line_no indicates the line where the syntax error occurred, column
+        indicates the column on which the error occurred and source is the
+        source code containing the syntax error.
+        """
+        msg = ('Syntax error. Python cannot understand this line. Check for '
+               'missing characters!')
+        self.log.append({
+            'message': msg,
+            'line_no': int(line_no),
+            'column': column - 1,
+            'source': source
+        })
+
+    def flake(self, message):
+        """
+        PyFlakes found something wrong with the code.
+        """
+        matcher = FLAKE_REGEX.match(str(message))
+        if matcher:
+            line_no, msg = matcher.groups()
+            self.log.append({
+                'line_no': int(line_no),
+                'column': 0,
+                'message': msg,
+            })
+        else:
+            self.log.append({
+                'line_no': 0,
+                'column': 0,
+                'message': str(message),
+            })
 
 
 class REPL:
@@ -102,6 +231,7 @@ class Editor:
         logger.info('Setting up editor.')
         self._view = view
         self.repl = None
+        self.fs = None
         self.theme = 'day'
         self.user_defined_microbit_path = None
         if not os.path.exists(PYTHON_DIRECTORY):
@@ -199,16 +329,49 @@ class Editor:
                            " the device remains unfound.")
             self._view.show_message(message, information)
 
+    def add_fs(self):
+        """
+        If the REPL is not active, add the file system navigator to the UI.
+        """
+        if self.repl is None:
+            if self.fs is None:
+                self._view.add_filesystem()
+                self.fs = True
+
+    def remove_fs(self):
+        """
+        If the REPL is not active, remove the file system navigator from
+        the UI.
+        """
+        if self.fs is None:
+            raise RuntimeError("File system not running")
+        self._view.remove_filesystem()
+        self.fs = None
+
     def toggle_fs(self):
         """
+        If the file system navigator is active enable it. Otherwise hide it.
+        If the REPL is active, display a message.
         """
-        self._view.add_filesystem()
+        if self.repl is None:
+            if self.fs is None:
+                self.add_fs()
+            else:
+                self.remove_fs()
+        else:
+            message = "File system and REPL cannot work at the same time."
+            information = ("The file system and REPL both use the same USB "
+                           "serial connection. Only one can be active "
+                           "at any time. Toggle the REPL off and try again.")
+            self._view.show_message(message, information)
 
     def add_repl(self):
         """
         Detect a connected BBC micro:bit and if found, connect to the
         MicroPython REPL and display it to the user.
         """
+        if self.fs:
+            raise RuntimeError("File system already connected")
         logger.info('Starting REPL in UI.')
         if self.repl is not None:
             raise RuntimeError("REPL already running")
@@ -248,10 +411,18 @@ class Editor:
         """
         If the REPL is active, close it; otherwise open the REPL.
         """
-        if self.repl is None:
-            self.add_repl()
+        if self.fs is None:
+            if self.repl is None:
+                self.add_repl()
+            else:
+                self.remove_repl()
         else:
-            self.remove_repl()
+            message = "REPL and file system cannot work at the same time."
+            information = ("The REPL and file system both use the same USB "
+                           "serial connection. Only one can be active "
+                           "at any time. Toggle the file system off and "
+                           "try again.")
+            self._view.show_message(message, information)
 
     def toggle_theme(self):
         """
@@ -333,6 +504,31 @@ class Editor:
         Make the editor's text smaller.
         """
         self._view.zoom_out()
+
+    def check_code(self):
+        """
+        Uses PyFlakes and PyCodeStyle to gather information about potential
+        problems with the code in the current tab.
+        """
+        self._view.reset_annotations()
+        tab = self._view.current_tab
+        if tab is None:
+            # There is no active text editor so abort.
+            return
+        filename = tab.path if tab.path else 'untitled'
+        flake = check_flake(filename, tab.text())
+        pep8 = check_pycodestyle(tab.text())
+        # Consolidate the feedback into a dict, with line numbers as keys.
+        feedback = {}
+        for item in flake + pep8:
+            line_no = int(item['line_no']) - 1  # zero based counting in Mu.
+            if line_no in feedback:
+                feedback[line_no].append(item)
+            else:
+                feedback[line_no] = [item, ]
+        if feedback:
+            logger.info(feedback)
+            self._view.annotate_code(feedback)
 
     def show_help(self):
         """

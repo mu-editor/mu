@@ -73,6 +73,7 @@ def run():
     button_bar.connect("zoom-in", editor.zoom_in)
     button_bar.connect("zoom-out", editor.zoom_out)
     button_bar.connect("theme", editor.toggle_theme)
+    button_bar.connect("check", editor.check_code)
     button_bar.connect("help", editor.show_help)
     button_bar.connect("quit", editor.quit)
     # Finished starting up the application, so hide the splash icon.

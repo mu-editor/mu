@@ -219,7 +219,7 @@ def test_ButtonBar_init():
         mock_tool_button_size.assert_called_once_with(3)
         mock_context_menu_policy.assert_called_once_with(Qt.PreventContextMenu)
         mock_object_name.assert_called_once_with('StandardToolBar')
-        assert mock_add_action.call_count == 11
+        assert mock_add_action.call_count == 12
         assert mock_add_separator.call_count == 3
 
 
@@ -763,7 +763,7 @@ def test_Window_setup():
     assert w.setWindowIcon.call_count == 1
     assert isinstance(w.setWindowIcon.call_args[0][0], QIcon)
     w.update_title.assert_called_once_with()
-    w.setMinimumSize.assert_called_once_with(852, 600)
+    w.setMinimumSize.assert_called_once_with(926, 600)
     assert w.widget == mock_widget
     assert w.splitter == mock_splitter
     w.widget.setLayout.assert_called_once_with(mock_layout)
