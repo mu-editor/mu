@@ -322,6 +322,9 @@ class EditorPane(QsciScintilla):
 
     def get_marker_at_line(self, line):
         """
+        Given a line, will return the marker if one exists. Otherwise, returns
+        None.
+
         Required because the built in markersAtLine method is useless, misnamed
         and doesn't return anything useful. :-(
         """
@@ -829,15 +832,15 @@ class FileSystemPane(QFrame):
         microbit_label.setText('Files on your micro:bit:')
         local_label = QLabel()
         local_label.setText('Files on your computer:')
-        layout.addWidget(microbit_label, 0, 0)
         self.microbit_label = microbit_label
-        layout.addWidget(local_label, 0, 1)
         self.local_label = local_label
-        layout.addWidget(microbit_fs, 1, 0)
         self.microbit_fs = microbit_fs
-        layout.addWidget(local_fs, 1, 1)
         self.local_fs = local_fs
         self.set_font_size()
+        layout.addWidget(microbit_label, 0, 0)
+        layout.addWidget(local_label, 0, 1)
+        layout.addWidget(microbit_fs, 1, 0)
+        layout.addWidget(local_fs, 1, 1)
 
     def set_theme(self, theme):
         """
@@ -850,6 +853,7 @@ class FileSystemPane(QFrame):
 
     def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
         """
+        Sets the font size for all the textual elements in this pane.
         """
         self.font.setPointSize(new_size)
         self.microbit_label.setFont(self.font)
@@ -857,16 +861,20 @@ class FileSystemPane(QFrame):
         self.microbit_fs.setFont(self.font)
         self.local_fs.setFont(self.font)
 
-    def zoomIn(self):
+    def zoomIn(self, delta=2):
         """
+        Zoom in (increase) the size of the font by delta amount difference in
+        point size upto 34 points.
         """
         old_size = self.font.pointSize()
-        new_size = min(old_size + 2, 34)
+        new_size = min(old_size + delta, 34)
         self.set_font_size(new_size)
 
-    def zoomOut(self):
+    def zoomOut(self, delta=2):
         """
+        Zoom out (decrease) the size of the font by delta amount difference in
+        point size down to 4 points.
         """
         old_size = self.font.pointSize()
-        new_size = max(old_size - 2, 4)
+        new_size = max(old_size - delta, 4)
         self.set_font_size(new_size)

@@ -3,7 +3,7 @@
 Tests for the user interface elements of Mu.
 """
 from PyQt5.QtWidgets import (QApplication, QAction, QWidget, QFileDialog,
-                             QMessageBox)
+                             QMessageBox, QLabel, QListWidget)
 from PyQt5.QtCore import QIODevice, Qt, QSize
 from PyQt5.QtGui import QTextCursor, QIcon
 from unittest import mock
@@ -188,6 +188,112 @@ def test_EditorPane_label():
     assert ep.label == 'bar.py'
     ep.isModified = mock.MagicMock(return_value=True)
     assert ep.label == 'bar.py *'
+
+
+def test_EditorPane_reset_annotations():
+    """
+    Ensure annotation state is reset.
+    """
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.clearAnnotations = mock.MagicMock()
+    ep.markerDeleteAll = mock.MagicMock()
+    ep.clearIndicatorRange = mock.MagicMock()
+    ep.indicators = {
+        1: 'indicator detail',
+    }
+    ep.reset_annotations()
+    ep.clearAnnotations.assert_called_once_with()
+    ep.markerDeleteAll.assert_called_once_with()
+    ep.clearIndicatorRange.assert_called_once_with(1, 0, 1, 999999,
+                                                   ep.INDICATOR_NUMBER)
+    assert ep.indicators == {}
+
+
+def test_EditorPane_annotate_code():
+    """
+    Given a dict containing representations of feedback on the code contained
+    within the EditorPane instance, ensure the correct indicators and markers
+    are set.
+    """
+    feedback = {
+        16: [{'line_no': 17,
+              'message': 'Syntax error',
+              'source': 'for word, pitch in words\n',
+              'column': 24},
+             {'line_no': 17,
+              'message': 'Too many blank lines (4) above this line',
+              'column': 0,
+              'code': 'E303'}],
+        17: [{'line_no': 18,
+              'message': 'Unexpected indentation',
+              'column': 4,
+              'code': 'E113'}],
+        20: [{'line_no': 21,
+              'message': 'No newline at end of file',
+              'column': 50,
+              'code': 'W292'}]}
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.indicatorDefine = mock.MagicMock()
+    ep.setIndicatorDrawUnder = mock.MagicMock()
+    ep.markerAdd = mock.MagicMock()
+    ep.fillIndicatorRange = mock.MagicMock()
+    ep.annotate_code(feedback)
+    ep.indicatorDefine.assert_called_once_with(ep.SquiggleIndicator,
+                                               ep.INDICATOR_NUMBER)
+    ep.setIndicatorDrawUnder.assert_called_once_with(True)
+    assert ep.markerAdd.call_count == 3  # once for each affected line.
+    assert ep.fillIndicatorRange.call_count == 3  # once for each message.
+
+
+def test_EditorPane_on_marker_clicked_on():
+    """
+    Ensure the annotation is shown when the marker is clicked.
+    """
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.indicators = {
+        1: [
+            {'message': 'a message'},
+            {'message': 'another message'},
+        ]
+    }
+    ep.annotation = mock.MagicMock(return_value=None)
+    ep.annotate = mock.MagicMock()
+    ep.get_marker_at_line = mock.MagicMock(return_value=1)
+    line_no = 1
+    ep.on_marker_clicked(1, line_no, None)
+    ep.get_marker_at_line.assert_called_once_with(line_no)
+    ep.annotation.assert_called_once_with(line_no)
+    ep.annotate.assert_called_once_with(line_no, 'a message\nanother message',
+                                        ep.annotationDisplay())
+
+
+def test_EditorPane_on_marker_clicked_off():
+    """
+    Ensure the annotation is removed when the marker is clicked again.
+    """
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.clearAnnotations = mock.MagicMock()
+    ep.get_marker_at_line = mock.MagicMock(return_value=1)
+    ep.annotation = mock.MagicMock(return_value=1)
+    line_no = 1
+    ep.on_marker_clicked(1, line_no, None)
+    ep.clearAnnotations.assert_called_once_with(line_no)
+
+
+def test_EditorPane_get_marker_at_line():
+    """
+    Given a line with a marker on it, will return the marker_id for it.
+    """
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.indicators = {
+        1: [
+            {'message': 'a message'},
+            {'message': 'another message'},
+        ]
+    }
+    line_no = 22
+    ep.markerLine = mock.MagicMock(return_value=line_no)
+    assert ep.get_marker_at_line(line_no) == 1
 
 
 def test_ButtonBar_init():
@@ -493,6 +599,29 @@ def test_Window_modified():
     assert w.modified
 
 
+def test_Window_add_filesystem():
+    """
+    Ensure the expected settings are updated when adding a file system pane.
+    """
+    w = mu.interface.Window()
+    w.theme = mock.MagicMock()
+    w.splitter = mock.MagicMock()
+    w.splitter.addWidget = mock.MagicMock(return_value=None)
+    w.splitter.setSizes = mock.MagicMock(return_value=None)
+    w.connect_zoom = mock.MagicMock(return_value=None)
+    mock_fs = mock.MagicMock()
+    mock_fs.setFocus = mock.MagicMock(return_value=None)
+    mock_fs_class = mock.MagicMock(return_value=mock_fs)
+    with mock.patch('mu.interface.FileSystemPane', mock_fs_class):
+        w.add_filesystem()
+    mock_fs_class.assert_called_once_with(w.splitter)
+    assert w.fs == mock_fs
+    w.splitter.addWidget.assert_called_once_with(mock_fs)
+    w.splitter.setSizes.assert_called_once_with([66, 33])
+    mock_fs.setFocus.assert_called_once_with()
+    w.connect_zoom.assert_called_once_with(mock_fs)
+
+
 def test_Window_add_repl():
     """
     Ensure the expected settings are updated.
@@ -519,6 +648,22 @@ def test_Window_add_repl():
     w.connect_zoom.assert_called_once_with(mock_repl)
 
 
+def test_Window_remove_filesystem():
+    """
+    Check all the necessary calls to remove / reset the file system pane are
+    made.
+    """
+    w = mu.interface.Window()
+    mock_fs = mock.MagicMock()
+    mock_fs.setParent = mock.MagicMock(return_value=None)
+    mock_fs.deleteLater = mock.MagicMock(return_value=None)
+    w.fs = mock_fs
+    w.remove_filesystem()
+    mock_fs.setParent.assert_called_once_with(None)
+    mock_fs.deleteLater.assert_called_once_with()
+    assert w.fs is None
+
+
 def test_Window_remove_repl():
     """
     Check all the necessary calls to remove / reset the REPL are made.
@@ -532,7 +677,6 @@ def test_Window_remove_repl():
     mock_repl.setParent.assert_called_once_with(None)
     mock_repl.deleteLater.assert_called_once_with()
     assert w.repl is None
-    w = mu.interface.Window()
 
 
 def test_Window_set_theme():
@@ -717,6 +861,31 @@ def test_Window_autosize_window():
     x = (1024 - 819) / 2
     y = (768 - 614) / 2
     w.move.assert_called_once_with(x, y)
+
+
+def test_Window_reset_annotations():
+    """
+    Ensure the current tab has its annotations reset.
+    """
+    tab = mock.MagicMock()
+    w = mu.interface.Window()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget = mock.MagicMock(return_value=tab)
+    w.reset_annotations()
+    tab.reset_annotations.assert_called_once_with()
+
+
+def test_Window_annotate_code():
+    """
+    Ensure the current tab is annotated with the passed in feedback.
+    """
+    tab = mock.MagicMock()
+    w = mu.interface.Window()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget = mock.MagicMock(return_value=tab)
+    feedback = 'foo'
+    w.annotate_code(feedback)
+    tab.annotate_code.assert_called_once_with(feedback)
 
 
 def test_Window_setup():
@@ -1046,3 +1215,75 @@ def test_REPLPane_clear():
         rp.setText = mock.MagicMock(return_value=None)
         rp.clear()
         rp.setText.assert_called_once_with('')
+
+
+def test_FileSysyemPane_init():
+    """
+    Check things are set up as expected.
+    """
+    fsp = mu.interface.FileSystemPane(None)
+    assert isinstance(fsp.microbit_label, QLabel)
+    assert isinstance(fsp.local_label, QLabel)
+    assert isinstance(fsp.microbit_fs, QListWidget)
+    assert isinstance(fsp.local_fs, QListWidget)
+
+
+def test_FileSystemPane_set_theme_day():
+    """
+    Ensures the day theme is set.
+    """
+    fsp = mu.interface.FileSystemPane(None)
+    fsp.setStyleSheet = mock.MagicMock()
+    fsp.set_theme('day')
+    fsp.setStyleSheet.assert_called_once_with(mu.interface.DAY_STYLE)
+
+
+def test_FileSystemPane_set_theme_night():
+    """
+    Ensures the night theme is set.
+    """
+    fsp = mu.interface.FileSystemPane(None)
+    fsp.setStyleSheet = mock.MagicMock()
+    fsp.set_theme('night')
+    fsp.setStyleSheet.assert_called_once_with(mu.interface.NIGHT_STYLE)
+
+
+def test_FileSystemPane_set_font_size():
+    """
+    Ensure the right size is set as the point size and the text based UI child
+    widgets are updated.
+    """
+    fsp = mu.interface.FileSystemPane(None)
+    fsp.font = mock.MagicMock()
+    fsp.microbit_label = mock.MagicMock()
+    fsp.local_label = mock.MagicMock()
+    fsp.microbit_fs = mock.MagicMock()
+    fsp.local_fs = mock.MagicMock()
+    fsp.set_font_size(22)
+    fsp.font.setPointSize.assert_called_once_with(22)
+    fsp.microbit_label.setFont.assert_called_once_with(fsp.font)
+    fsp.local_label.setFont.assert_called_once_with(fsp.font)
+    fsp.microbit_fs.setFont.assert_called_once_with(fsp.font)
+    fsp.local_fs.setFont.assert_called_once_with(fsp.font)
+
+
+def test_FileSystemPane_zoom_in():
+    """
+    Ensure the font is re-set bigger when zooming in.
+    """
+    fsp = mu.interface.FileSystemPane(None)
+    fsp.set_font_size = mock.MagicMock()
+    fsp.zoomIn()
+    expected = mu.interface.DEFAULT_FONT_SIZE + 2
+    fsp.set_font_size.assert_called_once_with(expected)
+
+
+def test_FileSystemPane_zoom_out():
+    """
+    Ensure the font is re-set smaller when zooming out.
+    """
+    fsp = mu.interface.FileSystemPane(None)
+    fsp.set_font_size = mock.MagicMock()
+    fsp.zoomOut()
+    expected = mu.interface.DEFAULT_FONT_SIZE - 2
+    fsp.set_font_size.assert_called_once_with(expected)
