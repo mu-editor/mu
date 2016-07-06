@@ -953,10 +953,8 @@ class FileSystemPane(QFrame):
         microbit_files = microfs.ls(microfs.get_serial())
         for f in microbit_files:
             self.microbit_fs.addItem(f)
-        print(os.listdir())
         local_files = [f for f in os.listdir(self.home)
                        if os.path.isfile(os.path.join(self.home, f))]
-        print(local_files)
         for f in local_files:
             self.local_fs.addItem(f)
 
