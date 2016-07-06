@@ -30,7 +30,7 @@ from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
-from mu.contrib import uflash, appdirs
+from mu.contrib import uflash, appdirs, microfs
 from mu import __version__
 
 
@@ -335,8 +335,20 @@ class Editor:
         """
         if self.repl is None:
             if self.fs is None:
-                self._view.add_filesystem()
-                self.fs = True
+                try:
+                    microfs.get_serial()
+                    self._view.add_filesystem(home=PYTHON_DIRECTORY)
+                    self.fs = True
+                except IOError:
+                    message = 'Could not find an attached BBC micro:bit.'
+                    information = ("Please make sure the device is plugged "
+                                   "into this computer.\n\nThe device must "
+                                   "have MicroPython flashed onto it before "
+                                   "the file system will work.\n\n"
+                                   "Finally, press the device's reset button "
+                                   "and wait a few seconds before trying "
+                                   "again.")
+                    self._view.show_message(message, information)
 
     def remove_fs(self):
         """

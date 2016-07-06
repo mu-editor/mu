@@ -24,11 +24,13 @@ from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
                              QTabWidget, QFileDialog, QMessageBox, QTextEdit,
-                             QFrame, QListWidget, QGridLayout, QLabel)
+                             QFrame, QListWidget, QGridLayout, QLabel, QMenu)
 from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
 from PyQt5.QtSerialPort import QSerialPort
+from mu.contrib import microfs
 from mu.resources import load_icon, load_stylesheet, load_font_data
+
 
 #: The default font size.
 DEFAULT_FONT_SIZE = 14
@@ -530,11 +532,11 @@ class Window(QStackedWidget):
                 return True
         return False
 
-    def add_filesystem(self):
+    def add_filesystem(self, home):
         """
         Adds the file system pane to the application.
         """
-        self.fs = FileSystemPane(self.splitter)
+        self.fs = FileSystemPane(self.splitter, home)
         self.splitter.addWidget(self.fs)
         self.splitter.setSizes([66, 33])
         self.fs.setFocus()
@@ -812,6 +814,104 @@ class REPLPane(QTextEdit):
         self.setText('')
 
 
+class MuFileList(QListWidget):
+    """
+    Contains shared methods for the two types of file listing used in Mu.
+    """
+    def disable(self, sibling):
+        """
+        Stops interaction with the list widgets.
+        """
+        self.setDisabled(True)
+        sibling.setDisabled(True)
+        self.setAcceptDrops(False)
+        sibling.setAcceptDrops(False)
+
+    def enable(self, sibling):
+        """
+        Allows interaction with the list widgets.
+        """
+        self.setDisabled(False)
+        sibling.setDisabled(False)
+        self.setAcceptDrops(True)
+        sibling.setAcceptDrops(True)
+
+
+class MicrobitFileList(MuFileList):
+    """
+    Represents a list of files on the micro:bit.
+    """
+
+    def __init__(self, home):
+        super().__init__()
+        self.home = home
+        self.setDragDropMode(QListWidget.DragDrop)
+
+    def dropEvent(self, event):
+        source = event.source()
+        self.disable(source)
+        if isinstance(source, LocalFileList):
+            local_filename = os.path.join(self.home,
+                                          source.currentItem().text())
+            logger.info("Putting {}".format(local_filename))
+            try:
+                with microfs.get_serial() as serial:
+                    logger.info(serial.port)
+                    microfs.put(serial, local_filename)
+                super().dropEvent(event)
+            except Exception as ex:
+                logger.error(ex)
+        self.enable(source)
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        delete_action = menu.addAction("Delete (cannot be undone)")
+        action = menu.exec_(self.mapToGlobal(event.pos()))
+        if action == delete_action:
+            self.setDisabled(True)
+            self.setAcceptDrops(False)
+            microbit_filename = self.currentItem().text()
+            logger.info("Deleting {}".format(microbit_filename))
+            try:
+                with microfs.get_serial() as serial:
+                    logger.info(serial.port)
+                    microfs.rm(serial, microbit_filename)
+                self.takeItem(self.currentRow())
+            except Exception as ex:
+                logger.error(ex)
+            self.setDisabled(False)
+            self.setAcceptDrops(True)
+
+
+class LocalFileList(MuFileList):
+    """
+    Represents a list of files in the Mu directory on the local machine.
+    """
+
+    def __init__(self, home):
+        super().__init__()
+        self.home = home
+        self.setDragDropMode(QListWidget.DragDrop)
+
+    def dropEvent(self, event):
+        source = event.source()
+        self.disable(source)
+        if isinstance(source, MicrobitFileList):
+            microbit_filename = source.currentItem().text()
+            local_filename = os.path.join(self.home,
+                                          microbit_filename)
+            logger.debug("Getting {} to {}".format(microbit_filename,
+                                                   local_filename))
+            try:
+                with microfs.get_serial() as serial:
+                    logger.info(serial.port)
+                    microfs.get(serial, microbit_filename, local_filename)
+                super().dropEvent(event)
+            except Exception as ex:
+                logger.error(ex)
+        self.enable(source)
+
+
 class FileSystemPane(QFrame):
     """
     Contains two QListWidgets representing the micro:bit and the user's code
@@ -819,13 +919,12 @@ class FileSystemPane(QFrame):
     can be selected for deletion.
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent, home):
         super().__init__(parent)
+        self.home = home
         self.font = Font().load()
-        microbit_fs = QListWidget()
-        microbit_fs.addItem('microbit')
-        local_fs = QListWidget()
-        local_fs.addItem('local')
+        microbit_fs = MicrobitFileList(home)
+        local_fs = LocalFileList(home)
         layout = QGridLayout()
         self.setLayout(layout)
         microbit_label = QLabel()
@@ -841,6 +940,25 @@ class FileSystemPane(QFrame):
         layout.addWidget(local_label, 0, 1)
         layout.addWidget(microbit_fs, 1, 0)
         layout.addWidget(local_fs, 1, 1)
+        self.ls()
+
+    def ls(self):
+        """
+        Gets a list of the files on the micro:bit.
+
+        Naive implementation for simplicity's sake.
+        """
+        self.microbit_fs.clear()
+        self.local_fs.clear()
+        microbit_files = microfs.ls(microfs.get_serial())
+        for f in microbit_files:
+            self.microbit_fs.addItem(f)
+        print(os.listdir())
+        local_files = [f for f in os.listdir(self.home)
+                       if os.path.isfile(os.path.join(self.home, f))]
+        print(local_files)
+        for f in local_files:
+            self.local_fs.addItem(f)
 
     def set_theme(self, theme):
         """

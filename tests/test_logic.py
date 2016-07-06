@@ -403,8 +403,9 @@ def test_add_fs_no_repl():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    ed.add_fs()
-    view.add_filesystem.assert_called_once_with()
+    with mock.patch('mu.logic.microfs.get_serial', return_value=True):
+        ed.add_fs()
+    view.add_filesystem.assert_called_once_with(home=mu.logic.PYTHON_DIRECTORY)
     assert ed.fs
 
 
@@ -415,8 +416,22 @@ def test_add_fs_with_repl():
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
     ed.repl = True
-    ed.add_fs()
+    with mock.patch('mu.logic.microfs.get_serial', return_value=True):
+        ed.add_fs()
     assert view.add_filesystem.call_count == 0
+
+
+def test_add_fs_no_device():
+    """
+    If there's no device attached then ensure a helpful message is displayed.
+    """
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    ex = IOError('BOOM')
+    ed = mu.logic.Editor(view)
+    with mock.patch('mu.logic.microfs.get_serial', side_effect=ex):
+        ed.add_fs()
+    assert view.show_message.call_count == 1
 
 
 def test_remove_fs_no_fs():
