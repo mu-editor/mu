@@ -412,6 +412,7 @@ MICROPYTHON_APIS = [
     "radio.on() \nTurns on the radio. This needs to be called since the radio draws power and\ntakes up memory that you may otherwise need.",
     "radio.off() \nTurns off the radio, thus saving power and memory.",
     "radio.config(length=32, queue=3, channel=7, power=0, address=0x75626974, group=0, data_rate=radio.RATE_1MBIT) \nConfigures the various settings relating to the radio. The specified default\nvalues are sensible.\n'length' is the maximum length, in bytes, of a message. It can be up to 251\nbytes long.\n'queue' is the number of messages to store on the message queue.\n'channel' (0-100) defines the channel to which the radio is tuned.\n'address' is an arbitrary 32-bit address that's used to filter packets.\n'group' is an 8-bit value used with 'address' when filtering packets.\n'data_rate' is the throughput speed. It can be one of: radio.RATE_250KbIT,\nradio.RATE_1MbIT (the default) or radio.2MBIT.",
+    "radio.reset() \nReset the settings to their default value.",
     "radio.send_bytes(message) \nSends a message containing bytes.",
     "radio.receive_bytes() \nReceive the next incoming message from the message queue. Returns 'None' if\nthere are no pending messages. Messages are returned as bytes.",
     "radio.send(message) \nSend a message string.",
