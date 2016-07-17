@@ -955,6 +955,7 @@ class FileSystemPane(QFrame):
             self.microbit_fs.addItem(f)
         local_files = [f for f in os.listdir(self.home)
                        if os.path.isfile(os.path.join(self.home, f))]
+        local_files.sort()
         for f in local_files:
             self.local_fs.addItem(f)
 

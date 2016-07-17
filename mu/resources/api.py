@@ -420,9 +420,12 @@ MICROPYTHON_APIS = [
     "radio.RATE_250KBIT",
     "radio.RATE_1MBIT",
     "radio.RATE_2MBIT",
+    # Audio
+    "audio.play(source, wait=True, pins=(pin0, pin1)) \nPlay the source to completion where 'source' is an iterable, each element of\nwhich must be an AudioFrame instance.",
+    "audio.AudioFrame()() \nRepresents a list of 32 samples each of which is a signed byte. It takes just\nover 4ms to play a single frame.",
     # Speech
-    "speech.reset() \nReset the pitch, speed, mouth and throat settings to their default values.",
+    "speech.translate(words) \nReturn a string containing the phonemes for the English words in the string\n'words'.",
     "speech.say(words, pitch=64, speed=72, mouth=128, throat=128) \nSay the English words in the string 'words'. Override the optional pitch,\nspeed, mouth and throat settings to change the tone of voice.",
     "speech.pronounce(phonemes, pitch=64, speed=72, mouth=128, throat=128) \nPronounce the phonemes in the string 'phonemes'. Override the optional pitch,\nspeed, mouth and throat settings to change the tone of voice.",
-    "speech.sing(phonemes, pitch=64, speed=72, mouth=128, throat=128) \nSing the phonemes in the string 'phonemes'. Change the pitch setting to change\nthe note. Override the optional pitch, speed, mouth and throat settings to\nchange the tone of voice.",
+    "speech.sing(song, pitch=64, speed=72, mouth=128, throat=128) \nSing the phonemes in the string 'song'. Add pitch information to a phoneme\nwith a hash followed by a number between 1-255 like this: '#112DOWWWWWWWW'.\nOverride the optional pitch, speed, mouth and throat settings to change the\ntone of voice.",
 ]
