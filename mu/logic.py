@@ -29,7 +29,11 @@ import webbrowser
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
 from pyflakes.api import check
-from pycodestyle import StyleGuide, Checker
+# Currently there is no Debian packages for pycodestyle, so fallback to old name
+try:
+    from pycodestyle import StyleGuide, Checker
+except ImportError:
+    from pep8 import StyleGuide, Checker
 from mu.contrib import uflash, appdirs, microfs
 from mu import __version__
 

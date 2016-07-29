@@ -8,5 +8,5 @@ Standards-Version: 3.9.1
 Package: mu
 Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends}, python3-setuptools, python3-pyqt5,
-         python3-pyqt5.qsci, python3-pyqt5.qtserialport
+         python3-pyqt5.qsci, python3-pyqt5.qtserialport, python3-serial, python3-pep8, pyflakes
 Description: A simple editor for kids, teachers and new programmers.
