@@ -42,7 +42,7 @@ Mu's outlook is:
 * Walk the path of least resistance (Mu should be easy);
 * Have fun (learning should be a positive experience).
 
-Mu's own code is simple an monolithic - it's commented and mostly found in a
+Mu's own code is simple and monolithic - it's commented and mostly found in a
 few obviously named Python files. This has been done on purpose: we want
 teachers and kids to take ownership of this project and organising the code in
 this way aids the first steps required to get involved (everything you need to
