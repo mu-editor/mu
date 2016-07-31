@@ -29,7 +29,7 @@ import webbrowser
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
 from pyflakes.api import check
-# Currently there is no Debian packages for pycodestyle, so fallback to old name
+# Currently there is no pycodestyle deb packages, so fallback to old name
 try:
     from pycodestyle import StyleGuide, Checker
 except ImportError:
