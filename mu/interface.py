@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import keyword
 import os
+import platform
 import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
@@ -789,11 +790,10 @@ class REPLPane(QTextEdit):
             msg = b'\x1B[C'
         elif key == Qt.Key_Left:
             msg = b'\x1B[D'
-        elif data.modifiers() == Qt.MetaModifier:
-            # Handle the Control key.  I would've expected us to have to test
-            # for Qt.ControlModifier, but on (my!) OSX Qt.MetaModifier does
-            # correspond to the Control key.  I've read something that suggests
-            # that it's different on other platforms.
+        elif platform.system() == 'Darwin' and data.modifiers() == Qt.MetaModifier:
+            # Handle the Control key. On OSX/macOS/Darwin (python calls this platform Darwin), this
+            # is handled by Qt.MetaModifier. Other platforms (Linux, Windows) call this Qt.ControlModifier.
+            # Go figure. See see http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
             if Qt.Key_A <= key <= Qt.Key_Z:
                 # The microbit treats an input of \x01 as Ctrl+A, etc.
                 msg = bytes([1 + key - Qt.Key_A])
