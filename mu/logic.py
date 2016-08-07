@@ -103,7 +103,7 @@ def check_pycodestyle(code):
     # PyCodeStyle reads input from files, so make a temporary file containing
     # the code.
     _, code_filename = tempfile.mkstemp()
-    with open(code_filename, 'w') as code_file:
+    with open(code_filename, 'w', newline='\n') as code_file:
         code_file.write(code)
     # Configure which PEP8 rules to ignore.
     style = StyleGuide(parse_argv=False, config_file=False)
@@ -123,7 +123,7 @@ def check_pycodestyle(code):
     os.remove(code_filename)
     # Parse the output from the tool into a list of usefully structured data.
     style_feedback = []
-    for result in results.split('\n'):
+    for result in results.split(os.linesep):
         matcher = STYLE_REGEX.match(result)
         if matcher:
             line_no, col, msg = matcher.groups()
@@ -263,7 +263,8 @@ class Editor:
                         else:
                             self._view.add_tab(path, text)
         if not self._view.tab_count:
-            py = 'from microbit import *\n\n# Write your code here :-)'
+            py = 'from microbit import *{}{}# Write your code here :-)'.format(
+                    os.linesep, os.linesep)
             self._view.add_tab(None, py)
         self._view.set_theme(self.theme)
 
@@ -464,14 +465,14 @@ class Editor:
             if path.endswith('.py'):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
-                with open(path) as f:
+                with open(path, newline=os.linesep) as f:
                     text = f.read()
                 name = path
             else:
                 # Open the hex, extract the Python script therein and set the
                 # name to None, thus forcing the user to work out what to name
                 # the recovered script.
-                with open(path) as f:
+                with open(path, newline=os.linesep) as f:
                     text = uflash.extract_script(f.read())
                 name = None
         except FileNotFoundError:
@@ -496,7 +497,7 @@ class Editor:
             if not os.path.basename(tab.path).endswith('.py'):
                 # No extension given, default to .py
                 tab.path += '.py'
-            with open(tab.path, 'w') as f:
+            with open(tab.path, 'w', newline='\n') as f:
                 logger.info('Saving script to: {}'.format(tab.path))
                 logger.debug(tab.text())
                 f.write(tab.text())
