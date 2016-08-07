@@ -36,6 +36,7 @@ except ImportError:
     from pep8 import StyleGuide, Checker
 from mu.contrib import uflash, appdirs, microfs
 from mu import __version__
+from mu.upython_device import get_upython_device
 
 
 #: USB product ID.
@@ -423,30 +424,29 @@ class Editor:
         if self.fs:
             raise RuntimeError("File system already connected")
         logger.info('Starting REPL in UI.')
+
         if self.repl is not None:
             raise RuntimeError("REPL already running")
-        mb_port = find_microbit()
-        if mb_port:
-            try:
-                self.repl = REPL(port=mb_port)
-                self._view.add_repl(self.repl)
-                logger.info('REPL on port: {}'.format(mb_port))
-            except IOError as ex:
-                logger.error(ex)
-                self.repl = None
-                information = ("Click the device's reset button, wait a few"
-                               " seconds and then try again.")
-                self._view.show_message(str(ex), information)
-            except Exception as ex:
-                logger.error(ex)
-        else:
-            message = 'Could not find an attached BBC micro:bit.'
-            information = ("Please make sure the device is plugged into this"
-                           " computer.\n\nThe device must have MicroPython"
-                           " flashed onto it before the REPL will work.\n\n"
-                           "Finally, press the device's reset button and wait"
-                           " a few seconds before trying again.")
-            self._view.show_message(message, information)
+        # if mb_port:
+        try:
+            self.repl = get_upython_device()
+            self._view.add_repl(self.repl)
+        except IOError as ex:
+            logger.error(ex)
+            self.repl = None
+            information = ("Click the device's reset button, wait a few"
+                           " seconds and then try again.")
+            self._view.show_message(str(ex), information)
+        except Exception as ex:
+            logger.error(ex)
+        # else:
+        #     message = 'Could not find an attached BBC micro:bit.'
+        #     information = ("Please make sure the device is plugged into this"
+        #                    " computer.\n\nThe device must have MicroPython"
+        #                    " flashed onto it before the REPL will work.\n\n"
+        #                    "Finally, press the device's reset button and wait"
+        #                    " a few seconds before trying again.")
+        #     self._view.show_message(message, information)
 
     def remove_repl(self):
         """
@@ -455,6 +455,7 @@ class Editor:
         if self.repl is None:
             raise RuntimeError("REPL not running")
         self._view.remove_repl()
+        self.repl.close()
         self.repl = None
 
     def toggle_repl(self):
