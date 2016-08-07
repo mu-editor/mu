@@ -1,6 +1,6 @@
 import logging
 from PyQt5 import QtSerialPort, QtWebSockets
-from PyQt5.QtCore import QIODevice, QUrl
+from PyQt5.QtCore import QIODevice, QUrl, QTimer
 from mu import config
 
 logger = logging.getLogger(__name__)
@@ -54,14 +54,23 @@ class WEBREPLuPythonDevice(uPythonDevice):
     """A WebREPL/network connected device"""
     def __init__(self, data_received_callback=None, uri=None):
         super().__init__(data_received_callback)
+        self.buffer = ''
         self.ws = QtWebSockets.QWebSocket()
         if uri == None:
             uri = config.webrepl_options['uri']
         self.ws.open(QUrl(uri))
-        self.ws.textMessageReceived.connect(self.data_received)
+        self.ws.textMessageReceived.connect(self.data_available)
 
     def close(self):
         self.ws.close()
+
+    def data_available(self, data):
+        self.buffer += data
+        QTimer.singleShot(10, self.data_received)
+
+    def data_received(self):
+        super().data_received(self.buffer)
+        self.buffer = ''
 
     def send(self, bs):
         self.ws.sendTextMessage(bs.decode('utf-8'))  # sendTextMessage takes a string
