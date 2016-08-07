@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import keyword
 import os
+import re
 import platform
 import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
@@ -30,6 +31,7 @@ from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
 from PyQt5.QtSerialPort import QSerialPort
 from mu.contrib import microfs
+from mu.upython_device import get_upython_device
 from mu.resources import load_icon, load_stylesheet, load_font_data
 
 
@@ -543,11 +545,11 @@ class Window(QStackedWidget):
         self.fs.setFocus()
         self.connect_zoom(self.fs)
 
-    def add_repl(self, repl):
+    def add_repl(self, device):
         """
         Adds the REPL pane to the application.
         """
-        self.repl = REPLPane(port=repl.port, theme=self.theme)
+        self.repl = REPLPane(theme=self.theme, device=device)
         self.splitter.addWidget(self.repl)
         self.splitter.setSizes([66, 33])
         self.repl.setFocus()
@@ -712,6 +714,7 @@ class Window(QStackedWidget):
         self.autosize_window()
 
 
+
 class REPLPane(QTextEdit):
     """
     REPL = Read, Evaluate, Print, Loop.
@@ -722,24 +725,18 @@ class REPLPane(QTextEdit):
     The device MUST be flashed with MicroPython for this to work.
     """
 
-    def __init__(self, port, theme='day', parent=None):
+    def __init__(self, device, theme='day', parent=None):
         super().__init__(parent)
         self.setFont(Font().load())
         self.setAcceptRichText(False)
         self.setReadOnly(False)
         self.setObjectName('replpane')
-        # open the serial port
-        self.serial = QSerialPort(self)
-        self.serial.setPortName(port)
-        if self.serial.open(QIODevice.ReadWrite):
-            self.serial.setBaudRate(115200)
-            self.serial.readyRead.connect(self.on_serial_read)
-            # clear the text
-            self.clear()
-            # Send a Control-C
-            self.serial.write(b'\x03')
-        else:
-            raise IOError("Cannot connect to device on port {}".format(port))
+
+        self.device = device
+        self.device.add_callback(self.process_data)
+
+        # clear the text
+        self.clear()
         self.set_theme(theme)
 
     def set_theme(self, theme):
@@ -750,12 +747,6 @@ class REPLPane(QTextEdit):
             self.setStyleSheet(DAY_STYLE)
         else:
             self.setStyleSheet(NIGHT_STYLE)
-
-    def on_serial_read(self):
-        """
-        Called when the application gets data from the connected device.
-        """
-        self.process_bytes(bytes(self.serial.readAll()))
 
     def keyPressEvent(self, data):
         """
@@ -783,28 +774,75 @@ class REPLPane(QTextEdit):
             if Qt.Key_A <= key <= Qt.Key_Z:
                 # The microbit treats an input of \x01 as Ctrl+A, etc.
                 msg = bytes([1 + key - Qt.Key_A])
-        self.serial.write(msg)
+        self.device.send(msg)
 
-    def process_bytes(self, bs):
+    def process_data(self, data):
         """
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
         """
         tc = self.textCursor()
+        logger.debug(data)
         # The text cursor must be on the last line of the document. If it isn't
         # then move it there.
         while tc.movePosition(QTextCursor.Down):
             pass
-        for b in bs:
-            if b == 8:  # \b
+
+        i = 0
+        while i < len(data):
+            if data[i] == '\b':
                 tc.movePosition(QTextCursor.Left)
                 self.setTextCursor(tc)
-            elif b == 13:  # \r
+            elif data[i] == '\r':
                 pass
+            elif ord(data[i]) == 0x1b and data[i+1] == '[':  #VT100 cursor control
+                i += 2  # move index to after the [
+                m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])', bytes(data[i:], 'utf-8').decode('utf-8'))  # QBytes
+                i += m.end() - 1  #move to (almost) after the control seq (will increment at end of loop)
+
+                if m.group("count") == '':
+                    count = 1
+                else:
+                    count = int(m.group("count"))
+
+                if m.group("action") == "A":  #up
+                    tc.movePosition(QTextCursor.Up, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "B":  #down
+                    tc.movePosition(QTextCursor.Down, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "C":  #right
+                    tc.movePosition(QTextCursor.Right, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "D":  #left
+                    tc.movePosition(QTextCursor.Left, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "K":  #delete things
+                    if m.group("count") == "":  #delete to end of line
+                        tc.movePosition(QTextCursor.EndOfLine, mode=QTextCursor.KeepAnchor)
+                        tc.removeSelectedText()
+                        self.setTextCursor(tc)
+            elif data[i] == '\n':
+                tc.movePosition(QTextCursor.End)
+                self.setTextCursor(tc)
+                self.insertPlainText(data[i])
             else:
                 tc.deleteChar()
                 self.setTextCursor(tc)
-                self.insertPlainText(chr(b))
+                self.insertPlainText(data[i])
+            i += 1
+
+
+        # for c in data:
+        #     if c == '\b':
+        #         tc.movePosition(QTextCursor.Left)
+        #         self.setTextCursor(tc)
+        #     elif c == '\r':
+        #         pass
+        #     else:
+        #         tc.deleteChar()
+        #         self.setTextCursor(tc)
+        #         self.insertPlainText(c)
         self.ensureCursorVisible()
 
     def clear(self):
