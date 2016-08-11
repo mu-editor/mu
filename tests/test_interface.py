@@ -200,7 +200,7 @@ def test_EditorPane_reset_annotations():
     ep.markerDeleteAll = mock.MagicMock()
     ep.clearIndicatorRange = mock.MagicMock()
     ep.indicators = {
-        1: 'indicator detail',
+        1: [{'line_no': 2, 'column': 0, 'message': 'indicator detail'}],
     }
     ep.reset_annotations()
     ep.clearAnnotations.assert_called_once_with()

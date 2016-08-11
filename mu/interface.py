@@ -284,8 +284,8 @@ class EditorPane(QsciScintilla):
         self.markerDeleteAll()
         for marker_id in self.indicators:
             for message in self.indicators[marker_id]:
-                line_no = int(message['line_no']) - 1  # Mu editor is zero based
-                    self.clearIndicatorRange(line_no, 0, line_no, 999999,
+                line_no = int(message['line_no']) - 1  # Mu editor is 0-based
+                self.clearIndicatorRange(line_no, 0, line_no, 999999,
                                          self.INDICATOR_NUMBER)
         self.indicators = {}
 
