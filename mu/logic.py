@@ -264,7 +264,7 @@ class Editor:
                             self._view.add_tab(path, text)
         if not self._view.tab_count:
             py = 'from microbit import *{}{}# Write your code here :-)'.format(
-                    os.linesep, os.linesep)
+                os.linesep, os.linesep)
             self._view.add_tab(None, py)
         self._view.set_theme(self.theme)
 
