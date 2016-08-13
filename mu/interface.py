@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import keyword
 import os
-import platform
+import re
 import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
@@ -587,7 +587,7 @@ class Window(QStackedWidget):
         if hasattr(self, 'repl') and self.repl:
             self.repl.set_theme(theme)
 
-    def show_message(self, message, information=None, icon=None):
+    def show_message(self, message, information=None, icon=None, parent=None):
         """
         Displays a modal message to the user.
 
@@ -599,7 +599,7 @@ class Window(QStackedWidget):
         to override the icon to one of the following settings: NoIcon,
         Question, Information, Warning or Critical.
         """
-        message_box = QMessageBox()
+        message_box = QMessageBox(parent)
         message_box.setText(message)
         message_box.setWindowTitle('Mu')
         if information:
@@ -612,7 +612,7 @@ class Window(QStackedWidget):
         logger.debug(information)
         message_box.exec()
 
-    def show_confirmation(self, message, information=None, icon=None):
+    def show_confirmation(self, message, information=None, icon=None, parent=None):
         """
         Displays a modal message to the user to which they need to confirm or
         cancel.
@@ -625,7 +625,7 @@ class Window(QStackedWidget):
         to override the icon to one of the following settings: NoIcon,
         Question, Information, Warning or Critical.
         """
-        message_box = QMessageBox()
+        message_box = QMessageBox(parent)
         message_box.setText(message)
         message_box.setWindowTitle('Mu')
         if information:
@@ -776,13 +776,15 @@ class REPLPane(QTextEdit):
             msg = b'\x1B[C'
         elif key == Qt.Key_Left:
             msg = b'\x1B[D'
-        elif platform.system() == 'Darwin' and data.modifiers() == Qt.MetaModifier:
-            # Handle the Control key. On OSX/macOS/Darwin (python calls this platform Darwin), this
-            # is handled by Qt.MetaModifier. Other platforms (Linux, Windows) call this Qt.ControlModifier.
-            # Go figure. See see http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
-            if Qt.Key_A <= key <= Qt.Key_Z:
-                # The microbit treats an input of \x01 as Ctrl+A, etc.
-                msg = bytes([1 + key - Qt.Key_A])
+        elif data.modifiers() == Qt.ControlModifier:
+        #     # Handle the Control key.  I would've expected us to have to test
+        #     # for Qt.ControlModifier, but on (my!) OSX Qt.MetaModifier does
+        #     # correspond to the Control key.  I've read something that suggests
+        #     # that it's different on other platforms.
+        #     # see http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
+             if Qt.Key_A <= key <= Qt.Key_Z:
+        #         # The microbit treats an input of \x01 as Ctrl+A, etc.
+                 msg = bytes([1 + key - Qt.Key_A])
         self.serial.write(msg)
 
     def process_bytes(self, bs):
@@ -791,20 +793,54 @@ class REPLPane(QTextEdit):
         them in the REPL widget.
         """
         tc = self.textCursor()
+        logger.debug(bs)
         # The text cursor must be on the last line of the document. If it isn't
         # then move it there.
         while tc.movePosition(QTextCursor.Down):
             pass
-        for b in bs:
-            if b == 8:  # \b
+        i = 0
+        while i < len(bs):
+            if bs[i] == 8:  # \b
                 tc.movePosition(QTextCursor.Left)
                 self.setTextCursor(tc)
-            elif b == 13:  # \r
+            elif bs[i] == ord('\r'):
                 pass
+            elif bs[i] == 0x1b and bs[i+1] == ord('['):  #VT100 cursor control
+                i += 2  # move index to after the [
+                m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])', bs[i:].decode('ascii', errors='ignore'))
+                i += m.end() - 1  #move to (almost) after the control seq (will increment at end of loop)
+
+                if m.group("count") == '':
+                    count = 1
+                else:
+                    count = int(m.group("count"))
+
+                if m.group("action") == "A":  #up
+                    tc.movePosition(QTextCursor.Up, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "B":  #down
+                    tc.movePosition(QTextCursor.Down, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "C":  #right
+                    tc.movePosition(QTextCursor.Right, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "D":  #left
+                    tc.movePosition(QTextCursor.Left, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "K":  #delete things
+                    if m.group("count") == "":  #delete to end of line
+                        tc.movePosition(QTextCursor.EndOfLine, mode=QTextCursor.KeepAnchor)
+                        tc.removeSelectedText()
+                        self.setTextCursor(tc)
+            elif bs[i] == ord('\n'):
+                tc.movePosition(QTextCursor.End)
+                self.setTextCursor(tc)
+                self.insertPlainText(chr(bs[i]))
             else:
                 tc.deleteChar()
                 self.setTextCursor(tc)
-                self.insertPlainText(chr(b))
+                self.insertPlainText(chr(bs[i]))
+            i += 1
         self.ensureCursorVisible()
 
     def clear(self):
