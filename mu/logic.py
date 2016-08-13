@@ -59,18 +59,27 @@ FLAKE_REGEX = re.compile(r'.*:(\d+):\s+(.*)')
 logger = logging.getLogger(__name__)
 
 
-def find_upython_device():
+def find_microbit():
     """
-    TODO - allow option to select which serial port to use.
-    For now, this just returns the first serial port found
+    Returns the port for the first microbit it finds connected to the host
+    computer. If no microbit is found, returns None.
     """
     available_ports = QSerialPortInfo.availablePorts()
-    try:
-        port = available_ports[0]
-        logger.info('Using port {}'.format(port.portName()))
-        return port.portName()
-    except IndexError:
-        return None
+    for port in available_ports:
+        pid = port.productIdentifier()
+        vid = port.vendorIdentifier()
+        if pid == MICROBIT_PID and vid == MICROBIT_VID:
+            port_name = port.portName()
+            logger.info('Found micro:bit with portName: {}'.format(port_name))
+            return port_name
+    logger.warning('Could not find micro:bit.')
+    logger.debug('Available ports:')
+    logger.debug(['PID:{} VID:{} PORT:{}'.format(p.productIdentifier(),
+                                                 p.vendorIdentifier(),
+                                                 p.portName())
+                 for p in available_ports])
+    return None
+
 
 def check_flake(filename, code):
     """
@@ -269,10 +278,56 @@ class Editor:
         if tab is None:
             # There is no active text editor.
             return
-        self.save()  # save current script to disk
-        logger.debug('Python script file:')
-        logger.debug(tab.path)
-        microfs.put(microfs.get_serial(), tab.path)
+        python_script = tab.text().encode('utf-8')
+        logger.debug('Python script:')
+        logger.debug(python_script)
+        # Generate a hex file.
+        python_hex = uflash.hexlify(python_script)
+        logger.debug('Python hex:')
+        logger.debug(python_hex)
+        micropython_hex = uflash.embed_hex(uflash._RUNTIME, python_hex)
+        # Determine the location of the BBC micro:bit. If it can't be found
+        # fall back to asking the user to locate it.
+        path_to_microbit = uflash.find_microbit()
+        if path_to_microbit is None:
+            # Has the path to the device already been specified?
+            if self.user_defined_microbit_path:
+                path_to_microbit = self.user_defined_microbit_path
+            else:
+                # Ask the user to locate the device.
+                path_to_microbit = self._view.get_microbit_path(HOME_DIRECTORY)
+                # Store the user's specification of the path for future use.
+                self.user_defined_microbit_path = path_to_microbit
+                logger.debug('User defined path to micro:bit: {}'.format(
+                             self.user_defined_microbit_path))
+        # Check the path and that it exists simply because the path maybe based
+        # on stale data.
+        logger.debug('Path to micro:bit: {}'.format(path_to_microbit))
+        if path_to_microbit and os.path.exists(path_to_microbit):
+            logger.debug('Flashing to device.')
+            hex_file = os.path.join(path_to_microbit, 'micropython.hex')
+            uflash.save_hex(micropython_hex, hex_file)
+            message = 'Flashing "{}" onto the micro:bit.'.format(tab.label)
+            information = ("When the yellow LED stops flashing the device"
+                           " will restart and your script will run. If there"
+                           " is an error, you'll see a helpful message scroll"
+                           " across the device's display.")
+            self._view.show_message(message, information, 'Information', parent = self._view)
+        else:
+            # Reset user defined path since it's incorrect.
+            self.user_defined_microbit_path = None
+            # Try to be helpful... essentially there is nothing Mu can do but
+            # prompt for patience while the device is mounted and/or do the
+            # classic "have you tried switching it off and on again?" trick.
+            # This one's for James at the Raspberry Pi Foundation. ;-)
+            message = 'Could not find an attached BBC micro:bit.'
+            information = ("Please ensure you leave enough time for the BBC"
+                           " micro:bit to be attached and configured correctly"
+                           " by your computer. This may take several seconds."
+                           " Alternatively, try removing and re-attaching the"
+                           " device or saving your work and restarting Mu if"
+                           " the device remains unfound.")
+            self._view.show_message(message, information, parent = self._view)
 
     def add_fs(self):
         """
@@ -332,7 +387,7 @@ class Editor:
         logger.info('Starting REPL in UI.')
         if self.repl is not None:
             raise RuntimeError("REPL already running")
-        mb_port = find_upython_device()
+        mb_port = find_microbit()
         if mb_port:
             try:
                 self.repl = REPL(port=mb_port)
