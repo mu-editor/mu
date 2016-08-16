@@ -312,7 +312,8 @@ class Editor:
                            " will restart and your script will run. If there"
                            " is an error, you'll see a helpful message scroll"
                            " across the device's display.")
-            self._view.show_message(message, information, 'Information', parent = self._view)
+            self._view.show_message(message, information, 'Information',
+                                    parent=self._view)
         else:
             # Reset user defined path since it's incorrect.
             self.user_defined_microbit_path = None
@@ -327,7 +328,7 @@ class Editor:
                            " Alternatively, try removing and re-attaching the"
                            " device or saving your work and restarting Mu if"
                            " the device remains unfound.")
-            self._view.show_message(message, information, parent = self._view)
+            self._view.show_message(message, information, parent=self._view)
 
     def add_fs(self):
         """
@@ -348,7 +349,8 @@ class Editor:
                                    "Finally, press the device's reset button "
                                    "and wait a few seconds before trying "
                                    "again.")
-                    self._view.show_message(message, information, parent = self._view)
+                    self._view.show_message(message, information,
+                                            parent=self._view)
 
     def remove_fs(self):
         """
@@ -375,7 +377,7 @@ class Editor:
             information = ("The file system and REPL both use the same USB "
                            "serial connection. Only one can be active "
                            "at any time. Toggle the REPL off and try again.")
-            self._view.show_message(message, information, parent = self._view)
+            self._view.show_message(message, information, parent=self._view)
 
     def add_repl(self):
         """
@@ -398,7 +400,8 @@ class Editor:
                 self.repl = None
                 information = ("Click the device's reset button, wait a few"
                                " seconds and then try again.")
-                self._view.show_message(str(ex), information, parent = self._view)
+                self._view.show_message(str(ex), information,
+                                        parent=self._view)
             except Exception as ex:
                 logger.error(ex)
         else:
@@ -408,7 +411,7 @@ class Editor:
                            " flashed onto it before the REPL will work.\n\n"
                            "Finally, press the device's reset button and wait"
                            " a few seconds before trying again.")
-            self._view.show_message(message, information, parent = self._view)
+            self._view.show_message(message, information, parent=self._view)
 
     def remove_repl(self):
         """
@@ -434,7 +437,7 @@ class Editor:
                            "serial connection. Only one can be active "
                            "at any time. Toggle the file system off and "
                            "try again.")
-            self._view.show_message(message, information, parent = self._view)
+            self._view.show_message(message, information, parent=self._view)
 
     def toggle_theme(self):
         """
@@ -557,7 +560,7 @@ class Editor:
             # Alert the user to handle unsaved work.
             msg = ('There is un-saved work, exiting the application will'
                    ' cause you to lose it.')
-            result = self._view.show_confirmation(msg, parent = self._view)
+            result = self._view.show_confirmation(msg, parent=self._view)
             if result == QMessageBox.Cancel:
                 if args and hasattr(args[0], 'ignore'):
                     # The function is handling an event, so ignore it.

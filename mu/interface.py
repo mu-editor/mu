@@ -611,7 +611,8 @@ class Window(QStackedWidget):
         logger.debug(information)
         message_box.exec()
 
-    def show_confirmation(self, message, information=None, icon=None, parent=None):
+    def show_confirmation(self, message, information=None, icon=None,
+                          parent=None):
         """
         Displays a modal message to the user to which they need to confirm or
         cancel.
