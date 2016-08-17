@@ -767,7 +767,7 @@ def test_save_no_path():
     ed = mu.logic.Editor(view)
     with mock.patch('builtins.open', mock_open):
         ed.save()
-    mock_open.assert_called_once_with('foo.py', 'w', newline='\n')
+    mock_open.assert_called_once_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
     view.get_save_path.assert_called_once_with(mu.logic.PYTHON_DIRECTORY)
 
@@ -805,7 +805,7 @@ def test_save_python_file():
     ed = mu.logic.Editor(view)
     with mock.patch('builtins.open', mock_open):
         ed.save()
-    mock_open.assert_called_once_with('foo.py', 'w', newline='\n')
+    mock_open.assert_called_once_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
     assert view.get_save_path.call_count == 0
     view.current_tab.setModified.assert_called_once_with(False)
@@ -827,7 +827,7 @@ def test_save_with_no_file_extension():
     ed = mu.logic.Editor(view)
     with mock.patch('builtins.open', mock_open):
         ed.save()
-    mock_open.assert_called_once_with('foo.py', 'w', newline='\n')
+    mock_open.assert_called_once_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
     assert view.get_save_path.call_count == 0
 
