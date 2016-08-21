@@ -76,12 +76,11 @@ def test_check_flake():
     reporter.
     """
     mock_r = mock.MagicMock()
-    mock_log = mock.MagicMock()
-    mock_r.log = mock_log
+    mock_r.log = [{'line_no': 2, 'column': 0, 'message': 'b'}]
     with mock.patch('mu.logic.MuFlakeCodeReporter', return_value=mock_r), \
             mock.patch('mu.logic.check', return_value=None) as mock_check:
         result = mu.logic.check_flake('foo.py', 'some code')
-        assert result == mock_log
+        assert result == {2: mock_r.log}
         mock_check.assert_called_once_with('some code', 'foo.py', mock_r)
 
 
@@ -92,10 +91,10 @@ def test_check_pycodestyle():
     code = "import foo\n\n\n\n\n\ndef bar():\n    pass\n"  # Generate E303
     result = mu.logic.check_pycodestyle(code)
     assert len(result) == 1
-    assert result[0]['line_no'] == 7
-    assert result[0]['column'] == 0
-    assert ' above this line' in result[0]['message']
-    assert result[0]['code'] == 'E303'
+    assert result[6][0]['line_no'] == 6
+    assert result[6][0]['column'] == 0
+    assert ' above this line' in result[6][0]['message']
+    assert result[6][0]['code'] == 'E303'
 
 
 def test_MuFlakeCodeReporter_init():
@@ -129,7 +128,7 @@ def test_MuFlakeCodeReporter_syntax_error():
     r.syntaxError('foo.py', 'something incomprehensible to kids', '2', 3,
                   'source')
     assert len(r.log) == 1
-    assert r.log[0]['line_no'] == 2
+    assert r.log[0]['line_no'] == 1
     assert r.log[0]['message'] == msg
     assert r.log[0]['column'] == 2
     assert r.log[0]['source'] == 'source'
@@ -144,7 +143,7 @@ def test_MuFlakeCodeReporter_flake_matched():
     err = "foo.py:4: something went wrong"
     r.flake(err)
     assert len(r.log) == 1
-    assert r.log[0]['line_no'] == 4
+    assert r.log[0]['line_no'] == 3
     assert r.log[0]['column'] == 0
     assert r.log[0]['message'] == 'something went wrong'
 
@@ -863,18 +862,17 @@ def test_check_code():
     tab.path = 'foo.py'
     tab.text.return_value = 'import this\n'
     view.current_tab = tab
-    flake = [{'line_no': 2, 'message': 'a message', }, ]
-    pep8 = [{'line_no': 2, 'message': 'another message', },
-            {'line_no': 3, 'message': 'yet another message', }, ]
-    expected = {1: [{'line_no': 2, 'message': 'a message'},
-                    {'line_no': 2, 'message': 'another message'}, ],
-                2: [{'line_no': 3, 'message': 'yet another message'}]}
+    flake = {2: {'line_no': 2, 'message': 'a message', }, }
+    pep8 = {2: [{'line_no': 2, 'message': 'another message', }],
+            3: [{'line_no': 3, 'message': 'yet another message', }]}
     with mock.patch('mu.logic.check_flake', return_value=flake), \
             mock.patch('mu.logic.check_pycodestyle', return_value=pep8):
         ed = mu.logic.Editor(view)
         ed.check_code()
         view.reset_annotations.assert_called_once_with()
-        view.annotate_code.assert_called_once_with(expected)
+        view.annotate_code.assert_has_calls([mock.call(flake, 'error'),
+                                             mock.call(pep8, 'style')],
+                                            any_order=True)
 
 
 def test_check_code_no_tab():

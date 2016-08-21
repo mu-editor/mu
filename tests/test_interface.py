@@ -200,14 +200,30 @@ def test_EditorPane_reset_annotations():
     ep.markerDeleteAll = mock.MagicMock()
     ep.clearIndicatorRange = mock.MagicMock()
     ep.indicators = {
-        1: 'indicator detail',
+        'error': {
+            'id': 19,
+            'markers': {
+                1: [{'column': 0, 'line_no': 1, 'message': 'indicator detail'}]
+            },
+        },
+        'style': {
+            'id': 20,
+            'markers': {
+                2: [{'code': 'x', 'column': 0, 'line_no': 1,
+                     'message': 'indicator detail'}]
+            }
+        }
     }
     ep.reset_annotations()
     ep.clearAnnotations.assert_called_once_with()
     ep.markerDeleteAll.assert_called_once_with()
-    ep.clearIndicatorRange.assert_called_once_with(1, 0, 1, 999999,
-                                                   ep.INDICATOR_NUMBER)
-    assert ep.indicators == {}
+    ep.clearIndicatorRange.assert_has_calls(
+        [mock.call(1, 0, 1, 999999, ep.indicators['error']['id']),
+         mock.call(1, 0, 1, 999999, ep.indicators['style']['id'])],
+        any_order=True)
+    for indicator in ep.indicators:
+        assert ep.indicators[indicator]['markers'] == {}
+        assert ep.indicators[indicator]['markers'] == {}
 
 
 def test_EditorPane_annotate_code():
@@ -217,7 +233,7 @@ def test_EditorPane_annotate_code():
     are set.
     """
     feedback = {
-        16: [{'line_no': 17,
+        17: [{'line_no': 17,
               'message': 'Syntax error',
               'source': 'for word, pitch in words\n',
               'column': 24},
@@ -225,11 +241,11 @@ def test_EditorPane_annotate_code():
               'message': 'Too many blank lines (4) above this line',
               'column': 0,
               'code': 'E303'}],
-        17: [{'line_no': 18,
+        18: [{'line_no': 18,
               'message': 'Unexpected indentation',
               'column': 4,
               'code': 'E113'}],
-        20: [{'line_no': 21,
+        21: [{'line_no': 21,
               'message': 'No newline at end of file',
               'column': 50,
               'code': 'W292'}]}
@@ -238,9 +254,9 @@ def test_EditorPane_annotate_code():
     ep.setIndicatorDrawUnder = mock.MagicMock()
     ep.markerAdd = mock.MagicMock()
     ep.fillIndicatorRange = mock.MagicMock()
-    ep.annotate_code(feedback)
+    ep.annotate_code(feedback, 'error')
     ep.indicatorDefine.assert_called_once_with(ep.SquiggleIndicator,
-                                               ep.INDICATOR_NUMBER)
+                                               ep.indicators['error']['id'])
     ep.setIndicatorDrawUnder.assert_called_once_with(True)
     assert ep.markerAdd.call_count == 3  # once for each affected line.
     assert ep.fillIndicatorRange.call_count == 3  # once for each message.
@@ -252,10 +268,11 @@ def test_EditorPane_on_marker_clicked_on():
     """
     ep = mu.interface.EditorPane(None, 'baz')
     ep.indicators = {
-        1: [
-            {'message': 'a message'},
-            {'message': 'another message'},
-        ]
+        'error': {
+            'markers': {
+                1: [{'message': 'a message'}, {'message': 'another message'}]
+            }
+        }
     }
     ep.annotation = mock.MagicMock(return_value=None)
     ep.annotate = mock.MagicMock()
@@ -287,10 +304,11 @@ def test_EditorPane_get_marker_at_line():
     """
     ep = mu.interface.EditorPane(None, 'baz')
     ep.indicators = {
-        1: [
-            {'message': 'a message'},
-            {'message': 'another message'},
-        ]
+        'error': {
+            'markers': {
+                1: [{'message': 'a message'}, {'message': 'another message'}]
+            }
+        }
     }
     line_no = 22
     ep.markerLine = mock.MagicMock(return_value=line_no)
@@ -885,8 +903,8 @@ def test_Window_annotate_code():
     w.tabs = mock.MagicMock()
     w.tabs.currentWidget = mock.MagicMock(return_value=tab)
     feedback = 'foo'
-    w.annotate_code(feedback)
-    tab.annotate_code.assert_called_once_with(feedback)
+    w.annotate_code(feedback, 'error')
+    tab.annotate_code.assert_called_once_with(feedback, 'error')
 
 
 def test_Window_setup():
