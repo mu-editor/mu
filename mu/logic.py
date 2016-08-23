@@ -102,7 +102,8 @@ def check_pycodestyle(code):
     """
     # PyCodeStyle reads input from files, so make a temporary file containing
     # the code.
-    _, code_filename = tempfile.mkstemp()
+    code_fd, code_filename = tempfile.mkstemp()
+    os.close(code_fd)
     with open(code_filename, 'w') as code_file:
         code_file.write(code)
     # Configure which PEP8 rules to ignore.
