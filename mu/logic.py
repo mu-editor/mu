@@ -84,13 +84,18 @@ def find_microbit():
 def check_flake(filename, code):
     """
     Given a filename and some code to be checked, uses the PyFlakesmodule to
-    return a list of items describing issues of code quality. See:
+    return a dictionary describing issues of code quality per line. See:
 
     https://github.com/PyCQA/pyflakes
     """
     reporter = MuFlakeCodeReporter()
     check(code, filename, reporter)
-    return reporter.log
+    feedback = {}
+    for log in reporter.log:
+        if log['line_no'] not in feedback:
+            feedback[log['line_no']] = []
+        feedback[log['line_no']].append(log)
+    return feedback
 
 
 def check_pycodestyle(code):
@@ -122,17 +127,20 @@ def check_pycodestyle(code):
     temp_out.close()
     code_file.close()
     os.remove(code_filename)
-    # Parse the output from the tool into a list of usefully structured data.
-    style_feedback = []
+    # Parse the output from the tool into a dictionary of structured data.
+    style_feedback = {}
     for result in results.split(os.linesep):
         matcher = STYLE_REGEX.match(result)
         if matcher:
             line_no, col, msg = matcher.groups()
+            line_no = int(line_no) - 1
             code, description = msg.split(' ', 1)
             if code == 'E303':
                 description += ' above this line'
-            style_feedback.append({
-                'line_no': int(line_no),
+            if line_no not in style_feedback:
+                style_feedback[line_no] = []
+            style_feedback[line_no].append({
+                'line_no': line_no,
                 'column': int(col) - 1,
                 'message': description.capitalize(),
                 'code': code,
@@ -177,7 +185,7 @@ class MuFlakeCodeReporter:
                'missing characters!')
         self.log.append({
             'message': msg,
-            'line_no': int(line_no),
+            'line_no': int(line_no) - 1,  # Zero based counting in Mu.
             'column': column - 1,
             'source': source
         })
@@ -190,7 +198,7 @@ class MuFlakeCodeReporter:
         if matcher:
             line_no, msg = matcher.groups()
             self.log.append({
-                'line_no': int(line_no),
+                'line_no': int(line_no) - 1,  # Zero based counting in Mu.
                 'column': 0,
                 'message': msg,
             })
@@ -531,18 +539,13 @@ class Editor:
             return
         filename = tab.path if tab.path else 'untitled'
         flake = check_flake(filename, tab.text())
+        if flake:
+            logger.info(flake)
+            self._view.annotate_code(flake, 'error')
         pep8 = check_pycodestyle(tab.text())
-        # Consolidate the feedback into a dict, with line numbers as keys.
-        feedback = {}
-        for item in flake + pep8:
-            line_no = int(item['line_no']) - 1  # zero based counting in Mu.
-            if line_no in feedback:
-                feedback[line_no].append(item)
-            else:
-                feedback[line_no] = [item, ]
-        if feedback:
-            logger.info(feedback)
-            self._view.annotate_code(feedback)
+        if pep8:
+            logger.info(pep8)
+            self._view.annotate_code(pep8, 'style')
 
     def show_help(self):
         """
