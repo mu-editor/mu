@@ -1,5 +1,6 @@
 
-# TODO - this file should eventually read in config options from config files, either global or per-project.
+# TODO - this file should eventually read in config options from config files,
+# either global or per-project.
 # for now just edit the vars below as required
 
 # board types: 'microbit', 'serial', 'webrepl'
@@ -10,9 +11,6 @@ serial_options = {
     'speed': 115200
 }
 
-webrepl_options ={
+webrepl_options = {
     'uri': 'ws://192.168.1.177:8266',
 }
-
-
-

@@ -444,7 +444,7 @@ class Editor:
         #     information = ("Please make sure the device is plugged into this"
         #                    " computer.\n\nThe device must have MicroPython"
         #                    " flashed onto it before the REPL will work.\n\n"
-        #                    "Finally, press the device's reset button and wait"
+        #                   "Finally, press the device's reset button and wait"
         #                    " a few seconds before trying again.")
         #     self._view.show_message(message, information)
 

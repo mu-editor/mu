@@ -51,8 +51,9 @@ class uPythonDevice():
         """
         executes the commands in the list `commands` on the device via the REPL
 
-        For this to work correctly, a particular sequence of commands needs to be
-        sent to put the device into a good state to process the incoming command.
+        For this to work correctly, a particular sequence of commands needs to
+        be sent to put the device into a good state to process the incoming
+        command.
 
         Returns the stdout and stderr output from the micro:bit.
         """
@@ -117,8 +118,8 @@ class uPythonDevice():
 
     def list_files(self):
         """
-        Returns a list of the files on the connected device or raises an IOError if
-        there's a problem.
+        Returns a list of the files on the connected device or raises an IOError
+        if there's a problem.
         """
         out, err = self.execute_commands([
             'import os',
@@ -168,7 +169,8 @@ class uPythonDevice():
             "f = open('{}', 'rb')".format(remote_filename),
             "r = f.read",
             "result = True",
-            "while result:\n    result = r(32)\n    if result:\n        print(result, end='')\n",
+            "while result:\n    result = r(32)\n    if result:\n" # cont below
+            "        print(result, end='')\n",
             #"while f.read(32): print(_, end='')\n",
             "f.close()",
         ]
@@ -231,7 +233,8 @@ class WEBREPLuPythonDevice(uPythonDevice):
         return data
 
     def send(self, bs):
-        self.ws.sendTextMessage(bs.decode('utf-8'))  # sendTextMessage takes a string
+        # sendTextMessage requires string
+        self.ws.sendTextMessage(bs.decode('utf-8'))
 
 
 class SerialuPythonDevice(uPythonDevice):
@@ -283,7 +286,8 @@ class MicrobitDevice(SerialuPythonDevice):
         port = self.find_microbit()
         if port is None:
             raise IOError("Cannot find Microbit")
-        super().__init__(data_received_callback, port=port, speed=self.MICROBIT_SERIAL_SPEED)
+        super().__init__(data_received_callback, port=port,
+                         speed=self.MICROBIT_SERIAL_SPEED)
 
     def find_microbit(self):
         """
@@ -296,7 +300,8 @@ class MicrobitDevice(SerialuPythonDevice):
             vid = port.vendorIdentifier()
             if pid == self.MICROBIT_PID and vid == self.MICROBIT_VID:
                 port_name = port.portName()
-                logger.info('Found micro:bit with portName: {}'.format(port_name))
+                logger.info(
+                    'Found micro:bit with portName: {}'.format(port_name))
                 return port_name
         logger.warning('Could not find micro:bit.')
         logger.debug('Available ports:')
@@ -314,5 +319,3 @@ def get_upython_device(data_received_callback=None):
         return SerialuPythonDevice(data_received_callback=None)
     elif config.board_type == 'webrepl':
         return WEBREPLuPythonDevice(data_received_callback=None)
-
-

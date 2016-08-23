@@ -728,7 +728,6 @@ class Window(QStackedWidget):
         self.autosize_window()
 
 
-
 class REPLPane(QTextEdit):
     """
     REPL = Read, Evaluate, Print, Loop.
@@ -781,10 +780,12 @@ class REPLPane(QTextEdit):
             msg = b'\x1B[C'
         elif key == Qt.Key_Left:
             msg = b'\x1B[D'
-        elif platform.system() == 'Darwin' and data.modifiers() == Qt.MetaModifier:
-            # Handle the Control key. On OSX/macOS/Darwin (python calls this platform Darwin), this
-            # is handled by Qt.MetaModifier. Other platforms (Linux, Windows) call this Qt.ControlModifier.
-            # Go figure. See see http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
+        elif platform.system() == 'Darwin' and \
+                data.modifiers() == Qt.MetaModifier:
+            # Handle the Control key. On OSX/macOS/Darwin (python calls this
+            # platform Darwin), this is handled by Qt.MetaModifier. Other
+            # platforms (Linux, Windows) call this Qt.ControlModifier. Go
+            # figure. See http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
             if Qt.Key_A <= key <= Qt.Key_Z:
                 # The microbit treats an input of \x01 as Ctrl+A, etc.
                 msg = bytes([1 + key - Qt.Key_A])
@@ -809,31 +810,35 @@ class REPLPane(QTextEdit):
                 self.setTextCursor(tc)
             elif data[i] == '\r':
                 pass
-            elif ord(data[i]) == 0x1b and data[i+1] == '[':  #VT100 cursor control
+            elif ord(data[i]) == 0x1b and data[i+1] == '[':  # VT100 cursor
                 i += 2  # move index to after the [
-                m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])', bytes(data[i:], 'utf-8').decode('utf-8'))  # QBytes
-                i += m.end() - 1  #move to (almost) after the control seq (will increment at end of loop)
+                m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])',
+                              bytes(data[i:], 'utf-8').decode('utf-8'))
+
+                # move to (almost) after control seq (will ++ at end of loop)
+                i += m.end() - 1
 
                 if m.group("count") == '':
                     count = 1
                 else:
                     count = int(m.group("count"))
 
-                if m.group("action") == "A":  #up
+                if m.group("action") == "A":  # up
                     tc.movePosition(QTextCursor.Up, n=count)
                     self.setTextCursor(tc)
-                elif m.group("action") == "B":  #down
+                elif m.group("action") == "B":  # down
                     tc.movePosition(QTextCursor.Down, n=count)
                     self.setTextCursor(tc)
-                elif m.group("action") == "C":  #right
+                elif m.group("action") == "C":  # right
                     tc.movePosition(QTextCursor.Right, n=count)
                     self.setTextCursor(tc)
-                elif m.group("action") == "D":  #left
+                elif m.group("action") == "D":  # left
                     tc.movePosition(QTextCursor.Left, n=count)
                     self.setTextCursor(tc)
-                elif m.group("action") == "K":  #delete things
-                    if m.group("count") == "":  #delete to end of line
-                        tc.movePosition(QTextCursor.EndOfLine, mode=QTextCursor.KeepAnchor)
+                elif m.group("action") == "K":  # delete things
+                    if m.group("count") == "":  # delete to end of line
+                        tc.movePosition(QTextCursor.EndOfLine,
+                                        mode=QTextCursor.KeepAnchor)
                         tc.removeSelectedText()
                         self.setTextCursor(tc)
             elif data[i] == '\n':
@@ -845,7 +850,6 @@ class REPLPane(QTextEdit):
                 self.setTextCursor(tc)
                 self.insertPlainText(data[i])
             i += 1
-
 
         # for c in data:
         #     if c == '\b':
