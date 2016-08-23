@@ -282,9 +282,11 @@ class EditorPane(QsciScintilla):
         """
         self.clearAnnotations()
         self.markerDeleteAll()
-        for line_no in self.indicators:
-            self.clearIndicatorRange(line_no, 0, line_no, 999999,
-                                     self.INDICATOR_NUMBER)
+        for marker_id in self.indicators:
+            for message in self.indicators[marker_id]:
+                line_no = int(message['line_no']) - 1  # Mu editor is 0-based
+                self.clearIndicatorRange(line_no, 0, line_no, 999999,
+                                         self.INDICATOR_NUMBER)
         self.indicators = {}
 
     def annotate_code(self, feedback):
