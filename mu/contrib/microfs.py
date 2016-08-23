@@ -41,13 +41,13 @@ For example, 'ufs ls' will list the files on a connected BBC micro:bit.
 """
 
 
-def find_microbit():
+def find_upython_device():
     """
     Finds the port to which the device is connected.
     """
     ports = list_serial_ports()
     for port in ports:
-        if "VID:PID=0D28:0204" in port[2].upper():
+        #if "VID:PID=0D28:0204" in port[2].upper():
             return port[0]
     return None
 
@@ -74,13 +74,13 @@ def get_serial():
     Detect if a micro:bit is connected and return a serial object to talk to
     it.
     """
-    port = find_microbit()
+    port = find_upython_device()
     if port is None:
         raise IOError('Could not find micro:bit.')
     return Serial(port, 115200, timeout=1, parity='N')
 
 
-def execute(commands, serial):
+def execute(commands, serial=None):
     """
     Sends the command to the connected micro:bit via serial and returns the
     result.
@@ -90,6 +90,8 @@ def execute(commands, serial):
 
     Returns the stdout and stderr output from the micro:bit.
     """
+    if serial is None:
+        serial = get_serial()
     result = b''
     raw_on(serial)
     # Write the actual command and send CTRL-D to evaluate.

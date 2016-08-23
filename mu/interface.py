@@ -431,7 +431,7 @@ class FileTabs(QTabWidget):
         if (modified):
             msg = 'There is un-saved work, closing the tab will cause you ' \
                   'to lose it.'
-            if window.show_confirmation(msg) == QMessageBox.Cancel:
+            if window.show_confirmation(msg, parent=window) == QMessageBox.Cancel:
                 return
         super(FileTabs, self).removeTab(tab_id)
 
@@ -600,7 +600,7 @@ class Window(QStackedWidget):
         if hasattr(self, 'repl') and self.repl:
             self.repl.set_theme(theme)
 
-    def show_message(self, message, information=None, icon=None):
+    def show_message(self, message, information=None, icon=None, parent=None):
         """
         Displays a modal message to the user.
 
@@ -612,7 +612,7 @@ class Window(QStackedWidget):
         to override the icon to one of the following settings: NoIcon,
         Question, Information, Warning or Critical.
         """
-        message_box = QMessageBox()
+        message_box = QMessageBox(parent)
         message_box.setText(message)
         message_box.setWindowTitle('Mu')
         if information:
@@ -625,7 +625,8 @@ class Window(QStackedWidget):
         logger.debug(information)
         message_box.exec()
 
-    def show_confirmation(self, message, information=None, icon=None):
+    def show_confirmation(self, message, information=None, icon=None,
+                          parent=None):
         """
         Displays a modal message to the user to which they need to confirm or
         cancel.
@@ -638,7 +639,7 @@ class Window(QStackedWidget):
         to override the icon to one of the following settings: NoIcon,
         Question, Information, Warning or Critical.
         """
-        message_box = QMessageBox()
+        message_box = QMessageBox(parent)
         message_box.setText(message)
         message_box.setWindowTitle('Mu')
         if information:
