@@ -140,7 +140,8 @@ class DayTheme(Theme):
     Paper = QColor('white')
     Caret = QColor('black')
     Margin = QColor('#EEE')
-    Indicator = QColor('red')
+    IndicatorError = QColor('red')
+    IndicatorStyle = QColor('blue')
 
 
 class NightTheme(Theme):
@@ -166,7 +167,8 @@ class NightTheme(Theme):
     Paper = QColor('black')
     Caret = QColor('white')
     Margin = QColor('#333')
-    Indicator = QColor('white')
+    IndicatorError = QColor('white')
+    IndicatorStyle = QColor('cyan')
 
 
 class PythonLexer(QsciLexerPython):
@@ -201,8 +203,10 @@ class EditorPane(QsciScintilla):
         super().__init__()
         self.path = path
         self.setText(text)
-        self.indicators = {}
-        self.INDICATOR_NUMBER = 19  # arbitrary
+        self.indicators = {  # IDs are arbitrary
+            'error': {'id': 19, 'markers': {}},
+            'style': {'id': 20, 'markers': {}}
+        }
         self.MARKER_NUMBER = 22  # also arbitrary
         self.api = api if api else []
         self.setModified(False)
@@ -244,8 +248,11 @@ class EditorPane(QsciScintilla):
         self.setCaretForegroundColor(theme.Caret)
         self.setMarginsBackgroundColor(theme.Margin)
         self.setMarginsForegroundColor(theme.Caret)
-        self.setIndicatorForegroundColor(theme.Indicator)
-        self.setMarkerBackgroundColor(theme.Indicator, self.MARKER_NUMBER)
+        self.setIndicatorForegroundColor(theme.IndicatorError,
+                                         self.indicators['error']['id'])
+        self.setIndicatorForegroundColor(theme.IndicatorStyle,
+                                         self.indicators['style']['id'])
+        self.setMarkerBackgroundColor(theme.IndicatorError, self.MARKER_NUMBER)
 
         api = QsciAPIs(self.lexer)
         for entry in self.api:
@@ -282,32 +289,33 @@ class EditorPane(QsciScintilla):
         """
         self.clearAnnotations()
         self.markerDeleteAll()
-        for marker_id in self.indicators:
-            for message in self.indicators[marker_id]:
-                line_no = int(message['line_no']) - 1  # Mu editor is 0-based
+        for indicator in self.indicators:
+            for _, markers in self.indicators[indicator]['markers'].items():
+                line_no = markers[0]['line_no']  # All markers on same line.
                 self.clearIndicatorRange(line_no, 0, line_no, 999999,
-                                         self.INDICATOR_NUMBER)
-        self.indicators = {}
+                                         self.indicators[indicator]['id'])
+            self.indicators[indicator]['markers'] = {}
 
-    def annotate_code(self, feedback):
+    def annotate_code(self, feedback, annotation_type='error'):
         """
-        Given a list of annotations add them to the editor pane so the user
-        can act upon them.
+        Given a list of annotations add them to the editor pane so the user can
+        act upon them.
         """
-        self.indicatorDefine(self.SquiggleIndicator, self.INDICATOR_NUMBER)
+        indicator = self.indicators[annotation_type]
+        self.indicatorDefine(self.SquiggleIndicator, indicator['id'])
         self.setIndicatorDrawUnder(True)
         for line_no, messages in feedback.items():
             marker_id = self.markerAdd(line_no, self.MARKER_NUMBER)
             col_start = 0
             col_end = 0
-            self.indicators[marker_id] = messages
+            indicator['markers'][marker_id] = messages
             for message in messages:
                 col = message.get('column', 0)
                 if col:
                     col_start = col - 1
                     col_end = col + 1
                     self.fillIndicatorRange(line_no, col_start, line_no,
-                                            col_end, self.INDICATOR_NUMBER)
+                                            col_end, indicator['id'])
 
     def on_marker_clicked(self, margin, line, state):
         """
@@ -318,8 +326,11 @@ class EditorPane(QsciScintilla):
             if self.annotation(line):
                 self.clearAnnotations(line)
             else:
-                messages = [i['message'] for i in
-                            self.indicators.get(marker_id, [])]
+                messages = []
+                for indicator in self.indicators:
+                    markers = self.indicators[indicator]['markers']
+                    messages += [i['message'] for i in
+                                 markers.get(marker_id, [])]
                 text = '\n'.join(messages).strip()
                 if text:
                     self.annotate(line, text, self.annotationDisplay())
@@ -332,9 +343,10 @@ class EditorPane(QsciScintilla):
         Required because the built in markersAtLine method is useless, misnamed
         and doesn't return anything useful. :-(
         """
-        for marker_id in self.indicators:
-            if self.markerLine(marker_id) == line:
-                return marker_id
+        for indicator in self.indicators:
+            for marker_id in self.indicators[indicator]['markers']:
+                if self.markerLine(marker_id) == line:
+                    return marker_id
 
 
 class ButtonBar(QToolBar):
@@ -670,13 +682,13 @@ class Window(QStackedWidget):
         """
         self.current_tab.reset_annotations()
 
-    def annotate_code(self, feedback):
+    def annotate_code(self, feedback, annotation_type):
         """
         Given a list of annotations about the code in the current tab, add
         the annotations to the editor window so the user can make appropriate
         changes.
         """
-        self.current_tab.annotate_code(feedback)
+        self.current_tab.annotate_code(feedback, annotation_type)
 
     def setup(self, theme, api=None):
         """
