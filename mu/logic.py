@@ -58,6 +58,15 @@ LOG_FILE = os.path.join(LOG_DIR, 'mu.log')
 STYLE_REGEX = re.compile(r'.*:(\d+):(\d+):\s+(.*)')
 #: Regex to match flake8 output.
 FLAKE_REGEX = re.compile(r'.*:(\d+):\s+(.*)')
+#: Regex to match false positive flake errors if microbit.* is expanded.
+EXPAND_FALSE_POSITIVE = re.compile(r"^'microbit\.(\w+)' imported but unused$")
+#: The text to which "from microbit import *" should be expanded.
+EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
+                   " pin3, pin6, pin4, i2c, pin5, pin7, pin8, Image, "
+                   "pin9, pin14, pin16, reset, pin19, temperature, "
+                   "sleep, pin20, button_a, button_b, running_time, "
+                   "accelerometer, display, uart, spi, panic, pin13, "
+                   "pin12, pin11, pin10, compass")
 
 
 logger = logging.getLogger(__name__)
@@ -92,10 +101,20 @@ def check_flake(filename, code):
 
     https://github.com/PyCQA/pyflakes
     """
+    import_all = "from microbit import *" in code
+    if import_all:
+        # Massage code so "from microbit import *" is expanded so the symbols
+        # are known to flake.
+        code = code.replace("from microbit import *", EXPANDED_IMPORT)
     reporter = MuFlakeCodeReporter()
     check(code, filename, reporter)
     feedback = {}
     for log in reporter.log:
+        if import_all:
+            # Guard to stop unwanted "microbit.* imported but unused" messages.
+            message = log['message']
+            if EXPAND_FALSE_POSITIVE.match(message):
+                continue
         if log['line_no'] not in feedback:
             feedback[log['line_no']] = []
         feedback[log['line_no']].append(log)

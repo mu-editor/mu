@@ -84,6 +84,23 @@ def test_check_flake():
         mock_check.assert_called_once_with('some code', 'foo.py', mock_r)
 
 
+def test_check_flake_needing_expansion():
+    """
+    Ensure the check_flake method calls PyFlakes with the expected code
+    reporter.
+    """
+    mock_r = mock.MagicMock()
+    msg = "'microbit.foo' imported but unused"
+    mock_r.log = [{'line_no': 2, 'column': 0, 'message': msg}]
+    with mock.patch('mu.logic.MuFlakeCodeReporter', return_value=mock_r), \
+            mock.patch('mu.logic.check', return_value=None) as mock_check:
+        code = 'from microbit import *'
+        result = mu.logic.check_flake('foo.py', code)
+        assert result == {}
+        mock_check.assert_called_once_with(mu.logic.EXPANDED_IMPORT, 'foo.py',
+                                           mock_r)
+
+
 def test_check_pycodestyle():
     """
     Ensure the expected result if generated from the PEP8 style validator.
