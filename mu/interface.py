@@ -236,6 +236,7 @@ class EditorPane(QsciScintilla):
         self.setMarginSensitivity(1, True)
         self.marginClicked.connect(self.on_marker_clicked)
         self.setAnnotationDisplay(self.AnnotationBoxed)
+        self.setWhitespaceVisibility(self.WsVisible)
 
     def set_theme(self, theme=DayTheme):
         """
