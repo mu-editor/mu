@@ -163,6 +163,18 @@ For this to work you'll need to have Qt5 and Python 3 installed.
 
     brew install https://raw.githubusercontent.com/mu-editor/mu/master/package/extras/qscintilla2.rb
 
+  .. note:: If you have an existing virtual environment it will not have
+     changed to add the new packages. The simplest thing to do is to create a
+     new virtual environment, remembering to use the
+     ``--system-site-packages`` switch so that installed libraries are
+     included. For instance::
+
+        $ virtualenv -p /usr/local/bin/python3 --system-site-packages ~/env/py3
+
+     or::
+
+        $ mkvirtualenv -p /usr/local/bin/python3 --system-site-packages py3
+
 Ensure you have the correct dependencies for development installed by creating
 a virtualenv and running::
 
