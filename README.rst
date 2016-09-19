@@ -150,8 +150,18 @@ repository with the following command::
 
     $ git clone https://github.com/ntoll/mu.git
 
-For this to work you'll need to have Qt5 and Python 3 installed. On Debian
-based systems this is covered by installing: python3-pyqt5, python3-pyqt5.qsci and python3-pyqt5.qtserialport.
+For this to work you'll need to have Qt5 and Python 3 installed.
+
+* On Debian based systems this is covered by installing: python3-pyqt5,
+  python3-pyqt5.qsci and python3-pyqt5.qtserialport.
+
+* On Mac OS, first install PyQT5::
+
+    brew install pyqt5 --with-python3
+
+  Then install QScintilla using the recipe from the mu repository::
+
+    brew install https://raw.githubusercontent.com/mu-editor/mu/master/package/extras/qscintilla2.rb
 
 Ensure you have the correct dependencies for development installed by creating
 a virtualenv and running::
