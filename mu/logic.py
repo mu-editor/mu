@@ -319,7 +319,6 @@ class Editor:
             information = ("Your script is too long!.")
             self._view.show_message(message, information, 'Warning')
             return
-        
         # Generate a hex file.
         python_hex = uflash.hexlify(python_script)
         logger.debug('Python hex:')
