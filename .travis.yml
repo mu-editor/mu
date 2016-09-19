@@ -54,7 +54,7 @@ deploy:
   acl: public_read
   on:
     repo: ntoll/mu
-    branch: [master, travis]
+    branch: [master, travis, local_settings]
 
 notifications:
   email:
