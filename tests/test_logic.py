@@ -2,6 +2,7 @@
 """
 Tests for the Editor and REPL logic.
 """
+import sys
 import os.path
 import json
 import pytest
@@ -27,7 +28,6 @@ def test_CONSTANTS():
     assert mu.logic.HOME_DIRECTORY
     assert mu.logic.PYTHON_DIRECTORY
     assert mu.logic.DATA_DIR
-    assert mu.logic.SETTINGS_FILE
     # These should NEVER change.
     assert mu.logic.MICROBIT_PID == 516
     assert mu.logic.MICROBIT_VID == 3368
@@ -68,6 +68,53 @@ def test_find_microbit_with_device():
     with mock.patch('mu.logic.QSerialPortInfo.availablePorts',
                     return_value=[mock_port, ]):
         assert mu.logic.find_microbit() == 'COM0'
+
+
+def test_get_settings_app_path():
+    """
+    Find a settings file in the application location.
+    """
+    fake_app_path = os.path.dirname(__file__)
+    fake_app_script = os.path.join(fake_app_path, 'run.py')
+    fake_local_settings = os.path.join(fake_app_path, 'settings.json')
+    with mock.patch.object(sys, 'argv', [fake_app_script]):
+        assert mu.logic.get_settings_path() == fake_local_settings
+
+
+def test_get_settings_data_path():
+    """
+    Find a settings file in the data location.
+    """
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_exists = mock.MagicMock()
+    mock_exists.side_effect = [False, True]
+    mock_json_dump = mock.MagicMock()
+    with mock.patch('os.path.exists', mock_exists), \
+            mock.patch('builtins.open', mock_open), \
+            mock.patch('json.dump', mock_json_dump), \
+            mock.patch('mu.logic.DATA_DIR', 'fake_path'):
+        assert mu.logic.get_settings_path() == os.path.join(
+            'fake_path', 'settings.json')
+    assert not mock_json_dump.called
+
+
+def test_get_settings_no_files():
+    """
+    No settings files found, so create one.
+    """
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_json_dump = mock.MagicMock()
+    with mock.patch('os.path.exists', return_value=False), \
+            mock.patch('builtins.open', mock_open), \
+            mock.patch('json.dump', mock_json_dump), \
+            mock.patch('mu.logic.DATA_DIR', 'fake_path'):
+        assert mu.logic.get_settings_path() == os.path.join(
+            'fake_path', 'settings.json')
+    assert mock_json_dump.call_count == 1
 
 
 def test_check_flake():
@@ -251,12 +298,14 @@ def test_editor_restore_session_missing_files():
     Missing files that were opened tabs in the previous session are safely
     ignored when attempting to restore them.
     """
+    fake_settings = os.path.join(os.path.dirname(__file__), 'settings.json')
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
-    fake_settings = os.path.join(os.path.dirname(__file__), 'settings.json')
+    get_test_settings_path = mock.MagicMock()
+    get_test_settings_path.return_value = fake_settings
     with mock.patch('os.path.exists', return_value=True), \
-            mock.patch('mu.logic.SETTINGS_FILE', fake_settings):
+            mock.patch('mu.logic.get_settings_path', get_test_settings_path):
         ed.restore_session()
     assert ed._view.add_tab.call_count == 0
 

@@ -50,8 +50,6 @@ PYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'python')
 DATA_DIR = appdirs.user_data_dir('mu', 'python')
 #: The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir('mu', 'python')
-#: The path to the JSON file containing application settings.
-SETTINGS_FILE = os.path.join(DATA_DIR, 'settings.json')
 #: The path to the log file for the application.
 LOG_FILE = os.path.join(LOG_DIR, 'mu.log')
 #: Regex to match pycodestyle (PEP8) output.
@@ -92,6 +90,27 @@ def find_microbit():
                                                  p.portName())
                  for p in available_ports])
     return None
+
+
+def get_settings_path():
+    """
+    The settings file default location is the application data directory.
+    However, a settings file in  the same directory than the application itself
+    takes preference.
+    """
+    settings_filename = 'settings.json'
+    # App location depends on being interpreted by normal Python or bundled
+    app_path = sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
+    app_dir = os.path.dirname(os.path.abspath(app_path))
+    logger.info('Application directory: {}'.format(app_dir))
+    settings_dir = os.path.join(app_dir, settings_filename)
+    if not os.path.exists(settings_dir):
+        settings_dir = os.path.join(DATA_DIR, settings_filename)
+        if not os.path.exists(settings_dir):
+            with open(settings_dir, 'w') as f:
+                logger.debug('Creating settings file: {}'.format(settings_dir))
+                json.dump({}, f)
+    return settings_dir
 
 
 def check_flake(filename, code):
@@ -278,10 +297,15 @@ class Editor:
         Attempts to recreate the tab state from the last time the editor was
         run.
         """
-        if os.path.exists(SETTINGS_FILE):
-            logger.info('Restoring session from: {}'.format(SETTINGS_FILE))
-            with open(SETTINGS_FILE) as f:
+        settings_path = get_settings_path()
+        with open(settings_path) as f:
+            try:
                 old_session = json.load(f)
+            except ValueError:
+                logger.error('Settings file {} could not be parsed.'.format(
+                             settings_path))
+            else:
+                logger.info('Restoring session from: {}'.format(settings_path))
                 logger.debug(old_session)
                 if 'theme' in old_session:
                     self.theme = old_session['theme']
@@ -600,7 +624,8 @@ class Editor:
             'paths': paths
         }
         logger.debug(session)
-        with open(SETTINGS_FILE, 'w') as out:
-            logger.debug('Saving session to: {}'.format(SETTINGS_FILE))
+        settings_path = get_settings_path()
+        with open(settings_path, 'w') as out:
+            logger.debug('Saving session to: {}'.format(settings_path))
             json.dump(session, out, indent=2)
         sys.exit(0)
