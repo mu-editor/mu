@@ -25,6 +25,7 @@ import re
 import json
 import logging
 import tempfile
+import platform
 import webbrowser
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
@@ -102,6 +103,9 @@ def get_settings_path():
     # App location depends on being interpreted by normal Python or bundled
     app_path = sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
     app_dir = os.path.dirname(os.path.abspath(app_path))
+    # The os x bundled application is placed 3 levels deep in the .app folder
+    if platform.system() == 'Darwin' and getattr(sys, 'frozen', False):
+        app_dir = os.path.dirname(os.path.dirname(os.path.dirname(app_dir)))
     logger.info('Application directory: {}'.format(app_dir))
     settings_dir = os.path.join(app_dir, settings_filename)
     if not os.path.exists(settings_dir):
