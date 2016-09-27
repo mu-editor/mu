@@ -240,13 +240,15 @@ class WEBREPLuPythonDevice(uPythonDevice):
 
     def read(self, count):
         self.suspend_callback()
-        data = "" #TODO
+        data = self.buffer[:count]
+        self.buffer.remove(0, count)
         self.reinstate_callback()
         return data
 
     def read_all(self):
         self.suspend_callback()
-        data = "" #TODO
+        data = QByteArray(self.buffer)
+        self.buffer.clear()
         self.reinstate_callback()
         return data
 
