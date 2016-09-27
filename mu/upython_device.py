@@ -11,8 +11,12 @@ logger = logging.getLogger(__name__)
 
 class uPythonDevice():
     """Abstract base class/Interface for defining a micropython device."""
-    def __init__(self, data_received_callback=None):
+    def __init__(self, async=True, data_received_callback=None):
         self.data_received_callback = data_received_callback
+        if async:
+            self.set_async()
+        else:
+            self.set_sync()
         self.saved_callback = None
         pass
 
@@ -20,6 +24,12 @@ class uPythonDevice():
         self.close()
 
     def close(self):
+        pass
+
+    def set_sync(self):
+        pass
+
+    def set_async(self):
         pass
 
     def add_callback(self, data_received_callback):
@@ -80,10 +90,18 @@ class uPythonDevice():
 
     def raw_on(self):
         """ Puts the device into raw mode. """
+        print(self.read_all())  # TODO - some ugly hacks due to timing issues
+        print(self.read_all())
+        print(self.read_all())
+        print(self.read_all())
         self.send(b'\x03')  # Send CTRL-C to break out of loop.
-        self.read_until(b'\n>')  # Flush buffer until prompt.
-        self.send(b'\x01')  # Go into raw mode.
-        self.read_until(b'\r\n>OK')  # Flush buffer until raw mode prompt.
+        print(self.read_until(b'\n>>> '))  # Flush buffer until prompt.
+        print(self.read_all())
+        self.send(b'\x01')  # CTRL-A to go into raw mode.
+        self.send(b'\n')    # dummy command for prompt
+        self.send(b'\x04')  # CTRL-D to get prompt (TODO -check on others)
+        print(self.read_until(b'OK'))  # Flush buffer until raw mode prompt.
+        print(self.read_all())
 
     def raw_off(self):
         """ Takes the device out of raw mode. """
@@ -151,7 +169,7 @@ class uPythonDevice():
             commands.append('f(' + repr(line) + ')')
             content = content[64:]
         commands.append('fd.close()')
-        out, err = self.execute(commands)
+        out, err = self.execute_commands(commands)
         if err:
             raise IOError(err)
         return True
@@ -174,7 +192,7 @@ class uPythonDevice():
             #"while f.read(32): print(_, end='')\n",
             "f.close()",
         ]
-        out, err = self.execute(commands)
+        out, err = self.execute_commands(commands)
         if err:
             raise IOError(err)
         # Recombine the bytes while removing "b'" from start and "'" from end.
@@ -192,7 +210,7 @@ class uPythonDevice():
             "import os",
             "os.remove('{}')".format(remote_filename),
         ]
-        out, err = self.execute(commands)
+        out, err = self.execute_commands(commands)
         if err:
             raise IOError(err)
         return True
@@ -200,8 +218,8 @@ class uPythonDevice():
 
 class WEBREPLuPythonDevice(uPythonDevice):
     """A WebREPL/network connected device"""
-    def __init__(self, data_received_callback=None, uri=None):
-        super().__init__(data_received_callback)
+    def __init__(self, async=True, data_received_callback=None, uri=None):
+        super().__init__(async, data_received_callback)
         self.buffer = ''
         self.ws = QtWebSockets.QWebSocket()
         if uri == None:
@@ -239,8 +257,7 @@ class WEBREPLuPythonDevice(uPythonDevice):
 
 class SerialuPythonDevice(uPythonDevice):
     """A generic serial-only micropython device"""
-    def __init__(self, data_received_callback=None, port=None, speed=None):
-        super().__init__(data_received_callback)
+    def __init__(self, async=True, data_received_callback=None, port=None, speed=None):
         self.serial = QtSerialPort.QSerialPort()
         if port is None:
             port = config.serial_options['port']
@@ -249,14 +266,27 @@ class SerialuPythonDevice(uPythonDevice):
             if speed is None:
                 speed = config.serial_options['speed']
             self.serial.setBaudRate(speed)
-            self.serial.readyRead.connect(self.data_available)
-            # Send a Control-C
-            self.serial.write(b'\x03')
+            #self.serial.readyRead.connect(self.data_available)
+            self.serial.write(b'\x02')  # Send Ctrl-B to ensure not raw mode
+            self.serial.write(b'\x03')  # Send a Control-C
         else:
             raise IOError("Cannot connect to device on port {}".format(port))
+        super().__init__(async, data_received_callback)
+
+    def set_sync(self):
+        try:
+            self.serial.readyRead.disconnect()
+        except TypeError:  # ignore if nothing connected
+            pass
+
+    def set_async(self):
+        self.serial.readyRead.connect(self.data_available)
 
     def close(self):
-        self.serial.close()
+        try:
+            self.serial.close()
+        except AttributeError:  # is self.serial doesn't exist
+            pass
 
     def send(self, bs):
         return self.serial.write(bs)  # serial.write takes a byte array
@@ -266,13 +296,15 @@ class SerialuPythonDevice(uPythonDevice):
 
     def read(self, count):
         self.suspend_callback()
+        self.serial.waitForReadyRead(10)
         data = self.serial.read(count)
         self.reinstate_callback()
         return data
 
     def read_all(self):
         self.suspend_callback()
-        data = self.serial.readAll()
+        self.serial.waitForReadyRead(10)
+        data = self.serial.readAll()  # something wierd going on here
         self.reinstate_callback()
         return data
 
@@ -282,11 +314,11 @@ class MicrobitDevice(SerialuPythonDevice):
     MICROBIT_VID = 3368  # USB vendor ID.
     MICROBIT_SERIAL_SPEED = 115200
 
-    def __init__(self, data_received_callback=None):
+    def __init__(self, async=True, data_received_callback=None):
         port = self.find_microbit()
         if port is None:
             raise IOError("Cannot find Microbit")
-        super().__init__(data_received_callback, port=port,
+        super().__init__(async=async, data_received_callback=data_received_callback, port=port,
                          speed=self.MICROBIT_SERIAL_SPEED)
 
     def find_microbit(self):
@@ -312,10 +344,10 @@ class MicrobitDevice(SerialuPythonDevice):
         return None
 
 
-def get_upython_device(data_received_callback=None):
+def get_upython_device(async=True, data_received_callback=None):
     if config.board_type == 'microbit':
-        return MicrobitDevice(data_received_callback=None)
+        return MicrobitDevice(async=async, data_received_callback=data_received_callback)
     elif config.board_type == 'serial':
-        return SerialuPythonDevice(data_received_callback=None)
+        return SerialuPythonDevice(async=async, data_received_callback=data_received_callback)
     elif config.board_type == 'webrepl':
-        return WEBREPLuPythonDevice(data_received_callback=None)
+        return WEBREPLuPythonDevice(async=async, data_received_callback=data_received_callback)

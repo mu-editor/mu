@@ -549,11 +549,11 @@ class Window(QStackedWidget):
                 return True
         return False
 
-    def add_filesystem(self, home):
+    def add_filesystem(self, home, device):
         """
         Adds the file system pane to the application.
         """
-        self.fs = FileSystemPane(self.splitter, home)
+        self.fs = FileSystemPane(device, self.splitter, home)
         self.splitter.addWidget(self.fs)
         self.splitter.setSizes([66, 33])
         self.fs.setFocus()
@@ -911,9 +911,7 @@ class MicrobitFileList(MuFileList):
                                           source.currentItem().text())
             logger.info("Putting {}".format(local_filename))
             try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.put(serial, local_filename)
+                self.parent().device.put_file(local_filename)
                 super().dropEvent(event)
             except Exception as ex:
                 logger.error(ex)
@@ -929,9 +927,7 @@ class MicrobitFileList(MuFileList):
             microbit_filename = self.currentItem().text()
             logger.info("Deleting {}".format(microbit_filename))
             try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.rm(serial, microbit_filename)
+                self.parent().device.del_file(microbit_filename)
                 self.takeItem(self.currentRow())
             except Exception as ex:
                 logger.error(ex)
@@ -975,8 +971,10 @@ class FileSystemPane(QFrame):
     can be selected for deletion.
     """
 
-    def __init__(self, parent, home):
+    def __init__(self, device, parent, home):
         super().__init__(parent)
+        self.device = device
+        #self.device.add_callback(self.process_data)
         self.home = home
         self.font = Font().load()
         microbit_fs = MicrobitFileList(home)
@@ -1006,7 +1004,7 @@ class FileSystemPane(QFrame):
         """
         self.microbit_fs.clear()
         self.local_fs.clear()
-        microbit_files = microfs.ls(microfs.get_serial())
+        microbit_files = self.device.list_files()
         for f in microbit_files:
             self.microbit_fs.addItem(f)
         local_files = [f for f in os.listdir(self.home)

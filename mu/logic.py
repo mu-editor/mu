@@ -375,9 +375,11 @@ class Editor:
         if self.repl is None:
             if self.fs is None:
                 try:
-                    microfs.get_serial()
-                    self._view.add_filesystem(home=PYTHON_DIRECTORY)
-                    self.fs = True
+                    # TODO - should create a self.upython_device instead of
+                    # having a self.fs and self.repl?
+                    self.fs = get_upython_device(async=False)
+                    self._view.add_filesystem(home=PYTHON_DIRECTORY,
+                                              device=self.fs)
                 except IOError:
                     message = 'Could not find an attached BBC micro:bit.'
                     information = ("Please make sure the device is plugged "
@@ -397,6 +399,7 @@ class Editor:
         if self.fs is None:
             raise RuntimeError("File system not running")
         self._view.remove_filesystem()
+        self.fs.close()
         self.fs = None
 
     def toggle_fs(self):
@@ -429,7 +432,7 @@ class Editor:
             raise RuntimeError("REPL already running")
         # if mb_port:
         try:
-            self.repl = get_upython_device()
+            self.repl = get_upython_device(async=True)
             self._view.add_repl(self.repl)
         except IOError as ex:
             logger.error(ex)
