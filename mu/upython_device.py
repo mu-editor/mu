@@ -3,7 +3,7 @@ import time
 import ast
 import os
 from PyQt5 import QtSerialPort, QtWebSockets
-from PyQt5.QtCore import QIODevice, QUrl, QTimer
+from PyQt5.QtCore import QIODevice, QUrl, QTimer, QByteArray
 from mu import config
 
 logger = logging.getLogger(__name__)
@@ -220,7 +220,7 @@ class WEBREPLuPythonDevice(uPythonDevice):
     """A WebREPL/network connected device"""
     def __init__(self, async=True, data_received_callback=None, uri=None):
         super().__init__(async, data_received_callback)
-        self.buffer = ''
+        self.buffer = QByteArray()
         self.ws = QtWebSockets.QWebSocket()
         if uri == None:
             uri = config.webrepl_options['uri']
@@ -231,12 +231,12 @@ class WEBREPLuPythonDevice(uPythonDevice):
         self.ws.close()
 
     def data_available(self, data):
-        self.buffer += data
+        self.buffer += bytes(data, 'utf-8')
         QTimer.singleShot(10, self.data_received)
 
     def data_received(self):
         super().data_received(self.buffer)
-        self.buffer = ''
+        self.buffer.clear()
 
     def read(self, count):
         self.suspend_callback()

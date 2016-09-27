@@ -813,7 +813,7 @@ class REPLPane(QTextEdit):
             elif ord(data[i]) == 0x1b and data[i+1] == '[':  # VT100 cursor
                 i += 2  # move index to after the [
                 m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])',
-                              bytes(data[i:], 'utf-8').decode('utf-8'))
+                              bytes(data[i:]).decode('utf-8'))
 
                 # move to (almost) after control seq (will ++ at end of loop)
                 i += m.end() - 1
