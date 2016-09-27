@@ -447,6 +447,26 @@ class Editor:
         #                   "Finally, press the device's reset button and wait"
         #                    " a few seconds before trying again.")
         #     self._view.show_message(message, information)
+        # if mb_port:
+        try:
+            self.repl = get_upython_device()
+            self._view.add_repl(self.repl)
+        except IOError as ex:
+            logger.error(ex)
+            self.repl = None
+            information = ("Click the device's reset button, wait a few"
+                           " seconds and then try again.")
+            self._view.show_message(str(ex), information)
+        except Exception as ex:
+            logger.error(ex)
+        # else:
+        #     message = 'Could not find an attached BBC micro:bit.'
+        #     information = ("Please make sure the device is plugged into this"
+        #                    " computer.\n\nThe device must have MicroPython"
+        #                    " flashed onto it before the REPL will work.\n\n"
+        #                    "Finally, press the device's reset button and wait"
+        #                    " a few seconds before trying again.")
+        #     self._view.show_message(message, information)
 
     def remove_repl(self):
         """
