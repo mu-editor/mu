@@ -4,6 +4,7 @@ import ast
 import os
 from PyQt5 import QtSerialPort, QtWebSockets
 from PyQt5.QtCore import QIODevice, QUrl, QTimer, QByteArray
+from PyQt5.QtWidgets import QDialog, QLabel, QInputDialog, QLineEdit
 from mu import config
 
 logger = logging.getLogger(__name__)
@@ -219,6 +220,13 @@ class uPythonDevice():
 class WEBREPLuPythonDevice(uPythonDevice):
     """A WebREPL/network connected device"""
     def __init__(self, async=True, data_received_callback=None, uri=None):
+        self.password_dialog = QInputDialog()
+        self.password_dialog.setLabelText('Enter the WebREPL password')
+        self.password_dialog.setTextEchoMode(QLineEdit.Password)
+        if not self.password_dialog.exec_():  # user hit cancel
+            return
+        self.password = self.password_dialog.textValue()
+
         super().__init__(async, data_received_callback)
         self.buffer = QByteArray()
         self.ws = QtWebSockets.QWebSocket()
