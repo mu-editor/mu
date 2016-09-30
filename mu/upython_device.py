@@ -14,6 +14,7 @@ class uPythonDevice():
     """Abstract base class/Interface for defining a micropython device."""
     def __init__(self, async=True, data_received_callback=None):
         self.data_received_callback = data_received_callback
+        self.async = async
         if async:
             self.set_async()
         else:
@@ -28,10 +29,10 @@ class uPythonDevice():
         pass
 
     def set_sync(self):
-        pass
+        self.async = False
 
     def set_async(self):
-        pass
+        self.async = True
 
     def add_callback(self, data_received_callback):
         self.data_received_callback = data_received_callback
@@ -227,13 +228,27 @@ class WEBREPLuPythonDevice(uPythonDevice):
             return
         self.password = self.password_dialog.textValue()
 
-        super().__init__(async, data_received_callback)
         self.buffer = QByteArray()
         self.ws = QtWebSockets.QWebSocket()
         if uri == None:
             uri = config.webrepl_options['uri']
         self.ws.open(QUrl(uri))
+        self.set_sync()  # synchronous for sending password
         self.ws.textMessageReceived.connect(self.data_available)
+
+        super().__init__(async=False)
+
+        self.post_password_async = async
+        self.post_password_callback = data_received_callback
+        QTimer.singleShot(1000, self.send_password)
+
+    def send_password(self):
+        self.read_until('Password:')
+        self.buffer.clear()
+        self.send(bytes(self.password + '\n', 'utf-8'))
+        if self.post_password_async:
+            self.set_async()
+        #self.data_received_callback = self.post_password_callback
 
     def close(self):
         self.ws.close()
@@ -243,8 +258,9 @@ class WEBREPLuPythonDevice(uPythonDevice):
         QTimer.singleShot(10, self.data_received)
 
     def data_received(self):
-        super().data_received(self.buffer)
-        self.buffer.clear()
+        if self.async:
+            super().data_received(self.buffer)
+            self.buffer.clear()
 
     def read(self, count):
         self.suspend_callback()
