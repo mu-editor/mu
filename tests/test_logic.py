@@ -2,7 +2,7 @@
 """
 Tests for the Editor and REPL logic.
 """
-import os.path
+import os
 import json
 import pytest
 import mu.logic
@@ -272,7 +272,8 @@ def test_editor_restore_session_no_session_file():
     ed._view.add_tab = mock.MagicMock()
     with mock.patch('os.path.exists', return_value=False):
         ed.restore_session()
-    py = 'from microbit import *\n\n# Write your code here :-)'
+    py = 'from microbit import *{}{}# Write your code here :-)'.format(
+        os.linesep, os.linesep)
     ed._view.add_tab.assert_called_once_with(None, py)
 
 
