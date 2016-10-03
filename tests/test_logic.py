@@ -72,12 +72,47 @@ def test_find_microbit_with_device():
 
 def test_get_settings_app_path():
     """
-    Find a settings file in the application location.
+    Find a settings file in the application location when run using Python.
     """
     fake_app_path = os.path.dirname(__file__)
     fake_app_script = os.path.join(fake_app_path, 'run.py')
+    wrong_fake_path = 'wrong/path/to/executable'
     fake_local_settings = os.path.join(fake_app_path, 'settings.json')
-    with mock.patch.object(sys, 'argv', [fake_app_script]):
+    with mock.patch.object(sys, 'executable', wrong_fake_path), \
+            mock.patch.object(sys, 'argv', [fake_app_script]):
+        assert mu.logic.get_settings_path() == fake_local_settings
+
+
+def test_get_settings_app_path_frozen():
+    """
+    Find a settings file in the application location when it has been frozen
+    using PyInstaller.
+    """
+    fake_app_path = os.path.dirname(__file__)
+    fake_app_script = os.path.join(fake_app_path, 'mu.exe')
+    wrong_fake_path = 'wrong/path/to/executable'
+    fake_local_settings = os.path.join(fake_app_path, 'settings.json')
+    with mock.patch.object(sys, 'frozen', create=True, return_value=True), \
+            mock.patch('platform.system', return_value='not_Darwin'), \
+            mock.patch.object(sys, 'executable', fake_app_script), \
+            mock.patch.object(sys, 'argv', [wrong_fake_path]):
+        assert mu.logic.get_settings_path() == fake_local_settings
+
+
+def test_get_settings_app_path_frozen_osx():
+    """
+    Find a settings file in the application location when it has been frozen
+    using PyInstaller on macOS (as the path is different in the app bundle).
+    """
+    fake_app_path = os.path.join(os.path.dirname(__file__), 'a', 'b', 'c')
+    fake_app_script = os.path.join(fake_app_path, 'mu.exe')
+    wrong_fake_path = 'wrong/path/to/executable'
+    fake_local_settings = os.path.abspath(os.path.join(
+        fake_app_path, '..', '..', '..', 'settings.json'))
+    with mock.patch.object(sys, 'frozen', create=True, return_value=True), \
+            mock.patch('platform.system', return_value='Darwin'), \
+            mock.patch.object(sys, 'executable', fake_app_script), \
+            mock.patch.object(sys, 'argv', [wrong_fake_path]):
         assert mu.logic.get_settings_path() == fake_local_settings
 
 
@@ -321,7 +356,30 @@ def test_editor_restore_session_no_session_file():
     ed._view.add_tab = mock.MagicMock()
     with mock.patch('os.path.exists', return_value=False):
         ed.restore_session()
-    py = 'from microbit import *\n\n# Write your code here :-)'
+    py = 'from microbit import *{}{}# Write your code here :-)'.format(
+        os.linesep, os.linesep)
+    ed._view.add_tab.assert_called_once_with(None, py)
+
+
+def test_editor_restore_session_invalid_file():
+    """
+    A malformed JSON file is correctly detected and app behaves the same as if
+    there was no session file.
+    """
+    view = mock.MagicMock()
+    view.tab_count = 0
+    ed = mu.logic.Editor(view)
+    ed._view.add_tab = mock.MagicMock()
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.read.return_value = '{"paths": ["path/foo.py",' \
+                                               ' "path/bar.py"]}, invalid: 0}'
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('os.path.exists', return_value=True):
+        ed.restore_session()
+    py = 'from microbit import *{}{}# Write your code here :-)'.format(
+        os.linesep, os.linesep)
     ed._view.add_tab.assert_called_once_with(None, py)
 
 
