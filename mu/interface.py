@@ -955,9 +955,7 @@ class LocalFileList(MuFileList):
             logger.debug("Getting {} to {}".format(microbit_filename,
                                                    local_filename))
             try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.get(serial, microbit_filename, local_filename)
+                self.parent().device.get_file(microbit_filename, local_filename)
                 super().dropEvent(event)
             except Exception as ex:
                 logger.error(ex)
