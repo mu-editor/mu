@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import keyword
 import os
+import platform
 import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
@@ -789,11 +790,10 @@ class REPLPane(QTextEdit):
             msg = b'\x1B[C'
         elif key == Qt.Key_Left:
             msg = b'\x1B[D'
-        elif data.modifiers() == Qt.MetaModifier:
-            # Handle the Control key.  I would've expected us to have to test
-            # for Qt.ControlModifier, but on (my!) OSX Qt.MetaModifier does
-            # correspond to the Control key.  I've read something that suggests
-            # that it's different on other platforms.
+        elif platform.system() == 'Darwin' and data.modifiers() == Qt.MetaModifier:
+            # Handle the Control key. On OSX/macOS/Darwin (python calls this platform Darwin), this
+            # is handled by Qt.MetaModifier. Other platforms (Linux, Windows) call this Qt.ControlModifier.
+            # Go figure. See see http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
             if Qt.Key_A <= key <= Qt.Key_Z:
                 # The microbit treats an input of \x01 as Ctrl+A, etc.
                 msg = bytes([1 + key - Qt.Key_A])
@@ -850,6 +850,19 @@ class MuFileList(QListWidget):
         self.setAcceptDrops(True)
         sibling.setAcceptDrops(True)
 
+    def show_confirm_overwrite_dialog(self):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setText("File already exists; overwrite it?")
+        msg.setWindowTitle("File already exists")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        retval = msg.exec_()
+        if retval == QMessageBox.Ok:
+            return True
+        else:
+            return False
+
+
 
 class MicrobitFileList(MuFileList):
     """
@@ -865,17 +878,20 @@ class MicrobitFileList(MuFileList):
         source = event.source()
         self.disable(source)
         if isinstance(source, LocalFileList):
-            local_filename = os.path.join(self.home,
-                                          source.currentItem().text())
-            logger.info("Putting {}".format(local_filename))
-            try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.put(serial, local_filename)
-                super().dropEvent(event)
-            except Exception as ex:
-                logger.error(ex)
+            if self.findItems(source.currentItem().text(), Qt.MatchExactly) \
+                     and self.show_confirm_overwrite_dialog():
+                local_filename = os.path.join(self.home,
+                                              source.currentItem().text())
+                logger.info("Putting {}".format(local_filename))
+                try:
+                    with microfs.get_serial() as serial:
+                        logger.info(serial.port)
+                        microfs.put(serial, local_filename)
+                    super().dropEvent(event)
+                except Exception as ex:
+                    logger.error(ex)
         self.enable(source)
+        self.parent().ls()
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
@@ -911,19 +927,22 @@ class LocalFileList(MuFileList):
         source = event.source()
         self.disable(source)
         if isinstance(source, MicrobitFileList):
-            microbit_filename = source.currentItem().text()
-            local_filename = os.path.join(self.home,
-                                          microbit_filename)
-            logger.debug("Getting {} to {}".format(microbit_filename,
-                                                   local_filename))
-            try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.get(serial, microbit_filename, local_filename)
-                super().dropEvent(event)
-            except Exception as ex:
-                logger.error(ex)
+            if self.findItems(source.currentItem().text(), Qt.MatchExactly) \
+                     and self.show_confirm_overwrite_dialog():
+                microbit_filename = source.currentItem().text()
+                local_filename = os.path.join(self.home,
+                                              microbit_filename)
+                logger.debug("Getting {} to {}".format(microbit_filename,
+                                                       local_filename))
+                try:
+                    with microfs.get_serial() as serial:
+                        logger.info(serial.port)
+                        microfs.get(serial, microbit_filename, local_filename)
+                    super().dropEvent(event)
+                except Exception as ex:
+                    logger.error(ex)
         self.enable(source)
+        self.parent().ls()
 
 
 class FileSystemPane(QFrame):
