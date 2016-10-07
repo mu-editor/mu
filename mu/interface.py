@@ -877,8 +877,10 @@ class MicrobitFileList(MuFileList):
         source = event.source()
         self.disable(source)
         if isinstance(source, LocalFileList):
-            if self.findItems(source.currentItem().text(), Qt.MatchExactly) \
-                     and self.show_confirm_overwrite_dialog():
+            file_exists = self.findItems(source.currentItem().text(),
+                                         Qt.MatchExactly)
+            if not file_exists or \
+                    file_exists and self.show_confirm_overwrite_dialog():
                 local_filename = os.path.join(self.home,
                                               source.currentItem().text())
                 logger.info("Putting {}".format(local_filename))
@@ -926,8 +928,10 @@ class LocalFileList(MuFileList):
         source = event.source()
         self.disable(source)
         if isinstance(source, MicrobitFileList):
-            if self.findItems(source.currentItem().text(), Qt.MatchExactly) \
-                     and self.show_confirm_overwrite_dialog():
+            file_exists = self.findItems(source.currentItem().text(),
+                                         Qt.MatchExactly)
+            if not file_exists or \
+                    file_exists and self.show_confirm_overwrite_dialog():
                 microbit_filename = source.currentItem().text()
                 local_filename = os.path.join(self.home,
                                               microbit_filename)
