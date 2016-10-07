@@ -893,7 +893,7 @@ class MuFileList(QListWidget):
         sibling.setAcceptDrops(True)
 
     def show_confirm_overwrite_dialog(self):
-        msg = QMessageBox()
+        msg = QMessageBox(self)
         msg.setIcon(QMessageBox.Information)
 
         msg.setText("File already exists; overwrite it?")
