@@ -741,6 +741,7 @@ class REPLPane(QTextEdit):
         self.setAcceptRichText(False)
         self.setReadOnly(False)
         self.setUndoRedoEnabled(False)
+        self.setContextMenuPolicy(Qt.PreventContextMenu)
         self.setObjectName('replpane')
         # open the serial port
         self.serial = QSerialPort(self)
