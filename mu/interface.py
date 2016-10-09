@@ -892,7 +892,8 @@ class MicrobitFileList(MuFileList):
                 except Exception as ex:
                     logger.error(ex)
         self.enable(source)
-        self.parent().ls()
+        if self.parent() is not None:
+            self.parent().ls()
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
@@ -945,7 +946,8 @@ class LocalFileList(MuFileList):
                 except Exception as ex:
                     logger.error(ex)
         self.enable(source)
-        self.parent().ls()
+        if self.parent() is not None:
+            self.parent().ls()
 
 
 class FileSystemPane(QFrame):
