@@ -33,7 +33,6 @@ from PyQt5.QtSerialPort import QSerialPort
 from mu.contrib import microfs
 from mu.resources import load_icon, load_stylesheet, load_font_data
 
-
 #: The default font size.
 DEFAULT_FONT_SIZE = 14
 #: All editor windows use the same font
@@ -46,7 +45,6 @@ FONT_VARIANTS = ("Bold", "BoldIt", "It", "Regular", "Semibold", "SemiboldIt")
 NIGHT_STYLE = load_stylesheet('night.css')
 #: DAY_STYLE is a light conventional theme.
 DAY_STYLE = load_stylesheet('day.css')
-
 
 logger = logging.getLogger(__name__)
 
@@ -742,6 +740,7 @@ class REPLPane(QTextEdit):
         self.setFont(Font().load())
         self.setAcceptRichText(False)
         self.setReadOnly(False)
+        self.setUndoRedoEnabled(False)
         self.setObjectName('replpane')
         # open the serial port
         self.serial = QSerialPort(self)
@@ -791,9 +790,10 @@ class REPLPane(QTextEdit):
             msg = b'\x1B[C'
         elif key == Qt.Key_Left:
             msg = b'\x1B[D'
-        elif data.modifiers() == Qt.ControlModifier or \
-                (platform.system() == 'Darwin' and
-                    data.modifiers() == Qt.MetaModifier):
+        elif (platform.system() == 'Darwin' and
+                data.modifiers() == Qt.MetaModifier) or \
+             (platform.system() != 'Darwin' and
+                data.modifiers() == Qt.ControlModifier):
             # Handle the Control key. On OSX/macOS/Darwin (python calls this
             # platform Darwin), this is handled by Qt.MetaModifier. Other
             # platforms (Linux, Windows) call this Qt.ControlModifier. Go
@@ -801,6 +801,15 @@ class REPLPane(QTextEdit):
             if Qt.Key_A <= key <= Qt.Key_Z:
                 # The microbit treats an input of \x01 as Ctrl+A, etc.
                 msg = bytes([1 + key - Qt.Key_A])
+        elif (data.modifiers == Qt.ControlModifier | Qt.ShiftModifier) or \
+                (platform.system() == 'Darwin' and
+                    data.modifiers() == Qt.ControlModifier):
+            # Command-key on Mac, Ctrl-Shift on Win/Lin
+            if key == Qt.Key_C:
+                self.copy()
+            elif key == Qt.Key_V:
+                self.paste()
+
         self.serial.write(msg)
 
     def process_bytes(self, data):
@@ -821,7 +830,7 @@ class REPLPane(QTextEdit):
                 self.setTextCursor(tc)
             elif data[i] == 13:  # \r
                 pass
-            elif data[i] == 27 and data[i+1] == 91:  # VT100 cursor: <Esc>[
+            elif data[i] == 27 and data[i + 1] == 91:  # VT100 cursor: <Esc>[
                 i += 2  # move index to after the [
                 m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])',
                               data[i:].decode('utf-8'))
@@ -875,6 +884,7 @@ class MuFileList(QListWidget):
     """
     Contains shared methods for the two types of file listing used in Mu.
     """
+
     def disable(self, sibling):
         """
         Stops interaction with the list widgets.
