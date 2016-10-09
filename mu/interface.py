@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import keyword
 import os
+import re
+import platform
 import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
@@ -789,17 +791,19 @@ class REPLPane(QTextEdit):
             msg = b'\x1B[C'
         elif key == Qt.Key_Left:
             msg = b'\x1B[D'
-        elif data.modifiers() == Qt.MetaModifier:
-            # Handle the Control key.  I would've expected us to have to test
-            # for Qt.ControlModifier, but on (my!) OSX Qt.MetaModifier does
-            # correspond to the Control key.  I've read something that suggests
-            # that it's different on other platforms.
+        elif data.modifiers() == Qt.ControlModifier or \
+                (platform.system() == 'Darwin' and
+                    data.modifiers() == Qt.MetaModifier):
+            # Handle the Control key. On OSX/macOS/Darwin (python calls this
+            # platform Darwin), this is handled by Qt.MetaModifier. Other
+            # platforms (Linux, Windows) call this Qt.ControlModifier. Go
+            # figure. See http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
             if Qt.Key_A <= key <= Qt.Key_Z:
                 # The microbit treats an input of \x01 as Ctrl+A, etc.
                 msg = bytes([1 + key - Qt.Key_A])
         self.serial.write(msg)
 
-    def process_bytes(self, bs):
+    def process_bytes(self, data):
         """
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
@@ -809,16 +813,55 @@ class REPLPane(QTextEdit):
         # then move it there.
         while tc.movePosition(QTextCursor.Down):
             pass
-        for b in bs:
-            if b == 8:  # \b
+
+        i = 0
+        while i < len(data):
+            if data[i] == 8:  # \b
                 tc.movePosition(QTextCursor.Left)
                 self.setTextCursor(tc)
-            elif b == 13:  # \r
+            elif data[i] == 13:  # \r
                 pass
+            elif data[i] == 27 and data[i+1] == 91:  # VT100 cursor: <Esc>[
+                i += 2  # move index to after the [
+                m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])',
+                              data[i:].decode('utf-8'))
+
+                # move to (almost) after control seq (will ++ at end of loop)
+                i += m.end() - 1
+
+                if m.group("count") == '':
+                    count = 1
+                else:
+                    count = int(m.group("count"))
+
+                if m.group("action") == "A":  # up
+                    tc.movePosition(QTextCursor.Up, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "B":  # down
+                    tc.movePosition(QTextCursor.Down, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "C":  # right
+                    tc.movePosition(QTextCursor.Right, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "D":  # left
+                    tc.movePosition(QTextCursor.Left, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "K":  # delete things
+                    if m.group("count") == "":  # delete to end of line
+                        tc.movePosition(QTextCursor.EndOfLine,
+                                        mode=QTextCursor.KeepAnchor)
+                        tc.removeSelectedText()
+                        self.setTextCursor(tc)
+            elif data[i] == 10:  # \n
+                tc.movePosition(QTextCursor.End)
+                self.setTextCursor(tc)
+                self.insertPlainText(chr(data[i]))
             else:
                 tc.deleteChar()
                 self.setTextCursor(tc)
-                self.insertPlainText(chr(b))
+                self.insertPlainText(chr(data[i]))
+            i += 1
+
         self.ensureCursorVisible()
 
     def clear(self):
