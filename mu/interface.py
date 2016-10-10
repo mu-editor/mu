@@ -26,7 +26,8 @@ from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
                              QTabWidget, QFileDialog, QMessageBox, QTextEdit,
-                             QFrame, QListWidget, QGridLayout, QLabel, QMenu)
+                             QFrame, QListWidget, QGridLayout, QLabel, QMenu,
+                             QApplication)
 from PyQt5.QtGui import (QKeySequence, QColor, QTextCursor, QFontDatabase,
                          QCursor)
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
@@ -766,7 +767,9 @@ class REPLPane(QTextEdit):
         tc = self.textCursor()
         tc.movePosition(QTextCursor.End)
         self.setTextCursor(tc)
-        self.paste()
+
+        clipboard = QApplication.clipboard()
+        self.serial.write(bytes(clipboard.text(), 'utf8'))
 
     def repl_context_menu(self):
         """"
@@ -776,6 +779,14 @@ class REPLPane(QTextEdit):
         menu.addAction("Copy", self.copy)
         menu.addAction("Paste", self.repl_paste)
         menu.exec_(QCursor.pos())
+
+    def cursor_to_end(self):
+        """
+        moves cursor to the very end
+        """
+        tc = self.textCursor()
+        tc.movePosition(QTextCursor.End)
+        self.setTextCursor(tc)
 
     def set_theme(self, theme):
         """
