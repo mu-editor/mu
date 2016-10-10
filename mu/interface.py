@@ -27,7 +27,8 @@ from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
                              QTabWidget, QFileDialog, QMessageBox, QTextEdit,
                              QFrame, QListWidget, QGridLayout, QLabel, QMenu)
-from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
+from PyQt5.QtGui import (QKeySequence, QColor, QTextCursor, QFontDatabase,
+                         QCursor)
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
 from PyQt5.QtSerialPort import QSerialPort
 from mu.contrib import microfs
@@ -741,7 +742,8 @@ class REPLPane(QTextEdit):
         self.setAcceptRichText(False)
         self.setReadOnly(False)
         self.setUndoRedoEnabled(False)
-        self.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.repl_context_menu)
         self.setObjectName('replpane')
         # open the serial port
         self.serial = QSerialPort(self)
@@ -756,6 +758,24 @@ class REPLPane(QTextEdit):
         else:
             raise IOError("Cannot connect to device on port {}".format(port))
         self.set_theme(theme)
+
+    def repl_paste(self):
+        """
+        Moves cursor to the very end then pastes
+        """
+        tc = self.textCursor()
+        tc.movePosition(QTextCursor.End)
+        self.setTextCursor(tc)
+        self.paste()
+
+    def repl_context_menu(self):
+        """"
+        Creates custom context menu with just copy and paste
+        """
+        menu = QMenu(self)
+        menu.addAction("Copy", self.copy)
+        menu.addAction("Paste", self.repl_paste)
+        menu.exec_(QCursor.pos())
 
     def set_theme(self, theme):
         """
@@ -809,7 +829,7 @@ class REPLPane(QTextEdit):
             if key == Qt.Key_C:
                 self.copy()
             elif key == Qt.Key_V:
-                self.paste()
+                self.repl_paste()
 
         self.serial.write(msg)
 
