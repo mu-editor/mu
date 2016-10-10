@@ -762,12 +762,8 @@ class REPLPane(QTextEdit):
 
     def repl_paste(self):
         """
-        Moves cursor to the very end then pastes
+        Grabs clipboard contents then sends down the serial port
         """
-        tc = self.textCursor()
-        tc.movePosition(QTextCursor.End)
-        self.setTextCursor(tc)
-
         clipboard = QApplication.clipboard()
         self.serial.write(bytes(clipboard.text(), 'utf8'))
 
