@@ -26,8 +26,10 @@ from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
                              QTabWidget, QFileDialog, QMessageBox, QTextEdit,
-                             QFrame, QListWidget, QGridLayout, QLabel, QMenu)
-from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
+                             QFrame, QListWidget, QGridLayout, QLabel, QMenu,
+                             QApplication)
+from PyQt5.QtGui import (QKeySequence, QColor, QTextCursor, QFontDatabase,
+                         QCursor)
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
 from PyQt5.QtSerialPort import QSerialPort
 from mu.contrib import microfs
@@ -743,6 +745,9 @@ class REPLPane(QTextEdit):
         self.setFont(Font().load())
         self.setAcceptRichText(False)
         self.setReadOnly(False)
+        self.setUndoRedoEnabled(False)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.repl_context_menu)
         self.setObjectName('replpane')
 
         self.device = device
@@ -751,6 +756,30 @@ class REPLPane(QTextEdit):
         # clear the text
         self.clear()
         self.set_theme(theme)
+
+    def repl_paste(self):
+        """
+        Grabs clipboard contents then sends down the serial port
+        """
+        clipboard = QApplication.clipboard()
+        self.serial.write(bytes(clipboard.text(), 'utf8'))
+
+    def repl_context_menu(self):
+        """"
+        Creates custom context menu with just copy and paste
+        """
+        menu = QMenu(self)
+        menu.addAction("Copy", self.copy)
+        menu.addAction("Paste", self.repl_paste)
+        menu.exec_(QCursor.pos())
+
+    def cursor_to_end(self):
+        """
+        moves cursor to the very end
+        """
+        tc = self.textCursor()
+        tc.movePosition(QTextCursor.End)
+        self.setTextCursor(tc)
 
     def set_theme(self, theme):
         """
@@ -791,6 +820,14 @@ class REPLPane(QTextEdit):
             if Qt.Key_A <= key <= Qt.Key_Z:
                 # The microbit treats an input of \x01 as Ctrl+A, etc.
                 msg = bytes([1 + key - Qt.Key_A])
+        elif (data.modifiers == Qt.ControlModifier | Qt.ShiftModifier) or \
+                (platform.system() == 'Darwin' and
+                    data.modifiers() == Qt.ControlModifier):
+            # Command-key on Mac, Ctrl-Shift on Win/Lin
+            if key == Qt.Key_C:
+                self.copy()
+            elif key == Qt.Key_V:
+                self.repl_paste()
         self.device.send(msg)
 
     def process_data(self, data):
