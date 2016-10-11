@@ -836,8 +836,10 @@ class REPLPane(QTextEdit):
             # Command-key on Mac, Ctrl-Shift on Win/Lin
             if key == Qt.Key_C:
                 self.copy()
+                msg = b''
             elif key == Qt.Key_V:
                 self.repl_paste()
+                msg = b''
 
         self.serial.write(msg)
 
