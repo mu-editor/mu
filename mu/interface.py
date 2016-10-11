@@ -762,7 +762,7 @@ class REPLPane(QTextEdit):
         Grabs clipboard contents then sends down the serial port
         """
         clipboard = QApplication.clipboard()
-        self.serial.write(bytes(clipboard.text(), 'utf8'))
+        self.device.send(bytes(clipboard.text(), 'utf8'))
 
     def repl_context_menu(self):
         """"
@@ -826,8 +826,10 @@ class REPLPane(QTextEdit):
             # Command-key on Mac, Ctrl-Shift on Win/Lin
             if key == Qt.Key_C:
                 self.copy()
+                return
             elif key == Qt.Key_V:
                 self.repl_paste()
+                return
         self.device.send(msg)
 
     def process_data(self, data):
