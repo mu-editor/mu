@@ -780,9 +780,10 @@ class REPLPane(QTextEdit):
             msg = b'\x1B[C'
         elif key == Qt.Key_Left:
             msg = b'\x1B[D'
-        elif data.modifiers() == Qt.ControlModifier or \
-                (platform.system() == 'Darwin' and
-                    data.modifiers() == Qt.MetaModifier):
+        elif (platform.system() == 'Darwin' and
+                data.modifiers() == Qt.MetaModifier) or \
+             (platform.system() != 'Darwin' and
+                data.modifiers() == Qt.ControlModifier):
             # Handle the Control key. On OSX/macOS/Darwin (python calls this
             # platform Darwin), this is handled by Qt.MetaModifier. Other
             # platforms (Linux, Windows) call this Qt.ControlModifier. Go
