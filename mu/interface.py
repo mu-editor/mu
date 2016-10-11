@@ -826,10 +826,10 @@ class REPLPane(QTextEdit):
             # Command-key on Mac, Ctrl-Shift on Win/Lin
             if key == Qt.Key_C:
                 self.copy()
-                return
+                msg = b''
             elif key == Qt.Key_V:
                 self.repl_paste()
-                return
+                msg = b''
         self.device.send(msg)
 
     def process_data(self, data):
