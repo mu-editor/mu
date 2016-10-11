@@ -6,3 +6,5 @@ sphinx
 pytest-cov
 pyserial
 setuptools==19.2
+PyQt5
+QScintilla
