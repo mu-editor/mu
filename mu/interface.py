@@ -765,7 +765,8 @@ class REPLPane(QTextEdit):
         Grabs clipboard contents then sends down the serial port
         """
         clipboard = QApplication.clipboard()
-        self.serial.write(bytes(clipboard.text(), 'utf8'))
+        if clipboard is not None:
+            self.serial.write(bytes(clipboard.text(), 'utf8'))
 
     def repl_context_menu(self):
         """"
