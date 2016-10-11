@@ -13,6 +13,7 @@ Installation
 ------------
 
 At this stage you'll need to run from source.
+
 * Clone the repo, and switch to the feature/multiboard branch
 * (optionally, create a virtualenv for the project)
 * install the required packages using `pip3 install -r requirements.txt`
