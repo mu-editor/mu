@@ -769,8 +769,15 @@ class REPLPane(QTextEdit):
         Creates custom context menu with just copy and paste
         """
         menu = QMenu(self)
-        menu.addAction("Copy", self.copy)
-        menu.addAction("Paste", self.repl_paste)
+        if platform.system() == 'Darwin':
+            copy_keys = QKeySequence(Qt.CTRL + Qt.Key_C)
+            paste_keys = QKeySequence(Qt.CTRL + Qt.Key_V)
+        else:
+            copy_keys = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_C)
+            paste_keys = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_V)
+
+        menu.addAction("Copy", self.copy, copy_keys)
+        menu.addAction("Paste", self.repl_paste, paste_keys)
         menu.exec_(QCursor.pos())
 
     def cursor_to_end(self):
