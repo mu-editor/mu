@@ -19,16 +19,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import keyword
 import os
+import re
+import platform
 import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
                              QTabWidget, QFileDialog, QMessageBox, QTextEdit,
-                             QFrame, QListWidget, QGridLayout, QLabel, QMenu)
-from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
+                             QFrame, QListWidget, QGridLayout, QLabel, QMenu,
+                             QApplication)
+from PyQt5.QtGui import (QKeySequence, QColor, QTextCursor, QFontDatabase,
+                         QCursor)
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
 from PyQt5.QtSerialPort import QSerialPort
 from mu.contrib import microfs
+from mu.upython_device import get_upython_device
 from mu.resources import load_icon, load_stylesheet, load_font_data
 
 
@@ -546,21 +551,21 @@ class Window(QStackedWidget):
                 return True
         return False
 
-    def add_filesystem(self, home):
+    def add_filesystem(self, home, device):
         """
         Adds the file system pane to the application.
         """
-        self.fs = FileSystemPane(self.splitter, home)
+        self.fs = FileSystemPane(device, self.splitter, home)
         self.splitter.addWidget(self.fs)
         self.splitter.setSizes([66, 33])
         self.fs.setFocus()
         self.connect_zoom(self.fs)
 
-    def add_repl(self, repl):
+    def add_repl(self, device):
         """
         Adds the REPL pane to the application.
         """
-        self.repl = REPLPane(port=repl.port, theme=self.theme)
+        self.repl = REPLPane(theme=self.theme, device=device)
         self.splitter.addWidget(self.repl)
         self.splitter.setSizes([66, 33])
         self.repl.setFocus()
@@ -735,25 +740,53 @@ class REPLPane(QTextEdit):
     The device MUST be flashed with MicroPython for this to work.
     """
 
-    def __init__(self, port, theme='day', parent=None):
+    def __init__(self, device, theme='day', parent=None):
         super().__init__(parent)
         self.setFont(Font().load())
         self.setAcceptRichText(False)
         self.setReadOnly(False)
+        self.setUndoRedoEnabled(False)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.repl_context_menu)
         self.setObjectName('replpane')
-        # open the serial port
-        self.serial = QSerialPort(self)
-        self.serial.setPortName(port)
-        if self.serial.open(QIODevice.ReadWrite):
-            self.serial.setBaudRate(115200)
-            self.serial.readyRead.connect(self.on_serial_read)
-            # clear the text
-            self.clear()
-            # Send a Control-C
-            self.serial.write(b'\x03')
-        else:
-            raise IOError("Cannot connect to device on port {}".format(port))
+
+        self.device = device
+        self.device.add_callback(self.process_data)
+
+        # clear the text
+        self.clear()
         self.set_theme(theme)
+
+    def repl_paste(self):
+        """
+        Grabs clipboard contents then sends down the serial port
+        """
+        clipboard = QApplication.clipboard()
+        self.device.send(bytes(clipboard.text(), 'utf8'))
+
+    def repl_context_menu(self):
+        """"
+        Creates custom context menu with just copy and paste
+        """
+        menu = QMenu(self)
+        if platform.system() == 'Darwin':
+            copy_keys = QKeySequence(Qt.CTRL + Qt.Key_C)
+            paste_keys = QKeySequence(Qt.CTRL + Qt.Key_V)
+        else:
+            copy_keys = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_C)
+            paste_keys = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_V)
+
+        menu.addAction("Copy", self.copy, copy_keys)
+        menu.addAction("Paste", self.repl_paste, paste_keys)
+        menu.exec_(QCursor.pos())
+
+    def cursor_to_end(self):
+        """
+        moves cursor to the very end
+        """
+        tc = self.textCursor()
+        tc.movePosition(QTextCursor.End)
+        self.setTextCursor(tc)
 
     def set_theme(self, theme):
         """
@@ -763,12 +796,6 @@ class REPLPane(QTextEdit):
             self.setStyleSheet(DAY_STYLE)
         else:
             self.setStyleSheet(NIGHT_STYLE)
-
-    def on_serial_read(self):
-        """
-        Called when the application gets data from the connected device.
-        """
-        self.process_bytes(bytes(self.serial.readAll()))
 
     def keyPressEvent(self, data):
         """
@@ -789,36 +816,103 @@ class REPLPane(QTextEdit):
             msg = b'\x1B[C'
         elif key == Qt.Key_Left:
             msg = b'\x1B[D'
-        elif data.modifiers() == Qt.MetaModifier:
-            # Handle the Control key.  I would've expected us to have to test
-            # for Qt.ControlModifier, but on (my!) OSX Qt.MetaModifier does
-            # correspond to the Control key.  I've read something that suggests
-            # that it's different on other platforms.
+        elif key == Qt.Key_Home:
+            msg = b'\x1B[H'
+        elif key == Qt.Key_End:
+            msg = b'\x1B[F'
+        elif (platform.system() == 'Darwin' and
+                data.modifiers() == Qt.MetaModifier) or \
+             (platform.system() != 'Darwin' and
+                data.modifiers() == Qt.ControlModifier):
+            # Handle the Control key. On OSX/macOS/Darwin (python calls this
+            # platform Darwin), this is handled by Qt.MetaModifier. Other
+            # platforms (Linux, Windows) call this Qt.ControlModifier. Go
+            # figure. See http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
             if Qt.Key_A <= key <= Qt.Key_Z:
                 # The microbit treats an input of \x01 as Ctrl+A, etc.
                 msg = bytes([1 + key - Qt.Key_A])
-        self.serial.write(msg)
+        elif (data.modifiers == Qt.ControlModifier | Qt.ShiftModifier) or \
+                (platform.system() == 'Darwin' and
+                    data.modifiers() == Qt.ControlModifier):
+            # Command-key on Mac, Ctrl-Shift on Win/Lin
+            if key == Qt.Key_C:
+                self.copy()
+                msg = b''
+            elif key == Qt.Key_V:
+                self.repl_paste()
+                msg = b''
+        self.device.send(msg)
 
-    def process_bytes(self, bs):
+    def process_data(self, data):
         """
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
         """
         tc = self.textCursor()
+        logger.debug(data)
         # The text cursor must be on the last line of the document. If it isn't
         # then move it there.
         while tc.movePosition(QTextCursor.Down):
             pass
-        for b in bs:
-            if b == 8:  # \b
+
+        i = 0
+        while i < len(data):
+            if data[i] == '\b':
                 tc.movePosition(QTextCursor.Left)
                 self.setTextCursor(tc)
-            elif b == 13:  # \r
+            elif data[i] == '\r':
                 pass
+            elif ord(data[i]) == 0x1b and data[i+1] == '[':  # VT100 cursor
+                i += 2  # move index to after the [
+                m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])',
+                              bytes(data[i:]).decode('utf-8'))
+
+                # move to (almost) after control seq (will ++ at end of loop)
+                i += m.end() - 1
+
+                if m.group("count") == '':
+                    count = 1
+                else:
+                    count = int(m.group("count"))
+
+                if m.group("action") == "A":  # up
+                    tc.movePosition(QTextCursor.Up, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "B":  # down
+                    tc.movePosition(QTextCursor.Down, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "C":  # right
+                    tc.movePosition(QTextCursor.Right, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "D":  # left
+                    tc.movePosition(QTextCursor.Left, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "K":  # delete things
+                    if m.group("count") == "":  # delete to end of line
+                        tc.movePosition(QTextCursor.EndOfLine,
+                                        mode=QTextCursor.KeepAnchor)
+                        tc.removeSelectedText()
+                        self.setTextCursor(tc)
+            elif data[i] == '\n':
+                tc.movePosition(QTextCursor.End)
+                self.setTextCursor(tc)
+                self.insertPlainText(data[i])
             else:
                 tc.deleteChar()
                 self.setTextCursor(tc)
-                self.insertPlainText(chr(b))
+                self.insertPlainText(data[i])
+            i += 1
+
+        # for c in data:
+        #     if c == '\b':
+        #         tc.movePosition(QTextCursor.Left)
+        #         self.setTextCursor(tc)
+        #     elif c == '\r':
+        #         pass
+        #     else:
+        #         tc.deleteChar()
+        #         self.setTextCursor(tc)
+        #         self.insertPlainText(c)
         self.ensureCursorVisible()
 
     def clear(self):
@@ -850,6 +944,20 @@ class MuFileList(QListWidget):
         self.setAcceptDrops(True)
         sibling.setAcceptDrops(True)
 
+    def show_confirm_overwrite_dialog(self):
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Information)
+
+        msg.setText("File already exists; overwrite it?")
+        msg.setWindowTitle("File already exists")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+
+        retval = msg.exec_()
+        if retval == QMessageBox.Ok:
+            return True
+        else:
+            return False
+
 
 class MicrobitFileList(MuFileList):
     """
@@ -865,17 +973,21 @@ class MicrobitFileList(MuFileList):
         source = event.source()
         self.disable(source)
         if isinstance(source, LocalFileList):
-            local_filename = os.path.join(self.home,
-                                          source.currentItem().text())
-            logger.info("Putting {}".format(local_filename))
-            try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.put(serial, local_filename)
-                super().dropEvent(event)
-            except Exception as ex:
-                logger.error(ex)
+            file_exists = self.findItems(source.currentItem().text(),
+                                         Qt.MatchExactly)
+            if not file_exists or \
+                    file_exists and self.show_confirm_overwrite_dialog():
+                local_filename = os.path.join(self.home,
+                                              source.currentItem().text())
+                logger.info("Putting {}".format(local_filename))
+                try:
+                    self.parent().device.put_file(local_filename)
+                    super().dropEvent(event)
+                except Exception as ex:
+                    logger.error(ex)
         self.enable(source)
+        if self.parent() is not None:
+            self.parent().ls()
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
@@ -887,9 +999,7 @@ class MicrobitFileList(MuFileList):
             microbit_filename = self.currentItem().text()
             logger.info("Deleting {}".format(microbit_filename))
             try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.rm(serial, microbit_filename)
+                self.parent().device.del_file(microbit_filename)
                 self.takeItem(self.currentRow())
             except Exception as ex:
                 logger.error(ex)
@@ -911,19 +1021,23 @@ class LocalFileList(MuFileList):
         source = event.source()
         self.disable(source)
         if isinstance(source, MicrobitFileList):
-            microbit_filename = source.currentItem().text()
-            local_filename = os.path.join(self.home,
-                                          microbit_filename)
-            logger.debug("Getting {} to {}".format(microbit_filename,
-                                                   local_filename))
-            try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.get(serial, microbit_filename, local_filename)
-                super().dropEvent(event)
-            except Exception as ex:
-                logger.error(ex)
+            file_exists = self.findItems(source.currentItem().text(),
+                                         Qt.MatchExactly)
+            if not file_exists or \
+                    file_exists and self.show_confirm_overwrite_dialog():
+                microbit_filename = source.currentItem().text()
+                local_filename = os.path.join(self.home,
+                                              microbit_filename)
+                logger.debug("Getting {} to {}".format(microbit_filename,
+                                                       local_filename))
+                try:
+                    self.parent().device.get_file(microbit_filename, local_filename)
+                    super().dropEvent(event)
+                except Exception as ex:
+                    logger.error(ex)
         self.enable(source)
+        if self.parent() is not None:
+            self.parent().ls()
 
 
 class FileSystemPane(QFrame):
@@ -933,8 +1047,10 @@ class FileSystemPane(QFrame):
     can be selected for deletion.
     """
 
-    def __init__(self, parent, home):
+    def __init__(self, device, parent, home):
         super().__init__(parent)
+        self.device = device
+        #self.device.add_callback(self.process_data)
         self.home = home
         self.font = Font().load()
         microbit_fs = MicrobitFileList(home)
@@ -964,7 +1080,7 @@ class FileSystemPane(QFrame):
         """
         self.microbit_fs.clear()
         self.local_fs.clear()
-        microbit_files = microfs.ls(microfs.get_serial())
+        microbit_files = self.device.list_files()
         for f in microbit_files:
             self.microbit_fs.addItem(f)
         local_files = [f for f in os.listdir(self.home)
