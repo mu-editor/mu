@@ -826,6 +826,10 @@ class REPLPane(QTextEdit):
             msg = b'\x1B[C'
         elif key == Qt.Key_Left:
             msg = b'\x1B[D'
+        elif key == Qt.Key_Home:
+            msg = b'\x1B[H'
+        elif key == Qt.Key_End:
+            msg = b'\x1B[F'
         elif (platform.system() == 'Darwin' and
                 data.modifiers() == Qt.MetaModifier) or \
              (platform.system() != 'Darwin' and
