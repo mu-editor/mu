@@ -45,12 +45,13 @@ MICROBIT_PID = 516
 MICROBIT_VID = 3368
 #: The user's home directory.
 HOME_DIRECTORY = os.path.expanduser('~')
-#: The default directory for Python scripts.
-PYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'python')
-#: The default directory for application data.
-DATA_DIR = appdirs.user_data_dir('mu', 'python')
+#: The default directory for Python scripts. This needs to be in the user's
+#  home directory, and visible (so not a . directory)
+PYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'mu_code')
+#: The default directory for application data (i.e., configuration).
+DATA_DIR = appdirs.user_data_dir(appname='mu', appauthor='python')
 #: The default directory for application logs.
-LOG_DIR = appdirs.user_log_dir('mu', 'python')
+LOG_DIR = appdirs.user_log_dir(appname='mu', appauthor='python')
 #: The path to the log file for the application.
 LOG_FILE = os.path.join(LOG_DIR, 'mu.log')
 #: Regex to match pycodestyle (PEP8) output.
@@ -175,7 +176,7 @@ def check_pycodestyle(code):
     os.remove(code_filename)
     # Parse the output from the tool into a dictionary of structured data.
     style_feedback = {}
-    for result in results.split(os.linesep):
+    for result in results.split('\n'):
         matcher = STYLE_REGEX.match(result)
         if matcher:
             line_no, col, msg = matcher.groups()
@@ -342,6 +343,11 @@ class Editor:
         python_script = tab.text().encode('utf-8')
         logger.debug('Python script:')
         logger.debug(python_script)
+        if len(python_script) >= 8192:
+            message = 'Unable to flash "{}"'.format(tab.label)
+            information = ("Your script is too long!.")
+            self._view.show_message(message, information, 'Warning')
+            return
         # Generate a hex file.
         python_hex = uflash.hexlify(python_script)
         logger.debug('Python hex:')
