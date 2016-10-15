@@ -152,7 +152,7 @@ def check_pycodestyle(code):
     os.remove(code_filename)
     # Parse the output from the tool into a dictionary of structured data.
     style_feedback = {}
-    for result in results.split(os.linesep):
+    for result in results.split('\n'):
         matcher = STYLE_REGEX.match(result)
         if matcher:
             line_no, col, msg = matcher.groups()
