@@ -345,7 +345,7 @@ class Editor:
         logger.debug(python_script)
         if len(python_script) >= 8192:
             message = 'Unable to flash "{}"'.format(tab.label)
-            information = ("Your script is too long!.")
+            information = ("Your script is too long!")
             self._view.show_message(message, information, 'Warning')
             return
         # Generate a hex file.

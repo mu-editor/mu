@@ -520,6 +520,21 @@ def test_flash_without_device():
         assert s.call_count == 0
 
 
+def test_flash_script_too_big():
+    """
+    If the script in the current tab is too big, abort in the expected way.
+    """
+    view = mock.MagicMock()
+    view.current_tab.text = mock.MagicMock(return_value='x' * 8193)
+    view.current_tab.label = 'foo'
+    view.show_message = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.flash()
+    view.show_message.assert_called_once_with('Unable to flash "foo"',
+                                              'Your script is too long!',
+                                              'Warning')
+
+
 def test_add_fs_no_repl():
     """
     It's possible to add the file system pane if the REPL is inactive.
