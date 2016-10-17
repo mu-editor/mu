@@ -10,7 +10,7 @@ like to contribute to the development of Mu, please read on...
 The source code is hosted on GitHub. Please feel free to fork the repository.
 Assuming you have Git installed, you do it like this from the command line::
 
-    git clone https://github.com/ntoll/mu.git
+    git clone https://github.com/mu-editor/mu.git
 
 For Mu to work you'll need to have Qt5 and Python 3 installed.
 
