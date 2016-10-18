@@ -148,7 +148,7 @@ The source code is hosted on GitHub. Please feel free to fork the repository.
 Assuming you have Git installed you can download the code from the canonical
 repository with the following command::
 
-    $ git clone https://github.com/ntoll/mu.git
+    $ git clone https://github.com/mu-editor/mu.git
 
 For this to work you'll need to have Qt5 and Python 3 installed.
 

@@ -8,7 +8,7 @@ setup(
     description='A simple editor for kids, teachers and new programmers.',
     author='Nicholas Tollervey',
     author_email='ntoll@ntoll.org',
-    url='https://github.com/ntoll/mu',
+    url='https://github.com/mu-editor/mu',
     packages=['mu', 'mu.contrib', 'mu.resources'],
     include_package_data=True,
     zip_safe=False,
