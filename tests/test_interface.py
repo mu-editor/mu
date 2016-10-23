@@ -1379,6 +1379,26 @@ def test_MuFileList_enable():
     mock_sibling.setAcceptDrops.assert_called_once_with(True)
 
 
+def test_MuFileList_show_confirm_overwrite_dialog():
+    """
+    """
+    mfl = mu.interface.MuFileList()
+    mock_qmb = mock.MagicMock()
+    mock_qmb.setIcon = mock.MagicMock(return_value=None)
+    mock_qmb.setText = mock.MagicMock(return_value=None)
+    mock_qmb.setWindowTitle = mock.MagicMock(return_value=None)
+    mock_qmb.exec_ = mock.MagicMock(return_value=QMessageBox.Ok)
+    mock_qmb_class = mock.MagicMock(return_value=mock_qmb)
+    mock_qmb_class.Ok = QMessageBox.Ok
+    mock_qmb_class.Information = QMessageBox.Information
+    with mock.patch('mu.interface.QMessageBox', mock_qmb_class):
+        assert mfl.show_confirm_overwrite_dialog()
+    msg = 'File already exists; overwrite it?'
+    mock_qmb.setText.assert_called_once_with(msg)
+    mock_qmb.setWindowTitle.assert_called_once_with('File already exists')
+    mock_qmb.setIcon.assert_called_once_with(QMessageBox.Information)
+
+
 def test_MicrobitFileList_init():
     """
     Check the widget references the user's home and allows drag and drop.
@@ -1405,6 +1425,7 @@ def test_MicrobitFileList_dropEvent():
     mfs = mu.interface.MicrobitFileList('homepath')
     mfs.disable = mock.MagicMock()
     mfs.enable = mock.MagicMock()
+    mfs.parent = mock.MagicMock()
     with mock.patch('mu.interface.microfs.get_serial',
                     return_value=mock_context), \
             mock.patch('mu.interface.MuFileList.dropEvent',
@@ -1417,6 +1438,7 @@ def test_MicrobitFileList_dropEvent():
         mock_put.assert_called_once_with(mock_serial, home)
         mock_dropEvent.assert_called_once_with(mock_event)
         mfs.enable.assert_called_once_with(source)
+        mfs.parent().ls.assert_called_once_with()
 
 
 def test_MicrobitFileList_dropEvent_error():
@@ -1558,6 +1580,7 @@ def test_LocalFileList_dropEvent():
     lfs = mu.interface.LocalFileList('homepath')
     lfs.disable = mock.MagicMock()
     lfs.enable = mock.MagicMock()
+    lfs.parent = mock.MagicMock()
     with mock.patch('mu.interface.microfs.get_serial',
                     return_value=mock_context), \
             mock.patch('mu.interface.MuFileList.dropEvent',
@@ -1570,6 +1593,7 @@ def test_LocalFileList_dropEvent():
         mock_get.assert_called_once_with(mock_serial, 'foo.py', home)
         mock_dropEvent.assert_called_once_with(mock_event)
         lfs.enable.assert_called_once_with(source)
+        lfs.parent().ls.assert_called_once_with()
 
 
 def test_LocalFileList_dropEvent_error():
