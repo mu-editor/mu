@@ -84,8 +84,8 @@ Download the Mu executable
 .. image:: https://ci.appveyor.com/api/projects/status/agr9wmestx3t1tcl/branch/master?svg=true
     :target: https://ci.appveyor.com/project/carlosperate/mu
 
-.. image:: https://travis-ci.org/ntoll/mu.svg?branch=master
-    :target: https://travis-ci.org/ntoll/mu
+.. image:: https://travis-ci.org/mu-editor/mu.svg?branch=master
+    :target: https://travis-ci.org/mu-editor/mu
 
 You can download the latest executable build of Mu for your respective operating system from the following links:
 
