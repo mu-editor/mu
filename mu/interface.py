@@ -961,16 +961,17 @@ class MuFileList(QListWidget):
         sibling.setAcceptDrops(True)
 
     def show_confirm_overwrite_dialog(self):
+        """
+        Display a dialog to check if an existing file should be overwritten.
+
+        Returns a boolean indication of the user's decision.
+        """
         msg = QMessageBox(self)
         msg.setIcon(QMessageBox.Information)
         msg.setText("File already exists; overwrite it?")
         msg.setWindowTitle("File already exists")
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        retval = msg.exec_()
-        if retval == QMessageBox.Ok:
-            return True
-        else:
-            return False
+        return msg.exec_() == QMessageBox.Ok
 
 
 class MicrobitFileList(MuFileList):
