@@ -31,9 +31,9 @@ from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
 from pyflakes.api import check
 # Currently there is no pycodestyle deb packages, so fallback to old name
-try:
+try:  # pragma: no cover
     from pycodestyle import StyleGuide, Checker
-except ImportError:
+except ImportError:  # pragma: no cover
     from pep8 import StyleGuide, Checker
 from mu.contrib import uflash, appdirs, microfs
 from mu import __version__
