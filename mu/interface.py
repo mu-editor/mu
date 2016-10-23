@@ -960,6 +960,18 @@ class MuFileList(QListWidget):
         self.setAcceptDrops(True)
         sibling.setAcceptDrops(True)
 
+    def show_confirm_overwrite_dialog(self):
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Information)
+        msg.setText("File already exists; overwrite it?")
+        msg.setWindowTitle("File already exists")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        retval = msg.exec_()
+        if retval == QMessageBox.Ok:
+            return True
+        else:
+            return False
+
 
 class MicrobitFileList(MuFileList):
     """
@@ -975,17 +987,23 @@ class MicrobitFileList(MuFileList):
         source = event.source()
         self.disable(source)
         if isinstance(source, LocalFileList):
-            local_filename = os.path.join(self.home,
-                                          source.currentItem().text())
-            logger.info("Putting {}".format(local_filename))
-            try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.put(serial, local_filename)
-                super().dropEvent(event)
-            except Exception as ex:
-                logger.error(ex)
+            file_exists = self.findItems(source.currentItem().text(),
+                                         Qt.MatchExactly)
+            if not file_exists or \
+                    file_exists and self.show_confirm_overwrite_dialog():
+                local_filename = os.path.join(self.home,
+                                              source.currentItem().text())
+                logger.info("Putting {}".format(local_filename))
+                try:
+                    with microfs.get_serial() as serial:
+                        logger.info(serial.port)
+                        microfs.put(serial, local_filename)
+                    super().dropEvent(event)
+                except Exception as ex:
+                    logger.error(ex)
         self.enable(source)
+        if self.parent() is not None:
+            self.parent().ls()
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
@@ -1021,19 +1039,25 @@ class LocalFileList(MuFileList):
         source = event.source()
         self.disable(source)
         if isinstance(source, MicrobitFileList):
-            microbit_filename = source.currentItem().text()
-            local_filename = os.path.join(self.home,
-                                          microbit_filename)
-            logger.debug("Getting {} to {}".format(microbit_filename,
-                                                   local_filename))
-            try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.get(serial, microbit_filename, local_filename)
-                super().dropEvent(event)
-            except Exception as ex:
-                logger.error(ex)
+            file_exists = self.findItems(source.currentItem().text(),
+                                         Qt.MatchExactly)
+            if not file_exists or \
+                    file_exists and self.show_confirm_overwrite_dialog():
+                microbit_filename = source.currentItem().text()
+                local_filename = os.path.join(self.home,
+                                              microbit_filename)
+                logger.debug("Getting {} to {}".format(microbit_filename,
+                                                       local_filename))
+                try:
+                    with microfs.get_serial() as serial:
+                        logger.info(serial.port)
+                        microfs.get(serial, microbit_filename, local_filename)
+                    super().dropEvent(event)
+                except Exception as ex:
+                    logger.error(ex)
         self.enable(source)
+        if self.parent() is not None:
+            self.parent().ls()
 
 
 class FileSystemPane(QFrame):
