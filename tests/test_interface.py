@@ -136,6 +136,15 @@ def test_EditorPane_configure():
     ep.setBraceMatching = mock.MagicMock()
     ep.SendScintilla = mock.MagicMock()
     ep.set_theme = mock.MagicMock()
+    ep.markerDefine = mock.MagicMock()
+    ep.indicatorDefine = mock.MagicMock()
+    ep.setMarginSensitivity = mock.MagicMock()
+    ep.setIndicatorDrawUnder = mock.MagicMock()
+    ep.marginClicked = mock.MagicMock()
+    ep.marginClicked.connect = mock.MagicMock()
+    ep.setAnnotationDisplay = mock.MagicMock()
+    ep.selectionChanged = mock.MagicMock()
+    ep.selectionChanged.connect = mock.MagicMock()
     ep.configure()
     assert ep.api == api
     assert ep.setFont.call_count == 1
@@ -150,6 +159,20 @@ def test_EditorPane_configure():
     assert ep.setBraceMatching.call_count == 1
     assert ep.SendScintilla.call_count == 1
     assert ep.set_theme.call_count == 1
+    assert ep.markerDefine.call_count == 1
+    assert ep.setMarginSensitivity.call_count == 1
+    assert ep.setIndicatorDrawUnder.call_count == 1
+    assert ep.marginClicked.connect.call_count == 1
+    assert ep.setAnnotationDisplay.call_count == 1
+    assert ep.selectionChanged.connect.call_count == 1
+    ep.indicatorDefine.assert_has_calls(
+        [mock.call(ep.SquiggleIndicator,
+                   ep.check_indicators['error']['id']),
+         mock.call(ep.SquiggleIndicator,
+                   ep.check_indicators['style']['id']),
+         mock.call(ep.StraightBoxIndicator,
+                   ep.search_indicators['selection']['id'])],
+        any_order=True)
 
 
 def test_EditorPane_set_theme():
@@ -162,6 +185,7 @@ def test_EditorPane_set_theme():
     ep.setCaretForegroundColor = mock.MagicMock()
     ep.setMarginsBackgroundColor = mock.MagicMock()
     ep.setMarginsForegroundColor = mock.MagicMock()
+    ep.setIndicatorForegroundColor = mock.MagicMock()
     ep.setLexer = mock.MagicMock()
     mock_api = mock.MagicMock()
     with mock.patch('mu.interface.QsciAPIs', return_value=mock_api) as mapi:
@@ -172,6 +196,7 @@ def test_EditorPane_set_theme():
     assert ep.setMarginsBackgroundColor.call_count == 1
     assert ep.setMarginsForegroundColor.call_count == 1
     assert ep.setLexer.call_count == 1
+    assert ep.setIndicatorForegroundColor.call_count == 3
 
 
 def test_EditorPane_label():
@@ -198,8 +223,22 @@ def test_EditorPane_reset_annotations():
     ep = mu.interface.EditorPane(None, 'baz')
     ep.clearAnnotations = mock.MagicMock()
     ep.markerDeleteAll = mock.MagicMock()
+    ep.reset_search_indicators = mock.MagicMock()
+    ep.reset_check_indicators = mock.MagicMock()
+    ep.reset_annotations()
+    ep.clearAnnotations.assert_called_once_with()
+    ep.markerDeleteAll.assert_called_once_with()
+    ep.reset_search_indicators.assert_called_once_with()
+    ep.reset_check_indicators.assert_called_once_with()
+
+
+def test_EditorPane_reset_check_indicators():
+    """
+    Ensure code check indicators are reset.
+    """
+    ep = mu.interface.EditorPane(None, 'baz')
     ep.clearIndicatorRange = mock.MagicMock()
-    ep.indicators = {
+    ep.check_indicators = {
         'error': {
             'id': 19,
             'markers': {
@@ -214,16 +253,34 @@ def test_EditorPane_reset_annotations():
             }
         }
     }
-    ep.reset_annotations()
-    ep.clearAnnotations.assert_called_once_with()
-    ep.markerDeleteAll.assert_called_once_with()
+    ep.reset_check_indicators()
     ep.clearIndicatorRange.assert_has_calls(
-        [mock.call(1, 0, 1, 999999, ep.indicators['error']['id']),
-         mock.call(1, 0, 1, 999999, ep.indicators['style']['id'])],
+        [mock.call(1, 0, 1, 999999, 19), mock.call(1, 0, 1, 999999, 20)],
         any_order=True)
-    for indicator in ep.indicators:
-        assert ep.indicators[indicator]['markers'] == {}
-        assert ep.indicators[indicator]['markers'] == {}
+    for indicator in ep.check_indicators:
+        assert ep.check_indicators[indicator]['markers'] == {}
+        assert ep.check_indicators[indicator]['markers'] == {}
+
+
+def test_EditorPane_reset_search_indicators():
+    """
+    Ensure search indicators are reset.
+    """
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.clearIndicatorRange = mock.MagicMock()
+    ep.search_indicators = {
+        'selection': {'id': 10, 'positions': [
+            {'line_start': 1, 'col_start': 2, 'line_end': 3, 'col_end': 4},
+            {'line_start': 5, 'col_start': 4, 'line_end': 3, 'col_end': 2}
+        ]}
+    }
+    ep.reset_search_indicators()
+    ep.clearIndicatorRange.assert_has_calls(
+        [mock.call(1, 2, 3, 4, 10), mock.call(5, 4, 3, 2, 10)],
+        any_order=True)
+    for indicator in ep.search_indicators:
+        assert ep.search_indicators[indicator]['positions'] == []
+        assert ep.search_indicators[indicator]['positions'] == []
 
 
 def test_EditorPane_annotate_code():
@@ -250,14 +307,9 @@ def test_EditorPane_annotate_code():
               'column': 50,
               'code': 'W292'}]}
     ep = mu.interface.EditorPane(None, 'baz')
-    ep.indicatorDefine = mock.MagicMock()
-    ep.setIndicatorDrawUnder = mock.MagicMock()
     ep.markerAdd = mock.MagicMock()
     ep.fillIndicatorRange = mock.MagicMock()
     ep.annotate_code(feedback, 'error')
-    ep.indicatorDefine.assert_called_once_with(ep.SquiggleIndicator,
-                                               ep.indicators['error']['id'])
-    ep.setIndicatorDrawUnder.assert_called_once_with(True)
     assert ep.markerAdd.call_count == 3  # once for each affected line.
     assert ep.fillIndicatorRange.call_count == 3  # once for each message.
 
@@ -267,7 +319,7 @@ def test_EditorPane_on_marker_clicked_on():
     Ensure the annotation is shown when the marker is clicked.
     """
     ep = mu.interface.EditorPane(None, 'baz')
-    ep.indicators = {
+    ep.check_indicators = {
         'error': {
             'markers': {
                 1: [{'message': 'a message'}, {'message': 'another message'}]
@@ -303,7 +355,7 @@ def test_EditorPane_get_marker_at_line():
     Given a line with a marker on it, will return the marker_id for it.
     """
     ep = mu.interface.EditorPane(None, 'baz')
-    ep.indicators = {
+    ep.check_indicators = {
         'error': {
             'markers': {
                 1: [{'message': 'a message'}, {'message': 'another message'}]
@@ -313,6 +365,67 @@ def test_EditorPane_get_marker_at_line():
     line_no = 22
     ep.markerLine = mock.MagicMock(return_value=line_no)
     assert ep.get_marker_at_line(line_no) == 1
+
+
+def test_EditorPane_find_next_match():
+    """
+    Ensures that the expected arg values are passed through to QsciScintilla
+    for highlighting matched text.
+    """
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.findFirst = mock.MagicMock(return_value=True)
+    assert ep.find_next_match('foo', from_line=10, from_col=5,
+                              case_sensitive=True, wrap_around=False)
+    ep.findFirst.assert_called_once_with('foo', False, True, True, False,
+                                         forward=True, line=10, index=5,
+                                         show=False, posix=False)
+
+
+def test_EditorPane_highlight_selected_matches_no_match():
+    """
+    Ensure that if the current selection is not a single word then don't cause
+    a search/highlight call.
+    """
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.selectedText = mock.MagicMock(return_value="More than one word")
+    ep.find_next_match = mock.MagicMock()
+    ep.highlight_selected_matches()
+    assert ep.find_next_match.call_count == 0
+
+
+def test_EditorPane_highlight_selected_matches_with_match():
+    """
+    Ensure that if the current selection is a single word then it causes the
+    expected search/highlight call.
+    """
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.selectedText = mock.MagicMock(return_value="foo")
+    ep.getSelection = mock.MagicMock(return_value=(1, 1, 2, 2))
+    ep.find_next_match = mock.MagicMock(side_effect=[True, False])
+    ep.fillIndicatorRange = mock.MagicMock()
+    ep.clearIndicatorRange = mock.MagicMock()
+    ep.setSelection = mock.MagicMock()
+    ep.highlight_selected_matches()
+    indicators = ep.search_indicators['selection']
+    assert ep.fillIndicatorRange(1, 1, 2, 2, indicators['id'])
+    assert ep.clearIndicatorRange.call_count == 1
+    assert ep.setSelection.call_count == 1
+
+
+def test_EditorPane_selection_change_listener():
+    """
+    Enusure that is there is a change to the selected text then controll is
+    passed to highlight_selected_matches.
+    """
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.getSelection = mock.MagicMock(return_value=(1, 1, 2, 2))
+    ep.highlight_selected_matches = mock.MagicMock()
+    ep.selection_change_listener()
+    assert ep.previous_selection['line_start'] == 1
+    assert ep.previous_selection['col_start'] == 1
+    assert ep.previous_selection['line_end'] == 2
+    assert ep.previous_selection['col_end'] == 2
+    assert ep.highlight_selected_matches.call_count == 1
 
 
 def test_ButtonBar_init():
@@ -1266,6 +1379,26 @@ def test_MuFileList_enable():
     mock_sibling.setAcceptDrops.assert_called_once_with(True)
 
 
+def test_MuFileList_show_confirm_overwrite_dialog():
+    """
+    """
+    mfl = mu.interface.MuFileList()
+    mock_qmb = mock.MagicMock()
+    mock_qmb.setIcon = mock.MagicMock(return_value=None)
+    mock_qmb.setText = mock.MagicMock(return_value=None)
+    mock_qmb.setWindowTitle = mock.MagicMock(return_value=None)
+    mock_qmb.exec_ = mock.MagicMock(return_value=QMessageBox.Ok)
+    mock_qmb_class = mock.MagicMock(return_value=mock_qmb)
+    mock_qmb_class.Ok = QMessageBox.Ok
+    mock_qmb_class.Information = QMessageBox.Information
+    with mock.patch('mu.interface.QMessageBox', mock_qmb_class):
+        assert mfl.show_confirm_overwrite_dialog()
+    msg = 'File already exists; overwrite it?'
+    mock_qmb.setText.assert_called_once_with(msg)
+    mock_qmb.setWindowTitle.assert_called_once_with('File already exists')
+    mock_qmb.setIcon.assert_called_once_with(QMessageBox.Information)
+
+
 def test_MicrobitFileList_init():
     """
     Check the widget references the user's home and allows drag and drop.
@@ -1292,6 +1425,7 @@ def test_MicrobitFileList_dropEvent():
     mfs = mu.interface.MicrobitFileList('homepath')
     mfs.disable = mock.MagicMock()
     mfs.enable = mock.MagicMock()
+    mfs.parent = mock.MagicMock()
     with mock.patch('mu.interface.microfs.get_serial',
                     return_value=mock_context), \
             mock.patch('mu.interface.MuFileList.dropEvent',
@@ -1304,6 +1438,7 @@ def test_MicrobitFileList_dropEvent():
         mock_put.assert_called_once_with(mock_serial, home)
         mock_dropEvent.assert_called_once_with(mock_event)
         mfs.enable.assert_called_once_with(source)
+        mfs.parent().ls.assert_called_once_with()
 
 
 def test_MicrobitFileList_dropEvent_error():
@@ -1445,6 +1580,7 @@ def test_LocalFileList_dropEvent():
     lfs = mu.interface.LocalFileList('homepath')
     lfs.disable = mock.MagicMock()
     lfs.enable = mock.MagicMock()
+    lfs.parent = mock.MagicMock()
     with mock.patch('mu.interface.microfs.get_serial',
                     return_value=mock_context), \
             mock.patch('mu.interface.MuFileList.dropEvent',
@@ -1457,6 +1593,7 @@ def test_LocalFileList_dropEvent():
         mock_get.assert_called_once_with(mock_serial, 'foo.py', home)
         mock_dropEvent.assert_called_once_with(mock_event)
         lfs.enable.assert_called_once_with(source)
+        lfs.parent().ls.assert_called_once_with()
 
 
 def test_LocalFileList_dropEvent_error():

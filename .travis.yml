@@ -53,8 +53,8 @@ deploy:
   upload-dir: microbit/$TRAVIS_OS_NAME
   acl: public_read
   on:
-    repo: ntoll/mu
-    branch: [master, travis]
+    repo: mu-editor/mu
+    branch: [master]
 
 notifications:
   email:

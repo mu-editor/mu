@@ -25,11 +25,16 @@ import re
 import json
 import logging
 import tempfile
+import platform
 import webbrowser
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtSerialPort import QSerialPortInfo
 from pyflakes.api import check
-from pycodestyle import StyleGuide, Checker
+# Currently there is no pycodestyle deb packages, so fallback to old name
+try:  # pragma: no cover
+    from pycodestyle import StyleGuide, Checker
+except ImportError:  # pragma: no cover
+    from pep8 import StyleGuide, Checker
 from mu.contrib import uflash, appdirs, microfs
 from mu import __version__
 
@@ -40,20 +45,25 @@ MICROBIT_PID = 516
 MICROBIT_VID = 3368
 #: The user's home directory.
 HOME_DIRECTORY = os.path.expanduser('~')
-#: The default directory for Python scripts.
-PYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'python')
-#: The default directory for application data.
-DATA_DIR = appdirs.user_data_dir('mu', 'python')
+#: The default directory for application data (i.e., configuration).
+DATA_DIR = appdirs.user_data_dir(appname='mu', appauthor='python')
 #: The default directory for application logs.
-LOG_DIR = appdirs.user_log_dir('mu', 'python')
-#: The path to the JSON file containing application settings.
-SETTINGS_FILE = os.path.join(DATA_DIR, 'settings.json')
+LOG_DIR = appdirs.user_log_dir(appname='mu', appauthor='python')
 #: The path to the log file for the application.
 LOG_FILE = os.path.join(LOG_DIR, 'mu.log')
 #: Regex to match pycodestyle (PEP8) output.
 STYLE_REGEX = re.compile(r'.*:(\d+):(\d+):\s+(.*)')
 #: Regex to match flake8 output.
 FLAKE_REGEX = re.compile(r'.*:(\d+):\s+(.*)')
+#: Regex to match false positive flake errors if microbit.* is expanded.
+EXPAND_FALSE_POSITIVE = re.compile(r"^'microbit\.(\w+)' imported but unused$")
+#: The text to which "from microbit import *" should be expanded.
+EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
+                   " pin3, pin6, pin4, i2c, pin5, pin7, pin8, Image, "
+                   "pin9, pin14, pin16, reset, pin19, temperature, "
+                   "sleep, pin20, button_a, button_b, running_time, "
+                   "accelerometer, display, uart, spi, panic, pin13, "
+                   "pin12, pin11, pin10, compass")
 
 
 logger = logging.getLogger(__name__)
@@ -81,6 +91,43 @@ def find_microbit():
     return None
 
 
+def get_settings_path():
+    """
+    The settings file default location is the application data directory.
+    However, a settings file in  the same directory than the application itself
+    takes preference.
+    """
+    settings_filename = 'settings.json'
+    # App location depends on being interpreted by normal Python or bundled
+    app_path = sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
+    app_dir = os.path.dirname(os.path.abspath(app_path))
+    # The os x bundled application is placed 3 levels deep in the .app folder
+    if platform.system() == 'Darwin' and getattr(sys, 'frozen', False):
+        app_dir = os.path.dirname(os.path.dirname(os.path.dirname(app_dir)))
+    logger.info('Application directory: {}'.format(app_dir))
+    settings_dir = os.path.join(app_dir, settings_filename)
+    if not os.path.exists(settings_dir):
+        settings_dir = os.path.join(DATA_DIR, settings_filename)
+        if not os.path.exists(settings_dir):
+            with open(settings_dir, 'w') as f:
+                logger.debug('Creating settings file: {}'.format(settings_dir))
+                json.dump({}, f)
+    return settings_dir
+
+def get_python_dir():
+    settings_path = get_settings_path()
+    with open(settings_path) as f:
+        try:
+            sets = json.load(f)
+            if 'python_dir' in sets:
+                return sets['python_dir']
+            else:
+                return os.path.join(HOME_DIRECTORY, 'mu_code')
+        except ValueError:
+            logger.error('Settings file {} could not be parsed.'.format(
+                             settings_path))
+            return os.path.join(HOME_DIRECTORY, 'mu_code')
+
 def check_flake(filename, code):
     """
     Given a filename and some code to be checked, uses the PyFlakesmodule to
@@ -88,10 +135,20 @@ def check_flake(filename, code):
 
     https://github.com/PyCQA/pyflakes
     """
+    import_all = "from microbit import *" in code
+    if import_all:
+        # Massage code so "from microbit import *" is expanded so the symbols
+        # are known to flake.
+        code = code.replace("from microbit import *", EXPANDED_IMPORT)
     reporter = MuFlakeCodeReporter()
     check(code, filename, reporter)
     feedback = {}
     for log in reporter.log:
+        if import_all:
+            # Guard to stop unwanted "microbit.* imported but unused" messages.
+            message = log['message']
+            if EXPAND_FALSE_POSITIVE.match(message):
+                continue
         if log['line_no'] not in feedback:
             feedback[log['line_no']] = []
         feedback[log['line_no']].append(log)
@@ -129,7 +186,7 @@ def check_pycodestyle(code):
     os.remove(code_filename)
     # Parse the output from the tool into a dictionary of structured data.
     style_feedback = {}
-    for result in results.split(os.linesep):
+    for result in results.split('\n'):
         matcher = STYLE_REGEX.match(result)
         if matcher:
             line_no, col, msg = matcher.groups()
@@ -243,9 +300,9 @@ class Editor:
         self.fs = None
         self.theme = 'day'
         self.user_defined_microbit_path = None
-        if not os.path.exists(PYTHON_DIRECTORY):
-            logger.debug('Creating directory: {}'.format(PYTHON_DIRECTORY))
-            os.makedirs(PYTHON_DIRECTORY)
+        if not os.path.exists(get_python_dir()):
+            logger.debug('Creating directory: {}'.format(get_python_dir()))
+            os.makedirs(get_python_dir())
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
@@ -255,10 +312,15 @@ class Editor:
         Attempts to recreate the tab state from the last time the editor was
         run.
         """
-        if os.path.exists(SETTINGS_FILE):
-            logger.info('Restoring session from: {}'.format(SETTINGS_FILE))
-            with open(SETTINGS_FILE) as f:
+        settings_path = get_settings_path()
+        with open(settings_path) as f:
+            try:
                 old_session = json.load(f)
+            except ValueError:
+                logger.error('Settings file {} could not be parsed.'.format(
+                             settings_path))
+            else:
+                logger.info('Restoring session from: {}'.format(settings_path))
                 logger.debug(old_session)
                 if 'theme' in old_session:
                     self.theme = old_session['theme']
@@ -291,6 +353,11 @@ class Editor:
         python_script = tab.text().encode('utf-8')
         logger.debug('Python script:')
         logger.debug(python_script)
+        if len(python_script) >= 8192:
+            message = 'Unable to flash "{}"'.format(tab.label)
+            information = ("Your script is too long!")
+            self._view.show_message(message, information, 'Warning')
+            return
         # Generate a hex file.
         python_hex = uflash.hexlify(python_script)
         logger.debug('Python hex:')
@@ -347,7 +414,7 @@ class Editor:
             if self.fs is None:
                 try:
                     microfs.get_serial()
-                    self._view.add_filesystem(home=PYTHON_DIRECTORY)
+                    self._view.add_filesystem(home=get_python_dir())
                     self.fs = True
                 except IOError:
                     message = 'Could not find an attached BBC micro:bit.'
@@ -468,7 +535,7 @@ class Editor:
         Loads a Python file from the file system or extracts a Python sccript
         from a hex file.
         """
-        path = self._view.get_load_path(PYTHON_DIRECTORY)
+        path = self._view.get_load_path(get_python_dir())
         logger.info('Loading script from: {}'.format(path))
         try:
             if path.endswith('.py'):
@@ -500,7 +567,7 @@ class Editor:
             return
         if tab.path is None:
             # Unsaved file.
-            tab.path = self._view.get_save_path(PYTHON_DIRECTORY)
+            tab.path = self._view.get_save_path(get_python_dir())
         if tab.path:
             # The user specified a path to a file.
             if not os.path.basename(tab.path).endswith('.py'):
@@ -574,10 +641,12 @@ class Editor:
                 paths.append(widget.path)
         session = {
             'theme': self.theme,
-            'paths': paths
+            'paths': paths,
+            'python_dir': get_python_dir()
         }
         logger.debug(session)
-        with open(SETTINGS_FILE, 'w') as out:
-            logger.debug('Saving session to: {}'.format(SETTINGS_FILE))
+        settings_path = get_settings_path()
+        with open(settings_path, 'w') as out:
+            logger.debug('Saving session to: {}'.format(settings_path))
             json.dump(session, out, indent=2)
         sys.exit(0)

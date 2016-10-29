@@ -2,6 +2,7 @@
 """
 Tests for the Editor and REPL logic.
 """
+import sys
 import os.path
 import json
 import pytest
@@ -25,9 +26,7 @@ def test_CONSTANTS():
     Ensure the expected constants exist.
     """
     assert mu.logic.HOME_DIRECTORY
-    assert mu.logic.PYTHON_DIRECTORY
     assert mu.logic.DATA_DIR
-    assert mu.logic.SETTINGS_FILE
     # These should NEVER change.
     assert mu.logic.MICROBIT_PID == 516
     assert mu.logic.MICROBIT_VID == 3368
@@ -70,6 +69,88 @@ def test_find_microbit_with_device():
         assert mu.logic.find_microbit() == 'COM0'
 
 
+def test_get_settings_app_path():
+    """
+    Find a settings file in the application location when run using Python.
+    """
+    fake_app_path = os.path.dirname(__file__)
+    fake_app_script = os.path.join(fake_app_path, 'run.py')
+    wrong_fake_path = 'wrong/path/to/executable'
+    fake_local_settings = os.path.join(fake_app_path, 'settings.json')
+    with mock.patch.object(sys, 'executable', wrong_fake_path), \
+            mock.patch.object(sys, 'argv', [fake_app_script]):
+        assert mu.logic.get_settings_path() == fake_local_settings
+
+
+def test_get_settings_app_path_frozen():
+    """
+    Find a settings file in the application location when it has been frozen
+    using PyInstaller.
+    """
+    fake_app_path = os.path.dirname(__file__)
+    fake_app_script = os.path.join(fake_app_path, 'mu.exe')
+    wrong_fake_path = 'wrong/path/to/executable'
+    fake_local_settings = os.path.join(fake_app_path, 'settings.json')
+    with mock.patch.object(sys, 'frozen', create=True, return_value=True), \
+            mock.patch('platform.system', return_value='not_Darwin'), \
+            mock.patch.object(sys, 'executable', fake_app_script), \
+            mock.patch.object(sys, 'argv', [wrong_fake_path]):
+        assert mu.logic.get_settings_path() == fake_local_settings
+
+
+def test_get_settings_app_path_frozen_osx():
+    """
+    Find a settings file in the application location when it has been frozen
+    using PyInstaller on macOS (as the path is different in the app bundle).
+    """
+    fake_app_path = os.path.join(os.path.dirname(__file__), 'a', 'b', 'c')
+    fake_app_script = os.path.join(fake_app_path, 'mu.exe')
+    wrong_fake_path = 'wrong/path/to/executable'
+    fake_local_settings = os.path.abspath(os.path.join(
+        fake_app_path, '..', '..', '..', 'settings.json'))
+    with mock.patch.object(sys, 'frozen', create=True, return_value=True), \
+            mock.patch('platform.system', return_value='Darwin'), \
+            mock.patch.object(sys, 'executable', fake_app_script), \
+            mock.patch.object(sys, 'argv', [wrong_fake_path]):
+        assert mu.logic.get_settings_path() == fake_local_settings
+
+
+def test_get_settings_data_path():
+    """
+    Find a settings file in the data location.
+    """
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_exists = mock.MagicMock()
+    mock_exists.side_effect = [False, True]
+    mock_json_dump = mock.MagicMock()
+    with mock.patch('os.path.exists', mock_exists), \
+            mock.patch('builtins.open', mock_open), \
+            mock.patch('json.dump', mock_json_dump), \
+            mock.patch('mu.logic.DATA_DIR', 'fake_path'):
+        assert mu.logic.get_settings_path() == os.path.join(
+            'fake_path', 'settings.json')
+    assert not mock_json_dump.called
+
+
+def test_get_settings_no_files():
+    """
+    No settings files found, so create one.
+    """
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_json_dump = mock.MagicMock()
+    with mock.patch('os.path.exists', return_value=False), \
+            mock.patch('builtins.open', mock_open), \
+            mock.patch('json.dump', mock_json_dump), \
+            mock.patch('mu.logic.DATA_DIR', 'fake_path'):
+        assert mu.logic.get_settings_path() == os.path.join(
+            'fake_path', 'settings.json')
+    assert mock_json_dump.call_count == 1
+
+
 def test_check_flake():
     """
     Ensure the check_flake method calls PyFlakes with the expected code
@@ -82,6 +163,23 @@ def test_check_flake():
         result = mu.logic.check_flake('foo.py', 'some code')
         assert result == {2: mock_r.log}
         mock_check.assert_called_once_with('some code', 'foo.py', mock_r)
+
+
+def test_check_flake_needing_expansion():
+    """
+    Ensure the check_flake method calls PyFlakes with the expected code
+    reporter.
+    """
+    mock_r = mock.MagicMock()
+    msg = "'microbit.foo' imported but unused"
+    mock_r.log = [{'line_no': 2, 'column': 0, 'message': msg}]
+    with mock.patch('mu.logic.MuFlakeCodeReporter', return_value=mock_r), \
+            mock.patch('mu.logic.check', return_value=None) as mock_check:
+        code = 'from microbit import *'
+        result = mu.logic.check_flake('foo.py', code)
+        assert result == {}
+        mock_check.assert_called_once_with(mu.logic.EXPANDED_IMPORT, 'foo.py',
+                                           mock_r)
 
 
 def test_check_pycodestyle():
@@ -204,7 +302,7 @@ def test_editor_init():
         assert e.repl is None
         assert e.theme == 'day'
         assert mkd.call_count == 2
-        assert mkd.call_args_list[0][0][0] == mu.logic.PYTHON_DIRECTORY
+        assert mkd.call_args_list[0][0][0] == mu.logic.get_python_dir()
         assert mkd.call_args_list[1][0][0] == mu.logic.DATA_DIR
 
 
@@ -234,12 +332,14 @@ def test_editor_restore_session_missing_files():
     Missing files that were opened tabs in the previous session are safely
     ignored when attempting to restore them.
     """
+    fake_settings = os.path.join(os.path.dirname(__file__), 'settings.json')
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
-    fake_settings = os.path.join(os.path.dirname(__file__), 'settings.json')
+    get_test_settings_path = mock.MagicMock()
+    get_test_settings_path.return_value = fake_settings
     with mock.patch('os.path.exists', return_value=True), \
-            mock.patch('mu.logic.SETTINGS_FILE', fake_settings):
+            mock.patch('mu.logic.get_settings_path', get_test_settings_path):
         ed.restore_session()
     assert ed._view.add_tab.call_count == 0
 
@@ -255,7 +355,30 @@ def test_editor_restore_session_no_session_file():
     ed._view.add_tab = mock.MagicMock()
     with mock.patch('os.path.exists', return_value=False):
         ed.restore_session()
-    py = 'from microbit import *\n\n# Write your code here :-)'
+    py = 'from microbit import *{}{}# Write your code here :-)'.format(
+        os.linesep, os.linesep)
+    ed._view.add_tab.assert_called_once_with(None, py)
+
+
+def test_editor_restore_session_invalid_file():
+    """
+    A malformed JSON file is correctly detected and app behaves the same as if
+    there was no session file.
+    """
+    view = mock.MagicMock()
+    view.tab_count = 0
+    ed = mu.logic.Editor(view)
+    ed._view.add_tab = mock.MagicMock()
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.read.return_value = '{"paths": ["path/foo.py",' \
+                                               ' "path/bar.py"]}, invalid: 0}'
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('os.path.exists', return_value=True):
+        ed.restore_session()
+    py = 'from microbit import *{}{}# Write your code here :-)'.format(
+        os.linesep, os.linesep)
     ed._view.add_tab.assert_called_once_with(None, py)
 
 
@@ -396,6 +519,21 @@ def test_flash_without_device():
         assert s.call_count == 0
 
 
+def test_flash_script_too_big():
+    """
+    If the script in the current tab is too big, abort in the expected way.
+    """
+    view = mock.MagicMock()
+    view.current_tab.text = mock.MagicMock(return_value='x' * 8193)
+    view.current_tab.label = 'foo'
+    view.show_message = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.flash()
+    view.show_message.assert_called_once_with('Unable to flash "foo"',
+                                              'Your script is too long!',
+                                              'Warning')
+
+
 def test_add_fs_no_repl():
     """
     It's possible to add the file system pane if the REPL is inactive.
@@ -404,7 +542,7 @@ def test_add_fs_no_repl():
     ed = mu.logic.Editor(view)
     with mock.patch('mu.logic.microfs.get_serial', return_value=True):
         ed.add_fs()
-    view.add_filesystem.assert_called_once_with(home=mu.logic.PYTHON_DIRECTORY)
+    view.add_filesystem.assert_called_once_with(home=mu.logic.get_python_dir())
     assert ed.fs
 
 
@@ -768,7 +906,7 @@ def test_save_no_path():
         ed.save()
     mock_open.assert_called_once_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
-    view.get_save_path.assert_called_once_with(mu.logic.PYTHON_DIRECTORY)
+    view.get_save_path.assert_called_once_with(mu.logic.get_python_dir())
 
 
 def test_save_no_path_no_path_given():

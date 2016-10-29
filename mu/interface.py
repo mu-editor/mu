@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import keyword
 import os
+import re
 import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
@@ -44,6 +45,9 @@ FONT_VARIANTS = ("Bold", "BoldIt", "It", "Regular", "Semibold", "SemiboldIt")
 NIGHT_STYLE = load_stylesheet('night.css')
 #: DAY_STYLE is a light conventional theme.
 DAY_STYLE = load_stylesheet('day.css')
+
+# Regular Expression for valid individual code 'words'
+RE_VALID_WORD = re.compile('^[A-Za-z0-9_-]*$')
 
 
 logger = logging.getLogger(__name__)
@@ -142,6 +146,7 @@ class DayTheme(Theme):
     Margin = QColor('#EEE')
     IndicatorError = QColor('red')
     IndicatorStyle = QColor('blue')
+    IndicatorWordMatch = QColor('lightGrey')
 
 
 class NightTheme(Theme):
@@ -169,6 +174,7 @@ class NightTheme(Theme):
     Margin = QColor('#333')
     IndicatorError = QColor('white')
     IndicatorStyle = QColor('cyan')
+    IndicatorWordMatch = QColor('grey')
 
 
 class PythonLexer(QsciLexerPython):
@@ -203,12 +209,19 @@ class EditorPane(QsciScintilla):
         super().__init__()
         self.path = path
         self.setText(text)
-        self.indicators = {  # IDs are arbitrary
+        self.check_indicators = {  # IDs are arbitrary
             'error': {'id': 19, 'markers': {}},
             'style': {'id': 20, 'markers': {}}
         }
-        self.MARKER_NUMBER = 22  # also arbitrary
+        self.MARKER_NUMBER = 22  # Also arbitrary
+        self.search_indicators = {
+            'selection': {'id': 21, 'positions': []}
+        }
+        self.previous_selection = {
+            'line_start': 0, 'col_start': 0, 'line_end': 0, 'col_end': 0
+        }
         self.api = api if api else []
+        self.lexer = PythonLexer()
         self.setModified(False)
         self.configure()
 
@@ -217,7 +230,6 @@ class EditorPane(QsciScintilla):
         Set up the editor component.
         """
         # Font information
-
         font = Font().load()
         self.setFont(font)
         # Generic editor settings
@@ -232,26 +244,37 @@ class EditorPane(QsciScintilla):
         self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
         self.set_theme()
+        # Markers and indicators
         self.markerDefine(self.RightArrow, self.MARKER_NUMBER)
         self.setMarginSensitivity(1, True)
-        self.marginClicked.connect(self.on_marker_clicked)
+        self.setIndicatorDrawUnder(True)
+        for type_ in self.check_indicators:
+            self.indicatorDefine(
+                self.SquiggleIndicator, self.check_indicators[type_]['id'])
+        for type_ in self.search_indicators:
+            self.indicatorDefine(
+                self.StraightBoxIndicator, self.search_indicators[type_]['id'])
         self.setAnnotationDisplay(self.AnnotationBoxed)
+        self.marginClicked.connect(self.on_marker_clicked)
+        self.selectionChanged.connect(self.selection_change_listener)
 
     def set_theme(self, theme=DayTheme):
         """
         Connect the theme to a lexer and return the lexer for the editor to
         apply to the script text.
         """
-        self.lexer = PythonLexer()
         theme.apply_to(self.lexer)
         self.lexer.setDefaultPaper(theme.Paper)
         self.setCaretForegroundColor(theme.Caret)
         self.setMarginsBackgroundColor(theme.Margin)
         self.setMarginsForegroundColor(theme.Caret)
         self.setIndicatorForegroundColor(theme.IndicatorError,
-                                         self.indicators['error']['id'])
+                                         self.check_indicators['error']['id'])
         self.setIndicatorForegroundColor(theme.IndicatorStyle,
-                                         self.indicators['style']['id'])
+                                         self.check_indicators['style']['id'])
+        for type_ in self.search_indicators:
+            self.setIndicatorForegroundColor(
+                theme.IndicatorWordMatch, self.search_indicators[type_]['id'])
         self.setMarkerBackgroundColor(theme.IndicatorError, self.MARKER_NUMBER)
 
         api = QsciAPIs(self.lexer)
@@ -284,30 +307,46 @@ class EditorPane(QsciScintilla):
 
     def reset_annotations(self):
         """
-        Clears all the assets (indicators, annotations and markers) associated
-        with last code check.
+        Clears all the assets (indicators, annotations and markers).
         """
         self.clearAnnotations()
         self.markerDeleteAll()
-        for indicator in self.indicators:
-            for _, markers in self.indicators[indicator]['markers'].items():
+        self.reset_search_indicators()
+        self.reset_check_indicators()
+
+    def reset_check_indicators(self):
+        """
+        Clears all the text indicators related to the check code functionality.
+        """
+        for indicator in self.check_indicators:
+            for _, markers in \
+                    self.check_indicators[indicator]['markers'].items():
                 line_no = markers[0]['line_no']  # All markers on same line.
-                self.clearIndicatorRange(line_no, 0, line_no, 999999,
-                                         self.indicators[indicator]['id'])
-            self.indicators[indicator]['markers'] = {}
+                self.clearIndicatorRange(
+                    line_no, 0, line_no, 999999,
+                    self.check_indicators[indicator]['id'])
+            self.check_indicators[indicator]['markers'] = {}
+
+    def reset_search_indicators(self):
+        """
+        Clears all the text indicators from the search functionality.
+        """
+        for indicator in self.search_indicators:
+            for position in self.search_indicators[indicator]['positions']:
+                self.clearIndicatorRange(
+                    position['line_start'], position['col_start'],
+                    position['line_end'], position['col_end'],
+                    self.search_indicators[indicator]['id'])
+            self.search_indicators[indicator]['positions'] = []
 
     def annotate_code(self, feedback, annotation_type='error'):
         """
         Given a list of annotations add them to the editor pane so the user can
         act upon them.
         """
-        indicator = self.indicators[annotation_type]
-        self.indicatorDefine(self.SquiggleIndicator, indicator['id'])
-        self.setIndicatorDrawUnder(True)
+        indicator = self.check_indicators[annotation_type]
         for line_no, messages in feedback.items():
             marker_id = self.markerAdd(line_no, self.MARKER_NUMBER)
-            col_start = 0
-            col_end = 0
             indicator['markers'][marker_id] = messages
             for message in messages:
                 col = message.get('column', 0)
@@ -327,8 +366,8 @@ class EditorPane(QsciScintilla):
                 self.clearAnnotations(line)
             else:
                 messages = []
-                for indicator in self.indicators:
-                    markers = self.indicators[indicator]['markers']
+                for indicator in self.check_indicators:
+                    markers = self.check_indicators[indicator]['markers']
                     messages += [i['message'] for i in
                                  markers.get(marker_id, [])]
                 text = '\n'.join(messages).strip()
@@ -343,10 +382,81 @@ class EditorPane(QsciScintilla):
         Required because the built in markersAtLine method is useless, misnamed
         and doesn't return anything useful. :-(
         """
-        for indicator in self.indicators:
-            for marker_id in self.indicators[indicator]['markers']:
+        for indicator in self.check_indicators:
+            for marker_id in self.check_indicators[indicator]['markers']:
                 if self.markerLine(marker_id) == line:
                     return marker_id
+
+    def find_next_match(self, text, from_line=-1, from_col=-1,
+                        case_sensitive=True, wrap_around=True):
+        """
+        Finds the next text match from the current cursor, or the given
+        position, and selects it (the automatic selection is the only available
+        QsciScintilla behaviour).
+        Returns True if match found, False otherwise.
+        """
+        return self.findFirst(
+            text,            # Text to find,
+            False,           # Treat as regular expression
+            case_sensitive,  # Case sensitive search
+            True,            # Whole word matches only
+            wrap_around,     # Wrap search
+            forward=True,    # Forward search
+            line=from_line,  # -1 starts at current position
+            index=from_col,  # -1 starts at current position
+            show=False,      # Unfolds found text
+            posix=False)     # More POSIX compatible RegEx
+
+    def highlight_selected_matches(self):
+        """
+        Checks the current selection, if it is a single word it then searches
+        and highlights all matches.
+        """
+        # Get the selected text and validate it
+        selected_text = self.selectedText()
+        if selected_text and RE_VALID_WORD.match(selected_text):
+            # Get the current selection position as it will have to be restored
+            line_from, index_from, line_to, index_to = self.getSelection()
+            indicators = self.search_indicators['selection']
+            line_start, col_start, line_end, col_end = 0, 0, 0, 0
+            while self.find_next_match(selected_text, from_line=line_end,
+                                       from_col=col_end, case_sensitive=True,
+                                       wrap_around=False):
+                line_start, col_start, line_end, col_end = self.getSelection()
+                indicators['positions'].append({
+                    'line_start': line_start, 'col_start': col_start,
+                    'line_end': line_end, 'col_end': col_end
+                })
+                self.fillIndicatorRange(line_start, col_start, line_end,
+                                        col_end, indicators['id'])
+            # Remove the highlight for the original selection and reselect it
+            self.clearIndicatorRange(
+                line_from, index_from, line_to, index_to, indicators['id'])
+            self.setSelection(line_from, index_from, line_to, index_to)
+
+    def selection_change_listener(self):
+        """
+        Runs every time the text selection changes. This could get triggered
+        multiple times while the mouse click is down, even if selection has not
+        changed in itself.
+        If there is a new selection is passes control to
+        highlight_selected_matches.
+        """
+        # Get the current selection, exit if it has not changed
+        line_from, index_from, line_to, index_to = self.getSelection()
+        if self.previous_selection['col_end'] != index_to or \
+                self.previous_selection['col_start'] != index_from or \
+                self.previous_selection['line_start'] != line_from or \
+                self.previous_selection['line_end'] != line_to:
+            self.previous_selection['line_start'] = line_from
+            self.previous_selection['col_start'] = index_from
+            self.previous_selection['line_end'] = line_to
+            self.previous_selection['col_end'] = index_to
+            # Highlight matches, disconnect listener to avoid recursion
+            self.selectionChanged.disconnect(self.selection_change_listener)
+            self.reset_search_indicators()
+            self.highlight_selected_matches()
+            self.selectionChanged.connect(self.selection_change_listener)
 
 
 class ButtonBar(QToolBar):
@@ -612,7 +722,7 @@ class Window(QStackedWidget):
         to override the icon to one of the following settings: NoIcon,
         Question, Information, Warning or Critical.
         """
-        message_box = QMessageBox()
+        message_box = QMessageBox(self)
         message_box.setText(message)
         message_box.setWindowTitle('Mu')
         if information:
@@ -850,6 +960,19 @@ class MuFileList(QListWidget):
         self.setAcceptDrops(True)
         sibling.setAcceptDrops(True)
 
+    def show_confirm_overwrite_dialog(self):
+        """
+        Display a dialog to check if an existing file should be overwritten.
+
+        Returns a boolean indication of the user's decision.
+        """
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Information)
+        msg.setText("File already exists; overwrite it?")
+        msg.setWindowTitle("File already exists")
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        return msg.exec_() == QMessageBox.Ok
+
 
 class MicrobitFileList(MuFileList):
     """
@@ -865,17 +988,23 @@ class MicrobitFileList(MuFileList):
         source = event.source()
         self.disable(source)
         if isinstance(source, LocalFileList):
-            local_filename = os.path.join(self.home,
-                                          source.currentItem().text())
-            logger.info("Putting {}".format(local_filename))
-            try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.put(serial, local_filename)
-                super().dropEvent(event)
-            except Exception as ex:
-                logger.error(ex)
+            file_exists = self.findItems(source.currentItem().text(),
+                                         Qt.MatchExactly)
+            if not file_exists or \
+                    file_exists and self.show_confirm_overwrite_dialog():
+                local_filename = os.path.join(self.home,
+                                              source.currentItem().text())
+                logger.info("Putting {}".format(local_filename))
+                try:
+                    with microfs.get_serial() as serial:
+                        logger.info(serial.port)
+                        microfs.put(serial, local_filename)
+                    super().dropEvent(event)
+                except Exception as ex:
+                    logger.error(ex)
         self.enable(source)
+        if self.parent() is not None:
+            self.parent().ls()
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
@@ -911,19 +1040,25 @@ class LocalFileList(MuFileList):
         source = event.source()
         self.disable(source)
         if isinstance(source, MicrobitFileList):
-            microbit_filename = source.currentItem().text()
-            local_filename = os.path.join(self.home,
-                                          microbit_filename)
-            logger.debug("Getting {} to {}".format(microbit_filename,
-                                                   local_filename))
-            try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.get(serial, microbit_filename, local_filename)
-                super().dropEvent(event)
-            except Exception as ex:
-                logger.error(ex)
+            file_exists = self.findItems(source.currentItem().text(),
+                                         Qt.MatchExactly)
+            if not file_exists or \
+                    file_exists and self.show_confirm_overwrite_dialog():
+                microbit_filename = source.currentItem().text()
+                local_filename = os.path.join(self.home,
+                                              microbit_filename)
+                logger.debug("Getting {} to {}".format(microbit_filename,
+                                                       local_filename))
+                try:
+                    with microfs.get_serial() as serial:
+                        logger.info(serial.port)
+                        microfs.get(serial, microbit_filename, local_filename)
+                    super().dropEvent(event)
+                except Exception as ex:
+                    logger.error(ex)
         self.enable(source)
+        if self.parent() is not None:
+            self.parent().ls()
 
 
 class FileSystemPane(QFrame):
