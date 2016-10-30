@@ -45,6 +45,8 @@ MICROBIT_PID = 516
 MICROBIT_VID = 3368
 #: The user's home directory.
 HOME_DIRECTORY = os.path.expanduser('~')
+# Name of the directory within the home folder to use by default
+DIRECTORY_NAME = 'mu_code'
 #: The default directory for application data (i.e., configuration).
 DATA_DIR = appdirs.user_data_dir(appname='mu', appauthor='python')
 #: The default directory for application logs.
@@ -116,18 +118,27 @@ def get_settings_path():
 
 
 def get_python_dir():
+    """
+    The default is to use a directory in the users home folder however
+    in some network systems this in inaccessable. This allows a key in the
+    settings file to be used to set a custom path
+    """
     settings_path = get_settings_path()
     with open(settings_path) as f:
         try:
+            # Load up the JSON
             sets = json.load(f)
             if 'python_dir' in sets:
+                # They have set a custom folder return that
                 return sets['python_dir']
             else:
-                return os.path.join(HOME_DIRECTORY, 'mu_code')
+                # No overide set. use the default
+                return os.path.join(HOME_DIRECTORY, DIRECTORY_NAME)
         except ValueError:
             logger.error('Settings file {} could not be parsed.'.format(
                              settings_path))
-            return os.path.join(HOME_DIRECTORY, 'mu_code')
+    # If all else fails return the default directory
+    return os.path.join(HOME_DIRECTORY, DIRECTORY_NAME)
 
 
 def check_flake(filename, code):
