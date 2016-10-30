@@ -124,19 +124,23 @@ def get_python_dir():
     settings file to be used to set a custom path
     """
     settings_path = get_settings_path()
-    with open(settings_path) as f:
-        try:
-            # Load up the JSON
-            sets = json.load(f)
-            if 'python_dir' in sets:
-                # They have set a custom folder return that
-                return sets['python_dir']
-            else:
-                # No overide set. use the default
-                return os.path.join(HOME_DIRECTORY, DIRECTORY_NAME)
-        except ValueError:
-            logger.error('Settings file {} could not be parsed.'.format(
+    try:
+        with open(settings_path) as f:
+            try:
+                # Load up the JSON
+                sets = json.load(f)
+                if 'python_dir' in sets:
+                    # They have set a custom folder return that
+                    return sets['python_dir']
+                else:
+                    # No overide set. use the default
+                    return os.path.join(HOME_DIRECTORY, DIRECTORY_NAME)
+            except ValueError:
+                logger.error('Settings file {} could not be parsed.'.format(
                              settings_path))
+    except FileNotFoundError:
+        logger.error('Settings file {} does not exist.'.format(
+                     settings_path))
     # If all else fails return the default directory
     return os.path.join(HOME_DIRECTORY, DIRECTORY_NAME)
 
