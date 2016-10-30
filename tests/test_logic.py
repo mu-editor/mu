@@ -302,8 +302,8 @@ def test_editor_init():
         assert e.repl is None
         assert e.theme == 'day'
         assert mkd.call_count == 2
-        assert mkd.call_args_list[0][0][0] == mu.logic.get_python_dir()
-        assert mkd.call_args_list[1][0][0] == mu.logic.DATA_DIR
+        assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
+        assert mkd.call_args_list[1][0][0] == mu.logic.get_python_dir()
 
 
 def test_editor_restore_session():

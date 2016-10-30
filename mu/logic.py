@@ -317,12 +317,12 @@ class Editor:
         self.fs = None
         self.theme = 'day'
         self.user_defined_microbit_path = None
-        if not os.path.exists(get_python_dir()):
-            logger.debug('Creating directory: {}'.format(get_python_dir()))
-            os.makedirs(get_python_dir())
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
+        if not os.path.exists(get_python_dir()):
+            logger.debug('Creating directory: {}'.format(get_python_dir()))
+            os.makedirs(get_python_dir())
 
     def restore_session(self):
         """
