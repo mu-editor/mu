@@ -111,9 +111,14 @@ def get_settings_path():
     if not os.path.exists(settings_dir):
         settings_dir = os.path.join(DATA_DIR, settings_filename)
         if not os.path.exists(settings_dir):
-            with open(settings_dir, 'w') as f:
-                logger.debug('Creating settings file: {}'.format(settings_dir))
-                json.dump({}, f)
+            try:
+                with open(settings_dir, 'w') as f:
+                    logger.debug('Creating settings file: {}'.format(
+                                 settings_dir))
+                    json.dump({}, f)
+            except FileNotFoundError:
+                logger.error('Unable to create settings file: {}'.format(
+                             settings_dir))
     return settings_dir
 
 
