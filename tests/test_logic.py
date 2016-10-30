@@ -303,7 +303,7 @@ def test_editor_init():
         assert e.theme == 'day'
         assert mkd.call_count == 2
         assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
-        assert mkd.call_args_list[1][0][0] == mu.logic.get_python_dir()
+        assert mkd.call_args_list[1][0][0] == mu.logic.get_workspace_dir()
 
 
 def test_editor_restore_session():
@@ -542,7 +542,8 @@ def test_add_fs_no_repl():
     ed = mu.logic.Editor(view)
     with mock.patch('mu.logic.microfs.get_serial', return_value=True):
         ed.add_fs()
-    view.add_filesystem.assert_called_once_with(home=mu.logic.get_python_dir())
+    workspace = mu.logic.get_workspace_dir()
+    view.add_filesystem.assert_called_once_with(home=workspace)
     assert ed.fs
 
 
@@ -907,7 +908,7 @@ def test_save_no_path():
     assert mock_open.call_count == 2
     mock_open.assert_called_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
-    view.get_save_path.assert_called_once_with(mu.logic.get_python_dir())
+    view.get_save_path.assert_called_once_with(mu.logic.get_workspace_dir())
 
 
 def test_save_no_path_no_path_given():
