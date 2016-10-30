@@ -114,6 +114,7 @@ def get_settings_path():
                 json.dump({}, f)
     return settings_dir
 
+
 def get_python_dir():
     settings_path = get_settings_path()
     with open(settings_path) as f:
@@ -127,6 +128,7 @@ def get_python_dir():
             logger.error('Settings file {} could not be parsed.'.format(
                              settings_path))
             return os.path.join(HOME_DIRECTORY, 'mu_code')
+
 
 def check_flake(filename, code):
     """
