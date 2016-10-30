@@ -904,7 +904,8 @@ def test_save_no_path():
     ed = mu.logic.Editor(view)
     with mock.patch('builtins.open', mock_open):
         ed.save()
-    mock_open.assert_called_once_with('foo.py', 'w', newline='')
+    assert mock_open.call_count == 2
+    mock_open.assert_called_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
     view.get_save_path.assert_called_once_with(mu.logic.get_python_dir())
 
@@ -1100,7 +1101,7 @@ def test_quit_modified_ok():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
+    assert mock_open.call_count == 2
     assert mock_open.return_value.write.call_count > 0
 
 
@@ -1127,7 +1128,7 @@ def test_quit_save_tabs_with_paths():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
+    assert mock_open.call_count == 2
     assert mock_open.return_value.write.call_count > 0
     recovered = ''.join([i[0][0] for i
                         in mock_open.return_value.write.call_args_list])
@@ -1158,7 +1159,7 @@ def test_quit_save_theme():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
+    assert mock_open.call_count == 2
     assert mock_open.return_value.write.call_count > 0
     recovered = ''.join([i[0][0] for i
                         in mock_open.return_value.write.call_args_list])
