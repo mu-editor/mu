@@ -27,6 +27,7 @@ def test_CONSTANTS():
     """
     assert mu.logic.HOME_DIRECTORY
     assert mu.logic.DATA_DIR
+    assert mu.logic.WORKSPACE_NAME
     # These should NEVER change.
     assert mu.logic.MICROBIT_PID == 516
     assert mu.logic.MICROBIT_VID == 3368
@@ -149,6 +150,19 @@ def test_get_settings_no_files():
         assert mu.logic.get_settings_path() == os.path.join(
             'fake_path', 'settings.json')
     assert mock_json_dump.call_count == 1
+
+
+def test_get_workspace():
+    """
+    Normally return generated folder otherwise user value
+    """
+    should_be = os.path.join(mu.logic.HOME_DIRECTORY,
+                             mu.logic.WORKSPACE_NAME)
+    assert mu.logic.get_workspace_dir() == should_be
+    # read from our demo settings.json
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settings.json') as wb:
+        assert mu.logic.get_workspace_dir() == '/home/foo/mycode'
 
 
 def test_check_flake():
