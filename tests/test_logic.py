@@ -158,7 +158,9 @@ def test_get_workspace():
     """
     should_be = os.path.join(mu.logic.HOME_DIRECTORY,
                              mu.logic.WORKSPACE_NAME)
-    assert mu.logic.get_workspace_dir() == should_be
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settingswithoutworkspace.json'):
+        assert mu.logic.get_workspace_dir() == should_be
     # read from our demo settings.json
     with mock.patch('mu.logic.get_settings_path',
                     return_value='tests/settings.json'):
