@@ -1462,9 +1462,9 @@ def test_MicrobitFileList_dropEvent_error():
     with mock.patch('mu.interface.microfs.get_serial',
                     return_value=mock_context), \
             mock.patch('mu.interface.microfs.put', side_effect=ex), \
-            mock.patch('mu.interface.logger.error', return_value=None) as l:
+            mock.patch('mu.interface.logger.error', return_value=None) as log:
         mfs.dropEvent(mock_event)
-        l.assert_called_once_with(ex)
+        log.assert_called_once_with(ex)
         mfs.disable.assert_called_once_with(source)
         mfs.enable.assert_called_once_with(source)
 
@@ -1545,10 +1545,10 @@ def test_MicrobitFileList_contextMenuEvent_error():
     with mock.patch('mu.interface.microfs.get_serial',
                     return_value=mock_context), \
             mock.patch('mu.interface.microfs.rm', side_effect=ex), \
-            mock.patch('mu.interface.logger.error', return_value=None) as l, \
-            mock.patch('mu.interface.QMenu', return_value=mock_menu):
+            mock.patch('mu.interface.QMenu', return_value=mock_menu), \
+            mock.patch('mu.interface.logger.error', return_value=None) as log:
         mfs.contextMenuEvent(mock_event)
-        l.assert_called_once_with(ex)
+        log.assert_called_once_with(ex)
         assert mfs.takeItem.call_count == 0
         assert mfs.setDisabled.call_count == 2
         assert mfs.setAcceptDrops.call_count == 2
@@ -1617,9 +1617,9 @@ def test_LocalFileList_dropEvent_error():
     with mock.patch('mu.interface.microfs.get_serial',
                     return_value=mock_context), \
             mock.patch('mu.interface.microfs.get', side_effect=ex), \
-            mock.patch('mu.interface.logger.error', return_value=None) as l:
+            mock.patch('mu.interface.logger.error', return_value=None) as log:
         lfs.dropEvent(mock_event)
-        l.assert_called_once_with(ex)
+        log.assert_called_once_with(ex)
         lfs.disable.assert_called_once_with(source)
         lfs.enable.assert_called_once_with(source)
 
