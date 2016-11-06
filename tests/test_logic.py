@@ -152,6 +152,25 @@ def test_get_settings_no_files():
     assert mock_json_dump.call_count == 1
 
 
+def test_get_settings_no_files_cannot_create():
+    """
+    No settings files found, attempting to create one causes Mu to log and
+    make do.
+    """
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__.side_effect = FileNotFoundError('Bang')
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_json_dump = mock.MagicMock()
+    with mock.patch('os.path.exists', return_value=False), \
+            mock.patch('builtins.open', mock_open), \
+            mock.patch('json.dump', mock_json_dump), \
+            mock.patch('mu.logic.DATA_DIR', 'fake_path'), \
+            mock.patch('mu.logic.logger', return_value=None) as logger:
+        mu.logic.get_settings_path()
+        msg = 'Unable to create settings file: fake_path/settings.json'
+        logger.error.assert_called_once_with(msg)
+
+
 def test_get_workspace():
     """
     Normally return generated folder otherwise user value
