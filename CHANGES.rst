@@ -1,6 +1,11 @@
 Release History
 ===============
 
+0.9.13
+------
+
+* Add ability to change default Python directory in the settings file. Thanks to Zander Brown for the contribution. See #179.
+
 0.9.12
 ------
 

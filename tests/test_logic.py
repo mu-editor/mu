@@ -26,8 +26,8 @@ def test_CONSTANTS():
     Ensure the expected constants exist.
     """
     assert mu.logic.HOME_DIRECTORY
-    assert mu.logic.PYTHON_DIRECTORY
     assert mu.logic.DATA_DIR
+    assert mu.logic.WORKSPACE_NAME
     # These should NEVER change.
     assert mu.logic.MICROBIT_PID == 516
     assert mu.logic.MICROBIT_VID == 3368
@@ -150,6 +150,40 @@ def test_get_settings_no_files():
         assert mu.logic.get_settings_path() == os.path.join(
             'fake_path', 'settings.json')
     assert mock_json_dump.call_count == 1
+
+
+def test_get_settings_no_files_cannot_create():
+    """
+    No settings files found, attempting to create one causes Mu to log and
+    make do.
+    """
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__.side_effect = FileNotFoundError('Bang')
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_json_dump = mock.MagicMock()
+    with mock.patch('os.path.exists', return_value=False), \
+            mock.patch('builtins.open', mock_open), \
+            mock.patch('json.dump', mock_json_dump), \
+            mock.patch('mu.logic.DATA_DIR', 'fake_path'), \
+            mock.patch('mu.logic.logger', return_value=None) as logger:
+        mu.logic.get_settings_path()
+        msg = 'Unable to create settings file: fake_path/settings.json'
+        logger.error.assert_called_once_with(msg)
+
+
+def test_get_workspace():
+    """
+    Normally return generated folder otherwise user value
+    """
+    should_be = os.path.join(mu.logic.HOME_DIRECTORY,
+                             mu.logic.WORKSPACE_NAME)
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settingswithoutworkspace.json'):
+        assert mu.logic.get_workspace_dir() == should_be
+    # read from our demo settings.json
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settings.json'):
+        assert mu.logic.get_workspace_dir() == '/home/foo/mycode'
 
 
 def test_check_flake():
@@ -303,8 +337,8 @@ def test_editor_init():
         assert e.repl is None
         assert e.theme == 'day'
         assert mkd.call_count == 2
-        assert mkd.call_args_list[0][0][0] == mu.logic.PYTHON_DIRECTORY
-        assert mkd.call_args_list[1][0][0] == mu.logic.DATA_DIR
+        assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
+        assert mkd.call_args_list[1][0][0] == mu.logic.get_workspace_dir()
 
 
 def test_editor_restore_session():
@@ -543,7 +577,8 @@ def test_add_fs_no_repl():
     ed = mu.logic.Editor(view)
     with mock.patch('mu.logic.microfs.get_serial', return_value=True):
         ed.add_fs()
-    view.add_filesystem.assert_called_once_with(home=mu.logic.PYTHON_DIRECTORY)
+    workspace = mu.logic.get_workspace_dir()
+    view.add_filesystem.assert_called_once_with(home=workspace)
     assert ed.fs
 
 
@@ -905,9 +940,10 @@ def test_save_no_path():
     ed = mu.logic.Editor(view)
     with mock.patch('builtins.open', mock_open):
         ed.save()
-    mock_open.assert_called_once_with('foo.py', 'w', newline='')
+    assert mock_open.call_count == 2
+    mock_open.assert_called_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
-    view.get_save_path.assert_called_once_with(mu.logic.PYTHON_DIRECTORY)
+    view.get_save_path.assert_called_once_with(mu.logic.get_workspace_dir())
 
 
 def test_save_no_path_no_path_given():
@@ -1101,7 +1137,7 @@ def test_quit_modified_ok():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
+    assert mock_open.call_count == 2
     assert mock_open.return_value.write.call_count > 0
 
 
@@ -1128,7 +1164,7 @@ def test_quit_save_tabs_with_paths():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
+    assert mock_open.call_count == 2
     assert mock_open.return_value.write.call_count > 0
     recovered = ''.join([i[0][0] for i
                         in mock_open.return_value.write.call_args_list])
@@ -1159,7 +1195,7 @@ def test_quit_save_theme():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
+    assert mock_open.call_count == 2
     assert mock_open.return_value.write.call_count > 0
     recovered = ''.join([i[0][0] for i
                         in mock_open.return_value.write.call_args_list])

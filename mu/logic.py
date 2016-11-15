@@ -50,9 +50,8 @@ BOARD_IDS = set([
 ])
 #: The user's home directory.
 HOME_DIRECTORY = os.path.expanduser('~')
-#: The default directory for Python scripts. This needs to be in the user's
-#  home directory, and visible (so not a . directory)
-PYTHON_DIRECTORY = os.path.join(HOME_DIRECTORY, 'mu_code')
+# Name of the directory within the home folder to use by default
+WORKSPACE_NAME = 'mu_code'
 #: The default directory for application data (i.e., configuration).
 DATA_DIR = appdirs.user_data_dir(appname='mu', appauthor='python')
 #: The default directory for application logs.
@@ -118,10 +117,40 @@ def get_settings_path():
     if not os.path.exists(settings_dir):
         settings_dir = os.path.join(DATA_DIR, settings_filename)
         if not os.path.exists(settings_dir):
-            with open(settings_dir, 'w') as f:
-                logger.debug('Creating settings file: {}'.format(settings_dir))
-                json.dump({}, f)
+            try:
+                with open(settings_dir, 'w') as f:
+                    logger.debug('Creating settings file: {}'.format(
+                                 settings_dir))
+                    json.dump({}, f)
+            except FileNotFoundError:
+                logger.error('Unable to create settings file: {}'.format(
+                             settings_dir))
     return settings_dir
+
+
+def get_workspace_dir():
+    """
+    The default is to use a directory in the users home folder however
+    in some network systems this in inaccessable. This allows a key in the
+    settings file to be used to set a custom path
+    """
+    settings_path = get_settings_path()
+    try:
+        with open(settings_path) as f:
+            try:
+                # Load up the JSON
+                sets = json.load(f)
+                if 'workspace' in sets:
+                    # The key exists so use it
+                    return sets['workspace']
+            except ValueError:
+                logger.error('Settings file {} could not be parsed.'.format(
+                             settings_path))
+    except FileNotFoundError:
+        logger.error('Settings file {} does not exist.'.format(
+                     settings_path))
+    # If all else fails return the default directory
+    return os.path.join(HOME_DIRECTORY, WORKSPACE_NAME)
 
 
 def check_flake(filename, code):
@@ -296,12 +325,12 @@ class Editor:
         self.fs = None
         self.theme = 'day'
         self.user_defined_microbit_path = None
-        if not os.path.exists(PYTHON_DIRECTORY):
-            logger.debug('Creating directory: {}'.format(PYTHON_DIRECTORY))
-            os.makedirs(PYTHON_DIRECTORY)
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
+        if not os.path.exists(get_workspace_dir()):
+            logger.debug('Creating directory: {}'.format(get_workspace_dir()))
+            os.makedirs(get_workspace_dir())
 
     def restore_session(self):
         """
@@ -410,7 +439,7 @@ class Editor:
             if self.fs is None:
                 try:
                     microfs.get_serial()
-                    self._view.add_filesystem(home=PYTHON_DIRECTORY)
+                    self._view.add_filesystem(home=get_workspace_dir())
                     self.fs = True
                 except IOError:
                     message = 'Could not find an attached BBC micro:bit.'
@@ -531,7 +560,7 @@ class Editor:
         Loads a Python file from the file system or extracts a Python sccript
         from a hex file.
         """
-        path = self._view.get_load_path(PYTHON_DIRECTORY)
+        path = self._view.get_load_path(get_workspace_dir())
         logger.info('Loading script from: {}'.format(path))
         try:
             if path.endswith('.py'):
@@ -563,7 +592,7 @@ class Editor:
             return
         if tab.path is None:
             # Unsaved file.
-            tab.path = self._view.get_save_path(PYTHON_DIRECTORY)
+            tab.path = self._view.get_save_path(get_workspace_dir())
         if tab.path:
             # The user specified a path to a file.
             if not os.path.basename(tab.path).endswith('.py'):
@@ -637,7 +666,8 @@ class Editor:
                 paths.append(widget.path)
         session = {
             'theme': self.theme,
-            'paths': paths
+            'paths': paths,
+            'workspace': get_workspace_dir()
         }
         logger.debug(session)
         settings_path = get_settings_path()

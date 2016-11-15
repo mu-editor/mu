@@ -225,7 +225,6 @@ MICROPYTHON_APIS = [
     "microbit.Image.SNAKE",
     "microbit.Image.ALL_CLOCKS",
     "microbit.Image.ALL_ARROWS",
-
     # uart
     "microbit.uart.init(baudrate=9600, bits=8, parity=None, stop=1, tx=None, rx=None) \nUse init() to set up communication using the default values. \nOtherwise override the defaults as named arguments.",
     "microbit.uart.any() \nIf there are incoming characters waiting to be read, any() will return True.\nOtherwise, returns False.",
@@ -234,13 +233,11 @@ MICROPYTHON_APIS = [
     "microbit.uart.readline() \nUse readline() to read a line that ends with a newline character.",
     "microbit.uart.readinto(buf, n) \nUse readinto(buf) to read bytes into the buffer 'buf'.\nUse readinto(buff, n) to read, at most, 'n' number of bytes into 'buf'.",
     "microbit.uart.write() \nUse write(buf) to write the bytes in buffer 'buf' to the connected device.",
-
     # SPI
     "microbit.spi.init(baudrate=1000000, bits=8, mode=0, sclk=pin13, mosi=pin15, miso=pin14) \nSet up communication. Override the defaults for baudrate, mode,\nSCLK, MOSI and MISO. The default connections are pin13 for SCLK, pin15 for\nMOSI and pin14 for MISO.",
     "microbit.spi.write(buf) \nUse write(buf) to write bytes in buffer 'buf' to the connected device.",
     "microbit.spi.read(n) \nUse read(n) to read 'n' bytes of data.",
     "microbit.spi.write_readinto(out, in) \nUse write_readinto(out, in) to write the 'out' buffer to the connected device\nand read any response into the 'in' buffer. The length of the buffers should\nbe the same. The buffers can be the same object.",
-
     # Music module
     "music.set_tempo(number, bpm) \nMake a beat last a 'number' of ticks long and\nplayed at 'bpm' beats per minute.",
     "music.pitch(freq, length=-1, pin=microbit.pin0, wait=True) \nMake micro:bit play a note at 'freq' frequency for\n'length' milliseconds. E.g. pitch(440, 1000) will play concert 'A' for 1 second.\nIf length is a negative number the pitch is played continuously.\nUse the optional pin argument to override the default output for the speaker.\nIf wait is False the music will play in the background while the program\ncontinues.",
@@ -268,7 +265,7 @@ MICROPYTHON_APIS = [
     "music.JUMP_UP",
     "music.JUMP_DOWN",
     "music.POWER_UP",
-    "music.POWER_DOWN"
+    "music.POWER_DOWN",
     # Antigravity
     "antigravity",
     # This module
