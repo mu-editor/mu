@@ -42,7 +42,11 @@ from mu import __version__
 #: List of supported board USB IDs.  Each board is a tuple of unique USB vendor
 # ID, USB product ID.
 BOARD_IDS = set([
-    (3368, 516)  # micro:bit USB VID, PID
+    (0x0D28, 0x0204),  # micro:bit USB VID, PID
+    (0x239A, 0x800B),  # Adafruit Feather M0 CDC only USB VID, PID
+    (0x239A, 0x8016),  # Adafruit Feather M0 CDC + MSC USB VID, PID
+    (0x239A, 0x8013),  # Adafruit Metro M0 CDC only USB VID, PID
+    (0x239A, 0x8015)   # Adafruit Metro Mo CDC + MSC USB VID, PID
 ])
 #: The user's home directory.
 HOME_DIRECTORY = os.path.expanduser('~')
