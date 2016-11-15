@@ -35,7 +35,7 @@ install:
 
 # Run the test suit and build the executable with the time stamp in its file name
 script:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make check; fi
+  - make check
   - pyinstaller package/pyinstaller.spec
   - du -sk dist/
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mv dist/mu dist/mu-$(date '+%Y-%m-%d_%H_%M_%S'); fi
