@@ -26,12 +26,12 @@ before_install:
   - sudo python3 --version
   - sudo python3 -c "import struct; print(struct.calcsize('P') * 8)"
   - sudo pip3 --version
-  - sudo python3 -c "import PyQt5"
   - pyinstaller --version
 
 # Build Mu and time stamp it
 install:
   - sudo pip3 install -r requirements.txt
+  - sudo python3 -c "import PyQt5"
 
 # Run the test suit and build the executable with the time stamp in its file name
 script:

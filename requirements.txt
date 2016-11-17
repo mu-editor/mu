@@ -1,3 +1,5 @@
+PyQt5==5.6
+QScintilla==2.9.2
 pytest
 pycodestyle
 pyflakes
