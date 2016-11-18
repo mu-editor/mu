@@ -1,41 +1,49 @@
-# Due to PyQt complexity within virtualenvs, indicate non-python environment and manually configure it
-language: cpp
+# Travis can building for Linux (Ubuntu 14.04 x64) and OS X (El Capitan)
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: generic
 
-# Travis can be used to build for both Linux and OS X
-os:
-  - osx
-  - linux
-
-# Ensure we are running on 14.04 instead of 12.04 on the Ubuntu side
-sudo: required
-dist: trusty
+    - os: osx
+      sudo: required
+      language: generic
 
 before_install:
-  # OS extra info
+  # OS and Python info
   - uname -a
-  - python --version
-  - python -c "import struct; print(struct.calcsize('P') * 8)"
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then python3 -c "import sys; print(sys.executable)"; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo python3 -c "import sys; print(sys.executable)"; fi
 
-  # Install Python 3, pip3, PyQt and PyInstaller in the respective OS
+install:
+  # Python 3 and pip 3 installation depends OS (and for now install PyQt & QScintilla in Linux as well)
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_linux.sh; fi
 
-  # Check everything was correctly installed (linux python path from sudo env)
-  - echo $PATH
-  - sudo echo $PATH
-  - sudo python3 --version
-  - sudo python3 -c "import struct; print(struct.calcsize('P') * 8)"
-  - sudo pip3 --version
-  - sudo python3 -c "import PyQt5"
-  - pyinstaller --version
-
-# Build Mu and time stamp it
-install:
+  # Install Mu dependencies (PyQt & QScintilla will be absorbed in requirements.txt once ready)
   - sudo pip3 install -r requirements.txt
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo pip3 install PyQt5; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo pip3 install QScintilla; fi
 
-# Run the test suit and build the executable with the time stamp in its file name
+  # Install packaging dependencies, macOS depends on update not yet release https://github.com/pyinstaller/pyinstaller/pull/1965
+  - sudo pip3 install git+git://github.com/pyinstaller/pyinstaller.git@483c819d6a256b58db6740696a901bd41c313f0c
+
+  # Check everything was correctly installed
+  - echo $PATH
+  - python3 --version
+  - python3 -c "import struct; print(struct.calcsize('P') * 8)"
+  - python3 -c "import sys; print(sys.executable)"
+  - pip3 --version
+  - pip3 freeze
+  - python3 -c "import PyQt5"
+  - python3 -c "import PyQt5.Qsci"
+
 script:
+  # Run the tests, at the moment there is a segmentation fault on Linux, this will go away with Py3.5
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make check; fi
+
+  # Package it
   - pyinstaller package/pyinstaller.spec
   - du -sk dist/
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mv dist/mu dist/mu-$(date '+%Y-%m-%d_%H_%M_%S'); fi

@@ -2,6 +2,12 @@
 import os
 from glob import glob
 
+# Find PyQt5 directory
+from inspect import getfile
+import PyQt5
+pyqt_dir = os.path.dirname(getfile(PyQt5))
+
+
 block_cipher = None
 
 
@@ -20,7 +26,7 @@ print('Spec file resources selected: %s' % data_files)
 
 
 a = Analysis(['../run.py'],
-             pathex=['../'],
+             pathex=['../', pyqt_dir],
              binaries=None,
              datas=data_files,
              hiddenimports = ['sip'],
