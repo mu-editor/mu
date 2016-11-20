@@ -20,18 +20,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import keyword
 import os
 import re
+import platform
 import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
                              QTabWidget, QFileDialog, QMessageBox, QTextEdit,
-                             QFrame, QListWidget, QGridLayout, QLabel, QMenu)
-from PyQt5.QtGui import QKeySequence, QColor, QTextCursor, QFontDatabase
+                             QFrame, QListWidget, QGridLayout, QLabel, QMenu,
+                             QApplication)
+from PyQt5.QtGui import (QKeySequence, QColor, QTextCursor, QFontDatabase,
+                         QCursor)
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
 from PyQt5.QtSerialPort import QSerialPort
 from mu.contrib import microfs
 from mu.resources import load_icon, load_stylesheet, load_font_data
-
 
 #: The default font size.
 DEFAULT_FONT_SIZE = 14
@@ -39,13 +41,11 @@ DEFAULT_FONT_SIZE = 14
 FONT_NAME = "Source Code Pro"
 FONT_FILENAME_PATTERN = "SourceCodePro-{variant}.otf"
 FONT_VARIANTS = ("Bold", "BoldIt", "It", "Regular", "Semibold", "SemiboldIt")
-
 # Load the two themes from resources/css/[night|day].css
 #: NIGHT_STYLE is a dark high contrast theme.
 NIGHT_STYLE = load_stylesheet('night.css')
 #: DAY_STYLE is a light conventional theme.
 DAY_STYLE = load_stylesheet('day.css')
-
 # Regular Expression for valid individual code 'words'
 RE_VALID_WORD = re.compile('^[A-Za-z0-9_-]*$')
 
@@ -850,6 +850,9 @@ class REPLPane(QTextEdit):
         self.setFont(Font().load())
         self.setAcceptRichText(False)
         self.setReadOnly(False)
+        self.setUndoRedoEnabled(False)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.context_menu)
         self.setObjectName('replpane')
         # open the serial port
         self.serial = QSerialPort(self)
@@ -864,6 +867,38 @@ class REPLPane(QTextEdit):
         else:
             raise IOError("Cannot connect to device on port {}".format(port))
         self.set_theme(theme)
+
+    def paste(self):
+        """
+        Grabs clipboard contents then sends down the serial port.
+        """
+        clipboard = QApplication.clipboard()
+        if clipboard and clipboard.text():
+            self.serial.write(bytes(clipboard.text(), 'utf8'))
+
+    def context_menu(self):
+        """"
+        Creates custom context menu with just copy and paste.
+        """
+        menu = QMenu(self)
+        if platform.system() == 'Darwin':
+            copy_keys = QKeySequence(Qt.CTRL + Qt.Key_C)
+            paste_keys = QKeySequence(Qt.CTRL + Qt.Key_V)
+        else:
+            copy_keys = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_C)
+            paste_keys = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_V)
+
+        menu.addAction("Copy", self.copy, copy_keys)
+        menu.addAction("Paste", self.paste, paste_keys)
+        menu.exec_(QCursor.pos())
+
+    def cursor_to_end(self):
+        """
+        Moves the cursor to the very end of the available text.
+        """
+        tc = self.textCursor()
+        tc.movePosition(QTextCursor.End)
+        self.setTextCursor(tc)
 
     def set_theme(self, theme):
         """
@@ -888,7 +923,6 @@ class REPLPane(QTextEdit):
         """
         key = data.key()
         msg = bytes(data.text(), 'utf8')
-
         if key == Qt.Key_Backspace:
             msg = b'\b'
         elif key == Qt.Key_Up:
@@ -899,17 +933,34 @@ class REPLPane(QTextEdit):
             msg = b'\x1B[C'
         elif key == Qt.Key_Left:
             msg = b'\x1B[D'
-        elif data.modifiers() == Qt.MetaModifier:
-            # Handle the Control key.  I would've expected us to have to test
-            # for Qt.ControlModifier, but on (my!) OSX Qt.MetaModifier does
-            # correspond to the Control key.  I've read something that suggests
-            # that it's different on other platforms.
+        elif key == Qt.Key_Home:
+            msg = b'\x1B[H'
+        elif key == Qt.Key_End:
+            msg = b'\x1B[F'
+        elif (platform.system() == 'Darwin' and
+                data.modifiers() == Qt.MetaModifier) or \
+             (platform.system() != 'Darwin' and
+                data.modifiers() == Qt.ControlModifier):
+            # Handle the Control key. On OSX/macOS/Darwin (python calls this
+            # platform Darwin), this is handled by Qt.MetaModifier. Other
+            # platforms (Linux, Windows) call this Qt.ControlModifier. Go
+            # figure. See http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
             if Qt.Key_A <= key <= Qt.Key_Z:
                 # The microbit treats an input of \x01 as Ctrl+A, etc.
                 msg = bytes([1 + key - Qt.Key_A])
+        elif (data.modifiers() == Qt.ControlModifier | Qt.ShiftModifier) or \
+                (platform.system() == 'Darwin' and
+                    data.modifiers() == Qt.ControlModifier):
+            # Command-key on Mac, Ctrl-Shift on Win/Lin
+            if key == Qt.Key_C:
+                self.copy()
+                msg = b''
+            elif key == Qt.Key_V:
+                self.paste()
+                msg = b''
         self.serial.write(msg)
 
-    def process_bytes(self, bs):
+    def process_bytes(self, data):
         """
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
@@ -919,16 +970,53 @@ class REPLPane(QTextEdit):
         # then move it there.
         while tc.movePosition(QTextCursor.Down):
             pass
-        for b in bs:
-            if b == 8:  # \b
+        i = 0
+        while i < len(data):
+            if data[i] == 8:  # \b
                 tc.movePosition(QTextCursor.Left)
                 self.setTextCursor(tc)
-            elif b == 13:  # \r
+            elif data[i] == 13:  # \r
                 pass
+            elif data[i] == 27 and data[i + 1] == 91:  # VT100 cursor: <Esc>[
+                i += 2  # move index to after the [
+                m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])',
+                              data[i:].decode('utf-8'))
+
+                # move to (almost) after control seq (will ++ at end of loop)
+                i += m.end() - 1
+
+                if m.group("count") == '':
+                    count = 1
+                else:
+                    count = int(m.group("count"))
+
+                if m.group("action") == "A":  # up
+                    tc.movePosition(QTextCursor.Up, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "B":  # down
+                    tc.movePosition(QTextCursor.Down, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "C":  # right
+                    tc.movePosition(QTextCursor.Right, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "D":  # left
+                    tc.movePosition(QTextCursor.Left, n=count)
+                    self.setTextCursor(tc)
+                elif m.group("action") == "K":  # delete things
+                    if m.group("count") == "":  # delete to end of line
+                        tc.movePosition(QTextCursor.EndOfLine,
+                                        mode=QTextCursor.KeepAnchor)
+                        tc.removeSelectedText()
+                        self.setTextCursor(tc)
+            elif data[i] == 10:  # \n
+                tc.movePosition(QTextCursor.End)
+                self.setTextCursor(tc)
+                self.insertPlainText(chr(data[i]))
             else:
                 tc.deleteChar()
                 self.setTextCursor(tc)
-                self.insertPlainText(chr(b))
+                self.insertPlainText(chr(data[i]))
+            i += 1
         self.ensureCursorVisible()
 
     def clear(self):
@@ -942,6 +1030,7 @@ class MuFileList(QListWidget):
     """
     Contains shared methods for the two types of file listing used in Mu.
     """
+
     def disable(self, sibling):
         """
         Stops interaction with the list widgets.
