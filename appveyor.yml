@@ -15,7 +15,6 @@ init:
 
   # Utilise pre-installed MinGw for make
   - ps: $env:PATH = 'C:\MinGW\msys\1.0\bin;C:\MinGW\mingw32\bin;C:\MinGW\bin;' + $env:PATH
-  #- cmd: copy c:\MinGW\bin\mingw32-make.exe c:\MinGW\bin\make.exe
 
   # As AppVeyor has multiple python install, check which one uses by default
   - cmd: ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
@@ -54,21 +53,21 @@ install:
   - cmd: python -c "import PyQt5"
   - cmd: python -c "import PyQt5.Qsci"
 
-  # Build mu using PyInstaller and rename executable with timestamp
+  # Build mu using PyInstaller, rename dist folder and executable with timestamp
   - cmd: pyinstaller package\pyinstaller.spec
-  - cmd: dir dist
-  - ps: Rename-Item .\dist\mu.exe mu-$(get-date -f yyyy-MM-dd_HH_mm_ss).exe
+  - ps: Rename-Item -path .\dist upload
+  - cmd: dir upload
+  - ps: Rename-Item .\upload\mu.exe mu-$(get-date -f yyyy-MM-dd_HH_mm_ss).exe
 
 # Not a project with an msbuild file, build done at install.
 build: None
 
 test_script:
-  #- cmd: sh -c "make check"
   - cmd: make check
 
 # Push artifacts to s3 bucket and list all
 before_deploy:
-  - ps: Get-ChildItem .\dist\*.exe | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName ardublockly-s3-deployment }
+  - ps: Get-ChildItem .\upload\*.exe | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName ardublockly-s3-deployment }
   - ps: foreach($artifactName in $artifacts.keys) { $artifacts[$artifactName] }
 
 # Deploy build to Amazon S3 bucket
