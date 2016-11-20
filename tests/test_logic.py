@@ -28,9 +28,7 @@ def test_CONSTANTS():
     assert mu.logic.HOME_DIRECTORY
     assert mu.logic.DATA_DIR
     assert mu.logic.WORKSPACE_NAME
-    # These should NEVER change.
-    assert mu.logic.MICROBIT_PID == 516
-    assert mu.logic.MICROBIT_VID == 3368
+    assert isinstance(mu.logic.BOARD_IDS, set)
 
 
 def test_find_microbit_no_ports():
@@ -59,15 +57,16 @@ def test_find_microbit_with_device():
     If a device is found, return the port name.
     """
     mock_port = mock.MagicMock()
-    mock_port.vid = mu.logic.MICROBIT_VID
-    mock_port.productIdentifier = mock.MagicMock()
-    mock_port.productIdentifier.return_value = mu.logic.MICROBIT_PID
-    mock_port.vendorIdentifier = mock.MagicMock()
-    mock_port.vendorIdentifier.return_value = mu.logic.MICROBIT_VID
-    mock_port.portName = mock.MagicMock(return_value='COM0')
-    with mock.patch('mu.logic.QSerialPortInfo.availablePorts',
-                    return_value=[mock_port, ]):
-        assert mu.logic.find_microbit() == 'COM0'
+    for vid, pid in mu.logic.BOARD_IDS:
+        mock_port.vid = vid
+        mock_port.productIdentifier = mock.MagicMock()
+        mock_port.productIdentifier.return_value = pid
+        mock_port.vendorIdentifier = mock.MagicMock()
+        mock_port.vendorIdentifier.return_value = vid
+        mock_port.portName = mock.MagicMock(return_value='COM0')
+        with mock.patch('mu.logic.QSerialPortInfo.availablePorts',
+                        return_value=[mock_port, ]):
+            assert mu.logic.find_microbit() == 'COM0'
 
 
 def test_get_settings_app_path():
