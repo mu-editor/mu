@@ -8,6 +8,7 @@ from PyQt5.QtCore import QIODevice, Qt, QSize
 from PyQt5.QtGui import QTextCursor, QIcon
 from unittest import mock
 import os
+import platform
 import mu.interface
 import pytest
 import keyword
@@ -1115,6 +1116,144 @@ def test_REPLPane_init_cannot_open():
             mu.interface.REPLPane('COM0')
 
 
+def test_REPLPane_paste():
+    """
+    Pasting into the REPL should send bytes via the serial connection.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=True)
+    mock_serial.readyRead = mock.MagicMock()
+    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
+    mock_serial.write = mock.MagicMock(return_value=None)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    mock_clipboard = mock.MagicMock()
+    mock_clipboard.text.return_value = 'paste me!'
+    mock_application = mock.MagicMock()
+    mock_application.clipboard.return_value = mock_clipboard
+    with mock.patch('mu.interface.QSerialPort', mock_serial_class):
+        with mock.patch('mu.interface.QApplication', mock_application):
+            rp = mu.interface.REPLPane('COM0')
+            mock_serial.write.reset_mock()
+            rp.paste()
+    mock_serial.write.assert_called_once_with(bytes('paste me!', 'utf8'))
+
+
+def test_REPLPane_paste_only_works_if_there_is_something_to_paste():
+    """
+    Pasting into the REPL should send bytes via the serial connection.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=True)
+    mock_serial.readyRead = mock.MagicMock()
+    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
+    mock_serial.write = mock.MagicMock(return_value=None)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    mock_clipboard = mock.MagicMock()
+    mock_clipboard.text.return_value = ''
+    mock_application = mock.MagicMock()
+    mock_application.clipboard.return_value = mock_clipboard
+    with mock.patch('mu.interface.QSerialPort', mock_serial_class):
+        with mock.patch('mu.interface.QApplication', mock_application):
+            rp = mu.interface.REPLPane('COM0')
+            mock_serial.write.reset_mock()
+            rp.paste()
+    assert mock_serial.write.call_count == 0
+
+
+def test_REPLPane_context_menu():
+    """
+    Ensure the context menu for the REPL is configured correctly for non-OSX
+    platforms.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=True)
+    mock_serial.readyRead = mock.MagicMock()
+    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
+    mock_serial.write = mock.MagicMock(return_value=None)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    mock_platform = mock.MagicMock()
+    mock_platform.system.return_value = 'WinNT'
+    mock_qmenu = mock.MagicMock()
+    mock_qmenu_class = mock.MagicMock(return_value=mock_qmenu)
+    with mock.patch('mu.interface.QSerialPort', mock_serial_class), \
+            mock.patch('mu.interface.platform', mock_platform), \
+            mock.patch('mu.interface.QMenu', mock_qmenu_class), \
+            mock.patch('mu.interface.QCursor'):
+        rp = mu.interface.REPLPane('COM0')
+        rp.context_menu()
+    assert mock_qmenu.addAction.call_count == 2
+    copy_action = mock_qmenu.addAction.call_args_list[0][0]
+    assert copy_action[0] == 'Copy'
+    assert copy_action[1] == rp.copy
+    assert copy_action[2].toString() == 'Ctrl+Shift+C'
+    paste_action = mock_qmenu.addAction.call_args_list[1][0]
+    assert paste_action[0] == 'Paste'
+    assert paste_action[1] == rp.paste
+    assert paste_action[2].toString() == 'Ctrl+Shift+V'
+    assert mock_qmenu.exec_.call_count == 1
+
+
+def test_REPLPane_context_menu_darwin():
+    """
+    Ensure the context menu for the REPL is configured correctly for non-OSX
+    platforms.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=True)
+    mock_serial.readyRead = mock.MagicMock()
+    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
+    mock_serial.write = mock.MagicMock(return_value=None)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    mock_platform = mock.MagicMock()
+    mock_platform.system.return_value = 'Darwin'
+    mock_qmenu = mock.MagicMock()
+    mock_qmenu_class = mock.MagicMock(return_value=mock_qmenu)
+    with mock.patch('mu.interface.QSerialPort', mock_serial_class), \
+            mock.patch('mu.interface.platform', mock_platform), \
+            mock.patch('mu.interface.QMenu', mock_qmenu_class), \
+            mock.patch('mu.interface.QCursor'):
+        rp = mu.interface.REPLPane('COM0')
+        rp.context_menu()
+    assert mock_qmenu.addAction.call_count == 2
+    copy_action = mock_qmenu.addAction.call_args_list[0][0]
+    assert copy_action[0] == 'Copy'
+    assert copy_action[1] == rp.copy
+    assert copy_action[2].toString() == 'Ctrl+C'
+    paste_action = mock_qmenu.addAction.call_args_list[1][0]
+    assert paste_action[0] == 'Paste'
+    assert paste_action[1] == rp.paste
+    assert paste_action[2].toString() == 'Ctrl+V'
+    assert mock_qmenu.exec_.call_count == 1
+
+
+def test_REPLPane_cursor_to_end():
+    """
+    Ensure the cursor is set to the very end of the available text using the
+    appropriate Qt related magic.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=True)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    mock_text_cursor = mock.MagicMock()
+    with mock.patch('mu.interface.QSerialPort', mock_serial_class):
+        rp = mu.interface.REPLPane('COM0')
+        rp.textCursor = mock.MagicMock(return_value=mock_text_cursor)
+        rp.setTextCursor = mock.MagicMock()
+        rp.cursor_to_end()
+        mock_text_cursor.movePosition.assert_called_once_with(QTextCursor.End)
+        rp.setTextCursor.assert_called_once_with(mock_text_cursor)
+
+
 def test_REPLPane_set_theme():
     """
     Ensure the set_theme toggles as expected.
@@ -1277,6 +1416,92 @@ def test_REPLPane_keyPressEvent_left():
         mock_serial.write.assert_called_once_with(b'\x1B[D')
 
 
+def test_REPLPane_keyPressEvent_home():
+    """
+    Ensure home key in the REPL is handled correctly.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=True)
+    mock_serial.write = mock.MagicMock(return_value=None)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    with mock.patch('mu.interface.QSerialPort', mock_serial_class):
+        rp = mu.interface.REPLPane('COM0')
+        mock_serial.write.reset_mock()  # write is called during __init__()
+        data = mock.MagicMock
+        data.key = mock.MagicMock(return_value=Qt.Key_Home)
+        data.text = mock.MagicMock(return_value='1b')
+        data.modifiers = mock.MagicMock(return_value=None)
+        rp.keyPressEvent(data)
+        mock_serial.write.assert_called_once_with(b'\x1B[H')
+
+
+def test_REPLPane_keyPressEvent_end():
+    """
+    Ensure end key in the REPL is handled correctly.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=True)
+    mock_serial.write = mock.MagicMock(return_value=None)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    with mock.patch('mu.interface.QSerialPort', mock_serial_class):
+        rp = mu.interface.REPLPane('COM0')
+        mock_serial.write.reset_mock()  # write is called during __init__()
+        data = mock.MagicMock
+        data.key = mock.MagicMock(return_value=Qt.Key_End)
+        data.text = mock.MagicMock(return_value='1b')
+        data.modifiers = mock.MagicMock(return_value=None)
+        rp.keyPressEvent(data)
+        mock_serial.write.assert_called_once_with(b'\x1B[F')
+
+
+def test_REPLPane_keyPressEvent_CTRL_C_Darwin():
+    """
+    Ensure end key in the REPL is handled correctly.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=True)
+    mock_serial.write = mock.MagicMock(return_value=None)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    with mock.patch('mu.interface.QSerialPort', mock_serial_class):
+        rp = mu.interface.REPLPane('COM0')
+        rp.copy = mock.MagicMock()
+        mock_serial.write.reset_mock()  # write is called during __init__()
+        data = mock.MagicMock
+        data.key = mock.MagicMock(return_value=Qt.Key_C)
+        data.text = mock.MagicMock(return_value='1b')
+        data.modifiers.return_value = Qt.ControlModifier | Qt.ShiftModifier
+        rp.keyPressEvent(data)
+        rp.copy.assert_called_once_with()
+
+
+def test_REPLPane_keyPressEvent_CTRL_V_Darwin():
+    """
+    Ensure end key in the REPL is handled correctly.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=True)
+    mock_serial.write = mock.MagicMock(return_value=None)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    with mock.patch('mu.interface.QSerialPort', mock_serial_class):
+        rp = mu.interface.REPLPane('COM0')
+        rp.paste = mock.MagicMock()
+        mock_serial.write.reset_mock()  # write is called during __init__()
+        data = mock.MagicMock
+        data.key = mock.MagicMock(return_value=Qt.Key_V)
+        data.text = mock.MagicMock(return_value='1b')
+        data.modifiers.return_value = Qt.ControlModifier | Qt.ShiftModifier
+        rp.keyPressEvent(data)
+        rp.paste.assert_called_once_with()
+
+
 def test_REPLPane_keyPressEvent_meta():
     """
     Ensure backspaces in the REPL are handled correctly.
@@ -1293,7 +1518,10 @@ def test_REPLPane_keyPressEvent_meta():
         data = mock.MagicMock
         data.key = mock.MagicMock(return_value=Qt.Key_M)
         data.text = mock.MagicMock(return_value='a')
-        data.modifiers = mock.MagicMock(return_value=Qt.MetaModifier)
+        if platform.system() == 'Darwin':
+            data.modifiers = mock.MagicMock(return_value=Qt.MetaModifier)
+        else:
+            data.modifiers = mock.MagicMock(return_value=Qt.ControlModifier)
         rp.keyPressEvent(data)
         expected = 1 + Qt.Key_M - Qt.Key_A
         mock_serial.write.assert_called_once_with(bytes([expected]))
@@ -1302,7 +1530,8 @@ def test_REPLPane_keyPressEvent_meta():
 def test_REPLPane_process_bytes():
     """
     Ensure bytes coming from the device to the application are processed as
-    expected. Backspace is enacted, carriage-return is ignored and all others
+    expected. Backspace is enacted, carriage-return is ignored, newline moves
+    the cursor position to the end of the line before enacted and all others
     are simply inserted.
     """
     mock_serial = mock.MagicMock()
@@ -1311,7 +1540,8 @@ def test_REPLPane_process_bytes():
     mock_serial.open = mock.MagicMock(return_value=True)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     mock_tc = mock.MagicMock()
-    mock_tc.movePosition = mock.MagicMock(side_effect=[True, False, True])
+    mock_tc.movePosition = mock.MagicMock(side_effect=[True, False, True,
+                                                       True])
     mock_tc.deleteChar = mock.MagicMock(return_value=None)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
         rp = mu.interface.REPLPane('COM0')
@@ -1319,17 +1549,71 @@ def test_REPLPane_process_bytes():
         rp.setTextCursor = mock.MagicMock(return_value=None)
         rp.insertPlainText = mock.MagicMock(return_value=None)
         rp.ensureCursorVisible = mock.MagicMock(return_value=None)
-        bs = [8, 13, 65]  # \b, \r, 'A'
+        bs = bytes([8, 13, 10, 65, ])  # \b, \r, \n, 'A'
         rp.process_bytes(bs)
         rp.textCursor.assert_called_once_with()
-        assert mock_tc.movePosition.call_count == 3
+        assert mock_tc.movePosition.call_count == 4
         assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
         assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Down
         assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Left
-        assert rp.setTextCursor.call_count == 2
+        assert mock_tc.movePosition.call_args_list[3][0][0] == QTextCursor.End
+        assert rp.setTextCursor.call_count == 3
         assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
         assert rp.setTextCursor.call_args_list[1][0][0] == mock_tc
-        rp.insertPlainText.assert_called_once_with(chr(65))
+        assert rp.setTextCursor.call_args_list[2][0][0] == mock_tc
+        assert rp.insertPlainText.call_count == 2
+        assert rp.insertPlainText.call_args_list[0][0][0] == chr(10)
+        assert rp.insertPlainText.call_args_list[1][0][0] == chr(65)
+        rp.ensureCursorVisible.assert_called_once_with()
+
+
+def test_REPLPane_process_bytes_VT100():
+    """
+    Ensure bytes coming from the device to the application are processed as
+    expected. In this case, make sure VT100 related codes are handled properly.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=True)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    mock_tc = mock.MagicMock()
+    mock_tc.movePosition = mock.MagicMock(return_value=False)
+    mock_tc.removeSelectedText = mock.MagicMock()
+    mock_tc.deleteChar = mock.MagicMock(return_value=None)
+    with mock.patch('mu.interface.QSerialPort', mock_serial_class):
+        rp = mu.interface.REPLPane('COM0')
+        rp.textCursor = mock.MagicMock(return_value=mock_tc)
+        rp.setTextCursor = mock.MagicMock(return_value=None)
+        rp.insertPlainText = mock.MagicMock(return_value=None)
+        rp.ensureCursorVisible = mock.MagicMock(return_value=None)
+        bs = bytes([
+            27, 91, ord('1'), ord('A'),  # <Esc>[1A
+            27, 91, ord('1'), ord('B'),  # <Esc>[1B
+            27, 91, ord('1'), ord('C'),  # <Esc>[1C
+            27, 91, ord('1'), ord('D'),  # <Esc>[1D
+            27, 91, ord('K'),  # <Esc>[K
+        ])
+        rp.process_bytes(bs)
+        rp.textCursor.assert_called_once_with()
+        assert mock_tc.movePosition.call_count == 6
+        assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
+        assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Up
+        assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Down
+        assert mock_tc.movePosition.call_args_list[3][0][0] == \
+            QTextCursor.Right
+        assert mock_tc.movePosition.call_args_list[4][0][0] == QTextCursor.Left
+        assert mock_tc.movePosition.call_args_list[5][0][0] == \
+            QTextCursor.EndOfLine
+        assert mock_tc.movePosition.call_args_list[5][1]['mode'] == \
+            QTextCursor.KeepAnchor
+        assert rp.setTextCursor.call_count == 5
+        assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
+        assert rp.setTextCursor.call_args_list[1][0][0] == mock_tc
+        assert rp.setTextCursor.call_args_list[2][0][0] == mock_tc
+        assert rp.setTextCursor.call_args_list[3][0][0] == mock_tc
+        assert rp.setTextCursor.call_args_list[4][0][0] == mock_tc
+        mock_tc.removeSelectedText.assert_called_once_with()
         rp.ensureCursorVisible.assert_called_once_with()
 
 
