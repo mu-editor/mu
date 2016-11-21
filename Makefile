@@ -17,9 +17,9 @@ clean:
 	rm -rf mu.egg-info
 	rm -rf .coverage
 	rm -rf docs/_build
-	find . \( -name '*.py[co]' -o -name dropin.cache \) -print0 | $(XARGS) rm
-	find . \( -name '*.bak' -o -name dropin.cache \) -print0 | $(XARGS) rm
-	find . \( -name '*.tgz' -o -name dropin.cache \) -print0 | $(XARGS) rm
+	find . \( -name '*.py[co]' -o -name dropin.cache \) -delete
+	find . \( -name '*.bak' -o -name dropin.cache \) -delete
+	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
 
 pyflakes:
 	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes

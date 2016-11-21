@@ -166,7 +166,8 @@ def test_get_settings_no_files_cannot_create():
             mock.patch('mu.logic.DATA_DIR', 'fake_path'), \
             mock.patch('mu.logic.logger', return_value=None) as logger:
         mu.logic.get_settings_path()
-        msg = 'Unable to create settings file: fake_path/settings.json'
+        msg = 'Unable to create settings file: ' \
+              'fake_path{}settings.json'.format(os.path.sep)
         logger.error.assert_called_once_with(msg)
 
 
