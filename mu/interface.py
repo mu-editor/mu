@@ -22,12 +22,14 @@ import os
 import re
 import platform
 import logging
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
+import json
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice, QUrl
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
                              QTabWidget, QFileDialog, QMessageBox, QTextEdit,
                              QFrame, QListWidget, QGridLayout, QLabel, QMenu,
                              QApplication)
+from PyQt5.QtWebKitWidgets import QWebPage, QWebView
 from PyQt5.QtGui import (QKeySequence, QColor, QTextCursor, QFontDatabase,
                          QCursor)
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
@@ -495,10 +497,13 @@ class ButtonBar(QToolBar):
         self.addAction(name="theme",
                        tool_text="Change theme between day or night.")
         self.addSeparator()
+        self.addAction(name="blocks",
+                       tool_text="Use code blocks to generate code.")
         self.addAction(name="check",
                        tool_text="Check your code for mistakes.")
         self.addAction(name="help",
                        tool_text="Show help about Mu in a browser.")
+        self.addSeparator()
         self.addAction(name="quit", tool_text="Quit Mu.")
 
     def addAction(self, name, tool_text):
@@ -656,13 +661,37 @@ class Window(QStackedWidget):
                 return True
         return False
 
+    def add_webview(self, url="http://codewith.mu", width_percent=50):
+        """
+        Add a webview to the left hand pane of the editor. It should navigate
+        to the referenced url and take up the specified width.
+        """
+        page = WebViewPage()
+        self.webview = WebViewPane()
+        self.webview.setPage(page)
+        self.webview.load_url(url)
+        # Add the webview to the right place in the widget tree.
+        web_index = 0
+        tabs_index = self.splitter_horizontal.indexOf(self.tabs)
+        if tabs_index:
+            web_index = tabs_index - 1
+        self.splitter_horizontal.insertWidget(web_index, self.webview)
+        self.connect_zoom(self.webview)
+        # Ensure the width is of the expected percentage.
+        tabs_index = self.splitter_horizontal.indexOf(self.tabs)
+        sizes = self.splitter_horizontal.sizes()
+        total_size = sizes[web_index] + sizes[tabs_index]
+        sizes[web_index] = total_size * width_percent // 100
+        sizes[tabs_index] = total_size - sizes[web_index]
+        self.splitter_horizontal.setSizes(sizes)
+
     def add_filesystem(self, home):
         """
         Adds the file system pane to the application.
         """
-        self.fs = FileSystemPane(self.splitter, home)
-        self.splitter.addWidget(self.fs)
-        self.splitter.setSizes([66, 33])
+        self.fs = FileSystemPane(self.splitter_vertical, home)
+        self.splitter_vertical.addWidget(self.fs)
+        self.splitter_vertical.setSizes([66, 33])
         self.fs.setFocus()
         self.connect_zoom(self.fs)
 
@@ -671,10 +700,18 @@ class Window(QStackedWidget):
         Adds the REPL pane to the application.
         """
         self.repl = REPLPane(port=repl.port, theme=self.theme)
-        self.splitter.addWidget(self.repl)
-        self.splitter.setSizes([66, 33])
+        self.splitter_vertical.addWidget(self.repl)
+        self.splitter_vertical.setSizes([66, 33])
         self.repl.setFocus()
         self.connect_zoom(self.repl)
+
+    def remove_webview(self):
+        """
+        Remove the webview from the editor window.
+        """
+        self.webview.setParent(None)
+        self.webview.deleteLater()
+        self.webview = None
 
     def remove_filesystem(self):
         """
@@ -812,10 +849,11 @@ class Window(QStackedWidget):
         # Give the window a default icon, title and minimum size.
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
-        self.setMinimumSize(926, 600)
+        self.setMinimumSize(1040, 600)
 
         self.widget = QWidget()
-        self.splitter = QSplitter(Qt.Vertical)
+        self.splitter_vertical = QSplitter(Qt.Vertical)
+        self.splitter_horizontal = QSplitter(Qt.Horizontal)
 
         widget_layout = QVBoxLayout()
         self.widget.setLayout(widget_layout)
@@ -823,9 +861,11 @@ class Window(QStackedWidget):
         self.button_bar = ButtonBar(self.widget)
 
         widget_layout.addWidget(self.button_bar)
-        widget_layout.addWidget(self.splitter)
+        widget_layout.addWidget(self.splitter_horizontal)
+        widget_layout.addWidget(self.splitter_vertical)
         self.tabs = FileTabs()
-        self.splitter.addWidget(self.tabs)
+        self.splitter_horizontal.addWidget(self.tabs)
+        self.splitter_vertical.addWidget(self.splitter_horizontal)
 
         self.addWidget(self.widget)
         self.setCurrentWidget(self.widget)
@@ -1233,3 +1273,58 @@ class FileSystemPane(QFrame):
         old_size = self.font.pointSize()
         new_size = max(old_size - delta, 4)
         self.set_font_size(new_size)
+
+
+class WebViewPage(QWebPage):
+
+    def set_console_handler(self, fn):
+        """
+        Set the function for handling JavaScript console output.
+        """
+        self.console_handler = fn
+
+    def javaScriptConsoleMessage(self, msg, line, source):
+        try:
+            self.console_handler(json.loads(msg))
+        finally:
+            pass
+
+class WebViewPane(QWebView):
+    """
+    Represents an embedded web browser (webview) that displays a certain URL.
+    """
+
+    def load_url(self, url):
+        """
+        Navigate to the specified URL.
+        """
+        self.load(QUrl(url))
+
+    def handle_code_update(self, fn):
+        """
+        Handle any code updates triggered by blockly.
+        """
+        self.page().set_console_handler(fn)
+
+    def execute_js(self, code):
+        """
+        Run the referenced fragment of JavaScript within the browser. Return
+        any result.
+        """
+        return self.page().mainFrame().evaluateJavaScript(code)
+
+    def zoomIn(self):
+        """
+        Handles zooming in, increases in deltas of 0.1 up to a factor of +1.0.
+        """
+        new_zoom = self.zoomFactor() + 0.1
+        self.setZoomFactor(new_zoom if (new_zoom < 2.0) else 2.0)
+        self.execute_js('window.dispatchEvent(new Event("resize"));')
+
+    def zoomOut(self):
+        """
+        Handles zooming out, decreases in deltas of 0.1 up to a factor of -0.5.
+        """
+        new_zoom = self.zoomFactor() - 0.1
+        self.setZoomFactor(new_zoom if (new_zoom > 0.5) else 0.5)
+        self.execute_js('window.dispatchEvent(new Event("resize"));')
