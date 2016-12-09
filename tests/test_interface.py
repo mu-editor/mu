@@ -458,8 +458,8 @@ def test_ButtonBar_init():
         mock_tool_button_size.assert_called_once_with(3)
         mock_context_menu_policy.assert_called_once_with(Qt.PreventContextMenu)
         mock_object_name.assert_called_once_with('StandardToolBar')
-        assert mock_add_action.call_count == 12
-        assert mock_add_separator.call_count == 3
+        assert mock_add_action.call_count == 13
+        assert mock_add_separator.call_count == 4
 
 
 def test_ButtonBar_add_action():
@@ -738,19 +738,19 @@ def test_Window_add_filesystem():
     """
     w = mu.interface.Window()
     w.theme = mock.MagicMock()
-    w.splitter = mock.MagicMock()
-    w.splitter.addWidget = mock.MagicMock(return_value=None)
-    w.splitter.setSizes = mock.MagicMock(return_value=None)
+    w.splitter_vertical = mock.MagicMock()
+    w.splitter_vertical.addWidget = mock.MagicMock(return_value=None)
+    w.splitter_vertical.setSizes = mock.MagicMock(return_value=None)
     w.connect_zoom = mock.MagicMock(return_value=None)
     mock_fs = mock.MagicMock()
     mock_fs.setFocus = mock.MagicMock(return_value=None)
     mock_fs_class = mock.MagicMock(return_value=mock_fs)
     with mock.patch('mu.interface.FileSystemPane', mock_fs_class):
         w.add_filesystem('path/to/home')
-    mock_fs_class.assert_called_once_with(w.splitter, 'path/to/home')
+    mock_fs_class.assert_called_once_with(w.splitter_vertical, 'path/to/home')
     assert w.fs == mock_fs
-    w.splitter.addWidget.assert_called_once_with(mock_fs)
-    w.splitter.setSizes.assert_called_once_with([66, 33])
+    w.splitter_vertical.addWidget.assert_called_once_with(mock_fs)
+    w.splitter_vertical.setSizes.assert_called_once_with([66, 33])
     mock_fs.setFocus.assert_called_once_with()
     w.connect_zoom.assert_called_once_with(mock_fs)
 
@@ -761,9 +761,9 @@ def test_Window_add_repl():
     """
     w = mu.interface.Window()
     w.theme = mock.MagicMock()
-    w.splitter = mock.MagicMock()
-    w.splitter.addWidget = mock.MagicMock(return_value=None)
-    w.splitter.setSizes = mock.MagicMock(return_value=None)
+    w.splitter_vertical = mock.MagicMock()
+    w.splitter_vertical.addWidget = mock.MagicMock(return_value=None)
+    w.splitter_vertical.setSizes = mock.MagicMock(return_value=None)
     w.connect_zoom = mock.MagicMock(return_value=None)
     mock_repl = mock.MagicMock()
     mock_repl.setFocus = mock.MagicMock(return_value=None)
@@ -775,8 +775,8 @@ def test_Window_add_repl():
     mock_repl_class.assert_called_once_with(port=mock_repl_arg.port,
                                             theme=w.theme)
     assert w.repl == mock_repl
-    w.splitter.addWidget.assert_called_once_with(mock_repl)
-    w.splitter.setSizes.assert_called_once_with([66, 33])
+    w.splitter_vertical.addWidget.assert_called_once_with(mock_repl)
+    w.splitter_vertical.setSizes.assert_called_once_with([66, 33])
     mock_repl.setFocus.assert_called_once_with()
     w.connect_zoom.assert_called_once_with(mock_repl)
 
@@ -1065,14 +1065,14 @@ def test_Window_setup():
     assert w.setWindowIcon.call_count == 1
     assert isinstance(w.setWindowIcon.call_args[0][0], QIcon)
     w.update_title.assert_called_once_with()
-    w.setMinimumSize.assert_called_once_with(926, 600)
+    w.setMinimumSize.assert_called_once_with(1040, 600)
     assert w.widget == mock_widget
-    assert w.splitter == mock_splitter
+    assert w.splitter_vertical == mock_splitter
     w.widget.setLayout.assert_called_once_with(mock_layout)
     assert w.button_bar == mock_button_bar
     assert w.tabs == mock_qtw
-    assert mock_layout.addWidget.call_count == 2
-    mock_splitter.addWidget.assert_called_once_with(mock_qtw)
+    assert mock_layout.addWidget.call_count == 3
+    assert mock_splitter.addWidget.call_count == 2
     w.addWidget.assert_called_once_with(mock_widget)
     w.setCurrentWidget.assert_called_once_with(mock_widget)
     w.set_theme.assert_called_once_with(theme)

@@ -1289,6 +1289,7 @@ class WebViewPage(QWebPage):
         finally:
             pass
 
+
 class WebViewPane(QWebView):
     """
     Represents an embedded web browser (webview) that displays a certain URL.
