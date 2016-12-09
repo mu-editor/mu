@@ -1,0 +1,6 @@
+[submodule "mu/resources/html/microbit_blocks"]
+	path = mu/resources/html/microbit_blocks
+	url = https://github.com/PyBlocks/microbit_blocks
+[submodule "mu/resources/html/blockly"]
+	path = mu/resources/html/blockly
+	url = https://github.com/google/blockly

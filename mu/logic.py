@@ -37,6 +37,7 @@ except ImportError:  # pragma: no cover
     from pep8 import StyleGuide, Checker
 from mu.contrib import uflash, appdirs, microfs
 from mu.contrib.atomicfile import open_atomic
+from mu.resources import path
 from mu import __version__
 
 
@@ -234,6 +235,48 @@ def check_pycodestyle(code):
     return style_feedback
 
 
+class Blockly:
+    """
+    Represents a blockly based view of the code.
+    """
+
+    def __init__(self, browser, view):
+        """
+        Initialise blockly with the referenced browser widget and view
+        containing editor tabs.
+        """
+        self._browser = browser
+        self._view = view
+        self._old_code = ''
+        self._browser.handle_code_update(self.handle_blocks)
+
+    def handle_blocks(self, msg):
+        """
+        Take a dictionary containing a Python code and XML representation of
+        what's currently in the blockly editor and display it in the currently
+        active tab. TODO: Other activities may be triggered here.
+        """
+        new_code = msg['code']
+        if new_code != self._old_code:
+            self._old_code = new_code
+            tab = self._view.current_tab
+            tab.setText(new_code)
+
+    def get_python_code(self):
+        """
+        Return a Python representation of the current arrangement of blocks.
+        """
+        code = self._browser.execute_js(
+            'Blockly.Python.workspaceToCode(Blockly.mainWorkspace)')
+        return code if code else ''
+
+    def get_blockly_code(self):
+        """
+        Return an XML representation of the current arrangement of blocks.
+        """
+        pass
+
+
 class MuFlakeCodeReporter:
     """
     The class instantiates a reporter that creates structured data about
@@ -327,6 +370,7 @@ class Editor:
         self._view = view
         self.repl = None
         self.fs = None
+        self.blocks = None
         self.theme = 'day'
         self.user_defined_microbit_path = None
         if not os.path.exists(DATA_DIR):
@@ -434,6 +478,33 @@ class Editor:
                            " device or saving your work and restarting Mu if"
                            " the device remains unfound.")
             self._view.show_message(message, information)
+
+    def add_blocks(self):
+        """
+        Create a webview containing blocks.
+        """
+        block_url = "file://" + path('blocks.html', 'html/')
+        self._view.add_webview(block_url)
+        self.blocks = Blockly(self._view.webview, self._view)
+
+    def remove_blocks(self):
+        """
+        Hide and disconnect an active webview containing blocks.
+        """
+        if self.blocks is None:
+            raise RuntimeError('Blocks not running.')
+        self._view.remove_webview()
+        self.blocks = None
+
+    def toggle_blocks(self):
+        """
+        If the blocks are active, close them; otherwise create them.
+        """
+        if self.blocks:
+            # Grab the code?
+            self.remove_blocks()
+        else:
+            self.add_blocks()
 
     def add_fs(self):
         """
