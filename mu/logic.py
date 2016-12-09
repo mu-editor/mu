@@ -398,14 +398,14 @@ class Editor:
                 if 'theme' in old_session:
                     self.theme = old_session['theme']
                 if 'paths' in old_session:
-                    for path in old_session['paths']:
+                    for p in old_session['paths']:
                         try:
-                            with open(path) as f:
+                            with open(p) as f:
                                 text = f.read()
                         except FileNotFoundError:
                             pass
                         else:
-                            self._view.add_tab(path, text)
+                            self._view.add_tab(p, text)
         if not self._view.tab_count:
             py = 'from microbit import *{}{}# Write your code here :-)'.format(
                 os.linesep, os.linesep)

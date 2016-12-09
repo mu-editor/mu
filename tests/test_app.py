@@ -56,7 +56,7 @@ def test_run():
         assert ed.call_count == 1
         assert len(ed.mock_calls) == 2
         assert win.call_count == 1
-        assert len(win.mock_calls) == 14
+        assert len(win.mock_calls) == 15
         assert ex.call_count == 1
 
 
