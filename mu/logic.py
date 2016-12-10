@@ -499,8 +499,12 @@ class Editor:
         if self.blocks:
             # Grab the code?
             self.remove_blocks()
+            for tab in self._view.widgets:
+                tab.set_read_only(False)
         else:
             self.add_blocks()
+            for tab in self._view.widgets:
+                tab.set_read_only(True)
 
     def add_fs(self):
         """
