@@ -265,6 +265,7 @@ class EditorPane(QsciScintilla):
         Connect the theme to a lexer and return the lexer for the editor to
         apply to the script text.
         """
+        self.theme = theme
         theme.apply_to(self.lexer)
         self.lexer.setDefaultPaper(theme.Paper)
         self.setCaretForegroundColor(theme.Caret)
@@ -306,6 +307,16 @@ class EditorPane(QsciScintilla):
             return label + ' *'
         else:
             return label
+
+    def set_read_only(self, read_only=True):
+        """
+        Sets the Editor in read-only mode or not.
+        """
+        self.setReadOnly(read_only)
+        if read_only:
+            self.lexer.setPaper(QColor(self.theme.Margin))
+        else:
+            self.set_theme(self.theme)
 
     def reset_annotations(self):
         """
