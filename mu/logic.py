@@ -130,27 +130,30 @@ def get_settings_path():
 
 def get_workspace_dir():
     """
-    The default is to use a directory in the users home folder however
-    in some network systems this in inaccessable. This allows a key in the
-    settings file to be used to set a custom path
+    The default is to use a directory in the users home folder, however
+    in some network systems this in inaccessible. This allows a key in the
+    settings file to be used to set a custom path.
     """
     settings_path = get_settings_path()
+    workspace_dir = os.path.join(HOME_DIRECTORY, WORKSPACE_NAME)
+    settings = {}
     try:
         with open(settings_path) as f:
-            try:
-                # Load up the JSON
-                sets = json.load(f)
-                if 'workspace' in sets:
-                    # The key exists so use it
-                    return sets['workspace']
-            except ValueError:
-                logger.error('Settings file {} could not be parsed.'.format(
-                             settings_path))
+            settings = json.load(f)
     except FileNotFoundError:
-        logger.error('Settings file {} does not exist.'.format(
+        logger.error('Settings file {} does not exist.'.format(settings_path))
+    except ValueError:
+        logger.error('Settings file {} could not be parsed.'.format(
                      settings_path))
-    # If all else fails return the default directory
-    return os.path.join(HOME_DIRECTORY, WORKSPACE_NAME)
+    else:
+        if 'workspace' in settings:
+            if os.path.isdir(settings['workspace']):
+                workspace_dir = settings['workspace']
+            else:
+                logger.error(
+                    'Workspace value in the settings file is not a valid'
+                    'directory: {}'.format(settings['workspace']))
+    return workspace_dir
 
 
 def check_flake(filename, code):
