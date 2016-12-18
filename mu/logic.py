@@ -36,6 +36,7 @@ try:  # pragma: no cover
 except ImportError:  # pragma: no cover
     from pep8 import StyleGuide, Checker
 from mu.contrib import uflash, appdirs, microfs
+from mu.contrib.atomicfile import open_atomic
 from mu import __version__
 
 
@@ -191,7 +192,7 @@ def check_pycodestyle(code):
     # the code.
     code_fd, code_filename = tempfile.mkstemp()
     os.close(code_fd)
-    with open(code_filename, 'w', newline='') as code_file:
+    with open_atomic(code_filename, 'w', newline='') as code_file:
         code_file.write(code)
     # Configure which PEP8 rules to ignore.
     style = StyleGuide(parse_argv=False, config_file=False)
@@ -598,7 +599,7 @@ class Editor:
             if not os.path.basename(tab.path).endswith('.py'):
                 # No extension given, default to .py
                 tab.path += '.py'
-            with open(tab.path, 'w', newline='') as f:
+            with open_atomic(tab.path, 'w', newline='') as f:
                 logger.info('Saving script to: {}'.format(tab.path))
                 logger.debug(tab.text())
                 f.write(tab.text())
