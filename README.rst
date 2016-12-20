@@ -148,7 +148,7 @@ The source code is hosted on GitHub. Please feel free to fork the repository.
 Assuming you have Git installed you can download the code from the canonical
 repository with the following command::
 
-    $ git clone https://github.com/mu-editor/mu.git
+    git clone https://github.com/mu-editor/mu.git
 
 You may need to grab the GIT submodules used for the blockly based UI::
 
@@ -173,26 +173,26 @@ For this to work you'll need to have Qt5 and Python 3 installed.
      ``--system-site-packages`` switch so that installed libraries are
      included. For instance::
 
-        $ virtualenv -p /usr/local/bin/python3 --system-site-packages ~/env/py3
+        virtualenv -p /usr/local/bin/python3 --system-site-packages ~/env/py3
 
      or::
 
-        $ mkvirtualenv -p /usr/local/bin/python3 --system-site-packages py3
+        mkvirtualenv -p /usr/local/bin/python3 --system-site-packages py3
 
 Ensure you have the correct dependencies for development installed by creating
 a virtualenv and running::
 
-    $ pip install -r requirements.txt
+    pip install -r requirements.txt
 
 To run the local development version of "mu", in the root of this repository
 type::
 
-    $ python3 run.py
+    python3 run.py
 
 There is a Makefile that helps with most of the common workflows associated
 with development. Typing "make" on its own will list the options thus::
 
-    $ make
+    make
 
     There is no default Makefile target right now. Try:
 
