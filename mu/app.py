@@ -36,8 +36,8 @@ def setup_logging():
     """
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
-    log_format = '%(name)s(%(funcName)s) %(levelname)s: %(message)s'
-    logging.basicConfig(filename=LOG_FILE, filemode='w', format=log_format,
+    log_fmt = '%(asctime)s - %(name)s(%(funcName)s) %(levelname)s: %(message)s'
+    logging.basicConfig(filename=LOG_FILE, filemode='w', format=log_fmt,
                         level=logging.DEBUG)
     print('Logging to {}'.format(LOG_FILE))
 

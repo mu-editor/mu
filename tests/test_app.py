@@ -18,9 +18,9 @@ def test_setup_logging():
             mock.patch('mu.app.os.makedirs', return_value=None) as mkdir:
         setup_logging()
         mkdir.assert_called_once_with(LOG_DIR)
-        log_format = '%(name)s(%(funcName)s) %(levelname)s: %(message)s'
+        fmt = '%(asctime)s - %(name)s(%(funcName)s) %(levelname)s: %(message)s'
         log_conf.assert_called_once_with(filename=LOG_FILE, filemode='w',
-                                         format=log_format,
+                                         format=fmt,
                                          level=logging.DEBUG)
 
 
