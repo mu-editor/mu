@@ -407,33 +407,42 @@ class EditorPane(QsciScintilla):
             show=False,      # Unfolds found text
             posix=False)     # More POSIX compatible RegEx
 
+    def range_from_positions(self, start_position, end_position):
+        """Given a start-end pair, such as are provided by a regex match,
+        return the corresponding Scintilla line-offset pairs which are
+        used for searches, indicators etc.
+        
+        FIXME: Not clear whether the Scintilla conversions are expecting
+        bytes or characters (ie codepoints)
+        """
+        start_line, start_offset = self.lineIndexFromPosition(start_position)
+        end_line, end_offset = self.lineIndexFromPosition(end_position)
+        return start_line, start_offset, end_line, end_offset
+
     def highlight_selected_matches(self):
         """
         Checks the current selection, if it is a single word it then searches
         and highlights all matches.
         """
         # Get the selected text and validate it
+        text = self.text()
         selected_text = self.selectedText()
+        selected_range = self.getSelection()
+        
         if selected_text and RE_VALID_WORD.match(selected_text):
-            # Get the current selection position as it will have to be restored
-            line_from, index_from, line_to, index_to = self.getSelection()
             indicators = self.search_indicators['selection']
-            line_start, col_start, line_end, col_end = 0, 0, 0, 0
-            while self.find_next_match(selected_text, from_line=line_end,
-                                       from_col=col_end, case_sensitive=True,
-                                       wrap_around=False):
-                line_start, col_start, line_end, col_end = self.getSelection()
+            for match in re.finditer(selected_text, text):
+                range = line_start, col_start, line_end, col_end = \
+                    self.range_from_positions(*match.span())
+                if range == selected_range:
+                    continue
                 indicators['positions'].append({
                     'line_start': line_start, 'col_start': col_start,
                     'line_end': line_end, 'col_end': col_end
                 })
                 self.fillIndicatorRange(line_start, col_start, line_end,
                                         col_end, indicators['id'])
-            # Remove the highlight for the original selection and reselect it
-            self.clearIndicatorRange(
-                line_from, index_from, line_to, index_to, indicators['id'])
-            self.setSelection(line_from, index_from, line_to, index_to)
-
+    
     def selection_change_listener(self):
         """
         Runs every time the text selection changes. This could get triggered
@@ -452,12 +461,9 @@ class EditorPane(QsciScintilla):
             self.previous_selection['col_start'] = index_from
             self.previous_selection['line_end'] = line_to
             self.previous_selection['col_end'] = index_to
-            # Highlight matches, disconnect listener to avoid recursion
-            self.selectionChanged.disconnect(self.selection_change_listener)
+            # Highlight matches
             self.reset_search_indicators()
             self.highlight_selected_matches()
-            self.selectionChanged.connect(self.selection_change_listener)
-
 
 class ButtonBar(QToolBar):
     """
