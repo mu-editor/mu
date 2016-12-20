@@ -150,6 +150,10 @@ repository with the following command::
 
     $ git clone https://github.com/mu-editor/mu.git
 
+You may need to grab the GIT submodules used for the blockly based UI::
+
+    git submodule update --init --recursive
+
 For this to work you'll need to have Qt5 and Python 3 installed.
 
 * On Debian based systems this is covered by installing: python3-pyqt5,
