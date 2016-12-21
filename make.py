@@ -30,8 +30,10 @@ def _walk(start_from=".", include_patterns=None, exclude_patterns=None):
 
 def _check_code(executable, *args):
     for filepath in _walk("mu", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
+        print(filepath)
         subprocess.call([executable, filepath] + list(args))
     for filepath in _walk("tests", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
+        print(filepath)
         subprocess.call([executable, filepath] + list(args))
 
 def _rmtree(dirpath):
@@ -53,24 +55,28 @@ def export(function):
 def test(*args):
     """Call py.test to run the test suite with additional args
     """
+    print("\n\ntest")
     return subprocess.call(["py.test.exe"] + list(args))
 
 @export
 def coverage(*args):
     """Call py.test with coverage turned on
     """
+    print("\n\ncoverage")
     return subprocess.call(["py.test.exe", "--cov-config", ".coveragerc", "--cov-report", "term-missing", "--cov=mu", "tests/"])
 
 @export
 def pyflakes(*args):
     """Call pyflakes on all .py files outside the docs and contrib directories
     """
+    print("\n\npyflakes")
     return _check_code("pyflakes.exe", *args)
 
 @export
 def pycodestyle(*args):
     """Call pyflakes on all .py files outside the docs and contrib directories
     """
+    print("\n\nPEP8")
     args = ("--ignore=E731,E402",) + args
     return _check_code("pycodestyle.exe", *args)
 
@@ -82,6 +88,7 @@ def pep8(*args):
 def check(*args):
     """Run pyflakes + pycodestyle
     """
+    print("\n\nCheck")
     pyflakes(*args)
     pycodestyle(*args)
     coverage(*args)
@@ -90,6 +97,7 @@ def check(*args):
 def clean(*args):
     """Clean up any build artefacts
     """
+    print("\n\nClean")
     _rmtree("build")
     _rmtree("dist")
     _rmtree("mu.egg-info")
