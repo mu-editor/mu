@@ -387,7 +387,7 @@ def _ranges_in_text(text, search_for):
     Scintilla Ranges of (line_start, column_start, line_end, column_end).
     For now, we'll ignore the possibility of multi-line ranges which are
     certainly supported within Scintilla.
-    
+
     NB Scintilla appears to use exclusive bounds at both ends, so
     for the text 'foo bar', 'foo' will give (0, 0, 0, 3).
     """
@@ -398,16 +398,17 @@ def _ranges_in_text(text, search_for):
 
 def test_EditorPane_highlight_selected_matches_no_selection():
     """
-    Ensure that if the current selection is empty then all highlights are cleared.
-    
+    Ensure that if the current selection is empty then all highlights
+    are cleared.
+
     There's no API for determining which highlighted regions are present
     in the edit control, so we use the selection indicators structure
     as a proxy for the indicators set.
     """
     text = "foo bar foo"
-    
+
     ep = mu.interface.EditorPane(None, 'baz')
-    ep.setText(text)    
+    ep.setText(text)
     ep.setSelection(-1, -1, -1, -1)
     assert ep.search_indicators['selection']['positions'] == []
 
@@ -416,19 +417,19 @@ def test_EditorPane_highlight_selected_matches_no_match():
     """
     Ensure that if the current selection is not a single word then don't cause
     a search/highlight call.
-    
+
     There's no API for determining which highlighted regions are present
     in the edit control, so we use the selection indicators structure
     as a proxy for the indicators set.
     """
     text = "foo bar foo"
     search_for = "foo bar"
-    
+
     ep = mu.interface.EditorPane(None, 'baz')
     ep.setText(text)
     for range in _ranges_in_text(text, search_for):
         break
-    
+
     ep.setSelection(*range)
     assert ep.search_indicators['selection']['positions'] == []
 
@@ -437,33 +438,38 @@ def test_EditorPane_highlight_selected_matches_with_match():
     """
     Ensure that if the current selection is a single word then it causes the
     expected search/highlight call.
-    
+
     There appears to be no way to iterate over indicators within the editor.
     So we're using the search_indicators structure as a proxy
     """
     text = "foo bar foo"
     search_for = "foo"
-    
+
     ep = mu.interface.EditorPane(None, 'baz')
     ep.setText(text)
-    
+
     #
     # Determine what ranges would be found and highlighted and arbitrarily
     # use the last one for the selection
     #
     expected_ranges = []
-    for (line_start, col_start, line_end, col_end) in _ranges_in_text(text, search_for):
-        expected_ranges.append(dict(line_start=line_start, col_start=col_start, line_end=line_end, col_end=col_end))
-    
+    for range in _ranges_in_text(text, search_for):
+        (line_start, col_start, line_end, col_end) = range
+        expected_ranges.append(
+            dict(
+                line_start=line_start, col_start=col_start,
+                line_end=line_end, col_end=col_end
+            )
+        )
+
     ep.setSelection(line_start, col_start, line_end, col_end)
     assert ep.search_indicators['selection']['positions'] == expected_ranges
-
 
 def test_EditorPane_highlight_selected_matches_cursor_remains():
     """
     Ensure that if a selection is made, the text cursor remains in the
     same place after any matching terms have been highlighted.
-    
+
     NB Since this is testing an interaction between our code and
     the QScintilla control, there is no way to mock this behaviour.
     """
@@ -471,9 +477,9 @@ def test_EditorPane_highlight_selected_matches_cursor_remains():
     search_for = "foo"
     ep = mu.interface.EditorPane(None, 'baz')
     ep.setText(text)
-    
+
     select_n_chars = 2
-    
+
     #
     # Find the first of the matching words
     # Place the cursor at the right-hand end of the match
