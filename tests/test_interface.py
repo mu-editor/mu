@@ -465,6 +465,7 @@ def test_EditorPane_highlight_selected_matches_with_match():
     ep.setSelection(line_start, col_start, line_end, col_end)
     assert ep.search_indicators['selection']['positions'] == expected_ranges
 
+
 def test_EditorPane_highlight_selected_matches_cursor_remains():
     """
     Ensure that if a selection is made, the text cursor remains in the
