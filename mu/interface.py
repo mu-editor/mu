@@ -411,7 +411,7 @@ class EditorPane(QsciScintilla):
         """Given a start-end pair, such as are provided by a regex match,
         return the corresponding Scintilla line-offset pairs which are
         used for searches, indicators etc.
-        
+
         FIXME: Not clear whether the Scintilla conversions are expecting
         bytes or characters (ie codepoints)
         """
@@ -427,12 +427,11 @@ class EditorPane(QsciScintilla):
         # Get the selected text and validate it
         text = self.text()
         selected_text = self.selectedText()
-        selected_range = self.getSelection()
-        
+
         if selected_text and RE_VALID_WORD.match(selected_text):
             indicators = self.search_indicators['selection']
             for match in re.finditer(selected_text, text):
-                range = line_start, col_start, line_end, col_end = \
+                line_start, col_start, line_end, col_end = \
                     self.range_from_positions(*match.span())
                 indicators['positions'].append({
                     'line_start': line_start, 'col_start': col_start,
@@ -440,7 +439,7 @@ class EditorPane(QsciScintilla):
                 })
                 self.fillIndicatorRange(line_start, col_start, line_end,
                                         col_end, indicators['id'])
-    
+
     def selection_change_listener(self):
         """
         Runs every time the text selection changes. This could get triggered
@@ -462,6 +461,7 @@ class EditorPane(QsciScintilla):
             # Highlight matches
             self.reset_search_indicators()
             self.highlight_selected_matches()
+
 
 class ButtonBar(QToolBar):
     """

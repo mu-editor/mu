@@ -395,6 +395,7 @@ def _ranges_in_text(text, search_for):
         for match in re.finditer(search_for, line):
             yield n_line, match.start(), n_line, match.end()
 
+
 def test_EditorPane_highlight_selected_matches_no_selection():
     """
     Ensure that if the current selection is empty then all highlights are cleared.
@@ -409,6 +410,7 @@ def test_EditorPane_highlight_selected_matches_no_selection():
     ep.setText(text)    
     ep.setSelection(-1, -1, -1, -1)
     assert ep.search_indicators['selection']['positions'] == []
+
 
 def test_EditorPane_highlight_selected_matches_no_match():
     """
@@ -429,6 +431,7 @@ def test_EditorPane_highlight_selected_matches_no_match():
     
     ep.setSelection(*range)
     assert ep.search_indicators['selection']['positions'] == []
+
 
 def test_EditorPane_highlight_selected_matches_with_match():
     """
@@ -455,6 +458,7 @@ def test_EditorPane_highlight_selected_matches_with_match():
     ep.setSelection(line_start, col_start, line_end, col_end)
     assert ep.search_indicators['selection']['positions'] == expected_ranges
 
+
 def test_EditorPane_highlight_selected_matches_cursor_remains():
     """
     Ensure that if a selection is made, the text cursor remains in the
@@ -479,11 +483,11 @@ def test_EditorPane_highlight_selected_matches_cursor_remains():
     #
     for line0, index0, line1, index1 in _ranges_in_text(text, search_for):
         break
-    position = ep.positionFromLineIndex(line1, index1)
     ep.setCursorPosition(line1, index1)
     for i in range(select_n_chars):
         ep.SendScintilla(mu.interface.QsciScintilla.SCI_CHARLEFTEXTEND)
     assert ep.getCursorPosition() == (line1, index1 - select_n_chars)
+
 
 def test_EditorPane_selection_change_listener():
     """
