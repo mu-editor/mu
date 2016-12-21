@@ -465,15 +465,25 @@ def test_EditorPane_highlight_selected_matches_cursor_remains():
     """
     text = "foo bar foo"
     search_for = "foo"
-    
     ep = mu.interface.EditorPane(None, 'baz')
     ep.setText(text)
-    line, index = ep.getCursorPosition()
-    for range in _ranges_in_text(text, search_for):
-        ep.setSelection(*range)
-        break
     
-    assert ep.getCursorPosition() == (line, index)
+    select_n_chars = 2
+    
+    #
+    # Find the first of the matching words
+    # Place the cursor at the right-hand end of the match
+    # Extend the selection back a number of characters
+    # Confirm that the cursor is correctly that many characters back from
+    #   the end of the matching text (ie that it hasn't been reset)
+    #
+    for line0, index0, line1, index1 in _ranges_in_text(text, search_for):
+        break
+    position = ep.positionFromLineIndex(line1, index1)
+    ep.setCursorPosition(line1, index1)
+    for i in range(select_n_chars):
+        ep.SendScintilla(mu.interface.QsciScintilla.SCI_CHARLEFTEXTEND)
+    assert ep.getCursorPosition() == (line1, index1 - select_n_chars)
 
 def test_EditorPane_selection_change_listener():
     """
