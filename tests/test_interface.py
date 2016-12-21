@@ -12,7 +12,7 @@ import platform
 import mu.interface
 import pytest
 import keyword
-
+import re
 
 # Required so the QWidget tests don't abort with the message:
 # "QWidget: Must construct a QApplication before a QWidget"
@@ -382,36 +382,83 @@ def test_EditorPane_find_next_match():
                                          show=False, posix=False)
 
 
+def _ranges_in_text(text, search_for):
+    """Find any instances of `search_for` inside text and return the equivalent
+    Scintilla Ranges of (line_start, column_start, line_end, column_end).
+    For now, we'll ignore the possibility of multi-line ranges which are
+    certainly supported within Scintilla.
+    
+    NB Scintilla appears to use exclusive bounds at both ends, so
+    for the text 'foo bar', 'foo' will give (0, 0, 0, 3).
+    """
+    for n_line, line in enumerate(text.splitlines()):
+        for match in re.finditer(search_for, line):
+            yield n_line, match.start(), n_line, match.end()
+
 def test_EditorPane_highlight_selected_matches_no_match():
     """
     Ensure that if the current selection is not a single word then don't cause
     a search/highlight call.
+    
+    There's no API for determining which highlighted regions are present
+    in the edit control, so we use the selection indicators structure
+    as a proxy for the indicators set.
     """
+    text = "foo bar foo"
+    search_for = "foo bar"
+    
     ep = mu.interface.EditorPane(None, 'baz')
-    ep.selectedText = mock.MagicMock(return_value="More than one word")
-    ep.find_next_match = mock.MagicMock()
-    ep.highlight_selected_matches()
-    assert ep.find_next_match.call_count == 0
-
+    ep.setText(text)
+    for range in _ranges_in_text(text, search_for):
+        break
+    
+    ep.setSelection(*range)
+    assert ep.search_indicators['selection']['positions'] == []
 
 def test_EditorPane_highlight_selected_matches_with_match():
     """
     Ensure that if the current selection is a single word then it causes the
     expected search/highlight call.
+    
+    There appears to be no way to iterate over indicators within the editor.
+    So we're using the search_indicators structure as a proxy
     """
+    text = "foo bar foo"
+    search_for = "foo"
+    
     ep = mu.interface.EditorPane(None, 'baz')
-    ep.selectedText = mock.MagicMock(return_value="foo")
-    ep.getSelection = mock.MagicMock(return_value=(1, 1, 2, 2))
-    ep.find_next_match = mock.MagicMock(side_effect=[True, False])
-    ep.fillIndicatorRange = mock.MagicMock()
-    ep.clearIndicatorRange = mock.MagicMock()
-    ep.setSelection = mock.MagicMock()
-    ep.highlight_selected_matches()
-    indicators = ep.search_indicators['selection']
-    assert ep.fillIndicatorRange(1, 1, 2, 2, indicators['id'])
-    assert ep.clearIndicatorRange.call_count == 1
-    assert ep.setSelection.call_count == 1
+    ep.setText(text)
+    
+    #
+    # Determine what ranges would be found and highlighted and arbitrarily
+    # use the last one for the selection
+    #
+    expected_ranges = []
+    for (line_start, col_start, line_end, col_end) in _ranges_in_text(text, search_for):
+        expected_ranges.append(dict(line_start=line_start, col_start=col_start, line_end=line_end, col_end=col_end))
+    
+    ep.setSelection(line_start, col_start, line_end, col_end)
+    assert ep.search_indicators['selection']['positions'] == expected_ranges
 
+def test_EditorPane_highlight_selected_matches_cursor_remains():
+    """
+    Ensure that if a selection is made, the text cursor remains in the
+    same place after any matching terms have been highlighted.
+    
+    NB Since this is testing an interaction between our code and
+    the QScintilla control, there is no way to mock this behaviour.
+    """
+    text = "foo bar foo"
+    search_for = "foo"
+    
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.setText(text)
+    line, index = ep.getCursorPosition()
+    for range in _ranges_in_text(text, search_for):
+        ep.setSelection(*range)
+        break
+    
+    assert ep.getCursorPosition() == (line, index)
 
 def test_EditorPane_selection_change_listener():
     """
