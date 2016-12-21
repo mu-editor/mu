@@ -434,8 +434,6 @@ class EditorPane(QsciScintilla):
             for match in re.finditer(selected_text, text):
                 range = line_start, col_start, line_end, col_end = \
                     self.range_from_positions(*match.span())
-                if range == selected_range:
-                    continue
                 indicators['positions'].append({
                     'line_start': line_start, 'col_start': col_start,
                     'line_end': line_end, 'col_end': col_end
