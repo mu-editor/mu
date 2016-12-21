@@ -1,19 +1,21 @@
 import os, sys
 import fnmatch
 import inspect
+import shutil
 import subprocess
 import textwrap
 
-_exported = {}
-def export(function):
-    """Decorator to tag certain functions as exported, meaning
-    that they show up as a command, with arguments, when this
-    file is run.
-    """
-    _exported[function.__name__] = function
-    return function
+INCLUDE_PATTERNS = {
+    "*.py"
+}
+EXCLUDE_PATTERNS = {
+    r"build\*",
+    r"docs\*",
+    r"mu\contrib\*",
+    r"mu\resources\api.py",
+}
 
-def walk(start_from=".", include_patterns=None, exclude_patterns=None):
+def _walk(start_from=".", include_patterns=None, exclude_patterns=None):
     _include_patterns = include_patterns or set(["*"])
     _exclude_patterns = exclude_patterns or set()
 
@@ -26,15 +28,26 @@ def walk(start_from=".", include_patterns=None, exclude_patterns=None):
                 continue
             yield filepath
 
-INCLUDE_PATTERNS = {
-    "*.py"
-}
-EXCLUDE_PATTERNS = {
-    r"build\*",
-    r"docs\*",
-    r"mu\contrib\*",
-    r"mu\resources\api.py",
-}
+def _check_code(executable, *args):
+    for filepath in _walk("mu", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
+        subprocess.call([executable, filepath] + list(args))
+    for filepath in _walk("tests", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
+        subprocess.call([executable, filepath] + list(args))
+
+def _rmtree(dirpath):
+    try:
+        shutil.rmtree(dirpath)
+    except FileNotFoundError:
+        pass
+
+_exported = {}
+def export(function):
+    """Decorator to tag certain functions as exported, meaning
+    that they show up as a command, with arguments, when this
+    file is run.
+    """
+    _exported[function.__name__] = function
+    return function
 
 @export
 def test(*args):
@@ -42,24 +55,46 @@ def test(*args):
     """
     return subprocess.call(["py.test.exe"] + list(args))
 
-def _check(executable, *args):
-    for filepath in walk("mu", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
-        subprocess.call([executable, filepath] + list(args))
-    for filepath in walk("tests", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
-        subprocess.call([executable, filepath] + list(args))
+@export
+def coverage(*args):
+    """Call py.test with coverage turned on
+    """
+    return subprocess.call(["py.test.exe", "--cov-config", ".coveragerc", "--cov-report", "term-missing", "--cov=mu", "tests/"])
 
 @export
 def pyflakes(*args):
     """Call pyflakes on all .py files outside the docs and contrib directories
     """
-    return _check("pyflakes.exe", *args)
+    return _check_code("pyflakes.exe", *args)
 
 @export
 def pycodestyle(*args):
     """Call pyflakes on all .py files outside the docs and contrib directories
     """
     args = ("--ignore=E731,E402",) + args
-    return _check("pycodestyle.exe", *args)
+    return _check_code("pycodestyle.exe", *args)
+
+@export
+def pep8(*args):
+    return pycodestyle(*args)
+
+@export
+def check(*args):
+    """Run pyflakes + pycodestyle
+    """
+    pyflakes(*args)
+    pycodestyle(*args)
+    coverage(*args)
+
+@export
+def clean(*args):
+    """Clean up any build artefacts
+    """
+    _rmtree("build")
+    _rmtree("dist")
+    _rmtree("mu.egg-info")
+    _rmtree("coverage")
+    _rmtree("docs/build")
 
 @export
 def help():
