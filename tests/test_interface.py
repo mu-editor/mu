@@ -442,7 +442,7 @@ def test_EditorPane_highlight_selected_matches_with_match():
     There appears to be no way to iterate over indicators within the editor.
     So we're using the search_indicators structure as a proxy
     """
-    text = "foo bar foo"
+    text = "foo bar foo baz foo"
     search_for = "foo"
 
     ep = mu.interface.EditorPane(None, 'baz')
@@ -453,16 +453,20 @@ def test_EditorPane_highlight_selected_matches_with_match():
     # use the last one for the selection
     #
     expected_ranges = []
+    selected_range = None
     for range in _ranges_in_text(text, search_for):
-        (line_start, col_start, line_end, col_end) = range
-        expected_ranges.append(
-            dict(
-                line_start=line_start, col_start=col_start,
-                line_end=line_end, col_end=col_end
+        if selected_range is None:
+            selected_range = range
+        else:
+            (line_start, col_start, line_end, col_end) = range
+            expected_ranges.append(
+                dict(
+                    line_start=line_start, col_start=col_start,
+                    line_end=line_end, col_end=col_end
+                )
             )
-        )
 
-    ep.setSelection(line_start, col_start, line_end, col_end)
+    ep.setSelection(*selected_range)
     assert ep.search_indicators['selection']['positions'] == expected_ranges
 
 

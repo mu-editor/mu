@@ -427,12 +427,15 @@ class EditorPane(QsciScintilla):
         # Get the selected text and validate it
         text = self.text()
         selected_text = self.selectedText()
+        selected_range = self.getSelection()
 
         if selected_text and RE_VALID_WORD.match(selected_text):
             indicators = self.search_indicators['selection']
             for match in re.finditer(selected_text, text):
-                line_start, col_start, line_end, col_end = \
-                    self.range_from_positions(*match.span())
+                range = self.range_from_positions(*match.span())
+                if range == selected_range:
+                    continue
+                line_start, col_start, line_end, col_end = range
                 indicators['positions'].append({
                     'line_start': line_start, 'col_start': col_start,
                     'line_end': line_end, 'col_end': col_end
