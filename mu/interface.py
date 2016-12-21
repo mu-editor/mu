@@ -423,25 +423,65 @@ class EditorPane(QsciScintilla):
         """
         Checks the current selection, if it is a single word it then searches
         and highlights all matches.
-        """
-        # Get the selected text and validate it
-        text = self.text()
-        selected_text = self.selectedText()
-        selected_range = self.getSelection()
 
-        if selected_text and RE_VALID_WORD.match(selected_text):
-            indicators = self.search_indicators['selection']
-            for match in re.finditer(selected_text, text):
-                range = self.range_from_positions(*match.span())
-                if range == selected_range:
-                    continue
-                line_start, col_start, line_end, col_end = range
-                indicators['positions'].append({
-                    'line_start': line_start, 'col_start': col_start,
-                    'line_end': line_end, 'col_end': col_end
-                })
-                self.fillIndicatorRange(line_start, col_start, line_end,
-                                        col_end, indicators['id'])
+        Since we're interested in exactly one word:
+        * We ignore anything which spans more than one line
+        """
+        selected_range = line0, col0, line1, col1 = self.getSelection()
+        logger.debug("Selected range: %s",selected_range)
+        #
+        # If there's no selection, do nothing
+        #
+        if selected_range == (-1, -1, -1, -1):
+            logger.warn("Empty selection")
+            return
+
+        #
+        # Ignore anything which spans two or more lines
+        #
+        if line0 != line1:
+            logger.warn(">1 line")
+            return
+
+        #
+        # Ignore anything which is not a whole word
+        # NB Although Scintilla defines a SCI_ISRANGEWORD message, it's not
+        # exposed by QSciScintilla.
+        #
+        start = self.SendScintilla(QsciScintilla.SCI_WORDSTARTPOSITION, col0, 1)
+        logger.debug("Start for %d is %d", col0, start)
+        if col0 != self.SendScintilla(QsciScintilla.SCI_WORDSTARTPOSITION, col0, 1):
+            logger.warn("Not start of word")
+            return
+        end = self.SendScintilla(QsciScintilla.SCI_WORDENDPOSITION, col1, 1)
+        logger.debug("End for %d is %d", col1, end  )
+        if col1 != self.SendScintilla(QsciScintilla.SCI_WORDENDPOSITION, col1, 1):
+            logger.warn("Not end of word")
+            return
+
+        #
+        # Ignore if no text is selected or the selected text is not at most one
+        # valid identifier-type word.
+        #
+        selected_text = self.selectedText()
+        if not selected_text:
+            return
+        if not RE_VALID_WORD.match(selected_text):
+            return
+
+        indicators = self.search_indicators['selection']
+        text = self.text()
+        for match in re.finditer(selected_text, text):
+            range = self.range_from_positions(*match.span())
+            if range == selected_range:
+                continue
+            line_start, col_start, line_end, col_end = range
+            indicators['positions'].append({
+                'line_start': line_start, 'col_start': col_start,
+                'line_end': line_end, 'col_end': col_end
+            })
+            self.fillIndicatorRange(line_start, col_start, line_end,
+                                    col_end, indicators['id'])
 
     def selection_change_listener(self):
         """

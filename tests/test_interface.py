@@ -470,6 +470,26 @@ def test_EditorPane_highlight_selected_matches_with_match():
     assert ep.search_indicators['selection']['positions'] == expected_ranges
 
 
+def test_EditorPane_highlight_selected_matches_incomplete_word():
+    """
+    Ensure that if the current selection is not a complete word
+    then no ranges are highlighted.
+
+    There appears to be no way to iterate over indicators within the editor.
+    So we're using the search_indicators structure as a proxy
+    """
+    text = "foo bar foo baz foo"
+    search_for = "fo"
+
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.setText(text)
+    for range in _ranges_in_text(text, search_for):
+        ep.setSelection(*range)
+        break
+
+    assert ep.search_indicators['selection']['positions'] == []
+
+
 def test_EditorPane_highlight_selected_matches_cursor_remains():
     """
     Ensure that if a selection is made, the text cursor remains in the
