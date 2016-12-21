@@ -395,6 +395,21 @@ def _ranges_in_text(text, search_for):
         for match in re.finditer(search_for, line):
             yield n_line, match.start(), n_line, match.end()
 
+def test_EditorPane_highlight_selected_matches_no_selection():
+    """
+    Ensure that if the current selection is empty then all highlights are cleared.
+    
+    There's no API for determining which highlighted regions are present
+    in the edit control, so we use the selection indicators structure
+    as a proxy for the indicators set.
+    """
+    text = "foo bar foo"
+    
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.setText(text)    
+    ep.setSelection(-1, -1, -1, -1)
+    assert ep.search_indicators['selection']['positions'] == []
+
 def test_EditorPane_highlight_selected_matches_no_match():
     """
     Ensure that if the current selection is not a single word then don't cause
