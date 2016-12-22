@@ -22,9 +22,9 @@ def _walk(start_from=".", include_patterns=None, exclude_patterns=None):
     for dirpath, dirnames, filenames in os.walk("mu"):
         for filename in filenames:
             filepath = os.path.join(dirpath, filename)
-            if not any(fnmatch.fnmatch(filepath, pattern) for pattern in include_patterns):
+            if not any(fnmatch.fnmatch(filepath, pattern) for pattern in _include_patterns):
                 continue
-            if any (fnmatch.fnmatch(filepath, pattern) for pattern in exclude_patterns):
+            if any (fnmatch.fnmatch(filepath, pattern) for pattern in _exclude_patterns):
                 continue
             yield filepath
 
@@ -42,6 +42,11 @@ def _rmtree(dirpath):
     except FileNotFoundError:
         pass
 
+def _rmfiles(start_from, pattern):
+    for filepath in _walk(".", {"*.pyc"}):
+        print(filepath)
+        os.remove(filepath)
+
 _exported = {}
 def export(function):
     """Decorator to tag certain functions as exported, meaning
@@ -56,7 +61,7 @@ def test(*args):
     """Call py.test to run the test suite with additional args
     """
     print("\n\ntest")
-    return subprocess.call(["py.test.exe"] + list(args))
+    return subprocess.call(["pytest"] + list(args))
 
 @export
 def coverage(*args):
@@ -103,6 +108,7 @@ def clean(*args):
     _rmtree("mu.egg-info")
     _rmtree("coverage")
     _rmtree("docs/build")
+    _rmfiles(".", "*.pyc")
 
 @export
 def help():
