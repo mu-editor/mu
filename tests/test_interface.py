@@ -409,7 +409,30 @@ def test_EditorPane_highlight_selected_matches_no_selection():
 
     ep = mu.interface.EditorPane(None, 'baz')
     ep.setText(text)
+    #
+    # We have to set the selection to something before setting it to
+    # nothing; otherwise the highlight code will never be invoked and
+    # we're not testing anything!
+    #
+    ep.setSelection(0, 0, 0, 2)
     ep.setSelection(-1, -1, -1, -1)
+    assert ep.search_indicators['selection']['positions'] == []
+
+
+def test_EditorPane_highlight_selected_matches_two_lines():
+    """
+    Ensure that if the current selection spans two lines then nothing
+    is highlighted.
+
+    There's no API for determining which highlighted regions are present
+    in the edit control, so we use the selection indicators structure
+    as a proxy for the indicators set.
+    """
+    text = "foo\nbar\nfoo"
+
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.setText(text)
+    ep.setSelection(0, 0, 1, 3)
     assert ep.search_indicators['selection']['positions'] == []
 
 

@@ -62,10 +62,10 @@ logger = logging.getLogger(__name__)
 # So, in the text "the quick brown fox", the word "the" is bounded by offsets
 # 0 and 3.
 #
-# A namedtuple provides a lightweight object which compares cleanly to a tuple plus the ability
-# to reference each component as a field: range.from_line &c. If it proved useful, we could
-# move to a heavier-weight object later, eg to implement the conversion between absolute position
-# and line/offset indexes.
+# A namedtuple provides a lightweight object which compares cleanly to a tuple
+# plus the ability to reference each component as a field: range.from_line &c.
+# If it proved useful, we could move to a heavier-weight object later, eg to
+# implement the conversion between absolute position and line/offset indexes.
 #
 Range = collections.namedtuple("Range", [
     "from_line", "from_offset", "to_line", "to_offset"
@@ -354,8 +354,10 @@ class EditorPane(QsciScintilla):
         """
         for indicator in self.search_indicators:
             for position in self.search_indicators[indicator]['positions']:
-                self.clearIndicatorRange(*position,
-                    self.search_indicators[indicator]['id'])
+                self.clearIndicatorRange(
+                    *position,
+                    self.search_indicators[indicator]['id']
+                )
             self.search_indicators[indicator]['positions'] = []
 
     def annotate_code(self, feedback, annotation_type='error'):
@@ -467,23 +469,21 @@ class EditorPane(QsciScintilla):
         # valid identifier-type word.
         #
         selected_text = self.selectedText()
-        if not selected_text:
-            return
         if not RE_VALID_WORD.match(selected_text):
             return
 
         #
-        # Ignore anything which is not a whole word. NB Although Scintilla defines a
-        # SCI_ISRANGEWORD message,  it's not exposed by QSciScintilla. Instead, we
-        # ask Scintilla for the start end end position of the word we're in and test
-        # whether our range end points match those or not.
+        # Ignore anything which is not a whole word. NB Although Scintilla
+        # defines a SCI_ISRANGEWORD message, it's not exposed by QSciScintilla.
+        # Instead, we ask Scintilla for the start end end position of the word
+        # we're in and test whether our range end points match those or not.
         #
         pos0 = self.positionFromLineIndex(
             selection.from_line, selection.from_offset)
         word_start_pos = self.SendScintilla(
             QsciScintilla.SCI_WORDSTARTPOSITION, pos0, 1)
         _, start_offset = self.lineIndexFromPosition(word_start_pos)
-        if selection.from_offset!= start_offset:
+        if selection.from_offset != start_offset:
             return
 
         pos1 = self.positionFromLineIndex(
@@ -522,8 +522,8 @@ class EditorPane(QsciScintilla):
         and passes control to highlight_selected_matches.
         """
         #
-        # If the selection has not changed (including changing to/from no selection)
-        # then do nothing.
+        # If the selection has not changed (including changing to/from
+        # no selection) then do nothing.
         #
         selected_range = Range(*self.getSelection())
         if self.previous_selection == selected_range:
