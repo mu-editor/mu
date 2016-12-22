@@ -63,11 +63,12 @@ def _check_code(executable, *args):
         subprocess.call([executable, filepath] + list(args))
 
 
-def _rmtree(dirpath):
+def _rmtree(dirpath, cascade_errors=False):
     try:
         shutil.rmtree(dirpath)
-    except FileNotFoundError:
-        pass
+    except OSError:
+        if cascade_errors:
+            raise
 
 
 def _rmfiles(start_from, pattern):
