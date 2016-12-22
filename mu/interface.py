@@ -448,8 +448,6 @@ class EditorPane(QsciScintilla):
         # valid identifier-type word.
         #
         selected_text = self.selectedText()
-        if not selected_text:
-            return
         if not RE_VALID_WORD.match(selected_text):
             return
 
