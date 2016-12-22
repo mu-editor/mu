@@ -454,10 +454,12 @@ class EditorPane(QsciScintilla):
             return
 
         #
-        # Ignore anything which is not a whole word. NB Although Scintilla defines
-        # a SCI_ISRANGEWORD message, it's not exposed by QSciScintilla. Instead, we
-        # ask Scintilla for the start end end position of the word we're in and test
-        # whether our range end points match those or not.
+        # Ignore anything which is not a whole word. 
+        # NB Although Scintilla defines a SCI_ISRANGEWORD message, 
+        # it's not exposed by QSciScintilla. Instead, we
+        # ask Scintilla for the start end end position of 
+        # the word we're in and test whether our range end points match 
+        # those or not.
         #
         pos0 = self.positionFromLineIndex(line0, col0)
         word_start_pos = self.SendScintilla(
@@ -465,8 +467,11 @@ class EditorPane(QsciScintilla):
         _, start_offset = self.lineIndexFromPosition(word_start_pos)
         if col0 != start_offset:
             return
+
         pos1 = self.positionFromLineIndex(line1, col1)
-        end_line, end_offset = self.lineIndexFromPosition(self.SendScintilla(QsciScintilla.SCI_WORDENDPOSITION, pos1, 1))
+        word_end_pos = self.SendScintilla(
+            QsciScintilla.SCI_WORDENDPOSITION, pos1, 1)
+        _, end_offset = self.lineIndexFromPosition(word_end_pos)
         if col1 != end_offset:
             return
 
