@@ -407,32 +407,96 @@ class EditorPane(QsciScintilla):
             show=False,      # Unfolds found text
             posix=False)     # More POSIX compatible RegEx
 
+    def range_from_positions(self, start_position, end_position):
+        """Given a start-end pair, such as are provided by a regex match,
+        return the corresponding Scintilla line-offset pairs which are
+        used for searches, indicators etc.
+
+        FIXME: Not clear whether the Scintilla conversions are expecting
+        bytes or characters (ie codepoints)
+        """
+        start_line, start_offset = self.lineIndexFromPosition(start_position)
+        end_line, end_offset = self.lineIndexFromPosition(end_position)
+        return start_line, start_offset, end_line, end_offset
+
     def highlight_selected_matches(self):
         """
         Checks the current selection, if it is a single word it then searches
         and highlights all matches.
+
+        Since we're interested in exactly one word:
+        * Ignore an empty selection
+        * Ignore anything which spans more than one line
+        * Ignore more than one word
+        * Ignore anything less than one word
         """
-        # Get the selected text and validate it
+        selected_range = line0, col0, line1, col1 = self.getSelection()
+        #
+        # If there's no selection, do nothing
+        #
+        if selected_range == (-1, -1, -1, -1):
+            return
+
+        #
+        # Ignore anything which spans two or more lines
+        #
+        if line0 != line1:
+            return
+
+        #
+        # Ignore if no text is selected or the selected text is not at most one
+        # valid identifier-type word.
+        #
         selected_text = self.selectedText()
-        if selected_text and RE_VALID_WORD.match(selected_text):
-            # Get the current selection position as it will have to be restored
-            line_from, index_from, line_to, index_to = self.getSelection()
-            indicators = self.search_indicators['selection']
-            line_start, col_start, line_end, col_end = 0, 0, 0, 0
-            while self.find_next_match(selected_text, from_line=line_end,
-                                       from_col=col_end, case_sensitive=True,
-                                       wrap_around=False):
-                line_start, col_start, line_end, col_end = self.getSelection()
-                indicators['positions'].append({
-                    'line_start': line_start, 'col_start': col_start,
-                    'line_end': line_end, 'col_end': col_end
-                })
-                self.fillIndicatorRange(line_start, col_start, line_end,
-                                        col_end, indicators['id'])
-            # Remove the highlight for the original selection and reselect it
-            self.clearIndicatorRange(
-                line_from, index_from, line_to, index_to, indicators['id'])
-            self.setSelection(line_from, index_from, line_to, index_to)
+        if not selected_text:
+            return
+        if not RE_VALID_WORD.match(selected_text):
+            return
+
+        #
+        # Ignore anything which is not a whole word.
+        # NB Although Scintilla defines a SCI_ISRANGEWORD message,
+        # it's not exposed by QSciScintilla. Instead, we
+        # ask Scintilla for the start end end position of
+        # the word we're in and test whether our range end points match
+        # those or not.
+        #
+        pos0 = self.positionFromLineIndex(line0, col0)
+        word_start_pos = self.SendScintilla(
+            QsciScintilla.SCI_WORDSTARTPOSITION, pos0, 1)
+        _, start_offset = self.lineIndexFromPosition(word_start_pos)
+        if col0 != start_offset:
+            return
+
+        pos1 = self.positionFromLineIndex(line1, col1)
+        word_end_pos = self.SendScintilla(
+            QsciScintilla.SCI_WORDENDPOSITION, pos1, 1)
+        _, end_offset = self.lineIndexFromPosition(word_end_pos)
+        if col1 != end_offset:
+            return
+
+        #
+        # For each matching word within the editor text, add it to
+        # the list of highlighted indicators and fill it according
+        # to the current theme.
+        #
+        indicators = self.search_indicators['selection']
+        text = self.text()
+        for match in re.finditer(selected_text, text):
+            range = self.range_from_positions(*match.span())
+            #
+            # Don't highlight the text we've selected
+            #
+            if range == selected_range:
+                continue
+
+            line_start, col_start, line_end, col_end = range
+            indicators['positions'].append({
+                'line_start': line_start, 'col_start': col_start,
+                'line_end': line_end, 'col_end': col_end
+            })
+            self.fillIndicatorRange(line_start, col_start, line_end,
+                                    col_end, indicators['id'])
 
     def selection_change_listener(self):
         """
@@ -452,11 +516,9 @@ class EditorPane(QsciScintilla):
             self.previous_selection['col_start'] = index_from
             self.previous_selection['line_end'] = line_to
             self.previous_selection['col_end'] = index_to
-            # Highlight matches, disconnect listener to avoid recursion
-            self.selectionChanged.disconnect(self.selection_change_listener)
+            # Highlight matches
             self.reset_search_indicators()
             self.highlight_selected_matches()
-            self.selectionChanged.connect(self.selection_change_listener)
 
 
 class ButtonBar(QToolBar):
