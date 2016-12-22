@@ -413,6 +413,23 @@ def test_EditorPane_highlight_selected_matches_no_selection():
     assert ep.search_indicators['selection']['positions'] == []
 
 
+def test_EditorPane_highlight_selected_spans_two_or_more_lines():
+    """
+    Ensure that if the current selection spans two or more lines then all
+    highlights are cleared.
+
+    There's no API for determining which highlighted regions are present
+    in the edit control, so we use the selection indicators structure
+    as a proxy for the indicators set.
+    """
+    text = "foo\nbar\nfoo"
+
+    ep = mu.interface.EditorPane(None, 'baz')
+    ep.setText(text)
+    ep.setSelection(0, 0, 1, 1)
+    assert ep.search_indicators['selection']['positions'] == []
+
+
 def test_EditorPane_highlight_selected_matches_multi_word():
     """
     Ensure that if the current selection is not a single word then don't cause
