@@ -22,6 +22,7 @@ import os
 import re
 import platform
 import logging
+import collections
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
@@ -51,6 +52,20 @@ RE_VALID_WORD = re.compile('^[A-Za-z0-9_-]*$')
 
 
 logger = logging.getLogger(__name__)
+
+
+#
+# A range in Scintilla is the result of, eg, a search operation or a selection
+# It consists of a "from" and a "to" position, each of which is formed of a
+# line -- zero-based from the top of the editor -- and an offset. The offset
+# is not a character cell; rather it is the gap between the character cells.
+# So, in the text "the quick brown fox", the word "quick" is bounded by offsets
+# 4 and 9
+#
+#
+Range = collections.namedtuple([
+    "from_line", "from_offset", "to_line", "to_offset"
+])
 
 
 class Font:
