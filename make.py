@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 import fnmatch
 import inspect
 import shutil
@@ -18,21 +19,42 @@ EXCLUDE_PATTERNS = {
     r"mu\contrib\*",
     r"mu\resources\api.py",
 }
+_exported = {}
 
-def _walk(start_from=".", include_patterns=None, exclude_patterns=None):
+
+def _walk(
+    start_from=".",
+    include_patterns=None,
+    exclude_patterns=None,
+    recurse=True
+):
     _include_patterns = include_patterns or set(["*"])
     _exclude_patterns = exclude_patterns or set()
 
-    for dirpath, dirnames, filenames in os.walk("mu"):
+    for dirpath, dirnames, filenames in os.walk(start_from):
         for filename in filenames:
             filepath = os.path.join(dirpath, filename)
-            if not any(fnmatch.fnmatch(filepath, pattern) for pattern in _include_patterns):
+
+            includes = [fnmatch.fnmatch(filepath, pattern)
+                        for pattern in _include_patterns]
+            if not any(includes):
                 continue
-            if any (fnmatch.fnmatch(filepath, pattern) for pattern in _exclude_patterns):
+
+            excludes = [fnmatch.fnmatch(filepath, pattern)
+                        for pattern in _exclude_patterns]
+            if any(excludes):
                 continue
+
             yield filepath
 
+        if not recurse:
+            break
+
+
 def _check_code(executable, *args):
+    for filepath in _walk(".", INCLUDE_PATTERNS, EXCLUDE_PATTERNS, False):
+        print(filepath)
+        subprocess.call([executable, filepath] + list(args))
     for filepath in _walk("mu", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
         print(filepath)
         subprocess.call([executable, filepath] + list(args))
@@ -40,18 +62,20 @@ def _check_code(executable, *args):
         print(filepath)
         subprocess.call([executable, filepath] + list(args))
 
+
 def _rmtree(dirpath):
     try:
         shutil.rmtree(dirpath)
     except FileNotFoundError:
         pass
 
+
 def _rmfiles(start_from, pattern):
     for filepath in _walk(".", {"*.pyc"}):
         print(filepath)
         os.remove(filepath)
 
-_exported = {}
+
 def export(function):
     """Decorator to tag certain functions as exported, meaning
     that they show up as a command, with arguments, when this
@@ -60,6 +84,7 @@ def export(function):
     _exported[function.__name__] = function
     return function
 
+
 @export
 def test(*args):
     """Call py.test to run the test suite with additional args
@@ -67,12 +92,22 @@ def test(*args):
     print("\n\ntest")
     return subprocess.call([PYTEST] + list(args))
 
+
 @export
 def coverage(*args):
     """Call py.test with coverage turned on
     """
     print("\n\ncoverage")
-    return subprocess.call([PYTEST, "--cov-config", ".coveragerc", "--cov-report", "term-missing", "--cov=mu", "tests/"])
+    return subprocess.call([
+        PYTEST,
+        "--cov-config",
+        ".coveragerc",
+        "--cov-report",
+        "term-missing",
+        "--cov=mu",
+        "tests/"
+    ])
+
 
 @export
 def pyflakes(*args):
@@ -80,6 +115,7 @@ def pyflakes(*args):
     """
     print("\n\npyflakes")
     return _check_code(PYFLAKES, *args)
+
 
 @export
 def pycodestyle(*args):
@@ -89,9 +125,11 @@ def pycodestyle(*args):
     args = ("--ignore=E731,E402",) + args
     return _check_code(PYCODESTYLE, *args)
 
+
 @export
 def pep8(*args):
     return pycodestyle(*args)
+
 
 @export
 def check(*args):
@@ -101,6 +139,7 @@ def check(*args):
     pyflakes(*args)
     pycodestyle(*args)
     coverage(*args)
+
 
 @export
 def clean(*args):
@@ -113,6 +152,7 @@ def clean(*args):
     _rmtree("coverage")
     _rmtree("docs/build")
     _rmfiles(".", "*.pyc")
+
 
 @export
 def help():
@@ -130,6 +170,7 @@ def help():
         else:
             print()
 
+
 def main(command="help", *args):
     """Dispatch on command name, passing all remaining parameters to the
     module-level function.
@@ -141,11 +182,6 @@ def main(command="help", *args):
     else:
         return function(*args)
 
+
 if __name__ == '__main__':
     sys.exit(main(*sys.argv[1:]))
-
-"""
-pyflakes *.py
-
-pycodestyle --repeat --exclude=build/*,docs/*,mu/contrib*,mu/resources/api.py --ignore=E731,E402 .
-"""
