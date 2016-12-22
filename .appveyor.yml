@@ -62,7 +62,10 @@ install:
 # Not a project with an msbuild file, build done at install.
 build: None
 
+# Makefiles support provided by MinGW, which does POSIX translations, so run tests natively as well
 test_script:
+  - cmd: make clean
+  - cmd: py.test
   - cmd: make check
 
 # Push artifacts to s3 bucket and list all

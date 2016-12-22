@@ -2,7 +2,7 @@ mu (0.9.13-1) unstable; urgency=low
 
   * Add ability to change default Python directory in the settings file. Thanks to Zander Brown for the contribution. See #179.
 
- -- Nicholas Tollervey <ntoll@ntoll.org> Sun, 06 Oct 2016 11:32:58 +0000
+ -- Nicholas Tollervey <ntoll@ntoll.org>  Sun, 06 Oct 2016 11:32:58 +0000
 
 mu (0.9.12-1) unstable; urgency=low
 
@@ -16,7 +16,7 @@ mu (0.9.12-1) unstable; urgency=low
   * Check to overwrite an existing file on the micro:bit FS.
   * Start changelog
 
- -- Nicholas Tollervey <ntoll@ntoll.org> Sun, 23 Oct 2016 17:22:35 +0000
+ -- Nicholas Tollervey <ntoll@ntoll.org>  Sun, 23 Oct 2016 17:22:35 +0000
 
 mu (0.1-1) unstable; urgency=low
 
