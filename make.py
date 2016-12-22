@@ -5,6 +5,10 @@ import shutil
 import subprocess
 import textwrap
 
+PYTEST = "pytest"
+PYFLAKES = "pyflakes"
+PYCODESTYLE = "pycodestyle"
+
 INCLUDE_PATTERNS = {
     "*.py"
 }
@@ -61,21 +65,21 @@ def test(*args):
     """Call py.test to run the test suite with additional args
     """
     print("\n\ntest")
-    return subprocess.call(["pytest"] + list(args))
+    return subprocess.call([PYTEST] + list(args))
 
 @export
 def coverage(*args):
     """Call py.test with coverage turned on
     """
     print("\n\ncoverage")
-    return subprocess.call(["py.test.exe", "--cov-config", ".coveragerc", "--cov-report", "term-missing", "--cov=mu", "tests/"])
+    return subprocess.call([PYTEST, "--cov-config", ".coveragerc", "--cov-report", "term-missing", "--cov=mu", "tests/"])
 
 @export
 def pyflakes(*args):
     """Call pyflakes on all .py files outside the docs and contrib directories
     """
     print("\n\npyflakes")
-    return _check_code("pyflakes.exe", *args)
+    return _check_code(PYFLAKES, *args)
 
 @export
 def pycodestyle(*args):
@@ -83,7 +87,7 @@ def pycodestyle(*args):
     """
     print("\n\nPEP8")
     args = ("--ignore=E731,E402",) + args
-    return _check_code("pycodestyle.exe", *args)
+    return _check_code(PYCODESTYLE, *args)
 
 @export
 def pep8(*args):
