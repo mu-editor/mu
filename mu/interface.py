@@ -356,7 +356,7 @@ class EditorPane(QsciScintilla):
             for position in self.search_indicators[indicator]['positions']:
                 self.clearIndicatorRange(
                     *position,
-                    self.search_indicators[indicator]['id']
+                    indicatorNumber=self.search_indicators[indicator]['id']
                 )
             self.search_indicators[indicator]['positions'] = []
 
@@ -510,7 +510,7 @@ class EditorPane(QsciScintilla):
                 continue
 
             indicators['positions'].append(range)
-            self.fillIndicatorRange(*range, indicators['id'])
+            self.fillIndicatorRange(*range, indicatorNumber=indicators['id'])
 
     def selection_change_listener(self):
         """
