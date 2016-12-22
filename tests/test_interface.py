@@ -413,7 +413,7 @@ def test_EditorPane_highlight_selected_matches_no_selection():
     assert ep.search_indicators['selection']['positions'] == []
 
 
-def test_EditorPane_highlight_selected_matches_no_match():
+def test_EditorPane_highlight_selected_matches_multi_word():
     """
     Ensure that if the current selection is not a single word then don't cause
     a search/highlight call.
