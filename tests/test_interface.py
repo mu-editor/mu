@@ -271,8 +271,8 @@ def test_EditorPane_reset_search_indicators():
     ep.clearIndicatorRange = mock.MagicMock()
     ep.search_indicators = {
         'selection': {'id': 10, 'positions': [
-            {'line_start': 1, 'col_start': 2, 'line_end': 3, 'col_end': 4},
-            {'line_start': 5, 'col_start': 4, 'line_end': 3, 'col_end': 2}
+            (1, 2, 3, 4),
+            (5, 4, 3, 2)
         ]}
     }
     ep.reset_search_indicators()
@@ -458,13 +458,7 @@ def test_EditorPane_highlight_selected_matches_with_match():
         if selected_range is None:
             selected_range = range
         else:
-            (line_start, col_start, line_end, col_end) = range
-            expected_ranges.append(
-                dict(
-                    line_start=line_start, col_start=col_start,
-                    line_end=line_end, col_end=col_end
-                )
-            )
+            expected_ranges.append(range)
 
     ep.setSelection(*selected_range)
     assert ep.search_indicators['selection']['positions'] == expected_ranges
@@ -529,10 +523,7 @@ def test_EditorPane_selection_change_listener():
     ep.getSelection = mock.MagicMock(return_value=(1, 1, 2, 2))
     ep.highlight_selected_matches = mock.MagicMock()
     ep.selection_change_listener()
-    assert ep.previous_selection['line_start'] == 1
-    assert ep.previous_selection['col_start'] == 1
-    assert ep.previous_selection['line_end'] == 2
-    assert ep.previous_selection['col_end'] == 2
+    assert ep.previous_selection == (1, 1, 2, 2)
     assert ep.highlight_selected_matches.call_count == 1
 
 
