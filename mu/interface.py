@@ -454,11 +454,11 @@ class EditorPane(QsciScintilla):
             return
 
         #
-        # Ignore anything which is not a whole word. 
-        # NB Although Scintilla defines a SCI_ISRANGEWORD message, 
+        # Ignore anything which is not a whole word.
+        # NB Although Scintilla defines a SCI_ISRANGEWORD message,
         # it's not exposed by QSciScintilla. Instead, we
-        # ask Scintilla for the start end end position of 
-        # the word we're in and test whether our range end points match 
+        # ask Scintilla for the start end end position of
+        # the word we're in and test whether our range end points match
         # those or not.
         #
         pos0 = self.positionFromLineIndex(line0, col0)
