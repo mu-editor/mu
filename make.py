@@ -164,7 +164,7 @@ def clean(*args):
     _rmtree("mu.egg-info")
     _rmtree("coverage")
     _rmtree("docs/build")
-    _rmfiles(".", {"*.pyc"})
+    _rmfiles(".", "*.pyc")
 
 
 @export

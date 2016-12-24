@@ -23,6 +23,9 @@ import os
 import sys
 import logging
 from PyQt5.QtWidgets import QApplication, QSplashScreen
+import PyQt5
+plugins_path = os.path.join(os.path.dirname(PyQt5.__file__), "plugins")
+QApplication.addLibraryPath(plugins_path)
 from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR
 from mu.interface import Window
