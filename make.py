@@ -15,10 +15,10 @@ INCLUDE_PATTERNS = {
     "*.py"
 }
 EXCLUDE_PATTERNS = {
-    r"build\*",
-    r"docs\*",
-    r"mu\contrib\*",
-    r"mu\resources\api.py",
+    "build/*",
+    "docs/*",
+    "mu/contrib/*",
+    "mu/resources/api.py",
 }
 _exported = {}
 
@@ -29,21 +29,25 @@ def _walk(
     exclude_patterns=None,
     recurse=True
 ):
-    _include_patterns = include_patterns or set(["*"])
-    _exclude_patterns = exclude_patterns or set()
+    if include_patterns:
+        _include_patterns = set(os.path.normpath(p) for p in include_patterns)
+    else:
+        _include_patterns = set()
+    if exclude_patterns:
+        _exclude_patterns = set(os.path.normpath(p) for p in exclude_patterns)
+    else:
+        _exclude_patterns = set()
 
     for dirpath, dirnames, filenames in os.walk(start_from):
         for filename in filenames:
-            filepath = os.path.join(dirpath, filename)
+            filepath = os.path.normpath(os.path.join(dirpath, filename))
 
-            includes = [fnmatch.fnmatch(filepath, pattern)
-                        for pattern in _include_patterns]
-            if not any(includes):
+            if not any(fnmatch.fnmatch(filepath, pattern)
+                       for pattern in _include_patterns):
                 continue
 
-            excludes = [fnmatch.fnmatch(filepath, pattern)
-                        for pattern in _exclude_patterns]
-            if any(excludes):
+            if any(fnmatch.fnmatch(filepath, pattern)
+                   for pattern in _exclude_patterns):
                 continue
 
             yield filepath
@@ -66,15 +70,22 @@ def _check_code(executable, *args):
 
 def _rmtree(dirpath, cascade_errors=False):
     try:
+        print("Removing directory", dirpath)
         shutil.rmtree(dirpath)
+        pass
     except OSError:
         if cascade_errors:
             raise
 
 
 def _rmfiles(start_from, pattern):
-    for filepath in _walk(".", {"*.pyc"}):
-        print(filepath)
+    """Remove files from a directory and its descendants
+
+    Starting from `start_from` directory and working downwards,
+    remove all files which match `pattern`, eg *.pyc
+    """
+    for filepath in _walk(start_from, {pattern}):
+        print("Removing", filepath)
         os.remove(filepath)
 
 
@@ -91,7 +102,7 @@ def export(function):
 def test(*args):
     """Call py.test to run the test suite with additional args
     """
-    print("\n\ntest")
+    print("\ntest")
     return subprocess.call([PYTEST] + list(args))
 
 
@@ -99,7 +110,7 @@ def test(*args):
 def coverage(*args):
     """Call py.test with coverage turned on
     """
-    print("\n\ncoverage")
+    print("\ncoverage")
     return subprocess.call([
         PYTEST,
         "--cov-config",
@@ -115,7 +126,7 @@ def coverage(*args):
 def pyflakes(*args):
     """Call pyflakes on all .py files outside the docs and contrib directories
     """
-    print("\n\npyflakes")
+    print("\npyflakes")
     return _check_code(PYFLAKES, *args)
 
 
@@ -123,7 +134,7 @@ def pyflakes(*args):
 def pycodestyle(*args):
     """Call pyflakes on all .py files outside the docs and contrib directories
     """
-    print("\n\nPEP8")
+    print("\nPEP8")
     args = ("--ignore=E731,E402",) + args
     return _check_code(PYCODESTYLE, *args)
 
@@ -137,7 +148,7 @@ def pep8(*args):
 def check(*args):
     """Run pyflakes + pycodestyle
     """
-    print("\n\nCheck")
+    print("\nCheck")
     pyflakes(*args)
     pycodestyle(*args)
     coverage(*args)
@@ -147,13 +158,13 @@ def check(*args):
 def clean(*args):
     """Clean up any build artefacts
     """
-    print("\n\nClean")
+    print("\nClean")
     _rmtree("build")
     _rmtree("dist")
     _rmtree("mu.egg-info")
     _rmtree("coverage")
     _rmtree("docs/build")
-    _rmfiles(".", "*.pyc")
+    _rmfiles(".", {"*.pyc"})
 
 
 @export
