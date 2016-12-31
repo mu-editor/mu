@@ -11,22 +11,22 @@ matrix:
       language: generic
 
 before_install:
-  # OS and Python info
+  # OS and default Python info
   - uname -a
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then python3 -c "import sys; print(sys.executable)"; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo python3 -c "import sys; print(sys.executable)"; fi
 
 install:
-  # Python 3 and pip 3 installation depends OS (and for now install PyQt & QScintilla in Linux as well)
+  # Python 3 and pip 3 installation are OS dependant
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_linux.sh; fi
 
   # Install Mu dependencies (PyQt & QScintilla will be absorbed in requirements.txt once ready)
   - sudo pip3 install -r requirements.txt
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo pip3 install PyQt5; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo pip3 install QScintilla; fi
+  - sudo pip3 install PyQt5
+  - sudo pip3 install QScintilla
 
-  # Install packaging dependencies, macOS depends on update not yet release https://github.com/pyinstaller/pyinstaller/pull/1965
+  # Install packaging dependencies, macOS depends on update not yet released https://github.com/pyinstaller/pyinstaller/pull/1965
   - sudo pip3 install git+git://github.com/pyinstaller/pyinstaller.git@483c819d6a256b58db6740696a901bd41c313f0c
 
   # Check everything was correctly installed
@@ -35,6 +35,7 @@ install:
   - python3 -c "import struct; print(struct.calcsize('P') * 8)"
   - python3 -c "import sys; print(sys.executable)"
   - pip3 --version
+  - sudo pip3 --version
   - pip3 freeze
   - python3 -c "import PyQt5"
   - python3 -c "import PyQt5.Qsci"
@@ -42,6 +43,7 @@ install:
 script:
   # Run the tests, at the moment there is a segmentation fault on Linux, this will go away with Py3.5
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make check; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make clean; fi
 
   # Package it
   - pyinstaller package/pyinstaller.spec
