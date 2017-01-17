@@ -6,13 +6,16 @@ matrix:
       sudo: required
       language: generic
 
+    # To maximise compatibility pick earliest image, 10.9 to be removed on 20/01/2017
     - os: osx
+      osx_image: beta-xcode6.1
       sudo: required
       language: generic
 
 before_install:
   # OS and Python info
   - uname -a
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sw_vers; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then python3 -c "import sys; print(sys.executable)"; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo python3 -c "import sys; print(sys.executable)"; fi
 
