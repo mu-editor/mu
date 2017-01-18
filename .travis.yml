@@ -20,7 +20,7 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo python3 -c "import sys; print(sys.executable)"; fi
 
 install:
-  # Python 3 and pip 3 installation are OS dependant
+  # Python 3 and pip 3 installation are OS dependent
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_linux.sh; fi
 
