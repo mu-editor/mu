@@ -83,3 +83,5 @@ deploy:
   bucket: ardublockly-builds
   set_public: true
   folder: microbit\windows
+  on:
+    branch: [master]
