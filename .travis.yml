@@ -51,8 +51,8 @@ script:
   # Package it
   - pyinstaller package/pyinstaller.spec
   - du -sk dist/
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mv dist/mu dist/mu-$(date '+%Y-%m-%d_%H_%M_%S'); fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cd dist && zip --symlinks -r mu-$(date '+%Y-%m-%d_%H_%M_%S').zip mu.app && rm -r mu.app && rm mu && cd ..; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mv dist/mu dist/mu_$(date '+%Y-%m-%d_%H_%M')_${TRAVIS_BRANCH}_${TRAVIS_COMMIT:0:7}.bin; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cd dist && zip --symlinks -r mu_$(date '+%Y-%m-%d_%H_%M')_${TRAVIS_BRANCH}_${TRAVIS_COMMIT:0:7}.zip mu.app && rm -r mu.app && rm mu && cd ..; fi
 
 # Deploy the build version in an S3 bucket
 deploy:
