@@ -3,8 +3,9 @@
 Tests for the app script.
 """
 import logging
+import sys
 from unittest import mock
-from mu.app import run, setup_logging
+from mu.app import excepthook, run, setup_logging
 from mu.logic import LOG_FILE, LOG_DIR
 
 
@@ -22,6 +23,7 @@ def test_setup_logging():
         log_conf.assert_called_once_with(filename=LOG_FILE, filemode='w',
                                          format=fmt,
                                          level=logging.DEBUG)
+        assert sys.excepthook == excepthook
 
 
 def test_run():
@@ -56,3 +58,17 @@ def test_run():
         assert win.call_count == 1
         assert len(win.mock_calls) == 14
         assert ex.call_count == 1
+
+
+def test_excepthook():
+    """
+    Test that custom excepthook logs error and calls sys.exit.
+    """
+    ex = Exception('BANG')
+    exc_args = (type(ex), ex, ex.__traceback__)
+
+    with mock.patch('mu.app.logging.error') as error, \
+            mock.patch('mu.app.sys.exit') as exit:
+        sys.excepthook(*exc_args)
+        error.assert_called_once_with('Unrecoverable error', exc_info=exc_args)
+        exit.assert_called_once_with(1)

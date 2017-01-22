@@ -39,7 +39,17 @@ def setup_logging():
     log_fmt = '%(asctime)s - %(name)s(%(funcName)s) %(levelname)s: %(message)s'
     logging.basicConfig(filename=LOG_FILE, filemode='w', format=log_fmt,
                         level=logging.DEBUG)
+    sys.excepthook = excepthook
     print('Logging to {}'.format(LOG_FILE))
+
+
+def excepthook(*exc_args):
+    """
+    Log exception and exit cleanly.
+    """
+    logging.error('Unrecoverable error', exc_info=(exc_args))
+    sys.__excepthook__(*exc_args)
+    sys.exit(1)
 
 
 def run():
