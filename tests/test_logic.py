@@ -119,9 +119,7 @@ def test_get_settings_data_path():
     """
     Find a settings file in the data location.
     """
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open = mock.mock_open()
     mock_exists = mock.MagicMock()
     mock_exists.side_effect = [False, True]
     mock_json_dump = mock.MagicMock()
@@ -138,9 +136,7 @@ def test_get_settings_no_files():
     """
     No settings files found, so create one.
     """
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open = mock.mock_open()
     mock_json_dump = mock.MagicMock()
     with mock.patch('os.path.exists', return_value=False), \
             mock.patch('builtins.open', mock_open), \
@@ -171,19 +167,70 @@ def test_get_settings_no_files_cannot_create():
         logger.error.assert_called_once_with(msg)
 
 
-def test_get_workspace():
+def test_get_workspace_valid():
     """
-    Normally return generated folder otherwise user value
+    Return settings file workspace value.
     """
-    should_be = os.path.join(mu.logic.HOME_DIRECTORY,
-                             mu.logic.WORKSPACE_NAME)
-    with mock.patch('mu.logic.get_settings_path',
-                    return_value='tests/settingswithoutworkspace.json'):
-        assert mu.logic.get_workspace_dir() == should_be
     # read from our demo settings.json
     with mock.patch('mu.logic.get_settings_path',
-                    return_value='tests/settings.json'):
+                    return_value='tests/settings.json'), \
+            mock.patch('os.path.isdir', return_value=True):
         assert mu.logic.get_workspace_dir() == '/home/foo/mycode'
+
+
+def test_get_workspace_not_present():
+    """
+    No workspace key in settings file, return default folder.
+    """
+    default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
+                                     mu.logic.WORKSPACE_NAME)
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settingswithoutworkspace.json'):
+        assert mu.logic.get_workspace_dir() == default_workspace
+
+
+def test_get_workspace_invalid_value():
+    """
+    Invalid workspace key in settings file, return default folder.
+    """
+    default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
+                                     mu.logic.WORKSPACE_NAME)
+    # read from our demo settings.json
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settings.json'), \
+            mock.patch('os.path.isdir', return_value=False), \
+            mock.patch('mu.logic.logger', return_value=None) as logger:
+        assert mu.logic.get_workspace_dir() == default_workspace
+        assert logger.error.call_count == 1
+
+
+def test_get_workspace_invalid_json():
+    """
+    Invalid workspace key in settings file, return default folder.
+    """
+    default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
+                                     mu.logic.WORKSPACE_NAME)
+    mock_open = mock.mock_open(read_data='{"workspace": invalid}')
+    with mock.patch('mu.logic.get_settings_path', return_value='a.json'), \
+            mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.logic.logger', return_value=None) as logger:
+        assert mu.logic.get_workspace_dir() == default_workspace
+        assert logger.error.call_count == 1
+
+
+def test_get_workspace_no_settings_file():
+    """
+    Invalid settings file, return default folder.
+    """
+    default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
+                                     mu.logic.WORKSPACE_NAME)
+    mock_open = mock.MagicMock(side_effect=FileNotFoundError())
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settings.json'), \
+            mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.logic.logger', return_value=None) as logger:
+        assert mu.logic.get_workspace_dir() == default_workspace
+        assert logger.error.call_count == 1
 
 
 def test_check_flake():
@@ -349,10 +396,7 @@ def test_editor_restore_session():
     view.set_theme = mock.MagicMock()
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.read.return_value = SESSION
+    mock_open = mock.mock_open(read_data=SESSION)
     with mock.patch('builtins.open', mock_open), \
             mock.patch('os.path.exists', return_value=True):
         ed.restore_session()
@@ -404,11 +448,8 @@ def test_editor_restore_session_invalid_file():
     view.tab_count = 0
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.read.return_value = '{"paths": ["path/foo.py",' \
-                                               ' "path/bar.py"]}, invalid: 0}'
+    mock_open = mock.mock_open(
+        read_data='{"paths": ["path/foo.py", "path/bar.py"]}, invalid: 0}')
     with mock.patch('builtins.open', mock_open), \
             mock.patch('os.path.exists', return_value=True):
         ed.restore_session()
@@ -863,10 +904,7 @@ def test_load_python_file():
     view.get_load_path = mock.MagicMock(return_value='foo.py')
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.read.return_value = 'PYTHON'
+    mock_open = mock.mock_open(read_data='PYTHON')
     with mock.patch('builtins.open', mock_open):
         ed.load()
     assert view.get_load_path.call_count == 1
@@ -882,10 +920,7 @@ def test_load_hex_file():
     view.get_load_path = mock.MagicMock(return_value='foo.hex')
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.read.return_value = 'PYTHON'
+    mock_open = mock.mock_open(read_data='PYTHON')
     hex_file = 'RECOVERED'
     with mock.patch('builtins.open', mock_open), \
             mock.patch('mu.logic.uflash.extract_script',
