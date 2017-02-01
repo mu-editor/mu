@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (QApplication, QAction, QWidget, QFileDialog,
 from PyQt5.QtCore import QIODevice, Qt, QSize
 from PyQt5.QtGui import QTextCursor, QIcon
 from unittest import mock
+from mu import __version__
 import os
 import platform
 import mu.interface
@@ -672,7 +673,7 @@ def test_Window_attributes():
     Expect the title and icon to be set correctly.
     """
     w = mu.interface.Window()
-    assert w.title == "Mu"
+    assert w.title == "Mu {}".format(__version__)
     assert w.icon == "icon"
 
 

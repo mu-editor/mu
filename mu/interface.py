@@ -32,6 +32,7 @@ from PyQt5.QtGui import (QKeySequence, QColor, QTextCursor, QFontDatabase,
                          QCursor)
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
 from PyQt5.QtSerialPort import QSerialPort
+from mu import __version__
 from mu.contrib import microfs
 from mu.resources import load_icon, load_stylesheet, load_font_data
 
@@ -611,7 +612,7 @@ class Window(QStackedWidget):
     Defines the look and characteristics of the application's main window.
     """
 
-    title = "Mu"
+    title = "Mu {}".format(__version__)
     icon = "icon"
 
     _zoom_in = pyqtSignal(int)
