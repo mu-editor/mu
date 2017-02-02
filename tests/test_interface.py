@@ -622,10 +622,12 @@ def test_FileTabs_init():
     Ensure a FileTabs instance is initialised as expected.
     """
     with mock.patch('mu.interface.FileTabs.setTabsClosable') as mstc, \
-            mock.patch('mu.interface.FileTabs.tabCloseRequested') as mtcr:
+            mock.patch('mu.interface.FileTabs.tabCloseRequested') as mtcr, \
+            mock.patch('mu.interface.FileTabs.currentChanged') as mcc:
         qtw = mu.interface.FileTabs()
         mstc.assert_called_once_with(True)
         mtcr.connect.assert_called_once_with(qtw.removeTab)
+        mcc.connect.assert_called_once_with(qtw.change_tab)
 
 
 def test_FileTabs_removeTab_cancel():
@@ -666,6 +668,35 @@ def test_FileTabs_removeTab_ok():
               'lose it.'
         mock_window.show_confirmation.assert_called_once_with(msg)
         rt.assert_called_once_with(tab_id)
+
+
+def test_FileTabs_change_tab():
+    """
+    Ensure change_tab updates the title of the application window with the
+    label from the currently selected file.
+    """
+    qtw = mu.interface.FileTabs()
+    mock_tab = mock.MagicMock()
+    mock_tab.label = "foo"
+    qtw.widget = mock.MagicMock(return_value=mock_tab)
+    mock_window = mock.MagicMock()
+    qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
+    tab_id = 1
+    qtw.change_tab(tab_id)
+    mock_window.update_title.assert_called_once_with(mock_tab.label)
+
+
+def test_FileTabs_change_tab_no_tabs():
+    """
+    If there are no tabs left, ensure change_tab updates the title of the
+    application window with the default value (None).
+    """
+    qtw = mu.interface.FileTabs()
+    qtw.widget = mock.MagicMock(return_value=None)
+    mock_window = mock.MagicMock()
+    qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
+    qtw.change_tab(0)
+    mock_window.update_title.assert_called_once_with(None)
 
 
 def test_Window_attributes():
@@ -786,6 +817,7 @@ def test_Window_add_tab():
     new_tab_index = 999
     w.tabs = mock.MagicMock()
     w.tabs.addTab = mock.MagicMock(return_value=new_tab_index)
+    w.tabs.currentIndex = mock.MagicMock(return_value=new_tab_index)
     w.tabs.setCurrentIndex = mock.MagicMock(return_value=None)
     w.tabs.setTabText = mock.MagicMock(return_value=None)
     w.connect_zoom = mock.MagicMock(return_value=None)

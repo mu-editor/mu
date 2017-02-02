@@ -592,6 +592,7 @@ class FileTabs(QTabWidget):
         super(FileTabs, self).__init__()
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.removeTab)
+        self.currentChanged.connect(self.change_tab)
 
     def removeTab(self, tab_id):
         """
@@ -605,6 +606,18 @@ class FileTabs(QTabWidget):
             if window.show_confirmation(msg) == QMessageBox.Cancel:
                 return
         super(FileTabs, self).removeTab(tab_id)
+
+    def change_tab(self, tab_id):
+        """
+        Update the application title to reflect the name of the file in the
+        currently selected tab.
+        """
+        current_tab = self.widget(tab_id)
+        window = self.nativeParentWidget()
+        if current_tab:
+            window.update_title(current_tab.label)
+        else:
+            window.update_title(None)
 
 
 class Window(QStackedWidget):
@@ -684,7 +697,9 @@ class Window(QStackedWidget):
 
         @new_tab.modificationChanged.connect
         def on_modified():
-            self.tabs.setTabText(new_tab_index, new_tab.label)
+            modified_tab_index = self.tabs.currentIndex()
+            self.tabs.setTabText(modified_tab_index, new_tab.label)
+            self.update_title(new_tab.label)
 
         self.tabs.setCurrentIndex(new_tab_index)
         self.connect_zoom(new_tab)
@@ -886,6 +901,7 @@ class Window(QStackedWidget):
         widget_layout.addWidget(self.button_bar)
         widget_layout.addWidget(self.splitter)
         self.tabs = FileTabs()
+        self.tabs.setMovable(True)
         self.splitter.addWidget(self.tabs)
 
         self.addWidget(self.widget)
