@@ -1363,7 +1363,7 @@ class WebViewPage(QWebPage):
     def javaScriptConsoleMessage(self, msg, line, source):
         try:
             self.console_handler(json.loads(msg))
-        finally:
+        except:
             pass
 
 

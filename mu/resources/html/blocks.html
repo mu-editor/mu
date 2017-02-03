@@ -26,85 +26,85 @@
         <script src="blockly/msg/js/en.js"></script>
         <script src="microbit_blocks/messages/en/messages.js"></script>
         <xml id="toolbox" style="display: none">
-          <category name="Accelerometer" colour="20">
-            <block type="microbit_accelerometer_get_x"></block>
-            <block type="microbit_accelerometer_get_y"></block>
-            <block type="microbit_accelerometer_get_z"></block>
-            <block type="microbit_accelerometer_was_gesture"></block>
-            <block type="microbit_accelerometer_is_gesture"></block>
-            <block type="microbit_accelerometer_get_gestures"></block>
-            <block type="microbit_accelerometer_current_gesture"></block>
-          </category>
-          <category name="Buttons" colour="10">
-            <block type="microbit_button_is_pressed"></block>
-            <block type="microbit_button_was_pressed"></block>
-            <block type="microbit_button_get_presses"></block>
-          </category>
-          <category name="Compass" colour="340">
-            <block type="microbit_compass_calibrate"></block>
-            <block type="microbit_compass_is_calibrated"></block>
-            <block type="microbit_compass_heading"></block>
-            <block type="microbit_compass_get_field_strength"></block>
-          </category>
-          <category name="Display" colour="0">
-            <block type="microbit_display_get_pixel"></block>
-            <block type="microbit_display_set_pixel"></block>
-            <block type="microbit_display_clear"></block>
-            <block type="microbit_display_show_image"></block>
-            <block type="microbit_display_show_animation"></block>
-            <block type="microbit_display_scroll"></block>
-            <block type="microbit_display_on"></block>
-            <block type="microbit_display_off"></block>
-            <block type="microbit_display_is_on"></block>
-          </category>
-          <category name="Image" colour="300">
-            <block type="microbit_image_builtins"></block>
-            <block type="microbit_image_copy"></block>
-            <block type="microbit_image_invert"></block>
-            <block type="microbit_image_create"></block>
-          </category>
-          <category name="Microbit" colour="210">
-            <block type="microbit_microbit_panic"></block>
-            <block type="microbit_microbit_reset"></block>
-            <block type="microbit_microbit_sleep"></block>
-            <block type="microbit_microbit_running_time"></block>
-            <block type="microbit_microbit_temperature"></block>
-          </category>
-          <category name="Music" colour="95">
-            <block type="microbit_music_play_built_in"></block>
-            <block type="microbit_music_pitch"></block>
-            <block type="microbit_music_play_list_of_notes"></block>
-            <block type="microbit_music_reset"></block>
-            <block type="microbit_music_stop"></block>
-            <block type="microbit_music_set_tempo"></block>
-            <block type="microbit_music_get_tempo"></block>
-          </category>
-          <category name="Neopixel" colour="260">
-            <block type="microbit_neopixel_initialise"></block>
-            <block type="microbit_neopixel_clear"></block>
-            <block type="microbit_neopixel_show"></block>
-            <block type="microbit_neopixel_set"></block>
-          </category>
-          <category name="Pins" colour="120">
-            <block type="microbit_pin_touched"></block>
-            <block type="microbit_pin_read_analog"></block>
-            <block type="microbit_pin_write_analog"></block>
-            <block type="microbit_pin_read_digital"></block>
-            <block type="microbit_pin_write_digital"></block>
-          </category>
-          <category name="Radio" colour="330">
-            <block type="microbit_radio_on"></block>
-            <block type="microbit_radio_off"></block>
-            <block type="microbit_radio_config"></block>
-            <block type="microbit_radio_reset"></block>
-            <block type="microbit_radio_send_string"></block>
-            <block type="microbit_radio_receive"></block>
-          </category>
-          <category name="Speech" colour="65">
-            <block type="microbit_speech_say"></block>
-            <block type="microbit_speech_pronounce"></block>
-            <block type="microbit_speech_sing"></block>
-          </category>
+		  <category name="Accelerometer" colour="0">
+		    <block type="microbit_accelerometer_get_x"></block>
+		    <block type="microbit_accelerometer_get_y"></block>
+		    <block type="microbit_accelerometer_get_z"></block>
+		    <block type="microbit_accelerometer_was_gesture"></block>
+		    <block type="microbit_accelerometer_is_gesture"></block>
+		    <block type="microbit_accelerometer_get_gestures"></block>
+		    <block type="microbit_accelerometer_current_gesture"></block>
+		  </category>
+		  <category name="Buttons" colour="32">
+		    <block type="microbit_button_is_pressed"></block>
+		    <block type="microbit_button_was_pressed"></block>
+		    <block type="microbit_button_get_presses"></block>
+		  </category>
+		  <category name="Compass" colour="64">
+		    <block type="microbit_compass_calibrate"></block>
+		    <block type="microbit_compass_is_calibrated"></block>
+		    <block type="microbit_compass_heading"></block>
+		    <block type="microbit_compass_get_field_strength"></block>
+		  </category>
+		  <category name="Display" colour="96">
+		    <block type="microbit_display_get_pixel"><value name="x"><shadow type="math_number"><field name="NUM">0</field></shadow></value><value name="y"><shadow type="math_number"><field name="NUM">0</field></shadow></value></block>
+		    <block type="microbit_display_set_pixel"><value name="x"><shadow type="math_number"><field name="NUM">0</field></shadow></value><value name="y"><shadow type="math_number"><field name="NUM">0</field></shadow></value><value name="value"><shadow type="math_number"><field name="NUM">9</field></shadow></value></block>
+		    <block type="microbit_display_clear"></block>
+		    <block type="microbit_display_show_image"></block>
+		    <block type="microbit_display_show_animation"></block>
+		    <block type="microbit_display_scroll"><value name="message"><shadow type="text"><field name="TEXT">Hello, World!</field></shadow></value></block>
+		    <block type="microbit_display_on"></block>
+		    <block type="microbit_display_off"></block>
+		    <block type="microbit_display_is_on"></block>
+		  </category>
+		  <category name="Image" colour="128">
+		    <block type="microbit_image_builtins"></block>
+		    <block type="microbit_image_copy"></block>
+		    <block type="microbit_image_invert"></block>
+		    <block type="microbit_image_create"></block>
+		  </category>
+		  <category name="Microbit" colour="160">
+		    <block type="microbit_microbit_panic"></block>
+		    <block type="microbit_microbit_reset"></block>
+		    <block type="microbit_microbit_sleep"><value name="duration"><shadow type="math_number"><field name="NUM">1000</field></shadow></value></block>
+		    <block type="microbit_microbit_running_time"></block>
+		    <block type="microbit_microbit_temperature"></block>
+		  </category>
+		  <category name="Music" colour="192">
+		    <block type="microbit_music_play_built_in"></block>
+		    <block type="microbit_music_pitch"></block>
+		    <block type="microbit_music_play_list_of_notes"></block>
+		    <block type="microbit_music_reset"></block>
+		    <block type="microbit_music_stop"></block>
+		    <block type="microbit_music_set_tempo"><value name="ticks"><shadow type="math_number"><field name="NUM">4</field></shadow></value><value name="bpm"><shadow type="math_number"><field name="NUM">120</field></shadow></value></block>
+		    <block type="microbit_music_get_tempo"></block>
+		  </category>
+		  <category name="Neopixel" colour="224">
+		    <block type="microbit_neopixel_initialise"></block>
+		    <block type="microbit_neopixel_clear"></block>
+		    <block type="microbit_neopixel_show"></block>
+		    <block type="microbit_neopixel_set"><value name="pixel"><shadow type="math_number"><field name="NUM">0</field></shadow></value><value name="red"><shadow type="math_number"><field name="NUM">0</field></shadow></value><value name="green"><shadow type="math_number"><field name="NUM">0</field></shadow></value><value name="blue"><shadow type="math_number"><field name="NUM">0</field></shadow></value></block>
+		  </category>
+		  <category name="Pins" colour="256">
+		    <block type="microbit_pin_touched"></block>
+		    <block type="microbit_pin_read_analog"></block>
+		    <block type="microbit_pin_write_analog"><value name="output"><shadow type="math_number"><field name="NUM">0</field></shadow></value></block>
+		    <block type="microbit_pin_read_digital"></block>
+		    <block type="microbit_pin_write_digital"><value name="output"><shadow type="math_number"><field name="NUM">0</field></shadow></value></block>
+		  </category>
+		  <category name="Radio" colour="288">
+		    <block type="microbit_radio_on"></block>
+		    <block type="microbit_radio_off"></block>
+		    <block type="microbit_radio_config"></block>
+		    <block type="microbit_radio_reset"></block>
+		    <block type="microbit_radio_send_string"><value name="message"><shadow type="text"><field name="TEXT">Some text</field></shadow></value></block>
+		    <block type="microbit_radio_receive"></block>
+		  </category>
+		  <category name="Speech" colour="320">
+		    <block type="microbit_speech_say"><value name="english"><shadow type="text"><field name="TEXT">Exterminate!</field></shadow></value></block>
+		    <block type="microbit_speech_pronounce"><value name="phonemes"><shadow type="text"><field name="TEXT">/HEH5EH4EH3EH2EH2EH3EH4EH5EHLP.</field></shadow></value></block>
+		    <block type="microbit_speech_sing"><value name="song"><shadow type="text"><field name="TEXT">#115DOWWWW</field></shadow></value></block>
+		  </category>
 	    <sep></sep>
 	    <category name="Logic" colour="210">
 	      <block type="controls_if"></block>
