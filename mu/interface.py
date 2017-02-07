@@ -874,8 +874,6 @@ class Window(QStackedWidget):
         size = self.geometry()
         self.move((screen.width() - size.width()) / 2,
                   (screen.height() - size.height()) / 2)
-        if super().geometry().height()<600:
-            self.button_bar.setCompactMode(True)
 
 
     def reset_annotations(self):
