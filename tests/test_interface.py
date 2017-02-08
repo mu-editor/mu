@@ -586,18 +586,19 @@ def test_ButtonBar_init():
         assert mock_add_action.call_count == 12
         assert mock_add_separator.call_count == 3
 
+
 def test_ButtonBar_setCompactMode():
     """
     Does the button bar shrink in compact mode and grow out of it?
     """
-    bb = mu.interface.ButtonBar(None)
-    bb.setCompactMode(True)
-    mock_icon_size.assert_called_once_with(QSize(25, 25))
-    mock_tool_button_size.assert_called_once_with(0)
-    bb.setCompactMode(False)
-    mock_icon_size.assert_called_once_with(QSize(64, 64))
-    mock_tool_button_size.assert_called_once_with(3)
-    
+    mock_icon_size = mock.MagicMock(return_value=None)
+    with mock.patch('mu.interface.ButtonBar.setIconSize', mock_icon_size):
+        bb = mu.interface.ButtonBar(None)
+        bb.setCompactMode(True)
+        mock_icon_size.assert_called_once_with(QSize(25, 25))
+        bb.setCompactMode(False)
+        mock_icon_size.assert_called_once_with(QSize(64, 64))
+
 
 def test_ButtonBar_add_action():
     """
@@ -627,7 +628,7 @@ def test_ButtonBar_connect():
     assert mock_shortcut.call_count == 1
     slot = bb.slots['save']
     slot.pyqtConfigure.assert_called_once_with(triggered=mock_handler)
-    
+
 
 def test_FileTabs_init():
     """
@@ -722,10 +723,11 @@ def test_Window_attributes():
 
 def test_Window_resizeEvent():
     w = mu.interface.Window()
-    w.resize(1024,768)
-    assert mock_setCompactMode.assert_called_once_with(False)
-    w.resize(800,400)
-    assert mock_setCompactMode.assert_called_once_with(False)
+    w.button_bar.setCompactMode = mock.MagicMock()
+    w.resize(1024, 768)
+    assert w.button_bar.setCompactMode.assert_called_once_with(False)
+    w.resize(800, 400)
+    assert w.button_bar.setCompactMode.assert_called_once_with(False)
 
 
 def test_Window_zoom_in():
@@ -1242,7 +1244,7 @@ def test_Window_setup():
     assert w.setWindowIcon.call_count == 1
     assert isinstance(w.setWindowIcon.call_args[0][0], QIcon)
     w.update_title.assert_called_once_with()
-    w.setMinimumSize.assert_called_once_with(926, 600)
+    w.setMinimumSize.assert_called_once_with(800, 400)
     assert w.widget == mock_widget
     assert w.splitter == mock_splitter
     w.widget.setLayout.assert_called_once_with(mock_layout)
