@@ -531,7 +531,6 @@ class ButtonBar(QToolBar):
         self.slots = {}
 
         self.setMovable(False)
-        
         self.setIconSize(QSize(64, 64))
         self.setToolButtonStyle(3)
         self.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -565,15 +564,12 @@ class ButtonBar(QToolBar):
 
     def setCompactMode(self, toggle):
         """
-        Option for a compact button bar to be used when the window is very small.
-
+        Compact button bar for when window is very small.
         """
-        if toggle == True:
+        if toggle is True:
             self.setIconSize(QSize(25, 25))
-            self.setToolButtonStyle(0)
         else:
             self.setIconSize(QSize(64, 64))
-            self.setToolButtonStyle(3)  
 
     def addAction(self, name, tool_text):
         """
@@ -875,7 +871,6 @@ class Window(QStackedWidget):
         self.move((screen.width() - size.width()) / 2,
                   (screen.height() - size.height()) / 2)
 
-
     def reset_annotations(self):
         """
         Resets the state of annotations on the current tab.
@@ -925,15 +920,15 @@ class Window(QStackedWidget):
         self.show()
         self.autosize_window()
 
-    def resizeEvent(self,resizeEvent):
+    def resizeEvent(self, resizeEvent):
         """
         Respond to window getting too small for the button bar to fit well.
-
         """
-        if super().geometry().height()<600:
+        if super().geometry().height() < 600:
             self.button_bar.setCompactMode(True)
         else:
             self.button_bar.setCompactMode(False)
+
 
 class REPLPane(QTextEdit):
     """
