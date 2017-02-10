@@ -595,9 +595,9 @@ def test_ButtonBar_setCompactMode():
     with mock.patch('mu.interface.ButtonBar.setIconSize', mock_icon_size):
         bb = mu.interface.ButtonBar(None)
         bb.setCompactMode(True)
-        mock_icon_size.assert_called_once_with(QSize(25, 25))
+        mock_icon_size.assert_called_with(QSize(25, 25))
         bb.setCompactMode(False)
-        mock_icon_size.assert_called_once_with(QSize(64, 64))
+        mock_icon_size.assert_called_with(QSize(64, 64))
 
 
 def test_ButtonBar_add_action():
@@ -723,11 +723,11 @@ def test_Window_attributes():
 
 def test_Window_resizeEvent():
     w = mu.interface.Window()
-    w.button_bar.setCompactMode = mock.MagicMock()
+    w.button_bar = mock.MagicMock()
     w.resize(1024, 768)
-    assert w.button_bar.setCompactMode.assert_called_once_with(False)
+    w.button_bar.setCompactMode.assert_called_with(False)
     w.resize(800, 400)
-    assert w.button_bar.setCompactMode.assert_called_once_with(False)
+    w.button_bar.setCompactMode.assert_called_with(True)
 
 
 def test_Window_zoom_in():
