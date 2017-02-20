@@ -602,11 +602,19 @@ class Editor:
             if not os.path.basename(tab.path).endswith('.py'):
                 # No extension given, default to .py
                 tab.path += '.py'
-            with open_atomic(tab.path, 'w', newline='') as f:
-                logger.info('Saving script to: {}'.format(tab.path))
-                logger.debug(tab.text())
-                f.write(tab.text())
-            tab.setModified(False)
+            try:
+                with open_atomic(tab.path, 'w', newline='') as f:
+                    logger.info('Saving script to: {}'.format(tab.path))
+                    logger.debug(tab.text())
+                    f.write(tab.text())
+                tab.setModified(False)
+            except OSError as e:
+                logger.error(e)
+                message = 'Could not save file.'
+                information = ("Error saving file to disk. Ensure you have "
+                               "permission to write the file and "
+                               "sufficient disk space.")
+                self._view.show_message(message, information)
         else:
             # The user cancelled the filename selection.
             tab.path = None
