@@ -928,7 +928,7 @@ def test_load_hex_file():
     with mock.patch('mu.logic.get_workspace_dir', mock_workspace_dir), \
             mock.patch('builtins.open', mock_open), \
             mock.patch('mu.logic.uflash.extract_script',
-                            return_value=hex_file) as s:
+                       return_value=hex_file) as s:
         ed.load()
     assert view.get_load_path.call_count == 1
     assert s.call_count == 1
