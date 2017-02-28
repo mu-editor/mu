@@ -157,7 +157,7 @@ You may need to grab the GIT submodules used for the blockly based UI::
 For this to work you'll need to have Qt5 and Python 3 installed.
 
 * On Debian based systems this is covered by installing: python3-pyqt5,
-  python3-pyqt5.qsci and python3-pyqt5.qtserialport.
+  python3-pyqt5.qsci, python3-pyqt5.qtserialport and python3-pyqt5.qtwebkit.
 
 * On Mac OS, first install PyQT5::
 

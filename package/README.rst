@@ -47,7 +47,7 @@ Assuming you are running a Linux distribution with apt.
 
 * Install PyQt5::
 
-    $ sudo apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport
+    $ sudo apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtwebkit
 
 * Install PyInstaller::
 
