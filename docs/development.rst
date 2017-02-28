@@ -15,7 +15,7 @@ Assuming you have Git installed, you do it like this from the command line::
 For Mu to work you'll need to have Qt5 and Python 3 installed.
 
 * On Debian based systems this is covered by installing: ``python3-pyqt5``,
-  ``python3-pyqt5.qsci`` and ``python3-pyqt5.qtserialport``.
+  ``python3-pyqt5.qsci``, ``python3-pyqt5.qtserialport`` and ``python3-pyqt5.qtwebkit``.
 
 * On Mac OS, first install PyQT5::
 
