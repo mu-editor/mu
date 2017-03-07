@@ -32,7 +32,7 @@ setup(
         'Programming Language :: Python :: 3',
     ],
     entry_points={
-        'console_scripts': [
+        'gui_scripts': [
             "mu = mu.app:run",
         ],
     },
