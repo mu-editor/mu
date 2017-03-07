@@ -1,6 +1,18 @@
+import os
 from setuptools import setup
 from mu import __version__
 
+#
+# The data files are *nix-specific. We use os.name rather than sys.platform
+# or the platform module as we don't care which Unix is in use. If it turns
+# out that we do, then a switch to os.uname or sys.platform might be in order.
+#
+if os.name == "posix":
+    data_files = [('/etc/udev/rules.d', ['conf/90-usb-microbit.rules', ]),
+                  ('/usr/share/pixmaps', ['conf/mu.png', ]),
+                  ('/usr/share/applications', ['conf/mu.desktop', ])]
+else:
+    data_files = []
 
 setup(
     name='mu',
@@ -24,7 +36,5 @@ setup(
             "mu = mu.app:run",
         ],
     },
-    data_files=[('/etc/udev/rules.d', ['conf/90-usb-microbit.rules', ]),
-                ('/usr/share/pixmaps', ['conf/mu.png', ]),
-                ('/usr/share/applications', ['conf/mu.desktop', ])],
+    data_files=data_files,
 )
