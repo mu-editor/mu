@@ -57,7 +57,7 @@ install:
   - cmd: pyinstaller package\pyinstaller.spec
   - ps: Rename-Item -path .\dist upload
   - cmd: dir upload
-  - ps: Rename-Item .\upload\mu.exe mu-$(get-date -f yyyy-MM-dd_HH_mm_ss).exe
+  - ps: Rename-Item .\upload\mu.exe mu_$(get-date -f yyyy-MM-dd_HH_mm)_$($env:APPVEYOR_REPO_BRANCH)_$($env:APPVEYOR_REPO_COMMIT.subString(0,7)).exe
 
 # Not a project with an msbuild file, build done at install.
 build: None
@@ -83,3 +83,5 @@ deploy:
   bucket: ardublockly-builds
   set_public: true
   folder: microbit\windows
+  on:
+    branch: [master]
