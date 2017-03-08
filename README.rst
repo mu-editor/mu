@@ -150,7 +150,10 @@ repository with the following command::
 
     $ git clone https://github.com/mu-editor/mu.git
 
-For this to work you'll need to have Qt5 and Python 3 installed.
+The instructions below assume that you're working within a Python
+virtual environment (aka "venv"). Versions of Python
+
+For this to work you'll need to have Qt5 and at least Python 3.4 installed.
 
 * On Debian based systems this is covered by installing: python3-pyqt5,
   python3-pyqt5.qsci and python3-pyqt5.qtserialport.
@@ -163,27 +166,72 @@ For this to work you'll need to have Qt5 and Python 3 installed.
 
     brew install https://raw.githubusercontent.com/mu-editor/mu/master/package/extras/qscintilla2.rb
 
-  .. note:: If you have an existing virtual environment it will not have
-     changed to add the new packages. The simplest thing to do is to create a
-     new virtual environment, remembering to use the
-     ``--system-site-packages`` switch so that installed libraries are
-     included. For instance::
+* On Windows::
 
-        $ virtualenv -p /usr/local/bin/python3 --system-site-packages ~/env/py3
+    Unless you want to build PyQt5 and its dependencies from scratch (a
+    non-trivial task) you'll almost certainly want to use the binaries
+    provided by Riverbank who provide the Python bindings for Qt. However,
+    they've recently switched from providing binary installers to providing
+    binary wheels. But they only provide wheels for the most recent versions
+    of Python. In addition, the MSI installer version interacts awkwardly
+    with virtual environments so you need to install PyQt5 globally and then
+    create the virtual environment with --system-site-packages.
 
-     or::
+    ============== ============ =========
+    Python Version PyQt Version Installer
+    -------------- ------------ ---------
+    3.4            5.6          .msi
+    -------------- ------------ ---------
+    3.5            5.6          .whl
+    -------------- ------------ ---------
+    3.5            5.7          .whl
+    -------------- ------------ ---------
+    3.5            5.8          .whl
+    -------------- ------------ ---------
+    3.6            5.8          .whl
+    ============== ============ =========
 
-        $ mkvirtualenv -p /usr/local/bin/python3 --system-site-packages py3
+    If you can, use Python 3.5 or greater and install from within the
+    virtualenv using the wheels.
+
+
+.. note:: From this point onwards, the instructions assume that you're
+   using a virtual environment.
+
+   If you have an existing virtual environment it will not have
+   changed to add the new packages. The simplest thing to do is to create a
+   new virtual environment, remembering to use the
+   ``--system-site-packages`` switch so that installed libraries are
+   included. For instance::
+
+    $ virtualenv -p /usr/local/bin/python3 --system-site-packages ~/env/py3
+
+ or::
+
+    $ mkvirtualenv -p /usr/local/bin/python3 --system-site-packages py3
+
+or::
+
+    c:\dev\mu> py -3.5 -mvenv .venv35
 
 Ensure you have the correct dependencies for development installed by creating
 a virtualenv and running::
 
     $ pip install -r requirements.txt
 
+If your setup hasn't yet included installing PyQt5 (eg because you're using
+Python 3.5+ on Windows for which wheels are available from PyPI)::
+
+    (.venv35) c:\dev\mu> pip install PyQt5 QScintilla
+
 To run the local development version of "mu", in the root of this repository
 type::
 
     $ python3 run.py
+
+or::
+
+    (.venv35) c:\dev\mu> python run.py
 
 There is a Makefile that helps with most of the common workflows associated
 with development. Typing "make" on its own will list the options thus::

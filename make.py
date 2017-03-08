@@ -100,7 +100,9 @@ def export(function):
 
 @export
 def test(*pytest_args):
-    """Call py.test to run the test suite with additional args
+    """Run the test suite
+
+    Call py.test to run the test suite with additional args
     """
     print("\ntest")
     return subprocess.call([PYTEST] + list(pytest_args))
@@ -108,7 +110,9 @@ def test(*pytest_args):
 
 @export
 def coverage():
-    """Call py.test with coverage turned on
+    """View a report on test coverage
+
+    Call py.test with coverage turned on
     """
     print("\ncoverage")
     return subprocess.call([
@@ -124,7 +128,9 @@ def coverage():
 
 @export
 def pyflakes(*pyflakes_args):
-    """Call pyflakes on all .py files outside the docs and contrib directories
+    """Run the PyFlakes code checker
+
+    Call pyflakes on all .py files outside the docs and contrib directories
     """
     print("\npyflakes")
     return _check_code(PYFLAKES, *args)
@@ -132,7 +138,7 @@ def pyflakes(*pyflakes_args):
 
 @export
 def pycodestyle(*pycodestyle_args):
-    """Call pyflakes on all .py files outside the docs and contrib directories
+    """Run the PEP8 style checker
     """
     print("\nPEP8")
     args = ("--ignore=E731,E402",) + args
@@ -141,12 +147,14 @@ def pycodestyle(*pycodestyle_args):
 
 @export
 def pep8(*pep8_args):
+    """Run the PEP8 style checker
+    """
     return pycodestyle(*args)
 
 
 @export
 def check():
-    """Run pyflakes + pycodestyle
+    """Run all the checkers and tests
     """
     print("\nCheck")
     pyflakes()
@@ -156,7 +164,7 @@ def check():
 
 @export
 def clean():
-    """Clean up any build artefacts
+    """Reset the project and remove auto-generated assets
     """
     print("\nClean")
     _rmtree("build")
@@ -176,12 +184,12 @@ def help():
 
     for command, function in sorted(_exported.items()):
         signature = inspect.signature(function)
-        print("{}{}".format(command, signature))
         doc = function.__doc__
         if doc:
-            print(textwrap.indent(textwrap.dedent(doc.strip("\r\n")), "    "))
+            first_line = doc.splitlines()[0]
         else:
-            print()
+            first_line = ""
+        print("make {} - {}".format(command, first_line))
 
 
 def main(command="help", *args):
