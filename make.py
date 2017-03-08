@@ -99,15 +99,15 @@ def export(function):
 
 
 @export
-def test(*args):
+def test(*pytest_args):
     """Call py.test to run the test suite with additional args
     """
     print("\ntest")
-    return subprocess.call([PYTEST] + list(args))
+    return subprocess.call([PYTEST] + list(pytest_args))
 
 
 @export
-def coverage(*args):
+def coverage():
     """Call py.test with coverage turned on
     """
     print("\ncoverage")
@@ -123,7 +123,7 @@ def coverage(*args):
 
 
 @export
-def pyflakes(*args):
+def pyflakes(*pyflakes_args):
     """Call pyflakes on all .py files outside the docs and contrib directories
     """
     print("\npyflakes")
@@ -131,7 +131,7 @@ def pyflakes(*args):
 
 
 @export
-def pycodestyle(*args):
+def pycodestyle(*pycodestyle_args):
     """Call pyflakes on all .py files outside the docs and contrib directories
     """
     print("\nPEP8")
@@ -140,22 +140,22 @@ def pycodestyle(*args):
 
 
 @export
-def pep8(*args):
+def pep8(*pep8_args):
     return pycodestyle(*args)
 
 
 @export
-def check(*args):
+def check():
     """Run pyflakes + pycodestyle
     """
     print("\nCheck")
-    pyflakes(*args)
-    pycodestyle(*args)
-    coverage(*args)
+    pyflakes()
+    pycodestyle()
+    coverage()
 
 
 @export
-def clean(*args):
+def clean():
     """Clean up any build artefacts
     """
     print("\nClean")
