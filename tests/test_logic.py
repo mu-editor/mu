@@ -1173,7 +1173,7 @@ def test_quit_modified_ok():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 2
+    assert mock_open.call_count == 3
     assert mock_open.return_value.write.call_count > 0
 
 
@@ -1200,7 +1200,7 @@ def test_quit_save_tabs_with_paths():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 2
+    assert mock_open.call_count == 3
     assert mock_open.return_value.write.call_count > 0
     recovered = ''.join([i[0][0] for i
                         in mock_open.return_value.write.call_args_list])
@@ -1231,7 +1231,7 @@ def test_quit_save_theme():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 2
+    assert mock_open.call_count == 3
     assert mock_open.return_value.write.call_count > 0
     recovered = ''.join([i[0][0] for i
                         in mock_open.return_value.write.call_args_list])
@@ -1261,3 +1261,14 @@ def test_quit_calls_sys_exit():
             mock.patch('builtins.open', mock_open):
         ed.quit(mock_event)
     ex.assert_called_once_with(0)
+
+
+def test_custom_hex_read():
+    """
+    Test that a custom hex file path can be read
+    """
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settingswithcustomhex.json'), \
+            mock.patch('mu.logic.get_workspace_dir',
+                       return_value=os.path.dirname(__file__)):
+        assert "customhextest.hex" in mu.logic.get_runtime_hex_path()
