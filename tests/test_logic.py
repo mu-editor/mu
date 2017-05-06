@@ -488,6 +488,18 @@ def test_flash_with_attached_device():
         s.assert_called_once_with('foo', hex_file_path)
 
 
+def test_flash_with_attached_device_and_custom_runtime():
+    """
+    Ensure the expected calls are made to uFlash and a helpful status message
+    is enacted.
+    """
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settingswithcustomhex.json'), \
+            mock.patch('mu.logic.get_workspace_dir',
+                       return_value=os.path.dirname(__file__)):
+        test_flash_with_attached_device()
+
+
 def test_flash_user_specified_device_path():
     """
     Ensure that if a micro:bit is not automatically found by uflash then it
@@ -1272,3 +1284,21 @@ def test_custom_hex_read():
             mock.patch('mu.logic.get_workspace_dir',
                        return_value=os.path.dirname(__file__)):
         assert "customhextest.hex" in mu.logic.get_runtime_hex_path()
+    """
+    Test that a corrupt settings file returns None for the
+    runtime hex path
+    """
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settingscorrupt.json'), \
+            mock.patch('mu.logic.get_workspace_dir',
+                       return_value=os.path.dirname(__file__)):
+        assert mu.logic.get_runtime_hex_path() is None
+    """
+    Test that a missing settings file returns None for the
+    runtime hex path
+    """
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settingswithmissingcustomhex.json'), \
+            mock.patch('mu.logic.get_workspace_dir',
+                       return_value=os.path.dirname(__file__)):
+        assert mu.logic.get_runtime_hex_path() is None
