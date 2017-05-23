@@ -336,14 +336,11 @@ class Editor:
             logger.debug('Creating directory: {}'.format(get_workspace_dir()))
             os.makedirs(get_workspace_dir())
 
-    def restore_session(self):
+    def restore_session(self, passed_filename=None):
         """
         Attempts to recreate the tab state from the last time the editor was
         run.
         """
-        # before restoring session files,
-        # see if the os passed a specific file to open
-        passed_filename = sys.argv[1] if len(sys.argv) > 1 else None
         settings_path = get_settings_path()
         with open(settings_path) as f:
             try:
