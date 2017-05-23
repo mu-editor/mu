@@ -653,7 +653,7 @@ class Window(QStackedWidget):
     @property
     def current_tab(self):
         """
-        Returns the currently focused tab.
+        Returns the currently focussed tab.
         """
         return self.tabs.currentWidget()
 
