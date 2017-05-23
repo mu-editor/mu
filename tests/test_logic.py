@@ -531,7 +531,10 @@ def test_editor_session_and_open_focus_passed_file():
         'test_editor_session_and_open_focus_passed_file.json'
     )
     with open(settings_path, 'w') as outfile:
-        json.dump({'paths': [file_path_blue, file_path_red, file_path_green]}, outfile)
+        json.dump({'paths': [
+            file_path_blue,
+            file_path_red,
+            file_path_green]}, outfile)
     view = mu.interface.Window()
     ed = mu.logic.Editor(view=view)
     view.setup(ed.theme, mu.resources.api.MICROPYTHON_APIS)
