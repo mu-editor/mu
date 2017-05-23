@@ -483,7 +483,7 @@ def test_editor_opens_file_from_session():
         ed.restore_session()
     tab = ed._view.current_tab
     assert ed._view.tab_count is 1
-    assert tab.text() == 'red'
+    assert 'red' in tab.text()
 
 
 def test_editor_open_focus_passed_file():
@@ -501,7 +501,7 @@ def test_editor_open_focus_passed_file():
     editor.restore_session(file_path)
     tab = editor._view.current_tab
     assert editor._view.tab_count is 1
-    assert tab.text() == 'red'
+    assert 'red' in tab.text()
 
 
 def test_editor_session_and_open_focus_passed_file():
@@ -544,7 +544,7 @@ def test_editor_session_and_open_focus_passed_file():
         ed.restore_session(file_path_red)
     tab = ed._view.current_tab
     assert ed._view.tab_count is 3
-    assert tab.text() == 'red'
+    assert 'red' in tab.text()
 
 
 def test_flash_no_tab():
