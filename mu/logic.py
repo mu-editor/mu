@@ -559,12 +559,7 @@ class Editor:
         """
         self._view.add_tab(None, '')
 
-    def load(self):
-        """
-        Loads a Python file from the file system or extracts a Python sccript
-        from a hex file.
-        """
-        path = self._view.get_load_path(get_workspace_dir())
+    def _load(self, path):
         logger.info('Loading script from: {}'.format(path))
         try:
             if path.endswith('.py'):
@@ -585,6 +580,18 @@ class Editor:
         else:
             logger.debug(text)
             self._view.add_tab(name, text)
+
+    def load(self):
+        """
+        Loads a Python file from the file system or extracts a Python script
+        from a hex file.
+        """
+        path = self._view.get_load_path(get_workspace_dir())
+        self._load(path)
+
+    def direct_load(self, path):
+        """ for loading files passed from command line or the OS launch"""
+        self._load(path)
 
     def save(self):
         """

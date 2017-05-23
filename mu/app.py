@@ -86,6 +86,10 @@ def run():
     button_bar.connect("check", editor.check_code)
     button_bar.connect("help", editor.show_help)
     button_bar.connect("quit", editor.quit)
+    if len(sys.argv) > 1:
+        filename = sys.argv[1]
+        editor.direct_load(filename)
+
     # Finished starting up the application, so hide the splash icon.
     splash.finish(editor_window)
     # Stop the program after the application finishes executing.
