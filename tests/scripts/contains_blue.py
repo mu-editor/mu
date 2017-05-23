@@ -1,2 +1,1 @@
 blue = 'blue'
-
