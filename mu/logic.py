@@ -341,7 +341,8 @@ class Editor:
         Attempts to recreate the tab state from the last time the editor was
         run.
         """
-        # before restoring session files, see if the os passed a specific file to open
+        # before restoring session files,
+        # see if the os passed a specific file to open
         passed_filename = sys.argv[1] if len(sys.argv) > 1 else None
         settings_path = get_settings_path()
         with open(settings_path) as f:
@@ -361,7 +362,8 @@ class Editor:
                         if passed_filename and path in passed_filename:
                             continue
                         self.direct_load(path)
-        # handle os passed file last, so it will not be focused over by another tab
+        # handle os passed file last,
+        # so it will not be focused over by another tab
         if passed_filename:
             self.direct_load(passed_filename)
         if not self._view.tab_count:
