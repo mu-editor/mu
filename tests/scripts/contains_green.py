@@ -1,1 +1,2 @@
-green
+green = 'green'
+

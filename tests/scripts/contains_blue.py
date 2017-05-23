@@ -1,1 +1,2 @@
-blue
+blue = 'blue'
+

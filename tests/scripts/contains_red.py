@@ -1,1 +1,2 @@
-red
+red = 'red'
+
