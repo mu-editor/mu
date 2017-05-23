@@ -711,7 +711,6 @@ class Window(QStackedWidget):
         self.tabs.setCurrentIndex(index)
         tab.setFocus()
 
-
     @property
     def tab_count(self):
         """
