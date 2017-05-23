@@ -566,6 +566,15 @@ class Editor:
         """
         path = self._view.get_load_path(get_workspace_dir())
         logger.info('Loading script from: {}'.format(path))
+        # see if file is open first
+        for widget in self._view.widgets:
+            if widget.path is None:  # this widget is an unsaved buffer
+                continue
+            if path in widget.path:
+                self._view.show_message('Requested file is already open.')
+                self._view.focus_tab(widget)
+                return
+
         try:
             if path.endswith('.py'):
                 # Open the file, read the textual content and set the name as

@@ -600,7 +600,7 @@ class FileTabs(QTabWidget):
         """
         window = self.nativeParentWidget()
         modified = window.current_tab.isModified()
-        if (modified):
+        if modified:
             msg = 'There is un-saved work, closing the tab will cause you ' \
                   'to lose it.'
             if window.show_confirmation(msg) == QMessageBox.Cancel:
@@ -653,7 +653,7 @@ class Window(QStackedWidget):
     @property
     def current_tab(self):
         """
-        Returns the currently focussed tab.
+        Returns the currently focused tab.
         """
         return self.tabs.currentWidget()
 
@@ -705,6 +705,12 @@ class Window(QStackedWidget):
         self.connect_zoom(new_tab)
         self.set_theme(self.theme)
         new_tab.setFocus()
+
+    def focus_tab(self, tab):
+        index = self.tabs.indexOf(tab)
+        self.tabs.setCurrentIndex(index)
+        tab.setFocus()
+
 
     @property
     def tab_count(self):
