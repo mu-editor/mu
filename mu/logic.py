@@ -341,6 +341,8 @@ class Editor:
         Attempts to recreate the tab state from the last time the editor was
         run.
         """
+        # before restoring session files, see if the os passed a specific file to open
+        passed_filename = sys.argv[1] if len(sys.argv) > 1 else None
         settings_path = get_settings_path()
         with open(settings_path) as f:
             try:
@@ -355,13 +357,13 @@ class Editor:
                     self.theme = old_session['theme']
                 if 'paths' in old_session:
                     for path in old_session['paths']:
-                        try:
-                            with open(path) as f:
-                                text = f.read()
-                        except FileNotFoundError:
-                            pass
-                        else:
-                            self._view.add_tab(path, text)
+                        # if the os passed in a file, defer loading it now
+                        if passed_filename and path in passed_filename:
+                            continue
+                        self.direct_load(path)
+        # handle os passed file last, so it will not be focused over by another tab
+        if passed_filename:
+            self.direct_load(passed_filename)
         if not self._view.tab_count:
             py = 'from microbit import *{}{}# Write your code here :-)'.format(
                 os.linesep, os.linesep)
@@ -576,6 +578,7 @@ class Editor:
                     text = uflash.extract_script(f.read())
                 name = None
         except FileNotFoundError:
+            logger.warning('could not load {}'.format(path))
             pass
         else:
             logger.debug(text)
