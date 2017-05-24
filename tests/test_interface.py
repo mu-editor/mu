@@ -586,6 +586,18 @@ def test_ButtonBar_init():
         assert mock_add_action.call_count == 12
         assert mock_add_separator.call_count == 3
 
+def test_ButtonBar_setCompactMode():
+    """
+    Does the button bar shrink in compact mode and grow out of it?
+    """
+    bb = mu.interface.ButtonBar(None)
+    bb.setCompactMode(True)
+    mock_icon_size.assert_called_once_with(QSize(25, 25))
+    mock_tool_button_size.assert_called_once_with(0)
+    bb.setCompactMode(False)
+    mock_icon_size.assert_called_once_with(QSize(64, 64))
+    mock_tool_button_size.assert_called_once_with(3)
+    
 
 def test_ButtonBar_add_action():
     """
@@ -615,7 +627,7 @@ def test_ButtonBar_connect():
     assert mock_shortcut.call_count == 1
     slot = bb.slots['save']
     slot.pyqtConfigure.assert_called_once_with(triggered=mock_handler)
-
+    
 
 def test_FileTabs_init():
     """
@@ -706,6 +718,14 @@ def test_Window_attributes():
     w = mu.interface.Window()
     assert w.title == "Mu {}".format(__version__)
     assert w.icon == "icon"
+
+
+def test_Window_resizeEvent():
+    w = mu.interface.Window()
+    w.resize(1024,768)
+    assert mock_setCompactMode.assert_called_once_with(False)
+    w.resize(800,400)
+    assert mock_setCompactMode.assert_called_once_with(False)
 
 
 def test_Window_zoom_in():
