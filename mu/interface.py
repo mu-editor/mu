@@ -22,6 +22,7 @@ import os
 import re
 import platform
 import logging
+import collections
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QStackedWidget, QDesktopWidget,
                              QWidget, QVBoxLayout, QShortcut, QSplitter,
@@ -48,10 +49,32 @@ NIGHT_STYLE = load_stylesheet('night.css')
 #: DAY_STYLE is a light conventional theme.
 DAY_STYLE = load_stylesheet('day.css')
 # Regular Expression for valid individual code 'words'
-RE_VALID_WORD = re.compile('^[A-Za-z0-9_-]*$')
+RE_VALID_WORD = re.compile('^[A-Za-z0-9_-]+$')
 
 
 logger = logging.getLogger(__name__)
+
+
+#
+# A range in Scintilla is the result of, eg, a search operation or a selection
+# It consists of a "from" and a "to" position, each of which is formed of a
+# line -- zero-based from the top of the editor -- and an offset. The offset
+# is not a character cell; rather it is the gap between the character cells.
+# So, in the text "the quick brown fox", the word "the" is bounded by offsets
+# 0 and 3.
+#
+# A namedtuple provides a lightweight object which compares cleanly to a tuple
+# plus the ability to reference each component as a field: range.from_line &c.
+# If it proved useful, we could move to a heavier-weight object later, eg to
+# implement the conversion between absolute position and line/offset indexes.
+#
+Range = collections.namedtuple("Range", [
+    "from_line", "from_offset", "to_line", "to_offset"
+])
+#
+# Scintilla defines the "unselected" or empty range as -1, -1, -1, -1
+#
+EMPTY_RANGE = Range(-1, -1, -1, -1)
 
 
 class Font:
@@ -218,9 +241,7 @@ class EditorPane(QsciScintilla):
         self.search_indicators = {
             'selection': {'id': 21, 'positions': []}
         }
-        self.previous_selection = {
-            'line_start': 0, 'col_start': 0, 'line_end': 0, 'col_end': 0
-        }
+        self.previous_selection = EMPTY_RANGE
         self.api = api if api else []
         self.lexer = PythonLexer()
         self.setModified(False)
@@ -335,9 +356,9 @@ class EditorPane(QsciScintilla):
         for indicator in self.search_indicators:
             for position in self.search_indicators[indicator]['positions']:
                 self.clearIndicatorRange(
-                    position['line_start'], position['col_start'],
-                    position['line_end'], position['col_end'],
-                    self.search_indicators[indicator]['id'])
+                    *position,
+                    indicatorNumber=self.search_indicators[indicator]['id']
+                )
             self.search_indicators[indicator]['positions'] = []
 
     def annotate_code(self, feedback, annotation_type='error'):
@@ -418,7 +439,7 @@ class EditorPane(QsciScintilla):
         """
         start_line, start_offset = self.lineIndexFromPosition(start_position)
         end_line, end_offset = self.lineIndexFromPosition(end_position)
-        return start_line, start_offset, end_line, end_offset
+        return Range(start_line, start_offset, end_line, end_offset)
 
     def highlight_selected_matches(self):
         """
@@ -431,17 +452,17 @@ class EditorPane(QsciScintilla):
         * Ignore more than one word
         * Ignore anything less than one word
         """
-        selected_range = line0, col0, line1, col1 = self.getSelection()
+        selection = Range(*self.getSelection())
         #
         # If there's no selection, do nothing
         #
-        if selected_range == (-1, -1, -1, -1):
+        if selection == EMPTY_RANGE:
             return
 
         #
         # Ignore anything which spans two or more lines
         #
-        if line0 != line1:
+        if selection.from_line != selection.to_line:
             return
 
         #
@@ -453,25 +474,25 @@ class EditorPane(QsciScintilla):
             return
 
         #
-        # Ignore anything which is not a whole word.
-        # NB Although Scintilla defines a SCI_ISRANGEWORD message,
-        # it's not exposed by QSciScintilla. Instead, we
-        # ask Scintilla for the start end end position of
-        # the word we're in and test whether our range end points match
-        # those or not.
+        # Ignore anything which is not a whole word. NB Although Scintilla
+        # defines a SCI_ISRANGEWORD message, it's not exposed by QSciScintilla.
+        # Instead, we ask Scintilla for the start end end position of the word
+        # we're in and test whether our range end points match those or not.
         #
-        pos0 = self.positionFromLineIndex(line0, col0)
+        pos0 = self.positionFromLineIndex(
+            selection.from_line, selection.from_offset)
         word_start_pos = self.SendScintilla(
             QsciScintilla.SCI_WORDSTARTPOSITION, pos0, 1)
         _, start_offset = self.lineIndexFromPosition(word_start_pos)
-        if col0 != start_offset:
+        if selection.from_offset != start_offset:
             return
 
-        pos1 = self.positionFromLineIndex(line1, col1)
+        pos1 = self.positionFromLineIndex(
+            selection.to_line, selection.to_offset)
         word_end_pos = self.SendScintilla(
             QsciScintilla.SCI_WORDENDPOSITION, pos1, 1)
         _, end_offset = self.lineIndexFromPosition(word_end_pos)
-        if col1 != end_offset:
+        if selection.to_offset != end_offset:
             return
 
         #
@@ -486,38 +507,36 @@ class EditorPane(QsciScintilla):
             #
             # Don't highlight the text we've selected
             #
-            if range == selected_range:
+            if range == selection:
                 continue
 
-            line_start, col_start, line_end, col_end = range
-            indicators['positions'].append({
-                'line_start': line_start, 'col_start': col_start,
-                'line_end': line_end, 'col_end': col_end
-            })
-            self.fillIndicatorRange(line_start, col_start, line_end,
-                                    col_end, indicators['id'])
+            indicators['positions'].append(range)
+            self.fillIndicatorRange(*range, indicatorNumber=indicators['id'])
 
     def selection_change_listener(self):
         """
         Runs every time the text selection changes. This could get triggered
         multiple times while the mouse click is down, even if selection has not
         changed in itself.
-        If there is a new selection is passes control to
-        highlight_selected_matches.
+
+        If there is a new selection it clears an existing indicator highlights
+        and passes control to highlight_selected_matches.
         """
-        # Get the current selection, exit if it has not changed
-        line_from, index_from, line_to, index_to = self.getSelection()
-        if self.previous_selection['col_end'] != index_to or \
-                self.previous_selection['col_start'] != index_from or \
-                self.previous_selection['line_start'] != line_from or \
-                self.previous_selection['line_end'] != line_to:
-            self.previous_selection['line_start'] = line_from
-            self.previous_selection['col_start'] = index_from
-            self.previous_selection['line_end'] = line_to
-            self.previous_selection['col_end'] = index_to
-            # Highlight matches
-            self.reset_search_indicators()
-            self.highlight_selected_matches()
+        #
+        # If the selection has not changed (including changing to/from
+        # no selection) then do nothing.
+        #
+        selected_range = Range(*self.getSelection())
+        if self.previous_selection == selected_range:
+            return
+
+        self.previous_selection = selected_range
+        #
+        # Always clear any existing highlights and then determine what
+        # to highlight now, if anything.
+        #
+        self.reset_search_indicators()
+        self.highlight_selected_matches()
 
 
 class ButtonBar(QToolBar):
