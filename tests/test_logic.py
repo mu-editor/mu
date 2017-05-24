@@ -936,8 +936,8 @@ def test_no_duplicate_load_python_file():
     editor = mu.logic.Editor(view=editor_window)
 
     editor.load()
-    editor_window.show_message.assert_called_once_with(
-        'That file is already open')
+    message = 'The file "{}" is already open'.format(os.path.basename(brown_script))
+    editor_window.show_message.assert_called_once_with(message)
     editor_window.add_tab.assert_not_called()
 
 
