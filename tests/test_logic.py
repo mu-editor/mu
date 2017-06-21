@@ -458,6 +458,95 @@ def test_editor_restore_session_invalid_file():
     ed._view.add_tab.assert_called_once_with(None, py)
 
 
+def test_editor_opens_file_from_session():
+    """
+    A file in an existing session is opened
+    """
+    file_path_red = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'scripts',
+        'contains_red.py'
+    )
+    settings_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'scripts',
+        'test_editor_opens_file_from_session.json'
+    )
+    with open(settings_path, 'w') as outfile:
+        json.dump({'paths': [file_path_red]}, outfile)
+    view = mu.interface.Window()
+    ed = mu.logic.Editor(view=view)
+    view.setup(ed.theme, mu.resources.api.MICROPYTHON_APIS)
+    get_test_settings_path = mock.MagicMock()
+    get_test_settings_path.return_value = settings_path
+    with mock.patch('mu.logic.get_settings_path', get_test_settings_path):
+        ed.restore_session()
+    tab = ed._view.current_tab
+    assert ed._view.tab_count is 1
+    assert 'red' in tab.text()
+
+
+def test_editor_open_focus_passed_file():
+    """
+    A file passed in by the OS is opened
+    """
+    window = mu.interface.Window()
+    editor = mu.logic.Editor(view=window)
+    window.setup(editor.theme, mu.resources.api.MICROPYTHON_APIS)
+    file_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'scripts',
+        'contains_red.py'
+    )
+    editor.restore_session(file_path)
+    tab = editor._view.current_tab
+    assert editor._view.tab_count is 1
+    assert 'red' in tab.text()
+
+
+def test_editor_session_and_open_focus_passed_file():
+    """
+    A passed in file is merged with session, opened last
+    so it receives focus
+    It will be the middle position in the session
+    """
+    file_path_red = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'scripts',
+        'contains_red.py'
+    )
+    file_path_green = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'scripts',
+        'contains_green.py'
+    )
+    file_path_blue = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'scripts',
+        'contains_blue.py'
+    )
+    settings_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'scripts',
+        'test_editor_session_and_open_focus_passed_file.json'
+    )
+    with open(settings_path, 'w') as outfile:
+        json.dump({'paths': [
+            file_path_blue,
+            file_path_red,
+            file_path_green]}, outfile)
+    view = mu.interface.Window()
+    ed = mu.logic.Editor(view=view)
+    view.setup(ed.theme, mu.resources.api.MICROPYTHON_APIS)
+    get_test_settings_path = mock.MagicMock()
+    get_test_settings_path.return_value = settings_path
+    with mock.patch('mu.logic.get_settings_path', get_test_settings_path):
+        ed.restore_session(file_path_red)
+    tab = ed._view.current_tab
+    assert ed._view.tab_count is 3
+    assert 'red' in tab.text()
+
+
 def test_flash_no_tab():
     """
     If there are no active tabs simply return.

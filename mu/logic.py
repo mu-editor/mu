@@ -368,7 +368,7 @@ class Editor:
             logger.debug('Creating directory: {}'.format(get_workspace_dir()))
             os.makedirs(get_workspace_dir())
 
-    def restore_session(self):
+    def restore_session(self, passed_filename=None):
         """
         Attempts to recreate the tab state from the last time the editor was
         run.
@@ -387,13 +387,14 @@ class Editor:
                     self.theme = old_session['theme']
                 if 'paths' in old_session:
                     for path in old_session['paths']:
-                        try:
-                            with open(path) as f:
-                                text = f.read()
-                        except FileNotFoundError:
-                            pass
-                        else:
-                            self._view.add_tab(path, text)
+                        # if the os passed in a file, defer loading it now
+                        if passed_filename and path in passed_filename:
+                            continue
+                        self.direct_load(path)
+        # handle os passed file last,
+        # so it will not be focused over by another tab
+        if passed_filename:
+            self.direct_load(passed_filename)
         if not self._view.tab_count:
             py = 'from microbit import *{}{}# Write your code here :-)'.format(
                 os.linesep, os.linesep)
@@ -592,12 +593,7 @@ class Editor:
         """
         self._view.add_tab(None, '')
 
-    def load(self):
-        """
-        Loads a Python file from the file system or extracts a Python sccript
-        from a hex file.
-        """
-        path = self._view.get_load_path(get_workspace_dir())
+    def _load(self, path):
         logger.info('Loading script from: {}'.format(path))
         # see if file is open first
         for widget in self._view.widgets:
@@ -624,10 +620,23 @@ class Editor:
                     text = uflash.extract_script(f.read())
                 name = None
         except FileNotFoundError:
+            logger.warning('could not load {}'.format(path))
             pass
         else:
             logger.debug(text)
             self._view.add_tab(name, text)
+
+    def load(self):
+        """
+        Loads a Python file from the file system or extracts a Python script
+        from a hex file.
+        """
+        path = self._view.get_load_path(get_workspace_dir())
+        self._load(path)
+
+    def direct_load(self, path):
+        """ for loading files passed from command line or the OS launch"""
+        self._load(path)
 
     def save(self):
         """
