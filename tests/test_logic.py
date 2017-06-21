@@ -997,6 +997,24 @@ def test_save_no_path_no_path_given():
     assert view.current_tab.path is None
 
 
+def test_save_file_with_exception():
+    """
+    If the file cannot be written, return an error message.
+    """
+    view = mock.MagicMock()
+    view.current_tab = mock.MagicMock()
+    view.current_tab.path = 'foo.py'
+    view.current_tab.text = mock.MagicMock(return_value='foo')
+    view.current_tab.setModified = mock.MagicMock(return_value=None)
+    view.show_message = mock.MagicMock()
+    mock_open_atomic = mock.MagicMock(side_effect=OSError())
+    ed = mu.logic.Editor(view)
+    with mock.patch('mu.logic.open_atomic', mock_open_atomic):
+        ed.save()
+    assert view.current_tab.setModified.call_count == 0
+    assert view.show_message.call_count == 1
+
+
 def test_save_python_file():
     """
     If the path is a Python file (ending in *.py) then save it and reset the
