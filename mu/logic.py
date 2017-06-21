@@ -604,7 +604,8 @@ class Editor:
             if widget.path is None:  # this widget is an unsaved buffer
                 continue
             if path in widget.path:
-                self._view.show_message('The file "{}" is already open'.format(os.path.basename(path)))
+                self._view.show_message('The file "{}" is already open'.format(
+                                        os.path.basename(path)))
                 self._view.focus_tab(widget)
                 return
 

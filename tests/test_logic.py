@@ -927,7 +927,7 @@ def test_load_python_file():
 
 def test_no_duplicate_load_python_file():
     """
-    If the user specifies loads a file already loaded, detect it
+    If the user specifies a file already loaded, ensure this is detected.
     """
     brown_script = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
@@ -940,17 +940,20 @@ def test_no_duplicate_load_python_file():
     editor_window.focus_tab = mock.MagicMock()
     editor_window.add_tab = mock.MagicMock()
 
-    class Tab:
-        path = brown_script
+    brown_tab = mock.MagicMock()
+    brown_tab.path = brown_script
+    unsaved_tab = mock.MagicMock()
+    unsaved_tab.path = None
 
-    editor_window.widgets = ({Tab()})
+    editor_window.widgets = ({unsaved_tab, brown_tab})
 
     editor_window.get_load_path = mock.MagicMock(return_value=brown_script)
     # Create the "editor" that'll control the "window".
     editor = mu.logic.Editor(view=editor_window)
 
     editor.load()
-    message = 'The file "{}" is already open'.format(os.path.basename(brown_script))
+    message = 'The file "{}" is already open'.format(os.path.basename(
+                                                     brown_script))
     editor_window.show_message.assert_called_once_with(message)
     editor_window.add_tab.assert_not_called()
 
