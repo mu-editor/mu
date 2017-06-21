@@ -3,7 +3,7 @@ Installation
 
 Currently, the latest builds for Windows, OSX and Linux x86 can be found here:
 
-http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/?prefix=microbit
+http://mu-builds.s3-website.eu-west-2.amazonaws.com
 
 Go to the link above, choose the directory for your platform and download the
 latest build of the editor.
