@@ -81,6 +81,7 @@ deploy:
   secret_access_key:
     secure: PlLCQKTcf9IzBXpEnXUxbJifb0usS7qcghnM0VxBTX0IL3C975JPidrYjP39ge7P
   bucket: ardublockly-builds
+  region: us-west-2
   set_public: true
   folder: microbit\windows
   on:
