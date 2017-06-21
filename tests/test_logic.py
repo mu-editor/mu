@@ -905,7 +905,9 @@ def test_load_python_file():
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
     mock_open = mock.mock_open(read_data='PYTHON')
-    with mock.patch('builtins.open', mock_open):
+    mock_workspace_dir = mock.MagicMock(return_value='/foo')
+    with mock.patch('mu.logic.get_workspace_dir', mock_workspace_dir), \
+            mock.patch('builtins.open', mock_open):
         ed.load()
     assert view.get_load_path.call_count == 1
     view.add_tab.assert_called_once_with('foo.py', 'PYTHON')
@@ -921,8 +923,10 @@ def test_load_hex_file():
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
     mock_open = mock.mock_open(read_data='PYTHON')
+    mock_workspace_dir = mock.MagicMock(return_value='/foo')
     hex_file = 'RECOVERED'
-    with mock.patch('builtins.open', mock_open), \
+    with mock.patch('mu.logic.get_workspace_dir', mock_workspace_dir), \
+            mock.patch('builtins.open', mock_open), \
             mock.patch('mu.logic.uflash.extract_script',
                        return_value=hex_file) as s:
         ed.load()
@@ -940,7 +944,9 @@ def test_load_error():
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock(side_effect=FileNotFoundError())
-    with mock.patch('builtins.open', mock_open):
+    mock_workspace_dir = mock.MagicMock(return_value='/foo')
+    with mock.patch('mu.logic.get_workspace_dir', mock_workspace_dir), \
+            mock.patch('builtins.open', mock_open):
         ed.load()
     assert view.get_load_path.call_count == 1
     assert view.add_tab.call_count == 0
