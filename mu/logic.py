@@ -46,8 +46,9 @@ BOARD_IDS = set([
     (0x0D28, 0x0204),  # micro:bit USB VID, PID
     (0x239A, 0x800B),  # Adafruit Feather M0 CDC only USB VID, PID
     (0x239A, 0x8016),  # Adafruit Feather M0 CDC + MSC USB VID, PID
-    (0x239A, 0x8013),  # Adafruit Metro M0 CDC only USB VID, PID
-    (0x239A, 0x8015)   # Adafruit Metro Mo CDC + MSC USB VID, PID
+    (0x239A, 0x8014),  # metro m0 PID
+    (0x239A, 0x8019),  # circuitplayground m0 PID
+    (0x239A, 0x801B),  # feather m0 express PID
 ])
 #: The user's home directory.
 HOME_DIRECTORY = os.path.expanduser('~')
@@ -155,6 +156,37 @@ def get_workspace_dir():
                     'Workspace value in the settings file is not a valid'
                     'directory: {}'.format(settings['workspace']))
     return workspace_dir
+
+
+def get_runtime_hex_path():
+    """
+    Returns the path to the hex runtime file - if this has been
+    specified under element 'microbit_runtime_hex' in settings.json.
+    This can be a fully-qualified file path, or just a file name
+    in which case the file should be located in the workspace directory.
+    Returns None if no path is specified or if the file is not present.
+    """
+    runtime_hex_path = None
+    settings_path = get_settings_path()
+    settings = {}
+    try:
+        with open(settings_path) as f:
+            settings = json.load(f)
+    except FileNotFoundError:
+        logger.error('Settings file {} does not exist.'.format(settings_path))
+    except ValueError:
+        logger.error('Settings file {} could not be parsed.'.format(
+                     settings_path))
+    else:
+        if 'microbit_runtime_hex' in settings and \
+                settings['microbit_runtime_hex'] is not None:
+            runtime_hex_path = os.path.join(
+                get_workspace_dir(),
+                settings['microbit_runtime_hex'])
+            if not os.path.exists(runtime_hex_path):
+                runtime_hex_path = None
+
+    return runtime_hex_path
 
 
 def check_flake(filename, code):
@@ -387,11 +419,6 @@ class Editor:
             information = ("Your script is too long!")
             self._view.show_message(message, information, 'Warning')
             return
-        # Generate a hex file.
-        python_hex = uflash.hexlify(python_script)
-        logger.debug('Python hex:')
-        logger.debug(python_hex)
-        micropython_hex = uflash.embed_hex(uflash._RUNTIME, python_hex)
         # Determine the location of the BBC micro:bit. If it can't be found
         # fall back to asking the user to locate it.
         path_to_microbit = uflash.find_microbit()
@@ -411,9 +438,15 @@ class Editor:
         logger.debug('Path to micro:bit: {}'.format(path_to_microbit))
         if path_to_microbit and os.path.exists(path_to_microbit):
             logger.debug('Flashing to device.')
-            hex_file = os.path.join(path_to_microbit, 'micropython.hex')
-            uflash.save_hex(micropython_hex, hex_file)
+            # Flash the microbit
+            rt_hex_path = get_runtime_hex_path()
+            uflash.flash(paths_to_microbits=[path_to_microbit],
+                         python_script=python_script,
+                         path_to_runtime=rt_hex_path)
             message = 'Flashing "{}" onto the micro:bit.'.format(tab.label)
+            if (rt_hex_path is not None and os.path.exists(rt_hex_path)):
+                message = message + "\nRuntime: {}". \
+                    format(rt_hex_path)
             information = ("When the yellow LED stops flashing the device"
                            " will restart and your script will run. If there"
                            " is an error, you'll see a helpful message scroll"
@@ -602,11 +635,19 @@ class Editor:
             if not os.path.basename(tab.path).endswith('.py'):
                 # No extension given, default to .py
                 tab.path += '.py'
-            with open_atomic(tab.path, 'w', newline='') as f:
-                logger.info('Saving script to: {}'.format(tab.path))
-                logger.debug(tab.text())
-                f.write(tab.text())
-            tab.setModified(False)
+            try:
+                with open_atomic(tab.path, 'w', newline='') as f:
+                    logger.info('Saving script to: {}'.format(tab.path))
+                    logger.debug(tab.text())
+                    f.write(tab.text())
+                tab.setModified(False)
+            except OSError as e:
+                logger.error(e)
+                message = 'Could not save file.'
+                information = ("Error saving file to disk. Ensure you have "
+                               "permission to write the file and "
+                               "sufficient disk space.")
+                self._view.show_message(message, information)
         else:
             # The user cancelled the filename selection.
             tab.path = None
@@ -671,7 +712,8 @@ class Editor:
         session = {
             'theme': self.theme,
             'paths': paths,
-            'workspace': get_workspace_dir()
+            'workspace': get_workspace_dir(),
+            'microbit_runtime_hex': get_runtime_hex_path()
         }
         logger.debug(session)
         settings_path = get_settings_path()

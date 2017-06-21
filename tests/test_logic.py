@@ -488,6 +488,18 @@ def test_flash_with_attached_device():
         s.assert_called_once_with('foo', hex_file_path)
 
 
+def test_flash_with_attached_device_and_custom_runtime():
+    """
+    Ensure the expected calls are made to uFlash and a helpful status message
+    is enacted.
+    """
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settingswithcustomhex.json'), \
+            mock.patch('mu.logic.get_workspace_dir',
+                       return_value=os.path.dirname(__file__)):
+        test_flash_with_attached_device()
+
+
 def test_flash_user_specified_device_path():
     """
     Ensure that if a micro:bit is not automatically found by uflash then it
@@ -905,7 +917,9 @@ def test_load_python_file():
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
     mock_open = mock.mock_open(read_data='PYTHON')
-    with mock.patch('builtins.open', mock_open):
+    mock_workspace_dir = mock.MagicMock(return_value='/foo')
+    with mock.patch('mu.logic.get_workspace_dir', mock_workspace_dir), \
+            mock.patch('builtins.open', mock_open):
         ed.load()
     assert view.get_load_path.call_count == 1
     view.add_tab.assert_called_once_with('foo.py', 'PYTHON')
@@ -921,8 +935,10 @@ def test_load_hex_file():
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
     mock_open = mock.mock_open(read_data='PYTHON')
+    mock_workspace_dir = mock.MagicMock(return_value='/foo')
     hex_file = 'RECOVERED'
-    with mock.patch('builtins.open', mock_open), \
+    with mock.patch('mu.logic.get_workspace_dir', mock_workspace_dir), \
+            mock.patch('builtins.open', mock_open), \
             mock.patch('mu.logic.uflash.extract_script',
                        return_value=hex_file) as s:
         ed.load()
@@ -940,7 +956,9 @@ def test_load_error():
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock(side_effect=FileNotFoundError())
-    with mock.patch('builtins.open', mock_open):
+    mock_workspace_dir = mock.MagicMock(return_value='/foo')
+    with mock.patch('mu.logic.get_workspace_dir', mock_workspace_dir), \
+            mock.patch('builtins.open', mock_open):
         ed.load()
     assert view.get_load_path.call_count == 1
     assert view.add_tab.call_count == 0
@@ -995,6 +1013,24 @@ def test_save_no_path_no_path_given():
     ed.save()
     # The path isn't the empty string returned from get_save_path.
     assert view.current_tab.path is None
+
+
+def test_save_file_with_exception():
+    """
+    If the file cannot be written, return an error message.
+    """
+    view = mock.MagicMock()
+    view.current_tab = mock.MagicMock()
+    view.current_tab.path = 'foo.py'
+    view.current_tab.text = mock.MagicMock(return_value='foo')
+    view.current_tab.setModified = mock.MagicMock(return_value=None)
+    view.show_message = mock.MagicMock()
+    mock_open_atomic = mock.MagicMock(side_effect=OSError())
+    ed = mu.logic.Editor(view)
+    with mock.patch('mu.logic.open_atomic', mock_open_atomic):
+        ed.save()
+    assert view.current_tab.setModified.call_count == 0
+    assert view.show_message.call_count == 1
 
 
 def test_save_python_file():
@@ -1173,7 +1209,7 @@ def test_quit_modified_ok():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 2
+    assert mock_open.call_count == 3
     assert mock_open.return_value.write.call_count > 0
 
 
@@ -1200,7 +1236,7 @@ def test_quit_save_tabs_with_paths():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 2
+    assert mock_open.call_count == 3
     assert mock_open.return_value.write.call_count > 0
     recovered = ''.join([i[0][0] for i
                         in mock_open.return_value.write.call_args_list])
@@ -1231,7 +1267,7 @@ def test_quit_save_theme():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 2
+    assert mock_open.call_count == 3
     assert mock_open.return_value.write.call_count > 0
     recovered = ''.join([i[0][0] for i
                         in mock_open.return_value.write.call_args_list])
@@ -1261,3 +1297,32 @@ def test_quit_calls_sys_exit():
             mock.patch('builtins.open', mock_open):
         ed.quit(mock_event)
     ex.assert_called_once_with(0)
+
+
+def test_custom_hex_read():
+    """
+    Test that a custom hex file path can be read
+    """
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settingswithcustomhex.json'), \
+            mock.patch('mu.logic.get_workspace_dir',
+                       return_value=os.path.dirname(__file__)):
+        assert "customhextest.hex" in mu.logic.get_runtime_hex_path()
+    """
+    Test that a corrupt settings file returns None for the
+    runtime hex path
+    """
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settingscorrupt.json'), \
+            mock.patch('mu.logic.get_workspace_dir',
+                       return_value=os.path.dirname(__file__)):
+        assert mu.logic.get_runtime_hex_path() is None
+    """
+    Test that a missing settings file returns None for the
+    runtime hex path
+    """
+    with mock.patch('mu.logic.get_settings_path',
+                    return_value='tests/settingswithmissingcustomhex.json'), \
+            mock.patch('mu.logic.get_workspace_dir',
+                       return_value=os.path.dirname(__file__)):
+        assert mu.logic.get_runtime_hex_path() is None

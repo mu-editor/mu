@@ -7,6 +7,8 @@ Currently, the latest builds for Windows, OSX and Linux x86 can be found here:
 
 http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/?prefix=microbit
 
+For our project roadmap see the ``ROADMAP.rst`` file.
+
 Installation
 ------------
 

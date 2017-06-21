@@ -147,6 +147,7 @@ MICROPYTHON_APIS = [
     # I2C
     "microbit.i2c.read(address, n, repeat=False) \nUse read(address, n) to read 'n' bytes from the device with the 7-bit address.\nIf repeat is True, no stop bit will be sent.",
     "microbit.i2c.write(adress, buffer, repeat=False) \nUse write(address, buffer) to write to the 'buffer' of the device at the 7-bit 'address'.\nIf repeat is True, no stop bit will be sent.",
+    "microbit.i2c.init(frequency, scl, sda) \nUse init(frequency, scl, sda) to set the bus frequency and pins.",
     # Image
     "microbit.Image(string) \nCreate and use built-in IMAGES to show on the display. Use:\nImage(\n  '09090:'\n  '99999:'\n  '99999:'\n  '09990:'\n  '00900:')\n...to make a new 5x5 heart image. Numbers go from 0 (off) to 9 (brightest). Note\nthe colon ':' to set the end of a row.",
     "microbit.Image.width() \nReturn the width of the image in pixels.",
