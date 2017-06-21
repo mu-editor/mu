@@ -4,7 +4,8 @@ Contributing to Mu
 Hey! Many thanks for wanting to improve Mu.
 
 Contributions are welcome without prejudice from *anyone* irrespective of
-age, gender, religion, race or sexuality. Good quality code and engagement
+age, gender, religion, race or sexuality. If you're thinking, "but they don't
+mean me", *then we especially mean YOU*. Good quality code and engagement
 with respect, humour and intelligence wins every time.
 
 * If you're from a background which isn't well-represented in most geeky
@@ -27,6 +28,11 @@ Feedback may be given for contributions and, where necessary, changes will
 be politely requested and discussed with the originating author. Respectful
 yet robust argument is most welcome.
 
+Finally, contributions are subject to the following caveat: the contribution
+was created by the contributor who, by submitting the contribution, is
+confirming that they have the authority to submit the contribution and place it
+under the license as defined in the LICENSE file found within this repository.
+
 Checklist
 +++++++++
 
@@ -35,9 +41,9 @@ Checklist
   already, add yourself to the AUTHORS file following the convention found
   therein.
 * We have 100% test coverage - include tests to maintain this!
-* Before submitting code ensure coding standards and test coverage by running::
+* **Before submitting code ensure coding standards and test coverage by running**::
 
     $ make check
 
 * If in doubt, ask a question. The only stupid question is the one that's never asked.
-* Have fun!
+* Most importantly, **Have fun!**
