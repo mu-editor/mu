@@ -46,8 +46,9 @@ BOARD_IDS = set([
     (0x0D28, 0x0204),  # micro:bit USB VID, PID
     (0x239A, 0x800B),  # Adafruit Feather M0 CDC only USB VID, PID
     (0x239A, 0x8016),  # Adafruit Feather M0 CDC + MSC USB VID, PID
-    (0x239A, 0x8013),  # Adafruit Metro M0 CDC only USB VID, PID
-    (0x239A, 0x8015)   # Adafruit Metro Mo CDC + MSC USB VID, PID
+    (0x239A, 0x8014),  # metro m0 PID
+    (0x239A, 0x8019),  # circuitplayground m0 PID
+    (0x239A, 0x801B),  # feather m0 express PID
 ])
 #: The user's home directory.
 HOME_DIRECTORY = os.path.expanduser('~')
