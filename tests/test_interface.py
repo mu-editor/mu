@@ -844,6 +844,19 @@ def test_Window_add_tab():
     w.tabs.setTabText.assert_called_once_with(new_tab_index, ep.label)
 
 
+def test_Window_focus_tab():
+    """
+    Given a tab instance, ensure it has focus.
+    """
+    w = mu.interface.Window()
+    w.tabs = mock.MagicMock()
+    w.tabs.indexOf.return_value = 1
+    tab = mock.MagicMock()
+    w.focus_tab(tab)
+    w.tabs.setCurrentIndex.assert_called_once_with(1)
+    tab.setFocus.assert_called_once_with()
+
+
 def test_Window_tab_count():
     """
     Ensure the number from Window.tabs.count() is returned.

@@ -25,11 +25,11 @@ Assuming you have the `Homebrew <http://brew.sh/>`_ package manager installed:
 
 * Install the PyQt5 binary package::
 
-    $ brew install pyqt5 --with-python3
+    $ pip3 install PyQt5
 
 * Install the QScintilla2 package using the formula in the `extras` directory::
 
-    $ brew install extras/qscintilla2.rb
+    $ pip3 install QScintilla
 
 * Install PyInstaller::
 

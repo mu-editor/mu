@@ -925,6 +925,39 @@ def test_load_python_file():
     view.add_tab.assert_called_once_with('foo.py', 'PYTHON')
 
 
+def test_no_duplicate_load_python_file():
+    """
+    If the user specifies a file already loaded, ensure this is detected.
+    """
+    brown_script = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'scripts',
+        'contains_brown.py'
+    )
+
+    editor_window = mock.MagicMock
+    editor_window.show_message = mock.MagicMock()
+    editor_window.focus_tab = mock.MagicMock()
+    editor_window.add_tab = mock.MagicMock()
+
+    brown_tab = mock.MagicMock()
+    brown_tab.path = brown_script
+    unsaved_tab = mock.MagicMock()
+    unsaved_tab.path = None
+
+    editor_window.widgets = ({unsaved_tab, brown_tab})
+
+    editor_window.get_load_path = mock.MagicMock(return_value=brown_script)
+    # Create the "editor" that'll control the "window".
+    editor = mu.logic.Editor(view=editor_window)
+
+    editor.load()
+    message = 'The file "{}" is already open'.format(os.path.basename(
+                                                     brown_script))
+    editor_window.show_message.assert_called_once_with(message)
+    editor_window.add_tab.assert_not_called()
+
+
 def test_load_hex_file():
     """
     If the user specifies a hex file (*.hex) then ensure it's loaded and
