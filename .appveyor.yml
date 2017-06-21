@@ -70,19 +70,19 @@ test_script:
 
 # Push artifacts to s3 bucket and list all
 before_deploy:
-  - ps: Get-ChildItem .\upload\*.exe | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName ardublockly-s3-deployment }
+  - ps: Get-ChildItem .\upload\*.exe | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName mu-s3-deployment }
   - ps: foreach($artifactName in $artifacts.keys) { $artifacts[$artifactName] }
 
 # Deploy build to Amazon S3 bucket
 deploy:
-  name: ardublockly-s3-deployment
+  name: mu-s3-deployment
   provider: S3
   access_key_id: AKIAJYJV7NN6HVHCX5NQ
   secret_access_key:
     secure: PlLCQKTcf9IzBXpEnXUxbJifb0usS7qcghnM0VxBTX0IL3C975JPidrYjP39ge7P
-  bucket: ardublockly-builds
-  region: us-west-2
+  bucket: mu-builds
+  region: eu-west-2
   set_public: true
-  folder: microbit\windows
+  folder: windows
   on:
     branch: [master]
