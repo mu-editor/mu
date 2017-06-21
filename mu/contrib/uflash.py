@@ -12,6 +12,7 @@ import os
 import struct
 import sys
 from subprocess import check_output
+import time
 
 #: The magic start address in flash memory for a Python script.
 _SCRIPT_ADDR = 0x3e000
@@ -32,7 +33,7 @@ Documentation is here: https://uflash.readthedocs.io/en/latest/
 
 
 #: MAJOR, MINOR, RELEASE, STATUS [alpha, beta, final], VERSION
-_VERSION = (1, 0, 5, )
+_VERSION = (1, 0, 8, )
 
 
 def get_version():
@@ -89,7 +90,10 @@ def unhexlify(blob):
     for line in lines:
         # Discard the address, length etc. and reverse the hexlification
         output.append(binascii.unhexlify(line[9:-2]))
-    # Strip off "MP<size>" from the start
+    # Check the header is correct ("MP<size>")
+    if (output[0][0:2].decode('utf-8') != u'MP'):
+        return ''
+    # Strip off header
     output[0] = output[0][4:]
     # and strip any null bytes from the end
     output[-1] = output[-1].strip(b'\x00')
@@ -138,19 +142,30 @@ def extract_script(embedded_hex):
     Returns a string containing the original embedded script.
     """
     hex_lines = embedded_hex.split('\n')
-    # Blob will hold the extracted hex values representing the embedded script.
-    blob = ''
-    # Find the marker in the hex that comes just before the script
-    if ':020000040003F7' in hex_lines:
-        start_line = max(loc for loc, val in enumerate(hex_lines)
-                         if val == ':020000040003F7')
-        # Recombine the lines after that, but leave out the last 3 lines
-        blob = '\n'.join(hex_lines[start_line:-3])
-    if blob == '':
-        # If the result is the empty string, there was no embedded script
-        return ''
-    # Pass the extracted hex through unhexlify
-    return unhexlify(blob)
+    script_addr_high = hex((_SCRIPT_ADDR >> 16) & 0xffff)[2:].upper().zfill(4)
+    script_addr_low = hex(_SCRIPT_ADDR & 0xffff)[2:].upper().zfill(4)
+    start_script = None
+    within_range = False
+    # Look for the script start address
+    for loc, val in enumerate(hex_lines):
+        if val[0:9] == ':02000004':
+            # Reached an extended address record, check if within script range
+            within_range = val[9:13].upper() == script_addr_high
+        elif within_range and val[0:3] == ':10' and \
+                val[3:7].upper() == script_addr_low:
+            start_script = loc
+            break
+    if start_script:
+        # Find the end of the script
+        end_script = None
+        for loc, val in enumerate(hex_lines[start_script:]):
+            if val[9:41] == 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF':
+                end_script = loc + start_script
+                break
+        # Pass the extracted hex through unhexlify
+        return unhexlify('\n'.join(
+            hex_lines[start_script - 1:end_script if end_script else -3]))
+    return ''
 
 
 def find_microbit():
@@ -227,13 +242,16 @@ def save_hex(hex_file, path):
         output.write(hex_file.encode('ascii'))
 
 
-def flash(path_to_python=None, paths_to_microbits=None, path_to_runtime=None):
+def flash(path_to_python=None, paths_to_microbits=None,
+          path_to_runtime=None, python_script=None):
     """
-    Given a path to a Python file will attempt to create a hex file and then
-    flash it onto the referenced BBC micro:bit.
+    Given a path to or source of a Python file will attempt to create a hex
+    file and then flash it onto the referenced BBC micro:bit.
 
-    If the path_to_python is unspecified it will simply flash the unmodified
-    MicroPython runtime onto the device.
+    If the path_to_python & python_script are unspecified it will simply flash
+    the unmodified MicroPython runtime onto the device.
+
+    python_script should be a bytes object representing a UTF-8 encoded string
 
     If paths_to_microbits is unspecified it will attempt to find the device's
     path on the filesystem automatically.
@@ -255,6 +273,9 @@ def flash(path_to_python=None, paths_to_microbits=None, path_to_runtime=None):
             raise ValueError('Python files must end in ".py".')
         with open(path_to_python, 'rb') as python_script:
             python_hex = hexlify(python_script.read())
+    elif python_script:
+        python_hex = hexlify(python_script)
+
     runtime = _RUNTIME
     # Load the hex for the runtime.
     if path_to_runtime:
@@ -291,6 +312,27 @@ def extract(path_to_hex, output_path=None):
             print(python_script)
 
 
+def watch_file(path, func, *args, **kwargs):
+    """
+    Watch a file for changes by polling its last modification time. Call the
+    provided function with *args and **kwargs upon modification.
+    """
+    if not path:
+        raise ValueError('Please specify a file to watch')
+    print('Watching "{}" for changes'.format(path))
+    last_modification_time = os.path.getmtime(path)
+    try:
+        while True:
+            time.sleep(1)
+            new_modification_time = os.path.getmtime(path)
+            if new_modification_time == last_modification_time:
+                continue
+            func(*args, **kwargs)
+            last_modification_time = new_modification_time
+    except KeyboardInterrupt:
+        pass
+
+
 def main(argv=None):
     """
     Entry point for the command line tool 'uflash'.
@@ -316,10 +358,20 @@ def main(argv=None):
                             action='store_true',
                             help=("Extract python source from a hex file"
                                   " instead of creating the hex file."), )
+        parser.add_argument('-w', '--watch',
+                            action='store_true',
+                            help='Watch the source file for changes.')
+        parser.add_argument('--version', action='version',
+                            version='%(prog)s ' + get_version())
         args = parser.parse_args(argv)
 
         if args.extract:
             extract(args.source, args.target)
+        elif args.watch:
+            watch_file(args.source, flash,
+                       path_to_python=args.source,
+                       paths_to_microbits=args.target,
+                       path_to_runtime=args.runtime)
         else:
             flash(path_to_python=args.source, paths_to_microbits=args.target,
                   path_to_runtime=args.runtime)
