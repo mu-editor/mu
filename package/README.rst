@@ -12,7 +12,7 @@ found the latest versions of some of these packages are not always backwards
 compatible with each other.
 
 * Install the 32bit version of Python 3.4 from the `official website <https://www.python.org/downloads/>`_.
-* Install the PyQt5 binary package from `riverbankcomputing <https://riverbankcomputing.com/software/pyqt/download>`_ (specifically, `this one <https://sourceforge.net/projects/pyqt/files/PyQt5/PyQt-5.4.2/>`_).
+* Install the PyQt5 binary package from `riverbankcomputing <https://riverbankcomputing.com/software/pyqt/download>`_ (specifically, `this one <https://riverbankcomputing.com/software/pyqt/download5>`_).
 * Install PyInstaller using pip or pip3 (includes pypiwin32)::
 
     $ pip install pyinstaller==3.1.1
