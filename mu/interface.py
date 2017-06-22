@@ -562,6 +562,15 @@ class ButtonBar(QToolBar):
                        tool_text="Show help about Mu in a browser.")
         self.addAction(name="quit", tool_text="Quit Mu.")
 
+    def setCompactMode(self, toggle):
+        """
+        Compact button bar for when window is very small.
+        """
+        if toggle is True:
+            self.setIconSize(QSize(25, 25))
+        else:
+            self.setIconSize(QSize(64, 64))
+
     def addAction(self, name, tool_text):
         """
         Creates an action associated with an icon and name and adds it to the
@@ -893,7 +902,7 @@ class Window(QStackedWidget):
         # Give the window a default icon, title and minimum size.
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
-        self.setMinimumSize(926, 600)
+        self.setMinimumSize(800, 400)
 
         self.widget = QWidget()
         self.splitter = QSplitter(Qt.Vertical)
@@ -915,6 +924,15 @@ class Window(QStackedWidget):
         self.set_theme(theme)
         self.show()
         self.autosize_window()
+
+    def resizeEvent(self, resizeEvent):
+        """
+        Respond to window getting too small for the button bar to fit well.
+        """
+        if super().geometry().height() < 600:
+            self.button_bar.setCompactMode(True)
+        else:
+            self.button_bar.setCompactMode(False)
 
 
 class REPLPane(QTextEdit):
