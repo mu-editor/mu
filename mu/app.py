@@ -71,7 +71,9 @@ def run():
     # Setup the window.
     editor_window.closeEvent = editor.quit
     editor_window.setup(editor.theme, MICROPYTHON_APIS)
-    editor.restore_session()
+    # capture the filename passed by the os, if there was one
+    passed_filename = sys.argv[1] if len(sys.argv) > 1 else None
+    editor.restore_session(passed_filename)
     # Connect the various buttons in the window to the editor.
     button_bar = editor_window.button_bar
     button_bar.connect("new", editor.new, "Ctrl+N")
