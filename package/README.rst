@@ -89,6 +89,6 @@ Download the Mu executable
 
 You can download the latest executable build of Mu for your respective operating system from the following links:
 
-* `Windows <http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/windows/>`_
-* `Mac OS X <http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/osx/>`_
-* `Linux <http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/linux/>`_
+* `Windows <http://mu-builds.s3-website.eu-west-2.amazonaws.com/?prefix=windows/>`_
+* `Mac OS X <http://mu-builds.s3-website.eu-west-2.amazonaws.com/?prefix=osx/>`_
+* `Linux <http://mu-builds.s3-website.eu-west-2.amazonaws.com/?prefix=linux/>`_
