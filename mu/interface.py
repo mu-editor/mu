@@ -562,14 +562,20 @@ class ButtonBar(QToolBar):
                        tool_text="Show help about Mu in a browser.")
         self.addAction(name="quit", tool_text="Quit Mu.")
 
-    def setCompactMode(self, toggle):
+    def set_responsive_mode(self, width, height):
         """
         Compact button bar for when window is very small.
         """
-        if toggle is True:
-            self.setIconSize(QSize(25, 25))
+        font_size = DEFAULT_FONT_SIZE
+        if width < 940 and height > 600:
+            self.setIconSize(QSize(48, 48))
+        elif height < 600 and width < 940:
+            font_size = 10
+            self.setIconSize(QSize(32, 32))
         else:
             self.setIconSize(QSize(64, 64))
+        stylesheet = "QWidget{font-size: " + str(font_size) + "px;}"
+        self.setStyleSheet(stylesheet)
 
     def addAction(self, name, tool_text):
         """
@@ -929,10 +935,8 @@ class Window(QStackedWidget):
         """
         Respond to window getting too small for the button bar to fit well.
         """
-        if super().geometry().height() < 600:
-            self.button_bar.setCompactMode(True)
-        else:
-            self.button_bar.setCompactMode(False)
+        size = resizeEvent.size()
+        self.button_bar.set_responsive_mode(size.width(), size.height())
 
 
 class REPLPane(QTextEdit):

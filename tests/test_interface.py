@@ -587,17 +587,26 @@ def test_ButtonBar_init():
         assert mock_add_separator.call_count == 3
 
 
-def test_ButtonBar_setCompactMode():
+def test_ButtonBar_set_responsive_mode():
     """
     Does the button bar shrink in compact mode and grow out of it?
     """
     mock_icon_size = mock.MagicMock(return_value=None)
     with mock.patch('mu.interface.ButtonBar.setIconSize', mock_icon_size):
         bb = mu.interface.ButtonBar(None)
-        bb.setCompactMode(True)
-        mock_icon_size.assert_called_with(QSize(25, 25))
-        bb.setCompactMode(False)
+        bb.setStyleSheet = mock.MagicMock()
+        bb.set_responsive_mode(1024, 800)
         mock_icon_size.assert_called_with(QSize(64, 64))
+        default_font = str(mu.interface.DEFAULT_FONT_SIZE)
+        style = "QWidget{font-size: " + default_font + "px;}"
+        bb.setStyleSheet.assert_called_with(style)
+        bb.set_responsive_mode(939, 800)
+        mock_icon_size.assert_called_with(QSize(48, 48))
+        bb.setStyleSheet.assert_called_with(style)
+        bb.set_responsive_mode(939, 599)
+        mock_icon_size.assert_called_with(QSize(32, 32))
+        style = "QWidget{font-size: " + str(10) + "px;}"
+        bb.setStyleSheet.assert_called_with(style)
 
 
 def test_ButtonBar_add_action():
@@ -722,12 +731,15 @@ def test_Window_attributes():
 
 
 def test_Window_resizeEvent():
+    resizeEvent = mock.MagicMock()
+    size = mock.MagicMock()
+    size.width.return_value = 1024
+    size.height.return_value = 768
+    resizeEvent.size.return_value = size
     w = mu.interface.Window()
     w.button_bar = mock.MagicMock()
-    w.resize(1024, 768)
-    w.button_bar.setCompactMode.assert_called_with(False)
-    w.resize(800, 400)
-    w.button_bar.setCompactMode.assert_called_with(True)
+    w.resizeEvent(resizeEvent)
+    w.button_bar.set_responsive_mode.assert_called_with(1024, 768)
 
 
 def test_Window_zoom_in():
