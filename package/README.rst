@@ -7,11 +7,18 @@ Install dependencies
 Windows
 +++++++
 
-* Install Python 3 from the `official website <https://www.python.org/downloads/>`_.
-* Install the PyQt5 binary package from `riverbankcomputing <https://riverbankcomputing.com/software/pyqt/download>`_.
+Please ensure you use the specified versions in the instructions below. We've
+found the latest versions of some of these packages are not always backwards
+compatible with each other.
+
+* Install the 32bit version of Python 3.4 from the `official website <https://www.python.org/downloads/>`_.
+* Install the PyQt5 binary package from `riverbankcomputing <https://riverbankcomputing.com/software/pyqt/download>`_ (specifically, `this one <https://riverbankcomputing.com/software/pyqt/download5>`_).
 * Install PyInstaller using pip or pip3 (includes pypiwin32)::
 
-    $ pip install pyinstaller
+    $ pip install pyinstaller==3.1.1
+
+If in doubt, look in the details of the ``appveyor.yml`` file in the root of
+this repository.
 
 Mac OS X
 ++++++++
