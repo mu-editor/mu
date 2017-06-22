@@ -458,50 +458,21 @@ def test_editor_restore_session_invalid_file():
     ed._view.add_tab.assert_called_once_with(None, py)
 
 
-def test_editor_opens_file_from_session():
-    """
-    A file in an existing session is opened
-    """
-    file_path_red = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'scripts',
-        'contains_red.py'
-    )
-    settings_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'scripts',
-        'test_editor_opens_file_from_session.json'
-    )
-    with open(settings_path, 'w') as outfile:
-        json.dump({'paths': [file_path_red]}, outfile)
-    view = mu.interface.Window()
-    ed = mu.logic.Editor(view=view)
-    view.setup(ed.theme, mu.resources.api.MICROPYTHON_APIS)
-    get_test_settings_path = mock.MagicMock()
-    get_test_settings_path.return_value = settings_path
-    with mock.patch('mu.logic.get_settings_path', get_test_settings_path):
-        ed.restore_session()
-    tab = ed._view.current_tab
-    assert ed._view.tab_count is 1
-    assert 'red' in tab.text()
-
-
 def test_editor_open_focus_passed_file():
     """
     A file passed in by the OS is opened
     """
-    window = mu.interface.Window()
-    editor = mu.logic.Editor(view=window)
-    window.setup(editor.theme, mu.resources.api.MICROPYTHON_APIS)
+    view = mock.MagicMock()
+    view.tab_count = 0
+    ed = mu.logic.Editor(view)
+    ed._load = mock.MagicMock()
     file_path = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
         'scripts',
         'contains_red.py'
     )
-    editor.restore_session(file_path)
-    tab = editor._view.current_tab
-    assert editor._view.tab_count is 1
-    assert 'red' in tab.text()
+    ed.restore_session(file_path)
+    ed._load.assert_called_once_with(file_path)
 
 
 def test_editor_session_and_open_focus_passed_file():
@@ -510,41 +481,24 @@ def test_editor_session_and_open_focus_passed_file():
     so it receives focus
     It will be the middle position in the session
     """
-    file_path_red = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'scripts',
-        'contains_red.py'
-    )
-    file_path_green = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'scripts',
-        'contains_green.py'
-    )
-    file_path_blue = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'scripts',
-        'contains_blue.py'
-    )
-    settings_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'scripts',
-        'test_editor_session_and_open_focus_passed_file.json'
-    )
-    with open(settings_path, 'w') as outfile:
-        json.dump({'paths': [
-            file_path_blue,
-            file_path_red,
-            file_path_green]}, outfile)
-    view = mu.interface.Window()
-    ed = mu.logic.Editor(view=view)
-    view.setup(ed.theme, mu.resources.api.MICROPYTHON_APIS)
-    get_test_settings_path = mock.MagicMock()
-    get_test_settings_path.return_value = settings_path
-    with mock.patch('mu.logic.get_settings_path', get_test_settings_path):
-        ed.restore_session(file_path_red)
-    tab = ed._view.current_tab
-    assert ed._view.tab_count is 3
-    assert 'red' in tab.text()
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.direct_load = mock.MagicMock()
+    settings = json.dumps({
+        "paths": ["path/foo.py",
+                  "path/bar.py"]}, )
+    mock_open = mock.mock_open(read_data=settings)
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('os.path.exists', return_value=True):
+        ed.restore_session(passed_filename='path/foo.py')
+
+    # direct_load should be called twice (once for each path)
+    assert ed.direct_load.call_count == 2
+    # However, "foo.py" as the passed_filename should be direct_load-ed
+    # at the end so it has focus, despite being the first file listed in
+    # the restored session.
+    assert ed.direct_load.call_args_list[0][0][0] == 'path/bar.py'
+    assert ed.direct_load.call_args_list[1][0][0] == 'path/foo.py'
 
 
 def test_flash_no_tab():
