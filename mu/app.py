@@ -19,15 +19,22 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import gettext
 import os
 import sys
+import platform
 import logging
+from logging.handlers import TimedRotatingFileHandler
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR
 from mu.interface import Window
 from mu.resources import load_pixmap
 from mu.resources.api import MICROPYTHON_APIS
+from mu.modes import PythonMode, AdafruitMode, MicrobitMode
+
+
+gettext.install('mu', 'locale')
 
 
 def setup_logging():
@@ -36,11 +43,33 @@ def setup_logging():
     """
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
-    log_fmt = '%(asctime)s - %(name)s(%(funcName)s) %(levelname)s: %(message)s'
-    logging.basicConfig(filename=LOG_FILE, filemode='w', format=log_fmt,
-                        level=logging.DEBUG)
+    log_fmt = ('%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) '
+               '%(levelname)s: %(message)s')
+    formatter = logging.Formatter(log_fmt)
+    handler = TimedRotatingFileHandler(LOG_FILE, when='midnight',
+                                       backupCount=5, delay=0)
+    handler.setFormatter(formatter)
+    handler.setLevel(logging.DEBUG)
+
+    log = logging.getLogger()
+    log.setLevel(logging.DEBUG)
+    log.addHandler(handler)
     sys.excepthook = excepthook
-    print('Logging to {}'.format(LOG_FILE))
+    print(_('Logging to {}').format(LOG_FILE))
+
+
+def setup_modes(editor, view):
+    """
+    Create a simple dictionary to hold instances of the available modes.
+
+    *PREMATURE OPTIMIZATION ALERT* This may become more complex in future so
+    splitting things out here to contain the mess. ;-)
+    """
+    return {
+        'python': PythonMode(editor, view),
+        'adafruit': AdafruitMode(editor, view),
+        'microbit': MicrobitMode(editor, view),
+    }
 
 
 def excepthook(*exc_args):
@@ -58,7 +87,8 @@ def run():
     then runs the application.
     """
     setup_logging()
-    logging.info('Starting Mu {}'.format(__version__))
+    logging.info('\n\n-----------------\n\nStarting Mu {}'.format(__version__))
+    logging.info(platform.uname())
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
     # Display a friendly "splash" icon.
@@ -68,26 +98,17 @@ def run():
     editor_window = Window()
     # Create the "editor" that'll control the "window".
     editor = Editor(view=editor_window)
+    editor.set_modes(setup_modes(editor, editor_window))
     # Setup the window.
     editor_window.closeEvent = editor.quit
     editor_window.setup(editor.theme, MICROPYTHON_APIS)
     # capture the filename passed by the os, if there was one
     passed_filename = sys.argv[1] if len(sys.argv) > 1 else None
     editor.restore_session(passed_filename)
-    # Connect the various buttons in the window to the editor.
-    button_bar = editor_window.button_bar
-    button_bar.connect("new", editor.new, "Ctrl+N")
-    button_bar.connect("load", editor.load, "Ctrl+O")
-    button_bar.connect("save", editor.save, "Ctrl+S")
-    button_bar.connect("flash", editor.flash)
-    button_bar.connect("files", editor.toggle_fs)
-    button_bar.connect("repl", editor.toggle_repl)
-    button_bar.connect("zoom-in", editor.zoom_in)
-    button_bar.connect("zoom-out", editor.zoom_out)
-    button_bar.connect("theme", editor.toggle_theme)
-    button_bar.connect("check", editor.check_code)
-    button_bar.connect("help", editor.show_help)
-    button_bar.connect("quit", editor.quit)
+    # Connect the various UI elements in the window to the editor.
+    status_bar = editor_window.status_bar
+    status_bar.connect_logs(editor.show_logs)
+    status_bar.connect_mode(editor.select_mode)
     # Finished starting up the application, so hide the splash icon.
     splash.finish(editor_window)
     # Stop the program after the application finishes executing.

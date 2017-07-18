@@ -2,7 +2,6 @@
 """
 Tests for the app script.
 """
-import logging
 import sys
 from unittest import mock
 from mu.app import excepthook, run, setup_logging
@@ -13,16 +12,15 @@ def test_setup_logging():
     """
     Ensure that logging is set up in some way.
     """
-    with mock.patch('mu.app.logging.basicConfig',
-                    return_value=None) as log_conf, \
+    with mock.patch('mu.app.TimedRotatingFileHandler') as log_conf, \
             mock.patch('mu.app.os.path.exists', return_value=False),\
+            mock.patch('mu.app.logging') as logging, \
             mock.patch('mu.app.os.makedirs', return_value=None) as mkdir:
         setup_logging()
         mkdir.assert_called_once_with(LOG_DIR)
-        fmt = '%(asctime)s - %(name)s(%(funcName)s) %(levelname)s: %(message)s'
-        log_conf.assert_called_once_with(filename=LOG_FILE, filemode='w',
-                                         format=fmt,
-                                         level=logging.DEBUG)
+        log_conf.assert_called_once_with(LOG_FILE, when='midnight',
+                                         backupCount=5, delay=0)
+        logging.getLogger.assert_called_once_with()
         assert sys.excepthook == excepthook
 
 
@@ -54,9 +52,9 @@ def test_run():
         assert qsp.call_count == 1
         assert len(qsp.mock_calls) == 3
         assert ed.call_count == 1
-        assert len(ed.mock_calls) == 2
+        assert len(ed.mock_calls) == 3
         assert win.call_count == 1
-        assert len(win.mock_calls) == 14
+        assert len(win.mock_calls) == 4
         assert ex.call_count == 1
 
 

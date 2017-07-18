@@ -3,11 +3,12 @@
 Tests for the user interface elements of Mu.
 """
 from PyQt5.QtWidgets import (QApplication, QAction, QWidget, QFileDialog,
-                             QMessageBox, QLabel, QListWidget)
+                             QMessageBox, QLabel, QListWidget, QDialog)
 from PyQt5.QtCore import QIODevice, Qt, QSize
 from PyQt5.QtGui import QTextCursor, QIcon
 from unittest import mock
 from mu import __version__
+from mu.modes import PythonMode, AdafruitMode, MicrobitMode
 import os
 import platform
 import mu.interface
@@ -564,8 +565,7 @@ def test_ButtonBar_init():
     mock_tool_button_size = mock.MagicMock(return_value=None)
     mock_context_menu_policy = mock.MagicMock(return_value=None)
     mock_object_name = mock.MagicMock(return_value=None)
-    mock_add_action = mock.MagicMock(return_value=None)
-    mock_add_separator = mock.MagicMock(return_value=None)
+    mock_reset = mock.MagicMock(return_value=None)
     with mock.patch('mu.interface.ButtonBar.setMovable', mock_movable), \
             mock.patch('mu.interface.ButtonBar.setIconSize', mock_icon_size), \
             mock.patch('mu.interface.ButtonBar.setToolButtonStyle',
@@ -574,16 +574,55 @@ def test_ButtonBar_init():
                        mock_context_menu_policy), \
             mock.patch('mu.interface.ButtonBar.setObjectName',
                        mock_object_name), \
-            mock.patch('mu.interface.ButtonBar.addAction', mock_add_action), \
-            mock.patch('mu.interface.ButtonBar.addSeparator',
-                       mock_add_separator):
+            mock.patch('mu.interface.ButtonBar.reset', mock_reset):
         mu.interface.ButtonBar(None)
         mock_movable.assert_called_once_with(False)
         mock_icon_size.assert_called_once_with(QSize(64, 64))
         mock_tool_button_size.assert_called_once_with(3)
         mock_context_menu_policy.assert_called_once_with(Qt.PreventContextMenu)
         mock_object_name.assert_called_once_with('StandardToolBar')
-        assert mock_add_action.call_count == 12
+        assert mock_reset.call_count == 1
+
+
+def test_ButtonBar_reset():
+    """
+    Ensure reset clears the slots and actions.
+    """
+    mock_clear = mock.MagicMock()
+    with mock.patch('mu.interface.ButtonBar.clear', mock_clear):
+        b = mu.interface.ButtonBar(None)
+        mock_clear.reset_mock()
+        b.slots = {'foo': 'bar'}
+        b.reset()
+        assert b.slots == {}
+        mock_clear.assert_called_once_with()
+
+
+def test_ButtonBar_change_mode():
+    """
+    Ensure the expected actions are added to the button bar when the mode is
+    changed.
+    """
+    mock_reset = mock.MagicMock()
+    mock_add_action = mock.MagicMock()
+    mock_add_separator = mock.MagicMock()
+    actions = [
+        {
+            'name': 'foo',
+            'description': 'bar',
+        },
+    ]
+    mock_mode = mock.MagicMock()
+    mock_mode.actions.return_value = actions
+    with mock.patch('mu.interface.ButtonBar.reset', mock_reset), \
+            mock.patch('mu.interface.ButtonBar.addAction', mock_add_action), \
+            mock.patch('mu.interface.ButtonBar.addSeparator',
+                       mock_add_separator):
+        b = mu.interface.ButtonBar(None)
+        mock_reset.reset_mock()
+        b.change_mode(mock_mode)
+        mock_reset.assert_called_once_with()
+        assert mock_add_action.call_count == 10
         assert mock_add_separator.call_count == 3
 
 
@@ -731,6 +770,9 @@ def test_Window_attributes():
 
 
 def test_Window_resizeEvent():
+    """
+    Ensure resize events are passed along to the button bar.
+    """
     resizeEvent = mock.MagicMock()
     size = mock.MagicMock()
     size.width.return_value = 1024
@@ -740,6 +782,50 @@ def test_Window_resizeEvent():
     w.button_bar = mock.MagicMock()
     w.resizeEvent(resizeEvent)
     w.button_bar.set_responsive_mode.assert_called_with(1024, 768)
+
+
+def test_Window_select_mode_selected():
+    """
+    Handle the selection of a new mode.
+    """
+    mock_mode_selector = mock.MagicMock()
+    mock_selector = mock.MagicMock()
+    mock_selector.get_mode.return_value = 'foo'
+    mock_mode_selector.return_value = mock_selector
+    mock_modes = mock.MagicMock()
+    current_mode = 'python'
+    with mock.patch('mu.interface.ModeSelector', mock_mode_selector):
+        w = mu.interface.Window()
+        result = w.select_mode(mock_modes, current_mode)
+        assert result == 'foo'
+        mock_selector.setup.assert_called_once_with(mock_modes, current_mode)
+        mock_selector.exec.assert_called_once_with()
+
+
+def test_Window_select_mode_cancelled():
+    """
+    Handle the selection of a new mode.
+    """
+    mock_mode_selector = mock.MagicMock()
+    mock_selector = mock.MagicMock()
+    mock_selector.get_mode.side_effect = ValueError()
+    mock_mode_selector.return_value = mock_selector
+    mock_modes = mock.MagicMock()
+    current_mode = 'python'
+    with mock.patch('mu.interface.ModeSelector', mock_mode_selector):
+        w = mu.interface.Window()
+        result = w.select_mode(mock_modes, current_mode)
+        assert result is None
+
+
+def test_Window_change_mode():
+    """
+    Ensure the change of mode is made by the button_bar.
+    """
+    w = mu.interface.Window()
+    w.button_bar = mock.MagicMock()
+    w.change_mode('python')
+    w.button_bar.change_mode.assert_called_with('python')
 
 
 def test_Window_zoom_in():
@@ -801,6 +887,7 @@ def test_Window_get_load_path():
     path = '/foo/bar.py'
     mock_fd.getOpenFileName = mock.MagicMock(return_value=(path, True))
     w = mu.interface.Window()
+    w.widget = mock.MagicMock()
     with mock.patch('mu.interface.QFileDialog', mock_fd):
         assert w.get_load_path('micropython') == path
     mock_fd.getOpenFileName.assert_called_once_with(w.widget, 'Open file',
@@ -817,6 +904,7 @@ def test_Window_get_save_path():
     path = '/foo/bar.py'
     mock_fd.getSaveFileName = mock.MagicMock(return_value=(path, True))
     w = mu.interface.Window()
+    w.widget = mock.MagicMock()
     with mock.patch('mu.interface.QFileDialog', mock_fd):
         assert w.get_save_path('micropython') == path
     mock_fd.getSaveFileName.assert_called_once_with(w.widget, 'Save file',
@@ -834,6 +922,7 @@ def test_Window_get_microbit_path():
     mock_fd.getExistingDirectory = mock.MagicMock(return_value=path)
     mock_fd.ShowDirsOnly = ShowDirsOnly
     w = mu.interface.Window()
+    w.widget = mock.MagicMock()
     with mock.patch('mu.interface.QFileDialog', mock_fd):
         assert w.get_microbit_path('micropython') == path
     title = 'Locate BBC micro:bit'
@@ -959,7 +1048,7 @@ def test_Window_add_filesystem():
     w.connect_zoom.assert_called_once_with(mock_fs)
 
 
-def test_Window_add_repl():
+def test_Window_add_micropython_repl():
     """
     Ensure the expected settings are updated.
     """
@@ -969,18 +1058,18 @@ def test_Window_add_repl():
     w.splitter.addWidget = mock.MagicMock(return_value=None)
     w.splitter.setSizes = mock.MagicMock(return_value=None)
     w.connect_zoom = mock.MagicMock(return_value=None)
+    w.addDockWidget = mock.MagicMock()
     mock_repl = mock.MagicMock()
     mock_repl.setFocus = mock.MagicMock(return_value=None)
     mock_repl_class = mock.MagicMock(return_value=mock_repl)
     mock_repl_arg = mock.MagicMock()
     mock_repl_arg.port = mock.MagicMock('COM0')
-    with mock.patch('mu.interface.REPLPane', mock_repl_class):
-        w.add_repl(mock_repl_arg)
+    with mock.patch('mu.interface.MicroPythonREPLPane', mock_repl_class), \
+            mock.patch('mu.interface.QDockWidget'):
+        w.add_micropython_repl(mock_repl_arg, 'Test REPL')
     mock_repl_class.assert_called_once_with(port=mock_repl_arg.port,
                                             theme=w.theme)
-    assert w.repl == mock_repl
-    w.splitter.addWidget.assert_called_once_with(mock_repl)
-    w.splitter.setSizes.assert_called_once_with([66, 33])
+    assert w.repl_pane == mock_repl
     mock_repl.setFocus.assert_called_once_with()
     w.connect_zoom.assert_called_once_with(mock_repl)
 
@@ -1035,7 +1124,8 @@ def test_Window_set_theme():
     }
     w.button_bar.slots['theme'].setIcon = mock.MagicMock(return_value=None)
     w.repl = mock.MagicMock()
-    w.repl.set_theme = mock.MagicMock()
+    w.repl_pane = mock.MagicMock()
+    w.repl_pane.set_theme = mock.MagicMock()
     w.set_theme('night')
     assert w.setStyleSheet.call_count == 2
     assert w.theme == 'night'
@@ -1044,7 +1134,22 @@ def test_Window_set_theme():
     w.button_bar.slots['theme'].setIcon.asser_called_once()
     assert isinstance(w.button_bar.slots['theme'].setIcon.call_args[0][0],
                       QIcon)
-    w.repl.set_theme.assert_called_once_with('night')
+    w.repl_pane.set_theme.assert_called_once_with('night')
+
+
+def test_Window_show_logs():
+    """
+    Ensure the modal widget for showing the log file is correctly configured.
+    """
+    mock_log_display = mock.MagicMock()
+    mock_log_box = mock.MagicMock()
+    mock_log_display.return_value = mock_log_box
+    with mock.patch('mu.interface.LogDisplay', mock_log_display):
+        w = mu.interface.Window()
+        w.show_logs('foo')
+        mock_log_display.assert_called_once_with()
+        mock_log_box.setup.assert_called_once_with('foo')
+        mock_log_box.exec.assert_called_once_with()
 
 
 def test_Window_show_message():
@@ -1238,16 +1343,12 @@ def test_Window_setup():
     w.setCurrentWidget = mock.MagicMock(return_value=None)
     w.set_theme = mock.MagicMock(return_value=None)
     w.show = mock.MagicMock(return_value=None)
+    w.setCentralWidget = mock.MagicMock(return_value=None)
+    w.addToolBar = mock.MagicMock(return_value=None)
     w.autosize_window = mock.MagicMock(return_value=None)
     mock_widget = mock.MagicMock()
     mock_widget.setLayout = mock.MagicMock(return_value=None)
     mock_widget_class = mock.MagicMock(return_value=mock_widget)
-    mock_splitter = mock.MagicMock()
-    mock_splitter.addWidget = mock.MagicMock(return_value=None)
-    mock_splitter_class = mock.MagicMock(return_value=mock_splitter)
-    mock_layout = mock.MagicMock()
-    mock_layout.addWidget = mock.MagicMock(return_value=None)
-    mock_layout_class = mock.MagicMock(return_value=mock_layout)
     mock_button_bar = mock.MagicMock()
     mock_button_bar_class = mock.MagicMock(return_value=mock_button_bar)
     mock_qtw = mock.MagicMock()
@@ -1259,8 +1360,6 @@ def test_Window_setup():
     theme = 'night'
     api = ['some api docs', ]
     with mock.patch('mu.interface.QWidget', mock_widget_class), \
-            mock.patch('mu.interface.QSplitter', mock_splitter_class), \
-            mock.patch('mu.interface.QVBoxLayout', mock_layout_class), \
             mock.patch('mu.interface.ButtonBar', mock_button_bar_class), \
             mock.patch('mu.interface.FileTabs', mock_qtw_class):
         w.setup(theme, api)
@@ -1271,22 +1370,17 @@ def test_Window_setup():
     w.update_title.assert_called_once_with()
     w.setMinimumSize.assert_called_once_with(800, 400)
     assert w.widget == mock_widget
-    assert w.splitter == mock_splitter
-    w.widget.setLayout.assert_called_once_with(mock_layout)
     assert w.button_bar == mock_button_bar
     assert w.tabs == mock_qtw
-    assert mock_layout.addWidget.call_count == 2
-    mock_splitter.addWidget.assert_called_once_with(mock_qtw)
-    w.addWidget.assert_called_once_with(mock_widget)
-    w.setCurrentWidget.assert_called_once_with(mock_widget)
-    w.set_theme.assert_called_once_with(theme)
     w.show.assert_called_once_with()
+    w.setCentralWidget.call_count == 1
+    w.addToolBar.call_count == 1
     w.autosize_window.assert_called_once_with()
 
 
-def test_REPLPane_init_default_args():
+def test_MicroPythonREPLPane_init_default_args():
     """
-    Ensure the REPLPane object is instantiated as expected.
+    Ensure the MicroPython REPLPane object is instantiated as expected.
     """
     mock_serial = mock.MagicMock()
     mock_serial.setPortName = mock.MagicMock(return_value=None)
@@ -1297,7 +1391,7 @@ def test_REPLPane_init_default_args():
     mock_serial.write = mock.MagicMock(return_value=None)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
     assert mock_serial_class.call_count == 1
     mock_serial.setPortName.assert_called_once_with('COM0')
     mock_serial.setBaudRate.assert_called_once_with(115200)
@@ -1306,7 +1400,7 @@ def test_REPLPane_init_default_args():
     mock_serial.write.assert_called_once_with(b'\x03')
 
 
-def test_REPLPane_init_cannot_open():
+def test_MicroPythonREPLPane_init_cannot_open():
     """
     If serial.open fails raise an IOError.
     """
@@ -1317,10 +1411,10 @@ def test_REPLPane_init_cannot_open():
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
         with pytest.raises(IOError):
-            mu.interface.REPLPane('COM0')
+            mu.interface.MicroPythonREPLPane('COM0')
 
 
-def test_REPLPane_paste():
+def test_MicroPythonREPLPane_paste():
     """
     Pasting into the REPL should send bytes via the serial connection.
     """
@@ -1338,13 +1432,13 @@ def test_REPLPane_paste():
     mock_application.clipboard.return_value = mock_clipboard
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
         with mock.patch('mu.interface.QApplication', mock_application):
-            rp = mu.interface.REPLPane('COM0')
+            rp = mu.interface.MicroPythonREPLPane('COM0')
             mock_serial.write.reset_mock()
             rp.paste()
     mock_serial.write.assert_called_once_with(bytes('paste me!', 'utf8'))
 
 
-def test_REPLPane_paste_only_works_if_there_is_something_to_paste():
+def test_MicroPythonREPLPane_paste_only_works_if_there_is_something_to_paste():
     """
     Pasting into the REPL should send bytes via the serial connection.
     """
@@ -1362,13 +1456,13 @@ def test_REPLPane_paste_only_works_if_there_is_something_to_paste():
     mock_application.clipboard.return_value = mock_clipboard
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
         with mock.patch('mu.interface.QApplication', mock_application):
-            rp = mu.interface.REPLPane('COM0')
+            rp = mu.interface.MicroPythonREPLPane('COM0')
             mock_serial.write.reset_mock()
             rp.paste()
     assert mock_serial.write.call_count == 0
 
 
-def test_REPLPane_context_menu():
+def test_MicroPythonREPLPane_context_menu():
     """
     Ensure the context menu for the REPL is configured correctly for non-OSX
     platforms.
@@ -1389,7 +1483,7 @@ def test_REPLPane_context_menu():
             mock.patch('mu.interface.platform', mock_platform), \
             mock.patch('mu.interface.QMenu', mock_qmenu_class), \
             mock.patch('mu.interface.QCursor'):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         rp.context_menu()
     assert mock_qmenu.addAction.call_count == 2
     copy_action = mock_qmenu.addAction.call_args_list[0][0]
@@ -1403,7 +1497,7 @@ def test_REPLPane_context_menu():
     assert mock_qmenu.exec_.call_count == 1
 
 
-def test_REPLPane_context_menu_darwin():
+def test_MicroPythonREPLPane_context_menu_darwin():
     """
     Ensure the context menu for the REPL is configured correctly for non-OSX
     platforms.
@@ -1424,7 +1518,7 @@ def test_REPLPane_context_menu_darwin():
             mock.patch('mu.interface.platform', mock_platform), \
             mock.patch('mu.interface.QMenu', mock_qmenu_class), \
             mock.patch('mu.interface.QCursor'):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         rp.context_menu()
     assert mock_qmenu.addAction.call_count == 2
     copy_action = mock_qmenu.addAction.call_args_list[0][0]
@@ -1438,7 +1532,7 @@ def test_REPLPane_context_menu_darwin():
     assert mock_qmenu.exec_.call_count == 1
 
 
-def test_REPLPane_cursor_to_end():
+def test_MicroPythonREPLPane_cursor_to_end():
     """
     Ensure the cursor is set to the very end of the available text using the
     appropriate Qt related magic.
@@ -1450,7 +1544,7 @@ def test_REPLPane_cursor_to_end():
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     mock_text_cursor = mock.MagicMock()
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         rp.textCursor = mock.MagicMock(return_value=mock_text_cursor)
         rp.setTextCursor = mock.MagicMock()
         rp.cursor_to_end()
@@ -1458,7 +1552,7 @@ def test_REPLPane_cursor_to_end():
         rp.setTextCursor.assert_called_once_with(mock_text_cursor)
 
 
-def test_REPLPane_set_theme():
+def test_MicroPythonREPLPane_set_theme():
     """
     Ensure the set_theme toggles as expected.
     """
@@ -1468,7 +1562,7 @@ def test_REPLPane_set_theme():
     mock_serial.open = mock.MagicMock(return_value=True)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         rp.setStyleSheet = mock.MagicMock(return_value=None)
         rp.set_theme('day')
         rp.setStyleSheet.assert_called_once_with(mu.interface.DAY_STYLE)
@@ -1477,7 +1571,7 @@ def test_REPLPane_set_theme():
         rp.setStyleSheet.assert_called_once_with(mu.interface.NIGHT_STYLE)
 
 
-def test_REPLPane_on_serial_read():
+def test_MicroPythonREPLPane_on_serial_read():
     """
     Ensure the method calls process_bytes.
     """
@@ -1488,13 +1582,13 @@ def test_REPLPane_on_serial_read():
     mock_serial.readAll = mock.MagicMock(return_value='abc'.encode('utf-8'))
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         rp.process_bytes = mock.MagicMock()
         rp.on_serial_read()
         rp.process_bytes.assert_called_once_with(bytes('abc'.encode('utf-8')))
 
 
-def test_REPLPane_keyPressEvent():
+def test_MicroPythonREPLPane_keyPressEvent():
     """
     Ensure key presses in the REPL are handled correctly.
     """
@@ -1505,7 +1599,7 @@ def test_REPLPane_keyPressEvent():
     mock_serial.write = mock.MagicMock(return_value=None)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         mock_serial.write.reset_mock()  # write is called during __init__()
         data = mock.MagicMock
         data.key = mock.MagicMock(return_value=Qt.Key_A)
@@ -1515,7 +1609,7 @@ def test_REPLPane_keyPressEvent():
         mock_serial.write.assert_called_once_with(bytes('a', 'utf-8'))
 
 
-def test_REPLPane_keyPressEvent_backspace():
+def test_MicroPythonREPLPane_keyPressEvent_backspace():
     """
     Ensure backspaces in the REPL are handled correctly.
     """
@@ -1526,7 +1620,7 @@ def test_REPLPane_keyPressEvent_backspace():
     mock_serial.write = mock.MagicMock(return_value=None)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         mock_serial.write.reset_mock()  # write is called during __init__()
         data = mock.MagicMock
         data.key = mock.MagicMock(return_value=Qt.Key_Backspace)
@@ -1536,7 +1630,7 @@ def test_REPLPane_keyPressEvent_backspace():
         mock_serial.write.assert_called_once_with(b'\b')
 
 
-def test_REPLPane_keyPressEvent_up():
+def test_MicroPythonREPLPane_keyPressEvent_up():
     """
     Ensure up arrows in the REPL are handled correctly.
     """
@@ -1547,7 +1641,7 @@ def test_REPLPane_keyPressEvent_up():
     mock_serial.write = mock.MagicMock(return_value=None)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         mock_serial.write.reset_mock()  # write is called during __init__()
         data = mock.MagicMock
         data.key = mock.MagicMock(return_value=Qt.Key_Up)
@@ -1557,7 +1651,7 @@ def test_REPLPane_keyPressEvent_up():
         mock_serial.write.assert_called_once_with(b'\x1B[A')
 
 
-def test_REPLPane_keyPressEvent_down():
+def test_MicroPythonREPLPane_keyPressEvent_down():
     """
     Ensure down arrows in the REPL are handled correctly.
     """
@@ -1568,7 +1662,7 @@ def test_REPLPane_keyPressEvent_down():
     mock_serial.write = mock.MagicMock(return_value=None)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         mock_serial.write.reset_mock()  # write is called during __init__()
         data = mock.MagicMock
         data.key = mock.MagicMock(return_value=Qt.Key_Down)
@@ -1578,7 +1672,7 @@ def test_REPLPane_keyPressEvent_down():
         mock_serial.write.assert_called_once_with(b'\x1B[B')
 
 
-def test_REPLPane_keyPressEvent_right():
+def test_MicroPythonREPLPane_keyPressEvent_right():
     """
     Ensure right arrows in the REPL are handled correctly.
     """
@@ -1589,7 +1683,7 @@ def test_REPLPane_keyPressEvent_right():
     mock_serial.write = mock.MagicMock(return_value=None)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         mock_serial.write.reset_mock()  # write is called during __init__()
         data = mock.MagicMock
         data.key = mock.MagicMock(return_value=Qt.Key_Right)
@@ -1599,7 +1693,7 @@ def test_REPLPane_keyPressEvent_right():
         mock_serial.write.assert_called_once_with(b'\x1B[C')
 
 
-def test_REPLPane_keyPressEvent_left():
+def test_MicroPythonREPLPane_keyPressEvent_left():
     """
     Ensure left arrows in the REPL are handled correctly.
     """
@@ -1610,7 +1704,7 @@ def test_REPLPane_keyPressEvent_left():
     mock_serial.write = mock.MagicMock(return_value=None)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         mock_serial.write.reset_mock()  # write is called during __init__()
         data = mock.MagicMock
         data.key = mock.MagicMock(return_value=Qt.Key_Left)
@@ -1620,7 +1714,7 @@ def test_REPLPane_keyPressEvent_left():
         mock_serial.write.assert_called_once_with(b'\x1B[D')
 
 
-def test_REPLPane_keyPressEvent_home():
+def test_MicroPythonREPLPane_keyPressEvent_home():
     """
     Ensure home key in the REPL is handled correctly.
     """
@@ -1631,7 +1725,7 @@ def test_REPLPane_keyPressEvent_home():
     mock_serial.write = mock.MagicMock(return_value=None)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         mock_serial.write.reset_mock()  # write is called during __init__()
         data = mock.MagicMock
         data.key = mock.MagicMock(return_value=Qt.Key_Home)
@@ -1641,7 +1735,7 @@ def test_REPLPane_keyPressEvent_home():
         mock_serial.write.assert_called_once_with(b'\x1B[H')
 
 
-def test_REPLPane_keyPressEvent_end():
+def test_MicroPythonREPLPane_keyPressEvent_end():
     """
     Ensure end key in the REPL is handled correctly.
     """
@@ -1652,7 +1746,7 @@ def test_REPLPane_keyPressEvent_end():
     mock_serial.write = mock.MagicMock(return_value=None)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         mock_serial.write.reset_mock()  # write is called during __init__()
         data = mock.MagicMock
         data.key = mock.MagicMock(return_value=Qt.Key_End)
@@ -1662,7 +1756,7 @@ def test_REPLPane_keyPressEvent_end():
         mock_serial.write.assert_called_once_with(b'\x1B[F')
 
 
-def test_REPLPane_keyPressEvent_CTRL_C_Darwin():
+def test_MicroPythonREPLPane_keyPressEvent_CTRL_C_Darwin():
     """
     Ensure end key in the REPL is handled correctly.
     """
@@ -1673,7 +1767,7 @@ def test_REPLPane_keyPressEvent_CTRL_C_Darwin():
     mock_serial.write = mock.MagicMock(return_value=None)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         rp.copy = mock.MagicMock()
         mock_serial.write.reset_mock()  # write is called during __init__()
         data = mock.MagicMock
@@ -1684,7 +1778,7 @@ def test_REPLPane_keyPressEvent_CTRL_C_Darwin():
         rp.copy.assert_called_once_with()
 
 
-def test_REPLPane_keyPressEvent_CTRL_V_Darwin():
+def test_MicroPythonREPLPane_keyPressEvent_CTRL_V_Darwin():
     """
     Ensure end key in the REPL is handled correctly.
     """
@@ -1695,7 +1789,7 @@ def test_REPLPane_keyPressEvent_CTRL_V_Darwin():
     mock_serial.write = mock.MagicMock(return_value=None)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         rp.paste = mock.MagicMock()
         mock_serial.write.reset_mock()  # write is called during __init__()
         data = mock.MagicMock
@@ -1706,7 +1800,7 @@ def test_REPLPane_keyPressEvent_CTRL_V_Darwin():
         rp.paste.assert_called_once_with()
 
 
-def test_REPLPane_keyPressEvent_meta():
+def test_MicroPythonREPLPane_keyPressEvent_meta():
     """
     Ensure backspaces in the REPL are handled correctly.
     """
@@ -1717,7 +1811,7 @@ def test_REPLPane_keyPressEvent_meta():
     mock_serial.write = mock.MagicMock(return_value=None)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         mock_serial.write.reset_mock()  # write is called during __init__()
         data = mock.MagicMock
         data.key = mock.MagicMock(return_value=Qt.Key_M)
@@ -1731,7 +1825,7 @@ def test_REPLPane_keyPressEvent_meta():
         mock_serial.write.assert_called_once_with(bytes([expected]))
 
 
-def test_REPLPane_process_bytes():
+def test_MicroPythonREPLPane_process_bytes():
     """
     Ensure bytes coming from the device to the application are processed as
     expected. Backspace is enacted, carriage-return is ignored, newline moves
@@ -1748,7 +1842,7 @@ def test_REPLPane_process_bytes():
                                                        True])
     mock_tc.deleteChar = mock.MagicMock(return_value=None)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         rp.textCursor = mock.MagicMock(return_value=mock_tc)
         rp.setTextCursor = mock.MagicMock(return_value=None)
         rp.insertPlainText = mock.MagicMock(return_value=None)
@@ -1771,7 +1865,7 @@ def test_REPLPane_process_bytes():
         rp.ensureCursorVisible.assert_called_once_with()
 
 
-def test_REPLPane_process_bytes_VT100():
+def test_MicroPythonREPLPane_process_bytes_VT100():
     """
     Ensure bytes coming from the device to the application are processed as
     expected. In this case, make sure VT100 related codes are handled properly.
@@ -1786,7 +1880,7 @@ def test_REPLPane_process_bytes_VT100():
     mock_tc.removeSelectedText = mock.MagicMock()
     mock_tc.deleteChar = mock.MagicMock(return_value=None)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         rp.textCursor = mock.MagicMock(return_value=mock_tc)
         rp.setTextCursor = mock.MagicMock(return_value=None)
         rp.insertPlainText = mock.MagicMock(return_value=None)
@@ -1821,7 +1915,7 @@ def test_REPLPane_process_bytes_VT100():
         rp.ensureCursorVisible.assert_called_once_with()
 
 
-def test_REPLPane_clear():
+def test_MicroPythonREPLPane_clear():
     """
     Ensure setText is called with an empty string.
     """
@@ -1831,7 +1925,7 @@ def test_REPLPane_clear():
     mock_serial.open = mock.MagicMock(return_value=True)
     mock_serial_class = mock.MagicMock(return_value=mock_serial)
     with mock.patch('mu.interface.QSerialPort', mock_serial_class):
-        rp = mu.interface.REPLPane('COM0')
+        rp = mu.interface.MicroPythonREPLPane('COM0')
         rp.setText = mock.MagicMock(return_value=None)
         rp.clear()
         rp.setText.assert_called_once_with('')
@@ -2232,3 +2326,141 @@ def test_FileSystemPane_zoom_out():
     fsp.zoomOut()
     expected = mu.interface.DEFAULT_FONT_SIZE - 2
     fsp.set_font_size.assert_called_once_with(expected)
+
+
+def test_StatusBar_init():
+    """
+    Ensure the status bar is set up as expected.
+    """
+    sb = mu.interface.StatusBar()
+    # Default mode is set.
+    assert sb.mode == 'python'
+
+    sb = mu.interface.StatusBar(mode='foo')
+    # Pass in the default mode.
+    assert sb.mode == 'foo'
+
+    # Expect two widgets for logs and mode.
+    assert sb.mode_label
+    assert sb.logs_label
+
+
+def test_StatusBar_connect_logs():
+    """
+    Ensure the event handler for viewing logs is correctly set.
+    """
+    sb = mu.interface.StatusBar()
+
+    def handler():
+        pass
+
+    sb.connect_logs(handler)
+    assert sb.logs_label.mousePressEvent == handler
+
+
+def test_StatusBar_connect_mode():
+    """
+    Ensure the event handler for selecting the new mode is correctly set.
+    """
+    sb = mu.interface.StatusBar()
+
+    def handler():
+        pass
+
+    sb.connect_mode(handler)
+    assert sb.mode_label.mousePressEvent == handler
+
+
+def test_StatusBar_set_message():
+    """
+    Ensure the default pause for displaying a message in the status bar is
+    used.
+    """
+    sb = mu.interface.StatusBar()
+    sb.showMessage = mock.MagicMock()
+    sb.set_message('Hello')
+    sb.showMessage.assert_called_once_with('Hello', 5000)
+    sb.showMessage.reset_mock()
+    sb.set_message('Hello', 1000)
+    sb.showMessage.assert_called_once_with('Hello', 1000)
+
+
+def test_StatusBar_set_mode():
+    """
+    Ensure the mode displayed in the status bar is correctly updated.
+    """
+    mode = 'python'
+    sb = mu.interface.StatusBar()
+    sb.mode_label.setText = mock.MagicMock()
+    sb.set_mode(mode)
+    sb.mode_label.setText.assert_called_once_with(mode.capitalize())
+
+
+def test_ModeItem_init():
+    """
+    Ensure that ModeItem objects are setup correctly.
+    """
+    name = 'item_name'
+    description = 'item_description'
+    icon = 'icon_name'
+    mock_text = mock.MagicMock()
+    mock_icon = mock.MagicMock()
+    mock_load = mock.MagicMock(return_value=icon)
+    with mock.patch('mu.interface.QListWidgetItem.setText', mock_text), \
+            mock.patch('mu.interface.QListWidgetItem.setIcon', mock_icon), \
+            mock.patch('mu.interface.load_icon', mock_load):
+        mi = mu.interface.ModeItem(name, description, icon)
+        assert mi.name == name
+        assert mi.description == description
+        assert mi.icon == icon
+    mock_text.assert_called_once_with('{}\n{}'.format(name, description))
+    mock_load.assert_called_once_with(icon)
+    mock_icon.assert_called_once_with(icon)
+
+
+def test_ModeSelector_setup():
+    """
+    Ensure the ModeSelector dialog is setup properly given a list of modes.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    modes = {
+        'python': PythonMode(editor, view),
+        'adafruit': AdafruitMode(editor, view),
+        'microbit': MicrobitMode(editor, view),
+    }
+    current_mode = 'python'
+    mock_item = mock.MagicMock()
+    with mock.patch('mu.interface.ModeItem', mock_item):
+        ms = mu.interface.ModeSelector()
+        ms.setup(modes, current_mode)
+    assert mock_item.call_count == 3
+
+
+def test_ModeSelector_get_mode():
+    """
+    Ensure that the ModeSelector will correctly return a selected mode (or
+    raise the expected exception if cancelled).
+    """
+    ms = mu.interface.ModeSelector()
+    ms.result = mock.MagicMock(return_value=QDialog.Accepted)
+    item = mock.MagicMock()
+    item.icon = 'name'
+    ms.mode_list = mock.MagicMock()
+    ms.mode_list.currentItem.return_value = item
+    result = ms.get_mode()
+    assert result == 'name'
+    ms.result.return_value = None
+    with pytest.raises(RuntimeError):
+        ms.get_mode()
+
+
+def test_LogDisplay_setup():
+    """
+    Ensure the log display dialog is setup properly given the content of a log
+    file.
+    """
+    log = 'this is the contents of a log file'
+    ld = mu.interface.LogDisplay()
+    ld.setup(log)
+    assert ld.log_text_area.toPlainText() == log

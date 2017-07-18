@@ -14,6 +14,7 @@ from mu import __version__
 
 SESSION = json.dumps({
     'theme': 'night',
+    'mode': 'python',
     'paths': [
         'path/foo.py',
         'path/bar.py',
@@ -28,45 +29,6 @@ def test_CONSTANTS():
     assert mu.logic.HOME_DIRECTORY
     assert mu.logic.DATA_DIR
     assert mu.logic.WORKSPACE_NAME
-    assert isinstance(mu.logic.BOARD_IDS, set)
-
-
-def test_find_microbit_no_ports():
-    """
-    There are no connected devices so return None.
-    """
-    with mock.patch('mu.logic.QSerialPortInfo.availablePorts',
-                    return_value=[]):
-        assert mu.logic.find_microbit() is None
-
-
-def test_find_microbit_no_device():
-    """
-    None of the connected devices is a micro:bit so return None.
-    """
-    mock_port = mock.MagicMock()
-    mock_port.productIdentifier = mock.MagicMock(return_value=666)
-    mock_port.vendorIdentifier = mock.MagicMock(return_value=999)
-    with mock.patch('mu.logic.QSerialPortInfo.availablePorts',
-                    return_value=[mock_port, ]):
-        assert mu.logic.find_microbit() is None
-
-
-def test_find_microbit_with_device():
-    """
-    If a device is found, return the port name.
-    """
-    mock_port = mock.MagicMock()
-    for vid, pid in mu.logic.BOARD_IDS:
-        mock_port.vid = vid
-        mock_port.productIdentifier = mock.MagicMock()
-        mock_port.productIdentifier.return_value = pid
-        mock_port.vendorIdentifier = mock.MagicMock()
-        mock_port.vendorIdentifier.return_value = vid
-        mock_port.portName = mock.MagicMock(return_value='COM0')
-        with mock.patch('mu.logic.QSerialPortInfo.availablePorts',
-                        return_value=[mock_port, ]):
-            assert mu.logic.find_microbit() == 'COM0'
 
 
 def test_get_settings_app_path():
@@ -381,11 +343,21 @@ def test_editor_init():
             mock.patch('os.makedirs', return_value=None) as mkd:
         e = mu.logic.Editor(view)
         assert e._view == view
-        assert e.repl is None
         assert e.theme == 'day'
         assert mkd.call_count == 2
         assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
         assert mkd.call_args_list[1][0][0] == mu.logic.get_workspace_dir()
+
+
+def test_editor_set_modes():
+    """
+    An editor should have a modes attribute.
+    """
+    view = mock.MagicMock()
+    e = mu.logic.Editor(view)
+    mock_modes = mock.MagicMock()
+    e.set_modes(mock_modes)
+    assert e.modes == mock_modes
 
 
 def test_editor_restore_session():
@@ -396,6 +368,7 @@ def test_editor_restore_session():
     view.set_theme = mock.MagicMock()
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
+    ed.modes = mock.MagicMock()
     mock_open = mock.mock_open(read_data=SESSION)
     with mock.patch('builtins.open', mock_open), \
             mock.patch('os.path.exists', return_value=True):
@@ -415,6 +388,7 @@ def test_editor_restore_session_missing_files():
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
+    ed.modes = mock.MagicMock()
     get_test_settings_path = mock.MagicMock()
     get_test_settings_path.return_value = fake_settings
     with mock.patch('os.path.exists', return_value=True), \
@@ -432,6 +406,7 @@ def test_editor_restore_session_no_session_file():
     view.tab_count = 0
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
+    ed.modes = mock.MagicMock()
     with mock.patch('os.path.exists', return_value=False):
         ed.restore_session()
     py = 'from microbit import *{}{}# Write your code here :-)'.format(
@@ -448,6 +423,7 @@ def test_editor_restore_session_invalid_file():
     view.tab_count = 0
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
+    ed.modes = mock.MagicMock()
     mock_open = mock.mock_open(
         read_data='{"paths": ["path/foo.py", "path/bar.py"]}, invalid: 0}')
     with mock.patch('builtins.open', mock_open), \
@@ -465,6 +441,7 @@ def test_editor_open_focus_passed_file():
     view = mock.MagicMock()
     view.tab_count = 0
     ed = mu.logic.Editor(view)
+    ed.modes = mock.MagicMock()
     ed._load = mock.MagicMock()
     file_path = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
@@ -483,6 +460,7 @@ def test_editor_session_and_open_focus_passed_file():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.modes = mock.MagicMock()
     ed.direct_load = mock.MagicMock()
     settings = json.dumps({
         "paths": ["path/foo.py",
@@ -775,127 +753,6 @@ def test_add_repl_with_fs():
     ed.fs = True
     with pytest.raises(RuntimeError):
         ed.add_repl()
-
-
-def test_add_repl_already_exists():
-    """
-    Ensure the editor raises a RuntimeError if the repl already exists.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.repl = True
-    with pytest.raises(RuntimeError):
-        ed.add_repl()
-
-
-def test_add_repl_no_port():
-    """
-    If it's not possible to find a connected micro:bit then ensure a helpful
-    message is enacted.
-    """
-    view = mock.MagicMock()
-    view.show_message = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.find_microbit', return_value=False):
-        ed.add_repl()
-    assert view.show_message.call_count == 1
-    message = 'Could not find an attached BBC micro:bit.'
-    assert view.show_message.call_args[0][0] == message
-
-
-def test_add_repl_ioerror():
-    """
-    Sometimes when attempting to connect to the device there is an IOError
-    because it's still booting up or connecting to the host computer. In this
-    case, ensure a useful message is displayed.
-    """
-    view = mock.MagicMock()
-    view.show_message = mock.MagicMock()
-    ex = IOError('BOOM')
-    view.add_repl = mock.MagicMock(side_effect=ex)
-    ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.find_microbit', return_value='COM0'):
-        ed.add_repl()
-    assert view.show_message.call_count == 1
-    assert view.show_message.call_args[0][0] == str(ex)
-
-
-def test_add_repl_exception():
-    """
-    Ensure that any non-IOError based exceptions are logged.
-    """
-    view = mock.MagicMock()
-    ex = Exception('BOOM')
-    view.add_repl = mock.MagicMock(side_effect=ex)
-    ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.find_microbit', return_value='COM0'), \
-            mock.patch('mu.logic.logger', return_value=None) as logger:
-        ed.add_repl()
-        logger.error.assert_called_once_with(ex)
-
-
-def test_add_repl():
-    """
-    Nothing goes wrong so check the _view.add_repl gets the expected argument.
-    """
-    view = mock.MagicMock()
-    view.show_message = mock.MagicMock()
-    view.add_repl = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.find_microbit', return_value='COM0'), \
-            mock.patch('os.name', 'nt'):
-        ed.add_repl()
-    assert view.show_message.call_count == 0
-    assert view.add_repl.call_args[0][0].port == 'COM0'
-
-
-def test_remove_repl_is_none():
-    """
-    If there's no repl to remove raise a RuntimeError.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.repl = None
-    with pytest.raises(RuntimeError):
-        ed.remove_repl()
-
-
-def test_remove_repl():
-    """
-    If there is a repl, make sure it's removed as expected and the state is
-    updated.
-    """
-    view = mock.MagicMock()
-    view.remove_repl = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.repl = True
-    ed.remove_repl()
-    assert view.remove_repl.call_count == 1
-    assert ed.repl is None
-
-
-def test_toggle_repl_on():
-    """
-    There is no repl, so toggle on.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.add_repl = mock.MagicMock()
-    ed.repl = None
-    ed.toggle_repl()
-    assert ed.add_repl.call_count == 1
-
-
-def test_toggle_repl_off():
-    """
-    There is a repl, so toggle off.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.remove_repl = mock.MagicMock()
-    ed.repl = True
-    ed.toggle_repl()
-    assert ed.remove_repl.call_count == 1
 
 
 def test_toggle_repl_with_fs():
@@ -1402,3 +1259,56 @@ def test_custom_hex_read():
             mock.patch('mu.logic.get_workspace_dir',
                        return_value=os.path.dirname(__file__)):
         assert mu.logic.get_runtime_hex_path() is None
+
+
+def test_show_logs():
+    """
+    Ensure the expected log file is displayed to the end user.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    mock_open = mock.mock_open()
+    with mock.patch('builtins.open', mock_open):
+        ed.show_logs(None)
+        mock_open.assert_called_once_with(mu.logic.LOG_FILE, 'r')
+        assert view.show_logs.call_count == 1
+
+
+def test_select_mode():
+    """
+    It's possible to select and update to a new mode.
+    """
+    view = mock.MagicMock()
+    view.select_mode.return_value = 'foo'
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    ed.select_mode(None)
+    assert view.select_mode.call_count == 1
+    assert ed.mode == 'foo'
+    ed.change_mode.assert_called_once_with('foo')
+
+
+def test_change_mode():
+    """
+    It should be possible to change modes in the expected fashion (buttons get
+    correctly connected to event handlers).
+    """
+    view = mock.MagicMock()
+    mock_button_bar = mock.MagicMock()
+    view.button_bar = mock_button_bar
+    view.change_mode = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    mode = mock.MagicMock()
+    mode.actions.return_value = [
+        {
+            'name': 'name',
+            'handler': 'handler',
+        },
+    ]
+    ed.modes = {
+        'python': mode,
+    }
+    ed.change_mode('python')
+    view.change_mode.assert_called_once_with(mode)
+    assert mock_button_bar.connect.call_count == 10
+    view.status_bar.set_mode.assert_called_once_with('python')
