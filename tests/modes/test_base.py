@@ -2,7 +2,9 @@
 """
 Tests for the BaseMode class.
 """
+import os
 import pytest
+import mu
 from mu.modes.base import BaseMode, MicroPythonMode
 from unittest import mock
 
@@ -21,8 +23,90 @@ def test_base_mode():
     assert bm.editor == editor
     assert bm.view == view
     assert bm.actions() == NotImplemented
-    assert bm.workspace_dir() == NotImplemented
+    assert bm.workspace_dir()
     assert bm.apis() == NotImplemented
+
+
+def test_base_mode_workspace_dir():
+    """
+    Return settings file workspace value.
+    """
+    # read from our demo settings.json
+    with mock.patch('mu.modes.base.get_settings_path',
+                    return_value='tests/settings.json'), \
+            mock.patch('os.path.isdir', return_value=True):
+        editor = mock.MagicMock()
+        view = mock.MagicMock()
+        bm = BaseMode(editor, view)
+        assert bm.workspace_dir() == '/home/foo/mycode'
+
+
+def test_base_mode_workspace_not_present():
+    """
+    No workspace key in settings file, return default folder.
+    """
+    default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
+                                     mu.logic.WORKSPACE_NAME)
+    with mock.patch('mu.modes.base.get_settings_path',
+                    return_value='tests/settingswithoutworkspace.json'):
+        editor = mock.MagicMock()
+        view = mock.MagicMock()
+        bm = BaseMode(editor, view)
+        assert bm.workspace_dir() == default_workspace
+
+
+def test_base_mode_workspace_invalid_value():
+    """
+    Invalid workspace key in settings file, return default folder.
+    """
+    default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
+                                     mu.logic.WORKSPACE_NAME)
+    # read from our demo settings.json
+    with mock.patch('mu.modes.base.get_settings_path',
+                    return_value='tests/settings.json'), \
+            mock.patch('os.path.isdir', return_value=False), \
+            mock.patch('mu.modes.base.logger', return_value=None) as logger:
+        editor = mock.MagicMock()
+        view = mock.MagicMock()
+        bm = BaseMode(editor, view)
+        assert bm.workspace_dir() == default_workspace
+        assert logger.error.call_count == 1
+
+
+def test_base_mode_workspace_invalid_json():
+    """
+    Invalid workspace key in settings file, return default folder.
+    """
+    default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
+                                     mu.logic.WORKSPACE_NAME)
+    mock_open = mock.mock_open(read_data='{"workspace": invalid}')
+    with mock.patch('mu.modes.base.get_settings_path',
+                    return_value='a.json'), \
+            mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.modes.base.logger', return_value=None) as logger:
+        editor = mock.MagicMock()
+        view = mock.MagicMock()
+        bm = BaseMode(editor, view)
+        assert bm.workspace_dir() == default_workspace
+        assert logger.error.call_count == 1
+
+
+def test_base_mode_workspace_no_settings_file():
+    """
+    Invalid settings file, return default folder.
+    """
+    default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
+                                     mu.logic.WORKSPACE_NAME)
+    mock_open = mock.MagicMock(side_effect=FileNotFoundError())
+    with mock.patch('mu.modes.base.get_settings_path',
+                    return_value='tests/settings.json'), \
+            mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.modes.base.logger', return_value=None) as logger:
+        editor = mock.MagicMock()
+        view = mock.MagicMock()
+        bm = BaseMode(editor, view)
+        assert bm.workspace_dir() == default_workspace
+        assert logger.error.call_count == 1
 
 
 def test_micropython_mode_find_device():
@@ -44,6 +128,7 @@ def test_micropython_mode_find_device():
                         return_value=[mock_port, ]):
             assert mm.find_device() == 'COM0'
 
+
 def test_micropython_mode_find_device_no_ports():
     """
     There are no connected devices so return None.
@@ -51,7 +136,6 @@ def test_micropython_mode_find_device_no_ports():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
-    mock_port = mock.MagicMock()
     with mock.patch('mu.modes.base.QSerialPortInfo.availablePorts',
                     return_value=[]):
         assert mm.find_device() is None

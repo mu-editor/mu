@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import ctypes
+from gettext import gettext as _
 from subprocess import check_output
 from mu.modes.base import MicroPythonMode
 
@@ -29,7 +31,7 @@ class AdafruitMode(MicroPythonMode):
                     "boards.")
     icon = 'adafruit'
     save_timeout = 0  #: Don't autosave on Adafruit boards. Casues a restart.
-    connected = True #: is the Adafruit board connected.
+    connected = True  #: is the Adafruit board connected.
     valid_boards = [
         (0x239A, 0x800B),  # Adafruit Feather M0 CDC only USB VID, PID
         (0x239A, 0x8016),  # Adafruit Feather M0 CDC + MSC USB VID, PID
@@ -70,7 +72,7 @@ class AdafruitMode(MicroPythonMode):
                     device_dir = volume.decode('utf-8')
         elif os.name == 'nt':
             # We're on Windows.
-            
+
             def get_volume_name(disk_name):
                 """
                 Each disk or external device connected to windows has an
@@ -103,10 +105,10 @@ class AdafruitMode(MicroPythonMode):
         else:
             # No support for unknown operating systems.
             raise NotImplementedError('OS "{}" not supported'.format(os.name))
-            
+
         if device_dir:
             # Found it!
-            self.connected = True 
+            self.connected = True
             return device_dir
         else:
             # Not plugged in? Just return Mu's regular workspace directory

@@ -129,72 +129,6 @@ def test_get_settings_no_files_cannot_create():
         logger.error.assert_called_once_with(msg)
 
 
-def test_get_workspace_valid():
-    """
-    Return settings file workspace value.
-    """
-    # read from our demo settings.json
-    with mock.patch('mu.logic.get_settings_path',
-                    return_value='tests/settings.json'), \
-            mock.patch('os.path.isdir', return_value=True):
-        assert mu.logic.get_workspace_dir() == '/home/foo/mycode'
-
-
-def test_get_workspace_not_present():
-    """
-    No workspace key in settings file, return default folder.
-    """
-    default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
-                                     mu.logic.WORKSPACE_NAME)
-    with mock.patch('mu.logic.get_settings_path',
-                    return_value='tests/settingswithoutworkspace.json'):
-        assert mu.logic.get_workspace_dir() == default_workspace
-
-
-def test_get_workspace_invalid_value():
-    """
-    Invalid workspace key in settings file, return default folder.
-    """
-    default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
-                                     mu.logic.WORKSPACE_NAME)
-    # read from our demo settings.json
-    with mock.patch('mu.logic.get_settings_path',
-                    return_value='tests/settings.json'), \
-            mock.patch('os.path.isdir', return_value=False), \
-            mock.patch('mu.logic.logger', return_value=None) as logger:
-        assert mu.logic.get_workspace_dir() == default_workspace
-        assert logger.error.call_count == 1
-
-
-def test_get_workspace_invalid_json():
-    """
-    Invalid workspace key in settings file, return default folder.
-    """
-    default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
-                                     mu.logic.WORKSPACE_NAME)
-    mock_open = mock.mock_open(read_data='{"workspace": invalid}')
-    with mock.patch('mu.logic.get_settings_path', return_value='a.json'), \
-            mock.patch('builtins.open', mock_open), \
-            mock.patch('mu.logic.logger', return_value=None) as logger:
-        assert mu.logic.get_workspace_dir() == default_workspace
-        assert logger.error.call_count == 1
-
-
-def test_get_workspace_no_settings_file():
-    """
-    Invalid settings file, return default folder.
-    """
-    default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
-                                     mu.logic.WORKSPACE_NAME)
-    mock_open = mock.MagicMock(side_effect=FileNotFoundError())
-    with mock.patch('mu.logic.get_settings_path',
-                    return_value='tests/settings.json'), \
-            mock.patch('builtins.open', mock_open), \
-            mock.patch('mu.logic.logger', return_value=None) as logger:
-        assert mu.logic.get_workspace_dir() == default_workspace
-        assert logger.error.call_count == 1
-
-
 def test_check_flake():
     """
     Ensure the check_flake method calls PyFlakes with the expected code
@@ -344,9 +278,8 @@ def test_editor_init():
         e = mu.logic.Editor(view)
         assert e._view == view
         assert e.theme == 'day'
-        assert mkd.call_count == 2
+        assert mkd.call_count == 1
         assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
-        assert mkd.call_args_list[1][0][0] == mu.logic.get_workspace_dir()
 
 
 def test_editor_set_modes():
@@ -368,7 +301,11 @@ def test_editor_restore_session():
     view.set_theme = mock.MagicMock()
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
-    ed.modes = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    mock_mode.save_timeout = 5
+    ed.modes = {
+        'python': mock_mode,
+    }
     mock_open = mock.mock_open(read_data=SESSION)
     with mock.patch('builtins.open', mock_open), \
             mock.patch('os.path.exists', return_value=True):
@@ -388,10 +325,18 @@ def test_editor_restore_session_missing_files():
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
-    ed.modes = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    mock_mode.save_timeout = 5
+    ed.modes = {
+        'python': mock_mode,
+    }
+    mock_gettext = mock.MagicMock()
+    mock_gettext.return_value = '# Write your code here :-)'
     get_test_settings_path = mock.MagicMock()
     get_test_settings_path.return_value = fake_settings
     with mock.patch('os.path.exists', return_value=True), \
+            mock.patch('mu.logic._', mock_gettext), \
             mock.patch('mu.logic.get_settings_path', get_test_settings_path):
         ed.restore_session()
     assert ed._view.add_tab.call_count == 0
@@ -406,10 +351,18 @@ def test_editor_restore_session_no_session_file():
     view.tab_count = 0
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
-    ed.modes = mock.MagicMock()
-    with mock.patch('os.path.exists', return_value=False):
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    mock_mode.save_timeout = 5
+    ed.modes = {
+        'python': mock_mode,
+    }
+    mock_gettext = mock.MagicMock()
+    mock_gettext.return_value = '# Write your code here :-)'
+    with mock.patch('os.path.exists', return_value=False), \
+            mock.patch('mu.logic._', mock_gettext):
         ed.restore_session()
-    py = 'from microbit import *{}{}# Write your code here :-)'.format(
+    py = '# Write your code here :-)'.format(
         os.linesep, os.linesep)
     ed._view.add_tab.assert_called_once_with(None, py)
 
@@ -423,14 +376,21 @@ def test_editor_restore_session_invalid_file():
     view.tab_count = 0
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
-    ed.modes = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    mock_mode.save_timeout = 5
+    ed.modes = {
+        'python': mock_mode,
+    }
     mock_open = mock.mock_open(
         read_data='{"paths": ["path/foo.py", "path/bar.py"]}, invalid: 0}')
+    mock_gettext = mock.MagicMock()
+    mock_gettext.return_value = '# Write your code here :-)'
     with mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.logic._', mock_gettext), \
             mock.patch('os.path.exists', return_value=True):
         ed.restore_session()
-    py = 'from microbit import *{}{}# Write your code here :-)'.format(
-        os.linesep, os.linesep)
+    py = '# Write your code here :-)'
     ed._view.add_tab.assert_called_once_with(None, py)
 
 
@@ -441,7 +401,12 @@ def test_editor_open_focus_passed_file():
     view = mock.MagicMock()
     view.tab_count = 0
     ed = mu.logic.Editor(view)
-    ed.modes = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    mock_mode.save_timeout = 5
+    ed.modes = {
+        'python': mock_mode,
+    }
     ed._load = mock.MagicMock()
     file_path = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
@@ -462,6 +427,12 @@ def test_editor_session_and_open_focus_passed_file():
     ed = mu.logic.Editor(view)
     ed.modes = mock.MagicMock()
     ed.direct_load = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    mock_mode.save_timeout = 5
+    ed.modes = {
+        'python': mock_mode,
+    }
     settings = json.dumps({
         "paths": ["path/foo.py",
                   "path/bar.py"]}, )
@@ -477,295 +448,6 @@ def test_editor_session_and_open_focus_passed_file():
     # the restored session.
     assert ed.direct_load.call_args_list[0][0][0] == 'path/bar.py'
     assert ed.direct_load.call_args_list[1][0][0] == 'path/foo.py'
-
-
-def test_flash_no_tab():
-    """
-    If there are no active tabs simply return.
-    """
-    view = mock.MagicMock()
-    view.current_tab = None
-    ed = mu.logic.Editor(view)
-    assert ed.flash() is None
-
-
-def test_flash_with_attached_device():
-    """
-    Ensure the expected calls are made to uFlash and a helpful status message
-    is enacted.
-    """
-    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
-            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
-            mock.patch('mu.logic.uflash.find_microbit', return_value='bar'),\
-            mock.patch('mu.logic.os.path.exists', return_value=True),\
-            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
-        view = mock.MagicMock()
-        view.current_tab.text = mock.MagicMock(return_value='')
-        view.show_message = mock.MagicMock()
-        ed = mu.logic.Editor(view)
-        ed.flash()
-        assert view.show_message.call_count == 1
-        hex_file_path = os.path.join('bar', 'micropython.hex')
-        s.assert_called_once_with('foo', hex_file_path)
-
-
-def test_flash_with_attached_device_and_custom_runtime():
-    """
-    Ensure the expected calls are made to uFlash and a helpful status message
-    is enacted.
-    """
-    with mock.patch('mu.logic.get_settings_path',
-                    return_value='tests/settingswithcustomhex.json'), \
-            mock.patch('mu.logic.get_workspace_dir',
-                       return_value=os.path.dirname(__file__)):
-        test_flash_with_attached_device()
-
-
-def test_flash_user_specified_device_path():
-    """
-    Ensure that if a micro:bit is not automatically found by uflash then it
-    prompts the user to locate the device and, assuming a path was given,
-    saves the hex in the expected location.
-    """
-    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
-            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
-            mock.patch('mu.logic.uflash.find_microbit', return_value=None),\
-            mock.patch('mu.logic.os.path.exists', return_value=True),\
-            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
-        view = mock.MagicMock()
-        view.get_microbit_path = mock.MagicMock(return_value='bar')
-        view.current_tab.text = mock.MagicMock(return_value='')
-        view.show_message = mock.MagicMock()
-        ed = mu.logic.Editor(view)
-        ed.flash()
-        home = mu.logic.HOME_DIRECTORY
-        view.get_microbit_path.assert_called_once_with(home)
-        assert view.show_message.call_count == 1
-        assert ed.user_defined_microbit_path == 'bar'
-        hex_file_path = os.path.join('bar', 'micropython.hex')
-        s.assert_called_once_with('foo', hex_file_path)
-
-
-def test_flash_existing_user_specified_device_path():
-    """
-    Ensure that if a micro:bit is not automatically found by uflash and the
-    user has previously specified a path to the device, then the hex is saved
-    in the specified location.
-    """
-    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
-            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
-            mock.patch('mu.logic.uflash.find_microbit', return_value=None),\
-            mock.patch('mu.logic.os.path.exists', return_value=True),\
-            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
-        view = mock.MagicMock()
-        view.get_microbit_path = mock.MagicMock(return_value='bar')
-        view.current_tab.text = mock.MagicMock(return_value='')
-        view.show_message = mock.MagicMock()
-        ed = mu.logic.Editor(view)
-        ed.user_defined_microbit_path = 'baz'
-        ed.flash()
-        assert view.get_microbit_path.call_count == 0
-        assert view.show_message.call_count == 1
-        hex_file_path = os.path.join('baz', 'micropython.hex')
-        s.assert_called_once_with('foo', hex_file_path)
-
-
-def test_flash_path_specified_does_not_exist():
-    """
-    Ensure that if a micro:bit is not automatically found by uflash and the
-    user has previously specified a path to the device, then the hex is saved
-    in the specified location.
-    """
-    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
-            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
-            mock.patch('mu.logic.uflash.find_microbit', return_value=None),\
-            mock.patch('mu.logic.os.path.exists', return_value=False),\
-            mock.patch('mu.logic.os.makedirs', return_value=None), \
-            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
-        view = mock.MagicMock()
-        view.current_tab.text = mock.MagicMock(return_value='')
-        view.show_message = mock.MagicMock()
-        ed = mu.logic.Editor(view)
-        ed.user_defined_microbit_path = 'baz'
-        ed.flash()
-        message = 'Could not find an attached BBC micro:bit.'
-        information = ("Please ensure you leave enough time for the BBC"
-                       " micro:bit to be attached and configured correctly"
-                       " by your computer. This may take several seconds."
-                       " Alternatively, try removing and re-attaching the"
-                       " device or saving your work and restarting Mu if"
-                       " the device remains unfound.")
-        view.show_message.assert_called_once_with(message, information)
-        assert s.call_count == 0
-        assert ed.user_defined_microbit_path is None
-
-
-def test_flash_without_device():
-    """
-    If no device is found and the user doesn't provide a path then ensure a
-    helpful status message is enacted.
-    """
-    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
-            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
-            mock.patch('mu.logic.uflash.find_microbit', return_value=None), \
-            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
-        view = mock.MagicMock()
-        view.get_microbit_path = mock.MagicMock(return_value=None)
-        view.current_tab.text = mock.MagicMock(return_value='')
-        view.show_message = mock.MagicMock()
-        ed = mu.logic.Editor(view)
-        ed.flash()
-        message = 'Could not find an attached BBC micro:bit.'
-        information = ("Please ensure you leave enough time for the BBC"
-                       " micro:bit to be attached and configured correctly"
-                       " by your computer. This may take several seconds."
-                       " Alternatively, try removing and re-attaching the"
-                       " device or saving your work and restarting Mu if"
-                       " the device remains unfound.")
-        view.show_message.assert_called_once_with(message, information)
-        home = mu.logic.HOME_DIRECTORY
-        view.get_microbit_path.assert_called_once_with(home)
-        assert s.call_count == 0
-
-
-def test_flash_script_too_big():
-    """
-    If the script in the current tab is too big, abort in the expected way.
-    """
-    view = mock.MagicMock()
-    view.current_tab.text = mock.MagicMock(return_value='x' * 8193)
-    view.current_tab.label = 'foo'
-    view.show_message = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.flash()
-    view.show_message.assert_called_once_with('Unable to flash "foo"',
-                                              'Your script is too long!',
-                                              'Warning')
-
-
-def test_add_fs_no_repl():
-    """
-    It's possible to add the file system pane if the REPL is inactive.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.microfs.get_serial', return_value=True):
-        ed.add_fs()
-    workspace = mu.logic.get_workspace_dir()
-    view.add_filesystem.assert_called_once_with(home=workspace)
-    assert ed.fs
-
-
-def test_add_fs_with_repl():
-    """
-    If the REPL is active, you can't add the file system pane.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.repl = True
-    with mock.patch('mu.logic.microfs.get_serial', return_value=True):
-        ed.add_fs()
-    assert view.add_filesystem.call_count == 0
-
-
-def test_add_fs_no_device():
-    """
-    If there's no device attached then ensure a helpful message is displayed.
-    """
-    view = mock.MagicMock()
-    view.show_message = mock.MagicMock()
-    ex = IOError('BOOM')
-    ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.microfs.get_serial', side_effect=ex):
-        ed.add_fs()
-    assert view.show_message.call_count == 1
-
-
-def test_remove_fs_no_fs():
-    """
-    Removing a non-existent file system raises a RuntimeError.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.fs = None
-    with pytest.raises(RuntimeError):
-        ed.remove_fs()
-
-
-def test_remove_fs():
-    """
-    Removing the file system results in the expected state.
-    """
-    view = mock.MagicMock()
-    view.remove_repl = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.fs = True
-    ed.remove_fs()
-    assert view.remove_filesystem.call_count == 1
-    assert ed.fs is None
-
-
-def test_toggle_fs_on():
-    """
-    If the fs is off, toggle it on.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.add_fs = mock.MagicMock()
-    ed.repl = None
-    ed.fs = None
-    ed.toggle_fs()
-    assert ed.add_fs.call_count == 1
-
-
-def test_toggle_fs_off():
-    """
-    If the fs is on, toggle if off.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.remove_fs = mock.MagicMock()
-    ed.repl = None
-    ed.fs = True
-    ed.toggle_fs()
-    assert ed.remove_fs.call_count == 1
-
-
-def test_toggle_fs_with_repl():
-    """
-    If the REPL is active, ensure a helpful message is displayed.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.add_repl = mock.MagicMock()
-    ed.repl = True
-    ed.fs = None
-    ed.toggle_fs()
-    assert view.show_message.call_count == 1
-
-
-def test_add_repl_with_fs():
-    """
-    Raise a RuntimeError if the file system exists to use the serial link.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.fs = True
-    with pytest.raises(RuntimeError):
-        ed.add_repl()
-
-
-def test_toggle_repl_with_fs():
-    """
-    If the file system is active, show a helpful message instead.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.remove_repl = mock.MagicMock()
-    ed.repl = None
-    ed.fs = True
-    ed.toggle_repl()
-    assert view.show_message.call_count == 1
 
 
 def test_toggle_theme_to_night():
@@ -816,10 +498,13 @@ def test_load_python_file():
     view.get_load_path = mock.MagicMock(return_value='foo.py')
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    ed.modes = {
+        'python': mock_mode,
+    }
     mock_open = mock.mock_open(read_data='PYTHON')
-    mock_workspace_dir = mock.MagicMock(return_value='/foo')
-    with mock.patch('mu.logic.get_workspace_dir', mock_workspace_dir), \
-            mock.patch('builtins.open', mock_open):
+    with mock.patch('builtins.open', mock_open):
         ed.load()
     assert view.get_load_path.call_count == 1
     view.add_tab.assert_called_once_with('foo.py', 'PYTHON')
@@ -850,10 +535,15 @@ def test_no_duplicate_load_python_file():
     editor_window.get_load_path = mock.MagicMock(return_value=brown_script)
     # Create the "editor" that'll control the "window".
     editor = mu.logic.Editor(view=editor_window)
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    editor.modes = {
+        'python': mock_mode,
+    }
 
     editor.load()
-    message = 'The file "{}" is already open'.format(os.path.basename(
-                                                     brown_script))
+    message = 'The file "{}" is already open.'.format(os.path.basename(
+                                                      brown_script))
     editor_window.show_message.assert_called_once_with(message)
     editor_window.add_tab.assert_not_called()
 
@@ -867,11 +557,14 @@ def test_load_hex_file():
     view.get_load_path = mock.MagicMock(return_value='foo.hex')
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    ed.modes = {
+        'python': mock_mode,
+    }
     mock_open = mock.mock_open(read_data='PYTHON')
-    mock_workspace_dir = mock.MagicMock(return_value='/foo')
     hex_file = 'RECOVERED'
-    with mock.patch('mu.logic.get_workspace_dir', mock_workspace_dir), \
-            mock.patch('builtins.open', mock_open), \
+    with mock.patch('builtins.open', mock_open), \
             mock.patch('mu.logic.uflash.extract_script',
                        return_value=hex_file) as s:
         ed.load()
@@ -889,9 +582,12 @@ def test_load_error():
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock(side_effect=FileNotFoundError())
-    mock_workspace_dir = mock.MagicMock(return_value='/foo')
-    with mock.patch('mu.logic.get_workspace_dir', mock_workspace_dir), \
-            mock.patch('builtins.open', mock_open):
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    ed.modes = {
+        'python': mock_mode,
+    }
+    with mock.patch('builtins.open', mock_open):
         ed.load()
     assert view.get_load_path.call_count == 1
     assert view.add_tab.call_count == 0
@@ -924,8 +620,12 @@ def test_save_no_path():
     mock_open_atomic.return_value.__exit__ = mock.Mock()
     mock_open_atomic.return_value.write = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.get_workspace_dir', return_value='/fake/path'), \
-            mock.patch('mu.logic.open_atomic', mock_open_atomic):
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    ed.modes = {
+        'python': mock_mode,
+    }
+    with mock.patch('mu.logic.open_atomic', mock_open_atomic):
         ed.save()
     assert mock_open_atomic.call_count == 1
     mock_open_atomic.assert_called_with('foo.py', 'w', newline='')
@@ -943,6 +643,11 @@ def test_save_no_path_no_path_given():
     view.current_tab.path = None
     view.get_save_path = mock.MagicMock(return_value='')
     ed = mu.logic.Editor(view)
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = 'foo/bar'
+    ed.modes = {
+        'python': mock_mode,
+    }
     ed.save()
     # The path isn't the empty string returned from get_save_path.
     assert view.current_tab.path is None
@@ -1131,6 +836,13 @@ def test_quit_modified_ok():
     view.modified = True
     view.show_confirmation = mock.MagicMock(return_value=True)
     ed = mu.logic.Editor(view)
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = 'foo/bar'
+    mock_mode.get_hex_path.return_value = 'foo/bar'
+    ed.modes = {
+        'python': mock_mode,
+        'microbit': mock_mode,
+    }
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
@@ -1142,7 +854,7 @@ def test_quit_modified_ok():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 3
+    assert mock_open.call_count == 1
     assert mock_open.return_value.write.call_count > 0
 
 
@@ -1158,6 +870,13 @@ def test_quit_save_tabs_with_paths():
     w1.path = 'foo.py'
     view.widgets = [w1, ]
     ed = mu.logic.Editor(view)
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = 'foo/bar'
+    mock_mode.get_hex_path.return_value = 'foo/bar'
+    ed.modes = {
+        'python': mock_mode,
+        'microbit': mock_mode,
+    }
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
@@ -1169,7 +888,7 @@ def test_quit_save_tabs_with_paths():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 3
+    assert mock_open.call_count == 1
     assert mock_open.return_value.write.call_count > 0
     recovered = ''.join([i[0][0] for i
                         in mock_open.return_value.write.call_args_list])
@@ -1189,6 +908,13 @@ def test_quit_save_theme():
     view.widgets = [w1, ]
     ed = mu.logic.Editor(view)
     ed.theme = 'night'
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = 'foo/bar'
+    mock_mode.get_hex_path.return_value = 'foo/bar'
+    ed.modes = {
+        'python': mock_mode,
+        'microbit': mock_mode,
+    }
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
@@ -1200,7 +926,7 @@ def test_quit_save_theme():
         ed.quit(mock_event)
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 3
+    assert mock_open.call_count == 1
     assert mock_open.return_value.write.call_count > 0
     recovered = ''.join([i[0][0] for i
                         in mock_open.return_value.write.call_args_list])
@@ -1220,6 +946,10 @@ def test_quit_calls_sys_exit():
     view.widgets = [w1, ]
     ed = mu.logic.Editor(view)
     ed.theme = 'night'
+    ed.modes = {
+        'python': mock.MagicMock(),
+        'microbit': mock.MagicMock(),
+    }
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
@@ -1230,35 +960,6 @@ def test_quit_calls_sys_exit():
             mock.patch('builtins.open', mock_open):
         ed.quit(mock_event)
     ex.assert_called_once_with(0)
-
-
-def test_custom_hex_read():
-    """
-    Test that a custom hex file path can be read
-    """
-    with mock.patch('mu.logic.get_settings_path',
-                    return_value='tests/settingswithcustomhex.json'), \
-            mock.patch('mu.logic.get_workspace_dir',
-                       return_value=os.path.dirname(__file__)):
-        assert "customhextest.hex" in mu.logic.get_runtime_hex_path()
-    """
-    Test that a corrupt settings file returns None for the
-    runtime hex path
-    """
-    with mock.patch('mu.logic.get_settings_path',
-                    return_value='tests/settingscorrupt.json'), \
-            mock.patch('mu.logic.get_workspace_dir',
-                       return_value=os.path.dirname(__file__)):
-        assert mu.logic.get_runtime_hex_path() is None
-    """
-    Test that a missing settings file returns None for the
-    runtime hex path
-    """
-    with mock.patch('mu.logic.get_settings_path',
-                    return_value='tests/settingswithmissingcustomhex.json'), \
-            mock.patch('mu.logic.get_workspace_dir',
-                       return_value=os.path.dirname(__file__)):
-        assert mu.logic.get_runtime_hex_path() is None
 
 
 def test_show_logs():
@@ -1299,6 +1000,7 @@ def test_change_mode():
     view.change_mode = mock.MagicMock()
     ed = mu.logic.Editor(view)
     mode = mock.MagicMock()
+    mode.save_timeout = 5
     mode.actions.return_value = [
         {
             'name': 'name',

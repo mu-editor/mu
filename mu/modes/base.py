@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import json
 import os
 import logging
+from gettext import gettext as _
 from PyQt5.QtSerialPort import QSerialPortInfo
 from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path
 
@@ -47,7 +48,7 @@ class BaseMode:
     icon = 'help'
     repl = None
     debugger = False
-    save_timeout = 5  #: Number of seconds to wait before chicking to save work.
+    save_timeout = 5  #: Number of seconds to wait before saving work.
 
     def __init__(self, editor, view):
         self.editor = editor
@@ -195,4 +196,3 @@ class REPL:
             # No idea how to deal with other OS's so fail.
             raise NotImplementedError('OS not supported.')
         logger.info('Created new REPL object with port: {}'.format(self.port))
-

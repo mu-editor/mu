@@ -23,11 +23,10 @@ def test_python_mode():
     actions = pm.actions()
     assert len(actions) == 2
     assert actions[0]['name'] == 'run'
-    assert actions[0]['handler'] == pm.run
+    assert actions[0]['handler'] == pm.toggle_run
     assert actions[1]['name'] == 'repl'
-    assert actions[1]['handler'] == pm.repl
+    assert actions[1]['handler'] == pm.toggle_repl
 
-    assert pm.workspace_dir() == NotImplemented
     assert pm.apis() == NotImplemented
 
 
@@ -38,7 +37,7 @@ def test_python_run():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pm = PythonMode(editor, view)
-    assert pm.run(None) is None
+    assert pm.run() is None
 
 
 def test_python_repl():
@@ -48,4 +47,4 @@ def test_python_repl():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pm = PythonMode(editor, view)
-    assert pm.repl(None) is None
+    assert pm.toggle_repl(None) is None

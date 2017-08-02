@@ -609,6 +609,7 @@ def test_ButtonBar_change_mode():
     actions = [
         {
             'name': 'foo',
+            'display_name': 'Foo',
             'description': 'bar',
         },
     ]
@@ -655,7 +656,7 @@ def test_ButtonBar_add_action():
     """
     bb = mu.interface.ButtonBar(None)
     with mock.patch('builtins.super') as mock_s:
-        bb.addAction('save', 'save stuff')
+        bb.addAction('save', 'Save', 'save stuff')
         mock_s.assert_called_once_with()
     assert 'save' in bb.slots
     assert isinstance(bb.slots['save'], QAction)
@@ -667,7 +668,7 @@ def test_ButtonBar_connect():
     """
     bb = mu.interface.ButtonBar(None)
     bb.parentWidget = mock.MagicMock(return_value=QWidget())
-    bb.addAction('save', 'save stuff')
+    bb.addAction('save', 'Save', 'save stuff')
     bb.slots['save'].pyqtConfigure = mock.MagicMock(return_value=None)
     mock_handler = mock.MagicMock(return_value=None)
     mock_shortcut = mock.MagicMock()
@@ -1032,18 +1033,19 @@ def test_Window_add_filesystem():
     w = mu.interface.Window()
     w.theme = mock.MagicMock()
     w.splitter = mock.MagicMock()
-    w.splitter.addWidget = mock.MagicMock(return_value=None)
-    w.splitter.setSizes = mock.MagicMock(return_value=None)
+    w.addDockWidget = mock.MagicMock(return_value=None)
     w.connect_zoom = mock.MagicMock(return_value=None)
     mock_fs = mock.MagicMock()
     mock_fs.setFocus = mock.MagicMock(return_value=None)
     mock_fs_class = mock.MagicMock(return_value=mock_fs)
-    with mock.patch('mu.interface.FileSystemPane', mock_fs_class):
+    mock_dock = mock.MagicMock()
+    mock_dock_class = mock.MagicMock(return_value=mock_dock)
+    with mock.patch('mu.interface.FileSystemPane', mock_fs_class), \
+            mock.patch('mu.interface.QDockWidget', mock_dock_class):
         w.add_filesystem('path/to/home')
-    mock_fs_class.assert_called_once_with(w.splitter, 'path/to/home')
-    assert w.fs == mock_fs
-    w.splitter.addWidget.assert_called_once_with(mock_fs)
-    w.splitter.setSizes.assert_called_once_with([66, 33])
+    mock_fs_class.assert_called_once_with('path/to/home')
+    assert w.fs_pane == mock_fs
+    w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
     mock_fs.setFocus.assert_called_once_with()
     w.connect_zoom.assert_called_once_with(mock_fs)
 
@@ -2230,7 +2232,7 @@ def test_FileSystemPane_init():
     """
     with mock.patch('mu.interface.FileSystemPane.ls',
                     return_value=None) as mock_ls:
-        fsp = mu.interface.FileSystemPane(None, 'homepath')
+        fsp = mu.interface.FileSystemPane('homepath')
     mock_ls.assert_called_once_with()
     assert isinstance(fsp.microbit_label, QLabel)
     assert isinstance(fsp.local_label, QLabel)
@@ -2254,8 +2256,9 @@ def test_FileSystemPane_ls():
             mock.patch('mu.interface.microfs.get_serial', return_value=None), \
             mock.patch('mu.interface.os.listdir', return_value=local_files), \
             mock.patch('mu.interface.os.path.isfile', return_value=True), \
+            mock.patch('mu.interface._', return_value=''), \
             mock.patch('mu.interface.os.path.join', return_value=None):
-        fsp = mu.interface.FileSystemPane(None, 'homepath')
+        fsp = mu.interface.FileSystemPane('homepath')
         mfs_clear.assert_called_once_with()
         lfs_clear.assert_called_once_with()
         assert fsp.microbit_fs.count() == 3
@@ -2267,7 +2270,7 @@ def test_FileSystemPane_set_theme_day():
     Ensures the day theme is set.
     """
     with mock.patch('mu.interface.FileSystemPane.ls', return_value=None):
-        fsp = mu.interface.FileSystemPane(None, 'homepath')
+        fsp = mu.interface.FileSystemPane('homepath')
     fsp.setStyleSheet = mock.MagicMock()
     fsp.set_theme('day')
     fsp.setStyleSheet.assert_called_once_with(mu.interface.DAY_STYLE)
@@ -2278,7 +2281,7 @@ def test_FileSystemPane_set_theme_night():
     Ensures the night theme is set.
     """
     with mock.patch('mu.interface.FileSystemPane.ls', return_value=None):
-        fsp = mu.interface.FileSystemPane(None, 'homepath')
+        fsp = mu.interface.FileSystemPane('homepath')
     fsp.setStyleSheet = mock.MagicMock()
     fsp.set_theme('night')
     fsp.setStyleSheet.assert_called_once_with(mu.interface.NIGHT_STYLE)
@@ -2290,7 +2293,7 @@ def test_FileSystemPane_set_font_size():
     widgets are updated.
     """
     with mock.patch('mu.interface.FileSystemPane.ls', return_value=None):
-        fsp = mu.interface.FileSystemPane(None, 'homepath')
+        fsp = mu.interface.FileSystemPane('homepath')
     fsp.font = mock.MagicMock()
     fsp.microbit_label = mock.MagicMock()
     fsp.local_label = mock.MagicMock()
@@ -2309,7 +2312,7 @@ def test_FileSystemPane_zoom_in():
     Ensure the font is re-set bigger when zooming in.
     """
     with mock.patch('mu.interface.FileSystemPane.ls', return_value=None):
-        fsp = mu.interface.FileSystemPane(None, 'homepath')
+        fsp = mu.interface.FileSystemPane('homepath')
     fsp.set_font_size = mock.MagicMock()
     fsp.zoomIn()
     expected = mu.interface.DEFAULT_FONT_SIZE + 2
@@ -2321,7 +2324,7 @@ def test_FileSystemPane_zoom_out():
     Ensure the font is re-set smaller when zooming out.
     """
     with mock.patch('mu.interface.FileSystemPane.ls', return_value=None):
-        fsp = mu.interface.FileSystemPane(None, 'homepath')
+        fsp = mu.interface.FileSystemPane('homepath')
     fsp.set_font_size = mock.MagicMock()
     fsp.zoomOut()
     expected = mu.interface.DEFAULT_FONT_SIZE - 2

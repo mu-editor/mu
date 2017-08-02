@@ -155,7 +155,7 @@ repository with the following command::
 For this to work you'll need to have Qt5 and Python 3 installed.
 
 * On Debian based systems this is covered by installing: python3-pyqt5,
-  python3-pyqt5.qsci and python3-pyqt5.qtserialport.
+  python3-pyqt5.qsci and python3-pyqt5.qtserialport, python3-pyqt5.qtsvg
 
 * On Mac OS, first install PyQT5::
 

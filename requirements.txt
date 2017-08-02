@@ -5,4 +5,5 @@ coverage
 sphinx
 pytest-cov
 pyserial
+qtconsole
 setuptools==19.2

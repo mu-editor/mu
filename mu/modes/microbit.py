@@ -17,7 +17,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import json
 import os
 import logging
-from mu.logic import get_settings_path
+from gettext import gettext as _
+from mu.logic import get_settings_path, HOME_DIRECTORY
 from mu.contrib import uflash, microfs
 from mu.modes.base import MicroPythonMode
 
@@ -37,6 +38,8 @@ class MicrobitMode(MicroPythonMode):
     valid_boards = [
         (0x0D28, 0x0204),  # micro:bit USB VID, PID
     ]
+
+    user_defined_microbit_path = None
 
     def actions(self):
         """
@@ -228,8 +231,9 @@ class MicrobitMode(MicroPythonMode):
                 if os.path.exists(settings['microbit_runtime_hex']):
                     runtime_hex_path = settings['microbit_runtime_hex']
                 else:
+                    expected_path = settings['microbit_runtime_hex']
                     runtime_hex_path = os.path.join(self.workspace_dir(),
-                        settings['microbit_runtime_hex'])
+                                                    expected_path)
                     if not os.path.exists(runtime_hex_path):
                         runtime_hex_path = None
         return runtime_hex_path

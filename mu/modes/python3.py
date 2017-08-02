@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+from gettext import gettext as _
 from mu.modes.base import BaseMode
 from mu.resources import load_icon
 from qtconsole.inprocess import QtInProcessKernelManager
@@ -31,7 +32,7 @@ class PythonMode(BaseMode):
     name = _('Python 3')
     description = _('Create code using standard Python 3.')
     icon = 'python'
-    runner = None 
+    runner = None
     debugger = True
 
     def actions(self):

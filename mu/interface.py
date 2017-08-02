@@ -25,12 +25,11 @@ import platform
 import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice, QProcess, QTimer
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
-                             QVBoxLayout, QShortcut, QSplitter,
-                             QTabWidget, QFileDialog, QMessageBox, QTextEdit,
-                             QFrame, QListWidget, QGridLayout, QLabel, QMenu,
-                             QApplication, QMainWindow, QStatusBar,
-                             QListWidgetItem, QDialog, QDialogButtonBox,
-                             QPlainTextEdit, QDockWidget)
+                             QVBoxLayout, QShortcut, QTabWidget, QFileDialog,
+                             QMessageBox, QTextEdit, QFrame, QListWidget,
+                             QGridLayout, QLabel, QMenu, QApplication,
+                             QMainWindow, QStatusBar, QListWidgetItem, QDialog,
+                             QDialogButtonBox, QPlainTextEdit, QDockWidget)
 from PyQt5.QtGui import (QKeySequence, QColor, QTextCursor, QFontDatabase,
                          QCursor)
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
@@ -43,6 +42,7 @@ from mu.resources import (load_icon, load_stylesheet, load_font_data,
 
 
 gettext.install('mu', 'locale')
+_ = gettext.gettext
 
 
 #: The default font size.
@@ -821,7 +821,7 @@ class Window(QMainWindow):
         self.repl.setWidget(repl_pane)
         self.repl.setFeatures(QDockWidget.DockWidgetMovable)
         self.repl.setAllowedAreas(Qt.BottomDockWidgetArea |
-                                  Qt.LeftDockWidgetArea  |
+                                  Qt.LeftDockWidgetArea |
                                   Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.repl)
         self.repl_pane.setFocus()
@@ -836,8 +836,8 @@ class Window(QMainWindow):
         self.runner.setWidget(self.process_runner)
         self.runner.setFeatures(QDockWidget.DockWidgetMovable)
         self.runner.setAllowedAreas(Qt.BottomDockWidgetArea |
-                                  Qt.LeftDockWidgetArea  |
-                                  Qt.RightDockWidgetArea)
+                                    Qt.LeftDockWidgetArea |
+                                    Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
         self.process_runner.start_process(path, name)
         return self.process_runner
@@ -1695,4 +1695,3 @@ class PythonProcessPane(QTextEdit):
         if hasattr(self, 'process') and self.process:
             self.append(msg)
             self.process.write(msg)
-

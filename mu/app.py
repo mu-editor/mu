@@ -35,6 +35,7 @@ from mu.modes import PythonMode, AdafruitMode, MicrobitMode
 
 
 gettext.install('mu', 'locale')
+_ = gettext.gettext
 
 
 def setup_logging():

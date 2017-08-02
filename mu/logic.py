@@ -27,6 +27,7 @@ import logging
 import tempfile
 import platform
 import webbrowser
+import gettext
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 # Currently there is no pycodestyle deb packages, so fallback to old name
@@ -34,9 +35,12 @@ try:  # pragma: no cover
     from pycodestyle import StyleGuide, Checker
 except ImportError:  # pragma: no cover
     from pep8 import StyleGuide, Checker
-from mu.contrib import appdirs
+from mu.contrib import appdirs, uflash
 from mu.contrib.atomicfile import open_atomic
 from mu import __version__
+
+
+_ = gettext.gettext
 
 
 #: The user's home directory.
@@ -268,7 +272,6 @@ class Editor:
         self.theme = 'day'
         self.mode = 'python'
         self.modes = {}  # See set_modes.
-        self.user_defined_microbit_path = None
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
@@ -353,8 +356,8 @@ class Editor:
                 continue
             if path in widget.path:
                 logger.info('Script already open.')
-                self._view.show_message(_('The file "{}" is already open').format(
-                                        os.path.basename(path)))
+                msg = _('The file "{}" is already open.')
+                self._view.show_message(msg.format(os.path.basename(path)))
                 self._view.focus_tab(widget)
                 return
         try:
