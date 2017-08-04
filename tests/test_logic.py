@@ -282,14 +282,22 @@ def test_editor_init():
         assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
 
 
-def test_editor_set_modes():
+def test_editor_setup():
     """
     An editor should have a modes attribute.
     """
     view = mock.MagicMock()
     e = mu.logic.Editor(view)
-    mock_modes = mock.MagicMock()
-    e.set_modes(mock_modes)
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = 'foo'
+    mock_modes = {
+        'python': mock_mode,
+    }
+    with mock.patch('os.path.exists', return_value=False), \
+            mock.patch('os.makedirs', return_value=None) as mkd:
+        e.setup(mock_modes)
+        assert mkd.call_count == 1
+        assert mkd.call_args_list[0][0][0] == 'foo'
     assert e.modes == mock_modes
 
 
@@ -352,6 +360,8 @@ def test_editor_restore_session_no_session_file():
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
     mock_mode = mock.MagicMock()
+    api = ['API specification', ]
+    mock_mode.api.return_value = api
     mock_mode.workspace_dir.return_value = '/fake/path'
     mock_mode.save_timeout = 5
     ed.modes = {
@@ -364,7 +374,7 @@ def test_editor_restore_session_no_session_file():
         ed.restore_session()
     py = '# Write your code here :-)'.format(
         os.linesep, os.linesep)
-    ed._view.add_tab.assert_called_once_with(None, py)
+    ed._view.add_tab.assert_called_once_with(None, py, api)
 
 
 def test_editor_restore_session_invalid_file():
@@ -377,6 +387,8 @@ def test_editor_restore_session_invalid_file():
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
     mock_mode = mock.MagicMock()
+    api = ['API specification', ]
+    mock_mode.api.return_value = api
     mock_mode.workspace_dir.return_value = '/fake/path'
     mock_mode.save_timeout = 5
     ed.modes = {
@@ -391,7 +403,7 @@ def test_editor_restore_session_invalid_file():
             mock.patch('os.path.exists', return_value=True):
         ed.restore_session()
     py = '# Write your code here :-)'
-    ed._view.add_tab.assert_called_once_with(None, py)
+    ed._view.add_tab.assert_called_once_with(None, py, api)
 
 
 def test_editor_open_focus_passed_file():
@@ -499,6 +511,8 @@ def test_load_python_file():
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
     mock_mode = mock.MagicMock()
+    api = ['API specification', ]
+    mock_mode.api.return_value = api
     mock_mode.workspace_dir.return_value = '/fake/path'
     ed.modes = {
         'python': mock_mode,
@@ -507,7 +521,7 @@ def test_load_python_file():
     with mock.patch('builtins.open', mock_open):
         ed.load()
     assert view.get_load_path.call_count == 1
-    view.add_tab.assert_called_once_with('foo.py', 'PYTHON')
+    view.add_tab.assert_called_once_with('foo.py', 'PYTHON', api)
 
 
 def test_no_duplicate_load_python_file():
@@ -558,6 +572,8 @@ def test_load_hex_file():
     view.add_tab = mock.MagicMock()
     ed = mu.logic.Editor(view)
     mock_mode = mock.MagicMock()
+    api = ['API specification', ]
+    mock_mode.api.return_value = api
     mock_mode.workspace_dir.return_value = '/fake/path'
     ed.modes = {
         'python': mock_mode,
@@ -570,7 +586,7 @@ def test_load_hex_file():
         ed.load()
     assert view.get_load_path.call_count == 1
     assert s.call_count == 1
-    view.add_tab.assert_called_once_with(None, 'RECOVERED')
+    view.add_tab.assert_called_once_with(None, 'RECOVERED', api)
 
 
 def test_load_error():
@@ -1014,3 +1030,50 @@ def test_change_mode():
     view.change_mode.assert_called_once_with(mode)
     assert mock_button_bar.connect.call_count == 10
     view.status_bar.set_mode.assert_called_once_with('python')
+    view.set_timer.assert_called_once_with(5, ed.autosave)
+
+
+def test_change_mode_no_timer():
+    """
+    It should be possible to change modes in the expected fashion (buttons get
+    correctly connected to event handlers).
+    """
+    view = mock.MagicMock()
+    mock_button_bar = mock.MagicMock()
+    view.button_bar = mock_button_bar
+    view.change_mode = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    mode = mock.MagicMock()
+    mode.save_timeout = 0
+    mode.actions.return_value = [
+        {
+            'name': 'name',
+            'handler': 'handler',
+        },
+    ]
+    ed.modes = {
+        'python': mode,
+    }
+    ed.change_mode('python')
+    view.change_mode.assert_called_once_with(mode)
+    assert mock_button_bar.connect.call_count == 10
+    view.status_bar.set_mode.assert_called_once_with('python')
+    view.stop_timer.assert_called_once_with()
+
+
+def test_autosave():
+    """
+    Ensure the autosave callback does the expected things to the tabs.
+    """
+    view = mock.MagicMock()
+    view.modified = True
+    mock_tab = mock.MagicMock()
+    mock_tab.path = 'foo'
+    mock_tab.isModified.return_value = True
+    view.widgets = [mock_tab, ]
+    ed = mu.logic.Editor(view)
+    mock_open_atomic = mock.MagicMock()
+    with mock.patch('mu.logic.open_atomic', mock_open_atomic):
+        ed.autosave()
+    assert mock_open_atomic.call_count == 1
+    mock_tab.setModified.assert_called_once_with(False)

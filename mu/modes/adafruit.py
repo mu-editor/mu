@@ -98,13 +98,13 @@ class AdafruitMode(MicroPythonMode):
                 for disk in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
                     path = '{}:\\'.format(disk)
                     if (os.path.exists(path) and
-                            get_volume_name(path) == 'MICROBIT'):
+                            get_volume_name(path) == 'CIRCUITPY'):
                         return path
             finally:
                 ctypes.windll.kernel32.SetErrorMode(old_mode)
         else:
             # No support for unknown operating systems.
-            raise NotImplementedError('OS "{}" not supported'.format(os.name))
+            raise NotImplementedError('OS "{}" not supported.'.format(os.name))
 
         if device_dir:
             # Found it!
@@ -127,9 +127,9 @@ class AdafruitMode(MicroPythonMode):
                 self.connected = False
             return wd
 
-    def apis(self):
+    def api(self):
         """
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return NotImplemented
+        return []

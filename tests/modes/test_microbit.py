@@ -34,8 +34,6 @@ def test_microbit_mode():
     assert actions[2]['name'] == 'repl'
     assert actions[2]['handler'] == mm.toggle_repl
 
-    assert mm.apis() == NotImplemented
-
 
 def test_custom_hex_read():
     """
@@ -46,6 +44,7 @@ def test_custom_hex_read():
     mm = MicrobitMode(editor, view)
     with mock.patch('mu.modes.microbit.get_settings_path',
                     return_value='tests/settingswithcustomhex.json'), \
+            mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
             mock.patch('mu.modes.base.BaseMode.workspace_dir',
                        return_value=TEST_ROOT):
         assert "customhextest.hex" in mm.get_hex_path()
@@ -85,11 +84,14 @@ def test_flash_with_attached_device():
     Ensure the expected calls are made to uFlash and a helpful status message
     is enacted.
     """
-    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
-            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
-            mock.patch('mu.logic.uflash.find_microbit', return_value='bar'),\
-            mock.patch('mu.logic.os.path.exists', return_value=True),\
-            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
+    with mock.patch('mu.modes.microbit.uflash.hexlify', return_value=''), \
+            mock.patch('mu.modes.microbit.uflash.embed_hex',
+                       return_value='foo'), \
+            mock.patch('mu.modes.microbit.uflash.find_microbit',
+                       return_value='bar'),\
+            mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
+            mock.patch('mu.modes.microbit.uflash.save_hex',
+                       return_value=None) as s:
         view = mock.MagicMock()
         view.current_tab.text = mock.MagicMock(return_value='')
         view.show_message = mock.MagicMock()
@@ -106,11 +108,20 @@ def test_flash_with_attached_device_and_custom_runtime():
     Ensure the expected calls are made to uFlash and a helpful status message
     is enacted.
     """
-    with mock.patch('mu.logic.get_settings_path',
+    with mock.patch('mu.modes.microbit.get_settings_path',
                     return_value='tests/settingswithcustomhex.json'), \
             mock.patch('mu.modes.base.BaseMode.workspace_dir',
-                       return_value=TEST_ROOT):
-        test_flash_with_attached_device()
+                       return_value=TEST_ROOT), \
+            mock.patch('mu.modes.microbit.uflash.flash') as fl:
+        view = mock.MagicMock()
+        view.current_tab.text = mock.MagicMock(return_value='')
+        view.show_message = mock.MagicMock()
+        editor = mock.MagicMock()
+        mm = MicrobitMode(editor, view)
+        mm.flash()
+        assert view.show_message.call_count == 1
+        assert 'tests/customhextest.hex' in view.show_message.call_args[0][0]
+        assert fl.call_count == 1
 
 
 def test_flash_user_specified_device_path():
@@ -350,6 +361,20 @@ def test_toggle_files_with_repl():
     assert view.show_message.call_count == 1
 
 
+def test_toggle_repl():
+    """
+    If the file system is active, show a helpful message instead.
+    """
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    with mock.patch('mu.modes.microbit.MicroPythonMode.toggle_repl') as tr:
+        mm.repl = None
+        mm.toggle_repl(None)
+        tr.assert_called_once_with(None)
+
+
 def test_toggle_repl_with_fs():
     """
     If the file system is active, show a helpful message instead.
@@ -363,3 +388,15 @@ def test_toggle_repl_with_fs():
     mm.fs = True
     mm.toggle_repl(None)
     assert view.show_message.call_count == 1
+
+
+def test_api():
+    """
+    Ensure the right thing comes back from the API.
+    """
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    api = mm.api()
+    assert isinstance(api, list)
+    assert api

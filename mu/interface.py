@@ -215,7 +215,7 @@ class EditorPane(QsciScintilla):
     Represents the text editor.
     """
 
-    def __init__(self, path, text, api=None):
+    def __init__(self, path, text):
         super().__init__()
         self.path = path
         self.setText(text)
@@ -230,8 +230,8 @@ class EditorPane(QsciScintilla):
         self.previous_selection = {
             'line_start': 0, 'col_start': 0, 'line_end': 0, 'col_end': 0
         }
-        self.api = api if api else []
         self.lexer = PythonLexer()
+        self.api = None
         self.setModified(False)
         self.configure()
 
@@ -288,20 +288,18 @@ class EditorPane(QsciScintilla):
                 theme.IndicatorWordMatch, self.search_indicators[type_]['id'])
         self.setMarkerBackgroundColor(theme.IndicatorError, self.MARKER_NUMBER)
 
-        api = QsciAPIs(self.lexer)
-        for entry in self.api:
-            api.add(entry)
-        api.prepare()
         self.setAutoCompletionThreshold(2)
         self.setAutoCompletionSource(QsciScintilla.AcsAll)
         self.setLexer(self.lexer)
 
-    def set_api(self, api):
+    def set_api(self, api_definitions):
         """
         Sets the API entries for tooltips, calltips and the like.
         """
         self.api = QsciAPIs(self.lexer)
-        assert False
+        for entry in api_definitions:
+            self.api.add(entry)
+        self.api.prepare()
 
     @property
     def label(self):
@@ -730,12 +728,13 @@ class Window(QMainWindow):
         logger.debug('Getting micro:bit path: {}'.format(path))
         return path
 
-    def add_tab(self, path, text):
+    def add_tab(self, path, text, api):
         """
         Adds a tab with the referenced path and text to the editor.
         """
-        new_tab = EditorPane(path, text, self.api)
+        new_tab = EditorPane(path, text)
         new_tab_index = self.tabs.addTab(new_tab, new_tab.label)
+        new_tab.set_api(api)
 
         @new_tab.modificationChanged.connect
         def on_modified():
@@ -807,7 +806,7 @@ class Window(QMainWindow):
         kernel.gui = 'qt4'
         kernel_client = repl.client()
         kernel_client.start_channels()
-        ipython_widget = JupyterREPLPane()
+        ipython_widget = JupyterREPLPane(theme=self.theme)
         ipython_widget.kernel_manager = repl
         ipython_widget.kernel_client = kernel_client
         self.add_repl(ipython_widget, _('Python3 (Jupyter)'))
@@ -840,6 +839,8 @@ class Window(QMainWindow):
                                     Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
         self.process_runner.start_process(path, name)
+        self.process_runner.setFocus()
+        self.connect_zoom(self.process_runner)
         return self.process_runner
 
     def remove_filesystem(self):
@@ -988,7 +989,7 @@ class Window(QMainWindow):
         """
         self.current_tab.annotate_code(feedback, annotation_type)
 
-    def setup(self, theme, api=None):
+    def setup(self, theme):
         """
         Sets up the window.
 
@@ -996,7 +997,6 @@ class Window(QMainWindow):
         interface is laid out.
         """
         self.theme = theme
-        self.api = api if api else []
         # Give the window a default icon, title and minimum size.
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
@@ -1041,6 +1041,10 @@ class Window(QMainWindow):
         the expected functionality.
         """
         self.button_bar.change_mode(mode)
+        # Update the autocomplete / tooltip APIs for each tab to the new mode.
+        api = mode.api()
+        for widget in self.widgets:
+            widget.set_api(api)
 
     def set_timer(self, duration, callback):
         """
@@ -1187,11 +1191,19 @@ class JupyterREPLPane(RichJupyterWidget):
 
     Displays a Jupyter iPython session.
     """
+
+    def __init__(self, theme='day', parent=None):
+        super().__init__(parent)
+        self.set_theme(theme)
+        self.console_height = 10
+
     def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
         """
         Sets the font size for all the textual elements in this pane.
         """
-        self.font.setPointSize(new_size)
+        stylesheet = ("QWidget{font-size: " + str(new_size) +
+                      "pt; font-family: Monospace;}")
+        self.setStyleSheet(stylesheet)
 
     def zoomIn(self, delta=2):
         """
@@ -1210,6 +1222,17 @@ class JupyterREPLPane(RichJupyterWidget):
         old_size = self.font.pointSize()
         new_size = max(old_size - delta, 4)
         self.set_font_size(new_size)
+
+    def set_theme(self, theme):
+        """
+        Sets the theme / look for the REPL pane.
+        """
+        if theme == 'day':
+            self.set_default_style()
+            self.setStyleSheet(DAY_STYLE)
+        else:
+            self.set_default_style(colors='nocolor')
+            self.setStyleSheet(NIGHT_STYLE)
 
 
 class MicroPythonREPLPane(QTextEdit):
@@ -1620,7 +1643,15 @@ class PythonProcessPane(QTextEdit):
     Used for running standard Python3 scripts.
     """
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFont(Font().load())
+        self.input_buffer = []
+
     def start_process(self, workspace, script):
+        """
+        Start the child process from the workspace with the script.
+        """
         self.script = script
         logger.info('Running script: {}'.format(script))
         self.process = QProcess(self)
@@ -1629,7 +1660,19 @@ class PythonProcessPane(QTextEdit):
         logger.info('Working directory: {}'.format(workspace))
         self.process.setWorkingDirectory(workspace)
         self.process.readyRead.connect(self.read)
+        self.process.finished.connect(self.finished)
         self.process.start('python3', ['-u', script])
+
+    def finished(self, code, status):
+        """
+        Called when the process is finished.
+        """
+        cursor = self.textCursor()
+        cursor.movePosition(cursor.End)
+        cursor.insertText(_('\n\n---------- FINISHED ----------\n'))
+        msg = _('exit code: {} status: {}').format(code, status)
+        cursor.insertText(msg)
+        self.setDisabled(True)
 
     def append(self, byte_stream):
         """
@@ -1641,45 +1684,36 @@ class PythonProcessPane(QTextEdit):
         cursor.movePosition(QTextCursor.End)
         self.setTextCursor(cursor)
 
+    def delete(self):
+        """
+        Removes a character from the end of the text (to facilitate when a
+        user presses the delete button).
+        """
+        if self.input_buffer:
+            self.input_buffer.pop()
+            cursor = self.textCursor()
+            cursor.movePosition(cursor.End)
+            cursor.deletePreviousChar()
+            cursor.movePosition(QTextCursor.End)
+            self.setTextCursor(cursor)
+
     def read(self):
         """
         From the process's stdout.
         """
+        self.input_buffer = []
         self.append(self.process.readAll().data())
 
     def keyPressEvent(self, data):
         """
         Called when the user types something in the REPL.
 
-        Correctly encodes it and sends it to the connected device.
+        Correctly encodes it and sends it to the connected process.
         """
         key = data.key()
         msg = bytes(data.text(), 'utf8')
         if key == Qt.Key_Backspace:
             msg = b'\b'
-        elif key == Qt.Key_Up:
-            msg = b'\x1B[A'
-        elif key == Qt.Key_Down:
-            msg = b'\x1B[B'
-        elif key == Qt.Key_Right:
-            msg = b'\x1B[C'
-        elif key == Qt.Key_Left:
-            msg = b'\x1B[D'
-        elif key == Qt.Key_Home:
-            msg = b'\x1B[H'
-        elif key == Qt.Key_End:
-            msg = b'\x1B[F'
-        elif (platform.system() == 'Darwin' and
-                data.modifiers() == Qt.MetaModifier) or \
-             (platform.system() != 'Darwin' and
-                data.modifiers() == Qt.ControlModifier):
-            # Handle the Control key. On OSX/macOS/Darwin (python calls this
-            # platform Darwin), this is handled by Qt.MetaModifier. Other
-            # platforms (Linux, Windows) call this Qt.ControlModifier. Go
-            # figure. See http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
-            if Qt.Key_A <= key <= Qt.Key_Z:
-                # The microbit treats an input of \x01 as Ctrl+A, etc.
-                msg = bytes([1 + key - Qt.Key_A])
         elif (data.modifiers() == Qt.ControlModifier | Qt.ShiftModifier) or \
                 (platform.system() == 'Darwin' and
                     data.modifiers() == Qt.ControlModifier):
@@ -1690,8 +1724,43 @@ class PythonProcessPane(QTextEdit):
             elif key == Qt.Key_V:
                 self.paste()
                 msg = b''
-        if msg == b'\r':
+        elif key == Qt.Key_Enter or key == Qt.Key_Return:
             msg = b'\n'
-        if hasattr(self, 'process') and self.process:
+        if key == Qt.Key_Backspace:
+            self.delete()
+        else:
+            self.input_buffer.append(msg)
             self.append(msg)
-            self.process.write(msg)
+        if self.input_buffer and self.input_buffer[-1] == b'\n':
+            if hasattr(self, 'process') and self.process:
+                self.process.write(b''.join(self.input_buffer))
+            self.input_buffer = []
+
+    def zoomIn(self, delta=2):
+        """
+        Zoom in (increase) the size of the font by delta amount difference in
+        point size upto 34 points.
+        """
+        old_size = self.font().pointSize()
+        new_size = old_size + delta
+        if new_size <= 34:
+            super().zoomIn(delta)
+
+    def zoomOut(self, delta=2):
+        """
+        Zoom out (decrease) the size of the font by delta amount difference in
+        point size down to 4 points.
+        """
+        old_size = self.font().pointSize()
+        new_size = old_size - delta
+        if new_size >= 4:
+            super().zoomOut(delta)
+
+    def set_theme(self, theme):
+        """
+        Sets the theme / look for the REPL pane.
+        """
+        if theme == 'day':
+            self.setStyleSheet(DAY_STYLE)
+        else:
+            self.setStyleSheet(NIGHT_STYLE)

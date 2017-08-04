@@ -279,9 +279,10 @@ class Editor:
         logger.info('Log directory: {}'.format(LOG_DIR))
         logger.info('Data directory: {}'.format(DATA_DIR))
 
-    def set_modes(self, modes):
+    def setup(self, modes):
         """
-        Define the available modes.
+        Define the available modes and ensure there's a default working
+        directory.
         """
         self.modes = modes
         logger.info('Available modes: {}'.format(', '.join(self.modes.keys())))
@@ -325,7 +326,7 @@ class Editor:
             self.direct_load(passed_filename)
         if not self._view.tab_count:
             py = _('# Write your code here :-)')
-            self._view.add_tab(None, py)
+            self._view.add_tab(None, py, self.modes[self.mode].api())
             logger.info('Starting with blank file.')
         self.change_mode(self.mode)
         self._view.set_theme(self.theme)
@@ -378,7 +379,7 @@ class Editor:
             logger.warning('could not load {}'.format(path))
         else:
             logger.debug(text)
-            self._view.add_tab(name, text)
+            self._view.add_tab(name, text, self.modes[self.mode].api())
 
     def load(self):
         """

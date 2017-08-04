@@ -1,0 +1,7 @@
+sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)
+proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+udev on /dev type devtmpfs (rw,relatime,size=10240k,nr_inodes=489849,mode=755)
+devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000)
+tmpfs on /run type tmpfs (rw,nosuid,relatime,size=787732k,mode=755)
+/dev/mapper/heraclitus--vg-root on / type ext4 (rw,relatime,errors=remount-ro,data=ordered)
+/dev/sdb on /media/ntoll/CIRCUITPY type vfat (rw,nosuid,nodev,relatime,uid=1000,gid=1000,fmask=0022,dmask=0077,codepage=437,iocharset=utf8,shortname=mixed,showexec,utf8,flush,errors=remount-ro,uhelper=udisks2)

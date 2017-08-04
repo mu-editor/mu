@@ -5,7 +5,7 @@ Tests for the BaseMode class.
 import os
 import pytest
 import mu
-from mu.modes.base import BaseMode, MicroPythonMode
+from mu.modes.base import BaseMode, MicroPythonMode, REPL
 from unittest import mock
 
 
@@ -24,7 +24,7 @@ def test_base_mode():
     assert bm.view == view
     assert bm.actions() == NotImplemented
     assert bm.workspace_dir()
-    assert bm.apis() == NotImplemented
+    assert bm.api() == NotImplemented
 
 
 def test_base_mode_workspace_dir():
@@ -286,3 +286,19 @@ def test_micropython_mode_toggle_repl_off():
     mm.repl = True
     mm.toggle_repl(None)
     assert mm.remove_repl.call_count == 1
+
+
+def test_REPL_init():
+    """
+    Ensure the correct port name is set depending on OS.
+    """
+    with mock.patch('os.name', 'posix'):
+        r = REPL('tty')
+        assert r.port == '/dev/tty'
+    with mock.patch('os.name', 'nt'):
+        r = REPL('COM0')
+        assert r.port == 'COM0'
+    with mock.patch('os.name', 'foo'):
+        with pytest.raises(NotImplementedError) as ex:
+            r = REPL('COM0')
+    assert ex.value.args[0] == 'OS "foo" not supported.'

@@ -18,6 +18,7 @@ import logging
 from gettext import gettext as _
 from mu.modes.base import BaseMode
 from mu.resources import load_icon
+from mu.contrib.atomicfile import open_atomic
 from qtconsole.inprocess import QtInProcessKernelManager
 
 
@@ -55,16 +56,16 @@ class PythonMode(BaseMode):
             },
         ]
 
-    def apis(self):
+    def api(self):
         """
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return NotImplemented
+        return []
 
     def toggle_run(self, event):
         """
-
+        Run or stop the current script.
         """
         if self.runner is None:
             logger.info('Start RUN.')
@@ -86,8 +87,14 @@ class PythonMode(BaseMode):
             # Unsaved file.
             self.editor.save()
         if tab.path:
-            # Save the script.
-            # TODO complete this!
+            logger.debug('Running script.')
+            # If needed, save the script.
+            if tab.isModified():
+                with open_atomic(tab.path, 'w', newline='') as f:
+                    logger.info('Saving script to: {}'.format(tab.path))
+                    logger.debug(tab.text())
+                    f.write(tab.text())
+                    tab.setModified(False)
             logger.debug('Python script: {}'.format(tab.path))
             logger.debug('Working directory: {}'.format(self.workspace_dir()))
             logger.debug(tab.text())
@@ -102,6 +109,7 @@ class PythonMode(BaseMode):
         """
         Stop the currently running script.
         """
+        logger.debug('Stopping script runner.')
         self.runner.process.kill()
         self.runner = None
         self.view.remove_python_runner()
@@ -133,7 +141,5 @@ class PythonMode(BaseMode):
         """
         Remove the Jupyter REPL session.
         """
-        if self.repl is None:
-            raise RuntimeError('REPL not running.')
         self.view.remove_repl()
         self.repl = None

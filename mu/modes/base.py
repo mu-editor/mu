@@ -89,7 +89,7 @@ class BaseMode:
                         'directory: {}'.format(settings['workspace']))
         return workspace_dir
 
-    def apis(self):
+    def api(self):
         """
         Return a list of API specifications to be used by auto-suggest and call
         tips.
@@ -194,5 +194,5 @@ class REPL:
             self.port = port
         else:
             # No idea how to deal with other OS's so fail.
-            raise NotImplementedError('OS not supported.')
+            raise NotImplementedError('OS "{}" not supported.'.format(os.name))
         logger.info('Created new REPL object with port: {}'.format(self.port))

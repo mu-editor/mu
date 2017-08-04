@@ -20,6 +20,7 @@ import logging
 from gettext import gettext as _
 from mu.logic import get_settings_path, HOME_DIRECTORY
 from mu.contrib import uflash, microfs
+from mu.resources.api import MICROPYTHON_APIS
 from mu.modes.base import MicroPythonMode
 
 
@@ -68,12 +69,12 @@ class MicrobitMode(MicroPythonMode):
             },
         ]
 
-    def apis(self):
+    def api(self):
         """
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return NotImplemented
+        return MICROPYTHON_APIS
 
     def flash(self):
         """

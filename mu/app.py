@@ -30,7 +30,6 @@ from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR
 from mu.interface import Window
 from mu.resources import load_pixmap
-from mu.resources.api import MICROPYTHON_APIS
 from mu.modes import PythonMode, AdafruitMode, MicrobitMode
 
 
@@ -99,10 +98,10 @@ def run():
     editor_window = Window()
     # Create the "editor" that'll control the "window".
     editor = Editor(view=editor_window)
-    editor.set_modes(setup_modes(editor, editor_window))
+    editor.setup(setup_modes(editor, editor_window))
     # Setup the window.
     editor_window.closeEvent = editor.quit
-    editor_window.setup(editor.theme, MICROPYTHON_APIS)
+    editor_window.setup(editor.theme)
     # capture the filename passed by the os, if there was one
     passed_filename = sys.argv[1] if len(sys.argv) > 1 else None
     editor.restore_session(passed_filename)

@@ -125,8 +125,7 @@ def test_EditorPane_configure():
     values may be. I.e. we're checking that, say, setIndentationWidth is
     called.
     """
-    api = ['api help text', ]
-    ep = mu.interface.EditorPane('/foo/bar.py', 'baz', api)
+    ep = mu.interface.EditorPane('/foo/bar.py', 'baz')
     ep.setFont = mock.MagicMock()
     ep.setUtf8 = mock.MagicMock()
     ep.setAutoIndent = mock.MagicMock()
@@ -149,7 +148,7 @@ def test_EditorPane_configure():
     ep.selectionChanged = mock.MagicMock()
     ep.selectionChanged.connect = mock.MagicMock()
     ep.configure()
-    assert ep.api == api
+    assert ep.api is None
     assert ep.setFont.call_count == 1
     assert ep.setUtf8.call_count == 1
     assert ep.setAutoIndent.call_count == 1
@@ -184,22 +183,14 @@ def test_EditorPane_set_theme():
     theme is updated.
     """
     api = ['api help text', ]
-    ep = mu.interface.EditorPane('/foo/bar.py', 'baz', api)
-    ep.setCaretForegroundColor = mock.MagicMock()
-    ep.setMarginsBackgroundColor = mock.MagicMock()
-    ep.setMarginsForegroundColor = mock.MagicMock()
-    ep.setIndicatorForegroundColor = mock.MagicMock()
-    ep.setLexer = mock.MagicMock()
+    ep = mu.interface.EditorPane('/foo/bar.py', 'baz')
+    ep.lexer = mock.MagicMock()
     mock_api = mock.MagicMock()
     with mock.patch('mu.interface.QsciAPIs', return_value=mock_api) as mapi:
-        ep.set_theme()
+        ep.set_api(api)
         mapi.assert_called_once_with(ep.lexer)
         mock_api.add.assert_called_once_with('api help text')
-    assert ep.setCaretForegroundColor.call_count == 1
-    assert ep.setMarginsBackgroundColor.call_count == 1
-    assert ep.setMarginsForegroundColor.call_count == 1
-    assert ep.setLexer.call_count == 1
-    assert ep.setIndicatorForegroundColor.call_count == 3
+        mock_api.prepare.assert_called_once_with()
 
 
 def test_EditorPane_label():
@@ -823,10 +814,20 @@ def test_Window_change_mode():
     """
     Ensure the change of mode is made by the button_bar.
     """
+    mock_mode = mock.MagicMock()
+    api = ['API details', ]
+    mock_mode.api.return_value = api
     w = mu.interface.Window()
+    w.tabs = mock.MagicMock()
+    w.tabs.count = mock.MagicMock(return_value=2)
+    tab1 = mock.MagicMock()
+    tab2 = mock.MagicMock()
+    w.tabs.widget = mock.MagicMock(side_effect=[tab1, tab2])
     w.button_bar = mock.MagicMock()
-    w.change_mode('python')
-    w.button_bar.change_mode.assert_called_with('python')
+    w.change_mode(mock_mode)
+    w.button_bar.change_mode.assert_called_with(mock_mode)
+    tab1.set_api.assert_called_once_with(api)
+    tab2.set_api.assert_called_once_with(api)
 
 
 def test_Window_zoom_in():
@@ -949,19 +950,22 @@ def test_Window_add_tab():
     w.theme = mock.MagicMock()
     w.api = ['an api help text', ]
     ep = mu.interface.EditorPane('/foo/bar.py', 'baz')
+    ep.set_api = mock.MagicMock()
     ep.modificationChanged = mock.MagicMock()
     ep.modificationChanged.connect = mock.MagicMock(return_value=None)
     ep.setFocus = mock.MagicMock(return_value=None)
     mock_ed = mock.MagicMock(return_value=ep)
     path = '/foo/bar.py'
     text = 'print("Hello, World!")'
+    api = ['API definition', ]
     with mock.patch('mu.interface.EditorPane', mock_ed):
-        w.add_tab(path, text)
-    mock_ed.assert_called_once_with(path, text, w.api)
+        w.add_tab(path, text, api)
+    mock_ed.assert_called_once_with(path, text)
     w.tabs.addTab.assert_called_once_with(ep, ep.label)
     w.tabs.setCurrentIndex.assert_called_once_with(new_tab_index)
     w.connect_zoom.assert_called_once_with(ep)
     w.set_theme.assert_called_once_with(w.theme)
+    ep.set_api.assert_called_once_with(api)
     ep.setFocus.assert_called_once_with()
     on_modified = ep.modificationChanged.connect.call_args[0][0]
     on_modified()
@@ -1052,28 +1056,92 @@ def test_Window_add_filesystem():
 
 def test_Window_add_micropython_repl():
     """
+    Ensure the expected object is instantiated and add_repl is called for a
+    MicroPython based REPL.
+    """
+    w = mu.interface.Window()
+    w.theme = mock.MagicMock()
+    w.connect_zoom = mock.MagicMock(return_value=None)
+    w.add_repl = mock.MagicMock()
+    mock_repl = mock.MagicMock()
+    mock_repl_class = mock.MagicMock(return_value=mock_repl)
+    mock_repl_arg = mock.MagicMock()
+    mock_repl_arg.port = mock.MagicMock('COM0')
+    with mock.patch('mu.interface.MicroPythonREPLPane', mock_repl_class):
+        w.add_micropython_repl(mock_repl_arg, 'Test REPL')
+    mock_repl_class.assert_called_once_with(port=mock_repl_arg.port,
+                                            theme=w.theme)
+    w.add_repl.assert_called_once_with(mock_repl, 'Test REPL')
+
+
+def test_Window_add_jupyter_repl():
+    """
+    Ensure the expected object is instantiated and add_repl is called for a
+    Jupyter based REPL.
+    """
+    w = mu.interface.Window()
+    w.theme = mock.MagicMock()
+    w.connect_zoom = mock.MagicMock(return_value=None)
+    w.add_repl = mock.MagicMock()
+    mock_repl = mock.MagicMock()
+    mock_kernel = mock.MagicMock()
+    mock_kernel_client = mock.MagicMock()
+    mock_repl.kernel = mock_kernel
+    mock_repl.client.return_value = mock_kernel_client
+    mock_pane = mock.MagicMock()
+    mock_pane_class = mock.MagicMock(return_value=mock_pane)
+    with mock.patch('mu.interface.JupyterREPLPane', mock_pane_class):
+        w.add_jupyter_repl(mock_repl)
+    mock_pane_class.assert_called_once_with(theme=w.theme)
+    assert mock_pane.kernel_manager == mock_repl
+    assert mock_pane.kernel_client == mock_kernel_client
+    assert mock_kernel.gui == 'qt4'
+    w.add_repl.assert_called_once_with(mock_pane, 'Python3 (Jupyter)')
+
+
+def test_Window_add_repl():
+    """
     Ensure the expected settings are updated.
     """
     w = mu.interface.Window()
     w.theme = mock.MagicMock()
-    w.splitter = mock.MagicMock()
-    w.splitter.addWidget = mock.MagicMock(return_value=None)
-    w.splitter.setSizes = mock.MagicMock(return_value=None)
     w.connect_zoom = mock.MagicMock(return_value=None)
     w.addDockWidget = mock.MagicMock()
-    mock_repl = mock.MagicMock()
-    mock_repl.setFocus = mock.MagicMock(return_value=None)
-    mock_repl_class = mock.MagicMock(return_value=mock_repl)
-    mock_repl_arg = mock.MagicMock()
-    mock_repl_arg.port = mock.MagicMock('COM0')
-    with mock.patch('mu.interface.MicroPythonREPLPane', mock_repl_class), \
-            mock.patch('mu.interface.QDockWidget'):
-        w.add_micropython_repl(mock_repl_arg, 'Test REPL')
-    mock_repl_class.assert_called_once_with(port=mock_repl_arg.port,
-                                            theme=w.theme)
-    assert w.repl_pane == mock_repl
-    mock_repl.setFocus.assert_called_once_with()
-    w.connect_zoom.assert_called_once_with(mock_repl)
+    mock_repl_pane = mock.MagicMock()
+    mock_repl_pane.setFocus = mock.MagicMock(return_value=None)
+    mock_dock = mock.MagicMock()
+    mock_dock_class = mock.MagicMock(return_value=mock_dock)
+    with mock.patch('mu.interface.QDockWidget'), \
+            mock.patch('mu.interface.QDockWidget', mock_dock_class):
+        w.add_repl(mock_repl_pane, 'Test REPL')
+    assert w.repl_pane == mock_repl_pane
+    mock_repl_pane.setFocus.assert_called_once_with()
+    w.connect_zoom.assert_called_once_with(mock_repl_pane)
+    w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
+
+
+def test_Window_add_python3_runner():
+    """
+    Ensure a Python 3 runner (to capture stdin/out/err) is displayed correctly.
+    """
+    w = mu.interface.Window()
+    w.theme = mock.MagicMock()
+    w.connect_zoom = mock.MagicMock(return_value=None)
+    w.addDockWidget = mock.MagicMock()
+    mock_process_runner = mock.MagicMock()
+    mock_process_class = mock.MagicMock(return_value=mock_process_runner)
+    mock_dock = mock.MagicMock()
+    mock_dock_class = mock.MagicMock(return_value=mock_dock)
+    name = 'foo'
+    path = 'bar'
+    with mock.patch('mu.interface.PythonProcessPane', mock_process_class), \
+            mock.patch('mu.interface.QDockWidget', mock_dock_class):
+        result = w.add_python3_runner(name, path)
+        assert result == mock_process_runner
+    assert w.process_runner == mock_process_runner
+    assert w.runner == mock_dock
+    w.runner.setWidget.assert_called_once_with(w.process_runner)
+    w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
 
 
 def test_Window_remove_filesystem():
@@ -1105,6 +1173,23 @@ def test_Window_remove_repl():
     mock_repl.setParent.assert_called_once_with(None)
     mock_repl.deleteLater.assert_called_once_with()
     assert w.repl is None
+
+
+def test_Window_remove_python_runner():
+    """
+    Check all the necessary calls to remove / reset the Python3 runner are
+    made.
+    """
+    w = mu.interface.Window()
+    mock_runner = mock.MagicMock()
+    mock_runner.setParent = mock.MagicMock(return_value=None)
+    mock_runner.deleteLater = mock.MagicMock(return_value=None)
+    w.runner = mock_runner
+    w.remove_python_runner()
+    mock_runner.setParent.assert_called_once_with(None)
+    mock_runner.deleteLater.assert_called_once_with()
+    assert w.process_runner is None
+    assert w.runner is None
 
 
 def test_Window_set_theme():
@@ -1360,13 +1445,11 @@ def test_Window_setup():
     mock_qtw.removeTab = mock.MagicMock
     mock_qtw_class = mock.MagicMock(return_value=mock_qtw)
     theme = 'night'
-    api = ['some api docs', ]
     with mock.patch('mu.interface.QWidget', mock_widget_class), \
             mock.patch('mu.interface.ButtonBar', mock_button_bar_class), \
             mock.patch('mu.interface.FileTabs', mock_qtw_class):
-        w.setup(theme, api)
+        w.setup(theme)
     assert w.theme == theme
-    assert w.api == api
     assert w.setWindowIcon.call_count == 1
     assert isinstance(w.setWindowIcon.call_args[0][0], QIcon)
     w.update_title.assert_called_once_with()
@@ -1378,6 +1461,33 @@ def test_Window_setup():
     w.setCentralWidget.call_count == 1
     w.addToolBar.call_count == 1
     w.autosize_window.assert_called_once_with()
+
+
+def test_Window_set_timer():
+    """
+    Ensure a repeating timer with the referenced callback is created.
+    """
+    w = mu.interface.Window()
+    mock_timer = mock.MagicMock()
+    mock_timer_class = mock.MagicMock(return_value=mock_timer)
+    mock_callback = mock.MagicMock()
+    with mock.patch('mu.interface.QTimer', mock_timer_class):
+        w.set_timer(5, mock_callback)
+        assert w.timer == mock_timer
+        w.timer.timeout.connect.assert_called_once_with(mock_callback)
+        w.timer.start.assert_called_once_with(5 * 1000)
+
+
+def test_Window_stop_timer():
+    """
+    Ensure the timer is stopped and destroyed.
+    """
+    mock_timer = mock.MagicMock()
+    w = mu.interface.Window()
+    w.timer = mock_timer
+    w.stop_timer()
+    assert w.timer is None
+    mock_timer.stop.assert_called_once_with()
 
 
 def test_MicroPythonREPLPane_init_default_args():
@@ -2467,3 +2577,296 @@ def test_LogDisplay_setup():
     ld = mu.interface.LogDisplay()
     ld.setup(log)
     assert ld.log_text_area.toPlainText() == log
+
+
+def test_JupyterREPLPane_init():
+    """
+    Ensure the widget is setup with the correct defaults.
+    """
+    jw = mu.interface.JupyterREPLPane()
+    assert jw.console_height == 10
+
+
+def test_JupyterREPLPane_set_font_size():
+    """
+    Check the correct stylesheet values are being set.
+    """
+    jw = mu.interface.JupyterREPLPane()
+    jw.setStyleSheet = mock.MagicMock()
+    jw.set_font_size(16)
+    style = jw.setStyleSheet.call_args[0][0]
+    assert 'font-size: 16pt;' in style
+    assert 'font-family: Monospace;' in style
+
+
+def test_JupyterREPLPane_zoomIn():
+    """
+    Ensure zooming in increases the font size.
+    """
+    jw = mu.interface.JupyterREPLPane()
+    jw.set_font_size = mock.MagicMock()
+    old_size = jw.font.pointSize()
+    jw.zoomIn(delta=4)
+    jw.set_font_size.assert_called_once_with(old_size + 4)
+
+
+def test_JupyterREPLPane_zoomOut():
+    """
+    Ensure zooming out decreases the font size.
+    """
+    jw = mu.interface.JupyterREPLPane()
+    jw.set_font_size = mock.MagicMock()
+    old_size = jw.font.pointSize()
+    jw.zoomOut(delta=4)
+    jw.set_font_size.assert_called_once_with(old_size - 4)
+
+
+def test_JupyterREPLPane_set_theme_day():
+    """
+    Make sure the theme is correctly set for day.
+    """
+    jw = mu.interface.JupyterREPLPane()
+    jw.set_default_style = mock.MagicMock()
+    jw.setStyleSheet = mock.MagicMock()
+    jw.set_theme('day')
+    jw.set_default_style.assert_called_once_with()
+    jw.setStyleSheet.assert_called_once_with(mu.interface.DAY_STYLE)
+
+
+def test_JupyterREPLPane_set_theme_night():
+    """
+    Make sure the theme is correctly set for night.
+    """
+    jw = mu.interface.JupyterREPLPane()
+    jw.set_default_style = mock.MagicMock()
+    jw.setStyleSheet = mock.MagicMock()
+    jw.set_theme('night')
+    jw.set_default_style.assert_called_once_with(colors='nocolor')
+    jw.setStyleSheet.assert_called_once_with(mu.interface.NIGHT_STYLE)
+
+
+def test_PythonProcessPane_init():
+    """
+    Check the font and input_buffer is set.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    assert ppp.font()
+    assert ppp.input_buffer == []
+
+
+def test_PythonProcessPane_start_process():
+    """
+    Ensure the widget is created as expected.
+    """
+    mock_process = mock.MagicMock()
+    mock_process_class = mock.MagicMock(return_value=mock_process)
+    mock_merge_chans = mock.MagicMock()
+    mock_process_class.MergedChannels = mock_merge_chans
+    with mock.patch('mu.interface.QProcess', mock_process_class):
+        ppp = mu.interface.PythonProcessPane()
+        ppp.start_process('workspace', 'script.py')
+    assert mock_process_class.call_count == 1
+    assert ppp.process == mock_process
+    ppp.process.setProcessChannelMode.assert_called_once_with(mock_merge_chans)
+    ppp.process.setWorkingDirectory.assert_called_once_with('workspace')
+    ppp.process.readyRead.connect.assert_called_once_with(ppp.read)
+    ppp.process.finished.connect.assert_called_once_with(ppp.finished)
+    ppp.process.start.assert_called_once_with('python3', ['-u', 'script.py'])
+
+
+def test_PythonProcessPane_finished():
+    """
+    Check the functionality to handle the process finishing is correct.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    mock_cursor = mock.MagicMock()
+    mock_cursor.insertText = mock.MagicMock()
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.setDisabled = mock.MagicMock()
+    ppp.finished(0, 1)
+    assert mock_cursor.insertText.call_count == 2
+    assert 'exit code: 0' in mock_cursor.insertText.call_args[0][0]
+    assert 'status: 1' in mock_cursor.insertText.call_args[0][0]
+    ppp.setDisabled.assert_called_once_with(True)
+
+
+def test_PythonProcessPane_append():
+    """
+    Ensure the referenced byte_stream is added to the textual content of the
+    QTextEdit.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    mock_cursor = mock.MagicMock()
+    mock_cursor.insertText = mock.MagicMock()
+    ppp.setTextCursor = mock.MagicMock()
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.append(b'hello')
+    mock_cursor.insertText.assert_called_once_with('hello')
+
+
+def test_PythonProcessPane_delete():
+    """
+    Make sure that removing a character from the QTextEdit works as expected.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    ppp.input_buffer = ['a', 'b', ]
+    mock_cursor = mock.MagicMock()
+    mock_cursor.deletePreviousChar = mock.MagicMock()
+    ppp.setTextCursor = mock.MagicMock()
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.delete()
+    assert ppp.input_buffer == ['a', ]
+    mock_cursor.deletePreviousChar.assert_called_once_with()
+
+
+def test_PythonProcessPane_read():
+    """
+    Ensure incoming bytes from sub-process's stout are processed correctly.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    ppp.append = mock.MagicMock()
+    ppp.process = mock.MagicMock()
+    ppp.read()
+    assert ppp.append.call_count == 1
+    assert ppp.process.readAll().data.call_count == 1
+
+
+def test_PythonProcessPane_keyPressEvent_a():
+    """
+    A "regular" character is typed.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_A)
+    data.text = mock.MagicMock(return_value='a')
+    data.modifiers = mock.MagicMock(return_value=None)
+    ppp.keyPressEvent(data)
+    assert ppp.input_buffer == [b'a', ]
+
+
+def test_PythonProcessPane_keyPressEvent_backspace():
+    """
+    A backspace is typed.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    ppp.input_buffer = [b'a', 'b', ]
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Backspace)
+    data.text = mock.MagicMock(return_value='\b')
+    data.modifiers = mock.MagicMock(return_value=None)
+    ppp.keyPressEvent(data)
+    assert ppp.input_buffer == [b'a', ]
+
+
+def test_PythonProcessPane_keyPressEvent_paste():
+    """
+    Control-V (paste)  character is typed.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_V)
+    data.text = mock.MagicMock(return_value='')
+    data.modifiers = mock.MagicMock(return_value=Qt.ControlModifier |
+                                    Qt.ShiftModifier)
+    ppp.paste = mock.MagicMock()
+    ppp.keyPressEvent(data)
+    ppp.paste.assert_called_once_with()
+
+
+def test_PythonProcessPane_keyPressEvent_copy():
+    """
+    A "regular" character is typed.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_C)
+    data.text = mock.MagicMock(return_value='')
+    data.modifiers = mock.MagicMock(return_value=Qt.ControlModifier |
+                                    Qt.ShiftModifier)
+    ppp.copy = mock.MagicMock()
+    ppp.keyPressEvent(data)
+    ppp.copy.assert_called_once_with()
+
+
+def test_PythonProcessPane_keyPressEvent_newline():
+    """
+    A "regular" character is typed.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.input_buffer = [b'a', ]
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Enter)
+    data.text = mock.MagicMock(return_value='\r')
+    data.modifiers = mock.MagicMock(return_value=None)
+    ppp.keyPressEvent(data)
+    assert ppp.input_buffer == []
+    ppp.process.write.assert_called_once_with(b'a\n')
+
+
+def test_PythonProcessPane_zoomIn():
+    """
+    Check ZoomIn increases point size.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    ppp.font = mock.MagicMock()
+    ppp.font().pointSize.return_value = 12
+    with mock.patch('mu.interface.QTextEdit.zoomIn') as mock_zoom:
+        ppp.zoomIn(8)
+        mock_zoom.assert_called_once_with(8)
+
+
+def test_PythonProcessPane_zoomIn_max():
+    """
+    Check ZoomIn only works up to point size of 34
+    """
+    ppp = mu.interface.PythonProcessPane()
+    ppp.font = mock.MagicMock()
+    ppp.font().pointSize.return_value = 34
+    with mock.patch('mu.interface.QTextEdit.zoomIn') as mock_zoom:
+        ppp.zoomIn(8)
+        assert mock_zoom.call_count == 0
+
+
+def test_PythonProcessPane_zoomOut():
+    """
+    Check ZoomOut decreases point size.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    ppp.font = mock.MagicMock()
+    ppp.font().pointSize.return_value = 12
+    with mock.patch('mu.interface.QTextEdit.zoomOut') as mock_zoom:
+        ppp.zoomOut(6)
+        mock_zoom.assert_called_once_with(6)
+
+
+def test_PythonProcessPane_zoomOut_min():
+    """
+    Check ZoomOut decreases point size down to 4
+    """
+    ppp = mu.interface.PythonProcessPane()
+    ppp.font = mock.MagicMock()
+    ppp.font().pointSize.return_value = 4
+    with mock.patch('mu.interface.QTextEdit.zoomOut') as mock_zoom:
+        ppp.zoomOut(8)
+        assert mock_zoom.call_count == 0
+
+
+def test_PythonProcessPane_set_theme_day():
+    """
+    Set the theme to day.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    ppp.setStyleSheet = mock.MagicMock()
+    ppp.set_theme('day')
+    ppp.setStyleSheet.assert_called_once_with(mu.interface.DAY_STYLE)
+
+
+def test_PythonProcessPane_set_theme_night():
+    """
+    Set the theme to night.
+    """
+    ppp = mu.interface.PythonProcessPane()
+    ppp.setStyleSheet = mock.MagicMock()
+    ppp.set_theme('night')
+    ppp.setStyleSheet.assert_called_once_with(mu.interface.NIGHT_STYLE)
