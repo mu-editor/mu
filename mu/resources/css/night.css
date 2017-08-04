@@ -3,6 +3,11 @@ QStackedWidget, QWidget, QApplication {
     color: white;
 }
 
+QDialog, QLabel, QStatusBar {
+    background-color: #333;
+    color: white;
+}
+
 QToolButton:hover {
     color: #FF0000;
 }
@@ -51,9 +56,6 @@ QMessageBox {
 QPushButton {
     background: #fff;
     color: #000;
-    border: 3px #fff solid;
-    font-size: 14pt;
-    padding:1em;
 }
 
 QTabWidget::pane {
@@ -62,4 +64,8 @@ QTabWidget::pane {
 
 QListWidget {
     border: 1px solid white;
+}
+
+QListWidget::item:selected {
+    background: #444;
 }

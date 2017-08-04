@@ -891,12 +891,12 @@ class Window(QMainWindow):
         if hasattr(self, 'repl') and self.repl:
             self.repl_pane.set_theme(theme)
 
-    def show_logs(self, log):
+    def show_logs(self, log, theme):
         """
         Display the referenced content of the log.
         """
         log_box = LogDisplay()
-        log_box.setup(log)
+        log_box.setup(log, theme)
         log_box.exec()
 
     def show_message(self, message, information=None, icon=None):
@@ -1023,12 +1023,12 @@ class Window(QMainWindow):
         size = resizeEvent.size()
         self.button_bar.set_responsive_mode(size.width(), size.height())
 
-    def select_mode(self, modes, current_mode):
+    def select_mode(self, modes, current_mode, theme):
         """
         Display the mode selector dialog and return the result.
         """
         mode_select = ModeSelector()
-        mode_select.setup(modes, current_mode)
+        mode_select.setup(modes, current_mode, theme)
         mode_select.exec()
         try:
             return mode_select.get_mode()
@@ -1130,7 +1130,11 @@ class ModeSelector(QDialog):
     Defines a UI for selecting the mode for Mu.
     """
 
-    def setup(self, modes, current_mode):
+    def setup(self, modes, current_mode, theme):
+        if theme == 'day':
+            self.setStyleSheet(DAY_STYLE)
+        else:
+            self.setStyleSheet(NIGHT_STYLE)
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_('Select Mode'))
         widget_layout = QVBoxLayout()
@@ -1166,7 +1170,11 @@ class LogDisplay(QDialog):
     Defines the UI for displaying the logs produced by Mu.
     """
 
-    def setup(self, log):
+    def setup(self, log, theme):
+        if theme == 'day':
+            self.setStyleSheet(DAY_STYLE)
+        else:
+            self.setStyleSheet(NIGHT_STYLE)
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_('Mu Debug Log'))
         widget_layout = QVBoxLayout()

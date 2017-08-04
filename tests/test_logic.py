@@ -496,9 +496,15 @@ def test_new():
     """
     view = mock.MagicMock()
     view.add_tab = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    api = ['API specification', ]
+    mock_mode.api.return_value = api
     ed = mu.logic.Editor(view)
+    ed.modes = {
+        'python': mock_mode,
+    }
     ed.new()
-    view.add_tab.assert_called_once_with(None, '')
+    view.add_tab.assert_called_once_with(None, '', api)
 
 
 def test_load_python_file():

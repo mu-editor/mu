@@ -788,9 +788,10 @@ def test_Window_select_mode_selected():
     current_mode = 'python'
     with mock.patch('mu.interface.ModeSelector', mock_mode_selector):
         w = mu.interface.Window()
-        result = w.select_mode(mock_modes, current_mode)
+        result = w.select_mode(mock_modes, current_mode, 'day')
         assert result == 'foo'
-        mock_selector.setup.assert_called_once_with(mock_modes, current_mode)
+        mock_selector.setup.assert_called_once_with(mock_modes, current_mode,
+                                                    'day')
         mock_selector.exec.assert_called_once_with()
 
 
@@ -806,7 +807,7 @@ def test_Window_select_mode_cancelled():
     current_mode = 'python'
     with mock.patch('mu.interface.ModeSelector', mock_mode_selector):
         w = mu.interface.Window()
-        result = w.select_mode(mock_modes, current_mode)
+        result = w.select_mode(mock_modes, current_mode, 'day')
         assert result is None
 
 
@@ -1233,9 +1234,9 @@ def test_Window_show_logs():
     mock_log_display.return_value = mock_log_box
     with mock.patch('mu.interface.LogDisplay', mock_log_display):
         w = mu.interface.Window()
-        w.show_logs('foo')
+        w.show_logs('foo', 'day')
         mock_log_display.assert_called_once_with()
-        mock_log_box.setup.assert_called_once_with('foo')
+        mock_log_box.setup.assert_called_once_with('foo', 'day')
         mock_log_box.exec.assert_called_once_with()
 
 
@@ -2546,8 +2547,30 @@ def test_ModeSelector_setup():
     mock_item = mock.MagicMock()
     with mock.patch('mu.interface.ModeItem', mock_item):
         ms = mu.interface.ModeSelector()
-        ms.setup(modes, current_mode)
+        ms.setup(modes, current_mode, 'day')
     assert mock_item.call_count == 3
+
+
+def test_ModeSelector_setup_night_theme():
+    """
+    Ensure the ModeSelector can cope with theme.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    modes = {
+        'python': PythonMode(editor, view),
+        'adafruit': AdafruitMode(editor, view),
+        'microbit': MicrobitMode(editor, view),
+    }
+    current_mode = 'python'
+    mock_item = mock.MagicMock()
+    mock_css = mock.MagicMock()
+    with mock.patch('mu.interface.ModeItem', mock_item):
+        ms = mu.interface.ModeSelector()
+        ms.setStyleSheet = mock_css
+        ms.setup(modes, current_mode, 'night')
+    assert mock_item.call_count == 3
+    mock_css.assert_called_once_with(mu.interface.NIGHT_STYLE)
 
 
 def test_ModeSelector_get_mode():
@@ -2575,8 +2598,20 @@ def test_LogDisplay_setup():
     """
     log = 'this is the contents of a log file'
     ld = mu.interface.LogDisplay()
-    ld.setup(log)
+    ld.setup(log, 'day')
     assert ld.log_text_area.toPlainText() == log
+
+
+def test_LogDisplay_setup_night():
+    """
+    Ensure the log display dialog can be themed.
+    """
+    log = 'this is the contents of a log file'
+    ld = mu.interface.LogDisplay()
+    ld.setStyleSheet = mock.MagicMock()
+    ld.setup(log, 'night')
+    assert ld.log_text_area.toPlainText() == log
+    ld.setStyleSheet.assert_called_once_with(mu.interface.NIGHT_STYLE)
 
 
 def test_JupyterREPLPane_init():

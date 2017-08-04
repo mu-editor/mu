@@ -347,7 +347,7 @@ class Editor:
         Adds a new tab to the editor.
         """
         logger.info('Added a new tab.')
-        self._view.add_tab(None, '')
+        self._view.add_tab(None, '', self.modes[self.mode].api())
 
     def _load(self, path):
         logger.info('Loading script from: {}'.format(path))
@@ -446,12 +446,12 @@ class Editor:
         Uses PyFlakes and PyCodeStyle to gather information about potential
         problems with the code in the current tab.
         """
-        logger.info('Checking code.')
-        self._view.reset_annotations()
         tab = self._view.current_tab
         if tab is None:
             # There is no active text editor so abort.
             return
+        logger.info('Checking code.')
+        self._view.reset_annotations()
         filename = tab.path if tab.path else 'untitled'
         flake = check_flake(filename, tab.text())
         if flake:
@@ -511,14 +511,14 @@ class Editor:
         """
         logger.info('Showing logs from {}'.format(LOG_FILE))
         with open(LOG_FILE, 'r') as logfile:
-            self._view.show_logs(logfile.read())
+            self._view.show_logs(logfile.read(), self.theme)
 
     def select_mode(self, event):
         """
         Select the mode that editor is supposed to be in.
         """
         logger.info('Showing available modes: {}'.format(self.modes.keys()))
-        new_mode = self._view.select_mode(self.modes, self.mode)
+        new_mode = self._view.select_mode(self.modes, self.mode, self.theme)
         if new_mode and new_mode is not self.mode:
             self.mode = new_mode
             self.change_mode(self.mode)
