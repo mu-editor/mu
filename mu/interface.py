@@ -1684,7 +1684,7 @@ class PythonProcessPane(QTextEdit):
         cursor.insertText(_('\n\n---------- FINISHED ----------\n'))
         msg = _('exit code: {} status: {}').format(code, status)
         cursor.insertText(msg)
-        self.setDisabled(True)
+        self.setReadOnly(True)
 
     def append(self, byte_stream):
         """
@@ -1742,7 +1742,8 @@ class PythonProcessPane(QTextEdit):
             self.delete()
         else:
             self.input_buffer.append(msg)
-            self.append(msg)
+            if not self.isReadOnly():
+                self.append(msg)
         if self.input_buffer and self.input_buffer[-1] == b'\n':
             if hasattr(self, 'process') and self.process:
                 self.process.write(b''.join(self.input_buffer))
