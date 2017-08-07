@@ -98,7 +98,7 @@ def test_flash_with_attached_device():
         editor = mock.MagicMock()
         mm = MicrobitMode(editor, view)
         mm.flash()
-        assert view.show_message.call_count == 1
+        assert editor.show_status_message.call_count == 1
         hex_file_path = os.path.join('bar', 'micropython.hex')
         s.assert_called_once_with('foo', hex_file_path)
 
@@ -119,8 +119,9 @@ def test_flash_with_attached_device_and_custom_runtime():
         editor = mock.MagicMock()
         mm = MicrobitMode(editor, view)
         mm.flash()
-        assert view.show_message.call_count == 1
-        assert 'tests/customhextest.hex' in view.show_message.call_args[0][0]
+        assert editor.show_status_message.call_count == 1
+        assert 'tests/customhextest.hex' in \
+            editor.show_status_message.call_args[0][0]
         assert fl.call_count == 1
 
 
@@ -144,7 +145,7 @@ def test_flash_user_specified_device_path():
         mm.flash()
         home = HOME_DIRECTORY
         view.get_microbit_path.assert_called_once_with(home)
-        assert view.show_message.call_count == 1
+        assert editor.show_status_message.call_count == 1
         assert mm.user_defined_microbit_path == 'bar'
         hex_file_path = os.path.join('bar', 'micropython.hex')
         s.assert_called_once_with('foo', hex_file_path)
@@ -170,7 +171,7 @@ def test_flash_existing_user_specified_device_path():
         mm.user_defined_microbit_path = 'baz'
         mm.flash()
         assert view.get_microbit_path.call_count == 0
-        assert view.show_message.call_count == 1
+        assert editor.show_status_message.call_count == 1
         hex_file_path = os.path.join('baz', 'micropython.hex')
         s.assert_called_once_with('foo', hex_file_path)
 

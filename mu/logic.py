@@ -28,6 +28,7 @@ import tempfile
 import platform
 import webbrowser
 import gettext
+import random
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 # Currently there is no pycodestyle deb packages, so fallback to old name
@@ -66,6 +67,80 @@ EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
                    "sleep, pin20, button_a, button_b, running_time, "
                    "accelerometer, display, uart, spi, panic, pin13, "
                    "pin12, pin11, pin10, compass")
+
+
+"""
+
+"""
+MOTD = [  #: Candidate phrases for the message of the day (MOTD).
+    _('Hello, World!'),
+    _("This editor is free software written in Python. You can modify it, "
+      "add features or fix bugs if you like."),
+    _("This editor is called Mu (you say it 'mew' or 'moo')."),
+    _("Google, Facebook, NASA, Pixar, Disney and many more use Python."),
+    _("Programming is a form of magic. Learn to cast the right spells with "
+      "code and you'll become a wizard."),
+    _("Your teacher is probably only a few lessons ahead of you."),
+    _("REPL stands for read, evaluate, print, loop. It's a fun way to talk to "
+      "your computer! :-)"),
+    _("When programming, show kindness, compassion and forgiveness."),
+    _("When programming, share freely without fraud or falsehood."),
+    _("When programming, take no more time or resource than is needed."),
+    _("When programming, treat others with courtesy, dignity and respect."),
+    _('Be brave, break things, learn and have fun!'),
+    _("Make your software both useful AND fun. Empower your users."),
+    _('For the Zen of Python: import this'),
+    _("An open mind, spirit of adventure and respect for diversity are key."),
+    _("Don't worry if it doesn't work. Learn the lesson, fix it and try "
+      "again! :-)"),
+    _("Coding is collaboration."),
+    _("Compliment and amplify the good things with code."),
+    _("In theory, theory and practice are the same. In practice, they're "
+      "not. ;-)"),
+    _("Debugging is twice as hard as writing the code in the first place."),
+    _("It's fun to program."),
+    _("Programming has more to do with problem solving than writing code."),
+    _("Start with your users' needs."),
+    _("Try to see things from your users' point of view."),
+    _("Put yourself in your users' shoes."),
+    _("Explaining a programming problem to a friend often reveals the "
+      "solution. :-)"),
+    _("If you don't know, ask. Nobody to ask? Just look it up."),
+    _("Complexity is the enemy. KISS - keep it simple, stupid!"),
+    _("Beautiful is better than ugly."),
+    _("Explicit is better than implicit."),
+    _("Simple is better than complex. Complex is better than complicated."),
+    _("Flat is better than nested."),
+    _("Sparse is better than dense."),
+    _("A good programmer is humble."),
+    _("A good programmer is playful."),
+    _("A good programmer learns to learn."),
+    _("A good programmer thinks beyond the obvious."),
+    _("A good programmer promotes simplicity."),
+    _("A good programmer avoids complexity."),
+    _("A good programmer is patient."),
+    _("A good programmer asks questions."),
+    _("A good programmer is willing to say, 'I don't know'."),
+    _("Wisest are they that know they know nothing."),
+    _("Readability counts."),
+    _("Special cases aren't special enough to break the rules. "
+      "Although practicality beats purity."),
+    _("Errors should never pass silently. Unless explicitly silenced."),
+    _("In the face of ambiguity, refuse the temptation to guess."),
+    _("There should be one-- and preferably only one --obvious way to do it."),
+    _("Now is better than never. Although never is often better than "
+      "*right* now."),
+    _("If the implementation is hard to explain, it's a bad idea."),
+    _("If the implementation is easy to explain, it may be a good idea."),
+    _("Namespaces are one honking great idea -- let's do more of those!"),
+    _("Mu was created by Nicholas H.Tollervey."),
+    _("It's a feature, not a bug!"),
+    _("To understand what recursion is, you must first understand recursion."),
+    _("Algorithm: a word used by programmers when they don't want to explain "
+      "what they did."),
+    _("Programmers count from zero."),
+    _("Simplicity is the ultimate sophistication."),
+]
 
 
 logger = logging.getLogger(__name__)
@@ -312,6 +387,9 @@ class Editor:
                     self.theme = old_session['theme']
                 if 'mode' in old_session:
                     self.mode = old_session['mode']
+                else:
+                    # So ask for the desired mode.
+                    self.select_mode(None)
                 if 'paths' in old_session:
                     for path in old_session['paths']:
                         # if the os passed in a file, defer loading it now
@@ -330,6 +408,7 @@ class Editor:
             logger.info('Starting with blank file.')
         self.change_mode(self.mode)
         self._view.set_theme(self.theme)
+        self.show_status_message(random.choice(MOTD))
 
     def toggle_theme(self):
         """
@@ -416,6 +495,7 @@ class Editor:
                     logger.debug(tab.text())
                     f.write(tab.text())
                 tab.setModified(False)
+                self.show_status_message(_("Saved file: {}").format(tab.path))
             except OSError as e:
                 logger.error(e)
                 message = _('Could not save file.')
@@ -495,7 +575,6 @@ class Editor:
             'workspace': self.modes[self.mode].workspace_dir(),
             'microbit_runtime_hex': self.modes['microbit'].get_hex_path()
         }
-        logger.debug(session)
         settings_path = get_settings_path()
         with open(settings_path, 'w') as out:
             logger.debug('Session: {}'.format(session))
@@ -517,11 +596,14 @@ class Editor:
         """
         Select the mode that editor is supposed to be in.
         """
-        logger.info('Showing available modes: {}'.format(self.modes.keys()))
+        logger.info('Showing available modes: {}'.format(
+            list(self.modes.keys())))
         new_mode = self._view.select_mode(self.modes, self.mode, self.theme)
         if new_mode and new_mode is not self.mode:
             self.mode = new_mode
             self.change_mode(self.mode)
+            self.show_status_message(_('Changed to {} mode.').format(
+                                     self.mode.capitalize()))
 
     def change_mode(self, mode):
         """
@@ -570,3 +652,9 @@ class Editor:
                         logger.debug(tab.text())
                         f.write(tab.text())
                     tab.setModified(False)
+
+    def show_status_message(self, message, duration=5):
+        """
+        Displays the referenced message for duration seconds.
+        """
+        self._view.status_bar.set_message(message, duration * 1000)

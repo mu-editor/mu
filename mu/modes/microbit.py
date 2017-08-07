@@ -121,12 +121,8 @@ class MicrobitMode(MicroPythonMode):
                          path_to_runtime=rt_hex_path)
             message = _('Flashing "{}" onto the micro:bit.').format(tab.label)
             if (rt_hex_path is not None and os.path.exists(rt_hex_path)):
-                message = message + _("\nRuntime: {}").format(rt_hex_path)
-            information = _("When the yellow LED stops flashing the device"
-                            " will restart and your script will run. If there"
-                            " is an error, you'll see a helpful message scroll"
-                            " across the device's display.")
-            self.view.show_message(message, information, 'Information')
+                message = message + _(" Runtime: {}").format(rt_hex_path)
+            self.editor.show_status_message(message, 10)
         else:
             # Reset user defined path since it's incorrect.
             self.user_defined_microbit_path = None

@@ -102,6 +102,8 @@ class PythonMode(BaseMode):
             self.view.button_bar.slots['run'].setText(_('Stop'))
             self.view.button_bar.slots['run'].setToolTip(
                 _('Quit the running code.'))
+            self.editor.show_status_message(_("Running script {}").format(
+                tab.path))
             self.runner = self.view.add_python3_runner(tab.path,
                                                        self.workspace_dir())
 

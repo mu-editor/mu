@@ -1081,7 +1081,6 @@ class StatusBar(QStatusBar):
         self.logs_label.setPixmap(load_pixmap('logs').scaledToHeight(24))
         self.logs_label.setToolTip(_('View logs.'))
         self.addPermanentWidget(self.logs_label)
-        self.set_message(_("Hello, World!"))
 
     def connect_logs(self, handler):
         """
@@ -1149,6 +1148,11 @@ class ModeSelector(QDialog):
         for name, item in modes.items():
             ModeItem(item.name, item.description, item.icon, self.mode_list)
         self.mode_list.sortItems()
+        instructions = QLabel(_('You can change mode at any time by clicking '
+                                'the name of the current mode shown in the '
+                                ' bottom right-hand corner of Mu.'))
+        instructions.setWordWrap(True)
+        widget_layout.addWidget(instructions)
         button_box = QDialogButtonBox(QDialogButtonBox.Ok |
                                       QDialogButtonBox.Cancel)
         button_box.accepted.connect(self.accept)

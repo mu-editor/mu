@@ -359,6 +359,7 @@ def test_editor_restore_session_no_session_file():
     view.tab_count = 0
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
+    ed.select_mode = mock.MagicMock()
     mock_mode = mock.MagicMock()
     api = ['API specification', ]
     mock_mode.api.return_value = api
@@ -375,6 +376,7 @@ def test_editor_restore_session_no_session_file():
     py = '# Write your code here :-)'.format(
         os.linesep, os.linesep)
     ed._view.add_tab.assert_called_once_with(None, py, api)
+    ed.select_mode.assert_called_once_with(None)
 
 
 def test_editor_restore_session_invalid_file():
@@ -425,6 +427,7 @@ def test_editor_open_focus_passed_file():
         'scripts',
         'contains_red.py'
     )
+    ed.select_mode = mock.MagicMock()
     ed.restore_session(file_path)
     ed._load.assert_called_once_with(file_path)
 
@@ -445,6 +448,7 @@ def test_editor_session_and_open_focus_passed_file():
     ed.modes = {
         'python': mock_mode,
     }
+    ed.select_mode = mock.MagicMock()
     settings = json.dumps({
         "paths": ["path/foo.py",
                   "path/bar.py"]}, )
@@ -1083,3 +1087,14 @@ def test_autosave():
         ed.autosave()
     assert mock_open_atomic.call_count == 1
     mock_tab.setModified.assert_called_once_with(False)
+
+
+def test_show_status_message():
+    """
+    Ensure the method calls the status_bar in the view layer.
+    """
+    msg = "Hello, World!"
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.show_status_message(msg, 8)
+    view.status_bar.set_message.assert_called_once_with(msg, 8000)
