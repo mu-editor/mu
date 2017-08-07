@@ -103,7 +103,7 @@ class MicroPythonMode(BaseMode):
     """
     valid_boards = BOARD_IDS
 
-    def find_device(self):
+    def find_device(self, with_logging=True):
         """
         Returns the port for the first MicroPython-ish device found connected
         to the host computer. If no device is found, returns None.
@@ -117,12 +117,13 @@ class MicroPythonMode(BaseMode):
                 port_name = port.portName()
                 logger.info('Found device on port: {}'.format(port_name))
                 return port_name
-        logger.warning('Could not find device.')
-        logger.debug('Available ports:')
-        logger.debug(['PID:{} VID:{} PORT:{}'.format(p.productIdentifier(),
-                                                     p.vendorIdentifier(),
-                                                     p.portName())
-                     for p in available_ports])
+        if with_logging:
+            logger.warning('Could not find device.')
+            logger.debug('Available ports:')
+            logger.debug(['PID:{} VID:{} PORT:{}'.format(p.productIdentifier(),
+                                                         p.vendorIdentifier(),
+                                                         p.portName())
+                         for p in available_ports])
         return None
 
     def toggle_repl(self, event):

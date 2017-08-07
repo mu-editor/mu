@@ -1464,6 +1464,21 @@ def test_Window_setup():
     w.autosize_window.assert_called_once_with()
 
 
+def test_Window_set_usb_checker():
+    """
+    Ensure the callback for checking for connected devices is set as expected.
+    """
+    w = mu.interface.Window()
+    mock_timer = mock.MagicMock()
+    mock_timer_class = mock.MagicMock(return_value=mock_timer)
+    mock_callback = mock.MagicMock()
+    with mock.patch('mu.interface.QTimer', mock_timer_class):
+        w.set_usb_checker(1, mock_callback)
+        assert w.usb_checker == mock_timer
+        w.usb_checker.timeout.connect.assert_called_once_with(mock_callback)
+        w.usb_checker.start.assert_called_once_with(1000)
+
+
 def test_Window_set_timer():
     """
     Ensure a repeating timer with the referenced callback is created.

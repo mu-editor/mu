@@ -1089,6 +1089,24 @@ def test_autosave():
     mock_tab.setModified.assert_called_once_with(False)
 
 
+def test_check_usb():
+    """
+    Ensure the check_usb callback actually checks for connected USB devices.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    mode = mock.MagicMock()
+    mode.find_device.return_value = '/dev/ttyUSB0'
+    ed.modes = {
+        'microbit': mode,
+    }
+    ed.show_status_message = mock.MagicMock()
+    ed.check_usb()
+    expected = ("Connection from a new device detected. "
+                "Please switch to Microbit mode.")
+    ed.show_status_message.assert_called_once_with(expected)
+
+
 def test_show_status_message():
     """
     Ensure the method calls the status_bar in the view layer.

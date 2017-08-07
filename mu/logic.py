@@ -347,6 +347,7 @@ class Editor:
         self.theme = 'day'
         self.mode = 'python'
         self.modes = {}  # See set_modes.
+        self.connected_devices = set()
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
@@ -366,6 +367,9 @@ class Editor:
         if not os.path.exists(wd):
             logger.debug('Creating directory: {}'.format(wd))
             os.makedirs(wd)
+        # Start the timer to poll every second for an attached or removed
+        # USB device.
+        self._view.set_usb_checker(1, self.check_usb)
 
     def restore_session(self, passed_filename=None):
         """
@@ -652,6 +656,25 @@ class Editor:
                         logger.debug(tab.text())
                         f.write(tab.text())
                     tab.setModified(False)
+
+    def check_usb(self):
+        """
+        Ensure connected USB devices are polled. If there's a change and a new
+        recognised device is attached, inform the user via a status message.
+        """
+        for name, mode in self.modes.items():
+            if hasattr(mode, "find_device"):
+                # The mode can detect an attached device.
+                device = mode.find_device(with_logging=False)
+                if device and (device, mode) not in self.connected_devices:
+                    self.connected_devices = set()
+                    self.connected_devices.add((device, mode))
+                    msg = _("Connection from a new device detected.")
+                    if self.mode != name:
+                        msg += _(" Please switch to {} mode.").format(
+                            name.capitalize())
+                    self.show_status_message(msg)
+                    break
 
     def show_status_message(self, message, duration=5):
         """

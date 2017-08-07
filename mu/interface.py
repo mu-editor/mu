@@ -667,6 +667,7 @@ class Window(QMainWindow):
     title = _("Mu {}").format(__version__)
     icon = "icon"
     timer = None
+    usb_checker = None
 
     _zoom_in = pyqtSignal(int)
     _zoom_out = pyqtSignal(int)
@@ -1045,6 +1046,15 @@ class Window(QMainWindow):
         api = mode.api()
         for widget in self.widgets:
             widget.set_api(api)
+
+    def set_usb_checker(self, duration, callback):
+        """
+        Sets up a timer that polls for USB changes via the "callback" every
+        "duration" seconds.
+        """
+        self.usb_checker = QTimer()
+        self.usb_checker.timeout.connect(callback)
+        self.usb_checker.start(duration * 1000)
 
     def set_timer(self, duration, callback):
         """
