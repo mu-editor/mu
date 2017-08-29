@@ -624,8 +624,8 @@ class Editor:
         button_bar.connect("save", self.save, "Ctrl+S")
         for action in self.modes[mode].actions():
             button_bar.connect(action['name'], action['handler'])
-        button_bar.connect("zoom-in", self.zoom_in)
-        button_bar.connect("zoom-out", self.zoom_out)
+        button_bar.connect("zoom-in", self.zoom_in, "Ctrl++")
+        button_bar.connect("zoom-out", self.zoom_out, "Ctrl+-")
         button_bar.connect("theme", self.toggle_theme)
         button_bar.connect("check", self.check_code)
         button_bar.connect("help", self.show_help)

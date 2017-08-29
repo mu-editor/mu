@@ -25,7 +25,7 @@ import platform
 import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice, QProcess, QTimer
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
-                             QVBoxLayout, QShortcut, QTabWidget, QFileDialog,
+                             QVBoxLayout, QTabWidget, QFileDialog,
                              QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
                              QMainWindow, QStatusBar, QListWidgetItem, QDialog,
@@ -611,15 +611,14 @@ class ButtonBar(QToolBar):
         super().addAction(action)
         self.slots[name] = action
 
-    def connect(self, name, handler, *shortcuts):
+    def connect(self, name, handler, shortcut=None):
         """
         Connects a named slot to a handler function and optional hot-key
         shortcuts.
         """
         self.slots[name].pyqtConfigure(triggered=handler)
-        for shortcut in shortcuts:
-            QShortcut(QKeySequence(shortcut),
-                      self.parentWidget()).activated.connect(handler)
+        if shortcut:
+            self.slots[name].setShortcut(QKeySequence(shortcut))
 
 
 class FileTabs(QTabWidget):

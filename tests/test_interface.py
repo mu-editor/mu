@@ -5,7 +5,7 @@ Tests for the user interface elements of Mu.
 from PyQt5.QtWidgets import (QApplication, QAction, QWidget, QFileDialog,
                              QMessageBox, QLabel, QListWidget, QDialog)
 from PyQt5.QtCore import QIODevice, Qt, QSize
-from PyQt5.QtGui import QTextCursor, QIcon
+from PyQt5.QtGui import QTextCursor, QIcon, QKeySequence
 from unittest import mock
 from mu import __version__
 from mu.modes import PythonMode, AdafruitMode, MicrobitMode
@@ -661,13 +661,12 @@ def test_ButtonBar_connect():
     bb.parentWidget = mock.MagicMock(return_value=QWidget())
     bb.addAction('save', 'Save', 'save stuff')
     bb.slots['save'].pyqtConfigure = mock.MagicMock(return_value=None)
+    bb.slots['save'].setShortcut = mock.MagicMock()
     mock_handler = mock.MagicMock(return_value=None)
-    mock_shortcut = mock.MagicMock()
-    with mock.patch('mu.interface.QShortcut', mock_shortcut):
-        bb.connect('save', mock_handler, 'Ctrl+S')
-    assert mock_shortcut.call_count == 1
+    bb.connect('save', mock_handler, 'Ctrl+S')
     slot = bb.slots['save']
     slot.pyqtConfigure.assert_called_once_with(triggered=mock_handler)
+    slot.setShortcut.assert_called_once_with(QKeySequence('Ctrl+S'))
 
 
 def test_FileTabs_init():
