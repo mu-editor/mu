@@ -37,7 +37,6 @@ try:  # pragma: no cover
 except ImportError:  # pragma: no cover
     from pep8 import StyleGuide, Checker
 from mu.contrib import appdirs, uflash
-from mu.contrib.atomicfile import open_atomic
 from mu import __version__
 
 
@@ -67,11 +66,8 @@ EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
                    "sleep, pin20, button_a, button_b, running_time, "
                    "accelerometer, display, uart, spi, panic, pin13, "
                    "pin12, pin11, pin10, compass")
-
-
-"""
-
-"""
+#: Port number for debugger.
+DEBUGGER_PORT = 31415
 MOTD = [  #: Candidate phrases for the message of the day (MOTD).
     _('Hello, World!'),
     _("This editor is free software written in Python. You can modify it, "
@@ -79,17 +75,13 @@ MOTD = [  #: Candidate phrases for the message of the day (MOTD).
     _("This editor is called Mu (you say it 'mew' or 'moo')."),
     _("Google, Facebook, NASA, Pixar, Disney and many more use Python."),
     _("Programming is a form of magic. Learn to cast the right spells with "
-      "code and you'll become a wizard."),
-    _("Your teacher is probably only a few lessons ahead of you."),
+      "code and you'll be a wizard."),
     _("REPL stands for read, evaluate, print, loop. It's a fun way to talk to "
       "your computer! :-)"),
-    _("When programming, show kindness, compassion and forgiveness."),
-    _("When programming, share freely without fraud or falsehood."),
-    _("When programming, take no more time or resource than is needed."),
-    _("When programming, treat others with courtesy, dignity and respect."),
     _('Be brave, break things, learn and have fun!'),
     _("Make your software both useful AND fun. Empower your users."),
     _('For the Zen of Python: import this'),
+    _('Diversity promotes creativity.'),
     _("An open mind, spirit of adventure and respect for diversity are key."),
     _("Don't worry if it doesn't work. Learn the lesson, fix it and try "
       "again! :-)"),
@@ -112,16 +104,6 @@ MOTD = [  #: Candidate phrases for the message of the day (MOTD).
     _("Simple is better than complex. Complex is better than complicated."),
     _("Flat is better than nested."),
     _("Sparse is better than dense."),
-    _("A good programmer is humble."),
-    _("A good programmer is playful."),
-    _("A good programmer learns to learn."),
-    _("A good programmer thinks beyond the obvious."),
-    _("A good programmer promotes simplicity."),
-    _("A good programmer avoids complexity."),
-    _("A good programmer is patient."),
-    _("A good programmer asks questions."),
-    _("A good programmer is willing to say, 'I don't know'."),
-    _("Wisest are they that know they know nothing."),
     _("Readability counts."),
     _("Special cases aren't special enough to break the rules. "
       "Although practicality beats purity."),
@@ -134,16 +116,35 @@ MOTD = [  #: Candidate phrases for the message of the day (MOTD).
     _("If the implementation is easy to explain, it may be a good idea."),
     _("Namespaces are one honking great idea -- let's do more of those!"),
     _("Mu was created by Nicholas H.Tollervey."),
-    _("It's a feature, not a bug!"),
     _("To understand what recursion is, you must first understand recursion."),
     _("Algorithm: a word used by programmers when they don't want to explain "
       "what they did."),
     _("Programmers count from zero."),
     _("Simplicity is the ultimate sophistication."),
+    _("A good programmer is humble."),
+    _("A good programmer is playful."),
+    _("A good programmer learns to learn."),
+    _("A good programmer thinks beyond the obvious."),
+    _("A good programmer promotes simplicity."),
+    _("A good programmer avoids complexity."),
+    _("A good programmer is patient."),
+    _("A good programmer asks questions."),
+    _("A good programmer is willing to say, 'I don't know'."),
+    _("Wisest are they that know they know nothing."),
 ]
 
 
 logger = logging.getLogger(__name__)
+
+
+def write_and_flush(fd, content):
+    """
+    Writes content to the fd, then flushes and fsyncs to ensure the data is, in
+    fact, written.
+    """
+    fd.write(content)
+    fd.flush()
+    os.fsync(fd)
 
 
 def get_settings_path():
@@ -212,8 +213,8 @@ def check_pycodestyle(code):
     # the code.
     code_fd, code_filename = tempfile.mkstemp()
     os.close(code_fd)
-    with open_atomic(code_filename, 'w', newline='') as code_file:
-        code_file.write(code)
+    with open(code_filename, 'w', newline='') as code_file:
+        write_and_flush(code_file, code)
     # Configure which PEP8 rules to ignore.
     style = StyleGuide(parse_argv=False, config_file=False)
     checker = Checker(code_filename, options=style.options)
@@ -494,10 +495,10 @@ class Editor:
                 # No extension given, default to .py
                 tab.path += '.py'
             try:
-                with open_atomic(tab.path, 'w', newline='') as f:
+                with open(tab.path, 'w', newline='') as f:
                     logger.info('Saving script to: {}'.format(tab.path))
                     logger.debug(tab.text())
-                    f.write(tab.text())
+                    write_and_flush(f, tab.text())
                 tab.setModified(False)
                 self.show_status_message(_("Saved file: {}").format(tab.path))
             except OSError as e:
@@ -572,6 +573,10 @@ class Editor:
         for widget in self._view.widgets:
             if widget.path:
                 paths.append(widget.path)
+        if self.modes[self.mode].is_debugger:
+            # If quitting while debugging, make sure everything is cleaned
+            # up.
+            self.modes[self.mode].stop()
         session = {
             'theme': self.theme,
             'mode': self.mode,
@@ -600,6 +605,8 @@ class Editor:
         """
         Select the mode that editor is supposed to be in.
         """
+        if self.modes[self.mode].debugger:
+            return
         logger.info('Showing available modes: {}'.format(
             list(self.modes.keys())))
         new_mode = self._view.select_mode(self.modes, self.mode, self.theme)
@@ -651,10 +658,10 @@ class Editor:
             logger.info('Autosave has detected changes.')
             for tab in self._view.widgets:
                 if tab.path and tab.isModified():
-                    with open_atomic(tab.path, 'w', newline='') as f:
+                    with open(tab.path, 'w', newline='') as f:
                         logger.info('Saving script to: {}'.format(tab.path))
                         logger.debug(tab.text())
-                        f.write(tab.text())
+                        write_and_flush(f, tab.text())
                     tab.setModified(False)
 
     def check_usb(self):
@@ -681,3 +688,23 @@ class Editor:
         Displays the referenced message for duration seconds.
         """
         self._view.status_bar.set_message(message, duration * 1000)
+
+    def debug_toggle_breakpoint(self, margin, line, modifiers):
+        """
+        How to handle the toggling of a breakpoint.
+        """
+        tab = self._view.current_tab
+        if tab is None:
+            # There is no active text editor so abort.
+            return
+        if self.mode == 'debugger':
+            # The debugger is running.
+            self.modes['debugger'].toggle_breakpoint(line, tab)
+        else:
+            # The debugger isn't running.
+            if line in tab.breakpoint_lines:
+                tab.markerDelete(line, tab.BREAKPOINT_MARKER)
+                tab.breakpoint_lines.remove(line)
+            else:
+                tab.markerAdd(line, tab.BREAKPOINT_MARKER)
+                tab.breakpoint_lines.add(line)

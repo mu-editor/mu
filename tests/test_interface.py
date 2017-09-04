@@ -8,7 +8,7 @@ from PyQt5.QtCore import QIODevice, Qt, QSize
 from PyQt5.QtGui import QTextCursor, QIcon, QKeySequence
 from unittest import mock
 from mu import __version__
-from mu.modes import PythonMode, AdafruitMode, MicrobitMode
+from mu.modes import PythonMode, AdafruitMode, MicrobitMode, DebugMode
 import os
 import platform
 import mu.interface
@@ -2549,6 +2549,9 @@ def test_ModeItem_init():
 def test_ModeSelector_setup():
     """
     Ensure the ModeSelector dialog is setup properly given a list of modes.
+
+    If a mode has debugger = True it is ignored since debug mode is not a mode
+    to be selected by users.
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
@@ -2556,6 +2559,7 @@ def test_ModeSelector_setup():
         'python': PythonMode(editor, view),
         'adafruit': AdafruitMode(editor, view),
         'microbit': MicrobitMode(editor, view),
+        'debugger': DebugMode(editor, view),
     }
     current_mode = 'python'
     mock_item = mock.MagicMock()

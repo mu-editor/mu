@@ -18,7 +18,6 @@ import logging
 from gettext import gettext as _
 from mu.modes.base import BaseMode
 from mu.resources import load_icon
-from mu.contrib.atomicfile import open_atomic
 from qtconsole.inprocess import QtInProcessKernelManager
 
 
@@ -34,7 +33,6 @@ class PythonMode(BaseMode):
     description = _('Create code using standard Python 3.')
     icon = 'python'
     runner = None
-    debugger = True
 
     def actions(self):
         """
@@ -45,8 +43,8 @@ class PythonMode(BaseMode):
             {
                 'name': 'run',
                 'display_name': _('Run'),
-                'description': _('Run your Python script.'),
-                'handler': self.toggle_run,
+                'description': _('Run and debug your Python script.'),
+                'handler': self.run,
             },
             {
                 'name': 'repl',
@@ -63,62 +61,14 @@ class PythonMode(BaseMode):
         """
         return []
 
-    def toggle_run(self, event):
+    def run(self, event):
         """
-        Run or stop the current script.
+        Run and debug the script using the debug mode.
         """
-        if self.runner is None:
-            logger.info('Start RUN.')
-            self.run()
-        else:
-            logger.info('Stop RUN.')
-            self.stop()
-
-    def run(self):
-        """
-        Run the current script
-        """
-        # Grab the Python file.
-        tab = self.view.current_tab
-        if tab is None:
-            # There is no active text editor.
-            return
-        if tab.path is None:
-            # Unsaved file.
-            self.editor.save()
-        if tab.path:
-            logger.debug('Running script.')
-            # If needed, save the script.
-            if tab.isModified():
-                with open_atomic(tab.path, 'w', newline='') as f:
-                    logger.info('Saving script to: {}'.format(tab.path))
-                    logger.debug(tab.text())
-                    f.write(tab.text())
-                    tab.setModified(False)
-            logger.debug('Python script: {}'.format(tab.path))
-            logger.debug('Working directory: {}'.format(self.workspace_dir()))
-            logger.debug(tab.text())
-            self.view.button_bar.slots['run'].setIcon(load_icon('stop'))
-            self.view.button_bar.slots['run'].setText(_('Stop'))
-            self.view.button_bar.slots['run'].setToolTip(
-                _('Quit the running code.'))
-            self.editor.show_status_message(_("Running script {}").format(
-                tab.path))
-            self.runner = self.view.add_python3_runner(tab.path,
-                                                       self.workspace_dir())
-
-    def stop(self):
-        """
-        Stop the currently running script.
-        """
-        logger.debug('Stopping script runner.')
-        self.runner.process.kill()
-        self.runner = None
-        self.view.remove_python_runner()
-        self.view.button_bar.slots['run'].setIcon(load_icon('run'))
-        self.view.button_bar.slots['run'].setText(_('Run'))
-        self.view.button_bar.slots['run'].setToolTip(_('Run your Python '
-                                                       'script.'))
+        logger.info("Starting debug mode.")
+        self.editor.change_mode('debugger')
+        self.editor.mode = 'debugger'
+        self.editor.modes['debugger'].start()
 
     def toggle_repl(self, event):
         """

@@ -16,7 +16,7 @@ def test_python_mode():
     assert pm.name == 'Python 3'
     assert pm.description is not None
     assert pm.icon == 'python'
-    assert pm.debugger is True
+    assert pm.debugger is False
     assert pm.editor == editor
     assert pm.view == view
 

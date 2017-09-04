@@ -467,11 +467,13 @@ class Debugger(bdb.Bdb):
         # details).
         self._run_state = DebugState.STARTING
         self.mainpyfile = self.canonic(filename)
-        self._user_requested_quit = False
-        self.run('f = open("{filename}", "rb");'
-                 'code = compile(f.read(), "{filename}", "exec");'
-                 'exec(code);'
-                 'f.close();'.format(filename=filename))
+        self._user_requested_quit = True  # End the process once completed.
+        e = ('__debug_script__ = open("{filename}", "rb");'
+             '__debug_code__ = compile(__debug_script__.read(),'
+             ' "{filename}", "exec");'
+             'exec(__debug_code__);'
+             '__debug_script__.close();'.format(filename=filename))
+        self.run(e)
 
 
 def run(hostname, port, filename, *args):
@@ -499,8 +501,9 @@ def run(hostname, port, filename, *args):
             debugger._runscript(filename)
             if debugger._user_requested_quit:
                 break
-        except Restart:
             debugger.output('restart')
+        except Restart:
+            # TODO: Log restart.
             pass
         except (KeyboardInterrupt, SystemExit, OSError):
             debugger.client = None

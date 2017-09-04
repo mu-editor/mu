@@ -3,9 +3,10 @@
 Tests for the app script.
 """
 import sys
+import os.path
 from unittest import mock
-from mu.app import excepthook, run, setup_logging
-from mu.logic import LOG_FILE, LOG_DIR
+from mu.app import excepthook, run, setup_logging, debug
+from mu.logic import LOG_FILE, LOG_DIR, DEBUGGER_PORT
 
 
 def test_setup_logging():
@@ -70,3 +71,20 @@ def test_excepthook():
         sys.excepthook(*exc_args)
         error.assert_called_once_with('Unrecoverable error', exc_info=exc_args)
         exit.assert_called_once_with(1)
+
+
+def test_debug():
+    """
+    Ensure the debugger is run with the expected arguments given the filename
+    and other arguments passed in via sys.argv.
+    """
+    mock_sys = mock.MagicMock()
+    mock_sys.argv = [None, 'foo.py', 'foo', 'bar', 'baz']
+    mock_runner = mock.MagicMock()
+    with mock.patch('mu.app.sys', mock_sys), \
+            mock.patch('mu.app.run_debugger', mock_runner):
+        debug()
+    expected_filename = os.path.normcase(os.path.abspath('foo.py'))
+    mock_runner.assert_called_once_with('localhost', DEBUGGER_PORT,
+                                        expected_filename,
+                                        ['foo', 'bar', 'baz', ])

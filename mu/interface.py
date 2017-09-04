@@ -23,15 +23,17 @@ import os
 import re
 import platform
 import logging
+import os.path
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice, QProcess, QTimer
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog,
                              QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
                              QMainWindow, QStatusBar, QListWidgetItem, QDialog,
-                             QDialogButtonBox, QPlainTextEdit, QDockWidget)
+                             QDialogButtonBox, QPlainTextEdit, QDockWidget,
+                             QTreeView)
 from PyQt5.QtGui import (QKeySequence, QColor, QTextCursor, QFontDatabase,
-                         QCursor)
+                         QCursor, QStandardItemModel, QStandardItem)
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
 from PyQt5.QtSerialPort import QSerialPort
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
@@ -224,6 +226,7 @@ class EditorPane(QsciScintilla):
             'style': {'id': 20, 'markers': {}}
         }
         self.MARKER_NUMBER = 22  # Also arbitrary
+        self.BREAKPOINT_MARKER = 23 # Arbitrary
         self.search_indicators = {
             'selection': {'id': 21, 'positions': []}
         }
@@ -233,6 +236,7 @@ class EditorPane(QsciScintilla):
         self.lexer = PythonLexer()
         self.api = None
         self.setModified(False)
+        self.breakpoint_lines = set()
         self.configure()
 
     def configure(self):
@@ -256,7 +260,9 @@ class EditorPane(QsciScintilla):
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
         self.set_theme()
         # Markers and indicators
+        self.setMarginSensitivity(0, True)
         self.markerDefine(self.RightArrow, self.MARKER_NUMBER)
+        self.markerDefine(self.Circle, self.BREAKPOINT_MARKER)
         self.setMarginSensitivity(1, True)
         self.setIndicatorDrawUnder(True)
         for type_ in self.check_indicators:
@@ -268,6 +274,12 @@ class EditorPane(QsciScintilla):
         self.setAnnotationDisplay(self.AnnotationBoxed)
         self.marginClicked.connect(self.on_marker_clicked)
         self.selectionChanged.connect(self.selection_change_listener)
+
+    def connect_margin(self, func):
+        """
+        Connect clicking the margin to the passed in handler function.
+        """
+        self.marginClicked.connect(func)
 
     def set_theme(self, theme=DayTheme):
         """
@@ -287,6 +299,8 @@ class EditorPane(QsciScintilla):
             self.setIndicatorForegroundColor(
                 theme.IndicatorWordMatch, self.search_indicators[type_]['id'])
         self.setMarkerBackgroundColor(theme.IndicatorError, self.MARKER_NUMBER)
+        self.setMarkerBackgroundColor(theme.IndicatorError,
+                                      self.BREAKPOINT_MARKER)
 
         self.setAutoCompletionThreshold(2)
         self.setAutoCompletionSource(QsciScintilla.AcsAll)
@@ -697,6 +711,14 @@ class Window(QMainWindow):
         """
         return self.tabs.currentWidget()
 
+    def set_read_only(self, is_readonly):
+        """
+        Set all tabs read-only.
+        """
+        self.read_only_tabs = is_readonly
+        for tab in self.widgets:
+            tab.setReadOnly(is_readonly)
+
     def get_load_path(self, folder):
         """
         Displays a dialog for selecting a file to load. Returns the selected
@@ -733,6 +755,7 @@ class Window(QMainWindow):
         Adds a tab with the referenced path and text to the editor.
         """
         new_tab = EditorPane(path, text)
+        new_tab.connect_margin(self.breakpoint_toggle)
         new_tab_index = self.tabs.addTab(new_tab, new_tab.label)
         new_tab.set_api(api)
 
@@ -746,6 +769,8 @@ class Window(QMainWindow):
         self.connect_zoom(new_tab)
         self.set_theme(self.theme)
         new_tab.setFocus()
+        if self.read_only_tabs:
+            new_tab.setReadOnly(self.read_only_tabs)
 
     def focus_tab(self, tab):
         index = self.tabs.indexOf(tab)
@@ -843,6 +868,66 @@ class Window(QMainWindow):
         self.connect_zoom(self.process_runner)
         return self.process_runner
 
+    def add_debug_inspector(self):
+        """
+        Display a debug inspector to view the call stack.
+        """
+        self.debug_inspector = DebugInspector()
+        self.debug_model = QStandardItemModel()
+        self.debug_inspector.setModel(self.debug_model)
+        self.debug_inspector.setUniformRowHeights(True)
+        self.inspector = QDockWidget(_('Debug Inspector'))
+        self.inspector.setWidget(self.debug_inspector)
+        self.inspector.setFeatures(QDockWidget.DockWidgetMovable)
+        self.inspector.setAllowedAreas(Qt.BottomDockWidgetArea |
+                                       Qt.LeftDockWidgetArea |
+                                       Qt.RightDockWidgetArea)
+        self.addDockWidget(Qt.RightDockWidgetArea, self.inspector)
+        self.connect_zoom(self.debug_inspector)
+
+    def update_debug_inspector(self, locals_dict):
+        """
+        Given the contents of a dict representation of the locals in the
+        current stack frame, update the debug inspector with the new values.
+        """
+        excluded_names = ['__builtins__', '__debug_code__',
+                          '__debug_script__', ]
+        names = sorted([x for x in locals_dict if x not in excluded_names])
+        self.debug_model.clear()
+        self.debug_model.setHorizontalHeaderLabels([_('Name'), _('Value'), ])
+        for name in names:
+            # DANGER!
+            val = eval(locals_dict[name])
+            if isinstance(val, list):
+                # Show a list consisting of rows of position/value
+                list_item = QStandardItem(name)
+                for i, i_val in enumerate(val):
+                    list_item.appendRow([
+                        QStandardItem(str(i)),
+                        QStandardItem(repr(i_val))
+                    ])
+                self.debug_model.appendRow([
+                    list_item,
+                    QStandardItem(_('(A list of {} items.)').format(len(val)))
+                ])
+            elif isinstance(val, dict):
+                # Show a dict consisting of rows of key/value pairs.
+                dict_item = QStandardItem(name)
+                for k, k_val in val.items():
+                    dict_item.appendRow([
+                        QStandardItem(repr(k)),
+                        QStandardItem(repr(k_val))
+                    ])
+                self.debug_model.appendRow([
+                    dict_item,
+                    QStandardItem(_('(A dict of {} items.)').format(len(val)))
+                ])
+            else:
+                self.debug_model.appendRow([
+                    QStandardItem(name),
+                    QStandardItem(locals_dict[name]),
+                ])
+
     def remove_filesystem(self):
         """
         Removes the file system pane from the application.
@@ -872,6 +957,17 @@ class Window(QMainWindow):
             self.runner.setParent(None)
             self.runner.deleteLater()
             self.runner = None
+
+    def remove_debug_inspector(self):
+        """
+        Removes the debug inspector pane from the application.
+        """
+        if hasattr(self, 'inspector') and self.inspector:
+            self.debug_inspector = None
+            self.debug_model = None
+            self.inspector.setParent(None)
+            self.inspector.deleteLater()
+            self.inspector = None
 
     def set_theme(self, theme):
         """
@@ -989,7 +1085,7 @@ class Window(QMainWindow):
         """
         self.current_tab.annotate_code(feedback, annotation_type)
 
-    def setup(self, theme):
+    def setup(self, breakpoint_toggle, theme):
         """
         Sets up the window.
 
@@ -997,9 +1093,11 @@ class Window(QMainWindow):
         interface is laid out.
         """
         self.theme = theme
+        self.breakpoint_toggle = breakpoint_toggle
         # Give the window a default icon, title and minimum size.
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
+        self.read_only_tabs = False
         self.setMinimumSize(800, 400)
 
         self.widget = QWidget()
@@ -1155,7 +1253,9 @@ class ModeSelector(QDialog):
         widget_layout.addWidget(self.mode_list)
         self.mode_list.setIconSize(QSize(48, 48))
         for name, item in modes.items():
-            ModeItem(item.name, item.description, item.icon, self.mode_list)
+            if not item.is_debugger:
+                ModeItem(item.name, item.description, item.icon,
+                         self.mode_list)
         self.mode_list.sortItems()
         instructions = QLabel(_('You can change mode at any time by clicking '
                                 'the name of the current mode shown in the '
@@ -1661,7 +1761,7 @@ class PythonProcessPane(QTextEdit):
     Captures, displays and works with the stdin, stdout and stderr of a Python
     process.
 
-    Used for running standard Python3 scripts.
+    Used for running / debugging standard Python3 scripts.
     """
 
     def __init__(self, parent=None):
@@ -1673,7 +1773,7 @@ class PythonProcessPane(QTextEdit):
         """
         Start the child process from the workspace with the script.
         """
-        self.script = script
+        self.script = os.path.abspath(os.path.normcase(script))
         logger.info('Running script: {}'.format(script))
         self.process = QProcess(self)
         self.process.setProcessChannelMode(QProcess.MergedChannels)
@@ -1682,7 +1782,7 @@ class PythonProcessPane(QTextEdit):
         self.process.setWorkingDirectory(workspace)
         self.process.readyRead.connect(self.read)
         self.process.finished.connect(self.finished)
-        self.process.start('python3', ['-u', script])
+        self.process.start('mu-debug', [self.script])
 
     def finished(self, code, status):
         """
@@ -1777,6 +1877,48 @@ class PythonProcessPane(QTextEdit):
         new_size = old_size - delta
         if new_size >= 4:
             super().zoomOut(delta)
+
+    def set_theme(self, theme):
+        """
+        Sets the theme / look for the REPL pane.
+        """
+        if theme == 'day':
+            self.setStyleSheet(DAY_STYLE)
+        else:
+            self.setStyleSheet(NIGHT_STYLE)
+
+
+class DebugInspector(QTreeView):
+    """
+    Presents a tree like representation of the current state of the call stack
+    to the user.
+    """
+
+    def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
+        """
+        Sets the font size for all the textual elements in this pane.
+        """
+        stylesheet = ("QWidget{font-size: " + str(new_size) +
+                      "pt; font-family: Monospace;}")
+        self.setStyleSheet(stylesheet)
+
+    def zoomIn(self, delta=2):
+        """
+        Zoom in (increase) the size of the font by delta amount difference in
+        point size upto 34 points.
+        """
+        old_size = self.font().pointSize()
+        new_size = min(old_size + delta, 34)
+        self.set_font_size(new_size)
+
+    def zoomOut(self, delta=2):
+        """
+        Zoom out (decrease) the size of the font by delta amount difference in
+        point size down to 4 points.
+        """
+        old_size = self.font().pointSize()
+        new_size = max(old_size - delta, 4)
+        self.set_font_size(new_size)
 
     def set_theme(self, theme):
         """

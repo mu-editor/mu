@@ -67,6 +67,22 @@ def command_buffer(debugger):
     """
     Buffer input from a socket, yield complete debugger commands.
     """
+    connected = False
+    tries = 0
+    connection_attempts = 10
+    while not connected:
+        try:
+            debugger.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            debugger.socket.connect((debugger.host, debugger.port))
+            connected = True
+        except ConnectionRefusedError as e:
+            # Allow up to connection_attempts attempts to connect.
+            tries += 1
+            if tries >= connection_attempts:
+                raise
+            time.sleep(0.2)
+    # Getting here means the connection has been established, so handle all
+    # incoming data from the debug runner process.
     remainder = b''
     while True:
         new_buffer = debugger.socket.recv(1024)
@@ -92,6 +108,7 @@ def command_buffer(debugger):
                     getattr(debugger, 'on_{}'.format(event))(**data)
         else:
             # If recv() returns None, the socket is closed.
+            logger.debug('Debug client closed.')
             break
 
 
@@ -101,7 +118,6 @@ class Debugger:
     """
 
     ETX = b'\x03'  # End transmission token.
-    CONNECTION_ATTEMPTS = 3
 
     def __init__(self, host, port, proc=None):
         """
@@ -116,19 +132,6 @@ class Debugger:
         """
         Start the debugger session.
         """
-        connected = False
-        tries = 0
-        while not connected:
-            try:
-                self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.socket.connect((self.host, self.port))
-                connected = True
-            except OSError as e:
-                # Allow up to three attempts to connect.
-                tries += 1
-                if tries >= self.CONNECTION_ATTEMPTS:
-                    raise
-                time.sleep(0.2)
         t = Thread(target=command_buffer, args=(self,))
         t.daemon = True
         t.start()
@@ -250,6 +253,7 @@ class Debugger:
         self.bp_list = list([True, ])  # Breakpoints count from 1
         for bp_data in breakpoints:
             self.on_breakpoint_create(**bp_data)
+        self.view.debug_on_bootstrap()
 
     def on_breakpoint_create(self, **bp_data):
         """
@@ -332,11 +336,11 @@ class Debugger:
         """
         self.view.debug_on_exception(name, value)
 
-    def on_postmortem(self):
+    def on_postmortem(self, *args, **kwargs):
         """
         The runner encountered a fatal error and has died.
         """
-        self.view.debug_on_postmortem()
+        self.view.debug_on_postmortem(args, kwargs)
 
     def on_info(self, message):
         """

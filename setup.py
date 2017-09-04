@@ -22,6 +22,7 @@ setup(
     entry_points={
         'console_scripts': [
             "mu = mu.app:run",
+            "mu-debug = mu.app:debug",
         ],
     },
     data_files=[('/etc/udev/rules.d', ['conf/90-usb-microbit.rules', ]),

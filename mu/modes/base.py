@@ -47,7 +47,7 @@ class BaseMode:
     description = 'DESCRIPTION NOT AVAILABLE.'
     icon = 'help'
     repl = None
-    debugger = False
+    is_debugger = False
     save_timeout = 5  #: Number of seconds to wait before saving work.
 
     def __init__(self, editor, view):

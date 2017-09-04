@@ -27,10 +27,11 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 from mu import __version__
-from mu.logic import Editor, LOG_FILE, LOG_DIR
+from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT
 from mu.interface import Window
 from mu.resources import load_pixmap
-from mu.modes import PythonMode, AdafruitMode, MicrobitMode
+from mu.modes import PythonMode, AdafruitMode, MicrobitMode, DebugMode
+from mu.debugger.runner import run as run_debugger
 
 
 gettext.install('mu', 'locale')
@@ -69,6 +70,7 @@ def setup_modes(editor, view):
         'python': PythonMode(editor, view),
         'adafruit': AdafruitMode(editor, view),
         'microbit': MicrobitMode(editor, view),
+        'debugger': DebugMode(editor, view),
     }
 
 
@@ -101,7 +103,7 @@ def run():
     editor.setup(setup_modes(editor, editor_window))
     # Setup the window.
     editor_window.closeEvent = editor.quit
-    editor_window.setup(editor.theme)
+    editor_window.setup(editor.debug_toggle_breakpoint, editor.theme)
     # capture the filename passed by the os, if there was one
     passed_filename = sys.argv[1] if len(sys.argv) > 1 else None
     editor.restore_session(passed_filename)
@@ -113,3 +115,13 @@ def run():
     splash.finish(editor_window)
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
+
+
+def debug():
+    """
+    Create a debug runner in a new process. This is what the Mu debugger will
+    drive. Uses the filename and associated args found in sys.argv.
+    """
+    filename = os.path.normcase(os.path.abspath(sys.argv[1]))
+    args = sys.argv[2:]
+    run_debugger('localhost', DEBUGGER_PORT, filename, args)

@@ -865,10 +865,14 @@ def test_quit_modified_ok():
     mock_mode = mock.MagicMock()
     mock_mode.workspace_dir.return_value = 'foo/bar'
     mock_mode.get_hex_path.return_value = 'foo/bar'
+    mock_debug_mode = mock.MagicMock()
+    mock_debug_mode.debugger = True
     ed.modes = {
         'python': mock_mode,
         'microbit': mock_mode,
+        'debugger': mock_debug_mode,
     }
+    ed.mode = 'debugger'
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
@@ -878,6 +882,7 @@ def test_quit_modified_ok():
     with mock.patch('sys.exit', return_value=None), \
             mock.patch('builtins.open', mock_open):
         ed.quit(mock_event)
+    assert ed.mode == 'python'
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
     assert mock_open.call_count == 1
@@ -1007,12 +1012,36 @@ def test_select_mode():
     """
     view = mock.MagicMock()
     view.select_mode.return_value = 'foo'
+    mode = mock.MagicMock()
+    mode.debugger = False
     ed = mu.logic.Editor(view)
+    ed.modes = {
+        'python': mode,
+    }
     ed.change_mode = mock.MagicMock()
     ed.select_mode(None)
     assert view.select_mode.call_count == 1
     assert ed.mode == 'foo'
     ed.change_mode.assert_called_once_with('foo')
+
+
+def test_select_mode_debug_mode():
+    """
+    It's NOT possible to select and update to a new mode if you're in debug
+    mode.
+    """
+    view = mock.MagicMock()
+    mode = mock.MagicMock()
+    mode.debugger = True
+    ed = mu.logic.Editor(view)
+    ed.modes = {
+        'debugger': mode,
+    }
+    ed.mode = 'debugger'
+    ed.change_mode = mock.MagicMock()
+    ed.select_mode(None)
+    assert ed.mode == 'debugger'
+    assert ed.change_mode.call_count == 0
 
 
 def test_change_mode():
