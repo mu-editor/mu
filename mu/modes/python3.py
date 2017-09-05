@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 from gettext import gettext as _
 from mu.modes.base import BaseMode
-from mu.resources import load_icon
 from qtconsole.inprocess import QtInProcessKernelManager
 
 

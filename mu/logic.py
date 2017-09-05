@@ -605,7 +605,7 @@ class Editor:
         """
         Select the mode that editor is supposed to be in.
         """
-        if self.modes[self.mode].debugger:
+        if self.modes[self.mode].is_debugger:
             return
         logger.info('Showing available modes: {}'.format(
             list(self.modes.keys())))
@@ -694,9 +694,6 @@ class Editor:
         How to handle the toggling of a breakpoint.
         """
         tab = self._view.current_tab
-        if tab is None:
-            # There is no active text editor so abort.
-            return
         if self.mode == 'debugger':
             # The debugger is running.
             self.modes['debugger'].toggle_breakpoint(line, tab)

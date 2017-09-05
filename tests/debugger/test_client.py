@@ -30,15 +30,42 @@ def test_Breakpoint_str():
     assert str(bp) == 'filename.py:10'
 
 
+def test_command_buffer_start_with_error():
+    """
+    Check that the connection will try up to 10 times before raising an
+    exception.
+    """
+    mock_debugger = mock.MagicMock()
+    mock_debugger.host = 'localhost'
+    mock_debugger.port = 9999
+    mock_socket_factory = mock.MagicMock()
+    mock_socket = mock.MagicMock()
+    mock_socket.connect.side_effect = ConnectionRefusedError()
+    mock_socket_factory.socket.return_value = mock_socket
+    mock_time = mock.MagicMock()
+    with mock.patch('mu.debugger.client.socket', mock_socket_factory), \
+            mock.patch('mu.debugger.client.time', mock_time):
+        with pytest.raises(ConnectionRefusedError):
+            mu.debugger.client.command_buffer(mock_debugger)
+    assert mock_socket.connect.call_count == 10
+    assert mock_time.sleep.call_count == 9
+
+
 def test_command_buffer_break_loop():
     """
     Ensure if the command_buffer receives None from the socket then break out
     of the loop.
     """
     mock_debugger = mock.MagicMock()
-    mock_debugger.socket.recv.return_value = None
-    mu.debugger.client.command_buffer(mock_debugger)
-    mock_debugger.socket.recv.assert_called_once_with(1024)
+    mock_debugger.host = 'localhost'
+    mock_debugger.port = 9999
+    mock_socket_factory = mock.MagicMock()
+    mock_socket = mock.MagicMock()
+    mock_socket.recv.return_value = None
+    mock_socket_factory.socket.return_value = mock_socket
+    with mock.patch('mu.debugger.client.socket', mock_socket_factory):
+        mu.debugger.client.command_buffer(mock_debugger)
+    mock_socket.recv.assert_called_once_with(1024)
 
 
 def test_command_buffer_message():
@@ -55,9 +82,15 @@ def test_command_buffer_message():
     msg2 = msg[pos:]
     mock_debugger = mock.MagicMock()
     mock_debugger.ETX = mu.debugger.client.Debugger.ETX
-    mock_debugger.socket.recv.side_effect = [msg1, msg2, None]
+    mock_debugger.host = 'localhost'
+    mock_debugger.port = 9999
+    mock_socket_factory = mock.MagicMock()
+    mock_socket = mock.MagicMock()
+    mock_socket_factory.socket.return_value = mock_socket
+    mock_socket.recv.side_effect = [msg1, msg2, None]
     mock_debugger.on_bootstrap.return_value = True
-    mu.debugger.client.command_buffer(mock_debugger)
+    with mock.patch('mu.debugger.client.socket', mock_socket_factory):
+        mu.debugger.client.command_buffer(mock_debugger)
     assert mock_debugger.socket.recv.call_count == 3
     mock_debugger.on_bootstrap.assert_called_once_with(arg='value')
 
@@ -77,42 +110,15 @@ def test_Debugger_start():
     """
     Ensure the Debugger client starts a session correctly.
     """
-    mock_socket = mock.MagicMock()
-    mock_socket_instance = mock.MagicMock()
-    mock_socket.socket.return_value = mock_socket_instance
     mock_thread_instance = mock.MagicMock()
     mock_thread = mock.MagicMock(return_value=mock_thread_instance)
-    with mock.patch('mu.debugger.client.socket', mock_socket), \
-            mock.patch('mu.debugger.client.Thread', mock_thread):
+    with mock.patch('mu.debugger.client.Thread', mock_thread):
         db = mu.debugger.client.Debugger('localhost', 1908)
         db.start()
-    mock_socket.socket.assert_called_once_with(mock_socket.AF_INET,
-                                               mock_socket.SOCK_STREAM)
-    assert db.socket == mock_socket_instance
-    mock_socket_instance.connect.assert_called_once_with((db.host, db.port))
     cb = mu.debugger.client.command_buffer
     mock_thread.assert_called_once_with(target=cb, args=(db,))
     assert mock_thread_instance.daemon is True
     mock_thread_instance.start.assert_called_once_with()
-
-
-def test_Debugger_start_with_error():
-    """
-    Check that the connection will try up to three times before raising an
-    exception.
-    """
-    mock_socket = mock.MagicMock()
-    mock_socket_instance = mock.MagicMock()
-    mock_socket_instance.connect.side_effect = socket.error()
-    mock_socket.socket.return_value = mock_socket_instance
-    mock_time = mock.MagicMock()
-    with mock.patch('mu.debugger.client.socket', mock_socket), \
-            mock.patch('mu.debugger.client.time', mock_time):
-        with pytest.raises(OSError):
-            db = mu.debugger.client.Debugger('localhost', 1908)
-            db.start()
-    assert mock_socket_instance.connect.call_count == 3
-    assert mock_time.sleep.call_count == 2
 
 
 def test_Debugger_stop():
@@ -340,6 +346,7 @@ def test_Debugger_on_bootstrap():
     of breakpoints to on_breakpoint create.
     """
     db = mu.debugger.client.Debugger('localhost', 1908)
+    db.view = mock.MagicMock()
     db.on_breakpoint_create = mock.MagicMock()
     breakpoints = [
         {
@@ -353,6 +360,7 @@ def test_Debugger_on_bootstrap():
     assert db.bp_index == {}
     assert db.bp_list == [True, ]
     assert db.on_breakpoint_create.call_count == 2
+    db.view.debug_on_bootstrap.assert_called_once_with()
 
 
 def test_Debugger_on_breakpoint_create():
@@ -556,7 +564,7 @@ def test_Debugger_on_postmortem():
     db = mu.debugger.client.Debugger('localhost', 1908)
     db.view = mock.MagicMock()
     db.on_postmortem()
-    db.view.debug_on_postmortem.assert_called_once_with()
+    db.view.debug_on_postmortem.assert_called_once_with((), {})
 
 
 def test_Debugger_on_info():

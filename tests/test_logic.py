@@ -641,21 +641,21 @@ def test_save_no_path():
     view.current_tab.path = None
     view.current_tab.text = mock.MagicMock(return_value='foo')
     view.get_save_path = mock.MagicMock(return_value='foo.py')
-    mock_open_atomic = mock.MagicMock()
-    mock_open_atomic.return_value.__enter__ = lambda s: s
-    mock_open_atomic.return_value.__exit__ = mock.Mock()
-    mock_open_atomic.return_value.write = mock.MagicMock()
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.write = mock.MagicMock()
     ed = mu.logic.Editor(view)
     mock_mode = mock.MagicMock()
     mock_mode.workspace_dir.return_value = '/fake/path'
     ed.modes = {
         'python': mock_mode,
     }
-    with mock.patch('mu.logic.open_atomic', mock_open_atomic):
+    with mock.patch('mu.logic.open', mock_open):
         ed.save()
-    assert mock_open_atomic.call_count == 1
-    mock_open_atomic.assert_called_with('foo.py', 'w', newline='')
-    mock_open_atomic.return_value.write.assert_called_once_with('foo')
+    assert mock_open.call_count == 1
+    mock_open.assert_called_with('foo.py', 'w', newline='')
+    mock_open.return_value.write.assert_called_once_with('foo')
     view.get_save_path.assert_called_once_with('/fake/path')
 
 
@@ -689,9 +689,9 @@ def test_save_file_with_exception():
     view.current_tab.text = mock.MagicMock(return_value='foo')
     view.current_tab.setModified = mock.MagicMock(return_value=None)
     view.show_message = mock.MagicMock()
-    mock_open_atomic = mock.MagicMock(side_effect=OSError())
+    mock_open = mock.MagicMock(side_effect=OSError())
     ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.open_atomic', mock_open_atomic):
+    with mock.patch('mu.logic.open', mock_open):
         ed.save()
     assert view.current_tab.setModified.call_count == 0
     assert view.show_message.call_count == 1
@@ -708,15 +708,15 @@ def test_save_python_file():
     view.current_tab.text = mock.MagicMock(return_value='foo')
     view.get_save_path = mock.MagicMock()
     view.current_tab.setModified = mock.MagicMock(return_value=None)
-    mock_open_atomic = mock.MagicMock()
-    mock_open_atomic.return_value.__enter__ = lambda s: s
-    mock_open_atomic.return_value.__exit__ = mock.Mock()
-    mock_open_atomic.return_value.write = mock.MagicMock()
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.write = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.open_atomic', mock_open_atomic):
+    with mock.patch('mu.logic.open', mock_open):
         ed.save()
-    mock_open_atomic.assert_called_once_with('foo.py', 'w', newline='')
-    mock_open_atomic.return_value.write.assert_called_once_with('foo')
+    mock_open.assert_called_once_with('foo.py', 'w', newline='')
+    mock_open.return_value.write.assert_called_once_with('foo')
     assert view.get_save_path.call_count == 0
     view.current_tab.setModified.assert_called_once_with(False)
 
@@ -730,15 +730,15 @@ def test_save_with_no_file_extension():
     view.current_tab.path = 'foo'
     view.current_tab.text = mock.MagicMock(return_value='foo')
     view.get_save_path = mock.MagicMock()
-    mock_open_atomic = mock.MagicMock()
-    mock_open_atomic.return_value.__enter__ = lambda s: s
-    mock_open_atomic.return_value.__exit__ = mock.Mock()
-    mock_open_atomic.return_value.write = mock.MagicMock()
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.write = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.open_atomic', mock_open_atomic):
+    with mock.patch('mu.logic.open', mock_open):
         ed.save()
-    mock_open_atomic.assert_called_once_with('foo.py', 'w', newline='')
-    mock_open_atomic.return_value.write.assert_called_once_with('foo')
+    mock_open.assert_called_once_with('foo.py', 'w', newline='')
+    mock_open.return_value.write.assert_called_once_with('foo')
     assert view.get_save_path.call_count == 0
 
 
@@ -866,7 +866,7 @@ def test_quit_modified_ok():
     mock_mode.workspace_dir.return_value = 'foo/bar'
     mock_mode.get_hex_path.return_value = 'foo/bar'
     mock_debug_mode = mock.MagicMock()
-    mock_debug_mode.debugger = True
+    mock_debug_mode.is_debugger = True
     ed.modes = {
         'python': mock_mode,
         'microbit': mock_mode,
@@ -882,7 +882,7 @@ def test_quit_modified_ok():
     with mock.patch('sys.exit', return_value=None), \
             mock.patch('builtins.open', mock_open):
         ed.quit(mock_event)
-    assert ed.mode == 'python'
+    mock_debug_mode.stop.assert_called_once_with()
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
     assert mock_open.call_count == 1
@@ -1013,7 +1013,7 @@ def test_select_mode():
     view = mock.MagicMock()
     view.select_mode.return_value = 'foo'
     mode = mock.MagicMock()
-    mode.debugger = False
+    mode.is_debugger = False
     ed = mu.logic.Editor(view)
     ed.modes = {
         'python': mode,
@@ -1111,10 +1111,11 @@ def test_autosave():
     mock_tab.isModified.return_value = True
     view.widgets = [mock_tab, ]
     ed = mu.logic.Editor(view)
-    mock_open_atomic = mock.MagicMock()
-    with mock.patch('mu.logic.open_atomic', mock_open_atomic):
+    mock_open = mock.MagicMock()
+    with mock.patch('mu.logic.open', mock_open), \
+            mock.patch('mu.logic.os'):
         ed.autosave()
-    assert mock_open_atomic.call_count == 1
+    assert mock_open.call_count == 1
     mock_tab.setModified.assert_called_once_with(False)
 
 
@@ -1145,3 +1146,50 @@ def test_show_status_message():
     ed = mu.logic.Editor(view)
     ed.show_status_message(msg, 8)
     view.status_bar.set_message.assert_called_once_with(msg, 8000)
+
+
+def test_debug_toggle_breakpoint_as_debugger():
+    """
+    If a breakpoint is toggled in debug mode, pass it to the toggle_breakpoint
+    method in the debug client.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    mock_debugger = mock.MagicMock()
+    ed.modes = {
+        'debugger': mock_debugger,
+    }
+    ed.mode = 'debugger'
+    ed.debug_toggle_breakpoint(1, 10, False)
+    mock_debugger.toggle_breakpoint.assert_called_once_with(10,
+                                                            view.current_tab)
+
+
+def test_debug_toggle_breakpoint_on():
+    """
+    Toggle the breakpoint on when not in debug mode by tracking it in the
+    tab.breakpoint_lines set.
+    """
+    view = mock.MagicMock()
+    view.current_tab.breakpoint_lines = set()
+    ed = mu.logic.Editor(view)
+    ed.mode = 'python'
+    ed.debug_toggle_breakpoint(1, 10, False)
+    view.current_tab.markerAdd.\
+        assert_called_once_with(10, view.current_tab.BREAKPOINT_MARKER)
+    assert 10 in view.current_tab.breakpoint_lines
+
+
+def test_debug_toggle_breakpoint_off():
+    """
+    Toggle the breakpoint off when not in debug mode by tracking it in the
+    tab.breakpoint_lines set.
+    """
+    view = mock.MagicMock()
+    view.current_tab.breakpoint_lines = set([10, ])
+    ed = mu.logic.Editor(view)
+    ed.mode = 'python'
+    ed.debug_toggle_breakpoint(1, 10, False)
+    view.current_tab.markerDelete.\
+        assert_called_once_with(10, view.current_tab.BREAKPOINT_MARKER)
+    assert len(view.current_tab.breakpoint_lines) == 0

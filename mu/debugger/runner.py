@@ -501,10 +501,9 @@ def run(hostname, port, filename, *args):
             debugger._runscript(filename)
             if debugger._user_requested_quit:
                 break
-            debugger.output('restart')
         except Restart:
             # TODO: Log restart.
-            pass
+            debugger.output('restart')
         except (KeyboardInterrupt, SystemExit, OSError):
             debugger.client = None
             break

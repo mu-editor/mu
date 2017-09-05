@@ -15,13 +15,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import time
 from gettext import gettext as _
 from mu.modes.base import BaseMode
-from mu.resources import load_icon
 from mu.logic import DEBUGGER_PORT, write_and_flush
 from mu.debugger.client import Debugger
-from qtconsole.inprocess import QtInProcessKernelManager
 
 
 logger = logging.getLogger(__name__)
@@ -187,7 +184,7 @@ class DebugMode(BaseMode):
         """
         Button clicked to step out of the current block of code.
         """
-        self.debugger.do_return() 
+        self.debugger.do_return()
 
     def toggle_breakpoint(self, line, tab):
         """
@@ -241,17 +238,20 @@ class DebugMode(BaseMode):
         """
         Handle when the debugger sends an updated stack.
         """
-        locals_dict = stack[0][1]['locals']
-        self.view.update_debug_inspector(locals_dict)
+        if stack:
+            locals_dict = stack[0][1]['locals']
+            self.view.update_debug_inspector(locals_dict)
 
     def debug_on_postmortem(self, args, kwargs):
         """
         Handle when something catastrophic happens to the debugger.
         """
-        # TODO: Finish this.
-        print('Debugger buggered')
-        logger.debug(args)
-        logger.debug(kwargs)
+        process_runner = self.view.process_runner
+        for item in args:
+            process_runner.append(item.encode('utf-8'))
+        for k, v in kwargs.items():
+            msg = '{}: {}'.format(k, v)
+            process_runner.append(msg.encode('utf-8'))
 
     def debug_on_info(self, message):
         """

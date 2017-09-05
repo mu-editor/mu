@@ -161,8 +161,8 @@ def test_EditorPane_configure():
     assert ep.setBraceMatching.call_count == 1
     assert ep.SendScintilla.call_count == 1
     assert ep.set_theme.call_count == 1
-    assert ep.markerDefine.call_count == 1
-    assert ep.setMarginSensitivity.call_count == 1
+    assert ep.markerDefine.call_count == 2
+    assert ep.setMarginSensitivity.call_count == 2
     assert ep.setIndicatorDrawUnder.call_count == 1
     assert ep.marginClicked.connect.call_count == 1
     assert ep.setAnnotationDisplay.call_count == 1
@@ -175,6 +175,17 @@ def test_EditorPane_configure():
          mock.call(ep.StraightBoxIndicator,
                    ep.search_indicators['selection']['id'])],
         any_order=True)
+
+
+def test_Editor_connect_margin():
+    """
+    Ensure that the passed in function is connected to the marginClick event.
+    """
+    mock_fn = mock.MagicMock()
+    ep = mu.interface.EditorPane('/foo/bar.py', 'baz')
+    ep.marginClicked = mock.MagicMock()
+    ep.connect_margin(mock_fn)
+    ep.marginClicked.connect.assert_called_once_with(mock_fn)
 
 
 def test_EditorPane_set_theme():
@@ -880,6 +891,23 @@ def test_Window_current_tab():
     assert w.current_tab == 'foo'
 
 
+def test_Window_set_read_only():
+    """
+    Ensure all the tabs have the setReadOnly method set to the boolean passed
+    into set_read_only.
+    """
+    w = mu.interface.Window()
+    w.tabs = mock.MagicMock()
+    w.tabs.count = mock.MagicMock(return_value=2)
+    tab1 = mock.MagicMock()
+    tab2 = mock.MagicMock()
+    w.tabs.widget = mock.MagicMock(side_effect=[tab1, tab2])
+    w.set_read_only(True)
+    assert w.read_only_tabs
+    tab1.setReadOnly.assert_called_once_with(True)
+    tab2.setReadOnly.assert_called_once_with(True)
+
+
 def test_Window_get_load_path():
     """
     Ensure the QFileDialog is called with the expected arguments and the
@@ -939,6 +967,7 @@ def test_Window_add_tab():
     is created.
     """
     w = mu.interface.Window()
+    w.read_only_tabs = True
     new_tab_index = 999
     w.tabs = mock.MagicMock()
     w.tabs.addTab = mock.MagicMock(return_value=new_tab_index)
@@ -953,11 +982,14 @@ def test_Window_add_tab():
     ep.set_api = mock.MagicMock()
     ep.modificationChanged = mock.MagicMock()
     ep.modificationChanged.connect = mock.MagicMock(return_value=None)
+    ep.connect_margin = mock.MagicMock()
     ep.setFocus = mock.MagicMock(return_value=None)
+    ep.setReadOnly = mock.MagicMock()
     mock_ed = mock.MagicMock(return_value=ep)
     path = '/foo/bar.py'
     text = 'print("Hello, World!")'
     api = ['API definition', ]
+    w.breakpoint_toggle = mock.MagicMock()
     with mock.patch('mu.interface.EditorPane', mock_ed):
         w.add_tab(path, text, api)
     mock_ed.assert_called_once_with(path, text)
@@ -965,8 +997,10 @@ def test_Window_add_tab():
     w.tabs.setCurrentIndex.assert_called_once_with(new_tab_index)
     w.connect_zoom.assert_called_once_with(ep)
     w.set_theme.assert_called_once_with(w.theme)
+    ep.connect_margin.assert_called_once_with(w.breakpoint_toggle)
     ep.set_api.assert_called_once_with(api)
     ep.setFocus.assert_called_once_with()
+    ep.setReadOnly.assert_called_once_with(w.read_only_tabs)
     on_modified = ep.modificationChanged.connect.call_args[0][0]
     on_modified()
     w.tabs.setTabText.assert_called_once_with(new_tab_index, ep.label)
@@ -1144,6 +1178,80 @@ def test_Window_add_python3_runner():
     w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
 
 
+def test_Window_add_debug_inspector():
+    """
+    Ensure a debug inspector (to display local variables) is displayed
+    correctly.
+    """
+    w = mu.interface.Window()
+    w.theme = mock.MagicMock()
+    w.connect_zoom = mock.MagicMock(return_value=None)
+    w.addDockWidget = mock.MagicMock()
+    mock_debug_inspector = mock.MagicMock()
+    mock_debug_inspector_class = mock.MagicMock(
+        return_value=mock_debug_inspector)
+    mock_model = mock.MagicMock()
+    mock_model_class = mock.MagicMock(return_value=mock_model)
+    mock_dock = mock.MagicMock()
+    mock_dock_class = mock.MagicMock(return_value=mock_dock)
+    with mock.patch('mu.interface.DebugInspector',
+                    mock_debug_inspector_class), \
+            mock.patch('mu.interface.QStandardItemModel', mock_model_class), \
+            mock.patch('mu.interface.QDockWidget', mock_dock_class):
+        w.add_debug_inspector()
+    assert w.debug_inspector == mock_debug_inspector
+    assert w.debug_model == mock_model
+    mock_debug_inspector.setModel.assert_called_once_with(mock_model)
+    mock_dock.setWidget.assert_called_once_with(mock_debug_inspector)
+    w.addDockWidget.assert_called_once_with(Qt.RightDockWidgetArea, mock_dock)
+
+
+def test_Window_update_debug_inspector():
+    """
+    Given a representation of the local objects in the debug runner's call
+    stack. Ensure the debug inspector's model is populated in the correct way
+    to show the different types of value.
+    """
+    locals_dict = {
+        '__builtins__': ['some', 'builtin', 'methods', ],
+        '__debug_code__': '<debug code details>',
+        '__debug_script__': '<debug script details',
+        '__file__': "'/path/to/script.py'",
+        '__name__': "'__main__'",
+        'foo': "'hello'",
+        'bar': "['this', 'is', 'a', 'list']",
+        'baz': "{'this': 'is', 'a': 'dict'}",
+    }
+    w = mu.interface.Window()
+    w.debug_model = mock.MagicMock()
+    mock_standard_item = mock.MagicMock()
+    with mock.patch('mu.interface.QStandardItem', mock_standard_item):
+        w.update_debug_inspector(locals_dict)
+    w.debug_model.clear.assert_called_once_with()
+    w.debug_model.setHorizontalHeaderLabels(['Name', 'Value', ])
+    # You just have to believe this is correct. I checked! :-)
+    assert mock_standard_item.call_count == 22
+
+
+def test_Window_update_debug_inspector_with_exception():
+    """
+    If an exception is encountered when working out the type of the value,
+    make sure it just reverts to the repr of the object.
+    """
+    locals_dict = {
+        'bar': "['this', 'is', 'a', 'list']",
+    }
+    w = mu.interface.Window()
+    w.debug_model = mock.MagicMock()
+    mock_standard_item = mock.MagicMock()
+    mock_eval = mock.MagicMock(side_effect=Exception('BOOM!'))
+    with mock.patch('mu.interface.QStandardItem', mock_standard_item), \
+            mock.patch('mu.interface.eval', mock_eval):
+        w.update_debug_inspector(locals_dict)
+    # You just have to believe this is correct. I checked! :-)
+    assert mock_standard_item.call_count == 2
+
+
 def test_Window_remove_filesystem():
     """
     Check all the necessary calls to remove / reset the file system pane are
@@ -1190,6 +1298,26 @@ def test_Window_remove_python_runner():
     mock_runner.deleteLater.assert_called_once_with()
     assert w.process_runner is None
     assert w.runner is None
+
+
+def test_Window_remove_debug_inspector():
+    """
+    Check all the necessary calls to remove / reset the debug inspector are
+    made.
+    """
+    w = mu.interface.Window()
+    mock_inspector = mock.MagicMock()
+    mock_model = mock.MagicMock()
+    mock_debug_inspector = mock.MagicMock()
+    w.inspector = mock_inspector
+    w.debug_inspector = mock_debug_inspector
+    w.debug_model = mock_model
+    w.remove_debug_inspector()
+    assert w.debug_inspector is None
+    assert w.debug_model is None
+    assert w.inspector is None
+    mock_inspector.setParent.assert_called_once_with(None)
+    mock_inspector.deleteLater.assert_called_once_with()
 
 
 def test_Window_set_theme():
@@ -1445,10 +1573,12 @@ def test_Window_setup():
     mock_qtw.removeTab = mock.MagicMock
     mock_qtw_class = mock.MagicMock(return_value=mock_qtw)
     theme = 'night'
+    breakpoint_toggle = mock.MagicMock()
     with mock.patch('mu.interface.QWidget', mock_widget_class), \
             mock.patch('mu.interface.ButtonBar', mock_button_bar_class), \
             mock.patch('mu.interface.FileTabs', mock_qtw_class):
-        w.setup(theme)
+        w.setup(breakpoint_toggle, theme)
+    assert w.breakpoint_toggle == breakpoint_toggle
     assert w.theme == theme
     assert w.setWindowIcon.call_count == 1
     assert isinstance(w.setWindowIcon.call_args[0][0], QIcon)
@@ -2724,7 +2854,8 @@ def test_PythonProcessPane_start_process():
     ppp.process.setWorkingDirectory.assert_called_once_with('workspace')
     ppp.process.readyRead.connect.assert_called_once_with(ppp.read)
     ppp.process.finished.connect.assert_called_once_with(ppp.finished)
-    ppp.process.start.assert_called_once_with('python3', ['-u', 'script.py'])
+    expected_script = os.path.abspath(os.path.normcase('script.py'))
+    ppp.process.start.assert_called_once_with('mu-debug', [expected_script])
 
 
 def test_PythonProcessPane_finished():
@@ -2923,3 +3054,59 @@ def test_PythonProcessPane_set_theme_night():
     ppp.setStyleSheet = mock.MagicMock()
     ppp.set_theme('night')
     ppp.setStyleSheet.assert_called_once_with(mu.interface.NIGHT_STYLE)
+
+
+def test_DebugInspector_set_font_size():
+    """
+    Check the correct stylesheet values are being set.
+    """
+    di = mu.interface.DebugInspector()
+    di.setStyleSheet = mock.MagicMock()
+    di.set_font_size(16)
+    style = di.setStyleSheet.call_args[0][0]
+    assert 'font-size: 16pt;' in style
+    assert 'font-family: Monospace;' in style
+
+
+def test_DebugInspector_zoomIn():
+    """
+    Ensure zooming in increases the font size.
+    """
+    di = mu.interface.DebugInspector()
+    di.set_font_size = mock.MagicMock()
+    old_size = di.font().pointSize()
+    di.zoomIn(delta=4)
+    di.set_font_size.assert_called_once_with(old_size + 4)
+
+
+def test_DebugInspector_zoomOut():
+    """
+    Ensure zooming out decreases the font size.
+    """
+    di = mu.interface.DebugInspector()
+    di.set_font_size = mock.MagicMock()
+    old_size = di.font().pointSize()
+    di.zoomOut(delta=4)
+    di.set_font_size.assert_called_once_with(old_size - 4)
+
+
+def test_DebugInspector_set_theme_day():
+    """
+    Make sure the theme is correctly set for day.
+    """
+    di = mu.interface.DebugInspector()
+    di.set_default_style = mock.MagicMock()
+    di.setStyleSheet = mock.MagicMock()
+    di.set_theme('day')
+    di.setStyleSheet.assert_called_once_with(mu.interface.DAY_STYLE)
+
+
+def test_DebugInspector_set_theme_night():
+    """
+    Make sure the theme is correctly set for night.
+    """
+    di = mu.interface.DebugInspector()
+    di.set_default_style = mock.MagicMock()
+    di.setStyleSheet = mock.MagicMock()
+    di.set_theme('night')
+    di.setStyleSheet.assert_called_once_with(mu.interface.NIGHT_STYLE)

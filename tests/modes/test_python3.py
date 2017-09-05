@@ -16,14 +16,14 @@ def test_python_mode():
     assert pm.name == 'Python 3'
     assert pm.description is not None
     assert pm.icon == 'python'
-    assert pm.debugger is False
+    assert pm.is_debugger is False
     assert pm.editor == editor
     assert pm.view == view
 
     actions = pm.actions()
     assert len(actions) == 2
     assert actions[0]['name'] == 'run'
-    assert actions[0]['handler'] == pm.toggle_run
+    assert actions[0]['handler'] == pm.run
     assert actions[1]['name'] == 'repl'
     assert actions[1]['handler'] == pm.toggle_repl
 
@@ -39,79 +39,17 @@ def test_python_api():
     assert isinstance(result, list)
 
 
-def test_python_toggle_run():
-    """
-    Ensure the toggle method toggles!
-    """
-    editor = mock.MagicMock()
-    view = mock.MagicMock()
-    pm = PythonMode(editor, view)
-    pm.run = mock.MagicMock()
-    pm.stop = mock.MagicMock()
-    pm.toggle_run(None)
-    pm.run.assert_called_once_with()
-    pm.runner = True
-    pm.toggle_run(None)
-    pm.stop.assert_called_once_with()
-
-
 def test_python_run():
     """
-    Ensure the run handling works as expected.
-    """
-    editor = mock.MagicMock()
-    view = mock.MagicMock()
-    view.current_tab.path = '/foo'
-    view.current_tab.isModified.return_value = True
-    mock_runner = mock.MagicMock()
-    view.add_python3_runner.return_value = mock_runner
-    pm = PythonMode(editor, view)
-    pm.workspace_dir = mock.MagicMock(return_value='/bar')
-    with mock.patch('mu.modes.python3.open_atomic') as oa:
-        pm.run()
-        oa.assert_called_once_with('/foo', 'w', newline='')
-    view.add_python3_runner.assert_called_once_with('/foo', '/bar')
-    assert pm.runner == mock_runner
-
-
-def test_python_run_no_tab():
-    """
-    If there's no active tab, there can be no runner either.
-    """
-    editor = mock.MagicMock()
-    view = mock.MagicMock()
-    view.current_tab = None
-    pm = PythonMode(editor, view)
-    pm.run()
-    assert pm.runner is None
-
-
-def test_python_run_prompt_for_unsaved_file():
-    """
-    If the file hasn't been saved yet (it's unnamed), prompt the user to save
-    it.
-    """
-    editor = mock.MagicMock()
-    view = mock.MagicMock()
-    view.current_tab.path = None
-    pm = PythonMode(editor, view)
-    pm.run()
-    editor.save.assert_called_once_with()
-    assert pm.runner is None
-
-
-def test_python_stop():
-    """
-    Ensure the script runner is cleaned up properly.
+    Ensure Python3 mode hands over running of the script to the debug mode.
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pm = PythonMode(editor, view)
-    mock_runner = mock.MagicMock()
-    pm.runner = mock_runner
-    pm.stop()
-    assert pm.runner is None
-    mock_runner.process.kill.assert_called_once_with()
+    pm.run(None)
+    editor.change_mode.assert_called_once_with('debugger')
+    assert editor.mode == 'debugger'
+    editor.modes['debugger'].start.assert_called_once_with()
 
 
 def test_python_toggle_repl():

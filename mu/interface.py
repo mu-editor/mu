@@ -159,6 +159,11 @@ class DayTheme(Theme):
     IndicatorError = QColor('red')
     IndicatorStyle = QColor('blue')
     IndicatorWordMatch = QColor('lightGrey')
+    BraceBackground = QColor('lightGrey')
+    BraceForeground = QColor('blue')
+    UnmatchedBraceBackground = QColor('#FFDDDD')
+    UnmatchedBraceForeground = QColor('black')
+    BreakpointMarker = QColor('#D80000')
 
 
 class NightTheme(Theme):
@@ -187,6 +192,10 @@ class NightTheme(Theme):
     IndicatorError = QColor('white')
     IndicatorStyle = QColor('cyan')
     IndicatorWordMatch = QColor('grey')
+    BraceBackground = QColor('white')
+    BraceForeground = QColor('black')
+    UnmatchedBraceBackground = QColor('#666')
+    UnmatchedBraceForeground = QColor('black')
 
 
 class PythonLexer(QsciLexerPython):
@@ -226,7 +235,7 @@ class EditorPane(QsciScintilla):
             'style': {'id': 20, 'markers': {}}
         }
         self.MARKER_NUMBER = 22  # Also arbitrary
-        self.BREAKPOINT_MARKER = 23 # Arbitrary
+        self.BREAKPOINT_MARKER = 23  # Arbitrary
         self.search_indicators = {
             'selection': {'id': 21, 'positions': []}
         }
@@ -252,6 +261,7 @@ class EditorPane(QsciScintilla):
         self.setIndentationsUseTabs(False)
         self.setIndentationWidth(4)
         self.setIndentationGuides(True)
+        self.setBackspaceUnindents(True)
         self.setTabWidth(4)
         self.setEdgeColumn(79)
         self.setMarginLineNumbers(0, True)
@@ -299,12 +309,15 @@ class EditorPane(QsciScintilla):
             self.setIndicatorForegroundColor(
                 theme.IndicatorWordMatch, self.search_indicators[type_]['id'])
         self.setMarkerBackgroundColor(theme.IndicatorError, self.MARKER_NUMBER)
-        self.setMarkerBackgroundColor(theme.IndicatorError,
+        self.setMarkerBackgroundColor(theme.BreakpointMarker,
                                       self.BREAKPOINT_MARKER)
-
         self.setAutoCompletionThreshold(2)
         self.setAutoCompletionSource(QsciScintilla.AcsAll)
         self.setLexer(self.lexer)
+        self.setMatchedBraceBackgroundColor(theme.BraceBackground)
+        self.setMatchedBraceForegroundColor(theme.BraceForeground)
+        self.setUnmatchedBraceBackgroundColor(theme.UnmatchedBraceBackground)
+        self.setUnmatchedBraceForegroundColor(theme.UnmatchedBraceForeground)
 
     def set_api(self, api_definitions):
         """
@@ -896,8 +909,11 @@ class Window(QMainWindow):
         self.debug_model.clear()
         self.debug_model.setHorizontalHeaderLabels([_('Name'), _('Value'), ])
         for name in names:
-            # DANGER!
-            val = eval(locals_dict[name])
+            try:
+                # DANGER!
+                val = eval(locals_dict[name])
+            except Exception:
+                val = None
             if isinstance(val, list):
                 # Show a list consisting of rows of position/value
                 list_item = QStandardItem(name)

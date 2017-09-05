@@ -19,7 +19,7 @@ def test_base_mode():
     assert bm.name == 'UNNAMED MODE'
     assert bm.description == 'DESCRIPTION NOT AVAILABLE.'
     assert bm.icon == 'help'
-    assert bm.debugger is False
+    assert bm.is_debugger is False
     assert bm.editor == editor
     assert bm.view == view
     assert bm.actions() == NotImplemented

@@ -847,11 +847,12 @@ def test_Debugger_runscript():
     db._runscript('x.py')
     assert db._run_state == mu.debugger.runner.DebugState.STARTING
     assert db.mainpyfile == db.canonic('x.py')
-    assert not db._user_requested_quit
-    db.run.assert_called_once_with('f = open("x.py", "rb");'
-                                   'code = compile(f.read(), "x.py", "exec");'
-                                   'exec(code);'
-                                   'f.close();')
+    assert db._user_requested_quit
+    db.run.assert_called_once_with('__debug_script__ = open("x.py", "rb");'
+                                   '__debug_code__ = compile(__debug_script__'
+                                   '.read(), "x.py", "exec");'
+                                   'exec(__debug_code__);'
+                                   '__debug_script__.close();')
 
 
 def test_run_with_user_requested_quit():
