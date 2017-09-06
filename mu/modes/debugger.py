@@ -310,14 +310,14 @@ class DebugMode(BaseMode):
         Handle when the debugger has called a function with the referenced
         args. Currently an unimplemented extra feature.
         """
-        pass
+        self.debugger.do_step()
 
     def debug_on_return(self, return_value):
         """
         Handle when the debugger returns from a function call with the
         referenced return value. Currently an unimplemented extra feature.
         """
-        pass
+        self.debugger.do_step()
 
     def debug_on_exception(self, name, value):
         """

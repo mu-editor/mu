@@ -909,7 +909,9 @@ class Window(QMainWindow):
         names = sorted([x for x in locals_dict if x not in excluded_names])
         self.debug_model.clear()
         self.debug_model.setHorizontalHeaderLabels([_('Name'), _('Value'), ])
+        print("NEW")
         for name in names:
+            print(name)
             try:
                 # DANGER!
                 val = eval(locals_dict[name])

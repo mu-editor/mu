@@ -23,7 +23,7 @@ import json
 import socket
 import time
 import logging
-from threading import Thread
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 
 
 logger = logging.getLogger(__name__)
@@ -63,56 +63,60 @@ class Breakpoint:
         return '{}:{}'.format(self.filename, self.line)
 
 
-def command_buffer(debugger):
-    """
-    Buffer input from a socket, yield complete debugger commands.
-    """
-    connected = False
-    tries = 0
-    connection_attempts = 10
-    while not connected:
-        try:
-            debugger.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            debugger.socket.connect((debugger.host, debugger.port))
-            connected = True
-        except ConnectionRefusedError as e:
-            # Allow up to connection_attempts attempts to connect.
-            tries += 1
-            if tries >= connection_attempts:
-                raise
-            time.sleep(0.2)
-    # Getting here means the connection has been established, so handle all
-    # incoming data from the debug runner process.
-    remainder = b''
-    while True:
-        new_buffer = debugger.socket.recv(1024)
-        if new_buffer:
-            if new_buffer.endswith(debugger.ETX):
-                terminator = debugger.ETX
-                pos = new_buffer.rfind(debugger.ETX)
-                full_buffer = remainder + new_buffer[:pos]
+class CommandBufferHandler(QObject):
+
+    on_command = pyqtSignal(str)
+
+    def worker(self):
+        """
+        Buffer input from a socket, emit complete debugger commands as signals.
+        """
+        connected = False
+        tries = 0
+        connection_attempts = 10
+        while not connected:
+            try:
+                self.debugger.socket = socket.socket(socket.AF_INET,
+                                                     socket.SOCK_STREAM)
+                self.debugger.socket.connect((self.debugger.host,
+                                              self.debugger.port))
+                connected = True
+            except ConnectionRefusedError as e:
+                # Allow up to connection_attempts attempts to connect.
+                tries += 1
+                if tries >= connection_attempts:
+                    return 
+                time.sleep(0.2)
+        # Getting here means the connection has been established, so handle all
+        # incoming data from the debug runner process.
+        remainder = b''
+        while True:
+            new_buffer = self.debugger.socket.recv(1024)
+            if new_buffer:
+                if new_buffer.endswith(self.debugger.ETX):
+                    terminator = self.debugger.ETX
+                    pos = new_buffer.rfind(self.debugger.ETX)
+                    full_buffer = remainder + new_buffer[:pos]
+                else:
+                    terminator = None
+                    full_buffer = remainder + new_buffer
+
+                commands = full_buffer.split(self.debugger.ETX)
+                if terminator is None:
+                    remainder = commands.pop()
+                else:
+                    remainder = b''
+                for command in commands:
+                    command = command.decode('utf-8')
+                    logger.debug(command)
+                    self.on_command.emit(command)
             else:
-                terminator = None
-                full_buffer = remainder + new_buffer
-
-            commands = full_buffer.split(debugger.ETX)
-            if terminator is None:
-                remainder = commands.pop()
-            else:
-                remainder = b''
-            for command in commands:
-                command = command.decode('utf-8')
-                logger.debug(command)
-                event, data = json.loads(command)
-                if hasattr(debugger, 'on_{}'.format(event)):
-                    getattr(debugger, 'on_{}'.format(event))(**data)
-        else:
-            # If recv() returns None, the socket is closed.
-            logger.debug('Debug client closed.')
-            break
+                # If recv() returns None, the socket is closed.
+                logger.debug('Debug client closed.')
+                break
 
 
-class Debugger:
+class Debugger(QObject):
     """
     Represents the networked debugger client.
     """
@@ -127,14 +131,27 @@ class Debugger:
         self.port = port
         self.proc = proc
         self.view = None  # Set after instantiation.
+        super().__init__()
 
     def start(self):
         """
         Start the debugger session.
         """
-        t = Thread(target=command_buffer, args=(self,))
-        t.daemon = True
-        t.start()
+        self.listener_thread = QThread()
+        self.command_handler = CommandBufferHandler()
+        self.command_handler.debugger = self
+        self.command_handler.moveToThread(self.listener_thread)
+        self.command_handler.on_command.connect(self.on_command)
+        self.listener_thread.started.connect(self.command_handler.worker)
+        self.listener_thread.start()
+
+    def on_command(self, command):
+        """
+        Handle a command emitted by the client thread.
+        """
+        event, data = json.loads(command)
+        if hasattr(self, 'on_{}'.format(event)):
+            getattr(self, 'on_{}'.format(event))(**data)
 
     def stop(self):
         """
