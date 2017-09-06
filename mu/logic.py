@@ -471,7 +471,8 @@ class Editor:
         from a hex file.
         """
         path = self._view.get_load_path(self.modes[self.mode].workspace_dir())
-        self._load(path)
+        if path:
+            self._load(path)
 
     def direct_load(self, path):
         """ for loading files passed from command line or the OS launch"""

@@ -2867,11 +2867,13 @@ def test_PythonProcessPane_finished():
     mock_cursor.insertText = mock.MagicMock()
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.setReadOnly = mock.MagicMock()
+    ppp.setTextCursor = mock.MagicMock()
     ppp.finished(0, 1)
     assert mock_cursor.insertText.call_count == 2
     assert 'exit code: 0' in mock_cursor.insertText.call_args[0][0]
     assert 'status: 1' in mock_cursor.insertText.call_args[0][0]
     ppp.setReadOnly.assert_called_once_with(True)
+    ppp.setTextCursor.assert_called_once_with(ppp.textCursor())
 
 
 def test_PythonProcessPane_append():

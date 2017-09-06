@@ -196,6 +196,7 @@ class NightTheme(Theme):
     BraceForeground = QColor('black')
     UnmatchedBraceBackground = QColor('#666')
     UnmatchedBraceForeground = QColor('black')
+    BreakpointMarker = QColor('white')
 
 
 class PythonLexer(QsciLexerPython):
@@ -1809,6 +1810,8 @@ class PythonProcessPane(QTextEdit):
         cursor.insertText(_('\n\n---------- FINISHED ----------\n'))
         msg = _('exit code: {} status: {}').format(code, status)
         cursor.insertText(msg)
+        cursor.movePosition(QTextCursor.End)
+        self.setTextCursor(cursor)
         self.setReadOnly(True)
 
     def append(self, byte_stream):

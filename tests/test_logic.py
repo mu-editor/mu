@@ -31,6 +31,20 @@ def test_CONSTANTS():
     assert mu.logic.WORKSPACE_NAME
 
 
+def test_write_and_flush():
+    """
+    Ensure the write and flush function tries to write to the filesystem and
+    flush so the write happens immediately.
+    """
+    mock_fd = mock.MagicMock()
+    mock_content = mock.MagicMock()
+    with mock.patch('mu.logic.os.fsync') as fsync:
+        mu.logic.write_and_flush(mock_fd, mock_content)
+        fsync.assert_called_once_with(mock_fd)
+    mock_fd.write.assert_called_once_with(mock_content)
+    mock_fd.flush.assert_called_once_with()
+
+
 def test_get_settings_app_path():
     """
     Find a settings file in the application location when run using Python.

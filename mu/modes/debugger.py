@@ -34,6 +34,7 @@ class DebugMode(BaseMode):
     icon = 'python'
     runner = None
     is_debugger = True
+    save_timeout = 0  # No need to auto-save when in read-only debug mode.
 
     def actions(self):
         """
@@ -116,7 +117,11 @@ class DebugMode(BaseMode):
             self.debugger = Debugger('localhost', DEBUGGER_PORT,
                                      proc=self.runner.process)
             self.debugger.view = self
-            self.debugger.start()
+            try:
+                self.debugger.start()
+            except Exception as ex:
+                logger.error(ex)
+                self.view.show_message('Unable to start script')
         else:
             logger.debug('Current script has not been saved. Aborting debug.')
             self.stop()
@@ -232,6 +237,12 @@ class DebugMode(BaseMode):
         Handle when the debugger has moved to the referenced line in the file.
         """
         tab = self.view.current_tab
+        if tab.path != filename:
+            # The debugger has moved to a file that's not the current script.
+            # In this case, because Mu limits users to only debugging the
+            # current script, emit a step_out.
+            self.debugger.do_return()
+            return
         tab.setSelection(line - 1, 0, line, 0)
 
     def debug_on_stack(self, stack):
