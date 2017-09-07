@@ -24,7 +24,8 @@ import re
 import platform
 import logging
 import os.path
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QIODevice, QProcess, QTimer
+from PyQt5.QtCore import (QSize, Qt, pyqtSignal, QIODevice, QProcess,
+                          QTimer, QProcessEnvironment)
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog,
                              QMessageBox, QTextEdit, QFrame, QListWidget,
@@ -909,9 +910,7 @@ class Window(QMainWindow):
         names = sorted([x for x in locals_dict if x not in excluded_names])
         self.debug_model.clear()
         self.debug_model.setHorizontalHeaderLabels([_('Name'), _('Value'), ])
-        print("NEW")
         for name in names:
-            print(name)
             try:
                 # DANGER!
                 val = eval(locals_dict[name])
@@ -1796,7 +1795,10 @@ class PythonProcessPane(QTextEdit):
         logger.info('Running script: {}'.format(script))
         self.process = QProcess(self)
         self.process.setProcessChannelMode(QProcess.MergedChannels)
-        # TODO: Add QProcessEnvironment envars
+        # Force buffers to flush immediately.
+        env = QProcessEnvironment.systemEnvironment()
+        env.insert('PYTHONUNBUFFERED', '1')
+        self.process.setProcessEnvironment(env)
         logger.info('Working directory: {}'.format(workspace))
         self.process.setWorkingDirectory(workspace)
         self.process.readyRead.connect(self.read)

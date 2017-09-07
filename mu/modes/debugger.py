@@ -250,7 +250,10 @@ class DebugMode(BaseMode):
         Handle when the debugger sends an updated stack.
         """
         if stack:
-            locals_dict = stack[0][1]['locals']
+            locals_dict = {}
+            for frame in stack:
+                for k, v in frame[1]['locals'].items():
+                    locals_dict[k] = v
             self.view.update_debug_inspector(locals_dict)
 
     def debug_on_postmortem(self, args, kwargs):

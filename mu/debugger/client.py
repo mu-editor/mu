@@ -23,7 +23,7 @@ import json
 import socket
 import time
 import logging
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
 
 logger = logging.getLogger(__name__)
@@ -65,7 +65,16 @@ class Breakpoint:
 
 class CommandBufferHandler(QObject):
 
-    on_command = pyqtSignal(str)
+    on_command = pyqtSignal(str)  #: Signal emitted when a command is received.
+    on_fail = pyqtSignal(str)  #: Emitted when there was a connection failure.
+
+    def __init__(self, debugger):
+        """
+        Receive the debugger object containing the configuration attributes and
+        socket for inter-process communication with the debug runner.
+        """
+        super().__init__()
+        self.debugger = debugger
 
     def worker(self):
         """
@@ -85,7 +94,7 @@ class CommandBufferHandler(QObject):
                 # Allow up to connection_attempts attempts to connect.
                 tries += 1
                 if tries >= connection_attempts:
-                    return 
+                    self.on_fail.emit('Could not connect to debug runner.')
                 time.sleep(0.2)
         # Getting here means the connection has been established, so handle all
         # incoming data from the debug runner process.
@@ -138,10 +147,10 @@ class Debugger(QObject):
         Start the debugger session.
         """
         self.listener_thread = QThread()
-        self.command_handler = CommandBufferHandler()
-        self.command_handler.debugger = self
+        self.command_handler = CommandBufferHandler(self)
         self.command_handler.moveToThread(self.listener_thread)
         self.command_handler.on_command.connect(self.on_command)
+        self.command_handler.on_fail.connect(self.on_fail)
         self.listener_thread.started.connect(self.command_handler.worker)
         self.listener_thread.start()
 
@@ -152,6 +161,12 @@ class Debugger(QObject):
         event, data = json.loads(command)
         if hasattr(self, 'on_{}'.format(event)):
             getattr(self, 'on_{}'.format(event))(**data)
+
+    def on_fail(self, message):
+        """
+        Handle if there's a connection failure with the debug runner.
+        """
+        raise ConnectionError(message)
 
     def stop(self):
         """
