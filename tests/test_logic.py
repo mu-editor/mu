@@ -1114,6 +1114,14 @@ def test_change_mode_no_timer():
     view.stop_timer.assert_called_once_with()
 
 
+def test_change_mode_reset_breakpoints():
+    """
+    When changing modes, if the new mode does NOT require a debugger, then
+    breakpoints should be reset.
+    """
+    assert False
+
+
 def test_autosave():
     """
     Ensure the autosave callback does the expected things to the tabs.

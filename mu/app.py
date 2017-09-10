@@ -25,6 +25,7 @@ import sys
 import platform
 import logging
 from logging.handlers import TimedRotatingFileHandler
+from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT
@@ -93,9 +94,6 @@ def run():
     logging.info(platform.uname())
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
-    # Display a friendly "splash" icon.
-    splash = QSplashScreen(load_pixmap('icon'))
-    splash.show()
     # Create the "window" we'll be looking at.
     editor_window = Window()
     # Create the "editor" that'll control the "window".
@@ -111,8 +109,14 @@ def run():
     status_bar = editor_window.status_bar
     status_bar.connect_logs(editor.show_logs)
     status_bar.connect_mode(editor.select_mode)
+    # Display a friendly "splash" icon.
+    splash = QSplashScreen(load_pixmap('splash-screen'))
+    splash.show()
     # Finished starting up the application, so hide the splash icon.
-    splash.finish(editor_window)
+    splash_be_gone = QTimer()
+    splash_be_gone.timeout.connect(lambda: splash.finish(editor_window))
+    splash_be_gone.setSingleShot(True)
+    splash_be_gone.start(5000)
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
 

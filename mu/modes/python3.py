@@ -32,6 +32,7 @@ class PythonMode(BaseMode):
     description = _('Create code using standard Python 3.')
     icon = 'python'
     runner = None
+    has_debugger = True
 
     def actions(self):
         """

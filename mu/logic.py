@@ -413,7 +413,7 @@ class Editor:
             logger.info('Starting with blank file.')
         self.change_mode(self.mode)
         self._view.set_theme(self.theme)
-        self.show_status_message(random.choice(MOTD))
+        self.show_status_message(random.choice(MOTD), 10)
 
     def toggle_theme(self):
         """
@@ -649,6 +649,11 @@ class Editor:
         else:
             # Stop the timer
             self._view.stop_timer()
+        # Update breakpoint states.
+        if not self.modes[mode].has_debugger:
+            for tab in self._view.widgets:
+                tab.breakpoint_lines = set()
+                tab.reset_annotations()
 
     def autosave(self):
         """
@@ -694,15 +699,16 @@ class Editor:
         """
         How to handle the toggling of a breakpoint.
         """
-        tab = self._view.current_tab
-        if self.mode == 'debugger':
-            # The debugger is running.
-            self.modes['debugger'].toggle_breakpoint(line, tab)
-        else:
-            # The debugger isn't running.
-            if line in tab.breakpoint_lines:
-                tab.markerDelete(line, tab.BREAKPOINT_MARKER)
-                tab.breakpoint_lines.remove(line)
+        if self.modes[self.mode].has_debugger:
+            tab = self._view.current_tab
+            if self.mode == 'debugger':
+                # The debugger is running.
+                self.modes['debugger'].toggle_breakpoint(line, tab)
             else:
-                tab.markerAdd(line, tab.BREAKPOINT_MARKER)
-                tab.breakpoint_lines.add(line)
+                # The debugger isn't running.
+                if line in tab.breakpoint_lines:
+                    tab.markerDelete(line, tab.BREAKPOINT_MARKER)
+                    tab.breakpoint_lines.remove(line)
+                else:
+                    tab.markerAdd(line, tab.BREAKPOINT_MARKER)
+                    tab.breakpoint_lines.add(line)

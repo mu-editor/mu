@@ -863,8 +863,8 @@ class Window(QMainWindow):
                                   Qt.LeftDockWidgetArea |
                                   Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.repl)
-        self.repl_pane.setFocus()
         self.connect_zoom(self.repl_pane)
+        self.repl_pane.setFocus()
 
     def add_python3_runner(self, name, path):
         """

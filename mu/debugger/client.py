@@ -95,6 +95,7 @@ class CommandBufferHandler(QObject):
                 tries += 1
                 if tries >= connection_attempts:
                     self.on_fail.emit('Could not connect to debug runner.')
+                    return
                 time.sleep(0.2)
         # Getting here means the connection has been established, so handle all
         # incoming data from the debug runner process.
@@ -166,7 +167,7 @@ class Debugger(QObject):
         """
         Handle if there's a connection failure with the debug runner.
         """
-        raise ConnectionError(message)
+        self.view.view.show_message(message)
 
     def stop(self):
         """

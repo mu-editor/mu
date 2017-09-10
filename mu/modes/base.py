@@ -48,6 +48,7 @@ class BaseMode:
     icon = 'help'
     repl = None
     is_debugger = False
+    has_debugger = False
     save_timeout = 5  #: Number of seconds to wait before saving work.
 
     def __init__(self, editor, view):
