@@ -43,6 +43,7 @@ def test_run():
             mock.patch('mu.app.Editor') as ed, \
             mock.patch('mu.app.load_pixmap'), \
             mock.patch('mu.app.Window') as win, \
+            mock.patch('mu.app.QTimer') as timer, \
             mock.patch('sys.exit') as ex:
         run()
         assert set_log.call_count == 1
@@ -51,7 +52,9 @@ def test_run():
         # foo.mock_calls are method calls on the object
         assert len(qa.mock_calls) == 2
         assert qsp.call_count == 1
-        assert len(qsp.mock_calls) == 3
+        assert len(qsp.mock_calls) == 2
+        assert timer.call_count == 1
+        assert len(timer.mock_calls) == 4
         assert ed.call_count == 1
         assert len(ed.mock_calls) == 3
         assert win.call_count == 1

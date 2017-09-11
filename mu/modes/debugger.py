@@ -117,11 +117,7 @@ class DebugMode(BaseMode):
             self.debugger = Debugger('localhost', DEBUGGER_PORT,
                                      proc=self.runner.process)
             self.debugger.view = self
-            try:
-                self.debugger.start()
-            except Exception as ex:
-                logger.error(ex)
-                self.view.show_message('Unable to start script')
+            self.debugger.start()
         else:
             logger.debug('Current script has not been saved. Aborting debug.')
             self.stop()

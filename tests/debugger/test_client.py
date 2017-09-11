@@ -7,6 +7,7 @@ import pytest
 import json
 import mu.debugger.client
 from unittest import mock
+from PyQt5.QtCore import pyqtBoundSignal
 
 
 def test_Breakpoint_init():
@@ -30,10 +31,22 @@ def test_Breakpoint_str():
     assert str(bp) == 'filename.py:10'
 
 
-def test_command_buffer_start_with_error():
+def test_CommandBufferHandler_init():
     """
-    Check that the connection will try up to 10 times before raising an
-    exception.
+    Check the CommandBufferHandler initialises as expected: with two signals
+    and a reference to the debugger client instance.
+    """
+    mock_debugger = mock.MagicMock()
+    cbh = mu.debugger.client.CommandBufferHandler(mock_debugger)
+    assert isinstance(cbh.on_command, pyqtBoundSignal)
+    assert isinstance(cbh.on_fail, pyqtBoundSignal)
+    assert cbh.debugger == mock_debugger
+
+
+def test_CommandBufferHandler_worker_with_error():
+    """
+    Check that the connection will try up to 10 times before emitting an
+    on_fail signal.
     """
     mock_debugger = mock.MagicMock()
     mock_debugger.host = 'localhost'
@@ -43,18 +56,22 @@ def test_command_buffer_start_with_error():
     mock_socket.connect.side_effect = ConnectionRefusedError()
     mock_socket_factory.socket.return_value = mock_socket
     mock_time = mock.MagicMock()
+    mock_debugger = mock.MagicMock()
+    cbh = mu.debugger.client.CommandBufferHandler(mock_debugger)
+    cbh.on_fail = mock.MagicMock()
     with mock.patch('mu.debugger.client.socket', mock_socket_factory), \
             mock.patch('mu.debugger.client.time', mock_time):
-        with pytest.raises(ConnectionRefusedError):
-            mu.debugger.client.command_buffer(mock_debugger)
+        cbh.worker()
+    msg = 'Could not connect to debug runner.'
+    cbh.on_fail.emit.assert_called_once_with(msg)
     assert mock_socket.connect.call_count == 10
     assert mock_time.sleep.call_count == 9
 
 
-def test_command_buffer_break_loop():
+def test_CommandBufferHandler_worker_break_loop():
     """
-    Ensure if the command_buffer receives None from the socket then break out
-    of the loop.
+    Ensure if the worker receives None from the socket then break out of the
+    loop to end the thread.
     """
     mock_debugger = mock.MagicMock()
     mock_debugger.host = 'localhost'
@@ -63,8 +80,9 @@ def test_command_buffer_break_loop():
     mock_socket = mock.MagicMock()
     mock_socket.recv.return_value = None
     mock_socket_factory.socket.return_value = mock_socket
+    cbh = mu.debugger.client.CommandBufferHandler(mock_debugger)
     with mock.patch('mu.debugger.client.socket', mock_socket_factory):
-        mu.debugger.client.command_buffer(mock_debugger)
+        cbh.worker()
     mock_socket.recv.assert_called_once_with(1024)
 
 
@@ -88,11 +106,14 @@ def test_command_buffer_message():
     mock_socket = mock.MagicMock()
     mock_socket_factory.socket.return_value = mock_socket
     mock_socket.recv.side_effect = [msg1, msg2, None]
-    mock_debugger.on_bootstrap.return_value = True
+    cbh = mu.debugger.client.CommandBufferHandler(mock_debugger)
+    cbh.on_command = mock.MagicMock()
     with mock.patch('mu.debugger.client.socket', mock_socket_factory):
-        mu.debugger.client.command_buffer(mock_debugger)
+        cbh.worker()
     assert mock_debugger.socket.recv.call_count == 3
-    mock_debugger.on_bootstrap.assert_called_once_with(arg='value')
+    expected = msg.replace(mu.debugger.client.Debugger.ETX,
+                           b'').decode('utf-8')
+    cbh.on_command.emit.assert_called_once_with(expected)
 
 
 def test_Debugger_init():
@@ -112,13 +133,45 @@ def test_Debugger_start():
     """
     mock_thread_instance = mock.MagicMock()
     mock_thread = mock.MagicMock(return_value=mock_thread_instance)
-    with mock.patch('mu.debugger.client.Thread', mock_thread):
+    mock_handler_instance = mock.MagicMock()
+    mock_handler = mock.MagicMock(return_value=mock_handler_instance)
+    with mock.patch('mu.debugger.client.QThread', mock_thread), \
+            mock.patch('mu.debugger.client.CommandBufferHandler',
+                       mock_handler):
         db = mu.debugger.client.Debugger('localhost', 1908)
         db.start()
-    cb = mu.debugger.client.command_buffer
-    mock_thread.assert_called_once_with(target=cb, args=(db,))
-    assert mock_thread_instance.daemon is True
+    mock_thread.assert_called_once_with()
+    mock_thread_instance.started.connect.assert_called_once_with(
+        mock_handler_instance.worker)
     mock_thread_instance.start.assert_called_once_with()
+    mock_handler.assert_called_once_with(db)
+    mock_handler_instance.moveToThread.\
+        assert_called_once_with(mock_thread_instance)
+    mock_handler_instance.on_command.connect.\
+        assert_called_once_with(db.on_command)
+    mock_handler_instance.on_fail.connect.assert_called_once_with(db.on_fail)
+
+
+def test_Debugger_on_command():
+    """
+    Ensure the debug client handles command messages sent from the
+    CommandBufferHandler thread.
+    """
+    db = mu.debugger.client.Debugger('localhost', 1908)
+    db.on_bootstrap = mock.MagicMock()
+    msg = json.dumps(["bootstrap", {'arg': 'value'}])
+    db.on_command(msg)
+    db.on_bootstrap.assert_called_once_with(arg='value')
+
+
+def test_Debugger_on_fail():
+    """
+    If a failure is emitted ensure it's logged.
+    """
+    db = mu.debugger.client.Debugger('localhost', 1908)
+    with mock.patch('mu.debugger.client.logger.error') as mock_log:
+        db.on_fail('bang')
+        mock_log.assert_called_once_with('bang')
 
 
 def test_Debugger_stop():

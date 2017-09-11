@@ -64,6 +64,13 @@ class Breakpoint:
 
 
 class CommandBufferHandler(QObject):
+    """
+    Represents the work to be done on a separate thread for connecting and
+    processing incoming messages.
+
+    Emits signals to indicate when messages are receievd or the connection
+    fails at appropriate moments during the lifetime of a debug session.
+    """
 
     on_command = pyqtSignal(str)  #: Signal emitted when a command is received.
     on_fail = pyqtSignal(str)  #: Emitted when there was a connection failure.
@@ -167,7 +174,7 @@ class Debugger(QObject):
         """
         Handle if there's a connection failure with the debug runner.
         """
-        self.view.view.show_message(message)
+        logger.error(message)
 
     def stop(self):
         """

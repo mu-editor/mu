@@ -1119,7 +1119,20 @@ def test_change_mode_reset_breakpoints():
     When changing modes, if the new mode does NOT require a debugger, then
     breakpoints should be reset.
     """
-    assert False
+    view = mock.MagicMock()
+    mock_tab = mock.MagicMock()
+    mock_tab.breakpoint_lines = set([1, 2, 3, ])
+    view.widgets = [mock_tab, ]
+    ed = mu.logic.Editor(view)
+    mode = mock.MagicMock()
+    mode.has_debugger = False
+    mode.save_timeout = 5
+    ed.modes = {
+        'microbit': mode,
+    }
+    ed.change_mode('microbit')
+    assert mock_tab.breakpoint_lines == set()
+    mock_tab.reset_annotations.assert_called_once_with()
 
 
 def test_autosave():
@@ -1195,6 +1208,10 @@ def test_debug_toggle_breakpoint_on():
     view = mock.MagicMock()
     view.current_tab.breakpoint_lines = set()
     ed = mu.logic.Editor(view)
+    mock_debugger = mock.MagicMock()
+    ed.modes = {
+        'python': mock_debugger,
+    }
     ed.mode = 'python'
     ed.debug_toggle_breakpoint(1, 10, False)
     view.current_tab.markerAdd.\
@@ -1210,6 +1227,10 @@ def test_debug_toggle_breakpoint_off():
     view = mock.MagicMock()
     view.current_tab.breakpoint_lines = set([10, ])
     ed = mu.logic.Editor(view)
+    mock_debugger = mock.MagicMock()
+    ed.modes = {
+        'python': mock_debugger,
+    }
     ed.mode = 'python'
     ed.debug_toggle_breakpoint(1, 10, False)
     view.current_tab.markerDelete.\
