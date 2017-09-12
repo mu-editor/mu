@@ -513,6 +513,18 @@ class Editor:
             # The user cancelled the filename selection.
             tab.path = None
 
+    def get_tab(self, path):
+        """
+        Given a path, returns either an existing tab for the path or creates /
+        loads a new tab for the path.
+        """
+        for tab in self._view.widgets:
+            if tab.path == path:
+                self._view.focus_tab(tab)
+                return tab
+        self.direct_load(path)
+        return self._view.current_tab
+
     def zoom_in(self):
         """
         Make the editor's text bigger
@@ -650,7 +662,7 @@ class Editor:
             # Stop the timer
             self._view.stop_timer()
         # Update breakpoint states.
-        if not self.modes[mode].has_debugger:
+        if not (self.modes[mode].is_debugger or self.modes[mode].has_debugger):
             for tab in self._view.widgets:
                 tab.breakpoint_lines = set()
                 tab.reset_annotations()

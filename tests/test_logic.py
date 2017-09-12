@@ -756,6 +756,37 @@ def test_save_with_no_file_extension():
     assert view.get_save_path.call_count == 0
 
 
+def test_get_tab_existing_tab():
+    """
+    Ensure that an existing tab is returned if its path matches.
+    """
+    view = mock.MagicMock()
+    mock_tab = mock.MagicMock()
+    mock_tab.path = 'foo'
+    view.widgets = [mock_tab, ]
+    ed = mu.logic.Editor(view)
+    view.focus_tab.reset_mock()
+    tab = ed.get_tab('foo')
+    assert tab == mock_tab
+    view.focus_tab.assert_called_once_with(mock_tab)
+
+
+def test_get_tab_new_tab():
+    """
+    If the path is not represented by an existing tab, ensure it is loaded and
+    the new tab is returned.
+    """
+    view = mock.MagicMock()
+    mock_tab = mock.MagicMock()
+    mock_tab.path = 'foo'
+    view.widgets = [mock_tab, ]
+    ed = mu.logic.Editor(view)
+    ed.direct_load = mock.MagicMock()
+    tab = ed.get_tab('bar')
+    ed.direct_load.assert_called_once_with('bar')
+    assert tab == view.current_tab
+
+
 def test_zoom_in():
     """
     Ensure the UI layer is zoomed in.
@@ -1126,6 +1157,7 @@ def test_change_mode_reset_breakpoints():
     ed = mu.logic.Editor(view)
     mode = mock.MagicMock()
     mode.has_debugger = False
+    mode.is_debugger = False
     mode.save_timeout = 5
     ed.modes = {
         'microbit': mode,

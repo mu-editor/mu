@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import os.path
 from gettext import gettext as _
 from mu.modes.base import BaseMode
 from mu.logic import DEBUGGER_PORT, write_and_flush
@@ -232,13 +233,12 @@ class DebugMode(BaseMode):
         """
         Handle when the debugger has moved to the referenced line in the file.
         """
-        tab = self.view.current_tab
-        if tab.path != filename:
-            # The debugger has moved to a file that's not the current script.
-            # In this case, because Mu limits users to only debugging the
-            # current script, emit a step_out.
+        ignored = ['bdb.py', ]  # Files the debugger should ignore.
+        if os.path.basename(filename) in ignored:
             self.debugger.do_return()
             return
+        self.view.current_tab.setSelection(0, 0, 0, 0)
+        tab = self.editor.get_tab(filename)
         tab.setSelection(line - 1, 0, line, 0)
 
     def debug_on_stack(self, stack):

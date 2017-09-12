@@ -339,3 +339,195 @@ def test_debug_on_breakpoint_disable():
     dm.debug_on_breakpoint_disable(mock_breakpoint)
     mock_tab.markerDelete.assert_called_once_with(mock_breakpoint.line - 1,
                                                   mock_tab.BREAKPOINT_MARKER)
+
+
+def test_debug_on_line_ignore_file():
+    """
+    If the filename is in the ignored bucket, do a return.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    dm.debugger = mock.MagicMock()
+    dm.debug_on_line('bdb.py', 100)
+    dm.debugger.do_return.assert_called_once_with()
+
+
+def test_debug_on_line():
+    """
+    Ensure the view is updated to the expected tab and the correct line is
+    selected therein.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    mock_tab = mock.MagicMock()
+    editor.get_tab.return_value = mock_tab
+    dm.debug_on_line('foo.py', 100)
+    view.current_tab.setSelection.assert_called_once_with(0, 0, 0, 0)
+    mock_tab.setSelection(99, 0, 100, 0)
+
+
+def test_debug_on_stack_no_stack():
+    """
+    In certain rare situations the runner could send an empty stack.
+
+    ToDo: Look into this.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    dm.debug_on_stack([])
+    assert view.update_debug_inspector.call_count == 0
+
+
+def test_debug_on_stack():
+    """
+    Ensure the expected locals dict is passed to the view so the object
+    inspector is updated properly.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    stack = [
+        (
+            1,
+            {
+                'locals': {
+                    'a': 'frame1',
+                    'b': 'frame1',
+                }
+            }
+        ),
+        (
+            2,
+            {
+                'locals': {
+                    'b': 'frame2',
+                    'c': 'frame2',
+                }
+            }
+        )
+    ]
+    dm.debug_on_stack(stack)
+    view.update_debug_inspector.assert_called_once_with({
+        'a': 'frame1',
+        'b': 'frame2',
+        'c': 'frame2',
+    })
+
+
+def test_debug_on_postmortem():
+    """
+    Ensure that the args and kwargs passed as a context for postmortem and
+    appended to the text area displaying stdout from the Python process.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    args = ['foo', 'bar']
+    kwargs = {
+        'baz': 'qux',
+    }
+    dm.debug_on_postmortem(args, kwargs)
+    assert view.process_runner.append.call_count == 3
+
+
+def test_debug_on_info():
+    """
+    Information messages result in a status message being shown by the editor.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    dm.debug_on_info('message')
+    expected = 'Debugger info: message'
+    editor.show_status_message.assert_called_once_with(expected)
+
+
+def test_debug_on_warning():
+    """
+    Warning messages result in a status message being shown by the editor.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    dm.debug_on_warning('message')
+    expected = 'Debugger warning: message'
+    editor.show_status_message.assert_called_once_with(expected)
+
+
+def test_debug_on_error():
+    """
+    Error messages result in a status message being shown by the editor.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    dm.debug_on_error('message')
+    expected = 'Debugger error: message'
+    editor.show_status_message.assert_called_once_with(expected)
+
+
+def test_debug_on_call():
+    """
+    Calling a function causes the debugger to step into the function.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    dm.debugger = mock.MagicMock()
+    dm.debug_on_call(None)
+    dm.debugger.do_step.assert_called_once_with()
+
+
+def test_debug_on_return():
+    """
+    Returning from a function causes the debugger to step out of the function.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    dm.debugger = mock.MagicMock()
+    dm.debug_on_return(None)
+    dm.debugger.do_step.assert_called_once_with()
+
+
+def test_debug_on_breakpoint_ignore():
+    """
+    Should do nothing.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    assert dm.debug_on_breakpoint_ignore(None, None) is None
+
+
+def test_debug_on_breakpoint_clear():
+    """
+    Should do nothing.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    assert dm.debug_on_breakpoint_clear(None) is None
+
+
+def test_debug_on_restart():
+    """
+    Should do nothing.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    assert dm.debug_on_restart() is None
+
+
+def test_debug_on_exception():
+    """
+    Should do nothing.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    assert dm.debug_on_exception(None, None) is None
