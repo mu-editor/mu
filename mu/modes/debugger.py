@@ -283,6 +283,21 @@ class DebugMode(BaseMode):
         self.editor.show_status_message(_("Debugger error: {}").format(
             message))
 
+    def debug_on_call(self, args):
+        """
+        Handle when the debugger has called a function with the referenced
+        args. Make sure the debugger steps into the function.
+        """
+        self.debugger.do_step()
+
+    def debug_on_return(self, return_value):
+        """
+        Handle when the debugger returns from a function call with the
+        referenced return value. Make sure the debugger steps out of the
+        function to the caller.
+        """
+        self.debugger.do_step()
+
     def debug_on_breakpoint_ignore(self, breakpoint, count):
         """
         Handle when a breakpoint is to be ignored by the debugger. Currently
@@ -303,20 +318,6 @@ class DebugMode(BaseMode):
         feature.
         """
         pass
-
-    def debug_on_call(self, args):
-        """
-        Handle when the debugger has called a function with the referenced
-        args. Currently an unimplemented extra feature.
-        """
-        self.debugger.do_step()
-
-    def debug_on_return(self, return_value):
-        """
-        Handle when the debugger returns from a function call with the
-        referenced return value. Currently an unimplemented extra feature.
-        """
-        self.debugger.do_step()
 
     def debug_on_exception(self, name, value):
         """
