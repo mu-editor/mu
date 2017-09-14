@@ -19,6 +19,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import locale
+import os.path
+import gettext
+
+
+# Configure locale and language
+localedir = os.path.join('mu', 'locale')
+current_locale, encoding = locale.getdefaultlocale()
+language_code = current_locale[:2]
+gettext.translation('mu', localedir=localedir,
+                    languages=[language_code], fallback=True).install()
+
+
 import os
 import sys
 import platform

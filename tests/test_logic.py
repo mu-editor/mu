@@ -1239,6 +1239,8 @@ def test_debug_toggle_breakpoint_as_debugger():
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
     mock_debugger = mock.MagicMock()
+    mock_debugger.has_debugger = False
+    mock_debugger.is_debugger = True
     ed.modes = {
         'debugger': mock_debugger,
     }
@@ -1257,6 +1259,8 @@ def test_debug_toggle_breakpoint_on():
     view.current_tab.breakpoint_lines = set()
     ed = mu.logic.Editor(view)
     mock_debugger = mock.MagicMock()
+    mock_debugger.has_debugger = True
+    mock_debugger.is_debugger = False
     ed.modes = {
         'python': mock_debugger,
     }
@@ -1276,6 +1280,8 @@ def test_debug_toggle_breakpoint_off():
     view.current_tab.breakpoint_lines = set([10, ])
     ed = mu.logic.Editor(view)
     mock_debugger = mock.MagicMock()
+    mock_debugger.has_debugger = True
+    mock_debugger.is_debugger = False
     ed.modes = {
         'python': mock_debugger,
     }

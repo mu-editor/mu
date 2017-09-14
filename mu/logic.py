@@ -717,7 +717,8 @@ class Editor:
         """
         How to handle the toggling of a breakpoint.
         """
-        if self.modes[self.mode].has_debugger:
+        if (self.modes[self.mode].has_debugger or
+                self.modes[self.mode].is_debugger):
             tab = self._view.current_tab
             if self.mode == 'debugger':
                 # The debugger is running.

@@ -161,7 +161,7 @@ def test_EditorPane_configure():
     assert ep.setBraceMatching.call_count == 1
     assert ep.SendScintilla.call_count == 1
     assert ep.set_theme.call_count == 1
-    assert ep.markerDefine.call_count == 2
+    assert ep.markerDefine.call_count == 1
     assert ep.setMarginSensitivity.call_count == 2
     assert ep.setIndicatorDrawUnder.call_count == 1
     assert ep.setAnnotationDisplay.call_count == 1

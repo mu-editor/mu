@@ -232,7 +232,6 @@ class EditorPane(QsciScintilla):
             'error': {'id': 19, 'markers': {}},
             'style': {'id': 20, 'markers': {}}
         }
-        self.MARKER_NUMBER = 22  # Also arbitrary
         self.BREAKPOINT_MARKER = 23  # Arbitrary
         self.search_indicators = {
             'selection': {'id': 21, 'positions': []}
@@ -270,7 +269,6 @@ class EditorPane(QsciScintilla):
         self.set_theme()
         # Markers and indicators
         self.setMarginSensitivity(0, True)
-        self.markerDefine(self.RightArrow, self.MARKER_NUMBER)
         self.markerDefine(self.Circle, self.BREAKPOINT_MARKER)
         self.setMarginSensitivity(1, True)
         self.setIndicatorDrawUnder(True)
@@ -306,7 +304,6 @@ class EditorPane(QsciScintilla):
         for type_ in self.search_indicators:
             self.setIndicatorForegroundColor(
                 theme.IndicatorWordMatch, self.search_indicators[type_]['id'])
-        self.setMarkerBackgroundColor(theme.IndicatorError, self.MARKER_NUMBER)
         self.setMarkerBackgroundColor(theme.BreakpointMarker,
                                       self.BREAKPOINT_MARKER)
         self.setAutoCompletionThreshold(2)
