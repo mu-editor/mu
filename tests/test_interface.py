@@ -2511,7 +2511,6 @@ def test_FileSystemPane_ls():
             mock.patch('mu.interface.microfs.get_serial', return_value=None), \
             mock.patch('mu.interface.os.listdir', return_value=local_files), \
             mock.patch('mu.interface.os.path.isfile', return_value=True), \
-            mock.patch('mu.interface._', return_value=''), \
             mock.patch('mu.interface.os.path.join', return_value=None):
         fsp = mu.interface.FileSystemPane('homepath')
         mfs_clear.assert_called_once_with()

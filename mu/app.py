@@ -19,7 +19,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import gettext
 import os
 import sys
 import platform
@@ -33,10 +32,6 @@ from mu.interface import Window
 from mu.resources import load_pixmap
 from mu.modes import PythonMode, AdafruitMode, MicrobitMode, DebugMode
 from mu.debugger.runner import run as run_debugger
-
-
-gettext.install('mu', 'locale')
-_ = gettext.gettext
 
 
 def setup_logging():

@@ -16,7 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
 import ctypes
-from gettext import gettext as _
 from subprocess import check_output
 from mu.modes.base import MicroPythonMode
 

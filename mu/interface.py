@@ -17,7 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import gettext
 import keyword
 import os
 import re
@@ -42,10 +41,6 @@ from mu import __version__
 from mu.contrib import microfs
 from mu.resources import (load_icon, load_stylesheet, load_font_data,
                           load_pixmap)
-
-
-gettext.install('mu', 'locale')
-_ = gettext.gettext
 
 
 #: The default font size.

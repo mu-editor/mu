@@ -16,7 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
 import os.path
-from gettext import gettext as _
 from mu.modes.base import BaseMode
 from mu.logic import DEBUGGER_PORT, write_and_flush
 from mu.debugger.client import Debugger

@@ -27,7 +27,6 @@ import logging
 import tempfile
 import platform
 import webbrowser
-import gettext
 import random
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
@@ -38,9 +37,6 @@ except ImportError:  # pragma: no cover
     from pep8 import StyleGuide, Checker
 from mu.contrib import appdirs, uflash
 from mu import __version__
-
-
-_ = gettext.gettext
 
 
 #: The user's home directory.

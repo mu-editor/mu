@@ -1,0 +1,11 @@
+* Fix / make sane code quality check
+* Don't show object inspector when there are no breakpoints.
+* Day / Night / High Contrast themes
+* Hot keys for shortcuts
+* Update micro:bit runtime
+* Check button images for being centred
+* Adafruit flash
+* API documentation for auto-suggest and call tips
+* Packaging
+* Documentation
+* Website

@@ -1,5 +1,6 @@
 XARGS := xargs -0 $(shell test $$(uname) = Linux && echo -r)
 GREP_T_FLAG := $(shell test $$(uname) = Linux && echo -T)
+export PYFLAKES_BUILTINS=_
 
 all:
 	@echo "\nThere is no default Makefile target right now. Try:\n"
@@ -9,7 +10,8 @@ all:
 	@echo "make test - run the test suite."
 	@echo "make coverage - view a report on test coverage."
 	@echo "make check - run all the checkers and tests."
-	@echo "make docs - run sphinx to create project documentation.\n"
+	@echo "make docs - run sphinx to create project documentation."
+	@echo "make translate - run pygettext to create a new messages.pot file.\n"
 
 clean:
 	rm -rf build
@@ -28,10 +30,10 @@ pycodestyle:
 	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pycodestyle --repeat --exclude=build/*,docs/*,mu/contrib*,mu/resources/api.py --ignore=E731,E402
 
 test: clean
-	py.test
+	pytest
 
 coverage: clean
-	py.test --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
+	pytest --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
 check: clean pycodestyle pyflakes coverage
 
@@ -40,3 +42,8 @@ docs: clean
 	@echo "\nDocumentation can be found here:"
 	@echo file://`pwd`/docs/_build/html/index.html
 	@echo "\n"
+
+translate:
+	pygettext mu/* mu/debugger/* mu/modes/* mu/resources/*
+	@echo "\nNew messages.pot file created."
+	@echo "Remember to update the translation strings found in the locale directory."

@@ -358,7 +358,6 @@ def test_editor_restore_session_missing_files():
     get_test_settings_path = mock.MagicMock()
     get_test_settings_path.return_value = fake_settings
     with mock.patch('os.path.exists', return_value=True), \
-            mock.patch('mu.logic._', mock_gettext), \
             mock.patch('mu.logic.get_settings_path', get_test_settings_path):
         ed.restore_session()
     assert ed._view.add_tab.call_count == 0
@@ -384,8 +383,7 @@ def test_editor_restore_session_no_session_file():
     }
     mock_gettext = mock.MagicMock()
     mock_gettext.return_value = '# Write your code here :-)'
-    with mock.patch('os.path.exists', return_value=False), \
-            mock.patch('mu.logic._', mock_gettext):
+    with mock.patch('os.path.exists', return_value=False):
         ed.restore_session()
     py = '# Write your code here :-)'.format(
         os.linesep, os.linesep)
@@ -415,7 +413,6 @@ def test_editor_restore_session_invalid_file():
     mock_gettext = mock.MagicMock()
     mock_gettext.return_value = '# Write your code here :-)'
     with mock.patch('builtins.open', mock_open), \
-            mock.patch('mu.logic._', mock_gettext), \
             mock.patch('os.path.exists', return_value=True):
         ed.restore_session()
     py = '# Write your code here :-)'

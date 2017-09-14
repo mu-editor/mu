@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import json
 import os
 import logging
-from gettext import gettext as _
 from mu.logic import get_settings_path, HOME_DIRECTORY
 from mu.contrib import uflash, microfs
 from mu.resources.api import MICROPYTHON_APIS
