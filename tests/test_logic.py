@@ -806,12 +806,13 @@ def test_zoom_out():
     assert view.zoom_out.call_count == 1
 
 
-def test_check_code():
+def test_check_code_on():
     """
     Checking code correctly results in something the UI layer can parse.
     """
     view = mock.MagicMock()
     tab = mock.MagicMock()
+    tab.has_annotations = False
     tab.path = 'foo.py'
     tab.text.return_value = 'import this\n'
     view.current_tab = tab
@@ -822,10 +823,25 @@ def test_check_code():
             mock.patch('mu.logic.check_pycodestyle', return_value=pep8):
         ed = mu.logic.Editor(view)
         ed.check_code()
+        assert tab.has_annotations is True
         view.reset_annotations.assert_called_once_with()
         view.annotate_code.assert_has_calls([mock.call(flake, 'error'),
                                              mock.call(pep8, 'style')],
                                             any_order=True)
+
+
+def test_check_code_off():
+    """
+    If the tab already has annotations, toggle them off.
+    """
+    view = mock.MagicMock()
+    tab = mock.MagicMock()
+    tab.has_annotations = True
+    view.current_tab = tab
+    ed = mu.logic.Editor(view)
+    ed.check_code()
+    assert tab.has_annotations is False
+    view.reset_annotations.assert_called_once_with()
 
 
 def test_check_code_no_tab():
@@ -846,10 +862,13 @@ def test_show_help():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.webbrowser.open_new', return_value=None) as wb:
+    with mock.patch('mu.logic.webbrowser.open_new', return_value=None) as wb, \
+            mock.patch('mu.logic.locale.getdefaultlocale',
+                       return_value=('en_GB', 'UTF-8')):
         ed.show_help()
-        wb.assert_called_once_with('http://codewith.mu/help/{}'.format(
-                                   __version__))
+        version = '.'.join(__version__.split('.')[:2])
+        url = 'https://codewith.mu/en/help/{}'.format(version)
+        wb.assert_called_once_with(url)
 
 
 def test_quit_modified_cancelled_from_button():

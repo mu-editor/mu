@@ -23,6 +23,7 @@ import re
 import platform
 import logging
 import os.path
+from collections import defaultdict
 from PyQt5.QtCore import (QSize, Qt, pyqtSignal, QIODevice, QProcess,
                           QTimer, QProcessEnvironment)
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
@@ -241,6 +242,7 @@ class EditorPane(QsciScintilla):
         }
         self.lexer = PythonLexer()
         self.api = None
+        self.has_annotations = False
         self.setModified(False)
         self.breakpoint_lines = set()
         self.configure()
@@ -279,7 +281,6 @@ class EditorPane(QsciScintilla):
             self.indicatorDefine(
                 self.StraightBoxIndicator, self.search_indicators[type_]['id'])
         self.setAnnotationDisplay(self.AnnotationBoxed)
-        self.marginClicked.connect(self.on_marker_clicked)
         self.selectionChanged.connect(self.selection_change_listener)
 
     def connect_margin(self, func):
@@ -385,8 +386,7 @@ class EditorPane(QsciScintilla):
         """
         indicator = self.check_indicators[annotation_type]
         for line_no, messages in feedback.items():
-            marker_id = self.markerAdd(line_no, self.MARKER_NUMBER)
-            indicator['markers'][marker_id] = messages
+            indicator['markers'][line_no] = messages
             for message in messages:
                 col = message.get('column', 0)
                 if col:
@@ -395,36 +395,20 @@ class EditorPane(QsciScintilla):
                     self.fillIndicatorRange(line_no, col_start, line_no,
                                             col_end, indicator['id'])
 
-    def on_marker_clicked(self, margin, line, state):
+    def show_annotations(self):
         """
-        Display something when the margin indicator is clicked.
+        Display all the messages to be annotated to the code.
         """
-        marker_id = self.get_marker_at_line(line)
-        if marker_id:
-            if self.annotation(line):
-                self.clearAnnotations(line)
-            else:
-                messages = []
-                for indicator in self.check_indicators:
-                    markers = self.check_indicators[indicator]['markers']
-                    messages += [i['message'] for i in
-                                 markers.get(marker_id, [])]
-                text = '\n'.join(messages).strip()
-                if text:
-                    self.annotate(line, text, self.annotationDisplay())
-
-    def get_marker_at_line(self, line):
-        """
-        Given a line, will return the marker if one exists. Otherwise, returns
-        None.
-
-        Required because the built in markersAtLine method is useless, misnamed
-        and doesn't return anything useful. :-(
-        """
+        lines = defaultdict(list)
         for indicator in self.check_indicators:
-            for marker_id in self.check_indicators[indicator]['markers']:
-                if self.markerLine(marker_id) == line:
-                    return marker_id
+            markers = self.check_indicators[indicator]['markers']
+            for k, marker_list in markers.items():
+                for m in marker_list:
+                    lines[m['line_no']].append(m['message'])
+        for line, messages in lines.items():
+            text = '\n'.join(messages).strip()
+            if text:
+                self.annotate(line, text, self.annotationDisplay())
 
     def find_next_match(self, text, from_line=-1, from_col=-1,
                         case_sensitive=True, wrap_around=True):
@@ -1097,6 +1081,12 @@ class Window(QMainWindow):
         changes.
         """
         self.current_tab.annotate_code(feedback, annotation_type)
+
+    def show_annotations(self):
+        """
+        Show the annotations added to the current tab.
+        """
+        self.current_tab.show_annotations()
 
     def setup(self, breakpoint_toggle, theme):
         """

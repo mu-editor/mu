@@ -91,6 +91,7 @@ class DebugMode(BaseMode):
             logger.debug('There is no active text editor.')
             self.stop()
             return
+        self.view.reset_annotations()
         if tab.path is None:
             # Unsaved file.
             self.editor.save()

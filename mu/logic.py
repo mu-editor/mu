@@ -28,6 +28,7 @@ import tempfile
 import platform
 import webbrowser
 import random
+import locale
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 # Currently there is no pycodestyle deb packages, so fallback to old name
@@ -544,25 +545,34 @@ class Editor:
         if tab is None:
             # There is no active text editor so abort.
             return
-        logger.info('Checking code.')
-        self._view.reset_annotations()
-        filename = tab.path if tab.path else 'untitled'
-        flake = check_flake(filename, tab.text())
-        if flake:
-            logger.info(flake)
-            self._view.annotate_code(flake, 'error')
-        pep8 = check_pycodestyle(tab.text())
-        if pep8:
-            logger.info(pep8)
-            self._view.annotate_code(pep8, 'style')
+        tab.has_annotations = not tab.has_annotations
+        if tab.has_annotations:
+            logger.info('Checking code.')
+            self._view.reset_annotations()
+            filename = tab.path if tab.path else 'untitled'
+            flake = check_flake(filename, tab.text())
+            if flake:
+                logger.info(flake)
+                self._view.annotate_code(flake, 'error')
+            pep8 = check_pycodestyle(tab.text())
+            if pep8:
+                logger.info(pep8)
+                self._view.annotate_code(pep8, 'style')
+            self._view.show_annotations()
+        else:
+            self._view.reset_annotations()
 
     def show_help(self):
         """
         Display browser based help about Mu.
         """
         logger.info('Showing help.')
-        # TODO: add locale identifier to path.
-        webbrowser.open_new('http://codewith.mu/help/{}'.format(__version__))
+        current_locale, encoding = locale.getdefaultlocale()
+        language_code = current_locale[:2]
+        major_version = '.'.join(__version__.split('.')[:2])
+        url = 'https://codewith.mu/{}/help/{}'.format(language_code,
+                                                      major_version)
+        webbrowser.open_new(url)
 
     def quit(self, *args, **kwargs):
         """

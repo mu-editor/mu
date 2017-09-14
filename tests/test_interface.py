@@ -164,7 +164,6 @@ def test_EditorPane_configure():
     assert ep.markerDefine.call_count == 2
     assert ep.setMarginSensitivity.call_count == 2
     assert ep.setIndicatorDrawUnder.call_count == 1
-    assert ep.marginClicked.connect.call_count == 1
     assert ep.setAnnotationDisplay.call_count == 1
     assert ep.selectionChanged.connect.call_count == 1
     ep.indicatorDefine.assert_has_calls(
@@ -315,61 +314,28 @@ def test_EditorPane_annotate_code():
     ep.markerAdd = mock.MagicMock()
     ep.fillIndicatorRange = mock.MagicMock()
     ep.annotate_code(feedback, 'error')
-    assert ep.markerAdd.call_count == 3  # once for each affected line.
     assert ep.fillIndicatorRange.call_count == 3  # once for each message.
 
 
-def test_EditorPane_on_marker_clicked_on():
+def test_EditorPane_show_annotations():
     """
-    Ensure the annotation is shown when the marker is clicked.
+    Ensure the annotations are shown.
     """
     ep = mu.interface.EditorPane(None, 'baz')
     ep.check_indicators = {
         'error': {
             'markers': {
-                1: [{'message': 'a message'}, {'message': 'another message'}]
+                1: [
+                    {'message': 'a message', 'line_no': 1},
+                    {'message': 'another message', 'line_no': 1},
+                ]
             }
         }
     }
-    ep.annotation = mock.MagicMock(return_value=None)
     ep.annotate = mock.MagicMock()
-    ep.get_marker_at_line = mock.MagicMock(return_value=1)
-    line_no = 1
-    ep.on_marker_clicked(1, line_no, None)
-    ep.get_marker_at_line.assert_called_once_with(line_no)
-    ep.annotation.assert_called_once_with(line_no)
-    ep.annotate.assert_called_once_with(line_no, 'a message\nanother message',
+    ep.show_annotations()
+    ep.annotate.assert_called_once_with(1, 'a message\nanother message',
                                         ep.annotationDisplay())
-
-
-def test_EditorPane_on_marker_clicked_off():
-    """
-    Ensure the annotation is removed when the marker is clicked again.
-    """
-    ep = mu.interface.EditorPane(None, 'baz')
-    ep.clearAnnotations = mock.MagicMock()
-    ep.get_marker_at_line = mock.MagicMock(return_value=1)
-    ep.annotation = mock.MagicMock(return_value=1)
-    line_no = 1
-    ep.on_marker_clicked(1, line_no, None)
-    ep.clearAnnotations.assert_called_once_with(line_no)
-
-
-def test_EditorPane_get_marker_at_line():
-    """
-    Given a line with a marker on it, will return the marker_id for it.
-    """
-    ep = mu.interface.EditorPane(None, 'baz')
-    ep.check_indicators = {
-        'error': {
-            'markers': {
-                1: [{'message': 'a message'}, {'message': 'another message'}]
-            }
-        }
-    }
-    line_no = 22
-    ep.markerLine = mock.MagicMock(return_value=line_no)
-    assert ep.get_marker_at_line(line_no) == 1
 
 
 def test_EditorPane_find_next_match():
@@ -1543,6 +1509,18 @@ def test_Window_annotate_code():
     feedback = 'foo'
     w.annotate_code(feedback, 'error')
     tab.annotate_code.assert_called_once_with(feedback, 'error')
+
+
+def test_Window_show_annotations():
+    """
+    Ensure the current tab displays its annotations.
+    """
+    tab = mock.MagicMock()
+    w = mu.interface.Window()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget = mock.MagicMock(return_value=tab)
+    w.show_annotations()
+    tab.show_annotations.assert_called_once_with()
 
 
 def test_Window_setup():
