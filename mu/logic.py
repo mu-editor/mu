@@ -213,7 +213,10 @@ def check_pycodestyle(code):
     with open(code_filename, 'w', newline='') as code_file:
         write_and_flush(code_file, code)
     # Configure which PEP8 rules to ignore.
+    ignore = ('E121', 'E123', 'E126', 'E226', 'E302', 'E305', 'E24', 'E704',
+              'W291', 'W292', 'W293', 'W391', 'W503', )
     style = StyleGuide(parse_argv=False, config_file=False)
+    style.options.ignore = ignore
     checker = Checker(code_filename, options=style.options)
     # Re-route stdout to a temporary buffer to be parsed below.
     temp_out = io.StringIO()
@@ -559,6 +562,7 @@ class Editor:
                 logger.info(pep8)
                 self._view.annotate_code(pep8, 'style')
             self._view.show_annotations()
+            tab.has_annotations = bool(flake or pep8)
         else:
             self._view.reset_annotations()
 
