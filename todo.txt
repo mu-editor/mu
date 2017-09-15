@@ -1,11 +1,10 @@
 * Fix / make sane code quality check
-* Validate possibility of dropping breakpoint when not in debug mode (can't break on comments)
+* API documentation for auto-suggest and call tips
+* Hot keys for shortcuts
 * Don't show object inspector when there are no breakpoints.
 * Day / Night / High Contrast themes
-* Hot keys for shortcuts
 * Update micro:bit runtime
 * Adafruit flash
-* API documentation for auto-suggest and call tips
 * Packaging
 * Documentation
 * Website

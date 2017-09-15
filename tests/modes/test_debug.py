@@ -149,7 +149,7 @@ def test_debug_finished():
     tab1.path = 'foo'
     tab2 = mock.MagicMock()
     view.widgets = [tab1, tab2]
-    dm.finished(None, None)
+    dm.finished()
     # Buttons are set to the right state.
     assert view.button_bar.slots['stop'].setEnabled.call_count == 0
     view.button_bar.slots['run'].setEnabled.assert_called_once_with(False)
@@ -290,6 +290,22 @@ def test_debug_toggle_breakpoint_on_existing():
     mock_tab.markersAtLine.return_value = False
     dm.toggle_breakpoint(0, mock_tab)
     dm.debugger.create_breakpoint.assert_called_once_with(mock_tab.path, 1)
+
+
+def test_debug_on_fail():
+    """
+    Ensure an appropriate message is shown to the user and the UI is put into
+    the correct state if the debug client calls this function because it can't
+    connect to the runner.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    dm.finished = mock.MagicMock()
+    dm.debug_on_fail()
+    assert view.process_runner.append.call_count == 1  # message shown.
+    dm.finished.assert_called_once_with()
+    view.process_runner.finished.assert_called_once_with(1, -1)
 
 
 def test_debug_on_bootstrap():

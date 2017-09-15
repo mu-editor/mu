@@ -89,7 +89,8 @@ class CommandBufferHandler(QObject):
         """
         connected = False
         tries = 0
-        connection_attempts = 10
+        connection_attempts = 50  # Translates to 10 seconds.
+        pause_between_attempts = 0.2
         while not connected:
             try:
                 self.debugger.socket = socket.socket(socket.AF_INET,
@@ -99,11 +100,13 @@ class CommandBufferHandler(QObject):
                 connected = True
             except ConnectionRefusedError as e:
                 # Allow up to connection_attempts attempts to connect.
+                # The Raspberry Pi is quite slow, so Mu needs to give the
+                # debug runner enough time to start up and start listening.
                 tries += 1
                 if tries >= connection_attempts:
                     self.on_fail.emit('Could not connect to debug runner.')
                     return
-                time.sleep(0.2)
+                time.sleep(pause_between_attempts)
         # Getting here means the connection has been established, so handle all
         # incoming data from the debug runner process.
         remainder = b''
@@ -175,6 +178,7 @@ class Debugger(QObject):
         Handle if there's a connection failure with the debug runner.
         """
         logger.error(message)
+        self.view.debug_on_fail()
 
     def stop(self):
         """

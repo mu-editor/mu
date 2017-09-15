@@ -138,7 +138,7 @@ class DebugMode(BaseMode):
         self.editor.mode = 'python'
         self.view.set_read_only(False)
 
-    def finished(self, code, status):
+    def finished(self):
         """
         Called when the running / debugged Python process is finished.
         """
@@ -202,6 +202,24 @@ class DebugMode(BaseMode):
                 self.debugger.enable_breakpoint(breakpoint)
             else:
                 self.debugger.create_breakpoint(tab.path, line + 1)
+
+    def debug_on_fail(self):
+        """
+        Called when, for any reason, the debug client was unable to connect to
+        the debug runner. On a Raspberry Pi this is usually because it's an
+        underpowereed machine and it takes time to start the debug runner
+        process. (However, the debug client waits for 10 seconds for the
+        runner to start.)
+        """
+        # Report the problem.
+        process_runner = self.view.process_runner
+        msg = _("Unable to connect to the Python runner. "
+                "This probably means your machine is slow or busy. "
+                "Free up some of the machine's resources and try again.")
+        process_runner.append(msg.encode('utf-8'))
+        # Set the state to finished.
+        self.finished()
+        process_runner.finished(1, -1)
 
     def debug_on_bootstrap(self):
         """

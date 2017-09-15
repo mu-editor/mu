@@ -64,8 +64,8 @@ def test_CommandBufferHandler_worker_with_error():
         cbh.worker()
     msg = 'Could not connect to debug runner.'
     cbh.on_fail.emit.assert_called_once_with(msg)
-    assert mock_socket.connect.call_count == 10
-    assert mock_time.sleep.call_count == 9
+    assert mock_socket.connect.call_count == 50
+    assert mock_time.sleep.call_count == 49
 
 
 def test_CommandBufferHandler_worker_break_loop():
@@ -169,9 +169,11 @@ def test_Debugger_on_fail():
     If a failure is emitted ensure it's logged.
     """
     db = mu.debugger.client.Debugger('localhost', 1908)
+    db.view = mock.MagicMock()
     with mock.patch('mu.debugger.client.logger.error') as mock_log:
         db.on_fail('bang')
         mock_log.assert_called_once_with('bang')
+        db.view.debug_on_fail.assert_called_once_with()
 
 
 def test_Debugger_stop():
