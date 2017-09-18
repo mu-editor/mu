@@ -2,14 +2,21 @@ from setuptools import setup
 from mu import __version__
 
 
+with open('README.rst') as f:
+    readme = f.read()
+with open('CHANGES.rst') as f:
+    changes = f.read()
+
+
 setup(
     name='mu',
     version=__version__,
-    description='A simple editor for kids, teachers and new programmers.',
+    description='A simple editor for beginner programmers.',
+    long_description='{}\n\n{}'.format(readme, changes),
     author='Nicholas Tollervey',
     author_email='ntoll@ntoll.org',
     url='https://github.com/mu-editor/mu',
-    packages=['mu', 'mu.contrib', 'mu.resources'],
+    packages=['mu', 'mu.contrib', 'mu.resources', 'mu.modes', 'mu.debugger'],
     include_package_data=True,
     zip_safe=False,
     classifiers=[

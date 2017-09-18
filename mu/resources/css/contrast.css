@@ -1,0 +1,23 @@
+QStackedWidget, QWidget {
+    background-color: black;
+    color: white;
+}
+
+QToolButton:hover {
+    background-color: black;
+    border: white;
+}
+
+QTextEdit {
+    background-color: black;
+    color: white;
+}
+
+QToolBar, QToolButton {
+    background: transparent;
+}
+
+QListWidget {
+    background-color: black;
+    color: white;
+}

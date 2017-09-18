@@ -1,4 +1,7 @@
 """
+The mode for working with the BBC micro:bit. Conatains most of the origial
+functionality from Mu when it was only a micro:bit related editor.
+
 Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
 
 This program is free software: you can redistribute it and/or modify

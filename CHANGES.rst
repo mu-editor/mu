@@ -1,6 +1,21 @@
 Release History
 ===============
 
+1.0.0.beta.6
+------------
+
+* Pip installable.
+* Updated theme handling: day, night and high-contrast (as per user feedback).
+
+1.0.0.beta.*
+------------
+
+* Added modes to allow Mu to be a general Python editor. (Python3, Adafruit and micro:bit.)
+* Added simple visual debugger.
+* Added iPython based REPL for Python3 mode.
+* Many minor UI changes based on UX feedback.
+* Many bug fixes.
+
 0.9.13
 ------
 

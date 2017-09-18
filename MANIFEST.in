@@ -1,5 +1,6 @@
 include mu/*
 include README.rst
+include CHANGES.rst
 include LICENSE
 include conf/*
 include mu/resources/css/*

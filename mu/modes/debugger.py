@@ -1,4 +1,6 @@
 """
+The mode Mu is is when it's debugging a Python 3 script.
+
 Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
 
 This program is free software: you can redistribute it and/or modify

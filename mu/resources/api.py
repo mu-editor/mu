@@ -2,10 +2,7 @@
 Contains definitions for the MicroPython micro:bit related APIs so they can be
 used in the editor for autocomplete and call tips.
 
-Copyright (c) 2015-2016 Nicholas H.Tollervey and others (see the AUTHORS file).
-
-Based upon work done for Puppy IDE by Dan Pope, Nicholas Tollervey and Damien
-George.
+Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

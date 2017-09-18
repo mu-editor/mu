@@ -1,5 +1,5 @@
 """
-Copyright (c) 2015-2016 Nicholas H.Tollervey and others (see the AUTHORS file).
+Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
 
 Based upon work done for Puppy IDE by Dan Pope, Nicholas Tollervey and Damien
 George.

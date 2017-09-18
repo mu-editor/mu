@@ -1,10 +1,7 @@
 """
 A debug client for the Mu editor.
 
-Copyright (c) 2015-2016 Nicholas H.Tollervey and others (see the AUTHORS file).
-
-Based upon work done for Puppy IDE by Dan Pope, Nicholas Tollervey and Damien
-George.
+Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -82,6 +79,7 @@ class CommandBufferHandler(QObject):
         """
         super().__init__()
         self.debugger = debugger
+        self.stopped = False
 
     def worker(self):
         """
@@ -110,7 +108,7 @@ class CommandBufferHandler(QObject):
         # Getting here means the connection has been established, so handle all
         # incoming data from the debug runner process.
         remainder = b''
-        while True:
+        while not self.stopped:
             new_buffer = self.debugger.socket.recv(1024)
             if new_buffer:
                 if new_buffer.endswith(self.debugger.ETX):
@@ -157,7 +155,7 @@ class Debugger(QObject):
         """
         Start the debugger session.
         """
-        self.listener_thread = QThread()
+        self.listener_thread = QThread(self.view.view)
         self.command_handler = CommandBufferHandler(self)
         self.command_handler.moveToThread(self.listener_thread)
         self.command_handler.on_command.connect(self.on_command)
@@ -184,6 +182,9 @@ class Debugger(QObject):
         """
         Shut down the debugger session.
         """
+        self.command_handler.stopped = True
+        self.listener_thread.quit()
+        self.listener_thread.wait()
         if self.proc is not None:
             self.output('quit')
         self.socket.shutdown(socket.SHUT_WR)

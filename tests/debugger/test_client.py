@@ -139,8 +139,9 @@ def test_Debugger_start():
             mock.patch('mu.debugger.client.CommandBufferHandler',
                        mock_handler):
         db = mu.debugger.client.Debugger('localhost', 1908)
+        db.view = mock.MagicMock()
         db.start()
-    mock_thread.assert_called_once_with()
+    mock_thread.assert_called_once_with(db.view.view)
     mock_thread_instance.started.connect.assert_called_once_with(
         mock_handler_instance.worker)
     mock_thread_instance.start.assert_called_once_with()
@@ -184,7 +185,12 @@ def test_Debugger_stop():
     db.proc = mock.MagicMock()
     db.output = mock.MagicMock()
     db.socket = mock.MagicMock()
+    db.command_handler = mock.MagicMock()
+    db.listener_thread = mock.MagicMock()
     db.stop()
+    assert db.command_handler.stopped is True
+    db.listener_thread.quit.assert_called_once_with()
+    db.listener_thread.wait.assert_called_once_with()
     db.proc.wait.assert_called_once_with()
     db.socket.shutdown.assert_called_once_with(socket.SHUT_WR)
 

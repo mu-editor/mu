@@ -1,8 +1,8 @@
-* Fix / make sane code quality check
-* API documentation for auto-suggest and call tips
-* Hot keys for shortcuts
-* Don't show object inspector when there are no breakpoints.
+* Pip installable.
 * Day / Night / High Contrast themes
+* Hot keys for shortcuts
+* API documentation for auto-suggest and call tips
+* Don't show object inspector when there are no breakpoints.
 * Update micro:bit runtime
 * Adafruit flash
 * Packaging
