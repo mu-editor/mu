@@ -493,7 +493,21 @@ def test_toggle_theme_to_night():
 
 def test_toggle_theme_to_day():
     """
-    The current theme is 'night' so toggle to day. Expect the state to be
+    The current theme is 'contrast' so toggle to day. Expect the state to be
+    updated and the appropriate call to the UI layer is made.
+    """
+    view = mock.MagicMock()
+    view.set_theme = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.theme = 'contrast'
+    ed.toggle_theme()
+    assert ed.theme == 'day'
+    view.set_theme.assert_called_once_with(ed.theme)
+
+
+def test_toggle_theme_to_contrast():
+    """
+    The current theme is 'night' so toggle to contrast. Expect the state to be
     updated and the appropriate call to the UI layer is made.
     """
     view = mock.MagicMock()
@@ -501,7 +515,7 @@ def test_toggle_theme_to_day():
     ed = mu.logic.Editor(view)
     ed.theme = 'night'
     ed.toggle_theme()
-    assert ed.theme == 'day'
+    assert ed.theme == 'contrast'
     view.set_theme.assert_called_once_with(ed.theme)
 
 

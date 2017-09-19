@@ -21,7 +21,7 @@ from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import (QVBoxLayout, QListWidget, QLabel, QListWidgetItem,
                              QDialog, QDialogButtonBox, QPlainTextEdit)
 from mu.resources import load_icon
-from mu.interface.themes import NIGHT_STYLE, DAY_STYLE
+from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
 
 logger = logging.getLogger(__name__)
@@ -50,8 +50,10 @@ class ModeSelector(QDialog):
     def setup(self, modes, current_mode, theme):
         if theme == 'day':
             self.setStyleSheet(DAY_STYLE)
-        else:
+        elif theme == 'night':
             self.setStyleSheet(NIGHT_STYLE)
+        else:
+            self.setStyleSheet(CONTRAST_STYLE)
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_('Select Mode'))
         widget_layout = QVBoxLayout()
@@ -97,8 +99,10 @@ class LogDisplay(QDialog):
     def setup(self, log, theme):
         if theme == 'day':
             self.setStyleSheet(DAY_STYLE)
-        else:
+        elif theme == 'night':
             self.setStyleSheet(NIGHT_STYLE)
+        else:
+            self.setStyleSheet(CONTRAST_STYLE)
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_('Mu Debug Log'))
         widget_layout = QVBoxLayout()

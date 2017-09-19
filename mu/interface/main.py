@@ -24,8 +24,9 @@ from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
 from PyQt5.QtGui import QKeySequence, QStandardItemModel, QStandardItem
 from mu import __version__
 from mu.interface.dialogs import LogDisplay, ModeSelector
-from mu.interface.themes import (DayTheme, NightTheme, DEFAULT_FONT_SIZE,
-                                 DAY_STYLE, NIGHT_STYLE)
+from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
+                                 DEFAULT_FONT_SIZE, DAY_STYLE, NIGHT_STYLE,
+                                 CONTRAST_STYLE)
 from mu.interface.panes import (DebugInspector, PythonProcessPane,
                                 JupyterREPLPane, MicroPythonREPLPane,
                                 FileSystemPane)
@@ -79,7 +80,8 @@ class ButtonBar(QToolBar):
         self.addAction(name="zoom-out", display_name=_('Zoom-out'),
                        tool_text=_("Zoom out (to make the text smaller)."))
         self.addAction(name="theme", display_name=_('Theme'),
-                       tool_text=_("Change theme between day or night."))
+                       tool_text=_("Toggle theme between day, night or "
+                                   "high contrast."))
         self.addSeparator()
         self.addAction(name="check", display_name=_('Check'),
                        tool_text=_("Check your code for mistakes."))
@@ -337,6 +339,7 @@ class Window(QMainWindow):
                                   Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.repl)
         self.connect_zoom(self.repl_pane)
+        self.repl_pane.set_theme(self.theme)
         self.repl_pane.setFocus()
 
     def add_python3_runner(self, name, path):
@@ -464,14 +467,19 @@ class Window(QMainWindow):
         """
         Sets the theme for the REPL and editor tabs.
         """
-        self.setStyleSheet(DAY_STYLE)
         self.theme = theme
-        new_theme = DayTheme
-        new_icon = 'theme'
-        if theme == 'night':
-            new_theme = NightTheme
+        if theme == 'contrast':
+            self.setStyleSheet(CONTRAST_STYLE)
+            new_theme = ContrastTheme
             new_icon = 'theme_day'
+        elif theme == 'night':
+            new_theme = NightTheme
+            new_icon = 'theme_contrast'
             self.setStyleSheet(NIGHT_STYLE)
+        else:
+            self.setStyleSheet(DAY_STYLE)
+            new_theme = DayTheme
+            new_icon = 'theme'
         for widget in self.widgets:
             widget.set_theme(new_theme)
         self.button_bar.slots['theme'].setIcon(load_icon(new_icon))

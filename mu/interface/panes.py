@@ -30,7 +30,8 @@ from PyQt5.QtSerialPort import QSerialPort
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from mu.contrib import microfs
 from mu.interface.themes import Font
-from mu.interface.themes import DEFAULT_FONT_SIZE, NIGHT_STYLE, DAY_STYLE
+from mu.interface.themes import (DEFAULT_FONT_SIZE, NIGHT_STYLE, DAY_STYLE,
+                                 CONTRAST_STYLE)
 
 
 logger = logging.getLogger(__name__)
@@ -78,12 +79,15 @@ class JupyterREPLPane(RichJupyterWidget):
         """
         Sets the theme / look for the REPL pane.
         """
-        if theme == 'day':
-            self.set_default_style()
-            self.setStyleSheet(DAY_STYLE)
-        else:
+        if theme == 'contrast':
+            self.set_default_style(colors='nocolor')
+            self.setStyleSheet(CONTRAST_STYLE)
+        elif theme == 'night':
             self.set_default_style(colors='nocolor')
             self.setStyleSheet(NIGHT_STYLE)
+        else:
+            self.set_default_style()
+            self.setStyleSheet(DAY_STYLE)
 
 
 class MicroPythonREPLPane(QTextEdit):
@@ -157,8 +161,10 @@ class MicroPythonREPLPane(QTextEdit):
         """
         if theme == 'day':
             self.setStyleSheet(DAY_STYLE)
-        else:
+        elif theme == 'night':
             self.setStyleSheet(NIGHT_STYLE)
+        else:
+            self.setStyleSheet(CONTRAST_STYLE)
 
     def on_serial_read(self):
         """
@@ -454,8 +460,10 @@ class FileSystemPane(QFrame):
         """
         if theme == 'day':
             self.setStyleSheet(DAY_STYLE)
-        else:
+        elif theme == 'night':
             self.setStyleSheet(NIGHT_STYLE)
+        else:
+            self.setStyleSheet(CONTRAST_STYLE)
 
     def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
         """
@@ -619,8 +627,10 @@ class PythonProcessPane(QTextEdit):
         """
         if theme == 'day':
             self.setStyleSheet(DAY_STYLE)
-        else:
+        elif theme == 'night':
             self.setStyleSheet(NIGHT_STYLE)
+        else:
+            self.setStyleSheet(CONTRAST_STYLE)
 
 
 class DebugInspector(QTreeView):
@@ -657,9 +667,11 @@ class DebugInspector(QTreeView):
 
     def set_theme(self, theme):
         """
-        Sets the theme / look for the REPL pane.
+        Sets the theme / look for the debug inspector pane.
         """
         if theme == 'day':
             self.setStyleSheet(DAY_STYLE)
-        else:
+        elif theme == 'night':
             self.setStyleSheet(NIGHT_STYLE)
+        else:
+            self.setStyleSheet(CONTRAST_STYLE)

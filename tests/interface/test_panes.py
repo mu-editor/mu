@@ -209,6 +209,10 @@ def test_MicroPythonREPLPane_set_theme():
         rp.set_theme('night')
         rp.setStyleSheet.assert_called_once_with(
             mu.interface.themes.NIGHT_STYLE)
+        rp.setStyleSheet.reset_mock()
+        rp.set_theme('contrast')
+        rp.setStyleSheet.assert_called_once_with(
+            mu.interface.themes.CONTRAST_STYLE)
 
 
 def test_MicroPythonREPLPane_on_serial_read():
@@ -932,6 +936,18 @@ def test_FileSystemPane_set_theme_night():
     fsp.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
 
 
+def test_FileSystemPane_set_theme_contrast():
+    """
+    Ensures the contrast theme is set.
+    """
+    with mock.patch('mu.interface.panes.FileSystemPane.ls', return_value=None):
+        fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.setStyleSheet = mock.MagicMock()
+    fsp.set_theme('contrast')
+    fsp.setStyleSheet.assert_called_once_with(
+        mu.interface.themes.CONTRAST_STYLE)
+
+
 def test_FileSystemPane_set_font_size():
     """
     Ensure the right size is set as the point size and the text based UI child
@@ -1040,6 +1056,19 @@ def test_JupyterREPLPane_set_theme_night():
     jw.set_theme('night')
     jw.set_default_style.assert_called_once_with(colors='nocolor')
     jw.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
+
+
+def test_JupyterREPLPane_set_theme_contrast():
+    """
+    Make sure the theme is correctly set for high contrast.
+    """
+    jw = mu.interface.panes.JupyterREPLPane()
+    jw.set_default_style = mock.MagicMock()
+    jw.setStyleSheet = mock.MagicMock()
+    jw.set_theme('contrast')
+    jw.set_default_style.assert_called_once_with(colors='nocolor')
+    jw.setStyleSheet.assert_called_once_with(
+        mu.interface.themes.CONTRAST_STYLE)
 
 
 def test_PythonProcessPane_init():
@@ -1272,6 +1301,17 @@ def test_PythonProcessPane_set_theme_night():
     ppp.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
 
 
+def test_PythonProcessPane_set_theme_contrast():
+    """
+    Set the theme to high contrast.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.setStyleSheet = mock.MagicMock()
+    ppp.set_theme('contrast')
+    ppp.setStyleSheet.assert_called_once_with(
+        mu.interface.themes.CONTRAST_STYLE)
+
+
 def test_DebugInspector_set_font_size():
     """
     Check the correct stylesheet values are being set.
@@ -1326,3 +1366,15 @@ def test_DebugInspector_set_theme_night():
     di.setStyleSheet = mock.MagicMock()
     di.set_theme('night')
     di.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
+
+
+def test_DebugInspector_set_theme_contrast():
+    """
+    Make sure the theme is correctly set for high contrast.
+    """
+    di = mu.interface.panes.DebugInspector()
+    di.set_default_style = mock.MagicMock()
+    di.setStyleSheet = mock.MagicMock()
+    di.set_theme('contrast')
+    di.setStyleSheet.assert_called_once_with(
+        mu.interface.themes.CONTRAST_STYLE)

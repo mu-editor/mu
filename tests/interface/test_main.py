@@ -791,7 +791,8 @@ def test_Window_set_theme():
     tab1.set_theme = mock.MagicMock()
     tab2 = mock.MagicMock()
     tab2.set_theme = mock.MagicMock()
-    w.tabs.widget = mock.MagicMock(side_effect=[tab1, tab2])
+    w.tabs.widget = mock.MagicMock(side_effect=[tab1, tab2, tab1, tab2, tab1,
+                                                tab2])
     w.button_bar = mock.MagicMock()
     w.button_bar.slots = {
         'theme': mock.MagicMock()
@@ -801,14 +802,42 @@ def test_Window_set_theme():
     w.repl_pane = mock.MagicMock()
     w.repl_pane.set_theme = mock.MagicMock()
     w.set_theme('night')
-    assert w.setStyleSheet.call_count == 2
+    assert w.setStyleSheet.call_count == 1
     assert w.theme == 'night'
     tab1.set_theme.assert_called_once_with(mu.interface.themes.NightTheme)
     tab2.set_theme.assert_called_once_with(mu.interface.themes.NightTheme)
-    w.button_bar.slots['theme'].setIcon.asser_called_once()
+    assert 1 == w.button_bar.slots['theme'].setIcon.call_count
     assert isinstance(w.button_bar.slots['theme'].setIcon.call_args[0][0],
                       QIcon)
     w.repl_pane.set_theme.assert_called_once_with('night')
+    w.setStyleSheet.reset_mock()
+    tab1.set_theme.reset_mock()
+    tab2.set_theme.reset_mock()
+    w.button_bar.slots['theme'].setIcon.reset_mock()
+    w.repl_pane.set_theme.reset_mock()
+    w.set_theme('contrast')
+    assert w.setStyleSheet.call_count == 1
+    assert w.theme == 'contrast'
+    tab1.set_theme.assert_called_once_with(mu.interface.themes.ContrastTheme)
+    tab2.set_theme.assert_called_once_with(mu.interface.themes.ContrastTheme)
+    assert 1 == w.button_bar.slots['theme'].setIcon.call_count
+    assert isinstance(w.button_bar.slots['theme'].setIcon.call_args[0][0],
+                      QIcon)
+    w.repl_pane.set_theme.assert_called_once_with('contrast')
+    w.setStyleSheet.reset_mock()
+    tab1.set_theme.reset_mock()
+    tab2.set_theme.reset_mock()
+    w.button_bar.slots['theme'].setIcon.reset_mock()
+    w.repl_pane.set_theme.reset_mock()
+    w.set_theme('day')
+    assert w.setStyleSheet.call_count == 1
+    assert w.theme == 'day'
+    tab1.set_theme.assert_called_once_with(mu.interface.themes.DayTheme)
+    tab2.set_theme.assert_called_once_with(mu.interface.themes.DayTheme)
+    assert 1 == w.button_bar.slots['theme'].setIcon.call_count
+    assert isinstance(w.button_bar.slots['theme'].setIcon.call_args[0][0],
+                      QIcon)
+    w.repl_pane.set_theme.assert_called_once_with('day')
 
 
 def test_Window_show_logs():

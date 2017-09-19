@@ -64,7 +64,7 @@ def test_ModeSelector_setup():
 
 def test_ModeSelector_setup_night_theme():
     """
-    Ensure the ModeSelector can cope with theme.
+    Ensure the ModeSelector handles the night theme correctly.
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
@@ -82,6 +82,28 @@ def test_ModeSelector_setup_night_theme():
         ms.setup(modes, current_mode, 'night')
     assert mock_item.call_count == 3
     mock_css.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
+
+
+def test_ModeSelector_setup_contrast_theme():
+    """
+    Ensure the ModeSelector handles the high contrast theme correctly.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    modes = {
+        'python': PythonMode(editor, view),
+        'adafruit': AdafruitMode(editor, view),
+        'microbit': MicrobitMode(editor, view),
+    }
+    current_mode = 'python'
+    mock_item = mock.MagicMock()
+    mock_css = mock.MagicMock()
+    with mock.patch('mu.interface.dialogs.ModeItem', mock_item):
+        ms = mu.interface.dialogs.ModeSelector()
+        ms.setStyleSheet = mock_css
+        ms.setup(modes, current_mode, 'contrast')
+    assert mock_item.call_count == 3
+    mock_css.assert_called_once_with(mu.interface.themes.CONTRAST_STYLE)
 
 
 def test_ModeSelector_get_mode():
@@ -115,7 +137,7 @@ def test_LogDisplay_setup():
 
 def test_LogDisplay_setup_night():
     """
-    Ensure the log display dialog can be themed.
+    Ensure the log display dialog can start with the night theme.
     """
     log = 'this is the contents of a log file'
     ld = mu.interface.dialogs.LogDisplay()
@@ -123,3 +145,16 @@ def test_LogDisplay_setup_night():
     ld.setup(log, 'night')
     assert ld.log_text_area.toPlainText() == log
     ld.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
+
+
+def test_LogDisplay_setup_contrast():
+    """
+    Ensure the log display dialog can start with the high contrast theme.
+    """
+    log = 'this is the contents of a log file'
+    ld = mu.interface.dialogs.LogDisplay()
+    ld.setStyleSheet = mock.MagicMock()
+    ld.setup(log, 'contrast')
+    assert ld.log_text_area.toPlainText() == log
+    ld.setStyleSheet.assert_called_once_with(
+        mu.interface.themes.CONTRAST_STYLE)
