@@ -204,4 +204,4 @@ class ContrastTheme(Theme):
     BraceForeground = QColor('black')
     UnmatchedBraceBackground = QColor('#666')
     UnmatchedBraceForeground = QColor('black')
-    BreakpointMarker = QColor('white')
+    BreakpointMarker = QColor('#333')
