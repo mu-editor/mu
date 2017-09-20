@@ -52,7 +52,7 @@ def test_debug_start():
     mock_debugger_class = mock.MagicMock(return_value=mock_debugger)
     dm = DebugMode(editor, view)
     dm.workspace_dir = mock.MagicMock(return_value='/bar')
-    with mock.patch('mu.modes.debugger.open') as oa, \
+    with mock.patch('builtins.open') as oa, \
             mock.patch('mu.modes.debugger.Debugger', mock_debugger_class), \
             mock.patch('mu.modes.debugger.write_and_flush'):
         dm.start()

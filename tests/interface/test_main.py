@@ -705,7 +705,7 @@ def test_Window_update_debug_inspector_with_exception():
     mock_standard_item = mock.MagicMock()
     mock_eval = mock.MagicMock(side_effect=Exception('BOOM!'))
     with mock.patch('mu.interface.main.QStandardItem', mock_standard_item), \
-            mock.patch('mu.interface.main.eval', mock_eval):
+            mock.patch('builtins.eval', mock_eval):
         w.update_debug_inspector(locals_dict)
     # You just have to believe this is correct. I checked! :-)
     assert mock_standard_item.call_count == 2
