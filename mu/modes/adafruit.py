@@ -53,6 +53,7 @@ class AdafruitMode(MicroPythonMode):
                 'display_name': _('REPL'),
                 'description': _('Use the REPL for live coding.'),
                 'handler': self.toggle_repl,
+                'shortcut': 'CTRL+Shift+I',
             },
         ]
 

@@ -115,8 +115,8 @@ def run():
     editor.restore_session(passed_filename)
     # Connect the various UI elements in the window to the editor.
     status_bar = editor_window.status_bar
-    status_bar.connect_logs(editor.show_logs)
-    status_bar.connect_mode(editor.select_mode)
+    status_bar.connect_logs(editor.show_logs, 'Ctrl+Shift+D')
+    status_bar.connect_mode(editor.select_mode, 'Ctrl+Shift+M')
     # Display a friendly "splash" icon.
     splash = QSplashScreen(load_pixmap('splash-screen'))
     splash.show()

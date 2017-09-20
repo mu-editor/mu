@@ -617,7 +617,7 @@ class Editor:
         logger.info('Quitting.\n\n')
         sys.exit(0)
 
-    def show_logs(self, event):
+    def show_logs(self, event=None):
         """
         Cause the editor's logs to be displayed to the user to help with ease
         of bug reporting.
@@ -626,7 +626,7 @@ class Editor:
         with open(LOG_FILE, 'r') as logfile:
             self._view.show_logs(logfile.read(), self.theme)
 
-    def select_mode(self, event):
+    def select_mode(self, event=None):
         """
         Select the mode that editor is supposed to be in.
         """
@@ -655,13 +655,14 @@ class Editor:
         button_bar.connect("load", self.load, "Ctrl+O")
         button_bar.connect("save", self.save, "Ctrl+S")
         for action in self.modes[mode].actions():
-            button_bar.connect(action['name'], action['handler'])
+            button_bar.connect(action['name'], action['handler'],
+                               action['shortcut'])
         button_bar.connect("zoom-in", self.zoom_in, "Ctrl++")
         button_bar.connect("zoom-out", self.zoom_out, "Ctrl+-")
-        button_bar.connect("theme", self.toggle_theme)
-        button_bar.connect("check", self.check_code)
-        button_bar.connect("help", self.show_help)
-        button_bar.connect("quit", self.quit)
+        button_bar.connect("theme", self.toggle_theme, "F1")
+        button_bar.connect("check", self.check_code, "F2")
+        button_bar.connect("help", self.show_help, "Ctrl+H")
+        button_bar.connect("quit", self.quit, "Ctrl+Q")
         self._view.status_bar.set_mode(mode)
         # Update references to default file locations.
         logger.info('Workspace directory: {}'.format(

@@ -20,7 +20,8 @@ import logging
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog, QMessageBox,
-                             QLabel, QMainWindow, QStatusBar, QDockWidget)
+                             QLabel, QMainWindow, QStatusBar, QDockWidget,
+                             QShortcut)
 from PyQt5.QtGui import QKeySequence, QStandardItemModel, QStandardItem
 from mu import __version__
 from mu.interface.dialogs import LogDisplay, ModeSelector
@@ -613,7 +614,7 @@ class Window(QMainWindow):
         self.tabs = FileTabs()
         self.tabs.setMovable(True)
         self.setCentralWidget(self.tabs)
-        self.status_bar = StatusBar()
+        self.status_bar = StatusBar(parent=self)
         self.setStatusBar(self.status_bar)
         self.addToolBar(self.button_bar)
         self.show()
@@ -694,18 +695,24 @@ class StatusBar(QStatusBar):
         self.logs_label.setToolTip(_('View logs.'))
         self.addPermanentWidget(self.logs_label)
 
-    def connect_logs(self, handler):
+    def connect_logs(self, handler, shortcut):
         """
-        Connect the mouse press event for the log widget to the referenced
-        handler function.
+        Connect the mouse press event and keyboard shortcut for the log widget
+        to the referenced handler function.
         """
+        self.logs_label.shortcut = QShortcut(QKeySequence(shortcut),
+                                             self.parent())
+        self.logs_label.shortcut.activated.connect(handler)
         self.logs_label.mousePressEvent = handler
 
-    def connect_mode(self, handler):
+    def connect_mode(self, handler, shortcut):
         """
-        Connect the mouse press event for the mode widget to the referenced
-        handler function.
+        Connect the mouse press event and keyboard shortcut for the mode widget
+        to the referenced handler function.
         """
+        self.mode_label.shortcut = QShortcut(QKeySequence(shortcut),
+                                             self.parent())
+        self.mode_label.shortcut.activated.connect(handler)
         self.mode_label.mousePressEvent = handler
 
     def set_message(self, message, pause=5000):

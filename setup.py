@@ -32,7 +32,6 @@ setup(
             "mu-debug = mu.app:debug",
         ],
     },
-    data_files=[('/etc/udev/rules.d', ['conf/90-usb-microbit.rules', ]),
-                ('/usr/share/pixmaps', ['conf/mu.png', ]),
+    data_files=[('/usr/share/pixmaps', ['conf/mu.png', ]),
                 ('/usr/share/applications', ['conf/mu.desktop', ])],
 )

@@ -55,12 +55,14 @@ class MicrobitMode(MicroPythonMode):
                 'display_name': _('Flash'),
                 'description': _('Flash your code onto the micro:bit.'),
                 'handler': self.flash,
+                'shortcut': 'F3',
             },
             {
                 'name': 'files',
                 'display_name': _('Files'),
                 'description': _('Access the file system on the micro:bit.'),
                 'handler': self.toggle_files,
+                'shortcut': 'F4',
             },
             {
                 'name': 'repl',
@@ -68,6 +70,7 @@ class MicrobitMode(MicroPythonMode):
                 'description': _('Use the REPL to live-code on the '
                                  'micro:bit.'),
                 'handler': self.toggle_repl,
+                'shortcut': 'Ctrl+Shift+I',
             },
         ]
 

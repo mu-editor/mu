@@ -49,30 +49,35 @@ class DebugMode(BaseMode):
                 'display_name': _('Stop'),
                 'description': _('Stop the running code.'),
                 'handler': self.button_stop,
+                'shortcut': 'Shift+F5',
             },
             {
                 'name': 'run',
                 'display_name': _('Continue'),
                 'description': _('Continue to run your Python script.'),
                 'handler': self.button_continue,
+                'shortcut': 'F5',
             },
             {
                 'name': 'step-over',
                 'display_name': _('Step Over'),
                 'description': _('Step over a line of code.'),
                 'handler': self.button_step_over,
+                'shortcut': 'F10',
             },
             {
                 'name': 'step-in',
                 'display_name': _('Step In'),
                 'description': _('Step into a function.'),
                 'handler': self.button_step_in,
+                'shortcut': 'F11',
             },
             {
                 'name': 'step-out',
                 'display_name': _('Step Out'),
                 'description': _('Step out of a function.'),
                 'handler': self.button_step_out,
+                'shortcut': 'Shift+F11',
             },
         ]
 

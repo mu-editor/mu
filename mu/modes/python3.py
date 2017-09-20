@@ -46,12 +46,14 @@ class PythonMode(BaseMode):
                 'display_name': _('Run'),
                 'description': _('Run and debug your Python script.'),
                 'handler': self.run,
+                'shortcut': 'F5',
             },
             {
                 'name': 'repl',
                 'display_name': _('REPL'),
                 'description': _('Use the REPL for live coding.'),
                 'handler': self.toggle_repl,
+                'shortcut': 'Ctrl+Shift+I',
             },
         ]
 

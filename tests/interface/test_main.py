@@ -1154,28 +1154,41 @@ def test_StatusBar_init():
 
 def test_StatusBar_connect_logs():
     """
-    Ensure the event handler for viewing logs is correctly set.
+    Ensure the event handler / shortcut for viewing logs is correctly set.
     """
     sb = mu.interface.main.StatusBar()
 
     def handler():
         pass
 
-    sb.connect_logs(handler)
+    mock_shortcut = mock.MagicMock()
+    mock_sequence = mock.MagicMock()
+    with mock.patch('mu.interface.main.QShortcut', mock_shortcut), \
+            mock.patch('mu.interface.main.QKeySequence', mock_sequence):
+        sb.connect_logs(handler, 'Ctrl+X')
     assert sb.logs_label.mousePressEvent == handler
+    mock_shortcut.assert_called_once_with(mock_sequence('Ctrl-X'), sb.parent())
+    mock_shortcut().activated.connect.assert_called_once_with(handler)
 
 
 def test_StatusBar_connect_mode():
     """
-    Ensure the event handler for selecting the new mode is correctly set.
+    Ensure the event handler / shortcut for selecting the new mode is
+    correctly set.
     """
     sb = mu.interface.main.StatusBar()
 
     def handler():
         pass
 
-    sb.connect_mode(handler)
+    mock_shortcut = mock.MagicMock()
+    mock_sequence = mock.MagicMock()
+    with mock.patch('mu.interface.main.QShortcut', mock_shortcut), \
+            mock.patch('mu.interface.main.QKeySequence', mock_sequence):
+        sb.connect_mode(handler, 'Ctrl-X')
     assert sb.mode_label.mousePressEvent == handler
+    mock_shortcut.assert_called_once_with(mock_sequence('Ctrl-X'), sb.parent())
+    mock_shortcut().activated.connect.assert_called_once_with(handler)
 
 
 def test_StatusBar_set_message():

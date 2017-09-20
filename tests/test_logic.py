@@ -1135,6 +1135,7 @@ def test_change_mode():
         {
             'name': 'name',
             'handler': 'handler',
+            'shortcut': 'Ctrl+X',
         },
     ]
     ed.modes = {
@@ -1163,6 +1164,7 @@ def test_change_mode_no_timer():
         {
             'name': 'name',
             'handler': 'handler',
+            'shortcut': 'Ctrl+X',
         },
     ]
     ed.modes = {
