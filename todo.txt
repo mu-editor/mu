@@ -1,4 +1,3 @@
-* Pip installable.
 * API documentation for auto-suggest and call tips
 * Don't show object inspector when there are no breakpoints.
 * Update micro:bit runtime

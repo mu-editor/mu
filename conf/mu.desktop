@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
 Name=mu
-GenericName=A micro Python editor for microbit
-Comment=A micro Python editor
+GenericName=A Python editor for beginner programmers 
+Comment=A Python editor for beginner programmers
 Icon=mu
 TryExec=mu
 Exec=mu

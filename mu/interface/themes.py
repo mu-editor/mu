@@ -154,7 +154,7 @@ class NightTheme(Theme):
     Keyword = Font(color='#73a46a', bold=True, paper='#222')
     SingleQuotedString = DoubleQuotedString = Font(color='#fbd126',
                                                    paper='#222')
-    TripleSingleQuotedString = TripleDoubleQuotedString = Font(color='#434343',
+    TripleSingleQuotedString = TripleDoubleQuotedString = Font(color='#f14721',
                                                                paper='#222')
     Number = Font(color='#51aee6', paper='#222')
     Decorator = Font(color='#b83920', paper='#222')

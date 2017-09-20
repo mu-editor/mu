@@ -6,6 +6,7 @@ Release History
 
 * Pip installable.
 * Updated theme handling: day, night and high-contrast (as per user feedback).
+* Keyboard shortcuts.
 
 1.0.0.beta.*
 ------------
