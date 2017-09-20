@@ -39,14 +39,23 @@ install:
   # Fix for PyQt not being installed in correct directory: https://github.com/appveyor/ci/issues/363
   - cmd: REG ADD HKCU\Software\Python\PythonCore\3.4\InstallPath /f /ve /t REG_SZ /d C:\Python34
 
-  # Download PyQt5 with 10min timeout, rename to pyqt5_installer.exe, and install
+  # Download PyQt5 with 10 min time out, rename to pyqt5_installer.exe, and install
   - ps: Start-FileDownload 'http://downloads.sourceforge.net/project/pyqt/PyQt5/PyQt-5.5.1/PyQt5-5.5.1-gpl-Py3.4-Qt5.5.1-x32.exe' -FileName pyqt5_installer.exe -Timeout 600000
-
   - cmd: pyqt5_installer.exe /S
 
-  # Install python dependencies (v3.2 has VC++ redistributable dependencies)
-  - cmd: pip install pyinstaller==3.1.1
-  - cmd: pip install -r requirements.txt
+  # Install python dependencies, can't use requirements.txt as PyQt needs 3.5+
+  - cmd: pip install pyinstaller
+  #- cmd: pip install -r requirements.txt
+  - cmd: pip install pytest
+  - cmd: pip install pycodestyle
+  - cmd: pip install pyflakes
+  - cmd: pip install coverage
+  - cmd: pip install sphinx
+  - cmd: pip install pytest-cov
+  - cmd: pip install pyserial
+  - cmd: pip install qtconsole
+  - cmd: pip install matplotlib
+  - cmd: pip install setuptools==19.2
 
   # Check installed packages
   - cmd: pip freeze
@@ -85,4 +94,4 @@ deploy:
   set_public: true
   folder: windows
   on:
-    branch: [master]
+    branch: [master, appveyor]
