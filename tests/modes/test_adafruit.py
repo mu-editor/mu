@@ -5,6 +5,7 @@ Tests for the Adafruit mode.
 import pytest
 import ctypes
 from mu.modes.adafruit import AdafruitMode
+from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
 from unittest import mock
 
 
@@ -127,4 +128,4 @@ def test_api():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     am = AdafruitMode(editor, view)
-    assert am.api() == []
+    assert am.api() == SHARED_APIS + ADAFRUIT_APIS

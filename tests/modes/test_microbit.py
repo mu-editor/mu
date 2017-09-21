@@ -6,6 +6,7 @@ import os
 import pytest
 from mu.logic import HOME_DIRECTORY
 from mu.modes.microbit import MicrobitMode
+from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from unittest import mock
 
 
@@ -399,5 +400,4 @@ def test_api():
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
     api = mm.api()
-    assert isinstance(api, list)
-    assert api
+    assert api == SHARED_APIS + MICROBIT_APIS

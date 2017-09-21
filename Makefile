@@ -11,7 +11,8 @@ all:
 	@echo "make coverage - view a report on test coverage."
 	@echo "make check - run all the checkers and tests."
 	@echo "make docs - run sphinx to create project documentation."
-	@echo "make translate - run pygettext to create a new messages.pot file.\n"
+	@echo "make translate - create a new messages.pot file for Mu related strings."
+	@echo "make translateall - as with translate but also containing all API strings.\n"
 
 clean:
 	rm -rf build
@@ -24,10 +25,10 @@ clean:
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
 
 pyflakes:
-	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
+	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
 
 pycodestyle:
-	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pycodestyle --repeat --exclude=build/*,docs/*,mu/contrib*,mu/resources/api.py --ignore=E731,E402
+	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pycodestyle --repeat --exclude=build/*,docs/*,mu/contrib*,mu/modes/api/*,utils/* --ignore=E731,E402
 
 test: clean
 	pytest
@@ -44,6 +45,11 @@ docs: clean
 	@echo "\n"
 
 translate:
+	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils -o -path ./mu/modes/api \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pygettext
+	@echo "\nNew messages.pot file created."
+	@echo "Remember to update the translation strings found in the locale directory."
+
+translateall:
 	pygettext mu/* mu/debugger/* mu/modes/* mu/resources/*
 	@echo "\nNew messages.pot file created."
 	@echo "Remember to update the translation strings found in the locale directory."

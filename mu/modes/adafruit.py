@@ -20,6 +20,7 @@ import os
 import ctypes
 from subprocess import check_output
 from mu.modes.base import MicroPythonMode
+from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
 
 
 class AdafruitMode(MicroPythonMode):
@@ -134,4 +135,4 @@ class AdafruitMode(MicroPythonMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return []
+        return SHARED_APIS + ADAFRUIT_APIS

@@ -3,6 +3,7 @@
 Tests for the Python3 mode.
 """
 from mu.modes.python3 import PythonMode
+from mu.modes.api import PYTHON3_APIS, SHARED_APIS
 from unittest import mock
 
 
@@ -36,7 +37,7 @@ def test_python_api():
     view = mock.MagicMock()
     pm = PythonMode(editor, view)
     result = pm.api()
-    assert isinstance(result, list)
+    assert result == SHARED_APIS + PYTHON3_APIS
 
 
 def test_python_run():

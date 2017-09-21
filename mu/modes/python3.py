@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
 from mu.modes.base import BaseMode
+from mu.modes.api import PYTHON3_APIS, SHARED_APIS
 from qtconsole.inprocess import QtInProcessKernelManager
 
 
@@ -62,7 +63,7 @@ class PythonMode(BaseMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return []
+        return SHARED_APIS + PYTHON3_APIS
 
     def run(self, event):
         """
