@@ -44,8 +44,11 @@ install:
   - cmd: pyqt5_installer.exe /S
 
   # Install python dependencies, can't use requirements.txt as PyQt needs 3.5+
-  - cmd: pip install pyinstaller
+  - cmd: pip install pyinstaller==3.3
   #- cmd: pip install -r requirements.txt
+  # zmq is an ipython dependency, older version needed due to pyinstaller incompatibility
+  # https://github.com/pyinstaller/pyinstaller/issues/2147#issuecomment-274367270
+  - cmd: pip install pyzmq==15.3.0
   - cmd: pip install pytest
   - cmd: pip install pycodestyle
   - cmd: pip install pyflakes
@@ -55,7 +58,7 @@ install:
   - cmd: pip install pyserial
   - cmd: pip install qtconsole
   - cmd: pip install matplotlib
-  - cmd: pip install setuptools==19.2
+  - cmd: pip install setuptools
 
   # Check installed packages
   - cmd: pip freeze
