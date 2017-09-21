@@ -1,6 +1,15 @@
 Release History
 ===============
 
+1.0.0.beta.7
+------------
+
+* Update PyInstaller icons.
+* Fix some tests that fail on older version of Python 3.
+* Add scripts to extract API information from Adafruit and Python 3.
+* Add generated API documentation to Mu so autosuggest and call tips have data.
+* Ensure translation files are distributed.
+
 1.0.0.beta.6
 ------------
 

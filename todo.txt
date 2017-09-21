@@ -1,6 +1,7 @@
-* Don't show object inspector when there are no breakpoints.
 * Update micro:bit runtime
 * Adafruit flash
+* Testing
 * Packaging
+* Tutorials
 * Documentation
 * Website

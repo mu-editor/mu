@@ -9,7 +9,7 @@ with open('CHANGES.rst') as f:
 
 
 setup(
-    name='mu',
+    name='mu-editor',
     version=__version__,
     description='A simple editor for beginner programmers.',
     long_description='{}\n\n{}'.format(readme, changes),
@@ -20,7 +20,7 @@ setup(
     packages=['mu', 'mu.contrib', 'mu.resources', 'mu.modes', 'mu.debugger',
               'mu.interface', ],
     install_requires=['pycodestyle', 'pyflakes', 'pyserial', 'pyqt5',
-                      'qscintilla', 'qtconsole', 'matplotlib==2.0.2', ],
+                      'qscintilla', 'qtconsole', 'matplotlib', ],
     include_package_data=True,
     zip_safe=False,
     classifiers=[
