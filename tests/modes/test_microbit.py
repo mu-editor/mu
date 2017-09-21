@@ -121,7 +121,7 @@ def test_flash_with_attached_device_and_custom_runtime():
         mm = MicrobitMode(editor, view)
         mm.flash()
         assert editor.show_status_message.call_count == 1
-        assert 'tests/customhextest.hex' in \
+        assert os.path.join('tests', 'customhextest.hex') in \
             editor.show_status_message.call_args[0][0]
         assert fl.call_count == 1
 
