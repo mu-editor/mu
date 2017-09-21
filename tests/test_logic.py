@@ -676,7 +676,7 @@ def test_save_no_path():
     ed.modes = {
         'python': mock_mode,
     }
-    with mock.patch('mu.logic.open', mock_open):
+    with mock.patch('builtins.open', mock_open):
         ed.save()
     assert mock_open.call_count == 1
     mock_open.assert_called_with('foo.py', 'w', newline='')
@@ -716,7 +716,7 @@ def test_save_file_with_exception():
     view.show_message = mock.MagicMock()
     mock_open = mock.MagicMock(side_effect=OSError())
     ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.open', mock_open):
+    with mock.patch('builtins.open', mock_open):
         ed.save()
     assert view.current_tab.setModified.call_count == 0
     assert view.show_message.call_count == 1
@@ -738,7 +738,7 @@ def test_save_python_file():
     mock_open.return_value.__exit__ = mock.Mock()
     mock_open.return_value.write = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.open', mock_open):
+    with mock.patch('builtins.open', mock_open):
         ed.save()
     mock_open.assert_called_once_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
@@ -760,7 +760,7 @@ def test_save_with_no_file_extension():
     mock_open.return_value.__exit__ = mock.Mock()
     mock_open.return_value.write = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.open', mock_open):
+    with mock.patch('builtins.open', mock_open):
         ed.save()
     mock_open.assert_called_once_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
@@ -1211,7 +1211,7 @@ def test_autosave():
     view.widgets = [mock_tab, ]
     ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock()
-    with mock.patch('mu.logic.open', mock_open), \
+    with mock.patch('builtins.open', mock_open), \
             mock.patch('mu.logic.os'):
         ed.autosave()
     assert mock_open.call_count == 1
