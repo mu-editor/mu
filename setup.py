@@ -18,7 +18,7 @@ setup(
     url='https://github.com/mu-editor/mu',
     license='GPL3',
     packages=['mu', 'mu.contrib', 'mu.resources', 'mu.modes', 'mu.debugger',
-              'mu.interface', ],
+              'mu.interface', 'mu.modes.api', ],
     install_requires=['pycodestyle', 'pyflakes', 'pyserial', 'pyqt5',
                       'qscintilla', 'qtconsole', 'matplotlib', ],
     include_package_data=True,

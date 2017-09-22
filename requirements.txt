@@ -9,4 +9,4 @@ pyqt5
 qscintilla
 qtconsole
 matplotlib
-setuptools==19.2
+setuptools
