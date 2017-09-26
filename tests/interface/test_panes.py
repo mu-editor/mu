@@ -1102,7 +1102,7 @@ def test_PythonProcessPane_start_process():
     mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
     runner = os.path.join(mu_dir, 'mu-debug.py')
     expected_args = ['-i', runner, expected_script, ]
-    ppp.process.start.assert_called_once_with('python', expected_args)
+    ppp.process.start.assert_called_once_with('python3', expected_args)
 
 
 def test_PythonProcessPane_finished():
