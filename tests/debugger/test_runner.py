@@ -896,7 +896,9 @@ def test_run_with_restart_exception():
             mock.patch('mu.debugger.runner.sys', mock_sys), \
             mock.patch('mu.debugger.runner.socket', mock_socket):
         mu.debugger.runner.run('localhost', 1908, 'foo.py', 'bar', 'baz')
-    mock_debugger.output.assert_called_once_with('restart')
+    assert mock_debugger.output.call_count == 2
+    assert mock_debugger.output.call_args_list[0][0][0] == 'restart'
+    assert mock_debugger.output.call_args_list[1][0][0] == 'finished'
 
 
 def test_run_with_expected_exception():
@@ -934,6 +936,6 @@ def test_run_with_unexpected_exception():
             mock.patch('mu.debugger.runner.sys', mock_sys), \
             mock.patch('mu.debugger.runner.socket', mock_socket):
         mu.debugger.runner.run('localhost', 1908, 'foo.py', 'bar', 'baz')
-    expected = "Exception('boom',)"
-    mock_debugger.output.assert_called_once_with('postmortem',
-                                                 exception=expected)
+    assert mock_debugger.output.call_count == 2
+    assert mock_debugger.output.call_args_list[0][0][0] == 'postmortem'
+    assert mock_debugger.output.call_args_list[1][0][0] == 'finished'

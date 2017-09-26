@@ -7,6 +7,7 @@ from PyQt5.QtCore import QIODevice, Qt
 from PyQt5.QtGui import QTextCursor
 from unittest import mock
 import os
+import mu
 import platform
 import mu.interface.panes
 import pytest
@@ -1098,7 +1099,10 @@ def test_PythonProcessPane_start_process():
     ppp.process.readyRead.connect.assert_called_once_with(ppp.read)
     ppp.process.finished.connect.assert_called_once_with(ppp.finished)
     expected_script = os.path.abspath(os.path.normcase('script.py'))
-    ppp.process.start.assert_called_once_with('mu-debug', [expected_script])
+    mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
+    runner = os.path.join(mu_dir, 'mu-debug.py')
+    expected_args = ['-i', runner, expected_script, ]
+    ppp.process.start.assert_called_once_with('python', expected_args)
 
 
 def test_PythonProcessPane_finished():

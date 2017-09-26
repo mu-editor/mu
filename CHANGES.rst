@@ -1,6 +1,13 @@
 Release History
 ===============
 
+1.0.0.beta.8
+------------
+
+* Updated splash image to reflect trademark usage of logos.
+* Refactored the way the Python runner executes so that it drops into the Python shell when it completes.
+* The debug runner now reports when it has finished running a script.
+
 1.0.0.beta.7
 ------------
 

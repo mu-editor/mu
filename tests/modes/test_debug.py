@@ -509,6 +509,18 @@ def test_debug_on_return():
     dm.debugger.do_step.assert_called_once_with()
 
 
+def test_debug_on_finished():
+    """
+    When the debugger is finished, the view is reset.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    dm.finished = mock.MagicMock()
+    dm.debug_on_finished()
+    dm.finished.assert_called_once_with()
+
+
 def test_debug_on_breakpoint_ignore():
     """
     Should do nothing.

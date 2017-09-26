@@ -356,6 +356,12 @@ class Debugger(QObject):
         """
         self.view.debug_on_restart()
 
+    def on_finished(self):
+        """
+        The debug runner has finished running the script to be debugged.
+        """
+        self.view.debug_on_finished()
+
     def on_call(self, args):
         """
         The runner has called a function with the specified arguments.

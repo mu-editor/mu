@@ -497,6 +497,7 @@ def run(hostname, port, filename, *args):
         try:
             debugger._runscript(filename)
             if debugger._user_requested_quit:
+                debugger.output('finished')
                 break
         except Restart:
             # TODO: Log restart.

@@ -322,6 +322,13 @@ class DebugMode(BaseMode):
         """
         self.debugger.do_step()
 
+    def debug_on_finished(self):
+        """
+        Called when the runner has completed running the script to be
+        debugged.
+        """
+        self.finished()
+
     def debug_on_breakpoint_ignore(self, breakpoint, count):
         """
         Handle when a breakpoint is to be ignored by the debugger. Currently

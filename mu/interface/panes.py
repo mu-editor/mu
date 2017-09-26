@@ -21,6 +21,7 @@ import re
 import platform
 import logging
 import os.path
+import mu
 from PyQt5.QtCore import Qt, QIODevice, QProcess, QProcessEnvironment
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
@@ -523,7 +524,9 @@ class PythonProcessPane(QTextEdit):
         self.process.setWorkingDirectory(workspace)
         self.process.readyRead.connect(self.read)
         self.process.finished.connect(self.finished)
-        self.process.start('mu-debug', [self.script])
+        mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
+        runner = os.path.join(mu_dir, 'mu-debug.py')
+        self.process.start('python', ['-i', runner, self.script])
 
     def finished(self, code, status):
         """
@@ -566,7 +569,9 @@ class PythonProcessPane(QTextEdit):
         From the process's stdout.
         """
         self.input_buffer = []
-        self.append(self.process.readAll().data())
+        data = self.process.readAll().data()
+        if data:
+            self.append(data)
 
     def keyPressEvent(self, data):
         """

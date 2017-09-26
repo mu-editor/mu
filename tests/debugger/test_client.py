@@ -662,3 +662,13 @@ def test_Debugger_on_error():
         db.on_error('info')
         mock_logger.assert_called_once_with('Debug runner says: info')
         db.view.debug_on_error.assert_called_once_with('info')
+
+
+def test_Debugger_on_finished():
+    """
+    Ensure the client indicates the runner has completed to the view.
+    """
+    db = mu.debugger.client.Debugger('localhost', 1908)
+    db.view = mock.MagicMock()
+    db.on_finished()
+    db.view.debug_on_finished.assert_called_once_with()
