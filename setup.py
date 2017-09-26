@@ -20,7 +20,7 @@ setup(
     packages=['mu', 'mu.contrib', 'mu.resources', 'mu.modes', 'mu.debugger',
               'mu.interface', 'mu.modes.api', ],
     install_requires=['pycodestyle', 'pyflakes', 'pyserial', 'pyqt5',
-                      'qscintilla', 'qtconsole', 'matplotlib', ],
+                      'qscintilla', 'qtconsole', 'matplotlib', 'pyqt5.qtserialport', ],
     include_package_data=True,
     zip_safe=False,
     classifiers=[
