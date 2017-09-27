@@ -1,12 +1,12 @@
 Mu - an editor for beginner programmers
 =======================================
 
-Installation details below.
-
 What?
 -----
 
-Mu is a very simple code editor for kids, teachers and beginner programmers.
+Mu is a simple code editor for beginner programmers based on the feedback given
+to and experiences of the Raspberry Pi Foundation's education team.
+
 It's written in Python and works on Windows, OSX, Linux and Raspberry Pi.
 
 Why?
@@ -15,10 +15,10 @@ Why?
 There isn't a cross platform Python code editor that is:
 
 * Easy to use;
-* Accessible to everyone;
 * Available on all major platforms;
 * Well documented (even for beginners);
 * Simply coded;
+* Easily translated;
 * Currently maintained; and,
 * Thoroughly tested.
 
@@ -27,8 +27,8 @@ Mu addresses these needs.
 In the Python world, teachers, students and other beginner programmers are
 forced to use one of the following options:
 
-* IDLE - the long-in-the-tooth, unmaintained and eccentric editor that comes bundled with Python.
-* A third party IDE (integrated development environment) for teaching. If "IDE" sounds complicated, that's because it is.
+* IDLE - the editor that comes bundled with Python.
+* A third party IDE (integrated development environment) for teaching. If "IDE" sounds complicated for beginner programmers, that's because it is.
 * A professional programmer's editor such as vi or emacs.
 
 Such tools are fiddly, complicated and full of distracting "features". They
@@ -38,45 +38,57 @@ novice programmer's first steps.
 How?
 ----
 
-Mu's outlook is:
+Mu's philosophy is:
 
 * Less is more (remove all unnecessary distractions);
 * Keep it simple (so Mu is easy to understand);
 * Walk the path of least resistance (Mu should be easy);
 * Have fun (learning should be a positive experience).
 
-Mu is modal. It can work as a general purpose Python 3 editor, as a MicroPython
+Mu is modal. It works as a general purpose Python 3 editor, as a MicroPython
 editor for the BBC's micro:bit device, or as a CircuitPython editor for
 Adafruit boards.
 
-The BBC's micro:bit project is aimed at 11-year old children. It consists of a
-small and simple programmable device. One option is the remarkable work of
-Damien George in the form of MicroPython, a full re-implementation of Python 3
-for microcontrollers including the BBC micro:bit.
+Mu's code is simple - it's commented and mostly found in a few obviously named
+Python files. This has been done on purpose: we want teachers and kids to take
+ownership of this project and organising the code in this way aids the first
+steps required to get involved (everything you need to know is in obviously
+named files).
+
+History
+-------
+
+Mu was created as a PSF contribution to the BBC's micro:bit project, aimed at
+11-year old children.
+
+The micro:bit consists of a small and simple programmable device. One option is
+the remarkable work of Damien George in the form of MicroPython, a full
+re-implementation of Python 3 for microcontrollers including the BBC micro:bit.
 
 The BBC's "blessed" solution for programming this device is web-based. However,
-we have observed that this doesn't provide the optimum experience for Python:
+we observed this doesn't provide the optimum experience for Python:
 
 * It requires you to use a web-browser as a text based code editor.
 * You need to download the .hex file to flash onto the device and then drag it to the device's mount point on the filesystem. A rather clunky multi-part process.
 * It doesn't allow you to connect to the device in order to live code in Python via the REPL.
 
-The Mu editor addresses each of these problems: it is a native application
+Mu was created to address each of these problems: it is a native application
 specifically designed as a text based coding environment. It makes it easy to
 flash your code onto the device (it's only a click of a button). It has a built
 in REPL client that automatically connects to the device.
 
-Mu has been adapted from my previous work done with Damien George and Dan Pope
+Mu was adapted from my previous work done with Damien George and Dan Pope
 on the "Puppy" editor for kids. Mu is an ultra-slimmed down version of Puppy.
 
-The code is simple and monolithic - it's commented and mostly found in a
-a few obviously named Python files. This has been done on purpose: we want
-teachers and kids to take ownership of this project and organising the code in
-this way aids the first steps required to get involved (everything you need to
-know is in obviously named files).
+Mu has since become quite popular and the most requested feature has been to
+make it into a generic Python code editor for beginners. Thanks to the support
+of the Raspberry Pi Foundation I've been able to make it into the modal editor
+that exists today.
 
 Installation
 ------------
+
+** THESE INSTALLATION INSTRUCTIONS ARE OUT OF DATE **
 
 Currently, the latest builds for Windows, OSX and Linux x86 can be found here:
 

@@ -1,6 +1,13 @@
 Release History
 ===============
 
+1.0.0.beta.9
+------------
+
+* Debian related packaging updates.
+* Fixed a problem relating to how Windows stops the debug runner.
+* Fixed a problem relating to how Windows paths are expressed that was stopping the debug runner from starting.
+
 1.0.0.beta.8
 ------------
 
