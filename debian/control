@@ -9,7 +9,7 @@ X-Python3-Version: >= 3.2
 
 Package: mu
 Architecture: all
-Depends: ${python3:Depends}, ${misc:Depends}
+Depends: ${python3:Depends}, ${misc:Depends}, python3-pyqt5.qtserialport
 Description: A simple editor for beginner programmers
  A very simple code editor for kids, teachers and beginner programmers.
  It's written in Python and works on Windows, OSX, Linux and Raspberry Pi.
