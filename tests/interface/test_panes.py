@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QApplication, QMessageBox, QLabel, QListWidget
 from PyQt5.QtCore import QIODevice, Qt
 from PyQt5.QtGui import QTextCursor
 from unittest import mock
+import sys
 import os
 import mu
 import platform
@@ -1102,7 +1103,8 @@ def test_PythonProcessPane_start_process():
     mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
     runner = os.path.join(mu_dir, 'mu-debug.py')
     expected_args = ['-i', runner, expected_script, ]
-    ppp.process.start.assert_called_once_with('python3', expected_args)
+    expected_python = sys.executable
+    ppp.process.start.assert_called_once_with(expected_python, expected_args)
 
 
 def test_PythonProcessPane_finished():

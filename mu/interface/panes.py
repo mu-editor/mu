@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import sys
 import os
 import re
 import platform
@@ -524,10 +525,11 @@ class PythonProcessPane(QTextEdit):
         self.process.setWorkingDirectory(workspace)
         self.process.readyRead.connect(self.read)
         self.process.finished.connect(self.finished)
+        python_exec = sys.executable
         mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
         runner = os.path.join(mu_dir, 'mu-debug.py')
         # Start the mu-debug runner within an interactive Python shell.
-        self.process.start('python3', ['-i', runner, self.script])
+        self.process.start(python_exec, ['-i', runner, self.script])
 
     def finished(self, code, status):
         """
