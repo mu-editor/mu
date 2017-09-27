@@ -86,6 +86,25 @@ def test_CommandBufferHandler_worker_break_loop():
     mock_socket.recv.assert_called_once_with(1024)
 
 
+def test_CommandBufferHandler_worker_exception_breaks_loop():
+    """
+    Ensure if the worker has an exception thrown from the socket then break out
+    of the loop to end the thread.
+    """
+    mock_debugger = mock.MagicMock()
+    mock_debugger.host = 'localhost'
+    mock_debugger.port = 9999
+    mock_socket_factory = mock.MagicMock()
+    mock_socket = mock.MagicMock()
+    mock_socket.recv.side_effect = Exception('Bang!')
+    mock_socket_factory.socket.return_value = mock_socket
+    cbh = mu.debugger.client.CommandBufferHandler(mock_debugger)
+    with mock.patch('mu.debugger.client.socket', mock_socket_factory):
+        cbh.worker()
+    mock_socket.recv.assert_called_once_with(1024)
+    assert cbh.stopped
+
+
 def test_command_buffer_message():
     """
     Make sure that the command buffer of bytes received with a terminated

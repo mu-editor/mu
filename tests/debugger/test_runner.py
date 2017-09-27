@@ -848,9 +848,9 @@ def test_Debugger_runscript():
     assert db._run_state == mu.debugger.runner.DebugState.STARTING
     assert db.mainpyfile == db.canonic('x.py')
     assert db._user_requested_quit
-    db.run.assert_called_once_with('__debug_script__ = open("x.py", "rb");'
+    db.run.assert_called_once_with('__debug_script__ = open(r"x.py", "rb");'
                                    '__debug_code__ = compile(__debug_script__'
-                                   '.read(), "x.py", "exec");'
+                                   '.read(), r"x.py", "exec");'
                                    'exec(__debug_code__);'
                                    '__debug_script__.close();')
 

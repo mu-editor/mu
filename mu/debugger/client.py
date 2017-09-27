@@ -109,7 +109,13 @@ class CommandBufferHandler(QObject):
         # incoming data from the debug runner process.
         remainder = b''
         while not self.stopped:
-            new_buffer = self.debugger.socket.recv(1024)
+            new_buffer = None
+            try:
+                new_buffer = self.debugger.socket.recv(1024)
+            except Exception:
+                # Stop if there's any failure in receiving data from the
+                # runner.
+                self.stopped = True
             if new_buffer:
                 if new_buffer.endswith(self.debugger.ETX):
                     terminator = self.debugger.ETX
