@@ -346,7 +346,7 @@ class MicrobitFileList(MuFileList):
                 try:
                     with microfs.get_serial() as serial:
                         logger.info(serial.port)
-                        microfs.put(serial, local_filename)
+                        microfs.put(local_filename, serial)
                     super().dropEvent(event)
                 except Exception as ex:
                     logger.error(ex)
@@ -366,7 +366,7 @@ class MicrobitFileList(MuFileList):
             try:
                 with microfs.get_serial() as serial:
                     logger.info(serial.port)
-                    microfs.rm(serial, microbit_filename)
+                    microfs.rm(microbit_filename, serial)
                 self.takeItem(self.currentRow())
             except Exception as ex:
                 logger.error(ex)
@@ -400,7 +400,7 @@ class LocalFileList(MuFileList):
                 try:
                     with microfs.get_serial() as serial:
                         logger.info(serial.port)
-                        microfs.get(serial, microbit_filename, local_filename)
+                        microfs.get(microbit_filename, local_filename, serial)
                     super().dropEvent(event)
                 except Exception as ex:
                     logger.error(ex)

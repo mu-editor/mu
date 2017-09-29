@@ -10,3 +10,7 @@ qscintilla
 qtconsole
 matplotlib
 setuptools
+scrapy
+beautifulsoup4
+wheel
+twine

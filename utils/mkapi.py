@@ -11,7 +11,11 @@ if __name__ == '__main__':
     f = sys.argv[1]
     with open(f) as api_file:
         api = json.load(api_file)
-    for i in api:
+    # Sort the JSON objects so diffing code is easier to do.
+    sorted_api = sorted(api, key=lambda k: k['name'])
+    # Emit a representation of the API information in the format parsed by
+    # the Scintilla.
+    for i in sorted_api:
         name = i['name']
         args = ', '.join(i['args']) if i['args'] else ''
         description = i['description'].replace('\u2013', '--')

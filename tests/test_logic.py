@@ -731,7 +731,7 @@ def test_save_python_file():
     view.current_tab = mock.MagicMock()
     view.current_tab.path = 'foo.py'
     view.current_tab.text = mock.MagicMock(return_value='foo')
-    view.get_save_path = mock.MagicMock()
+    view.get_save_path = mock.MagicMock(return_value='foo.py')
     view.current_tab.setModified = mock.MagicMock(return_value=None)
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
@@ -742,7 +742,7 @@ def test_save_python_file():
         ed.save()
     mock_open.assert_called_once_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
-    assert view.get_save_path.call_count == 0
+    assert view.get_save_path.call_count == 1
     view.current_tab.setModified.assert_called_once_with(False)
 
 
@@ -754,7 +754,7 @@ def test_save_with_no_file_extension():
     view.current_tab = mock.MagicMock()
     view.current_tab.path = 'foo'
     view.current_tab.text = mock.MagicMock(return_value='foo')
-    view.get_save_path = mock.MagicMock()
+    view.get_save_path = mock.MagicMock(return_value='foo')
     mock_open = mock.MagicMock()
     mock_open.return_value.__enter__ = lambda s: s
     mock_open.return_value.__exit__ = mock.Mock()
@@ -764,7 +764,7 @@ def test_save_with_no_file_extension():
         ed.save()
     mock_open.assert_called_once_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
-    assert view.get_save_path.call_count == 0
+    assert view.get_save_path.call_count == 1
 
 
 def test_get_tab_existing_tab():

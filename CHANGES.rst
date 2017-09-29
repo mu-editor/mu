@@ -1,6 +1,17 @@
 Release History
 ===============
 
+1.0.0.beta.10
+-------------
+
+* Ensured "Save" button prompts user to confirm (or replace) the filename of an existing file. Allows Mu to have something like "Save As".
+* Updated to latest microfs library for working with the micro:bit's filesystem.
+* Fixed three code quality warnings found by https://lgtm.com/projects/g/mu-editor/mu/alerts/?mode=list
+* Updated API generation so the output is ordered (helps when diffing the generated files).
+* Updated Makefile to create Python packages/wheels and deploy to PyPI.
+* Explicit versions for packages found within install_requires in setup.py. 
+* Minor documentation changes.
+
 1.0.0.beta.9
 ------------
 

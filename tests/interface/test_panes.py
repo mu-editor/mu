@@ -664,7 +664,7 @@ def test_MicrobitFileList_dropEvent():
         mfs.dropEvent(mock_event)
         mfs.disable.assert_called_once_with(source)
         home = os.path.join('homepath', 'foo.py')
-        mock_put.assert_called_once_with(mock_serial, home)
+        mock_put.assert_called_once_with(home, mock_serial)
         mock_dropEvent.assert_called_once_with(mock_event)
         mfs.enable.assert_called_once_with(source)
         mfs.parent().ls.assert_called_once_with()
@@ -744,7 +744,7 @@ def test_MicrobitFileList_contextMenuEvent():
                        return_value=None) as mock_rm, \
             mock.patch('mu.interface.panes.QMenu', return_value=mock_menu):
         mfs.contextMenuEvent(mock_event)
-        mock_rm.assert_called_once_with(mock_serial, 'foo.py')
+        mock_rm.assert_called_once_with('foo.py', mock_serial)
         assert mfs.setDisabled.call_count == 2
         assert mfs.setAcceptDrops.call_count == 2
 
@@ -821,7 +821,7 @@ def test_LocalFileList_dropEvent():
         lfs.dropEvent(mock_event)
         lfs.disable.assert_called_once_with(source)
         home = os.path.join('homepath', 'foo.py')
-        mock_get.assert_called_once_with(mock_serial, 'foo.py', home)
+        mock_get.assert_called_once_with('foo.py', home, mock_serial)
         mock_dropEvent.assert_called_once_with(mock_event)
         lfs.enable.assert_called_once_with(source)
         lfs.parent().ls.assert_called_once_with()

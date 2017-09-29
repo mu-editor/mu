@@ -10,6 +10,9 @@ all:
 	@echo "make test - run the test suite."
 	@echo "make coverage - view a report on test coverage."
 	@echo "make check - run all the checkers and tests."
+	@echo "make dist - make a dist/wheel for the project."
+	@echo "make publish-test - publish the project to PyPI test instance."
+	@echo "make publish-live - publish the project to PyPI production."
 	@echo "make docs - run sphinx to create project documentation."
 	@echo "make translate - create a new messages.pot file for Mu related strings."
 	@echo "make translateall - as with translate but also containing all API strings.\n"
@@ -17,12 +20,13 @@ all:
 clean:
 	rm -rf build
 	rm -rf dist
-	rm -rf mu.egg-info
+	rm -rf mu_editor.egg-info
 	rm -rf .coverage
 	rm -rf docs/_build
 	find . \( -name '*.py[co]' -o -name dropin.cache \) -delete
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
+	find . | grep -E "(__pycache__)" | xargs rm -rf
 
 pyflakes:
 	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
@@ -37,6 +41,18 @@ coverage: clean
 	pytest --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
 check: clean pycodestyle pyflakes coverage
+
+dist: check
+	@echo "\nChecks pass, good to package..."
+	python setup.py sdist bdist_wheel
+
+publish-test: dist
+	@echo "\nPackaging complete... Uploading to PyPi..."
+	twine upload -r test --sign dist/*
+
+publish-live: dist 
+	@echo "\nPackaging complete... Uploading to PyPi..."
+	twine upload --sign dist/*
 
 docs: clean
 	$(MAKE) -C docs html

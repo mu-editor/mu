@@ -488,7 +488,11 @@ class Editor:
         if tab is None:
             # There is no active text editor so abort.
             return
-        if tab.path is None:
+        if tab.path:
+            # Existing file, but confirm filename with user to allow Mu to
+            # have something like a "save as" feature.
+            tab.path = self._view.get_save_path(tab.path)
+        else:
             # Unsaved file.
             workspace = self.modes[self.mode].workspace_dir()
             tab.path = self._view.get_save_path(workspace)
