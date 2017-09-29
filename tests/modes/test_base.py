@@ -149,7 +149,6 @@ def test_micropython_mode_find_microbit_no_device():
     view = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
     mock_port = mock.MagicMock()
-    mock_port = mock.MagicMock()
     mock_port.productIdentifier = mock.MagicMock(return_value=666)
     mock_port.vendorIdentifier = mock.MagicMock(return_value=999)
     with mock.patch('mu.modes.base.QSerialPortInfo.availablePorts',
