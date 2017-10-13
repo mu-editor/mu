@@ -569,7 +569,7 @@ def test_no_duplicate_load_python_file():
         'contains_brown.py'
     )
 
-    editor_window = mock.MagicMock
+    editor_window = mock.MagicMock()
     editor_window.show_message = mock.MagicMock()
     editor_window.focus_tab = mock.MagicMock()
     editor_window.add_tab = mock.MagicMock()
@@ -742,7 +742,7 @@ def test_save_python_file():
         ed.save()
     mock_open.assert_called_once_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
-    assert view.get_save_path.call_count == 1
+    assert view.get_save_path.call_count == 0
     view.current_tab.setModified.assert_called_once_with(False)
 
 
@@ -764,7 +764,7 @@ def test_save_with_no_file_extension():
         ed.save()
     mock_open.assert_called_once_with('foo.py', 'w', newline='')
     mock_open.return_value.write.assert_called_once_with('foo')
-    assert view.get_save_path.call_count == 1
+    assert view.get_save_path.call_count == 0
 
 
 def test_get_tab_existing_tab():
@@ -1306,3 +1306,61 @@ def test_debug_toggle_breakpoint_off():
     view.current_tab.markerDelete.\
         assert_called_once_with(10, view.current_tab.BREAKPOINT_MARKER)
     assert len(view.current_tab.breakpoint_lines) == 0
+
+
+def test_rename_tab_no_tab_id():
+    """
+    If no tab id is supplied (i.e. this method was triggered by the shortcut
+    instead of the double-click event), then use the tab currently in focus.
+    """
+    view = mock.MagicMock()
+    view.get_save_path.return_value = 'foo'
+    mock_tab = mock.MagicMock()
+    mock_tab.path = 'old.py'
+    view.current_tab = mock_tab
+    ed = mu.logic.Editor(view)
+    ed.save = mock.MagicMock()
+    ed.rename_tab()
+    view.get_save_path.assert_called_once_with('old.py')
+    assert mock_tab.path == 'foo.py'
+    ed.save.assert_called_once_with()
+
+
+def test_rename_tab():
+    """
+    If there's a tab id, the function being tested is reacting to a double-tap
+    so make sure the expected tab is grabbed from the view.
+    """
+    view = mock.MagicMock()
+    view.get_save_path.return_value = 'foo'
+    mock_tab = mock.MagicMock()
+    mock_tab.path = 'old.py'
+    view.tabs.widget.return_value = mock_tab
+    ed = mu.logic.Editor(view)
+    ed.save = mock.MagicMock()
+    ed.rename_tab(1)
+    view.get_save_path.assert_called_once_with('old.py')
+    view.tabs.widget.assert_called_once_with(1)
+    assert mock_tab.path == 'foo.py'
+    ed.save.assert_called_once_with()
+
+
+def test_rename_tab_avoid_duplicating_other_tab_name():
+    """
+    If the user attempts to rename the tab to a filename used by another tab
+    then show an error message and don't rename anything.
+    """
+    view = mock.MagicMock()
+    view.get_save_path.return_value = 'foo'
+    mock_other_tab = mock.MagicMock()
+    mock_other_tab.path = 'foo.py'
+    view.widgets = [mock_other_tab, ]
+    mock_tab = mock.MagicMock()
+    mock_tab.path = 'old.py'
+    view.tabs.widget.return_value = mock_tab
+    ed = mu.logic.Editor(view)
+    ed.rename_tab(1)
+    view.show_message.assert_called_once_with('Could not rename file.',
+                                              'A file of that name is already '
+                                              'open in Mu.')
+    assert mock_tab.path == 'old.py'

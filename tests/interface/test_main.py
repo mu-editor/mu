@@ -1132,6 +1132,24 @@ def test_Window_stop_timer():
     mock_timer.stop.assert_called_once_with()
 
 
+def test_Window_connect_tab_rename():
+    """
+    Ensure the referenced handler and shortcuts are set up to fire when
+    the tab is double-clicked.
+    """
+    w = mu.interface.main.Window()
+    w.tabs = mock.MagicMock()
+    mock_handler = mock.MagicMock()
+    mock_shortcut = mock.MagicMock()
+    mock_sequence = mock.MagicMock()
+    with mock.patch('mu.interface.main.QShortcut', mock_shortcut), \
+            mock.patch('mu.interface.main.QKeySequence', mock_sequence):
+        w.connect_tab_rename(mock_handler, 'Ctrl-Shift-S')
+    w.tabs.tabBarDoubleClicked.connect.assert_called_once_with(mock_handler)
+    mock_shortcut.assert_called_once_with(mock_sequence('Ctrl-Shift-S'), w)
+    mock_shortcut().activated.connect.assert_called_once_with(mock_handler)
+
+
 def test_StatusBar_init():
     """
     Ensure the status bar is set up as expected.

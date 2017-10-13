@@ -673,6 +673,15 @@ class Window(QMainWindow):
             self.timer.stop()
             self.timer = None
 
+    def connect_tab_rename(self, handler, shortcut):
+        """
+        Connect the double-click event on a tab and the keyboard shortcut to
+        the referenced handler (causing the Save As dialog).
+        """
+        self.tabs.shortcut = QShortcut(QKeySequence(shortcut), self)
+        self.tabs.shortcut.activated.connect(handler)
+        self.tabs.tabBarDoubleClicked.connect(handler)
+
 
 class StatusBar(QStatusBar):
     """

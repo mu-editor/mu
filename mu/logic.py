@@ -488,11 +488,7 @@ class Editor:
         if tab is None:
             # There is no active text editor so abort.
             return
-        if tab.path:
-            # Existing file, but confirm filename with user to allow Mu to
-            # have something like a "save as" feature.
-            tab.path = self._view.get_save_path(tab.path)
-        else:
+        if not tab.path:
             # Unsaved file.
             workspace = self.modes[self.mode].workspace_dir()
             tab.path = self._view.get_save_path(workspace)
@@ -742,3 +738,37 @@ class Editor:
                 else:
                     tab.markerAdd(line, tab.BREAKPOINT_MARKER)
                     tab.breakpoint_lines.add(line)
+
+    def rename_tab(self, tab_id=None):
+        """
+        How to handle double-clicking a tab in order to rename the file. If
+        activated by the shortcut, activate against the current tab.
+        """
+        tab = None
+        if tab_id:
+            tab = self._view.tabs.widget(tab_id)
+        else:
+            tab = self._view.current_tab
+        if tab:
+            new_path = self._view.get_save_path(tab.path)
+            if new_path:
+                logger.info('Attempting to rename {} to {}'.format(tab.path,
+                                                                   new_path))
+                # The user specified a path to a file.
+                if not os.path.basename(new_path).endswith('.py'):
+                    # No extension given, default to .py
+                    new_path += '.py'
+                # Check for duplicate path with currently open tab.
+                for other_tab in self._view.widgets:
+                    if other_tab.path == new_path:
+                        logger.info('Cannot rename, a file of that name is '
+                                    'already open in Mu')
+                        message = _('Could not rename file.')
+                        information = _("A file of that name is already open "
+                                        "in Mu.")
+                        self._view.show_message(message, information)
+                        return
+                # Finally rename
+                tab.path = new_path
+                logger.info('Renamed file to: {}'.format(tab.path))
+                self.save()

@@ -1,6 +1,13 @@
 Release History
 ===============
 
+1.0.0.beta.11
+-------------
+
+* Updated Python 3 REPL to make use of an out of process iPython kernel (to avoid problems with blocking Mu's UI).
+* Reverted Save related functionality to prior behaviour.
+* The "Save As" dialog for re-naming a file is launched when you click the filename in the tab associated with the code.
+
 1.0.0.beta.10
 -------------
 
