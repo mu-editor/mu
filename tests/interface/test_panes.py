@@ -1073,6 +1073,16 @@ def test_JupyterREPLPane_set_theme_contrast():
         mu.interface.themes.CONTRAST_STYLE)
 
 
+def test_JupyterREPLPane_setFocus():
+    """
+    Ensures setFocus actually occurs to the _control containing the REPL.
+    """
+    jw = mu.interface.panes.JupyterREPLPane()
+    jw._control = mock.MagicMock()
+    jw.setFocus()
+    jw._control.setFocus.assert_called_once_with()
+
+
 def test_PythonProcessPane_init():
     """
     Check the font and input_buffer is set.

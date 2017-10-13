@@ -1,3 +1,13 @@
+* Raspberry Pi related API docs
+    - GPIOZero
+    - PiCamera
+    - SenseHat, ExplorerHat, 
+    - time, random,
+    - PyGameZero
+    - GuiZero
+    - Tim NetworkZero
+* iPython cleanup
+* Terminal emulation
 * Update micro:bit runtime
 * Adafruit flash
 * Testing

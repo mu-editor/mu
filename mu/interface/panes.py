@@ -91,6 +91,13 @@ class JupyterREPLPane(RichJupyterWidget):
             self.set_default_style()
             self.setStyleSheet(DAY_STYLE)
 
+    def setFocus(self):
+        """
+        Override base setFocus so the focus happens to the embedded _control
+        within this widget.
+        """
+        self._control.setFocus()
+
 
 class MicroPythonREPLPane(QTextEdit):
     """

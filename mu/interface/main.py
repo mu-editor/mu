@@ -314,16 +314,14 @@ class Window(QMainWindow):
         repl_pane = MicroPythonREPLPane(port=repl.port, theme=self.theme)
         self.add_repl(repl_pane, name)
 
-    def add_jupyter_repl(self, repl):
+    def add_jupyter_repl(self, kernel_manager, kernel_client):
         """
         Adds a Jupyter based REPL pane to the application.
         """
-        kernel = repl.kernel
-        kernel.gui = 'qt4'
-        kernel_client = repl.client()
+        kernel_manager.kernel.gui = 'qt4'
         kernel_client.start_channels()
         ipython_widget = JupyterREPLPane(theme=self.theme)
-        ipython_widget.kernel_manager = repl
+        ipython_widget.kernel_manager = kernel_manager
         ipython_widget.kernel_client = kernel_client
         self.add_repl(ipython_widget, _('Python3 (Jupyter)'))
 

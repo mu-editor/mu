@@ -574,19 +574,16 @@ def test_Window_add_jupyter_repl():
     w.theme = mock.MagicMock()
     w.connect_zoom = mock.MagicMock(return_value=None)
     w.add_repl = mock.MagicMock()
-    mock_repl = mock.MagicMock()
-    mock_kernel = mock.MagicMock()
+    mock_kernel_manager = mock.MagicMock()
     mock_kernel_client = mock.MagicMock()
-    mock_repl.kernel = mock_kernel
-    mock_repl.client.return_value = mock_kernel_client
     mock_pane = mock.MagicMock()
     mock_pane_class = mock.MagicMock(return_value=mock_pane)
     with mock.patch('mu.interface.main.JupyterREPLPane', mock_pane_class):
-        w.add_jupyter_repl(mock_repl)
+        w.add_jupyter_repl(mock_kernel_manager, mock_kernel_client)
     mock_pane_class.assert_called_once_with(theme=w.theme)
-    assert mock_pane.kernel_manager == mock_repl
+    assert mock_pane.kernel_manager == mock_kernel_manager
     assert mock_pane.kernel_client == mock_kernel_client
-    assert mock_kernel.gui == 'qt4'
+    assert mock_kernel_manager.kernel.gui == 'qt4'
     w.add_repl.assert_called_once_with(mock_pane, 'Python3 (Jupyter)')
 
 
