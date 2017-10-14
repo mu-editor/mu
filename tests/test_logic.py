@@ -579,7 +579,7 @@ def test_no_duplicate_load_python_file():
     unsaved_tab = mock.MagicMock()
     unsaved_tab.path = None
 
-    editor_window.widgets = ({unsaved_tab, brown_tab})
+    editor_window.widgets = [unsaved_tab, brown_tab]
 
     editor_window.get_load_path = mock.MagicMock(return_value=brown_script)
     # Create the "editor" that'll control the "window".
