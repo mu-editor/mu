@@ -123,3 +123,4 @@ Contents:
    website.rst
    contributing.rst
    api.rst
+   changes.rst
