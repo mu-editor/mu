@@ -120,13 +120,6 @@ Contents:
    modes.rst
    translations.rst
    debugger.rst
+   website.rst
    contributing.rst
    api.rst
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

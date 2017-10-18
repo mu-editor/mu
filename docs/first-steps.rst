@@ -1,4 +1,4 @@
-Suggested First Development Steps
----------------------------------
+Suggested First Steps
+---------------------
 
 
