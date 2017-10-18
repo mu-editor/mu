@@ -1,4 +1,4 @@
-QStackedWidget, QWidget {
+QStackedWidget, QWidget, QApplication {
     background-color: #222;
     color: #CCC;
 }

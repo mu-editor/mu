@@ -1,6 +1,16 @@
 Release History
 ===============
 
+1.0.0.beta.12
+-------------
+
+* Update "save" related behaviour so "save as" pops up when the filename in the tab is double clicked.
+* Update the debugger so the process stops at the end of the run.
+* Ensure the current working directory for the REPL is set to mu_mode.
+* Add additional documentation about Raspberry Pi related API.
+* Update micro:bit runtime to lates MicroPython beta.
+* Make a start on developer documentation.
+
 1.0.0.beta.11
 -------------
 
