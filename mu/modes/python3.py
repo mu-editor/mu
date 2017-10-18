@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 import logging
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS
@@ -35,7 +36,19 @@ class KernelRunner(QObject):
     kernel_started = pyqtSignal(QtKernelManager, QtKernelClient)
     kernel_finished = pyqtSignal()
 
+    def __init__(self, cwd):
+        """
+        Initialise the kernel runner with a target current working directory.
+        """
+        super().__init__()
+        self.cwd = cwd
+
     def start_kernel(self):
+        """
+        Start the kernel, obtain a client and emit a signal when both are
+        started.
+        """
+        os.chdir(self.cwd)  # Ensure the kernel runs with the expected CWD.
         self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.start_kernel()
         self.repl_kernel_client = self.repl_kernel_manager.client()
@@ -43,6 +56,10 @@ class KernelRunner(QObject):
                                  self.repl_kernel_client)
 
     def stop_kernel(self):
+        """
+        Stop the client connections to the kernel, affect an immediate
+        shutdown of the kernel and emit a "finished" signal.
+        """
         self.repl_kernel_client.stop_channels()
         self.repl_kernel_manager.shutdown_kernel(now=True)
         self.kernel_finished.emit()
@@ -120,7 +137,7 @@ class PythonMode(BaseMode):
         """
         self.view.button_bar.slots['repl'].setEnabled(False)
         self.kernel_thread = QThread()
-        self.kernel_runner = KernelRunner()
+        self.kernel_runner = KernelRunner(cwd=self.workspace_dir())
         self.kernel_runner.moveToThread(self.kernel_thread)
         self.kernel_runner.kernel_started.connect(self.on_kernel_start)
         self.kernel_runner.kernel_finished.connect(self.kernel_thread.quit)
@@ -153,7 +170,8 @@ class PythonMode(BaseMode):
         iPython kernel.
         """
         self.repl_kernel_manager = None
-        self.view.button_bar.slots['repl'].setEnabled(True)
+        if 'repl' in self.view.button_bar.slots:
+            self.view.button_bar.slots['repl'].setEnabled(True)
         self.editor.show_status_message(_("REPL stopped."))
         self.kernel_runner = None
         self.kernel_thread = None

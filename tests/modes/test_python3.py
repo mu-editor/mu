@@ -16,11 +16,14 @@ def test_kernel_runner_start_kernel():
     mock_kernel_manager = mock.MagicMock()
     mock_client = mock.MagicMock()
     mock_kernel_manager.client.return_value = mock_client
-    kr = KernelRunner()
+    kr = KernelRunner(cwd='/a/path/to/mu_code')
     kr.kernel_started = mock.MagicMock()
-    with mock.patch('mu.modes.python3.QtKernelManager',
-                    return_value=mock_kernel_manager):
+    mock_os = mock.MagicMock()
+    with mock.patch('mu.modes.python3.os', mock_os), \
+            mock.patch('mu.modes.python3.QtKernelManager',
+                       return_value=mock_kernel_manager):
         kr.start_kernel()
+    mock_os.chdir.assert_called_once_with('/a/path/to/mu_code')
     assert kr.repl_kernel_manager == mock_kernel_manager
     mock_kernel_manager.start_kernel.assert_called_once_with()
     assert kr.repl_kernel_client == mock_client
@@ -34,7 +37,7 @@ def test_kernel_runner_stop_kernel():
     signal once it has stopped the client communication channels and shutdown
     the kernel in the quickest way possible.
     """
-    kr = KernelRunner()
+    kr = KernelRunner(cwd='/a/path/to/mu_code')
     kr.repl_kernel_client = mock.MagicMock()
     kr.repl_kernel_manager = mock.MagicMock()
     kr.kernel_finished = mock.MagicMock()
@@ -121,7 +124,7 @@ def test_python_add_repl():
             mock.patch('mu.modes.python3.KernelRunner', mock_kernel_runner):
         pm.add_repl()
     mock_qthread.assert_called_once_with()
-    mock_kernel_runner.assert_called_once_with()
+    mock_kernel_runner.assert_called_once_with(cwd=pm.workspace_dir())
     assert pm.kernel_thread == mock_qthread()
     assert pm.kernel_runner == mock_kernel_runner()
     view.button_bar.slots['repl'].setEnabled.assert_called_once_with(False)
@@ -176,6 +179,9 @@ def test_python_on_kernel_stop():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.button_bar.slots = {
+        'repl': mock.MagicMock(),
+    }
     pm = PythonMode(editor, view)
     pm.on_kernel_stop()
     assert pm.repl_kernel_manager is None

@@ -1,5 +1,5 @@
-Development
-===========
+Developer Setup
+===============
 
 .. Much of this information is also in the README.rst file at the top level.
    If you are updating one, remember to update the other.
@@ -60,4 +60,3 @@ with development. Typing ``make`` on its own will list the options thus::
     make check - run all the checkers and tests.
     make docs - run sphinx to create project documentation.
 
-.. include:: ../CONTRIBUTING.rst

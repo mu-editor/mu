@@ -1,4 +1,4 @@
-QStackedWidget, QWidget, QApplication {
+QStackedWidget, QWidget {
     background-color: black;
     color: white;
 }
@@ -12,57 +12,35 @@ QToolButton:hover {
     color: #FF0000;
 }
 
-QToolButton {
-    background-color: #333;
-}
-
 QTextEdit {
     background-color: black;
-    border:3px solid #FFF;
-    color: white
-}
-
-QTabBar::tab {
-    color: #999;
-    background: #333;
-    border: 1px solid #CCC;
-    padding: 6px 10px;
-}
-
-QTabBar::tab:selected {
-    color: black;
-    background: #CCC;
-}
-
-QTabBar::tab:!selected {
     color: white;
-    background: #111;
+    border: 1px solid white;
 }
 
-QSplitter::handle:horizontal {
+QTabBar {
     background: #333;
 }
 
-QToolBar {
+QTabBar::tab::selected {
+    background: #555;
+}
+
+QToolBar, QToolButton {
+    background: transparent;
+}
+
+QSplitter::handle {
     background: #333;
-    border: 0;
 }
 
 QMessageBox {
-    font-size: 14pt;
-    border: 3px solid white;
-}
-
-QPushButton {
-    background: #fff;
-    color: #000;
-}
-
-QTabWidget::pane {
     border: 1px solid white;
 }
 
 QListWidget {
+    background-color: black;
+    color: white;
     border: 1px solid white;
 }
 

@@ -1112,7 +1112,7 @@ def test_PythonProcessPane_start_process():
     expected_script = os.path.abspath(os.path.normcase('script.py'))
     mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
     runner = os.path.join(mu_dir, 'mu-debug.py')
-    expected_args = ['-i', runner, expected_script, ]
+    expected_args = [runner, expected_script, ]
     expected_python = sys.executable
     ppp.process.start.assert_called_once_with(expected_python, expected_args)
 
