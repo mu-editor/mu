@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import logging
 from mu.modes.base import BaseMode
-from mu.modes.api import PYTHON3_APIS, SHARED_APIS
+from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from qtconsole.manager import QtKernelManager
 from qtconsole.client import QtKernelClient
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
@@ -105,7 +105,7 @@ class PythonMode(BaseMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return SHARED_APIS + PYTHON3_APIS
+        return SHARED_APIS + PYTHON3_APIS + PI_APIS
 
     def run(self, event):
         """
