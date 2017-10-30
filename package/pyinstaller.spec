@@ -27,9 +27,10 @@ pyqt_dlls =  os.path.join(pyqt_dir, 'plugins', 'platforms')
 
 # Add qt.conf to indicate where PyInstaller placed dlls
 #data_files += [('qt.conf', '.')]
-binary_files = [(os.path.join(pyqt_dlls, 'qwindows.dll'), 'platforms')]
-binary_files += [(os.path.join(pyqt_dlls, 'qoffscreen.dll'), 'platforms')]
-binary_files += [(os.path.join(pyqt_dlls, 'qminimal.dll'), 'platforms')]
+binary_files =[]
+#binary_files = [(os.path.join(pyqt_dlls, 'qwindows.dll'), 'platforms')]
+#binary_files += [(os.path.join(pyqt_dlls, 'qoffscreen.dll'), 'platforms')]
+#binary_files += [(os.path.join(pyqt_dlls, 'qminimal.dll'), 'platforms')]
 
 
 a = Analysis(['../run.py'],
