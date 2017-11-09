@@ -67,10 +67,18 @@ repository with the following command::
 
     $ git clone https://github.com/mu-editor/mu.git
 
-Ensure you have the correct dependencies for development installed by creating
-a virtualenv and running::
+Ensure you have the correct dependencies for development installed.
+First, create a virtualenv.
+
+Dependency installation for the Raspberry Pi is described below.
+For all other platforms, run::
 
     $ pip install -r requirements.txt
+
+If you are building for the Pi there are two steps::
+
+    $ apt-get install python3-pyqt5 python3-pyqt5.qsci and python3-pyqt5.qtserialport
+    $ pip install -r requirements-pi.txt
 
 To run the local development version of "mu", in the root of this repository
 type::
