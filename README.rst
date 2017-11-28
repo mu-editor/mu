@@ -68,16 +68,17 @@ repository with the following command::
     $ git clone https://github.com/mu-editor/mu.git
 
 Ensure you have the correct dependencies for development installed.
+
 First, create a virtualenv.
 
-Dependency installation for the Raspberry Pi is described below.
-For all other platforms, run::
+Dependency installation for the Raspberry Pi is described below, for all other
+platforms, run::
 
     $ pip install -r requirements.txt
 
 If you are building for the Pi there are two steps::
 
-    $ apt-get install python3-pyqt5 python3-pyqt5.qsci and python3-pyqt5.qtserialport
+    $ apt-get install python3-pyqt5 python3-pyqt5.qsci and python3-pyqt5.qtserialport python3-dev
     $ pip install -r requirements-pi.txt
 
 To run the local development version of "mu", in the root of this repository
@@ -102,8 +103,9 @@ with development. Typing "make" on its own will list the options thus::
     make publish-test - publish the project to PyPI test instance.
     make publish-live - publish the project to PyPI production.
     make docs - run sphinx to create project documentation.
-    make translate - create a new messages.pot file for Mu related strings.
-    make translateall - as with translate but also containing all API strings.
+    make translate - create a messages.pot file for translations.
+    make translateall - as with translate but for all API strings.
+
 
 Before contributing code please make sure you've read CONTRIBUTING.rst. We
 expect everyone participating in the development of Mu to act in accordance
