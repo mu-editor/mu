@@ -21,18 +21,18 @@ from PyQt5.QtGui import QColor, QFontDatabase
 from mu.resources import load_stylesheet, load_font_data
 
 
-#: The default font size.
+# The default font size.
 DEFAULT_FONT_SIZE = 14
-#: All editor windows use the same font
+# All editor windows use the same font
 FONT_NAME = "Source Code Pro"
 FONT_FILENAME_PATTERN = "SourceCodePro-{variant}.otf"
 FONT_VARIANTS = ("Bold", "BoldIt", "It", "Regular", "Semibold", "SemiboldIt")
 # Load the two themes from resources/css/[night|day].css
-#: NIGHT_STYLE is a dark theme.
+# NIGHT_STYLE is a dark theme.
 NIGHT_STYLE = load_stylesheet('night.css')
-#: DAY_STYLE is a light conventional theme.
+# DAY_STYLE is a light conventional theme.
 DAY_STYLE = load_stylesheet('day.css')
-#: CONTRAST_STYLE is a high contrast theme.
+# CONTRAST_STYLE is a high contrast theme.
 CONTRAST_STYLE = load_stylesheet('contrast.css')
 
 

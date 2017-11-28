@@ -40,32 +40,32 @@ from mu.contrib import appdirs, uflash
 from mu import __version__
 
 
-#: The user's home directory.
+# The user's home directory.
 HOME_DIRECTORY = os.path.expanduser('~')
 # Name of the directory within the home folder to use by default
 WORKSPACE_NAME = 'mu_code'
-#: The default directory for application data (i.e., configuration).
+# The default directory for application data (i.e., configuration).
 DATA_DIR = appdirs.user_data_dir(appname='mu', appauthor='python')
-#: The default directory for application logs.
+# The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir(appname='mu', appauthor='python')
-#: The path to the log file for the application.
+# The path to the log file for the application.
 LOG_FILE = os.path.join(LOG_DIR, 'mu.log')
-#: Regex to match pycodestyle (PEP8) output.
+# Regex to match pycodestyle (PEP8) output.
 STYLE_REGEX = re.compile(r'.*:(\d+):(\d+):\s+(.*)')
-#: Regex to match flake8 output.
+# Regex to match flake8 output.
 FLAKE_REGEX = re.compile(r'.*:(\d+):\s+(.*)')
-#: Regex to match false positive flake errors if microbit.* is expanded.
+# Regex to match false positive flake errors if microbit.* is expanded.
 EXPAND_FALSE_POSITIVE = re.compile(r"^'microbit\.(\w+)' imported but unused$")
-#: The text to which "from microbit import *" should be expanded.
+# The text to which "from microbit import \*" should be expanded.
 EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
                    " pin3, pin6, pin4, i2c, pin5, pin7, pin8, Image, "
                    "pin9, pin14, pin16, reset, pin19, temperature, "
                    "sleep, pin20, button_a, button_b, running_time, "
                    "accelerometer, display, uart, spi, panic, pin13, "
                    "pin12, pin11, pin10, compass")
-#: Port number for debugger.
+# Port number for debugger.
 DEBUGGER_PORT = 31415
-MOTD = [  #: Candidate phrases for the message of the day (MOTD).
+MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _('Hello, World!'),
     _("This editor is free software written in Python. You can modify it, "
       "add features or fix bugs if you like."),

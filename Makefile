@@ -14,8 +14,8 @@ all:
 	@echo "make publish-test - publish the project to PyPI test instance."
 	@echo "make publish-live - publish the project to PyPI production."
 	@echo "make docs - run sphinx to create project documentation."
-	@echo "make translate - create a new messages.pot file for Mu related strings."
-	@echo "make translateall - as with translate but also containing all API strings.\n"
+	@echo "make translate - create a messages.pot file for translations."
+	@echo "make translateall - as with translate but for all API strings.\n"
 
 clean:
 	rm -rf build

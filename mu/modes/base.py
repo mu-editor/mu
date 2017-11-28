@@ -27,7 +27,7 @@ from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path
 logger = logging.getLogger(__name__)
 
 
-#: List of supported board USB IDs.  Each board is a tuple of unique USB vendor
+# List of supported board USB IDs.  Each board is a tuple of unique USB vendor
 # ID, USB product ID.
 BOARD_IDS = set([
     (0x0D28, 0x0204),  # micro:bit USB VID, PID

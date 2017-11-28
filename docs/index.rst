@@ -52,6 +52,13 @@ There isn't a cross platform Python code editor that is:
 
 Mu addresses these needs.
 
+Mu was originally created as a contribution from the
+`Python Software Foundation <http://python.org/psf>`_
+for the BBC's `micro:bit project <http://microbit.org/>`_. Many people asked if
+Mu could be turned into a generic beginner's code editor and, thanks to the
+wonderful support of the `Raspberry Pi Foundation <http://raspberrypi.org/>`_
+the work needed to make such changes was done over the summer of 2017.
+
 How?
 ----
 
@@ -74,8 +81,7 @@ If you're looking for ways to get involved check out some of the
 
 Furthermore, we put our users at the centre of our development work. Extensive
 interviews with teachers, observations of lessons and exceptionally clear and
-helpful feedback from the education team at the
-`Raspberry Pi Foundation <https://www.raspberrypi.org/education/>`_
+helpful feedback from the education team at the Raspberry Pi Foundation 
 (perhaps the most successful computing in education project in history) have
 informed the design choices for Mu.
 
@@ -120,6 +126,8 @@ Contents:
    modes.rst
    translations.rst
    debugger.rst
+   tests.rst
+   packaging.rst
    website.rst
    contributing.rst
    api.rst
