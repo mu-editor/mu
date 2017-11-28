@@ -35,12 +35,14 @@ class AdafruitMode(MicroPythonMode):
     save_timeout = 0  #: Don't autosave on Adafruit boards. Casues a restart.
     connected = True  #: is the Adafruit board connected.
     valid_boards = [
-        (0x239A, 0x800B),  # Adafruit Feather M0 CDC only USB VID, PID
-        (0x239A, 0x8016),  # Adafruit Feather M0 CDC + MSC USB VID, PID
-        (0x239A, 0x8014),  # metro m0 PID
-        (0x239A, 0x8019),  # circuitplayground m0 PID
-        (0x239A, 0x8015),  # circuitplayground m0 PID prototype
-        (0x239A, 0x801B),  # feather m0 express PID
+        (0x239A, 0x8015),  # Adafruit Feather M0 CircuitPython
+        (0x239A, 0x8023),  # Adafruit Feather M0 Express CircuitPython
+        (0x239A, 0x801B),  # Adafruit Feather M0 Express CircuitPython
+        (0x239A, 0x8014),  # Adafruit Metro M0 CircuitPython
+        (0x239A, 0x8019),  # Adafruit CircuitPlayground Express CircuitPython
+        (0x239A, 0x801D),  # Adafruit Gemma M0
+        (0x239A, 0x801F),  # Adafruit Trinket M0
+        (0x239A, 0x8012),  # Adafruit ItsyBitsy M0
     ]
 
     def actions(self):
