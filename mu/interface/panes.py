@@ -34,6 +34,7 @@ from mu.contrib import microfs
 from mu.interface.themes import Font
 from mu.interface.themes import (DEFAULT_FONT_SIZE, NIGHT_STYLE, DAY_STYLE,
                                  CONTRAST_STYLE)
+import serial
 
 
 logger = logging.getLogger(__name__)
@@ -122,6 +123,17 @@ class MicroPythonREPLPane(QTextEdit):
         self.serial = QSerialPort(self)
         self.serial.setPortName(port)
         if self.serial.open(QIODevice.ReadWrite):
+            self.serial.dataTerminalReady = True
+            if not self.serial.isDataTerminalReady():
+                # Using pyserial as a 'hack' to open the port and set DTR
+                # as QtSerial does not seem to work on some Windows :(
+                #print("DTR: ", self.serial.isDataTerminalReady())
+                self.serial.close()
+                pyser = serial.Serial(port)  # open serial port w/pyserial
+                pyser.dtr = True
+                pyser.close()
+                self.serial.open(QIODevice.ReadWrite)
+                #print("DTR: ", self.serial.isDataTerminalReady())
             self.serial.setBaudRate(115200)
             self.serial.readyRead.connect(self.on_serial_read)
             # clear the text
