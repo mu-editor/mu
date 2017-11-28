@@ -37,7 +37,7 @@ class AdafruitMode(MicroPythonMode):
     valid_boards = [
         (0x239A, 0x8015),  # Adafruit Feather M0 CircuitPython
         (0x239A, 0x8023),  # Adafruit Feather M0 Express CircuitPython
-        (0x239A, 0x801B),  # Adafruit Feather M0 Express CircuitPython	
+        (0x239A, 0x801B),  # Adafruit Feather M0 Express CircuitPython
         (0x239A, 0x8014),  # Adafruit Metro M0 CircuitPython
         (0x239A, 0x8019),  # Adafruit CircuitPlayground Express CircuitPython
         (0x239A, 0x801D),  # Adafruit Gemma M0
