@@ -55,6 +55,27 @@ def test_MicroPythonREPLPane_init_cannot_open():
             mu.interface.panes.MicroPythonREPLPane('COM0')
 
 
+def test_MicroPythonREPLPane_init_DTR_unset():
+    """
+    If data terminal ready (DTR) is unset (as can be the case on some
+    Windows / Qt combinations) then fall back to PySerial to correct. See
+    issues #281 and #302 for details.
+    """
+    mock_qt_serial = mock.MagicMock()
+    mock_qt_serial.isDataTerminalReady.return_value = False
+    mock_py_serial = mock.MagicMock()
+    mock_serial_class = mock.MagicMock(return_value=mock_qt_serial)
+    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
+        with mock.patch('mu.interface.panes.serial', mock_py_serial):
+            mu.interface.panes.MicroPythonREPLPane('COM0')
+    mock_qt_serial.close.assert_called_once_with()
+    assert mock_qt_serial.open.call_count == 2
+    mock_py_serial.Serial.assert_called_once_with('COM0')
+    mock_pyser = mock_py_serial.Serial('COM0')
+    assert mock_pyser.dtr is True
+    mock_pyser.close.assert_called_once_with()
+
+
 def test_MicroPythonREPLPane_paste():
     """
     Pasting into the REPL should send bytes via the serial connection.

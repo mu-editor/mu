@@ -461,7 +461,7 @@ class Editor:
                 with open(path, newline='') as f:
                     text = uflash.extract_script(f.read())
                 name = None
-        except FileNotFoundError:
+        except (PermissionError, FileNotFoundError):
             logger.warning('could not load {}'.format(path))
         else:
             logger.debug(text)
