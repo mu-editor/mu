@@ -186,6 +186,7 @@ class MicroPythonMode(BaseMode):
         """
         Toggles the plotter on and off.
         """
+        print("toggle_plotter", self.plotter)
         if self.plotter is None:
             self.add_plotter()
             logger.info('Toggle plotter on.')
@@ -197,24 +198,25 @@ class MicroPythonMode(BaseMode):
         """
         If there's an active plotter, hide it.
         """
+        print("base remove_plotter")
         if self.plotter is None:
             raise RuntimeError('Plotter not running.')
         self.view.remove_plotter()
         self.plotter = None
+        logger.info('Removing plotter')
 
     def add_plotter(self):
         """
         Check if REPL exists, and if so, enable the plotter pane!
         """
+        print("base add_plotter")
         if self.repl is None:
             message = _('Could not start plotter.')
             info = _("The REPL must be running for the plotter to work!")
             self.view.show_message(message, info)
-            raise RuntimeError('REPL not running, and is required!')
             return
-        print("Adding plotter pane")
         self.plotter = Plotter()
-        self.view.add_micropython_plotter(self.repl, self.name)
+        self.view.add_micropython_plotter(self.name)
         logger.info('Started plotter')
 
 class REPL:

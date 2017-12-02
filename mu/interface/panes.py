@@ -23,12 +23,15 @@ import platform
 import logging
 import os.path
 import mu
+from collections import deque
+from itertools import islice
 from PyQt5.QtCore import Qt, QIODevice, QProcess, QProcessEnvironment
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
                              QTreeView)
-from PyQt5.QtGui import QKeySequence, QTextCursor, QCursor
+from PyQt5.QtGui import QKeySequence, QTextCursor, QCursor, QPainter
 from PyQt5.QtSerialPort import QSerialPort
+from PyQt5.QtChart import QChart, QLineSeries, QChartView, QValueAxis
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from mu.contrib import microfs
 from mu.interface.themes import Font
@@ -119,6 +122,7 @@ class MicroPythonREPLPane(QTextEdit):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.context_menu)
         self.setObjectName('replpane')
+        self.serial_read_hook = None
         # open the serial port
         self.serial = QSerialPort(self)
         self.serial.setPortName(port)
@@ -186,11 +190,22 @@ class MicroPythonREPLPane(QTextEdit):
         else:
             self.setStyleSheet(CONTRAST_STYLE)
 
+    def set_serial_read_hook(self, f):
+        print("setting hook", f)
+        self.serial_read_hook = f
+
+    def remove_serial_read_hook(self):
+        print("removing hook")
+        self.serial_read_hook = None
+
     def on_serial_read(self):
         """
         Called when the application gets data from the connected device.
         """
-        self.process_bytes(bytes(self.serial.readAll()))
+        data = self.serial.readAll()
+        if self.serial_read_hook:
+            self.serial_read_hook(data)
+        self.process_bytes(bytes(data))
 
     def keyPressEvent(self, data):
         """
@@ -702,19 +717,91 @@ class DebugInspector(QTreeView):
         else:
             self.setStyleSheet(CONTRAST_STYLE)
 
-class MicroPythonPlotterPane(QTextEdit):
+class MicroPythonPlotterPane(QChartView):
     """
-    REPL = Read, Evaluate, Print, Loop.
+    This plotter makes viewing sensor data easy!
 
-    This widget represents a REPL client connected to a BBC micro:bit running
-    MicroPython.
+    This widget represents a chart that will look for CSV data on
+    the REPL and will auto-generate a graph
 
     The device MUST be flashed with MicroPython for this to work.
     """
 
-    def __init__(self, port, theme='day', parent=None):
+    def __init__(self, replpane, theme='day', parent=None):
         super().__init__(parent)
         self.setObjectName('plotterpane')
+
+        self.x_range = [0, 100]   # start out with a dummy range, we'll resize later
+        self.y_range = [0, 1000]  # ditto
+
+        self.t = range(self.x_range[0], self.x_range[1])
+        self.q = deque([0] * len(self.t))
+
+        self.series = QLineSeries()
+
+        self.chart = QChart()
+        self.chart.legend().hide()
+        self.chart.addSeries(self.series)
+
+        self.axis_x = QValueAxis()
+        self.axis_y = QValueAxis()
+        self.axis_x.setRange(self.x_range[0], self.x_range[1])
+        self.axis_y.setRange(self.y_range[0], self.y_range[1])
+        self.axis_x.setLabelFormat("")
+        self.axis_y.setLabelFormat("%d")
+        self.chart.setAxisX(self.axis_x, self.series)
+        self.chart.setAxisY(self.axis_y, self.series)
+
+        self.setChart(self.chart)
+        self.setRenderHint(QPainter.Antialiasing)
+
+        self.resizeEvent = lambda e: self.on_resize(e)
+        print("adding hook")
+        replpane.set_serial_read_hook(lambda d: self.read_from_repl(d))
+
+    def read_from_repl(self, d):
+        #print("<- ", d)
+        s = d.data().decode("utf-8")
+        print("<- ", s)
+        try:
+            val = float(s)
+        except ValueError:
+            # wasn't a number, no plotting to do!
+            return
+        self.add_data(0, val)
+
+    def add_data(self, chartnum, value):
+        self.q.appendleft(value)
+        if len(self.q) > len(self.t):
+            self.q.pop()
+        #print(self.q)
+
+        p_list = []
+        for i in range(0, len(self.t)):
+            if i > (len(self.q) - 1):
+                temp = 0
+            else:
+                temp = self.q[len(self.t) - 1 - i]
+            p_list.append((self.t[i], temp))
+
+        self.series.clear()
+        for i in p_list:
+            self.series.append(*i)
+
+    def on_resize(self, event):
+        print(event.size())
+        x = event.size().width()
+        y = event.size().height()
+        self.chart.axisY().setMax(y)
+        self.chart.axisX().setMax(x)
+        self.t = range(0, x)
+        q_len = len(self.q)
+        if x > q_len: # extend it!
+            self.q.extendleft([0] * (x - q_len))
+        if x < q_len: # contract it
+            self.q = deque(islice(self.q, q_len-x, q_len))
+        #print(self.q)
+        #self.chartView.update()
 
     def set_theme(self, theme):
         """
@@ -726,3 +813,15 @@ class MicroPythonPlotterPane(QTextEdit):
             self.setStyleSheet(NIGHT_STYLE)
         else:
             self.setStyleSheet(CONTRAST_STYLE)
+
+    def zoomIn(self, delta=2):
+        """
+        Zoom in (increase) does nothing yet
+        """
+        pass
+
+    def zoomOut(self, delta=2):
+        """
+        Zoom out (decrease) does nothing yet
+        """
+        pass

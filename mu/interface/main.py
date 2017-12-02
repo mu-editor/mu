@@ -314,11 +314,12 @@ class Window(QMainWindow):
         repl_pane = MicroPythonREPLPane(port=repl.port, theme=self.theme)
         self.add_repl(repl_pane, name)
 
-    def add_micropython_plotter(self, repl, name):
+    def add_micropython_plotter(self, name):
         """
         Adds a plotter that reads data from the REPL
         """
-        plotter_pane = MicroPythonPlotterPane(port=repl.port, theme=self.theme)
+        print("add_mp_plotter")
+        plotter_pane = MicroPythonPlotterPane(replpane=self.repl_pane, theme=self.theme)
         self.add_plotter(plotter_pane, name)
 
     def add_jupyter_repl(self, kernel_manager, kernel_client):
@@ -352,6 +353,7 @@ class Window(QMainWindow):
         """
         Adds the referenced plotter pane to the application.
         """
+        print("add_plotter")
         self.plotter_pane = plotter_pane
         self.plotter = QDockWidget(_('{} Plotter').format(name))
         self.plotter.setWidget(plotter_pane)
@@ -463,6 +465,17 @@ class Window(QMainWindow):
             self.repl.setParent(None)
             self.repl.deleteLater()
             self.repl = None
+
+    def remove_plotter(self):
+        """
+        Removes the plotter pane from the application.
+        """
+        print("remove_plotter")
+        if hasattr(self, 'plotter') and self.plotter:
+            self.plotter_pane = None
+            self.plotter.setParent(None)
+            self.plotter.deleteLater()
+            self.plotter = None
 
     def remove_python_runner(self):
         """
