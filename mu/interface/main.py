@@ -30,7 +30,7 @@ from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
                                  CONTRAST_STYLE)
 from mu.interface.panes import (DebugInspector, PythonProcessPane,
                                 JupyterREPLPane, MicroPythonREPLPane,
-                                FileSystemPane)
+                                FileSystemPane, MicroPythonPlotterPane)
 from mu.interface.editor import EditorPane
 from mu.resources import load_icon, load_pixmap
 
@@ -314,6 +314,13 @@ class Window(QMainWindow):
         repl_pane = MicroPythonREPLPane(port=repl.port, theme=self.theme)
         self.add_repl(repl_pane, name)
 
+    def add_micropython_plotter(self, repl, name):
+        """
+        Adds a plotter that reads data from the REPL
+        """
+        plotter_pane = MicroPythonPlotterPane(port=repl.port, theme=self.theme)
+        self.add_plotter(plotter_pane, name)
+
     def add_jupyter_repl(self, kernel_manager, kernel_client):
         """
         Adds a Jupyter based REPL pane to the application.
@@ -340,6 +347,22 @@ class Window(QMainWindow):
         self.connect_zoom(self.repl_pane)
         self.repl_pane.set_theme(self.theme)
         self.repl_pane.setFocus()
+
+    def add_plotter(self, plotter_pane, name):
+        """
+        Adds the referenced plotter pane to the application.
+        """
+        self.plotter_pane = plotter_pane
+        self.plotter = QDockWidget(_('{} Plotter').format(name))
+        self.plotter.setWidget(plotter_pane)
+        self.plotter.setFeatures(QDockWidget.DockWidgetMovable)
+        self.plotter.setAllowedAreas(Qt.BottomDockWidgetArea |
+                                  Qt.LeftDockWidgetArea |
+                                  Qt.RightDockWidgetArea)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.plotter)
+        self.connect_zoom(self.plotter_pane)
+        self.plotter_pane.set_theme(self.theme)
+        self.plotter_pane.setFocus()
 
     def add_python3_runner(self, name, path):
         """

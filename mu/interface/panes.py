@@ -701,3 +701,28 @@ class DebugInspector(QTreeView):
             self.setStyleSheet(NIGHT_STYLE)
         else:
             self.setStyleSheet(CONTRAST_STYLE)
+
+class MicroPythonPlotterPane(QTextEdit):
+    """
+    REPL = Read, Evaluate, Print, Loop.
+
+    This widget represents a REPL client connected to a BBC micro:bit running
+    MicroPython.
+
+    The device MUST be flashed with MicroPython for this to work.
+    """
+
+    def __init__(self, port, theme='day', parent=None):
+        super().__init__(parent)
+        self.setObjectName('plotterpane')
+
+    def set_theme(self, theme):
+        """
+        Sets the theme / look for the plotter pane.
+        """
+        if theme == 'day':
+            self.setStyleSheet(DAY_STYLE)
+        elif theme == 'night':
+            self.setStyleSheet(NIGHT_STYLE)
+        else:
+            self.setStyleSheet(CONTRAST_STYLE)
