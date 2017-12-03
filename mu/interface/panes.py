@@ -732,7 +732,7 @@ class MicroPythonPlotterPane(QChartView):
         self.setObjectName('plotterpane')
 
         self.x_range = [0, 100]   # start out with a dummy range, we'll resize later
-        self.y_range = [0, 100]  # ditto
+        self.y_range = [0, 1000]  # ditto
 
         self.t = range(self.x_range[0], self.x_range[1])
         self.q = deque([0] * len(self.t))
@@ -802,12 +802,12 @@ class MicroPythonPlotterPane(QChartView):
             else:
                 temp = self.q[len(self.t) - 1 - i]
             p_list.append((self.t[i], temp))
-
         self.series.clear()
         for i in p_list:
             self.series.append(*i)
 
     def on_resize(self, event):
+        return
         print(event.size())
         x = event.size().width()
         y = event.size().height()
