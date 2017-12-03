@@ -732,13 +732,13 @@ class MicroPythonPlotterPane(QChartView):
         self.setObjectName('plotterpane')
 
         self.x_range = [0, 100]   # start out with a dummy range, we'll resize later
-        self.y_range = [0, 1000]  # ditto
+        self.y_range = [0, 100]  # ditto
 
         self.t = range(self.x_range[0], self.x_range[1])
         self.q = deque([0] * len(self.t))
 
         self.series = QLineSeries()
-
+        self.repl_buffer = ""
         self.chart = QChart()
         self.chart.legend().hide()
         self.chart.addSeries(self.series)
@@ -761,13 +761,32 @@ class MicroPythonPlotterPane(QChartView):
 
     def read_from_repl(self, d):
         #print("<- ", d)
-        s = d.data().decode("utf-8")
-        print("<- ", s)
+        self.repl_buffer += d.data().decode("utf-8")
+        #print("<- ", bytearray(self.repl_buffer, 'utf-8'))
+        # eat everything up till the next newline + the newline
         try:
-            val = float(s)
+            i = self.repl_buffer.index('\n')
+            self.repl_buffer = self.repl_buffer[i:]
         except ValueError:
-            # wasn't a number, no plotting to do!
+            #print("no newline")
             return
+        try:
+            j = self.repl_buffer[1:].index('\n')
+        except ValueError:
+            #print("no second newline")
+            return
+
+        # ok if we got here, there's two newlines! parse data in between
+        self.repl_buffer = self.repl_buffer[1:]
+        toparse = self.repl_buffer[0:j]
+        #print("to parse: ", bytearray(toparse, 'utf-8'))
+        try:
+            val = float(toparse)
+            self.repl_buffer = self.repl_buffer[j:]
+        except ValueError:
+            #print("failed to parse")
+            return      # no double newlines? bad data? try again next time!
+
         self.add_data(0, val)
 
     def add_data(self, chartnum, value):
