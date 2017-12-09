@@ -78,8 +78,8 @@ platforms, run::
 
 If you are building for the Pi there are two steps::
 
-    $ apt-get install python3-pyqt5 python3-pyqt5.qsci and python3-pyqt5.qtserialport python3-dev
-    $ pip install -r requirements-pi.txt
+    $ apt-get install python3-pyqt5 python3-pyqt5.qsci and python3-pyqt5.qtserialport python3-pyqt5.qtsvg python3-dev
+    $ pip install -r requirements_pi.txt
 
 To run the local development version of "mu", in the root of this repository
 type::
