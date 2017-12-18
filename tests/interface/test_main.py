@@ -535,13 +535,41 @@ def test_Window_add_filesystem():
     mock_fs_class = mock.MagicMock(return_value=mock_fs)
     mock_dock = mock.MagicMock()
     mock_dock_class = mock.MagicMock(return_value=mock_dock)
+    mock_file_manager = mock.MagicMock()
     with mock.patch('mu.interface.main.FileSystemPane', mock_fs_class), \
             mock.patch('mu.interface.main.QDockWidget', mock_dock_class):
-        w.add_filesystem('path/to/home')
+        result = w.add_filesystem('path/to/home', mock_file_manager)
     mock_fs_class.assert_called_once_with('path/to/home')
+    assert result == mock_fs
     assert w.fs_pane == mock_fs
     w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
     mock_fs.setFocus.assert_called_once_with()
+    mock_file_manager.on_list_files.connect.\
+        assert_called_once_with(mock_fs.on_ls)
+    mock_fs.list_files.connect.assert_called_once_with(mock_file_manager.ls)
+    mock_fs.microbit_fs.put.connect.\
+        assert_called_once_with(mock_file_manager.put)
+    mock_fs.microbit_fs.delete.connect.\
+        assert_called_once_with(mock_file_manager.delete)
+    mock_fs.microbit_fs.list_files.connect.\
+        assert_called_once_with(mock_file_manager.ls)
+    mock_fs.local_fs.get.connect.assert_called_once_with(mock_file_manager.get)
+    mock_fs.local_fs.list_files.connect.\
+        assert_called_once_with(mock_file_manager.ls)
+    mock_file_manager.on_put_file.connect.\
+        assert_called_once_with(mock_fs.microbit_fs.on_put)
+    mock_file_manager.on_delete_file.connect.\
+        assert_called_once_with(mock_fs.microbit_fs.on_delete)
+    mock_file_manager.on_get_file.connect.\
+        assert_called_once_with(mock_fs.local_fs.on_get)
+    mock_file_manager.on_list_fail.connect.\
+        assert_called_once_with(mock_fs.on_ls_fail)
+    mock_file_manager.on_put_fail.connect.\
+        assert_called_once_with(mock_fs.on_put_fail)
+    mock_file_manager.on_delete_fail.connect.\
+        assert_called_once_with(mock_fs.on_delete_fail)
+    mock_file_manager.on_get_fail.connect.\
+        assert_called_once_with(mock_fs.on_get_fail)
     w.connect_zoom.assert_called_once_with(mock_fs)
 
 

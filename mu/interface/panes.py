@@ -23,14 +23,14 @@ import platform
 import logging
 import os.path
 import mu
-from PyQt5.QtCore import Qt, QIODevice, QProcess, QProcessEnvironment
+from PyQt5.QtCore import (Qt, QIODevice, QProcess, QProcessEnvironment,
+                          pyqtSignal)
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
                              QTreeView)
 from PyQt5.QtGui import QKeySequence, QTextCursor, QCursor
 from PyQt5.QtSerialPort import QSerialPort
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
-from mu.contrib import microfs
 from mu.interface.themes import Font
 from mu.interface.themes import (DEFAULT_FONT_SIZE, NIGHT_STYLE, DAY_STYLE,
                                  CONTRAST_STYLE)
@@ -307,24 +307,9 @@ class MuFileList(QListWidget):
     """
     Contains shared methods for the two types of file listing used in Mu.
     """
-
-    def disable(self, sibling):
-        """
-        Stops interaction with the list widgets.
-        """
-        self.setDisabled(True)
-        sibling.setDisabled(True)
-        self.setAcceptDrops(False)
-        sibling.setAcceptDrops(False)
-
-    def enable(self, sibling):
-        """
-        Allows interaction with the list widgets.
-        """
-        self.setDisabled(False)
-        sibling.setDisabled(False)
-        self.setAcceptDrops(True)
-        sibling.setAcceptDrops(True)
+    disable = pyqtSignal()
+    list_files = pyqtSignal()
+    set_message = pyqtSignal(str)
 
     def show_confirm_overwrite_dialog(self):
         """
@@ -345,6 +330,9 @@ class MicrobitFileList(MuFileList):
     Represents a list of files on the micro:bit.
     """
 
+    put = pyqtSignal(str)
+    delete = pyqtSignal(str)
+
     def __init__(self, home):
         super().__init__()
         self.home = home
@@ -352,44 +340,48 @@ class MicrobitFileList(MuFileList):
 
     def dropEvent(self, event):
         source = event.source()
-        self.disable(source)
         if isinstance(source, LocalFileList):
             file_exists = self.findItems(source.currentItem().text(),
                                          Qt.MatchExactly)
             if not file_exists or \
                     file_exists and self.show_confirm_overwrite_dialog():
+                self.disable.emit()
                 local_filename = os.path.join(self.home,
                                               source.currentItem().text())
-                logger.info("Putting {}".format(local_filename))
-                try:
-                    with microfs.get_serial() as serial:
-                        logger.info(serial.port)
-                        microfs.put(local_filename, serial)
-                    super().dropEvent(event)
-                except Exception as ex:
-                    logger.error(ex)
-        self.enable(source)
-        if self.parent() is not None:
-            self.parent().ls()
+                msg = _("Copying '{}' to micro:bit.").format(local_filename)
+                logger.info(msg)
+                self.set_message.emit(msg)
+                self.put.emit(local_filename)
+
+    def on_put(self, microbit_file):
+        """
+        Fired when the put event is completed for the given filename.
+        """
+        msg = _("'{}' successfully copied to micro:bit.").format(microbit_file)
+        self.set_message.emit(msg)
+        self.list_files.emit()
 
     def contextMenuEvent(self, event):
         menu = QMenu(self)
         delete_action = menu.addAction(_("Delete (cannot be undone)"))
         action = menu.exec_(self.mapToGlobal(event.pos()))
         if action == delete_action:
-            self.setDisabled(True)
-            self.setAcceptDrops(False)
+            self.disable.emit()
             microbit_filename = self.currentItem().text()
             logger.info("Deleting {}".format(microbit_filename))
-            try:
-                with microfs.get_serial() as serial:
-                    logger.info(serial.port)
-                    microfs.rm(microbit_filename, serial)
-                self.takeItem(self.currentRow())
-            except Exception as ex:
-                logger.error(ex)
-            self.setDisabled(False)
-            self.setAcceptDrops(True)
+            msg = _("Deleting '{}' from micro:bit.").format(microbit_filename)
+            logger.info(msg)
+            self.set_message.emit(msg)
+            self.delete.emit(microbit_filename)
+
+    def on_delete(self, microbit_file):
+        """
+        Fired when the delete event is completed for the given filename.
+        """
+        msg = _("'{}' successfully deleted from micro:bit.").\
+            format(microbit_file)
+        self.set_message.emit(msg)
+        self.list_files.emit()
 
 
 class LocalFileList(MuFileList):
@@ -397,6 +389,8 @@ class LocalFileList(MuFileList):
     Represents a list of files in the Mu directory on the local machine.
     """
 
+    get = pyqtSignal(str, str)
+
     def __init__(self, home):
         super().__init__()
         self.home = home
@@ -404,27 +398,30 @@ class LocalFileList(MuFileList):
 
     def dropEvent(self, event):
         source = event.source()
-        self.disable(source)
         if isinstance(source, MicrobitFileList):
             file_exists = self.findItems(source.currentItem().text(),
                                          Qt.MatchExactly)
             if not file_exists or \
                     file_exists and self.show_confirm_overwrite_dialog():
+                self.disable.emit()
                 microbit_filename = source.currentItem().text()
                 local_filename = os.path.join(self.home,
                                               microbit_filename)
-                logger.debug("Getting {} to {}".format(microbit_filename,
-                                                       local_filename))
-                try:
-                    with microfs.get_serial() as serial:
-                        logger.info(serial.port)
-                        microfs.get(microbit_filename, local_filename, serial)
-                    super().dropEvent(event)
-                except Exception as ex:
-                    logger.error(ex)
-        self.enable(source)
-        if self.parent() is not None:
-            self.parent().ls()
+                msg = _("Getting '{}' from micro:bit. "
+                        "Copying to '{}'.").format(microbit_filename,
+                                                   local_filename)
+                logger.info(msg)
+                self.set_message.emit(msg)
+                self.get.emit(microbit_filename, local_filename)
+
+    def on_get(self, microbit_file):
+        """
+        Fired when the get event is completed for the given filename.
+        """
+        msg = _("Successfully copied '{}' "
+                "from the micro:bit to your computer.").format(microbit_file)
+        self.set_message.emit(msg)
+        self.list_files.emit()
 
 
 class FileSystemPane(QFrame):
@@ -433,6 +430,10 @@ class FileSystemPane(QFrame):
     directory. Users transfer files by dragging and dropping. Highlighted files
     can be selected for deletion.
     """
+
+    set_message = pyqtSignal(str)
+    set_warning = pyqtSignal(str)
+    list_files = pyqtSignal()
 
     def __init__(self, home):
         super().__init__()
@@ -455,17 +456,51 @@ class FileSystemPane(QFrame):
         layout.addWidget(local_label, 0, 1)
         layout.addWidget(microbit_fs, 1, 0)
         layout.addWidget(local_fs, 1, 1)
-        self.ls()
+        self.microbit_fs.disable.connect(self.disable)
+        self.microbit_fs.set_message.connect(self.show_message)
+        self.local_fs.disable.connect(self.disable)
+        self.local_fs.set_message.connect(self.show_message)
 
-    def ls(self):
+    def disable(self):
         """
-        Gets a list of the files on the micro:bit.
+        Stops interaction with the list widgets.
+        """
+        self.microbit_fs.setDisabled(True)
+        self.local_fs.setDisabled(True)
+        self.microbit_fs.setAcceptDrops(False)
+        self.local_fs.setAcceptDrops(False)
 
-        Naive implementation for simplicity's sake.
+    def enable(self):
+        """
+        Allows interaction with the list widgets.
+        """
+        self.microbit_fs.setDisabled(False)
+        self.local_fs.setDisabled(False)
+        self.microbit_fs.setAcceptDrops(True)
+        self.local_fs.setAcceptDrops(True)
+
+    def show_message(self, message):
+        """
+        Emits the set_message signal.
+        """
+        self.set_message.emit(message)
+
+    def show_warning(self, message):
+        """
+        Emits the set_warning signal.
+        """
+        self.set_warning.emit(message)
+
+    def on_ls(self, microbit_files):
+        """
+        Displays a list of the files on the micro:bit.
+
+        Since listing files is always the final event in any interaction
+        between Mu and the micro:bit, this enables the controls again for
+        further interactions to take place.
         """
         self.microbit_fs.clear()
         self.local_fs.clear()
-        microbit_files = microfs.ls(microfs.get_serial())
         for f in microbit_files:
             self.microbit_fs.addItem(f)
         local_files = [f for f in os.listdir(self.home)
@@ -473,6 +508,42 @@ class FileSystemPane(QFrame):
         local_files.sort()
         for f in local_files:
             self.local_fs.addItem(f)
+        self.enable()
+
+    def on_ls_fail(self):
+        """
+        Fired when listing files fails.
+        """
+        self.show_warning(_("There was a problem getting the list of files on "
+                            "the micro:bit. Please check Mu's logs for "
+                            "technical information. Alternatively, try "
+                            "unplugging/plugging-in your micro:bit and/or "
+                            "restarting Mu."))
+        self.disable()
+
+    def on_put_fail(self, microbit_filename):
+        """
+        Fired when the referenced file cannot be copied onto the micro:bit.
+        """
+        self.show_warning(_("There was a problem copying the file '{}' onto "
+                            "the micro:bit. Please check Mu's logs for "
+                            "technical information."))
+
+    def on_delete_fail(self, microbit_filename):
+        """
+        Fired when a deletion on the micro:bit for the given file failed.
+        """
+        self.show_warning(_("There was a problem deleting '{}' from the "
+                            "micro:bit. Please check Mu's logs for "
+                            "technical information."))
+
+    def on_get_fail(self, microbit_filename):
+        """
+        Fired when getting the referenced file on the micro:bit failed.
+        """
+        self.show_warning(_("There was a problem getting '{}' from the "
+                            "micro:bit. Please check Mu's logs for "
+                            "technical information."))
 
     def set_theme(self, theme):
         """

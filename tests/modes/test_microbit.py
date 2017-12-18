@@ -260,11 +260,14 @@ def test_add_fs_no_repl():
     view = mock.MagicMock()
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
-    with mock.patch('mu.modes.microbit.microfs.get_serial', return_value=True):
+    with mock.patch('mu.modes.microbit.FileManager') as mock_fm,\
+            mock.patch('mu.modes.microbit.QThread'),\
+            mock.patch('mu.modes.microbit.microfs.get_serial',
+                       return_value=True):
         mm.add_fs()
-    workspace = mm.workspace_dir()
-    view.add_filesystem.assert_called_once_with(home=workspace)
-    assert mm.fs
+        workspace = mm.workspace_dir()
+        view.add_filesystem.assert_called_once_with(workspace, mock_fm())
+        assert mm.fs
 
 
 def test_add_fs_with_repl():

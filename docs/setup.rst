@@ -36,7 +36,7 @@ with development. Typing ``make`` on its own will list the options thus::
 
   make clean - reset the project and remove auto-generated assets.
   make pyflakes - run the PyFlakes code checker.
-  make pep8 - run the PEP8 style checker.
+  make pycodestyle - run the PEP8 style checker.
   make test - run the test suite.
   make coverage - view a report on test coverage.
   make check - run all the checkers and tests.

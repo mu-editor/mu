@@ -19,14 +19,104 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import json
 import os
+import os.path
 import logging
 from mu.logic import get_settings_path, HOME_DIRECTORY
 from mu.contrib import uflash, microfs
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from mu.modes.base import MicroPythonMode
+from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
 
 logger = logging.getLogger(__name__)
+
+
+class FileManager(QObject):
+    """
+    Used to manage micro:bit filesystem operations in a manner such that the
+    UI remains responsive.
+
+    Provides an FTP-ish API. Emits signals on success or failure of different
+    operations.
+    """
+
+    # Emitted when the tuple of files on the micro:bit is known.
+    on_list_files = pyqtSignal(tuple)
+    # Emitted when the file with referenced filename is got from the micro:bit.
+    on_get_file = pyqtSignal(str)
+    # Emitted when the file with referenced filename is put onto the micro:bit.
+    on_put_file = pyqtSignal(str)
+    # Emitted when the file with referenced filename is deleted from the
+    # micro:bit.
+    on_delete_file = pyqtSignal(str)
+    # Emitted when Mu is unable to list the files on the micro:bit.
+    on_list_fail = pyqtSignal()
+    # Emitted when the referenced file fails to be got from the micro:bit.
+    on_get_fail = pyqtSignal(str)
+    # Emitted when the referenced file fails to be put onto the micro:bit.
+    on_put_fail = pyqtSignal(str)
+    # Emitted when the referenced file fails to be deleted from the micro:bit.
+    on_delete_fail = pyqtSignal(str)
+
+    def on_start(self):
+        """
+        Run when the thread containing this object's instance is started so
+        it can emit the list of files found on the connected micro:bit.
+        """
+        self.ls()
+
+    def ls(self):
+        """
+        List the files on the micro:bit. Emit the resulting tuple of filenames
+        or emit a failure signal.
+        """
+        try:
+            result = tuple(microfs.ls(microfs.get_serial()))
+            self.on_list_files.emit(result)
+        except Exception as ex:
+            logger.exception(ex)
+            self.on_list_fail.emit()
+
+    def get(self, microbit_filename, local_filename):
+        """
+        Get the referenced micro:bit filename and save it to the local
+        filename. Emit the name of the local filename when complete or emit a
+        failure signal.
+        """
+        try:
+            with microfs.get_serial() as serial:
+                microfs.get(microbit_filename, local_filename, serial)
+            self.on_get_file.emit(microbit_filename)
+        except Exception as ex:
+            logger.error(ex)
+            self.on_get_fail(microbit_filename)
+
+    def put(self, local_filename):
+        """
+        Put the referenced local file onto the filesystem on the micro:bit.
+        Emit the name of the file on the micro:bit when complete, or emit
+        a failure signal.
+        """
+        try:
+            with microfs.get_serial() as serial:
+                microfs.put(local_filename, serial)
+            self.on_put_file.emit(os.path.basename(local_filename))
+        except Exception as ex:
+            logger.error(ex)
+            self.on_put_fail(local_filename)
+
+    def delete(self, microbit_filename):
+        """
+        Delete the referenced file on the micro:bit's filesystem. Emit the name
+        of the file when complete, or emit a failure signal.
+        """
+        try:
+            with microfs.get_serial() as serial:
+                microfs.rm(microbit_filename, serial)
+            self.on_delete_file.emit(microbit_filename)
+        except Exception as ex:
+            logger.error(ex)
+            self.on_delete_fail(microbit_filename)
 
 
 class MicrobitMode(MicroPythonMode):
@@ -182,22 +272,32 @@ class MicrobitMode(MicroPythonMode):
         """
         If the REPL is not active, add the file system navigator to the UI.
         """
-        if self.repl is None:
-            if self.fs is None:
-                try:
-                    microfs.get_serial()
-                    self.view.add_filesystem(home=self.workspace_dir())
-                    self.fs = True
-                except IOError:
-                    message = _('Could not find an attached BBC micro:bit.')
-                    information = _("Please make sure the device is plugged "
-                                    "into this computer.\n\nThe device must "
-                                    "have MicroPython flashed onto it before "
-                                    "the file system will work.\n\n"
-                                    "Finally, press the device's reset button "
-                                    "and wait a few seconds before trying "
-                                    "again.")
-                    self.view.show_message(message, information)
+        if self.repl is None and self.fs is None:
+            # Check for micro:bit
+            try:
+                microfs.get_serial()
+            except IOError:
+                # abort
+                message = _('Could not find an attached BBC micro:bit.')
+                information = _("Please make sure the device is plugged "
+                                "into this computer.\n\nThe device must "
+                                "have MicroPython flashed onto it before "
+                                "the file system will work.\n\n"
+                                "Finally, press the device's reset button "
+                                "and wait a few seconds before trying "
+                                "again.")
+                self.view.show_message(message, information)
+                return
+            self.file_manager_thread = QThread(self)
+            self.file_manager = FileManager()
+            self.file_manager.moveToThread(self.file_manager_thread)
+            self.file_manager_thread.started.\
+                connect(self.file_manager.on_start)
+            self.fs = self.view.add_filesystem(self.workspace_dir(),
+                                               self.file_manager)
+            self.fs.set_message.connect(self.editor.show_status_message)
+            self.fs.set_warning.connect(self.view.show_message)
+            self.file_manager_thread.start()
 
     def remove_fs(self):
         """
@@ -207,6 +307,8 @@ class MicrobitMode(MicroPythonMode):
         if self.fs is None:
             raise RuntimeError("File system not running")
         self.view.remove_filesystem()
+        self.file_manager = None
+        self.file_manager_thread = None
         self.fs = None
 
     def get_hex_path(self):
