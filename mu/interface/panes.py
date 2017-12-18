@@ -152,7 +152,7 @@ class MicroPythonREPLPane(QTextEdit):
             self.serial.write(bytes(clipboard.text(), 'utf8'))
 
     def context_menu(self):
-        """"
+        """
         Creates custom context menu with just copy and paste.
         """
         menu = QMenu(self)

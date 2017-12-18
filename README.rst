@@ -1,12 +1,65 @@
-Mu - an editor for beginner programmers
-=======================================
+Mu - a "micro" editor
+=====================
+
+**This project works with Python 3 and the Qt UI library.**
+
+Currently, the latest builds for Windows, OSX and Linux x86 can be found here:
+
+http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/?prefix=microbit
+
+For our project roadmap see the ``ROADMAP.rst`` file.
+
+Installation
+------------
+
+You could run Mu from source. Alternatively, go to the link above, choose the
+directory for your platform and download the latest build of the editor (HINT:
+they're ordered by date).
+
+Windows
++++++++
+
+You only need to copy the downloaded .exe file somewhere handy and double-click
+it to launch. Once you've got past all the Windows induced warnings and
+privilege requests you'll see the editor. Unfortunately, due to Windows more
+than anything else, to be able to use the REPL you'll need to install a driver
+for USB/serial connectivity to the BBC micro:bit. You can find the required
+driver and detailed instructions for installing it on ARM's website:
+
+https://developer.mbed.org/handbook/Windows-serial-configuration
+
+We're trying to find a way around this problem via Windows packaging.
+
+OS X
+++++
+
+OSX will probably ask you to confirm you want to run a program downloaded from
+the internet. You may need to right-click on the file and select `open` to make
+it work first time. You do not need to install any drivers.
+
+Linux
++++++
+
+Just make the file executable and run it! :-)
+
+We're in the process of creating official packages for both Debian and Fedora
+based flavours of Linux.
+
+Raspberry Pi (Raspbian)
++++++++++++++++++++++++
+
+A package is available for Raspbian for mu can be installed using the following commands.
+
+Open a Terminal (Menu > Accessories > Terminal):
+
+    sudo apt-get update
+
+    sudo apt-get install mu
 
 What?
 -----
 
-Mu is a simple code editor for beginner programmers based on the feedback given
-to and experiences of the Raspberry Pi Foundation's education team.
-
+Mu is a very simple code editor for kids, teachers and beginner programmers.
 It's written in Python and works on Windows, OSX, Linux and Raspberry Pi.
 
 Why?
@@ -15,10 +68,10 @@ Why?
 There isn't a cross platform Python code editor that is:
 
 * Easy to use;
+* Accessible to everyone;
 * Available on all major platforms;
 * Well documented (even for beginners);
 * Simply coded;
-* Easily translated;
 * Currently maintained; and,
 * Thoroughly tested.
 
@@ -27,33 +80,65 @@ Mu addresses these needs.
 In the Python world, teachers, students and other beginner programmers are
 forced to use one of the following options:
 
-* IDLE - the educationally problematic editor that comes bundled with Python.
-* A third party IDE (integrated development environment) for teaching. If "IDE" sounds complicated for beginner programmers, that's because it is.
-* An intimidating professional programmer's editor such as vi or emacs.
+* IDLE - the long-in-the-tooth, unmaintained and eccentric editor that comes with Python.
+* A third party IDE (integrated development environment) for teaching. If "IDE" sounds complicated, that's because it is.
+* A professional programmer's editor such as vi or emacs.
 
 Such tools are fiddly, complicated and full of distracting "features". They
-are usually inappropriate for teaching and learning ~ complexity impedes a
+are completely inappropriate for teaching and learning ~ complexity impedes a
 novice programmer's first steps.
 
 How?
 ----
 
-Mu's philosophy is:
+Mu's outlook is:
 
 * Less is more (remove all unnecessary distractions);
 * Keep it simple (so Mu is easy to understand);
-* Walk the path of least resistance (Mu should be easy to use);
+* Walk the path of least resistance (Mu should be easy);
 * Have fun (learning should be a positive experience).
 
-Mu is modal. It works as a general purpose Python 3 editor, as a MicroPython
-editor for the BBC's micro:bit device, or as a CircuitPython editor for
-Adafruit boards.
+Our first iteration targets MicroPython on the BBC micro:bit.
 
-Mu's code is simple - it's commented and mostly found in a few obviously named
-Python files. This has been done on purpose: we want teachers and kids to take
-ownership of this project and organising the code in this way aids the first
-steps required to get involved (everything you need to know is in obviously
-named files).
+The BBC's micro:bit project is aimed at 11-year old children. It consists of a
+small and simple programmable device. One option is the remarkable work of
+Damien George in the form of MicroPython, a full re-implementation of Python 3
+for microcontrollers including the BBC micro:bit.
+
+The BBC's "blessed" solution for programming this device is web-based. However,
+we have observed that this doesn't provide the optimum experience for Python:
+
+* It requires you to use a web-browser as a text based code editor.
+* You need to download the .hex file to flash onto the device and then drag it to the device's mount point on the filesystem. A rather clunky multi-part process.
+* It doesn't allow you to connect to the device in order to live code in Python via the REPL.
+
+The Mu editor addresses each of these problems: it is a native application
+specifically designed as a text based coding environment. It makes it easy to
+flash your code onto the device (it's only a click of a button). It has a built
+in REPL client that automatically connects to the device.
+
+Mu has been adapted from my previous work done with Damien George and Dan Pope
+on the "Puppy" editor for kids. Mu is an ultra-slimmed down version of Puppy.
+
+The code is simple and monolithic - it's commented and mostly found in a
+a few obviously named Python files. This has been done on purpose: we want
+teachers and kids to take ownership of this project and organising the code in
+this way aids the first steps required to get involved (everything you need to
+know is in four obvious files).
+
+In terms of features - it's a case of less is more:
+
+* Create a new Python script.
+* Load an existing Python script.
+* Save the existing Python script.
+* Flash the device with the current script.
+* Connect to the device via the REPL (will only work if a device is connected).
+* Zoom in/out.
+* Day / night (high contrast) modes.
+* Built in help (HTML).
+* Quit.
+
+That's it!
 
 Development
 -----------
@@ -67,24 +152,88 @@ repository with the following command::
 
     $ git clone https://github.com/mu-editor/mu.git
 
-Ensure you have the correct dependencies for development installed.
+The instructions below assume that you're working within a Python
+virtual environment (aka "venv"). Versions of Python
 
-First, create a virtualenv.
+For this to work you'll need to have Qt5 and at least Python 3.4 installed.
 
-Dependency installation for the Raspberry Pi is described below, for all other
-platforms, run::
+* On Debian based systems this is covered by installing: python3-pyqt5,
+  python3-pyqt5.qsci and python3-pyqt5.qtserialport.
+
+* On Mac OS, first install PyQT5::
+
+    brew install pyqt5 --with-python3
+
+  Then install QScintilla using the recipe from the mu repository::
+
+    brew install https://raw.githubusercontent.com/mu-editor/mu/master/package/extras/qscintilla2.rb
+
+* On Windows::
+
+    Unless you want to build PyQt5 and its dependencies from scratch (a
+    non-trivial task) you'll almost certainly want to use the binaries
+    provided by Riverbank who provide the Python bindings for Qt. However,
+    they've recently switched from providing binary installers to providing
+    binary wheels. But they only provide wheels for the most recent versions
+    of Python. In addition, the MSI installer version interacts awkwardly
+    with virtual environments so you need to install PyQt5 globally and then
+    create the virtual environment with --system-site-packages.
+
+    ============== ============ =========
+    Python Version PyQt Version Installer
+    -------------- ------------ ---------
+    3.4            5.6          .msi
+    -------------- ------------ ---------
+    3.5            5.6          .whl
+    -------------- ------------ ---------
+    3.5            5.7          .whl
+    -------------- ------------ ---------
+    3.5            5.8          .whl
+    -------------- ------------ ---------
+    3.6            5.8          .whl
+    ============== ============ =========
+
+    If you can, use Python 3.5 or greater and install from within the
+    virtualenv using the wheels.
+
+
+.. note:: From this point onwards, the instructions assume that you're
+   using a virtual environment.
+
+   If you have an existing virtual environment it will not have
+   changed to add the new packages. The simplest thing to do is to create a
+   new virtual environment, remembering to use the
+   ``--system-site-packages`` switch so that installed libraries are
+   included. For instance::
+
+    $ virtualenv -p /usr/local/bin/python3 --system-site-packages ~/env/py3
+
+ or::
+
+    $ mkvirtualenv -p /usr/local/bin/python3 --system-site-packages py3
+
+or::
+
+    c:\dev\mu> py -3.5 -mvenv .venv35
+
+Ensure you have the correct dependencies for development installed by creating
+a virtualenv and running::
 
     $ pip install -r requirements.txt
 
-If you are building for the Pi there are two steps::
+If your setup hasn't yet included installing PyQt5 (eg because you're using
+Python 3.5+ on Windows for which wheels are available from PyPI)::
 
-    $ apt-get install python3-pyqt5 python3-pyqt5.qsci and python3-pyqt5.qtserialport python3-dev
-    $ pip install -r requirements-pi.txt
+    (.venv35) c:\dev\mu> pip install PyQt5 QScintilla
 
 To run the local development version of "mu", in the root of this repository
 type::
 
     $ python3 run.py
+
+or::
+
+    (.venv35) c:\dev\mu> python run.py
 
 There is a Makefile that helps with most of the common workflows associated
 with development. Typing "make" on its own will list the options thus::
@@ -99,14 +248,6 @@ with development. Typing "make" on its own will list the options thus::
     make test - run the test suite.
     make coverage - view a report on test coverage.
     make check - run all the checkers and tests.
-    make dist - make a dist/wheel for the project.
-    make publish-test - publish the project to PyPI test instance.
-    make publish-live - publish the project to PyPI production.
     make docs - run sphinx to create project documentation.
-    make translate - create a messages.pot file for translations.
-    make translateall - as with translate but for all API strings.
 
-
-Before contributing code please make sure you've read CONTRIBUTING.rst. We
-expect everyone participating in the development of Mu to act in accordance
-with the PSF's code of conduct found in the CODE_OF_CONDUCT.rst file.
+Before contributing code please make sure you've read CONTRIBUTING.rst.
