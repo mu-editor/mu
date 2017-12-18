@@ -2,10 +2,8 @@
 import os
 import sys
 import fnmatch
-import inspect
 import shutil
 import subprocess
-import textwrap
 
 PYTEST = "pytest"
 PYFLAKES = "pyflakes"
@@ -133,7 +131,7 @@ def pyflakes(*pyflakes_args):
     Call pyflakes on all .py files outside the docs and contrib directories
     """
     print("\npyflakes")
-    return _check_code(PYFLAKES, *args)
+    return _check_code(PYFLAKES, *pyflakes_args)
 
 
 @export
@@ -141,7 +139,7 @@ def pycodestyle(*pycodestyle_args):
     """Run the PEP8 style checker
     """
     print("\nPEP8")
-    args = ("--ignore=E731,E402",) + args
+    args = ("--ignore=E731,E402",) + pycodestyle_args
     return _check_code(PYCODESTYLE, *args)
 
 
@@ -149,7 +147,7 @@ def pycodestyle(*pycodestyle_args):
 def pep8(*pep8_args):
     """Run the PEP8 style checker
     """
-    return pycodestyle(*args)
+    return pycodestyle(*pep8_args)
 
 
 @export
@@ -183,7 +181,6 @@ def help():
     print(module_doc + "\n" + "=" * len(module_doc) + "\n")
 
     for command, function in sorted(_exported.items()):
-        signature = inspect.signature(function)
         doc = function.__doc__
         if doc:
             first_line = doc.splitlines()[0]
