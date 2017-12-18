@@ -1,13 +1,15 @@
 Source: mu
-Maintainer: Nicholas Tollervey <ntoll@ntoll.org>
 Section: python
 Priority: optional
-Build-Depends: python3-setuptools, python3, debhelper (>= 9)
-Standards-Version: 3.9.1
+Maintainer: Serge Schneider <serge@raspberrypi.org>
+Build-Depends: debhelper (>= 9), dh-python, python3-all, python3-setuptools
+Standards-Version: 3.9.8
+Homepage: https://codewith.mu/
+X-Python3-Version: >= 3.2
 
 Package: mu
 Architecture: all
-Depends: ${misc:Depends}, ${python3:Depends}, python3-setuptools, python3-pyqt5,
-         python3-pyqt5.qsci, python3-pyqt5.qtserialport, python3-serial,
-         python3-pep8, pyflakes
-Description: A simple editor for kids, teachers and new programmers.
+Depends: ${python3:Depends}, ${misc:Depends}, python3-pyqt5.qtserialport
+Description: A simple editor for beginner programmers
+ A very simple code editor for kids, teachers and beginner programmers.
+ It's written in Python and works on Windows, OSX, Linux and Raspberry Pi.

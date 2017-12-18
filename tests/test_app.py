@@ -2,27 +2,26 @@
 """
 Tests for the app script.
 """
-import logging
 import sys
+import os.path
 from unittest import mock
-from mu.app import excepthook, run, setup_logging
-from mu.logic import LOG_FILE, LOG_DIR
+from mu.app import excepthook, run, setup_logging, debug
+from mu.logic import LOG_FILE, LOG_DIR, DEBUGGER_PORT
 
 
 def test_setup_logging():
     """
     Ensure that logging is set up in some way.
     """
-    with mock.patch('mu.app.logging.basicConfig',
-                    return_value=None) as log_conf, \
+    with mock.patch('mu.app.TimedRotatingFileHandler') as log_conf, \
             mock.patch('mu.app.os.path.exists', return_value=False),\
+            mock.patch('mu.app.logging') as logging, \
             mock.patch('mu.app.os.makedirs', return_value=None) as mkdir:
         setup_logging()
         mkdir.assert_called_once_with(LOG_DIR)
-        fmt = '%(asctime)s - %(name)s(%(funcName)s) %(levelname)s: %(message)s'
-        log_conf.assert_called_once_with(filename=LOG_FILE, filemode='w',
-                                         format=fmt,
-                                         level=logging.DEBUG)
+        log_conf.assert_called_once_with(LOG_FILE, when='midnight',
+                                         backupCount=5, delay=0)
+        logging.getLogger.assert_called_once_with()
         assert sys.excepthook == excepthook
 
 
@@ -44,6 +43,7 @@ def test_run():
             mock.patch('mu.app.Editor') as ed, \
             mock.patch('mu.app.load_pixmap'), \
             mock.patch('mu.app.Window') as win, \
+            mock.patch('mu.app.QTimer') as timer, \
             mock.patch('sys.exit') as ex:
         run()
         assert set_log.call_count == 1
@@ -52,11 +52,13 @@ def test_run():
         # foo.mock_calls are method calls on the object
         assert len(qa.mock_calls) == 2
         assert qsp.call_count == 1
-        assert len(qsp.mock_calls) == 3
+        assert len(qsp.mock_calls) == 2
+        assert timer.call_count == 1
+        assert len(timer.mock_calls) == 4
         assert ed.call_count == 1
-        assert len(ed.mock_calls) == 2
+        assert len(ed.mock_calls) == 3
         assert win.call_count == 1
-        assert len(win.mock_calls) == 14
+        assert len(win.mock_calls) == 5
         assert ex.call_count == 1
 
 
@@ -72,3 +74,20 @@ def test_excepthook():
         sys.excepthook(*exc_args)
         error.assert_called_once_with('Unrecoverable error', exc_info=exc_args)
         exit.assert_called_once_with(1)
+
+
+def test_debug():
+    """
+    Ensure the debugger is run with the expected arguments given the filename
+    and other arguments passed in via sys.argv.
+    """
+    mock_sys = mock.MagicMock()
+    mock_sys.argv = [None, 'foo.py', 'foo', 'bar', 'baz']
+    mock_runner = mock.MagicMock()
+    with mock.patch('mu.app.sys', mock_sys), \
+            mock.patch('mu.app.run_debugger', mock_runner):
+        debug()
+    expected_filename = os.path.normcase(os.path.abspath('foo.py'))
+    mock_runner.assert_called_once_with('localhost', DEBUGGER_PORT,
+                                        expected_filename,
+                                        ['foo', 'bar', 'baz', ])

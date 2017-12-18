@@ -5,4 +5,12 @@ coverage
 sphinx
 pytest-cov
 pyserial
-setuptools==19.2
+pyqt5
+qscintilla
+qtconsole
+matplotlib
+setuptools
+scrapy
+beautifulsoup4
+wheel
+twine

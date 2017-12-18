@@ -1,5 +1,5 @@
 """
-Copyright (c) 2015-2016 Nicholas H.Tollervey and others (see the AUTHORS file).
+Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
 
 Based upon work done for Puppy IDE by Dan Pope, Nicholas Tollervey and Damien
 George.
@@ -27,78 +27,121 @@ import logging
 import tempfile
 import platform
 import webbrowser
+import random
+import locale
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtSerialPort import QSerialPortInfo
 from pyflakes.api import check
 # Currently there is no pycodestyle deb packages, so fallback to old name
 try:  # pragma: no cover
     from pycodestyle import StyleGuide, Checker
 except ImportError:  # pragma: no cover
     from pep8 import StyleGuide, Checker
-from mu.contrib import uflash, appdirs, microfs
-from mu.contrib.atomicfile import open_atomic
+from mu.contrib import appdirs, uflash
 from mu import __version__
 
 
-#: List of supported board USB IDs.  Each board is a tuple of unique USB vendor
-# ID, USB product ID.
-BOARD_IDS = set([
-    (0x0D28, 0x0204),  # micro:bit USB VID, PID
-    (0x239A, 0x800B),  # Adafruit Feather M0 CDC only USB VID, PID
-    (0x239A, 0x8016),  # Adafruit Feather M0 CDC + MSC USB VID, PID
-    (0x239A, 0x8014),  # metro m0 PID
-    (0x239A, 0x8019),  # circuitplayground m0 PID
-    (0x239A, 0x801B),  # feather m0 express PID
-])
-#: The user's home directory.
+# The user's home directory.
 HOME_DIRECTORY = os.path.expanduser('~')
 # Name of the directory within the home folder to use by default
 WORKSPACE_NAME = 'mu_code'
-#: The default directory for application data (i.e., configuration).
+# The default directory for application data (i.e., configuration).
 DATA_DIR = appdirs.user_data_dir(appname='mu', appauthor='python')
-#: The default directory for application logs.
+# The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir(appname='mu', appauthor='python')
-#: The path to the log file for the application.
+# The path to the log file for the application.
 LOG_FILE = os.path.join(LOG_DIR, 'mu.log')
-#: Regex to match pycodestyle (PEP8) output.
+# Regex to match pycodestyle (PEP8) output.
 STYLE_REGEX = re.compile(r'.*:(\d+):(\d+):\s+(.*)')
-#: Regex to match flake8 output.
+# Regex to match flake8 output.
 FLAKE_REGEX = re.compile(r'.*:(\d+):\s+(.*)')
-#: Regex to match false positive flake errors if microbit.* is expanded.
+# Regex to match false positive flake errors if microbit.* is expanded.
 EXPAND_FALSE_POSITIVE = re.compile(r"^'microbit\.(\w+)' imported but unused$")
-#: The text to which "from microbit import *" should be expanded.
+# The text to which "from microbit import \*" should be expanded.
 EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
                    " pin3, pin6, pin4, i2c, pin5, pin7, pin8, Image, "
                    "pin9, pin14, pin16, reset, pin19, temperature, "
                    "sleep, pin20, button_a, button_b, running_time, "
                    "accelerometer, display, uart, spi, panic, pin13, "
                    "pin12, pin11, pin10, compass")
+# Port number for debugger.
+DEBUGGER_PORT = 31415
+MOTD = [  # Candidate phrases for the message of the day (MOTD).
+    _('Hello, World!'),
+    _("This editor is free software written in Python. You can modify it, "
+      "add features or fix bugs if you like."),
+    _("This editor is called Mu (you say it 'mew' or 'moo')."),
+    _("Google, Facebook, NASA, Pixar, Disney and many more use Python."),
+    _("Programming is a form of magic. Learn to cast the right spells with "
+      "code and you'll be a wizard."),
+    _("REPL stands for read, evaluate, print, loop. It's a fun way to talk to "
+      "your computer! :-)"),
+    _('Be brave, break things, learn and have fun!'),
+    _("Make your software both useful AND fun. Empower your users."),
+    _('For the Zen of Python: import this'),
+    _('Diversity promotes creativity.'),
+    _("An open mind, spirit of adventure and respect for diversity are key."),
+    _("Don't worry if it doesn't work. Learn the lesson, fix it and try "
+      "again! :-)"),
+    _("Coding is collaboration."),
+    _("Compliment and amplify the good things with code."),
+    _("In theory, theory and practice are the same. In practice, they're "
+      "not. ;-)"),
+    _("Debugging is twice as hard as writing the code in the first place."),
+    _("It's fun to program."),
+    _("Programming has more to do with problem solving than writing code."),
+    _("Start with your users' needs."),
+    _("Try to see things from your users' point of view."),
+    _("Put yourself in your users' shoes."),
+    _("Explaining a programming problem to a friend often reveals the "
+      "solution. :-)"),
+    _("If you don't know, ask. Nobody to ask? Just look it up."),
+    _("Complexity is the enemy. KISS - keep it simple, stupid!"),
+    _("Beautiful is better than ugly."),
+    _("Explicit is better than implicit."),
+    _("Simple is better than complex. Complex is better than complicated."),
+    _("Flat is better than nested."),
+    _("Sparse is better than dense."),
+    _("Readability counts."),
+    _("Special cases aren't special enough to break the rules. "
+      "Although practicality beats purity."),
+    _("Errors should never pass silently. Unless explicitly silenced."),
+    _("In the face of ambiguity, refuse the temptation to guess."),
+    _("There should be one-- and preferably only one --obvious way to do it."),
+    _("Now is better than never. Although never is often better than "
+      "*right* now."),
+    _("If the implementation is hard to explain, it's a bad idea."),
+    _("If the implementation is easy to explain, it may be a good idea."),
+    _("Namespaces are one honking great idea -- let's do more of those!"),
+    _("Mu was created by Nicholas H.Tollervey."),
+    _("To understand what recursion is, you must first understand recursion."),
+    _("Algorithm: a word used by programmers when they don't want to explain "
+      "what they did."),
+    _("Programmers count from zero."),
+    _("Simplicity is the ultimate sophistication."),
+    _("A good programmer is humble."),
+    _("A good programmer is playful."),
+    _("A good programmer learns to learn."),
+    _("A good programmer thinks beyond the obvious."),
+    _("A good programmer promotes simplicity."),
+    _("A good programmer avoids complexity."),
+    _("A good programmer is patient."),
+    _("A good programmer asks questions."),
+    _("A good programmer is willing to say, 'I don't know'."),
+    _("Wisest are they that know they know nothing."),
+]
 
 
 logger = logging.getLogger(__name__)
 
 
-def find_microbit():
+def write_and_flush(fd, content):
     """
-    Returns the port for the first microbit it finds connected to the host
-    computer. If no microbit is found, returns None.
+    Writes content to the fd, then flushes and fsyncs to ensure the data is, in
+    fact, written.
     """
-    available_ports = QSerialPortInfo.availablePorts()
-    for port in available_ports:
-        pid = port.productIdentifier()
-        vid = port.vendorIdentifier()
-        # Look for the port VID & PID in the list of known board IDs.
-        if (vid, pid) in BOARD_IDS:
-            port_name = port.portName()
-            logger.info('Found micro:bit with portName: {}'.format(port_name))
-            return port_name
-    logger.warning('Could not find micro:bit.')
-    logger.debug('Available ports:')
-    logger.debug(['PID:{} VID:{} PORT:{}'.format(p.productIdentifier(),
-                                                 p.vendorIdentifier(),
-                                                 p.portName())
-                 for p in available_ports])
-    return None
+    fd.write(content)
+    fd.flush()
+    os.fsync(fd)
 
 
 def get_settings_path():
@@ -114,7 +157,6 @@ def get_settings_path():
     # The os x bundled application is placed 3 levels deep in the .app folder
     if platform.system() == 'Darwin' and getattr(sys, 'frozen', False):
         app_dir = os.path.dirname(os.path.dirname(os.path.dirname(app_dir)))
-    logger.info('Application directory: {}'.format(app_dir))
     settings_dir = os.path.join(app_dir, settings_filename)
     if not os.path.exists(settings_dir):
         settings_dir = os.path.join(DATA_DIR, settings_filename)
@@ -128,65 +170,6 @@ def get_settings_path():
                 logger.error('Unable to create settings file: {}'.format(
                              settings_dir))
     return settings_dir
-
-
-def get_workspace_dir():
-    """
-    The default is to use a directory in the users home folder, however
-    in some network systems this in inaccessible. This allows a key in the
-    settings file to be used to set a custom path.
-    """
-    settings_path = get_settings_path()
-    workspace_dir = os.path.join(HOME_DIRECTORY, WORKSPACE_NAME)
-    settings = {}
-    try:
-        with open(settings_path) as f:
-            settings = json.load(f)
-    except FileNotFoundError:
-        logger.error('Settings file {} does not exist.'.format(settings_path))
-    except ValueError:
-        logger.error('Settings file {} could not be parsed.'.format(
-                     settings_path))
-    else:
-        if 'workspace' in settings:
-            if os.path.isdir(settings['workspace']):
-                workspace_dir = settings['workspace']
-            else:
-                logger.error(
-                    'Workspace value in the settings file is not a valid'
-                    'directory: {}'.format(settings['workspace']))
-    return workspace_dir
-
-
-def get_runtime_hex_path():
-    """
-    Returns the path to the hex runtime file - if this has been
-    specified under element 'microbit_runtime_hex' in settings.json.
-    This can be a fully-qualified file path, or just a file name
-    in which case the file should be located in the workspace directory.
-    Returns None if no path is specified or if the file is not present.
-    """
-    runtime_hex_path = None
-    settings_path = get_settings_path()
-    settings = {}
-    try:
-        with open(settings_path) as f:
-            settings = json.load(f)
-    except FileNotFoundError:
-        logger.error('Settings file {} does not exist.'.format(settings_path))
-    except ValueError:
-        logger.error('Settings file {} could not be parsed.'.format(
-                     settings_path))
-    else:
-        if 'microbit_runtime_hex' in settings and \
-                settings['microbit_runtime_hex'] is not None:
-            runtime_hex_path = os.path.join(
-                get_workspace_dir(),
-                settings['microbit_runtime_hex'])
-            if not os.path.exists(runtime_hex_path):
-                runtime_hex_path = None
-
-    return runtime_hex_path
 
 
 def check_flake(filename, code):
@@ -227,10 +210,13 @@ def check_pycodestyle(code):
     # the code.
     code_fd, code_filename = tempfile.mkstemp()
     os.close(code_fd)
-    with open_atomic(code_filename, 'w', newline='') as code_file:
-        code_file.write(code)
+    with open(code_filename, 'w', newline='') as code_file:
+        write_and_flush(code_file, code)
     # Configure which PEP8 rules to ignore.
+    ignore = ('E121', 'E123', 'E126', 'E226', 'E302', 'E305', 'E24', 'E704',
+              'W291', 'W292', 'W293', 'W391', 'W503', )
     style = StyleGuide(parse_argv=False, config_file=False)
+    style.options.ignore = ignore
     checker = Checker(code_filename, options=style.options)
     # Re-route stdout to a temporary buffer to be parsed below.
     temp_out = io.StringIO()
@@ -254,7 +240,7 @@ def check_pycodestyle(code):
             line_no = int(line_no) - 1
             code, description = msg.split(' ', 1)
             if code == 'E303':
-                description += ' above this line'
+                description += _(' above this line')
             if line_no not in style_feedback:
                 style_feedback[line_no] = []
             style_feedback[line_no].append({
@@ -299,8 +285,8 @@ class MuFlakeCodeReporter:
         indicates the column on which the error occurred and source is the
         source code containing the syntax error.
         """
-        msg = ('Syntax error. Python cannot understand this line. Check for '
-               'missing characters!')
+        msg = _('Syntax error. Python cannot understand this line. Check for '
+                'missing characters!')
         self.log.append({
             'message': msg,
             'line_no': int(line_no) - 1,  # Zero based counting in Mu.
@@ -354,26 +340,45 @@ class Editor:
     Application logic for the editor itself.
     """
 
-    def __init__(self, view):
+    def __init__(self, view, status_bar=None):
         logger.info('Setting up editor.')
         self._view = view
-        self.repl = None
+        self._status_bar = status_bar
         self.fs = None
         self.theme = 'day'
-        self.user_defined_microbit_path = None
+        self.mode = 'python'
+        self.modes = {}  # See set_modes.
+        self.connected_devices = set()
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
-        if not os.path.exists(get_workspace_dir()):
-            logger.debug('Creating directory: {}'.format(get_workspace_dir()))
-            os.makedirs(get_workspace_dir())
+        logger.info('Settings path: {}'.format(get_settings_path()))
+        logger.info('Log directory: {}'.format(LOG_DIR))
+        logger.info('Data directory: {}'.format(DATA_DIR))
 
-    def restore_session(self):
+    def setup(self, modes):
+        """
+        Define the available modes and ensure there's a default working
+        directory.
+        """
+        self.modes = modes
+        logger.info('Available modes: {}'.format(', '.join(self.modes.keys())))
+        # Ensure there is a workspace directory.
+        wd = self.modes['python'].workspace_dir()
+        if not os.path.exists(wd):
+            logger.debug('Creating directory: {}'.format(wd))
+            os.makedirs(wd)
+        # Start the timer to poll every second for an attached or removed
+        # USB device.
+        self._view.set_usb_checker(1, self.check_usb)
+
+    def restore_session(self, passed_filename=None):
         """
         Attempts to recreate the tab state from the last time the editor was
         run.
         """
         settings_path = get_settings_path()
+        self.change_mode(self.mode)
         with open(settings_path) as f:
             try:
                 old_session = json.load(f)
@@ -385,195 +390,30 @@ class Editor:
                 logger.debug(old_session)
                 if 'theme' in old_session:
                     self.theme = old_session['theme']
+                if 'mode' in old_session:
+                    self.mode = old_session['mode']
+                else:
+                    # So ask for the desired mode.
+                    self.select_mode(None)
                 if 'paths' in old_session:
                     for path in old_session['paths']:
-                        try:
-                            with open(path) as f:
-                                text = f.read()
-                        except FileNotFoundError:
-                            pass
-                        else:
-                            self._view.add_tab(path, text)
+                        # if the os passed in a file, defer loading it now
+                        if passed_filename and path in passed_filename:
+                            continue
+                        self.direct_load(path)
+                    logger.info('Loaded files.')
+        # handle os passed file last,
+        # so it will not be focused over by another tab
+        if passed_filename:
+            logger.info('Passed-in filename: {}'.format(passed_filename))
+            self.direct_load(passed_filename)
         if not self._view.tab_count:
-            py = 'from microbit import *{}{}# Write your code here :-)'.format(
-                os.linesep, os.linesep)
-            self._view.add_tab(None, py)
+            py = _('# Write your code here :-)')
+            self._view.add_tab(None, py, self.modes[self.mode].api())
+            logger.info('Starting with blank file.')
+        self.change_mode(self.mode)
         self._view.set_theme(self.theme)
-
-    def flash(self):
-        """
-        Takes the currently active tab, compiles the Python script therein into
-        a hex file and flashes it all onto the connected device.
-        """
-        logger.info('Flashing script')
-        # Grab the Python script.
-        tab = self._view.current_tab
-        if tab is None:
-            # There is no active text editor.
-            return
-        python_script = tab.text().encode('utf-8')
-        logger.debug('Python script:')
-        logger.debug(python_script)
-        if len(python_script) >= 8192:
-            message = 'Unable to flash "{}"'.format(tab.label)
-            information = ("Your script is too long!")
-            self._view.show_message(message, information, 'Warning')
-            return
-        # Determine the location of the BBC micro:bit. If it can't be found
-        # fall back to asking the user to locate it.
-        path_to_microbit = uflash.find_microbit()
-        if path_to_microbit is None:
-            # Has the path to the device already been specified?
-            if self.user_defined_microbit_path:
-                path_to_microbit = self.user_defined_microbit_path
-            else:
-                # Ask the user to locate the device.
-                path_to_microbit = self._view.get_microbit_path(HOME_DIRECTORY)
-                # Store the user's specification of the path for future use.
-                self.user_defined_microbit_path = path_to_microbit
-                logger.debug('User defined path to micro:bit: {}'.format(
-                             self.user_defined_microbit_path))
-        # Check the path and that it exists simply because the path maybe based
-        # on stale data.
-        logger.debug('Path to micro:bit: {}'.format(path_to_microbit))
-        if path_to_microbit and os.path.exists(path_to_microbit):
-            logger.debug('Flashing to device.')
-            # Flash the microbit
-            rt_hex_path = get_runtime_hex_path()
-            uflash.flash(paths_to_microbits=[path_to_microbit],
-                         python_script=python_script,
-                         path_to_runtime=rt_hex_path)
-            message = 'Flashing "{}" onto the micro:bit.'.format(tab.label)
-            if (rt_hex_path is not None and os.path.exists(rt_hex_path)):
-                message = message + "\nRuntime: {}". \
-                    format(rt_hex_path)
-            information = ("When the yellow LED stops flashing the device"
-                           " will restart and your script will run. If there"
-                           " is an error, you'll see a helpful message scroll"
-                           " across the device's display.")
-            self._view.show_message(message, information, 'Information')
-        else:
-            # Reset user defined path since it's incorrect.
-            self.user_defined_microbit_path = None
-            # Try to be helpful... essentially there is nothing Mu can do but
-            # prompt for patience while the device is mounted and/or do the
-            # classic "have you tried switching it off and on again?" trick.
-            # This one's for James at the Raspberry Pi Foundation. ;-)
-            message = 'Could not find an attached BBC micro:bit.'
-            information = ("Please ensure you leave enough time for the BBC"
-                           " micro:bit to be attached and configured correctly"
-                           " by your computer. This may take several seconds."
-                           " Alternatively, try removing and re-attaching the"
-                           " device or saving your work and restarting Mu if"
-                           " the device remains unfound.")
-            self._view.show_message(message, information)
-
-    def add_fs(self):
-        """
-        If the REPL is not active, add the file system navigator to the UI.
-        """
-        if self.repl is None:
-            if self.fs is None:
-                try:
-                    microfs.get_serial()
-                    self._view.add_filesystem(home=get_workspace_dir())
-                    self.fs = True
-                except IOError:
-                    message = 'Could not find an attached BBC micro:bit.'
-                    information = ("Please make sure the device is plugged "
-                                   "into this computer.\n\nThe device must "
-                                   "have MicroPython flashed onto it before "
-                                   "the file system will work.\n\n"
-                                   "Finally, press the device's reset button "
-                                   "and wait a few seconds before trying "
-                                   "again.")
-                    self._view.show_message(message, information)
-
-    def remove_fs(self):
-        """
-        If the REPL is not active, remove the file system navigator from
-        the UI.
-        """
-        if self.fs is None:
-            raise RuntimeError("File system not running")
-        self._view.remove_filesystem()
-        self.fs = None
-
-    def toggle_fs(self):
-        """
-        If the file system navigator is active enable it. Otherwise hide it.
-        If the REPL is active, display a message.
-        """
-        if self.repl is None:
-            if self.fs is None:
-                self.add_fs()
-            else:
-                self.remove_fs()
-        else:
-            message = "File system and REPL cannot work at the same time."
-            information = ("The file system and REPL both use the same USB "
-                           "serial connection. Only one can be active "
-                           "at any time. Toggle the REPL off and try again.")
-            self._view.show_message(message, information)
-
-    def add_repl(self):
-        """
-        Detect a connected BBC micro:bit and if found, connect to the
-        MicroPython REPL and display it to the user.
-        """
-        if self.fs:
-            raise RuntimeError("File system already connected")
-        logger.info('Starting REPL in UI.')
-        if self.repl is not None:
-            raise RuntimeError("REPL already running")
-        mb_port = find_microbit()
-        if mb_port:
-            try:
-                self.repl = REPL(port=mb_port)
-                self._view.add_repl(self.repl)
-                logger.info('REPL on port: {}'.format(mb_port))
-            except IOError as ex:
-                logger.error(ex)
-                self.repl = None
-                information = ("Click the device's reset button, wait a few"
-                               " seconds and then try again.")
-                self._view.show_message(str(ex), information)
-            except Exception as ex:
-                logger.error(ex)
-        else:
-            message = 'Could not find an attached BBC micro:bit.'
-            information = ("Please make sure the device is plugged into this"
-                           " computer.\n\nThe device must have MicroPython"
-                           " flashed onto it before the REPL will work.\n\n"
-                           "Finally, press the device's reset button and wait"
-                           " a few seconds before trying again.")
-            self._view.show_message(message, information)
-
-    def remove_repl(self):
-        """
-        If there's an active REPL, disconnect and hide it.
-        """
-        if self.repl is None:
-            raise RuntimeError("REPL not running")
-        self._view.remove_repl()
-        self.repl = None
-
-    def toggle_repl(self):
-        """
-        If the REPL is active, close it; otherwise open the REPL.
-        """
-        if self.fs is None:
-            if self.repl is None:
-                self.add_repl()
-            else:
-                self.remove_repl()
-        else:
-            message = "REPL and file system cannot work at the same time."
-            information = ("The REPL and file system both use the same USB "
-                           "serial connection. Only one can be active "
-                           "at any time. Toggle the file system off and "
-                           "try again.")
-            self._view.show_message(message, information)
+        self.show_status_message(random.choice(MOTD), 10)
 
     def toggle_theme(self):
         """
@@ -581,6 +421,8 @@ class Editor:
         """
         if self.theme == 'day':
             self.theme = 'night'
+        elif self.theme == 'night':
+            self.theme = 'contrast'
         else:
             self.theme = 'day'
         logger.info('Toggle theme to: {}'.format(self.theme))
@@ -590,15 +432,21 @@ class Editor:
         """
         Adds a new tab to the editor.
         """
-        self._view.add_tab(None, '')
+        logger.info('Added a new tab.')
+        self._view.add_tab(None, '', self.modes[self.mode].api())
 
-    def load(self):
-        """
-        Loads a Python file from the file system or extracts a Python sccript
-        from a hex file.
-        """
-        path = self._view.get_load_path(get_workspace_dir())
+    def _load(self, path):
         logger.info('Loading script from: {}'.format(path))
+        # see if file is open first
+        for widget in self._view.widgets:
+            if widget.path is None:  # this widget is an unsaved buffer
+                continue
+            if path in widget.path:
+                logger.info('Script already open.')
+                msg = _('The file "{}" is already open.')
+                self._view.show_message(msg.format(os.path.basename(path)))
+                self._view.focus_tab(widget)
+                return
         try:
             if path.endswith('.py'):
                 # Open the file, read the textual content and set the name as
@@ -613,11 +461,24 @@ class Editor:
                 with open(path, newline='') as f:
                     text = uflash.extract_script(f.read())
                 name = None
-        except FileNotFoundError:
-            pass
+        except (PermissionError, FileNotFoundError):
+            logger.warning('could not load {}'.format(path))
         else:
             logger.debug(text)
-            self._view.add_tab(name, text)
+            self._view.add_tab(name, text, self.modes[self.mode].api())
+
+    def load(self):
+        """
+        Loads a Python file from the file system or extracts a Python script
+        from a hex file.
+        """
+        path = self._view.get_load_path(self.modes[self.mode].workspace_dir())
+        if path:
+            self._load(path)
+
+    def direct_load(self, path):
+        """ for loading files passed from command line or the OS launch"""
+        self._load(path)
 
     def save(self):
         """
@@ -627,41 +488,57 @@ class Editor:
         if tab is None:
             # There is no active text editor so abort.
             return
-        if tab.path is None:
+        if not tab.path:
             # Unsaved file.
-            tab.path = self._view.get_save_path(get_workspace_dir())
+            workspace = self.modes[self.mode].workspace_dir()
+            tab.path = self._view.get_save_path(workspace)
         if tab.path:
             # The user specified a path to a file.
             if not os.path.basename(tab.path).endswith('.py'):
                 # No extension given, default to .py
                 tab.path += '.py'
             try:
-                with open_atomic(tab.path, 'w', newline='') as f:
+                with open(tab.path, 'w', newline='') as f:
                     logger.info('Saving script to: {}'.format(tab.path))
                     logger.debug(tab.text())
-                    f.write(tab.text())
+                    write_and_flush(f, tab.text())
                 tab.setModified(False)
+                self.show_status_message(_("Saved file: {}").format(tab.path))
             except OSError as e:
                 logger.error(e)
-                message = 'Could not save file.'
-                information = ("Error saving file to disk. Ensure you have "
-                               "permission to write the file and "
-                               "sufficient disk space.")
+                message = _('Could not save file.')
+                information = _("Error saving file to disk. Ensure you have "
+                                "permission to write the file and "
+                                "sufficient disk space.")
                 self._view.show_message(message, information)
         else:
             # The user cancelled the filename selection.
             tab.path = None
 
+    def get_tab(self, path):
+        """
+        Given a path, returns either an existing tab for the path or creates /
+        loads a new tab for the path.
+        """
+        for tab in self._view.widgets:
+            if tab.path == path:
+                self._view.focus_tab(tab)
+                return tab
+        self.direct_load(path)
+        return self._view.current_tab
+
     def zoom_in(self):
         """
         Make the editor's text bigger
         """
+        logger.info('Zoom in')
         self._view.zoom_in()
 
     def zoom_out(self):
         """
         Make the editor's text smaller.
         """
+        logger.info('Zoom out')
         self._view.zoom_out()
 
     def check_code(self):
@@ -669,36 +546,48 @@ class Editor:
         Uses PyFlakes and PyCodeStyle to gather information about potential
         problems with the code in the current tab.
         """
-        self._view.reset_annotations()
         tab = self._view.current_tab
         if tab is None:
             # There is no active text editor so abort.
             return
-        filename = tab.path if tab.path else 'untitled'
-        flake = check_flake(filename, tab.text())
-        if flake:
-            logger.info(flake)
-            self._view.annotate_code(flake, 'error')
-        pep8 = check_pycodestyle(tab.text())
-        if pep8:
-            logger.info(pep8)
-            self._view.annotate_code(pep8, 'style')
+        tab.has_annotations = not tab.has_annotations
+        if tab.has_annotations:
+            logger.info('Checking code.')
+            self._view.reset_annotations()
+            filename = tab.path if tab.path else 'untitled'
+            flake = check_flake(filename, tab.text())
+            if flake:
+                logger.info(flake)
+                self._view.annotate_code(flake, 'error')
+            pep8 = check_pycodestyle(tab.text())
+            if pep8:
+                logger.info(pep8)
+                self._view.annotate_code(pep8, 'style')
+            self._view.show_annotations()
+            tab.has_annotations = bool(flake or pep8)
+        else:
+            self._view.reset_annotations()
 
     def show_help(self):
         """
         Display browser based help about Mu.
         """
-        webbrowser.open_new('http://codewith.mu/help/{}'.format(__version__))
+        logger.info('Showing help.')
+        current_locale, encoding = locale.getdefaultlocale()
+        language_code = current_locale[:2]
+        major_version = '.'.join(__version__.split('.')[:2])
+        url = 'https://codewith.mu/{}/help/{}'.format(language_code,
+                                                      major_version)
+        webbrowser.open_new(url)
 
     def quit(self, *args, **kwargs):
         """
         Exit the application.
         """
-        logger.info('Quitting')
         if self._view.modified:
             # Alert the user to handle unsaved work.
-            msg = ('There is un-saved work, exiting the application will'
-                   ' cause you to lose it.')
+            msg = _('There is un-saved work, exiting the application will'
+                    ' cause you to lose it.')
             result = self._view.show_confirmation(msg)
             if result == QMessageBox.Cancel:
                 if args and hasattr(args[0], 'ignore'):
@@ -709,15 +598,177 @@ class Editor:
         for widget in self._view.widgets:
             if widget.path:
                 paths.append(widget.path)
+        if self.modes[self.mode].is_debugger:
+            # If quitting while debugging, make sure everything is cleaned
+            # up.
+            self.modes[self.mode].stop()
         session = {
             'theme': self.theme,
+            'mode': self.mode,
             'paths': paths,
-            'workspace': get_workspace_dir(),
-            'microbit_runtime_hex': get_runtime_hex_path()
+            'workspace': self.modes[self.mode].workspace_dir(),
+            'microbit_runtime_hex': self.modes['microbit'].get_hex_path()
         }
-        logger.debug(session)
         settings_path = get_settings_path()
         with open(settings_path, 'w') as out:
+            logger.debug('Session: {}'.format(session))
             logger.debug('Saving session to: {}'.format(settings_path))
             json.dump(session, out, indent=2)
+        logger.info('Quitting.\n\n')
         sys.exit(0)
+
+    def show_logs(self, event=None):
+        """
+        Cause the editor's logs to be displayed to the user to help with ease
+        of bug reporting.
+        """
+        logger.info('Showing logs from {}'.format(LOG_FILE))
+        with open(LOG_FILE, 'r') as logfile:
+            self._view.show_logs(logfile.read(), self.theme)
+
+    def select_mode(self, event=None):
+        """
+        Select the mode that editor is supposed to be in.
+        """
+        if self.modes[self.mode].is_debugger:
+            return
+        logger.info('Showing available modes: {}'.format(
+            list(self.modes.keys())))
+        new_mode = self._view.select_mode(self.modes, self.mode, self.theme)
+        if new_mode and new_mode is not self.mode:
+            self.mode = new_mode
+            self.change_mode(self.mode)
+            self.show_status_message(_('Changed to {} mode.').format(
+                                     self.mode.capitalize()))
+
+    def change_mode(self, mode):
+        """
+        Given the name of a mode, will make the necessary changes to put the
+        editor into the new mode.
+        """
+        # Remove the old mode's REPL.
+        self._view.remove_repl()
+        # Update buttons.
+        self._view.change_mode(self.modes[mode])
+        button_bar = self._view.button_bar
+        button_bar.connect("new", self.new, "Ctrl+N")
+        button_bar.connect("load", self.load, "Ctrl+O")
+        button_bar.connect("save", self.save, "Ctrl+S")
+        for action in self.modes[mode].actions():
+            button_bar.connect(action['name'], action['handler'],
+                               action['shortcut'])
+        button_bar.connect("zoom-in", self.zoom_in, "Ctrl++")
+        button_bar.connect("zoom-out", self.zoom_out, "Ctrl+-")
+        button_bar.connect("theme", self.toggle_theme, "F1")
+        button_bar.connect("check", self.check_code, "F2")
+        button_bar.connect("help", self.show_help, "Ctrl+H")
+        button_bar.connect("quit", self.quit, "Ctrl+Q")
+        self._view.status_bar.set_mode(mode)
+        # Update references to default file locations.
+        logger.info('Workspace directory: {}'.format(
+            self.modes[mode].workspace_dir()))
+        # Ensure auto-save timeouts are set.
+        if self.modes[mode].save_timeout > 0:
+            # Start the timer
+            self._view.set_timer(self.modes[mode].save_timeout, self.autosave)
+        else:
+            # Stop the timer
+            self._view.stop_timer()
+        # Update breakpoint states.
+        if not (self.modes[mode].is_debugger or self.modes[mode].has_debugger):
+            for tab in self._view.widgets:
+                tab.breakpoint_lines = set()
+                tab.reset_annotations()
+
+    def autosave(self):
+        """
+        Cycles through each tab and, if changed, saves it to the filesystem.
+        """
+        if self._view.modified:
+            # Something has changed, so save it!
+            logger.info('Autosave has detected changes.')
+            for tab in self._view.widgets:
+                if tab.path and tab.isModified():
+                    with open(tab.path, 'w', newline='') as f:
+                        logger.info('Saving script to: {}'.format(tab.path))
+                        logger.debug(tab.text())
+                        write_and_flush(f, tab.text())
+                    tab.setModified(False)
+
+    def check_usb(self):
+        """
+        Ensure connected USB devices are polled. If there's a change and a new
+        recognised device is attached, inform the user via a status message.
+        """
+        for name, mode in self.modes.items():
+            if hasattr(mode, "find_device"):
+                # The mode can detect an attached device.
+                device = mode.find_device(with_logging=False)
+                if device and (device, mode) not in self.connected_devices:
+                    self.connected_devices = set()
+                    self.connected_devices.add((device, mode))
+                    msg = _("Connection from a new device detected.")
+                    if self.mode != name:
+                        msg += _(" Please switch to {} mode.").format(
+                            name.capitalize())
+                    self.show_status_message(msg)
+                    break
+
+    def show_status_message(self, message, duration=5):
+        """
+        Displays the referenced message for duration seconds.
+        """
+        self._view.status_bar.set_message(message, duration * 1000)
+
+    def debug_toggle_breakpoint(self, margin, line, modifiers):
+        """
+        How to handle the toggling of a breakpoint.
+        """
+        if (self.modes[self.mode].has_debugger or
+                self.modes[self.mode].is_debugger):
+            tab = self._view.current_tab
+            if self.mode == 'debugger':
+                # The debugger is running.
+                self.modes['debugger'].toggle_breakpoint(line, tab)
+            else:
+                # The debugger isn't running.
+                if line in tab.breakpoint_lines:
+                    tab.markerDelete(line, tab.BREAKPOINT_MARKER)
+                    tab.breakpoint_lines.remove(line)
+                else:
+                    tab.markerAdd(line, tab.BREAKPOINT_MARKER)
+                    tab.breakpoint_lines.add(line)
+
+    def rename_tab(self, tab_id=None):
+        """
+        How to handle double-clicking a tab in order to rename the file. If
+        activated by the shortcut, activate against the current tab.
+        """
+        tab = None
+        if tab_id:
+            tab = self._view.tabs.widget(tab_id)
+        else:
+            tab = self._view.current_tab
+        if tab:
+            new_path = self._view.get_save_path(tab.path)
+            if new_path:
+                logger.info('Attempting to rename {} to {}'.format(tab.path,
+                                                                   new_path))
+                # The user specified a path to a file.
+                if not os.path.basename(new_path).endswith('.py'):
+                    # No extension given, default to .py
+                    new_path += '.py'
+                # Check for duplicate path with currently open tab.
+                for other_tab in self._view.widgets:
+                    if other_tab.path == new_path:
+                        logger.info('Cannot rename, a file of that name is '
+                                    'already open in Mu')
+                        message = _('Could not rename file.')
+                        information = _("A file of that name is already open "
+                                        "in Mu.")
+                        self._view.show_message(message, information)
+                        return
+                # Finally rename
+                tab.path = new_path
+                logger.info('Renamed file to: {}'.format(tab.path))
+                self.save()

@@ -1,0 +1,49 @@
+QStackedWidget, QWidget, QApplication {
+    background-color: black;
+    color: white;
+}
+
+QDialog, QLabel, QStatusBar {
+    background-color: #333;
+    color: white;
+}
+
+QToolButton:hover {
+    color: #FF0000;
+}
+
+QTextEdit {
+    background-color: black;
+    color: white;
+    border: 1px solid white;
+}
+
+QTabBar {
+    background: #333;
+}
+
+QTabBar::tab::selected {
+    background: #555;
+}
+
+QToolBar, QToolButton {
+    background: transparent;
+}
+
+QSplitter::handle {
+    background: #333;
+}
+
+QMessageBox {
+    border: 1px solid white;
+}
+
+QListWidget {
+    background-color: black;
+    color: white;
+    border: 1px solid white;
+}
+
+QListWidget::item:selected {
+    background: #444;
+}

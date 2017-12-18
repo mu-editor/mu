@@ -60,14 +60,15 @@ deploy:
   access_key_id: AKIAJYJV7NN6HVHCX5NQ
   secret_access_key:
     secure: QHLfRUdFQX+TejhRBkgNvySkaQOskXji+iduIvKRtzvvhyr3QJHKcMNtO426GRFyKhz6sK3shqn4d5iu/m03gtbv+u1pL9pp0J2GEePzQVP8v24q9Y3oxaXaA7Tm7L2vSIrB7uhJvG5D9H0bVL9my61JvXhvySH47jLvhqHH4F9LdPzby1DXds1Z+R4YNMKE0Z4KmNOhiBHkmKdDcp61fZ91gGiScFIjaXvDb50zdGKjXTQy2t4OtFt4kVbTZWijzxKPCSLZkErfcdNNrCNeMEktk6IEV2KVru9XhDNzzslWwwsR1r2hQI39oVULa3fYXK6W7am8WXVZ6cnJB+yBsNWro3Tp5oiNCWSe6fKDEp+Io+qyhZ+R5PSdzhyRYPUHPCIY/fP/dap/4M/MAO3hZFA3mxjK/vUOc6mtMD/wTE659K4/i7PNYtKFndXXpLpYHHaTis44NLZFIxvs9wWG/ljToYDDK20vG317k5TZUZB/6EipW1DeoO/9qBUxgTdfJypp58kcZNvntUVa4ezf/Bx01ZCMFAk234l7+xAFYI7+m9ITqAPlKWI230Ki5ShzyV+kYcI/GS9cT75iok6+zIWWfyQhKUMDYZ1qb/UDM5Gz9RXoIah0UJTjFd4b3bO6Awdrs2V5Vv2EgMWuKDaHs1s3uONH+PGTluROuqFju/s=
-  bucket: ardublockly-builds
+  bucket: mu-builds
+  region: eu-west-2
   skip_cleanup: true
   local-dir: dist/
-  upload-dir: microbit/$TRAVIS_OS_NAME
+  upload-dir: $TRAVIS_OS_NAME
   acl: public_read
   on:
     repo: mu-editor/mu
-    branch: [master]
+    branch: [master, travis_bucket_move]
 
 notifications:
   email:

@@ -7,11 +7,18 @@ Install dependencies
 Windows
 +++++++
 
-* Install Python 3 from the `official website <https://www.python.org/downloads/>`_.
-* Install the PyQt5 binary package from `riverbankcomputing <https://riverbankcomputing.com/software/pyqt/download>`_.
+Please ensure you use the specified versions in the instructions below. We've
+found the latest versions of some of these packages are not always backwards
+compatible with each other.
+
+* Install the 32bit version of Python 3.4 from the `official website <https://www.python.org/downloads/>`_.
+* Install the PyQt5 binary package from `riverbankcomputing <https://riverbankcomputing.com/software/pyqt/download>`_ (specifically, `this one <https://riverbankcomputing.com/software/pyqt/download5>`_).
 * Install PyInstaller using pip or pip3 (includes pypiwin32)::
 
-    $ pip install pyinstaller
+    $ pip install pyinstaller==3.1.1
+
+If in doubt, look in the details of the ``appveyor.yml`` file in the root of
+this repository.
 
 Mac OS X
 ++++++++
@@ -25,11 +32,11 @@ Assuming you have the `Homebrew <http://brew.sh/>`_ package manager installed:
 
 * Install the PyQt5 binary package::
 
-    $ brew install pyqt5 --with-python3
+    $ pip3 install PyQt5
 
 * Install the QScintilla2 package using the formula in the `extras` directory::
 
-    $ brew install extras/qscintilla2.rb
+    $ pip3 install QScintilla
 
 * Install PyInstaller::
 
@@ -89,6 +96,6 @@ Download the Mu executable
 
 You can download the latest executable build of Mu for your respective operating system from the following links:
 
-* `Windows <http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/windows/>`_
-* `Mac OS X <http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/osx/>`_
-* `Linux <http://ardublockly-builds.s3-website-us-west-2.amazonaws.com/index.html?prefix=microbit/linux/>`_
+* `Windows <http://mu-builds.s3-website.eu-west-2.amazonaws.com/?prefix=windows/>`_
+* `Mac OS X <http://mu-builds.s3-website.eu-west-2.amazonaws.com/?prefix=osx/>`_
+* `Linux <http://mu-builds.s3-website.eu-west-2.amazonaws.com/?prefix=linux/>`_

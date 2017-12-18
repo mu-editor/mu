@@ -1,3 +1,9 @@
+mu (1.0.0~beta8) stretch; urgency=medium
+
+  * Repackage
+
+ -- Serge Schneider <serge@raspberrypi.org>  Tue, 26 Sep 2017 17:39:30 +0100
+
 mu (0.9.13-1) unstable; urgency=low
 
   * Add ability to change default Python directory in the settings file. Thanks to Zander Brown for the contribution. See #179.

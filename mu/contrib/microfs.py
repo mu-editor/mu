@@ -80,16 +80,19 @@ def get_serial():
     return Serial(port, 115200, timeout=1, parity='N')
 
 
-def execute(commands, serial):
+def execute(commands, serial=None):
     """
     Sends the command to the connected micro:bit via serial and returns the
-    result.
+    result. If no serial connection is provided, attempts to autodetect the
+    device.
 
     For this to work correctly, a particular sequence of commands needs to be
     sent to put the device into a good state to process the incoming command.
 
     Returns the stdout and stderr output from the micro:bit.
     """
+    if serial is None:
+        serial = get_serial()
     result = b''
     raw_on(serial)
     # Write the actual command and send CTRL-D to evaluate.
@@ -124,8 +127,13 @@ def clean_error(err):
     return 'There was an error.'
 
 
-def ls(serial):
+def ls(serial=None):
     """
+    List the files on the micro:bit.
+
+    If no serial object is supplied, microfs will attempt to detect the
+    connection itself.
+
     Returns a list of the files on the connected device or raises an IOError if
     there's a problem.
     """
@@ -138,9 +146,12 @@ def ls(serial):
     return ast.literal_eval(out.decode('utf-8'))
 
 
-def rm(serial, filename):
+def rm(filename, serial=None):
     """
     Removes a referenced file on the micro:bit.
+
+    If no serial object is supplied, microfs will attempt to detect the
+    connection itself.
 
     Returns True for success or raises an IOError if there's a problem.
     """
@@ -154,10 +165,13 @@ def rm(serial, filename):
     return True
 
 
-def put(serial, filename):
+def put(filename, serial=None):
     """
     Puts a referenced file on the LOCAL file system onto the
     file system on the BBC micro:bit.
+
+    If no serial object is supplied, microfs will attempt to detect the
+    connection itself.
 
     Returns True for success or raises an IOError if there's a problem.
     """
@@ -184,10 +198,13 @@ def put(serial, filename):
     return True
 
 
-def get(serial, filename, target=None):
+def get(filename, target=None, serial=None):
     """
     Gets a referenced file on the device's file system and copies it to the
     target (or current working directory if unspecified).
+
+    If no serial object is supplied, microfs will attempt to detect the
+    connection itself.
 
     Returns True for success or raises an IOError if there's a problem.
     """
@@ -198,7 +215,7 @@ def get(serial, filename, target=None):
         "f = open('{}', 'rb')".format(filename),
         "r = f.read",
         "result = True",
-        "while result:\n    result = r(32)\n    if result:\n        "
+        "while result:\n    result = r(32)\n    if result:\n        " +
         "uart.write(result)\n",
         "f.close()",
     ]
@@ -229,26 +246,22 @@ def main(argv=None):
                             help="Use when a file needs referencing.")
         args = parser.parse_args(argv)
         if args.command == 'ls':
-            with get_serial() as serial:
-                list_of_files = ls(serial)
-                if list_of_files:
-                    print(' '.join(list_of_files))
+            list_of_files = ls()
+            if list_of_files:
+                print(' '.join(list_of_files))
         elif args.command == 'rm':
             if args.path:
-                with get_serial() as serial:
-                    rm(serial, args.path)
+                rm(args.path)
             else:
                 print('rm: missing filename. (e.g. "ufs rm foo.txt")')
         elif args.command == 'put':
             if args.path:
-                with get_serial() as serial:
-                    put(serial, args.path)
+                put(args.path)
             else:
                 print('put: missing filename. (e.g. "ufs put foo.txt")')
         elif args.command == 'get':
             if args.path:
-                with get_serial() as serial:
-                    get(serial, args.path)
+                get(args.path)
             else:
                 print('get: missing filename. (e.g. "ufs get foo.txt")')
         else:
