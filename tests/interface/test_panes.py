@@ -663,6 +663,19 @@ def test_MicrobitFileList_dropEvent_wrong_source():
     assert mfs.findItems.call_count == 0
 
 
+def test_MicrobitFileList_on_put():
+    """
+    A message and list_files signal should be emitted.
+    """
+    mfs = mu.interface.panes.MicrobitFileList('homepath')
+    mfs.set_message = mock.MagicMock()
+    mfs.list_files = mock.MagicMock()
+    mfs.on_put('my_file.py')
+    msg = "'my_file.py' successfully copied to micro:bit."
+    mfs.set_message.emit.assert_called_once_with(msg)
+    mfs.list_files.emit.assert_called_once_with()
+
+
 def test_MicrobitFileList_contextMenuEvent():
     """
     Ensure that the menu displayed when a file on the micro:bit is
@@ -686,6 +699,19 @@ def test_MicrobitFileList_contextMenuEvent():
     mfs.disable.emit.assert_called_once_with()
     assert mfs.set_message.emit.call_count == 1
     mfs.delete.emit.assert_called_once_with('foo.py')
+
+
+def test_MicrobitFileList_on_delete():
+    """
+    On delete should emit a message and list_files signal.
+    """
+    mfs = mu.interface.panes.MicrobitFileList('homepath')
+    mfs.set_message = mock.MagicMock()
+    mfs.list_files = mock.MagicMock()
+    mfs.on_delete('my_file.py')
+    msg = "'my_file.py' successfully deleted from micro:bit."
+    mfs.set_message.emit.assert_called_once_with(msg)
+    mfs.list_files.emit.assert_called_once_with()
 
 
 def test_LocalFileList_init():
@@ -733,6 +759,20 @@ def test_LocalFileList_dropEvent_wrong_source():
     assert lfs.findItems.call_count == 0
 
 
+def test_LocalFileList_on_get():
+    """
+    On get should emit two signals: a message and list_files.
+    """
+    lfs = mu.interface.panes.LocalFileList('homepath')
+    lfs.set_message = mock.MagicMock()
+    lfs.list_files = mock.MagicMock()
+    lfs.on_get('my_file.py')
+    msg = ("Successfully copied 'my_file.py' from the micro:bit "
+           "to your computer.")
+    lfs.set_message.emit.assert_called_once_with(msg)
+    lfs.list_files.emit.assert_called_once_with()
+
+
 def test_FileSystemPane_init():
     """
     Check things are set up as expected.
@@ -759,6 +799,120 @@ def test_FileSystemPane_init():
         test_local_fs.disable.connect.assert_called_once_with(fsp.disable)
         test_local_fs.set_message.connect.\
             assert_called_once_with(fsp.show_message)
+
+
+def test_FileSystemPane_disable():
+    """
+    The child list widgets are disabled correctly.
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.microbit_fs = mock.MagicMock()
+    fsp.local_fs = mock.MagicMock()
+    fsp.disable()
+    fsp.microbit_fs.setDisabled.assert_called_once_with(True)
+    fsp.local_fs.setDisabled.assert_called_once_with(True)
+    fsp.microbit_fs.setAcceptDrops.assert_called_once_with(False)
+    fsp.local_fs.setAcceptDrops.assert_called_once_with(False)
+
+
+def test_FileSystemPane_enable():
+    """
+    The child list widgets are enabled correctly.
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.microbit_fs = mock.MagicMock()
+    fsp.local_fs = mock.MagicMock()
+    fsp.enable()
+    fsp.microbit_fs.setDisabled.assert_called_once_with(False)
+    fsp.local_fs.setDisabled.assert_called_once_with(False)
+    fsp.microbit_fs.setAcceptDrops.assert_called_once_with(True)
+    fsp.local_fs.setAcceptDrops.assert_called_once_with(True)
+
+
+def test_FileSystemPane_show_message():
+    """
+    Ensure the expected message signal is emitted.
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.set_message = mock.MagicMock()
+    fsp.show_message('Hello')
+    fsp.set_message.emit.assert_called_once_with('Hello')
+
+
+def test_FileSystemPane_show_warning():
+    """
+    Ensure the expected warning signal is emitted.
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.set_warning = mock.MagicMock()
+    fsp.show_warning('Hello')
+    fsp.set_warning.emit.assert_called_once_with('Hello')
+
+
+def test_FileSystemPane_on_ls():
+    """
+    When lists of files have been obtained from the micro:bit and local
+    filesystem, make sure they're properly processed by the on_ls event
+    handler.
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    microbit_files = ['foo.py', 'bar.py', ]
+    fsp.microbit_fs = mock.MagicMock()
+    fsp.local_fs = mock.MagicMock()
+    fsp.enable = mock.MagicMock()
+    local_files = ['qux.py', 'baz.py', ]
+    mock_listdir = mock.MagicMock(return_value=local_files)
+    mock_isfile = mock.MagicMock(return_value=True)
+    with mock.patch('mu.interface.panes.os.listdir', mock_listdir),\
+            mock.patch('mu.interface.panes.os.path.isfile', mock_isfile):
+        fsp.on_ls(microbit_files)
+    fsp.microbit_fs.clear.assert_called_once_with()
+    fsp.local_fs.clear.assert_called_once_with()
+    assert fsp.microbit_fs.addItem.call_count == 2
+    assert fsp.local_fs.addItem.call_count == 2
+    fsp.enable.assert_called_once_with()
+
+
+def test_FileSystemPane_on_ls_fail():
+    """
+    A warning is emitted and the widget disabled if listing files fails.
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.show_warning = mock.MagicMock()
+    fsp.disable = mock.MagicMock()
+    fsp.on_ls_fail()
+    assert fsp.show_warning.call_count == 1
+    fsp.disable.assert_called_once_with()
+
+
+def test_FileSystem_Pane_on_put_fail():
+    """
+    A warning is emitted if putting files on the micro:bit fails.
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.show_warning = mock.MagicMock()
+    fsp.on_put_fail('foo.py')
+    assert fsp.show_warning.call_count == 1
+
+
+def test_FileSystem_Pane_on_delete_fail():
+    """
+    A warning is emitted if deleting files on the micro:bit fails.
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.show_warning = mock.MagicMock()
+    fsp.on_delete_fail('foo.py')
+    assert fsp.show_warning.call_count == 1
+
+
+def test_FileSystem_Pane_on_get_fail():
+    """
+    A warning is emitted if getting files from the micro:bit fails.
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.show_warning = mock.MagicMock()
+    fsp.on_get_fail('foo.py')
+    assert fsp.show_warning.call_count == 1
 
 
 def test_FileSystemPane_set_theme_day():

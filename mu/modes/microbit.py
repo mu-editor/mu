@@ -80,7 +80,7 @@ class FileManager(QObject):
     def get(self, microbit_filename, local_filename):
         """
         Get the referenced micro:bit filename and save it to the local
-        filename. Emit the name of the local filename when complete or emit a
+        filename. Emit the name of the filename when complete or emit a
         failure signal.
         """
         try:
@@ -89,7 +89,7 @@ class FileManager(QObject):
             self.on_get_file.emit(microbit_filename)
         except Exception as ex:
             logger.error(ex)
-            self.on_get_fail(microbit_filename)
+            self.on_get_fail.emit(microbit_filename)
 
     def put(self, local_filename):
         """
@@ -103,7 +103,7 @@ class FileManager(QObject):
             self.on_put_file.emit(os.path.basename(local_filename))
         except Exception as ex:
             logger.error(ex)
-            self.on_put_fail(local_filename)
+            self.on_put_fail.emit(local_filename)
 
     def delete(self, microbit_filename):
         """
@@ -116,7 +116,7 @@ class FileManager(QObject):
             self.on_delete_file.emit(microbit_filename)
         except Exception as ex:
             logger.error(ex)
-            self.on_delete_fail(microbit_filename)
+            self.on_delete_fail.emit(microbit_filename)
 
 
 class MicrobitMode(MicroPythonMode):

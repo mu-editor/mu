@@ -4,13 +4,136 @@ Tests for the micro:bit mode.
 """
 import os
 import pytest
+import os.path
 from mu.logic import HOME_DIRECTORY
-from mu.modes.microbit import MicrobitMode
+from mu.modes.microbit import MicrobitMode, FileManager
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from unittest import mock
 
 
 TEST_ROOT = os.path.split(os.path.dirname(__file__))[0]
+
+
+def test_FileManager_on_start():
+    """
+    When a thread signals it has started, list the files.
+    """
+    fm = FileManager()
+    fm.ls = mock.MagicMock()
+    fm.on_start()
+    fm.ls.assert_called_once_with()
+
+
+def test_FileManager_ls():
+    """
+    The on_list_files signal is emitted with a tuple of files when microfs.ls
+    completes successfully.
+    """
+    fm = FileManager()
+    fm.on_list_files = mock.MagicMock()
+    mock_ls = mock.MagicMock(return_value=['foo.py', 'bar.py', ])
+    with mock.patch('mu.modes.microbit.microfs.ls', mock_ls),\
+            mock.patch('mu.modes.microbit.microfs.get_serial'):
+        fm.ls()
+    fm.on_list_files.emit.assert_called_once_with(('foo.py', 'bar.py'))
+
+
+def test_FileManager_ls_fail():
+    """
+    The on_list_fail signal is emitted when a problem is encountered.
+    """
+    fm = FileManager()
+    fm.on_list_fail = mock.MagicMock()
+    with mock.patch('mu.modes.microbit.microfs.ls',
+                    side_effect=Exception('boom')):
+        fm.ls()
+    fm.on_list_fail.emit.assert_called_once_with()
+
+
+def test_fileManager_get():
+    """
+    The on_get_file signal is emitted with the name of the effected file when
+    microfs.get completes successfully.
+    """
+    fm = FileManager()
+    fm.on_get_file = mock.MagicMock()
+    mock_get = mock.MagicMock()
+    mock_serial = mock.MagicMock()
+    with mock.patch('mu.modes.microbit.microfs.get', mock_get),\
+            mock.patch('mu.modes.microbit.microfs.get_serial', mock_serial):
+        fm.get('foo.py', 'bar.py')
+    mock_get.assert_called_once_with('foo.py', 'bar.py',
+                                     mock_serial().__enter__())
+    fm.on_get_file.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_get_fail():
+    """
+    The on_get_fail signal is emitted when a problem is encountered.
+    """
+    fm = FileManager()
+    fm.on_get_fail = mock.MagicMock()
+    with mock.patch('mu.modes.microbit.microfs.get_serial',
+                    side_effect=Exception('boom')):
+        fm.get('foo.py', 'bar.py')
+    fm.on_get_fail.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_put():
+    """
+    The on_put_file signal is emitted with the name of the effected file when
+    microfs.put completes successfully.
+    """
+    fm = FileManager()
+    fm.on_put_file = mock.MagicMock()
+    mock_put = mock.MagicMock()
+    mock_serial = mock.MagicMock()
+    path = os.path.join('directory', 'foo.py')
+    with mock.patch('mu.modes.microbit.microfs.put', mock_put),\
+            mock.patch('mu.modes.microbit.microfs.get_serial', mock_serial):
+        fm.put(path)
+    mock_put.assert_called_once_with(path, mock_serial().__enter__())
+    fm.on_put_file.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_put_fail():
+    """
+    The on_put_fail signal is emitted when a problem is encountered.
+    """
+    fm = FileManager()
+    fm.on_put_fail = mock.MagicMock()
+    with mock.patch('mu.modes.microbit.microfs.get_serial',
+                    side_effect=Exception('boom')):
+        fm.put('foo.py')
+    fm.on_put_fail.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_delete():
+    """
+    The on_delete_file signal is emitted with the name of the effected file
+    when microfs.rm completes successfully.
+    """
+    fm = FileManager()
+    fm.on_delete_file = mock.MagicMock()
+    mock_rm = mock.MagicMock()
+    mock_serial = mock.MagicMock()
+    with mock.patch('mu.modes.microbit.microfs.rm', mock_rm),\
+            mock.patch('mu.modes.microbit.microfs.get_serial', mock_serial):
+        fm.delete('foo.py')
+    mock_rm.assert_called_once_with('foo.py', mock_serial().__enter__())
+    fm.on_delete_file.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_delete_fail():
+    """
+    The on_delete_fail signal is emitted when a problem is encountered.
+    """
+    fm = FileManager()
+    fm.on_delete_fail = mock.MagicMock()
+    with mock.patch('mu.modes.microbit.microfs.get_serial',
+                    side_effect=Exception('boom')):
+        fm.delete('foo.py')
+    fm.on_delete_fail.emit.assert_called_once_with('foo.py')
 
 
 def test_microbit_mode():
