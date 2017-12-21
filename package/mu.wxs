@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+
+<?define ProductName = "Mu Editor"?>
+<?define ProductVersion = "0.0.1"?>
+<!-- NEVER CHANGE THE upgrade_code BELOW!!!! -->
+<?define ProductUpgradeCode = "4981284B-DCB8-4257-91CA-D79EDC94A9E8"?>
+<?define CompanyName = "Trylan Erruh"?>
+<?define InstallDir = "Mu Editor"?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" UpgradeCode="$(var.ProductUpgradeCode)"
+           Name="$(var.ProductName)" Version="$(var.ProductVersion)" Manufacturer="$(var.CompanyName)" Language="1033">
+    <Package InstallerVersion="200" Compressed="yes" Comments="Windows Installer Package"/><!-- InstallScope="perUser" InstallPrivileges="limited"/> -->
+    <Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
+    <!-- <Icon Id="ProductIcon" SourceFile="example.ico"/> -->
+    <Property Id="ARPPRODUCTICON" Value="ProductIcon"/>
+    <Property Id="ARPHELPLINK" Value="https://codewith.mu/"/>
+    <Property Id="ARPURLINFOABOUT" Value="https://codewith.mu/"/>
+    <Property Id="ARPNOREPAIR" Value="1"/>
+    <Property Id="ARPNOMODIFY" Value="1"/>
+    <Upgrade Id="$(var.ProductUpgradeCode)">
+      <UpgradeVersion Minimum="$(var.ProductVersion)" OnlyDetect="yes" Property="NEWERVERSIONDETECTED"/>
+      <UpgradeVersion Minimum="0.0.0" Maximum="$(var.ProductVersion)" IncludeMinimum="yes" IncludeMaximum="no"
+                      Property="OLDERVERSIONBEINGUPGRADED"/>
+    </Upgrade>
+    <Condition Message="A newer version of this software is already installed.">NOT NEWERVERSIONDETECTED</Condition>
+
+    <Feature Id="ProgramFiles">
+      <ComponentGroupRef Id="FromHeat" />
+    </Feature>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <!-- <Directory Id="LocalAppDataFolder"> -->
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLDIR" Name="$(var.InstallDir)"></Directory>
+      </Directory>
+    </Directory>
+
+    <InstallExecuteSequence>
+      <RemoveExistingProducts After="InstallValidate"/>
+    </InstallExecuteSequence>
+    <!--
+    <Feature Id="DefaultFeature" Level="1">
+      <ComponentRef Id="ApplicationShortcuts"/>
+    </Feature>
+    -->
+   </Product>
+</Wix>

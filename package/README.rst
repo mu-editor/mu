@@ -99,3 +99,12 @@ You can download the latest executable build of Mu for your respective operating
 * `Windows <http://mu-builds.s3-website.eu-west-2.amazonaws.com/?prefix=windows/>`_
 * `Mac OS X <http://mu-builds.s3-website.eu-west-2.amazonaws.com/?prefix=osx/>`_
 * `Linux <http://mu-builds.s3-website.eu-west-2.amazonaws.com/?prefix=linux/>`_
+
+Create Windows MSI Installer
+------------------
+
+To create an MSI install the Wix Toolset http://wixtoolset.org/.
+Note: only the unreleased version 3.14 will install on Windows 10, you can download it here http://wixtoolset.org/releases/weekly/.
+
+* Set the version in the mu.wxs file.
+* Run `python create_msi.py`
