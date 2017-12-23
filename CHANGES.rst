@@ -1,6 +1,19 @@
 Release History
 ---------------
 
+1.0.0.beta.13
+=============
+
+* Fix to solve problem when restoring CircuitPython session when device is not
+  connected.
+* Fix to solve "data terminal ready" (DTR) problem when CircuitPython expects
+  DTR to be set (and it isn't by default in Qt).
+* Added initial work on developer documentation found here: http://mu.rtfd.io/
+* Updates to USB PIDs for Adafruit boards.
+* Added functionally equivalent "make.py" for Windows based developers.
+* Major refactor of the micro:bit related "files" UI pane: it no longer blocks
+  the main UI thread.
+
 1.0.0.beta.12
 =============
 
