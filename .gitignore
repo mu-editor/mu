@@ -69,3 +69,4 @@ target/
 
 # OSX
 .DS_Store
+/.vs/slnx.sqlite
