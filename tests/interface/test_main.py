@@ -379,7 +379,7 @@ def test_Window_get_load_path():
         assert w.get_load_path('micropython') == path
     mock_fd.getOpenFileName.assert_called_once_with(w.widget, 'Open file',
                                                     'micropython',
-                                                    '*.py *.hex')
+                                                    '*.py *.PY *.hex')
 
 
 def test_Window_get_save_path():

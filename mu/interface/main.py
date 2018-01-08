@@ -216,7 +216,7 @@ class Window(QMainWindow):
         path. Defaults to start in the referenced folder.
         """
         path, _ = QFileDialog.getOpenFileName(self.widget, 'Open file', folder,
-                                              '*.py *.hex')
+                                              '*.py *.PY *.hex')
         logger.debug('Getting load path: {}'.format(path))
         return path
 
