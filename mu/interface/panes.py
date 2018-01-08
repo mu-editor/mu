@@ -789,9 +789,9 @@ class DebugInspector(QTreeView):
             self.setStyleSheet(CONTRAST_STYLE)
 
 
-class MicroPythonPlotterPane(QChartView):
+class PlotterPane(QChartView):
     """
-    This plotter makes viewing sensor data easy!
+    This plotter widget makes viewing sensor data easy!
 
     This widget represents a chart that will look for CSV data on
     the REPL and will auto-generate a graph
