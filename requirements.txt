@@ -6,6 +6,7 @@ sphinx
 pytest-cov
 pyserial
 pyqt5
+PyQtChart
 qscintilla
 qtconsole
 matplotlib

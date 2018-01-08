@@ -49,6 +49,7 @@ class BaseMode(QObject):
     description = 'DESCRIPTION NOT AVAILABLE.'
     icon = 'help'
     repl = None
+    plotter = None
     is_debugger = False
     has_debugger = False
     save_timeout = 5  #: Number of seconds to wait before saving work.
@@ -181,6 +182,43 @@ class MicroPythonMode(BaseMode):
                             ' before trying again.')
             self.view.show_message(message, information)
 
+    def toggle_plotter(self, event):
+        """
+        Toggles the plotter on and off.
+        """
+        print("toggle_plotter", self.plotter)
+        if self.plotter is None:
+            self.add_plotter()
+            logger.info('Toggle plotter on.')
+        else:
+            self.remove_plotter()
+            logger.info('Toggle plotter off.')
+
+    def remove_plotter(self):
+        """
+        If there's an active plotter, hide it.
+        """
+        print("base remove_plotter")
+        if self.plotter is None:
+            raise RuntimeError('Plotter not running.')
+        self.view.remove_plotter()
+        self.plotter = None
+        logger.info('Removing plotter')
+
+    def add_plotter(self):
+        """
+        Check if REPL exists, and if so, enable the plotter pane!
+        """
+        print("base add_plotter")
+        if self.repl is None:
+            message = _('Could not start plotter.')
+            info = _("The REPL must be running for the plotter to work!")
+            self.view.show_message(message, info)
+            return
+        self.plotter = Plotter()
+        self.view.add_micropython_plotter(self.name)
+        logger.info('Started plotter')
+
 
 class REPL:
     """
@@ -201,3 +239,13 @@ class REPL:
             # No idea how to deal with other OS's so fail.
             raise NotImplementedError('OS "{}" not supported.'.format(os.name))
         logger.info('Created new REPL object with port: {}'.format(self.port))
+
+
+class Plotter:
+    """
+    A pane that plots data coming in from the REPL
+
+    REPL must already be open before this is activated!
+    """
+    def __init__(self):
+        pass

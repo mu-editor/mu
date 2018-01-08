@@ -58,6 +58,13 @@ class AdafruitMode(MicroPythonMode):
                 'handler': self.toggle_repl,
                 'shortcut': 'CTRL+Shift+I',
             },
+            {
+                'name': 'plotter',
+                'display_name': _('Plotter'),
+                'description': _('Plot incoming REPL data'),
+                'handler': self.toggle_plotter,
+                'shortcut': 'CTRL+Shift+P',
+            },
         ]
 
     def workspace_dir(self):
