@@ -120,4 +120,5 @@ Contents:
    packaging.rst
    website.rst
    api.rst
+   authors.rst
    changes.rst
