@@ -13,7 +13,7 @@ We have `extensive developer documentation <https://mu.readthedocs.io/>`_
 including a guide for
 `setting up a development environment <https://mu.readthedocs.io/en/latest/setup.html>`_, 
 `contributor guidelines <https://mu.readthedocs.io/en/latest/contributing.html>`_ and
-`some suggested first steps <https://mu.readthedocs.io/en/latest/first-steps.html>`.
+`some suggested first steps <https://mu.readthedocs.io/en/latest/first-steps.html>`_.
 
 We want our community to be a friendly place. Therefore, we expect contributors
 and collaborators to follow our
