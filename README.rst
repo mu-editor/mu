@@ -1,5 +1,5 @@
-Mu - a simple editor 
-====================
+Mu - A Simple Python Code Editor 
+================================
 
 .. image:: docs/logo.png
 
