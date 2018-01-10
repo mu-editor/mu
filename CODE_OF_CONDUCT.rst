@@ -1,5 +1,9 @@
-Python Community Code of Conduct
---------------------------------
+Code of Conduct
+---------------
+
+We expect contributors to follow the
+`Python Software Foundation's Code of Conduct <https://www.python.org/psf/codeofconduct/>`_,
+reproduced below.
 
 The Python community is made up of members from around the globe with a diverse
 set of skills, personalities, and experiences. It is through these differences

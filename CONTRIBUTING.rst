@@ -21,8 +21,12 @@ with respect, humour and intelligence wins every time.
   too, get involved.
 * This is a new community. *No-one knows what they are doing*, so, get involved.
 
-We expect contributors to follow the Python Software Foundation's Code of
-Conduct: https://www.python.org/psf/codeofconduct/
+We expect contributors to follow our `code_of_conduct <https://mu.readthedocs.io/en/latest/code_of_conduct.html>`_.
+
+Check out our
+`developer setup <https://mu.readthedocs.io/en/latest/setup.html>`
+documentation for instructions to configure a working development environment
+for Mu.
 
 Feedback may be given for contributions and, where necessary, changes will
 be politely requested and discussed with the originating author. Respectful
@@ -43,7 +47,7 @@ Checklist
 * We have 100% test coverage - include tests to maintain this!
 * **Before submitting code ensure coding standards and test coverage by running**::
 
-    $ make check
+    make check
 
 * If in doubt, ask a question. The only stupid question is the one that's never asked.
 * Most importantly, **Have fun!**

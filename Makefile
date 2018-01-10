@@ -4,6 +4,7 @@ export PYFLAKES_BUILTINS=_
 
 all:
 	@echo "\nThere is no default Makefile target right now. Try:\n"
+	@echo "make run - run the local development version of Mu."
 	@echo "make clean - reset the project and remove auto-generated assets."
 	@echo "make pyflakes - run the PyFlakes code checker."
 	@echo "make pycodestyle - run the PEP8 style checker."
@@ -27,6 +28,13 @@ clean:
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
 	find . | grep -E "(__pycache__)" | xargs rm -rf
+
+run: clean
+ifeq ($(VIRTUAL_ENV),)
+	@echo "\n\nCannot run Mu. Your Python virtualenv is not activated."
+else
+	python run.py
+endif
 
 pyflakes:
 	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
