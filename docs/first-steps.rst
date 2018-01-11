@@ -40,6 +40,8 @@ issues that say some variation of, "when I click this button, it breaks". ;-)
 Coding
 ++++++
 
+The first thing to do is follow the instructions for :doc:`setup`.
+
 You should read the explanation of :doc:`architecture` to learn how Mu fits
 together. As of time of writing, Mu is a very small project with only around
 2500 lines of Python code. However, it's important to know where to find
