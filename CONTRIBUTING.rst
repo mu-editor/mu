@@ -24,7 +24,7 @@ with respect, humour and intelligence wins every time.
 We expect contributors to follow our `code_of_conduct <https://mu.readthedocs.io/en/latest/code_of_conduct.html>`_.
 
 Check out our
-`developer setup <https://mu.readthedocs.io/en/latest/setup.html>`
+`developer setup <https://mu.readthedocs.io/en/latest/setup.html>`_
 documentation for instructions to configure a working development environment
 for Mu.
 
