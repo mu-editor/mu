@@ -113,8 +113,9 @@ class MicroPythonREPLPane(QTextEdit):
     The device MUST be flashed with MicroPython for this to work.
     """
 
-    def __init__(self, port, theme='day', parent=None):
+    def __init__(self, serial, theme='day', parent=None):
         super().__init__(parent)
+        self.serial = serial
         self.setFont(Font().load())
         self.setAcceptRichText(False)
         self.setReadOnly(False)
@@ -122,29 +123,8 @@ class MicroPythonREPLPane(QTextEdit):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.context_menu)
         self.setObjectName('replpane')
-        self.serial_read_hook = None
-        # open the serial port
-        self.serial = QSerialPort(self)
-        self.serial.setPortName(port)
-        if self.serial.open(QIODevice.ReadWrite):
-            self.serial.dataTerminalReady = True
-            if not self.serial.isDataTerminalReady():
-                # Using pyserial as a 'hack' to open the port and set DTR
-                # as QtSerial does not seem to work on some Windows :(
-                # See issues #281 and #302 for details.
-                self.serial.close()
-                pyser = serial.Serial(port)  # open serial port w/pyserial
-                pyser.dtr = True
-                pyser.close()
-                self.serial.open(QIODevice.ReadWrite)
-            self.serial.setBaudRate(115200)
-            self.serial.readyRead.connect(self.on_serial_read)
-            # clear the text
-            self.clear()
             # Send a Control-C
             self.serial.write(b'\x03')
-        else:
-            raise IOError("Cannot connect to device on port {}".format(port))
         self.set_theme(theme)
 
     def paste(self):
@@ -189,23 +169,6 @@ class MicroPythonREPLPane(QTextEdit):
             self.setStyleSheet(NIGHT_STYLE)
         else:
             self.setStyleSheet(CONTRAST_STYLE)
-
-    def set_serial_read_hook(self, f):
-        print("setting hook", f)
-        self.serial_read_hook = f
-
-    def remove_serial_read_hook(self):
-        print("removing hook")
-        self.serial_read_hook = None
-
-    def on_serial_read(self):
-        """
-        Called when the application gets data from the connected device.
-        """
-        data = self.serial.readAll()
-        if self.serial_read_hook:
-            self.serial_read_hook(data)
-        self.process_bytes(bytes(data))
 
     def keyPressEvent(self, data):
         """
