@@ -789,7 +789,7 @@ class DebugInspector(QTreeView):
             self.setStyleSheet(CONTRAST_STYLE)
 
 
-class PlotterPane(QChartView):
+class MicroPythonPlotterPane(QChartView):
     """
     This plotter widget makes viewing sensor data easy!
 

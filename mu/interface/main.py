@@ -17,12 +17,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer
+import serial
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QObject, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog, QMessageBox,
                              QLabel, QMainWindow, QStatusBar, QDockWidget,
                              QShortcut)
 from PyQt5.QtGui import QKeySequence, QStandardItemModel, QStandardItem
+from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
 from mu.interface.dialogs import LogDisplay, ModeSelector
 from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
@@ -163,6 +165,88 @@ class FileTabs(QTabWidget):
             window.update_title(None)
 
 
+class SerialLink(QObject):
+    """
+    Represents a USB serial connection to a MicroPython / CircuitPython board.
+    """
+
+    # emitted when any data is received.
+    data_received = pyqtSignal(bytes)
+    # emitted only when a Python tuple containing numeric values is received.
+    tuple_received = pyqtSignal(tuple)
+
+    def __init__(self, port, parent):
+        """
+        Given a port and parent widget, make a serial connection.
+        """
+        self.input_buffer = []
+        self.serial = QSerialPort(parent)
+        self.serial.setPortName(port)
+        if self.serial.open(QIODevice.ReadWrite):
+            self.serial.dataTerminalReady = True
+            if not self.serial.isDataTerminalReady():
+                # Using pyserial as a 'hack' to open the port and set DTR
+                # as QtSerial does not seem to work on some Windows :(
+                # See issues #281 and #302 for details.
+                self.serial.close()
+                pyser = serial.Serial(port)  # open serial port w/pyserial
+                pyser.dtr = True
+                pyser.close()
+                self.serial.open(QIODevice.ReadWrite)
+            self.serial.setBaudRate(115200)
+            self.serial.readyRead.connect(self.on_serial_read)
+        else:
+            raise IOError("Cannot connect to device on port {}".format(port))
+
+    def write(self, data):
+        """
+        Writes data to the serial connection.
+        """
+        self.serial.write(data)
+
+    def on_serial_read(self):
+        """
+        Called when the connected device is ready to send data via the serial
+        connection. It reads all the available data, emits the data_received
+        signal with the received bytes and, if appropriate, emits the
+        tuple_received signal with the tuple created from the bytes received.
+        """
+        data = self.serial.readAll()  # get all the available bytes.
+        self.data_received.emit(data)
+        self.input_buffer.append(data)
+        # Check if the data contains a Python tuple, containing numbers, on a
+        # single line (i.e. ends with \n).
+        input_bytes = b''.join(self.input_buffer)
+        lines = input_bytes.split(b'\n')
+        for line in lines:
+            if line.startswith(b'(') and line.endswith(b')'):
+                # Candidate tuple. Extract the raw bytes into a numeric tuple.
+                raw_values = [val.strip() for val in line[1:-1].split(b',')]
+                numeric_values = []
+                for raw in raw_values:
+                    try:
+                        numeric_values.append(int(raw))
+                        # It worked, so move onto the next value.
+                        continue
+                    except ValueError:
+                        # Try again as a float.
+                        pass
+                    try:
+                        numeric_values.append(float(raw))
+                    except ValueError:
+                        # Not an int or float, so ignore this value.
+                        continue
+                if numeric_values:
+                    # There were numeric values in the tuple, so emit them!
+                    self.tuple_received.emit(tuple(numeric_values))
+        # Reset the input buffer.
+        self.input_buffer = []
+        if lines[-1]:
+            # Append any bytes that are not yet at the end of a line, for
+            # processing next time we read data from self.serial.
+            self.input_buffer.append(lines[-1])
+
+
 class Window(QMainWindow):
     """
     Defines the look and characteristics of the application's main window.
@@ -172,6 +256,7 @@ class Window(QMainWindow):
     icon = "icon"
     timer = None
     usb_checker = None
+    serial_connection = None
 
     _zoom_in = pyqtSignal(int)
     _zoom_out = pyqtSignal(int)
