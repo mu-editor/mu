@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-09-13 17:50+0100\n"
-"PO-Revision-Date: 2018-01-17 20:32+0000\n"
-"Last-Translator: Richard Kellner <richard.kellner@pycon.sk>\n"
+"PO-Revision-Date: 2018-01-17 20:34+0000\n"
+"Last-Translator: Juraj M. Bezručka <juraj.bezrucka@gmail.com>\n"
 "Language-Team: Slovak <https://preklady.python.sk/projects/mu-editor/mu-"
 "editor-spy-github-fork/sk/>\n"
 "Language: sk\n"
@@ -711,13 +711,15 @@ msgstr ""
 
 #: mu/modes/microbit.py:170
 msgid "File system and REPL cannot work at the same time."
-msgstr ""
+msgstr "Súborový systém a REPL nemôžu pracovať naraz."
 
 #: mu/modes/microbit.py:171
 msgid ""
 "The file system and REPL both use the same USB serial connection. Only one "
 "can be active at any time. Toggle the REPL off and try again."
 msgstr ""
+"Súborový systém a REPL využívajú rovnaké USB sériové pripojenie. Len jedno z "
+"nich môže byť aktívne v jednom okamihu. Vypni REPL a skús znova."
 
 #: mu/modes/microbit.py:188
 msgid ""
@@ -744,4 +746,4 @@ msgstr "Spustiť"
 
 #: mu/modes/python3.py:46
 msgid "Run and debug your Python script."
-msgstr ""
+msgstr "Spusť a laď svoj Python skript."
