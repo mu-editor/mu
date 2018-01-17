@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-09-13 17:50+0100\n"
-"PO-Revision-Date: 2018-01-17 20:10+0000\n"
-"Last-Translator: Richard Kellner <richard.kellner@pycon.sk>\n"
+"PO-Revision-Date: 2018-01-17 20:29+0000\n"
+"Last-Translator: Juraj M. Bezručka <juraj.bezrucka@gmail.com>\n"
 "Language-Team: Slovak <https://preklady.python.sk/projects/mu-editor/mu-"
 "editor-spy-github-fork/sk/>\n"
 "Language: sk\n"
@@ -242,18 +242,22 @@ msgid ""
 "REPL stands for read, evaluate, print, loop. It's a fun way to talk to your "
 "computer! :-)"
 msgstr ""
+"REPL je anglická skratka, ktorá znamená Čítaj, Vyhodnoť, Vypíš, Opakuj. Je "
+"to zábavný spôsob, ako sa rozprávať so svojim počítačom! :-)"
 
 #: mu/logic.py:81
 msgid "Be brave, break things, learn and have fun!"
-msgstr ""
+msgstr "Smelo do toho, kaz veci, uč sa a bav sa!"
 
 #: mu/logic.py:82
 msgid "Make your software both useful AND fun. Empower your users."
 msgstr ""
+"Urob svoj program užitočný, ale AJ zábavný. Obohať používateľov tvojho "
+"programu."
 
 #: mu/logic.py:83
 msgid "For the Zen of Python: import this"
-msgstr ""
+msgstr "Pre Zen Pythonu: import this"
 
 #: mu/logic.py:84
 msgid "Diversity promotes creativity."
@@ -261,16 +265,16 @@ msgstr "Roznorodosť podporuje kreativitu."
 
 #: mu/logic.py:85
 msgid "An open mind, spirit of adventure and respect for diversity are key."
-msgstr ""
+msgstr "Otvorená myseľ, dobrodružný duch a rešpekt k rôznorodosti sú kľúčové."
 
 #: mu/logic.py:86
 msgid ""
 "Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
-msgstr ""
+msgstr "Nevadí, ak to nefunguje. Pouč sa, oprav to a skús znova! :-)"
 
 #: mu/logic.py:88
 msgid "Coding is collaboration."
-msgstr ""
+msgstr "Programovanie je spolupráca."
 
 #: mu/logic.py:89
 msgid "Compliment and amplify the good things with code."
@@ -279,11 +283,11 @@ msgstr ""
 #: mu/logic.py:90
 msgid ""
 "In theory, theory and practice are the same. In practice, they're not. ;-)"
-msgstr ""
+msgstr "V teórii sú teória a prax rovnaké. V praxi nie sú. ;-)"
 
 #: mu/logic.py:92
 msgid "Debugging is twice as hard as writing the code in the first place."
-msgstr ""
+msgstr "V prvom rade ladenie je dvakrát ťažšie ako písanie kódu."
 
 #: mu/logic.py:93
 msgid "It's fun to program."
@@ -291,15 +295,15 @@ msgstr "Programovať je zábava."
 
 #: mu/logic.py:94
 msgid "Programming has more to do with problem solving than writing code."
-msgstr ""
+msgstr "Programovanie je viac o riešení problémov ako o písaní kódu."
 
 #: mu/logic.py:95
 msgid "Start with your users' needs."
-msgstr ""
+msgstr "Začni s tým, čo tvoji používatelia potrebujú."
 
 #: mu/logic.py:96
 msgid "Try to see things from your users' point of view."
-msgstr ""
+msgstr "Skús sa pozrieť na svet očami tvojich užívateľov."
 
 #: mu/logic.py:97
 msgid "Put yourself in your users' shoes."
@@ -309,6 +313,7 @@ msgstr ""
 msgid ""
 "Explaining a programming problem to a friend often reveals the solution. :-)"
 msgstr ""
+"Vysvetľovanie programovacích problémov priateľom často odhalí riešenie. :-)"
 
 #: mu/logic.py:100
 msgid "If you don't know, ask. Nobody to ask? Just look it up."
@@ -316,160 +321,169 @@ msgstr ""
 
 #: mu/logic.py:101
 msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
-msgstr ""
+msgstr "Zložitosť je nepriateľ. Rob veci jednoducho!"
 
 #: mu/logic.py:102
 msgid "Beautiful is better than ugly."
-msgstr ""
+msgstr "Pekné je lepšie ako škaredé."
 
 #: mu/logic.py:103
 msgid "Explicit is better than implicit."
-msgstr ""
+msgstr "Explicitné je lepšie ako implicitné."
 
 #: mu/logic.py:104
 msgid "Simple is better than complex. Complex is better than complicated."
-msgstr ""
+msgstr "Jednoduché je lepšie ako zložité. Zložité je lepšie ako komplikované."
 
 #: mu/logic.py:105
 msgid "Flat is better than nested."
-msgstr ""
+msgstr "Ploché je lepšie ako vnorené."
 
 #: mu/logic.py:106
 msgid "Sparse is better than dense."
-msgstr ""
+msgstr "Voľné je lepšie ako tesné."
 
 #: mu/logic.py:107
 msgid "Readability counts."
-msgstr ""
+msgstr "Čitateľnosť sa počíta."
 
 #: mu/logic.py:108
 msgid ""
 "Special cases aren't special enough to break the rules. Although "
 "practicality beats purity."
 msgstr ""
+"Špeciálne prípady nie sú tak špeciálne, aby sme porušili pravidlá. Ale "
+"praktickosť víťazí nad čistotou."
 
 #: mu/logic.py:110
 msgid "Errors should never pass silently. Unless explicitly silenced."
-msgstr ""
+msgstr "Chyby nesmú prejsť potichu. Pokiaľ nie sú potichu explicitne."
 
 #: mu/logic.py:111
 msgid "In the face of ambiguity, refuse the temptation to guess."
-msgstr ""
+msgstr "Tvárou v tvár nejednoznačnosti odolaj pokušeniu hádať."
 
 #: mu/logic.py:112
 msgid "There should be one-- and preferably only one --obvious way to do it."
 msgstr ""
+"Mal by existovať jeden -- a podľa možností iba jeden -- jasný spôsob, ako to "
+"urobiť."
 
 #: mu/logic.py:113
 msgid ""
 "Now is better than never. Although never is often better than *right* now."
-msgstr ""
+msgstr "Teraz je lepšie ako nikdy. Ale nikdy je často lepšie ako *práve* teraz."
 
 #: mu/logic.py:115
 msgid "If the implementation is hard to explain, it's a bad idea."
-msgstr ""
+msgstr "Ak je implementáciu zložité vysvetliť, je to zlý nápad."
 
 #: mu/logic.py:116
 msgid "If the implementation is easy to explain, it may be a good idea."
-msgstr ""
+msgstr "Ak je implementáciu jednoduché vysvetliť, môže to byť dobrý nápad."
 
 #: mu/logic.py:117
 msgid "Namespaces are one honking great idea -- let's do more of those!"
-msgstr ""
+msgstr "Menné priestory sú skvelá myšlienka -- používajme ich viac!"
 
 #: mu/logic.py:118
 msgid "Mu was created by Nicholas H.Tollervey."
-msgstr ""
+msgstr "Autorom Mu je Nicholas H.Tollervey."
 
 #: mu/logic.py:119
 msgid "To understand what recursion is, you must first understand recursion."
-msgstr ""
+msgstr "Na pochopenie rekurzie musíš najskôr pochopiť rekurziu."
 
 #: mu/logic.py:120
 msgid ""
 "Algorithm: a word used by programmers when they don't want to explain what "
 "they did."
 msgstr ""
+"Algoritmus: slovo, ktoré programátori používajú, keď nechcú vysvetliť, čo "
+"urobili."
 
 #: mu/logic.py:122
 msgid "Programmers count from zero."
-msgstr ""
+msgstr "Programátori počítajú od nuly."
 
 #: mu/logic.py:123
 msgid "Simplicity is the ultimate sophistication."
-msgstr ""
+msgstr "Jednoduchosť je najvyšším štádiom pokroku."
 
 #: mu/logic.py:124
 msgid "A good programmer is humble."
-msgstr ""
+msgstr "Dobrý programátor je skromný."
 
 #: mu/logic.py:125
 msgid "A good programmer is playful."
-msgstr ""
+msgstr "Dobrý programátor je hravý."
 
 #: mu/logic.py:126
 msgid "A good programmer learns to learn."
-msgstr ""
+msgstr "Dobrý programátor sa učí učiť sa."
 
 #: mu/logic.py:127
 msgid "A good programmer thinks beyond the obvious."
-msgstr ""
+msgstr "Dobrý programátor premýšľa za hranicou samozrejmosti."
 
 #: mu/logic.py:128
 msgid "A good programmer promotes simplicity."
-msgstr ""
+msgstr "Dobrý programátor podporuje jednoduchosť."
 
 #: mu/logic.py:129
 msgid "A good programmer avoids complexity."
-msgstr ""
+msgstr "Dobrý programátor sa vyhýba zložitosti."
 
 #: mu/logic.py:130
 msgid "A good programmer is patient."
-msgstr ""
+msgstr "Dobrý programátor je trpezlivý."
 
 #: mu/logic.py:131
 msgid "A good programmer asks questions."
-msgstr ""
+msgstr "Dobrý programátor kladie otázky."
 
 #: mu/logic.py:132
 msgid "A good programmer is willing to say, 'I don't know'."
-msgstr ""
+msgstr "Dobrý programátor je ochotný povedať 'Neviem'."
 
 #: mu/logic.py:133
 msgid "Wisest are they that know they know nothing."
-msgstr ""
+msgstr "Najmúdrejší sú tí, ktorí vedia, že nič nevedia."
 
 #: mu/logic.py:243
 msgid " above this line"
-msgstr ""
+msgstr " nad týmto riadkom"
 
 #: mu/logic.py:288
 msgid ""
 "Syntax error. Python cannot understand this line. Check for missing "
 "characters!"
 msgstr ""
+"Chyba syntaxe. Python nerozumie tomuto riadku. Skontroluj chýbajúce znaky!"
 
 #: mu/logic.py:418
 msgid "# Write your code here :-)"
-msgstr ""
+msgstr "# Sem napíš svoj kód :-)"
 
 #: mu/logic.py:452
 msgid "The file \"{}\" is already open."
-msgstr ""
+msgstr "Súbor \"{}\" je už otvorený."
 
 #: mu/logic.py:512
 msgid "Saved file: {}"
-msgstr ""
+msgstr "Uložený súbor: {}"
 
 #: mu/logic.py:515
 msgid "Could not save file."
-msgstr ""
+msgstr "Nemôžem uložiť súbor."
 
 #: mu/logic.py:516
 msgid ""
 "Error saving file to disk. Ensure you have permission to write the file and "
 "sufficient disk space."
 msgstr ""
+"Chyba pri ukladaní na disk. Uisti sa, že máš práva na zápis súboru a "
+"dostatok miesta na disku."
 
 #: mu/logic.py:585
 msgid ""
@@ -478,19 +492,19 @@ msgstr ""
 
 #: mu/logic.py:638
 msgid "Changed to {} mode."
-msgstr ""
+msgstr "Zmenené do módu {}."
 
 #: mu/logic.py:723
 msgid "Connection from a new device detected."
-msgstr ""
+msgstr "Pripojenie nového zariadenia."
 
 #: mu/logic.py:725
 msgid " Please switch to {} mode."
-msgstr ""
+msgstr " Prepni sa prosím do módu {}."
 
 #: mu/modes/adafruit.py:29
 msgid "Adafruit CircuitPython"
-msgstr ""
+msgstr "Adafruit CircuitPython"
 
 #: mu/modes/adafruit.py:30
 msgid "Use CircuitPython on Adafruit's line of development boards."
@@ -498,7 +512,7 @@ msgstr ""
 
 #: mu/modes/adafruit.py:52 mu/modes/microbit.py:65 mu/modes/python3.py:51
 msgid "REPL"
-msgstr ""
+msgstr "REPL"
 
 #: mu/modes/adafruit.py:53 mu/modes/python3.py:52
 msgid "Use the REPL for live coding."
@@ -506,7 +520,7 @@ msgstr ""
 
 #: mu/modes/adafruit.py:118
 msgid "Could not find an attached Adafruit CircuitPython device."
-msgstr ""
+msgstr "Nemôžem nájsť pripojené zariadenie Adafruit CircuitPython."
 
 #: mu/modes/adafruit.py:120
 msgid ""
@@ -518,15 +532,24 @@ msgid ""
 "\n"
 "...to store your code."
 msgstr ""
+"Python súbory pre zariadenia Adafruit CircuitPython sú uložené na zariadení. "
+"Preto, na úpravu týchto súborov musí byť zariadenie pripojené. Kým pripojíš "
+"zariadenie, Mu bude používať tento adresár:\n"
+"\n"
+" {}\n"
+"\n"
+"...kde bude ukladať tvoj kód."
 
 #: mu/modes/base.py:166
 msgid ""
 "Click on the device's reset button, wait a few seconds and then try again."
 msgstr ""
+"Klikni na resetovacie tlačítko zariadenia, počkaj niekoľko sekúnd a skús "
+"znova. "
 
 #: mu/modes/base.py:172
 msgid "Could not find an attached device."
-msgstr ""
+msgstr "Nemôžem nájsť pripojené zariadenie."
 
 #: mu/modes/base.py:173
 msgid ""
@@ -538,6 +561,13 @@ msgid ""
 "Finally, press the device's reset button and wait a few seconds before "
 "trying again."
 msgstr ""
+"Prosím uistit sa, že zariadenie je pripojené k počítaču.\n"
+"\n"
+"Musí mať v sebe nahratú verziu MicroPythonu (or CircuitPythonu)  aby REPL "
+"fungoval.\n"
+"\n"
+"Nakoniec, stlač resetovacie tlačítko zariadenia, počkaj niekoľko sekúnd a "
+"skús znova."
 
 #: mu/modes/debugger.py:33
 msgid "Graphical Debugger"
@@ -545,7 +575,7 @@ msgstr ""
 
 #: mu/modes/debugger.py:34
 msgid "Debug your Python 3 code."
-msgstr ""
+msgstr "Laď svoj Python 3 kód."
 
 #: mu/modes/debugger.py:48
 msgid "Stop"
@@ -553,7 +583,7 @@ msgstr "Stop"
 
 #: mu/modes/debugger.py:49
 msgid "Stop the running code."
-msgstr ""
+msgstr "Zastav bežiaci kód."
 
 #: mu/modes/debugger.py:54
 msgid "Continue"
@@ -561,23 +591,23 @@ msgstr "Pokračovať"
 
 #: mu/modes/debugger.py:55
 msgid "Continue to run your Python script."
-msgstr ""
+msgstr "Pokračuj vo svojom Python skripte. "
 
 #: mu/modes/debugger.py:60
 msgid "Step Over"
-msgstr ""
+msgstr "Ďalší krok"
 
 #: mu/modes/debugger.py:61
 msgid "Step over a line of code."
-msgstr ""
+msgstr "Postúp o riadok kódu."
 
 #: mu/modes/debugger.py:66
 msgid "Step In"
-msgstr ""
+msgstr "Vojsť dovnútra"
 
 #: mu/modes/debugger.py:67
 msgid "Step into a function."
-msgstr ""
+msgstr "Vojsť do funkcie"
 
 #: mu/modes/debugger.py:72
 msgid "Step Out"
