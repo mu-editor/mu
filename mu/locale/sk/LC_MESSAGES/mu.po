@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-09-13 17:50+0100\n"
-"PO-Revision-Date: 2018-01-17 20:02+0000\n"
-"Last-Translator: Juraj M. Bezručka <juraj.bezrucka@gmail.com>\n"
+"PO-Revision-Date: 2018-01-17 20:04+0000\n"
+"Last-Translator: Richard Kellner <richard.kellner@pycon.sk>\n"
 "Language-Team: Slovak <https://preklady.python.sk/projects/mu-editor/mu-"
 "editor-spy-github-fork/sk/>\n"
 "Language: sk\n"
@@ -189,7 +189,7 @@ msgstr "Vymazať (nevratná operácia)"
 
 #: mu/interface.py:1721
 msgid "Files on your micro:bit:"
-msgstr "Súbory na tvojom micro:bite"
+msgstr "Súbory na tvojom micro:bite:"
 
 #: mu/interface.py:1723
 msgid "Files on your computer:"
