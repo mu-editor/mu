@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-09-13 17:50+0100\n"
 "PO-Revision-Date: 2018-01-17 20:29+0000\n"
-"Last-Translator: Juraj M. Bezručka <juraj.bezrucka@gmail.com>\n"
+"Last-Translator: Richard Kellner <richard.kellner@pycon.sk>\n"
 "Language-Team: Slovak <https://preklady.python.sk/projects/mu-editor/mu-"
 "editor-spy-github-fork/sk/>\n"
 "Language: sk\n"
@@ -607,7 +607,7 @@ msgstr "Vojsť dovnútra"
 
 #: mu/modes/debugger.py:67
 msgid "Step into a function."
-msgstr "Vojsť do funkcie"
+msgstr "Vojsť do funkcie."
 
 #: mu/modes/debugger.py:72
 msgid "Step Out"
