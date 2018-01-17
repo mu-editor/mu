@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-09-13 17:50+0100\n"
-"PO-Revision-Date: 2018-01-17 18:13+0000\n"
-"Last-Translator: Richard Kellner <richard.kellner@pycon.sk>\n"
+"PO-Revision-Date: 2018-01-17 20:02+0000\n"
+"Last-Translator: Juraj M. Bezručka <juraj.bezrucka@gmail.com>\n"
 "Language-Team: Slovak <https://preklady.python.sk/projects/mu-editor/mu-"
 "editor-spy-github-fork/sk/>\n"
 "Language: sk\n"
@@ -116,7 +116,7 @@ msgstr "{} REPL"
 
 #: mu/interface.py:894
 msgid "Debug Inspector"
-msgstr ""
+msgstr "Inšpektor ladenia"
 
 #: mu/interface.py:912
 msgid "Name"
@@ -128,11 +128,11 @@ msgstr "Hodnota"
 
 #: mu/interface.py:929
 msgid "(A list of {} items.)"
-msgstr ""
+msgstr "(Zoznam {} položiek.)"
 
 #: mu/interface.py:941
 msgid "(A dict of {} items.)"
-msgstr ""
+msgstr "(Slovník {} položiek.)"
 
 #: mu/interface.py:1056
 msgid "Mu"
@@ -140,7 +140,7 @@ msgstr "Mu"
 
 #: mu/interface.py:1201
 msgid "Select edit mode."
-msgstr ""
+msgstr "Vyber mód úprav."
 
 #: mu/interface.py:1207
 msgid "View logs."
@@ -152,13 +152,13 @@ msgstr "Vyber jazyk."
 
 #: mu/interface.py:1276
 msgid "Select Mode"
-msgstr ""
+msgstr "Vyber mód"
 
 #: mu/interface.py:1278
 msgid ""
 "Please select the desired mode then click \"OK\". Otherwise, click \"Cancel"
 "\"."
-msgstr ""
+msgstr "Vyber prosím zvolený mód a klikni \"OK\". Alebo klikni na \"Zrušiť\"."
 
 #: mu/interface.py:1291
 msgid ""
@@ -168,7 +168,7 @@ msgstr ""
 
 #: mu/interface.py:1323
 msgid "Mu Debug Log"
-msgstr ""
+msgstr "Mu log ladenia"
 
 #: mu/interface.py:1326
 msgid ""
@@ -185,15 +185,15 @@ msgstr "Súbor už existuje"
 
 #: mu/interface.py:1652
 msgid "Delete (cannot be undone)"
-msgstr "Vymazať (nevrátna operácia)"
+msgstr "Vymazať (nevratná operácia)"
 
 #: mu/interface.py:1721
 msgid "Files on your micro:bit:"
-msgstr ""
+msgstr "Súbory na tvojom micro:bite"
 
 #: mu/interface.py:1723
 msgid "Files on your computer:"
-msgstr ""
+msgstr "Súbory na tvojom počítači:"
 
 #: mu/interface.py:1827
 msgid ""
