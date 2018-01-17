@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-09-13 17:50+0100\n"
-"PO-Revision-Date: 2018-01-17 20:29+0000\n"
-"Last-Translator: Richard Kellner <richard.kellner@pycon.sk>\n"
+"PO-Revision-Date: 2018-01-17 20:31+0000\n"
+"Last-Translator: Juraj M. Bezručka <juraj.bezrucka@gmail.com>\n"
 "Language-Team: Slovak <https://preklady.python.sk/projects/mu-editor/mu-"
 "editor-spy-github-fork/sk/>\n"
 "Language: sk\n"
@@ -611,19 +611,19 @@ msgstr "Vojsť do funkcie."
 
 #: mu/modes/debugger.py:72
 msgid "Step Out"
-msgstr ""
+msgstr "Vyjsť von"
 
 #: mu/modes/debugger.py:73
 msgid "Step out of a function."
-msgstr ""
+msgstr "Vyjsť z funkcie."
 
 #: mu/modes/debugger.py:110
 msgid "Running script {}"
-msgstr ""
+msgstr "Bežiaci skript {}"
 
 #: mu/modes/debugger.py:149
 msgid "Your script has finished running."
-msgstr ""
+msgstr "Tvoj skript dobehol."
 
 #: mu/modes/debugger.py:270
 msgid "Debugger info: {}"
@@ -659,7 +659,7 @@ msgstr "Súbory"
 
 #: mu/modes/microbit.py:60
 msgid "Access the file system on the micro:bit."
-msgstr ""
+msgstr "Vojdi do súborového systému na micro:bite."
 
 #: mu/modes/microbit.py:66
 msgid "Use the REPL to live-code on the micro:bit."
@@ -671,7 +671,7 @@ msgstr ""
 
 #: mu/modes/microbit.py:95
 msgid "Your script is too long!"
-msgstr ""
+msgstr "Tvoj skript je príliš dlhý!"
 
 #: mu/modes/microbit.py:122
 msgid "Flashing \"{}\" onto the micro:bit."
@@ -683,7 +683,7 @@ msgstr ""
 
 #: mu/modes/microbit.py:133 mu/modes/microbit.py:187
 msgid "Could not find an attached BBC micro:bit."
-msgstr ""
+msgstr "Neviem nájsť pripojený BBC micro:bit."
 
 #: mu/modes/microbit.py:134
 msgid ""
