@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-09-13 17:50+0100\n"
-"PO-Revision-Date: 2018-01-17 12:35+0000\n"
-"Last-Translator: anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2018-01-17 12:37+0000\n"
+"Last-Translator: Juraj M. Bezručka <juraj.bezrucka@gmail.com>\n"
 "Language-Team: Slovak <https://preklady.python.sk/projects/mu-editor/mu-"
 "editor-spy-github-fork/sk/>\n"
 "Language: sk\n"
@@ -20,7 +20,7 @@ msgstr ""
 
 #: mu/app.py:61
 msgid "Logging to {}"
-msgstr ""
+msgstr "Prihlasujem sa k {}"
 
 #: mu/interface.py:345
 msgid "untitled"
