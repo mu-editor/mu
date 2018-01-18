@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-09-13 17:50+0100\n"
-"PO-Revision-Date: 2018-01-18 09:30+0000\n"
-"Last-Translator: Juraj M. Bezručka <juraj.bezrucka@gmail.com>\n"
+"PO-Revision-Date: 2018-01-18 20:56+0000\n"
+"Last-Translator: Richard Kellner <richard.kellner@pycon.sk>\n"
 "Language-Team: Slovak <https://preklady.python.sk/projects/mu-editor/mu-"
 "editor-spy-github-fork/sk/>\n"
 "Language: sk\n"
@@ -225,7 +225,7 @@ msgstr ""
 
 #: mu/logic.py:75
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
-msgstr "Tento editor sa volá Mu (vyslov 'múú'). "
+msgstr "Tento editor sa volá Mu (vyslov 'múú')."
 
 #: mu/logic.py:76
 msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
@@ -575,7 +575,7 @@ msgstr ""
 
 #: mu/modes/debugger.py:33
 msgid "Graphical Debugger"
-msgstr "Grafický debugger"
+msgstr "Grafické ladenie programu"
 
 #: mu/modes/debugger.py:34
 msgid "Debug your Python 3 code."
@@ -631,15 +631,15 @@ msgstr "Tvoj skript dobehol."
 
 #: mu/modes/debugger.py:270
 msgid "Debugger info: {}"
-msgstr "Info z debuggera: {}"
+msgstr "Info z ladenia programu: {}"
 
 #: mu/modes/debugger.py:276
 msgid "Debugger warning: {}"
-msgstr "Výstraha debuggera: {}"
+msgstr "Výstraha pri ladení programu: {}"
 
 #: mu/modes/debugger.py:283
 msgid "Debugger error: {}"
-msgstr "Chyba debuggera: {}"
+msgstr "Chyba pri ladení programu: {}"
 
 #: mu/modes/microbit.py:34
 msgid "BBC micro:bit"
