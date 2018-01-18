@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-09-13 17:50+0100\n"
-"PO-Revision-Date: 2018-01-18 09:23+0000\n"
-"Last-Translator: Marek Mansell <marek.mansell@pycon.sk>\n"
+"PO-Revision-Date: 2018-01-18 09:30+0000\n"
+"Last-Translator: Juraj M. Bezručka <juraj.bezrucka@gmail.com>\n"
 "Language-Team: Slovak <https://preklady.python.sk/projects/mu-editor/mu-"
 "editor-spy-github-fork/sk/>\n"
 "Language: sk\n"
@@ -175,7 +175,7 @@ msgstr "Mu log ladenia"
 #: mu/interface.py:1326
 msgid ""
 "When reporting a bug, copy and paste the content of the following log file."
-msgstr ""
+msgstr "Ak nahlasuješ chybu, skopíruj a vlož  obsah log súboru."
 
 #: mu/interface.py:1612
 msgid "File already exists; overwrite it?"
@@ -265,7 +265,7 @@ msgstr "Pre Zen Pythonu: import this"
 
 #: mu/logic.py:84
 msgid "Diversity promotes creativity."
-msgstr "Roznorodosť podporuje kreativitu."
+msgstr "Rôznorodosť podporuje kreativitu."
 
 #: mu/logic.py:85
 msgid "An open mind, spirit of adventure and respect for diversity are key."
@@ -282,7 +282,7 @@ msgstr "Programovanie je spolupráca."
 
 #: mu/logic.py:89
 msgid "Compliment and amplify the good things with code."
-msgstr ""
+msgstr "Oceň a ešte vylepši dobré veci pomocou kódu."
 
 #: mu/logic.py:90
 msgid ""
@@ -311,7 +311,7 @@ msgstr "Skús sa pozrieť na svet očami tvojich užívateľov."
 
 #: mu/logic.py:97
 msgid "Put yourself in your users' shoes."
-msgstr ""
+msgstr "Uvažuj ako tvoj užívateľ."
 
 #: mu/logic.py:98
 msgid ""
@@ -512,7 +512,7 @@ msgstr "Adafruit CircuitPython"
 
 #: mu/modes/adafruit.py:30
 msgid "Use CircuitPython on Adafruit's line of development boards."
-msgstr ""
+msgstr "Použi CircuitPython na vývojových doskách Adafruit."
 
 #: mu/modes/adafruit.py:52 mu/modes/microbit.py:65 mu/modes/python3.py:51
 msgid "REPL"
@@ -520,7 +520,7 @@ msgstr "REPL"
 
 #: mu/modes/adafruit.py:53 mu/modes/python3.py:52
 msgid "Use the REPL for live coding."
-msgstr ""
+msgstr "Použi REPL na živé kódenie."
 
 #: mu/modes/adafruit.py:118
 msgid "Could not find an attached Adafruit CircuitPython device."
@@ -565,9 +565,9 @@ msgid ""
 "Finally, press the device's reset button and wait a few seconds before "
 "trying again."
 msgstr ""
-"Prosím uistit sa, že zariadenie je pripojené k počítaču.\n"
+"Prosím uisti sa, že zariadenie je pripojené k počítaču.\n"
 "\n"
-"Musí mať v sebe nahratú verziu MicroPythonu (or CircuitPythonu)  aby REPL "
+"Musí mať v sebe nahratú verziu MicroPythonu (or CircuitPythonu), aby REPL "
 "fungoval.\n"
 "\n"
 "Nakoniec, stlač resetovacie tlačítko zariadenia, počkaj niekoľko sekúnd a "
@@ -575,7 +575,7 @@ msgstr ""
 
 #: mu/modes/debugger.py:33
 msgid "Graphical Debugger"
-msgstr ""
+msgstr "Grafický debugger"
 
 #: mu/modes/debugger.py:34
 msgid "Debug your Python 3 code."
@@ -631,15 +631,15 @@ msgstr "Tvoj skript dobehol."
 
 #: mu/modes/debugger.py:270
 msgid "Debugger info: {}"
-msgstr ""
+msgstr "Info z debuggera: {}"
 
 #: mu/modes/debugger.py:276
 msgid "Debugger warning: {}"
-msgstr ""
+msgstr "Výstraha debuggera: {}"
 
 #: mu/modes/debugger.py:283
 msgid "Debugger error: {}"
-msgstr ""
+msgstr "Chyba debuggera: {}"
 
 #: mu/modes/microbit.py:34
 msgid "BBC micro:bit"
@@ -651,11 +651,11 @@ msgstr ""
 
 #: mu/modes/microbit.py:53
 msgid "Flash"
-msgstr ""
+msgstr "Nahrať"
 
 #: mu/modes/microbit.py:54
 msgid "Flash your code onto the micro:bit."
-msgstr ""
+msgstr "Nahraj svoj kód na micro:bit."
 
 #: mu/modes/microbit.py:59
 msgid "Files"
@@ -667,11 +667,11 @@ msgstr "Vojdi do súborového systému na micro:bite."
 
 #: mu/modes/microbit.py:66
 msgid "Use the REPL to live-code on the micro:bit."
-msgstr ""
+msgstr "Na živé kódenie na micro:bite použi REPL."
 
 #: mu/modes/microbit.py:94
 msgid "Unable to flash \"{}\""
-msgstr ""
+msgstr "Neviem nahrať \"{}\""
 
 #: mu/modes/microbit.py:95
 msgid "Your script is too long!"
@@ -679,7 +679,7 @@ msgstr "Tvoj skript je príliš dlhý!"
 
 #: mu/modes/microbit.py:122
 msgid "Flashing \"{}\" onto the micro:bit."
-msgstr ""
+msgstr "Nahrávam \"{}\" na micro:bit."
 
 #: mu/modes/microbit.py:124
 msgid " Runtime: {}"
