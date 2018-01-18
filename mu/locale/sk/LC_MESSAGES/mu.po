@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-09-13 17:50+0100\n"
-"PO-Revision-Date: 2018-01-18 20:57+0000\n"
-"Last-Translator: Marek Mansell <marek.mansell@pycon.sk>\n"
+"PO-Revision-Date: 2018-01-18 20:58+0000\n"
+"Last-Translator: Richard Kellner <richard.kellner@pycon.sk>\n"
 "Language-Team: Slovak <https://preklady.python.sk/projects/mu-editor/mu-"
 "editor-spy-github-fork/sk/>\n"
 "Language: sk\n"
@@ -683,7 +683,7 @@ msgstr "Nahrávam \"{}\" na micro:bit."
 
 #: mu/modes/microbit.py:124
 msgid " Runtime: {}"
-msgstr "Čas behu: {}"
+msgstr " Čas behu programu: {}"
 
 #: mu/modes/microbit.py:133 mu/modes/microbit.py:187
 msgid "Could not find an attached BBC micro:bit."
