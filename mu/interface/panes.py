@@ -123,8 +123,6 @@ class MicroPythonREPLPane(QTextEdit):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.context_menu)
         self.setObjectName('replpane')
-            # Send a Control-C
-            self.serial.write(b'\x03')
         self.set_theme(theme)
 
     def paste(self):
@@ -752,7 +750,7 @@ class DebugInspector(QTreeView):
             self.setStyleSheet(CONTRAST_STYLE)
 
 
-class MicroPythonPlotterPane(QChartView):
+class PlotterPane(QChartView):
     """
     This plotter widget makes viewing sensor data easy!
 
@@ -762,10 +760,9 @@ class MicroPythonPlotterPane(QChartView):
     The device MUST be flashed with MicroPython for this to work.
     """
 
-    def __init__(self, replpane, theme='day', parent=None):
+    def __init__(self, theme='day', parent=None):
         super().__init__(parent)
         self.setObjectName('plotterpane')
-
         self.x_range = [0, 100]   # start out with a dummy range, resize later
         self.y_range = [0, 1000]  # ditto
 
@@ -773,7 +770,6 @@ class MicroPythonPlotterPane(QChartView):
         self.q = deque([0] * len(self.t))
 
         self.series = QLineSeries()
-        self.repl_buffer = ""
         self.chart = QChart()
         self.chart.legend().hide()
         self.chart.addSeries(self.series)
@@ -791,32 +787,6 @@ class MicroPythonPlotterPane(QChartView):
         self.setRenderHint(QPainter.Antialiasing)
 
         self.resizeEvent = lambda e: self.on_resize(e)
-        print("adding hook")
-        replpane.set_serial_read_hook(lambda d: self.read_from_repl(d))
-
-    def read_from_repl(self, d):
-        self.repl_buffer += d.data().decode("utf-8")
-        # eat everything up till the next newline + the newline
-        try:
-            i = self.repl_buffer.index('\n')
-            self.repl_buffer = self.repl_buffer[i:]
-        except ValueError:
-            return
-        try:
-            j = self.repl_buffer[1:].index('\n')
-        except ValueError:
-            return
-
-        # ok if we got here, there's two newlines! parse data in between
-        self.repl_buffer = self.repl_buffer[1:]
-        toparse = self.repl_buffer[0:j]
-        try:
-            val = float(toparse)
-            self.repl_buffer = self.repl_buffer[j:]
-        except ValueError:
-            return      # no double newlines? bad data? try again next time!
-
-        self.add_data(0, val)
 
     def add_data(self, chartnum, value):
         self.q.appendleft(value)
@@ -836,7 +806,6 @@ class MicroPythonPlotterPane(QChartView):
 
     def on_resize(self, event):
         return
-        print(event.size())
         x = event.size().width()
         y = event.size().height()
         self.chart.axisY().setMax(y)
