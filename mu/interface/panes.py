@@ -762,9 +762,10 @@ class PlotterPane(QChartView):
 
     def __init__(self, theme='day', parent=None):
         super().__init__(parent)
+        self.input_buffer = []
         self.setObjectName('plotterpane')
         self.x_range = [0, 100]   # start out with a dummy range, resize later
-        self.y_range = [0, 1000]  # ditto
+        self.y_range = [-1000, 1000]  # ditto
 
         self.t = range(self.x_range[0], self.x_range[1])
         self.q = deque([0] * len(self.t))
@@ -788,7 +789,46 @@ class PlotterPane(QChartView):
 
         self.resizeEvent = lambda e: self.on_resize(e)
 
-    def add_data(self, chartnum, value):
+    def process_bytes(self, data):
+        """
+        Takes raw baytes and, if a valid tuple is detected, adds the data to
+        the plotter.
+        """
+        self.input_buffer.append(data)
+        # Check if the data contains a Python tuple, containing numbers, on a
+        # single line (i.e. ends with \n).
+        input_bytes = b''.join(self.input_buffer)
+        lines = input_bytes.split(b'\r\n')
+        for line in lines:
+            if line.startswith(b'(') and line.endswith(b')'):
+                # Candidate tuple. Extract the raw bytes into a numeric tuple.
+                raw_values = [val.strip() for val in line[1:-1].split(b',')]
+                numeric_values = []
+                for raw in raw_values:
+                    try:
+                        numeric_values.append(int(raw))
+                        # It worked, so move onto the next value.
+                        continue
+                    except ValueError:
+                        # Try again as a float.
+                        pass
+                    try:
+                        numeric_values.append(float(raw))
+                    except ValueError:
+                        # Not an int or float, so ignore this value.
+                        continue
+                if numeric_values:
+                    # There were numeric values in the tuple, so emit them!
+                    self.add_data(tuple(numeric_values))
+        # Reset the input buffer.
+        self.input_buffer = []
+        if lines[-1]:
+            # Append any bytes that are not yet at the end of a line, for
+            # processing next time we read data from self.serial.
+            self.input_buffer.append(lines[-1])
+
+    def add_data(self, values):
+        value = values[0]
         self.q.appendleft(value)
         if len(self.q) > len(self.t):
             self.q.pop()

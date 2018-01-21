@@ -162,6 +162,13 @@ class MicrobitMode(MicroPythonMode):
                 'handler': self.toggle_repl,
                 'shortcut': 'Ctrl+Shift+I',
             },
+            {
+                'name': 'plotter',
+                'display_name': _('Plotter'),
+                'description': _('Plot incoming REPL data'),
+                'handler': self.toggle_plotter,
+                'shortcut': 'CTRL+Shift+P',
+            },
         ]
 
     def api(self):

@@ -18,8 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
 import serial
-from PyQt5.QtCore import (QSize, Qt, pyqtSignal, QTimer, QObject, QIODevice,
-                          QThread)
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QObject, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog, QMessageBox,
                              QLabel, QMainWindow, QStatusBar, QDockWidget,
@@ -312,40 +311,6 @@ class Window(QMainWindow):
         """
         data = bytes(self.serial.readAll())  # get all the available bytes.
         self.data_received.emit(data)
-        """
-        self.input_buffer.append(data)
-        # Check if the data contains a Python tuple, containing numbers, on a
-        # single line (i.e. ends with \n).
-        input_bytes = b''.join(self.input_buffer)
-        lines = input_bytes.split(b'\n')
-        for line in lines:
-            if line.startswith(b'(') and line.endswith(b')'):
-                # Candidate tuple. Extract the raw bytes into a numeric tuple.
-                raw_values = [val.strip() for val in line[1:-1].split(b',')]
-                numeric_values = []
-                for raw in raw_values:
-                    try:
-                        numeric_values.append(int(raw))
-                        # It worked, so move onto the next value.
-                        continue
-                    except ValueError:
-                        # Try again as a float.
-                        pass
-                    try:
-                        numeric_values.append(float(raw))
-                    except ValueError:
-                        # Not an int or float, so ignore this value.
-                        continue
-                if numeric_values:
-                    # There were numeric values in the tuple, so emit them!
-                    self.tuple_received.emit(tuple(numeric_values))
-        # Reset the input buffer.
-        self.input_buffer = []
-        if lines[-1]:
-            # Append any bytes that are not yet at the end of a line, for
-            # processing next time we read data from self.serial.
-            self.input_buffer.append(lines[-1])
-        """
 
     def open_serial_link(self, port):
         """
@@ -412,26 +377,26 @@ class Window(QMainWindow):
         self.connect_zoom(self.fs_pane)
         return self.fs_pane
 
-    def add_micropython_repl(self, repl, name):
+    def add_micropython_repl(self, port, name):
         """
         Adds a MicroPython based REPL pane to the application.
         """
         if not self.serial:
-            self.open_serial_link(repl.port)
+            self.open_serial_link(port)
             # Send a Control-C / keyboard interrupt.
             self.serial.write(b'\x03')
         repl_pane = MicroPythonREPLPane(serial=self.serial, theme=self.theme)
         self.data_received.connect(repl_pane.process_bytes)
         self.add_repl(repl_pane, name)
 
-    def add_micropython_plotter(self, name):
+    def add_micropython_plotter(self, port, name):
         """
         Adds a plotter that reads data from a serial connection.
         """
-        if not self.serial_link:
-            self.serial_link = SerialLink(repl.port)
-        plotter_pane = MicroPythonPlotterPane(replpane=self.repl_pane,
-                                              theme=self.theme)
+        if not self.serial:
+            self.open_serial_link(port)
+        plotter_pane = PlotterPane(theme=self.theme)
+        self.data_received.connect(plotter_pane.process_bytes)
         self.add_plotter(plotter_pane, name)
 
     def add_jupyter_repl(self, kernel_manager, kernel_client):

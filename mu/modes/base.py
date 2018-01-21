@@ -107,6 +107,8 @@ class MicroPythonMode(BaseMode):
     Includes functionality that works with a USB serial based REPL.
     """
     valid_boards = BOARD_IDS
+    pid = None
+    vid = None
 
     def find_device(self, with_logging=True):
         """
@@ -115,13 +117,17 @@ class MicroPythonMode(BaseMode):
         """
         available_ports = QSerialPortInfo.availablePorts()
         for port in available_ports:
-            pid = port.productIdentifier()
-            vid = port.vendorIdentifier()
+            new_pid = port.productIdentifier()
+            new_vid = port.vendorIdentifier()
+            if new_pid == self.pid and new_vid == self.vid:
+                return self.port_path(port.portName())
+            else:
+                self.pid, self.vid = new_pid, new_vid
             # Look for the port VID & PID in the list of know board IDs
-            if (vid, pid) in self.valid_boards:
+            if (self.vid, self.pid) in self.valid_boards:
                 port_name = port.portName()
                 logger.info('Found device on port: {}'.format(port_name))
-                return port_name
+                return self.port_path(port_name)
         if with_logging:
             logger.warning('Could not find device.')
             logger.debug('Available ports:')
@@ -131,42 +137,49 @@ class MicroPythonMode(BaseMode):
                          for p in available_ports])
         return None
 
+    def port_path(self, port_name):
+        if os.name == 'posix':
+            # If we're on Linux or OSX reference the port is like this...
+            return "/dev/{}".format(port_name)
+        elif os.name == 'nt':
+            # On Windows simply return the port (e.g. COM0).
+            return port_name 
+        else:
+            # No idea how to deal with other OS's so fail.
+            raise NotImplementedError('OS "{}" not supported.'.format(os.name))
+
     def toggle_repl(self, event):
         """
         Toggles the REPL on and off.
         """
-        if self.repl is None:
-            self.add_repl()
-            logger.info('Toggle REPL on.')
-        else:
+        if self.repl:
+            self.repl = False
             self.remove_repl()
             logger.info('Toggle REPL off.')
+        else:
+            self.repl = True
+            self.add_repl()
+            logger.info('Toggle REPL on.')
 
     def remove_repl(self):
         """
         If there's an active REPL, disconnect and hide it.
         """
-        if self.repl is None:
-            raise RuntimeError('REPL not running.')
         self.view.remove_repl()
-        self.repl = None
 
     def add_repl(self):
         """
         Detect a connected MicroPython based device and, if found, connect to
         the REPL and display it to the user.
         """
-        if self.repl is not None:
-            raise RuntimeError('REPL already running')
         device_port = self.find_device()
         if device_port:
             try:
-                self.repl = REPL(port=device_port)
-                self.view.add_micropython_repl(self.repl, self.name)
+                self.view.add_micropython_repl(device_port, self.name)
                 logger.info('Started REPL on port: {}'.format(device_port))
             except IOError as ex:
                 logger.error(ex)
-                self.repl = None
+                self.repl = False
                 info = _("Click on the device's reset button, wait a few"
                          " seconds and then try again.")
                 self.view.show_message(str(ex), info)
@@ -186,21 +199,19 @@ class MicroPythonMode(BaseMode):
         """
         Toggles the plotter on and off.
         """
-        print("toggle_plotter", self.plotter)
-        if self.plotter is None:
-            self.add_plotter()
-            logger.info('Toggle plotter on.')
-        else:
+        if self.plotter:
+            self.plotter = False
             self.remove_plotter()
             logger.info('Toggle plotter off.')
+        else:
+            self.plotter = True
+            self.add_plotter()
+            logger.info('Toggle plotter on.')
 
     def remove_plotter(self):
         """
         If there's an active plotter, hide it.
         """
-        print("base remove_plotter")
-        if self.plotter is None:
-            raise RuntimeError('Plotter not running.')
         self.view.remove_plotter()
         self.plotter = None
         logger.info('Removing plotter')
@@ -209,43 +220,25 @@ class MicroPythonMode(BaseMode):
         """
         Check if REPL exists, and if so, enable the plotter pane!
         """
-        print("base add_plotter")
-        if self.repl is None:
-            message = _('Could not start plotter.')
-            info = _("The REPL must be running for the plotter to work!")
-            self.view.show_message(message, info)
-            return
-        self.plotter = Plotter()
-        self.view.add_micropython_plotter(self.name)
-        logger.info('Started plotter')
-
-
-class REPL:
-    """
-    A USB serial Read, Evaluate, Print, Loop.
-
-    Represents the REPL. Since the logic for the REPL is simply a USB/serial
-    based widget this class only contains a reference to the associated port.
-    """
-
-    def __init__(self, port):
-        if os.name == 'posix':
-            # If we're on Linux or OSX reference the port is like this...
-            self.port = "/dev/{}".format(port)
-        elif os.name == 'nt':
-            # On Windows simply return the port (e.g. COM0).
-            self.port = port
+        device_port = self.find_device()
+        if device_port:
+            try:
+                self.view.add_micropython_plotter(device_port, self.name)
+                logger.info('Started plotter')
+            except IOError as ex:
+                logger.error(ex)
+                self.plotter = False
+                info = _("Click on the device's reset button, wait a few"
+                         " seconds and then try again.")
+                self.view.show_message(str(ex), info)
+            except Exception as ex:
+                logger.error(ex)
         else:
-            # No idea how to deal with other OS's so fail.
-            raise NotImplementedError('OS "{}" not supported.'.format(os.name))
-        logger.info('Created new REPL object with port: {}'.format(self.port))
-
-
-class Plotter:
-    """
-    A pane that plots data coming in from the REPL
-
-    REPL must already be open before this is activated!
-    """
-    def __init__(self):
-        pass
+            message = _('Could not find an attached device.')
+            information = _('Please make sure the device is plugged into this'
+                            ' computer.\n\nIt must have a version of'
+                            ' MicroPython (or CircuitPython) flashed onto it'
+                            ' before the Plotter will work.\n\nFinally, press'
+                            " the device's reset button and wait a few seconds"
+                            ' before trying again.')
+            self.view.show_message(message, information)
