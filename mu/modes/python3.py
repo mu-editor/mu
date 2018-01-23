@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import sys
 import os
 import logging
 from mu.modes.base import BaseMode
@@ -48,6 +49,7 @@ class KernelRunner(QObject):
         Start the kernel, obtain a client and emit a signal when both are
         started.
         """
+        logger.info(sys.path)
         os.chdir(self.cwd)  # Ensure the kernel runs with the expected CWD.
         self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.start_kernel()

@@ -105,6 +105,7 @@ def run():
     setup_logging()
     logging.info('\n\n-----------------\n\nStarting Mu {}'.format(__version__))
     logging.info(platform.uname())
+    logging.info('Python path: {}'.format(sys.path))
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
     # Create the "window" we'll be looking at.
