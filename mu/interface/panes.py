@@ -22,7 +22,7 @@ import re
 import platform
 import logging
 import os.path
-import mu
+# import mu
 from PyQt5.QtCore import (Qt, QIODevice, QProcess, QProcessEnvironment,
                           pyqtSignal)
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
@@ -614,8 +614,8 @@ class PythonProcessPane(QTextEdit):
         self.process.setWorkingDirectory(workspace)
         self.process.readyRead.connect(self.read)
         self.process.finished.connect(self.finished)
-        python_exec = sys.executable
-        mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
+        # python_exec = sys.executable
+        # mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
         # Start the mu-debug runner for the script.
         logger.info('Python path: {}'.format(sys.path))
         self.process.start('mu-debug', [self.script, ])
