@@ -21,6 +21,7 @@ import os
 import logging
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
+from mu.resources import load_icon
 from qtconsole.manager import QtKernelManager
 from qtconsole.client import QtKernelClient
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
@@ -89,9 +90,16 @@ class PythonMode(BaseMode):
             {
                 'name': 'run',
                 'display_name': _('Run'),
-                'description': _('Run and debug your Python script.'),
-                'handler': self.run,
+                'description': _('Run your Python script.'),
+                'handler': self.run_toggle,
                 'shortcut': 'F5',
+            },
+            {
+                'name': 'debug',
+                'display_name': _('Debug'),
+                'description': _('Debug your Python script.'),
+                'handler': self.debug,
+                'shortcut': 'F6',
             },
             {
                 'name': 'repl',
@@ -109,9 +117,74 @@ class PythonMode(BaseMode):
         """
         return SHARED_APIS + PYTHON3_APIS + PI_APIS
 
-    def run(self, event):
+    def run_toggle(self, event):
         """
-        Run and debug the script using the debug mode.
+        Handles the toggling of the run button to start/stop a script.
+        """
+        if self.runner:
+            self.stop_script()
+            run_slot = self.view.button_bar.slots['run']
+            run_slot.setIcon(load_icon('run'))
+            run_slot.setText(_('Run'))
+            run_slot.setToolTip(_('Run your Python script.'))
+            self.view.button_bar.slots['debug'].setEnabled(True)
+        else:
+            self.run_script()
+            run_slot = self.view.button_bar.slots['run']
+            run_slot.setIcon(load_icon('stop'))
+            run_slot.setText(_('Stop'))
+            run_slot.setToolTip(_('Stop your Python script.'))
+            self.view.button_bar.slots['debug'].setEnabled(False)
+
+    def run_script(self):
+        """
+        Run the current script.
+        """
+        # Grab the Python file.
+        tab = self.view.current_tab
+        if tab is None:
+            logger.debug('There is no active text editor.')
+            self.stop()
+            return
+        if tab.path is None:
+            # Unsaved file.
+            self.editor.save()
+        if tab.path:
+            # If needed, save the script.
+            if tab.isModified():
+                with open(tab.path, 'w', newline='') as f:
+                    logger.info('Saving script to: {}'.format(tab.path))
+                    logger.debug(tab.text())
+                    write_and_flush(f, tab.text())
+                    tab.setModified(False)
+            logger.debug(tab.text())
+            self.runner = self.view.add_python3_runner(tab.path,
+                                                       self.workspace_dir(),
+                                                       interactive=True)
+            self.runner.process.waitForStarted()
+            self.runner.process.finished.connect(self.script_finished)
+            self.view.set_read_only(True)
+
+    def stop_script(self):
+        """
+        Stop the currently running script.
+        """
+        logger.debug('Stopping script.')
+        self.runner.process.kill()
+        self.runner.process.waitForFinished()
+        self.runner = None
+        self.view.remove_python_runner()
+        self.view.set_read_only(False)
+
+    def script_finished(self):
+        """
+        Called when the debugged Python process is finished.
+        """
+        pass
+
+    def debug(self, event):
+        """
+        Debug the script using the debug mode.
         """
         logger.info("Starting debug mode.")
         self.editor.change_mode('debugger')

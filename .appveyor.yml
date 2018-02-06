@@ -76,4 +76,4 @@ deploy:
   set_public: true
   folder: windows
   on:
-    branch: [master]
+    branch: [master, new_python_runner]

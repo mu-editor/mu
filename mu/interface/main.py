@@ -356,19 +356,36 @@ class Window(QMainWindow):
         self.repl_pane.set_theme(self.theme)
         self.repl_pane.setFocus()
 
-    def add_python3_runner(self, name, path):
+    def add_python3_runner(self, script_name, working_directory,
+                           interactive=False, debugger=False,
+                           command_args=None):
         """
-        Display console output for the referenced running Python script.
+        Display console output for the referenced Python script.
+
+        The script will be run within the workspace_path directory.
+
+        If interactive is True (default is False) the Python process will
+        run in interactive mode (dropping the user into the REPL when the
+        script completes).
+
+        If debugger is True (default is False) the script will be run within
+        a debug runner session. The debugger overrides the interactive flag
+        (you cannot run the debugger in interactive mode).
+
+        If there is a list of command_args (the default is None) then these
+        will be passed as further arguments into the command run in the
+        new process.
         """
-        self.process_runner = PythonProcessPane()
-        self.runner = QDockWidget(name)
+        self.process_runner = PythonProcessPane(self)
+        self.runner = QDockWidget(script_name)
         self.runner.setWidget(self.process_runner)
         self.runner.setFeatures(QDockWidget.DockWidgetMovable)
         self.runner.setAllowedAreas(Qt.BottomDockWidgetArea |
                                     Qt.LeftDockWidgetArea |
                                     Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
-        self.process_runner.start_process(path, name)
+        self.process_runner.start_process(script_name, working_directory,
+                                          interactive, debugger, command_args)
         self.process_runner.setFocus()
         self.connect_zoom(self.process_runner)
         return self.process_runner
