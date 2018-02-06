@@ -57,7 +57,8 @@ def test_debug_start():
             mock.patch('mu.modes.debugger.write_and_flush'):
         dm.start()
         oa.assert_called_once_with('/foo', 'w', newline='')
-    view.add_python3_runner.assert_called_once_with('/foo', '/bar')
+    view.add_python3_runner.assert_called_once_with('/foo', '/bar',
+                                                    debugger=True)
     mock_runner.process.waitForStarted.assert_called_once_with()
     mock_runner.process.finished.connect.assert_called_once_with(dm.finished)
     view.add_debug_inspector.assert_called_once_with()

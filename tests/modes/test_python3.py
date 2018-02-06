@@ -62,11 +62,13 @@ def test_python_mode():
     assert pm.view == view
 
     actions = pm.actions()
-    assert len(actions) == 2
+    assert len(actions) == 3
     assert actions[0]['name'] == 'run'
-    assert actions[0]['handler'] == pm.run
-    assert actions[1]['name'] == 'repl'
-    assert actions[1]['handler'] == pm.toggle_repl
+    assert actions[0]['handler'] == pm.run_toggle
+    assert actions[1]['name'] == 'debug'
+    assert actions[1]['handler'] == pm.debug
+    assert actions[2]['name'] == 'repl'
+    assert actions[2]['handler'] == pm.toggle_repl
 
 
 def test_python_api():
@@ -80,14 +82,131 @@ def test_python_api():
     assert result == SHARED_APIS + PYTHON3_APIS + PI_APIS
 
 
-def test_python_run():
+def test_python_run_toggle_on():
+    """
+    Check the handler for clicking run starts the new process and updates the
+    UI state.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.runner = None
+    pm.run_script = mock.MagicMock()
+    pm.run_toggle(None)
+    pm.run_script.assert_called_once_with()
+    slot = pm.view.button_bar.slots['run']
+    assert slot.setIcon.call_count == 1
+    slot.setText.assert_called_once_with('Stop')
+    slot.setToolTip.assert_called_once_with('Stop your Python script.')
+    pm.view.button_bar.slots['debug'].setEnabled.assert_called_once_with(False)
+
+
+def test_python_run_toggle_off():
+    """
+    Check the handler for clicking run stops the process and reverts the UI
+    state.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.runner = True
+    pm.stop_script = mock.MagicMock()
+    pm.run_toggle(None)
+    pm.stop_script.assert_called_once_with()
+    slot = pm.view.button_bar.slots['run']
+    assert slot.setIcon.call_count == 1
+    slot.setText.assert_called_once_with('Run')
+    slot.setToolTip.assert_called_once_with('Run your Python script.')
+    pm.view.button_bar.slots['debug'].setEnabled.assert_called_once_with(True)
+
+
+def test_python_run_script():
+    """
+    Ensure that running the script launches the process as expected.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab.path = '/foo'
+    view.current_tab.isModified.return_value = True
+    mock_runner = mock.MagicMock()
+    view.add_python3_runner.return_value = mock_runner
+    pm = PythonMode(editor, view)
+    pm.workspace_dir = mock.MagicMock(return_value='/bar')
+    with mock.patch('builtins.open') as oa, \
+            mock.patch('mu.modes.python3.write_and_flush'):
+        pm.run_script()
+        oa.assert_called_once_with('/foo', 'w', newline='')
+    view.add_python3_runner.assert_called_once_with('/foo', '/bar',
+                                                    interactive=True)
+    mock_runner.process.waitForStarted.assert_called_once_with()
+
+
+def test_python_run_script_no_editor():
+    """
+    If there's no active tab, there can be no runner either.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
+    pm = PythonMode(editor, view)
+    pm.stop_script = mock.MagicMock()
+    pm.run_script()
+    assert pm.runner is None
+    pm.stop_script.assert_called_once_with()
+
+
+def test_python_run_script_needs_saving():
+    """
+    If the file hasn't been saved yet (it's unnamed), prompt the user to save
+    it.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab.path = None
+    pm = PythonMode(editor, view)
+    pm.stop_script = mock.MagicMock()
+    pm.run_script()
+    editor.save.assert_called_once_with()
+
+
+def test_python_stop_script():
+    """
+    Check that the child process is killed, the runner cleaned up and UI
+    is reset.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    mock_runner = mock.MagicMock()
+    pm.runner = mock_runner
+    pm.stop_script()
+    mock_runner.process.kill.assert_called_once_with()
+    mock_runner.process.waitForFinished.assert_called_once_with()
+    assert pm.runner is None
+    view.remove_python_runner.assert_called_once_with()
+
+
+def test_python_stop_script_no_runner():
+    """
+    If the script is cancelled before the child process is created ensure
+    nothing breaks and the UI is reset.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.runner = None
+    pm.stop_script()
+    view.remove_python_runner.assert_called_once_with()
+
+
+def test_python_debug():
     """
     Ensure Python3 mode hands over running of the script to the debug mode.
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pm = PythonMode(editor, view)
-    pm.run(None)
+    pm.debug(None)
     editor.change_mode.assert_called_once_with('debugger')
     assert editor.mode == 'debugger'
     editor.modes['debugger'].start.assert_called_once_with()

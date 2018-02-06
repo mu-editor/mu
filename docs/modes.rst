@@ -67,8 +67,16 @@ REPL that uses `project Jupyter <http://jupyter.org/>`_. As with other Jupyter
 notebooks, it's possible to embed graphics and charts into the REPL so it
 becomes a interesting to read and work with.
 
-When you tell Mu to run your script the Python mode transitions to the debug
-mode - a graphical way to inspect and watch your code execute.
+There are two ways to run your script in this mode:
+
+1. Click the "Run" button: will launch the script using Python's interactive
+   mode (so you'll be dropped into a basic interactive Python shell upon the
+   script's completion).
+2. Click the "Debug" button: Python mode transitions to the debug mode - a
+   graphical way to inspect and watch your code execute.
+   
+Because of the overhead needed to start the graphical debugger it takes longer
+to start running your script. This is especially noticable on the Raspberry Pi.
 
 Debug Mode
 ++++++++++
@@ -89,4 +97,4 @@ Create a New Mode
 =================
 
 It's very easy to create new mode for Mu. The following tutorial explains how
-to create one for PyGameZero.
+we created our PyGameZero mode.

@@ -70,7 +70,6 @@ def _rmtree(dirpath, cascade_errors=False):
     try:
         print("Removing directory", dirpath)
         shutil.rmtree(dirpath)
-        pass
     except OSError:
         if cascade_errors:
             raise
