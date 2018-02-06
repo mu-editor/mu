@@ -593,7 +593,8 @@ class PythonProcessPane(QTextEdit):
     """
 
     def __init__(self, parent):
-        super().__init__()
+        super().__init__(parent)
+        self.setFont(Font().load())
         self.setAcceptRichText(False)
         self.setReadOnly(False)
         self.setUndoRedoEnabled(False)
