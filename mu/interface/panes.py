@@ -21,6 +21,7 @@ import os
 import re
 import platform
 import logging
+import signal
 import string
 import os.path
 from PyQt5.QtCore import (Qt, QIODevice, QProcess, QProcessEnvironment,
