@@ -21,6 +21,7 @@ import os
 import logging
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
+from mu.logic import write_and_flush
 from mu.resources import load_icon
 from qtconsole.manager import QtKernelManager
 from qtconsole.client import QtKernelClient
@@ -144,7 +145,7 @@ class PythonMode(BaseMode):
         tab = self.view.current_tab
         if tab is None:
             logger.debug('There is no active text editor.')
-            self.stop()
+            self.stop_script()
             return
         if tab.path is None:
             # Unsaved file.
@@ -162,25 +163,17 @@ class PythonMode(BaseMode):
                                                        self.workspace_dir(),
                                                        interactive=True)
             self.runner.process.waitForStarted()
-            self.runner.process.finished.connect(self.script_finished)
-            self.view.set_read_only(True)
 
     def stop_script(self):
         """
         Stop the currently running script.
         """
         logger.debug('Stopping script.')
-        self.runner.process.kill()
-        self.runner.process.waitForFinished()
-        self.runner = None
+        if self.runner:
+            self.runner.process.kill()
+            self.runner.process.waitForFinished()
+            self.runner = None
         self.view.remove_python_runner()
-        self.view.set_read_only(False)
-
-    def script_finished(self):
-        """
-        Called when the debugged Python process is finished.
-        """
-        pass
 
     def debug(self, event):
         """

@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import os.path
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog, QMessageBox,
@@ -377,7 +378,8 @@ class Window(QMainWindow):
         new process.
         """
         self.process_runner = PythonProcessPane(self)
-        self.runner = QDockWidget(script_name)
+        self.runner = QDockWidget(_("Running: {}").format(
+                                  os.path.basename(script_name)))
         self.runner.setWidget(self.process_runner)
         self.runner.setFeatures(QDockWidget.DockWidgetMovable)
         self.runner.setAllowedAreas(Qt.BottomDockWidgetArea |

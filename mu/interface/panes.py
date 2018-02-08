@@ -25,7 +25,7 @@ import signal
 import string
 import os.path
 from PyQt5.QtCore import (Qt, QIODevice, QProcess, QProcessEnvironment,
-                          pyqtSignal)
+                          pyqtSignal, QTimer)
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
                              QTreeView)
@@ -167,14 +167,6 @@ class MicroPythonREPLPane(QTextEdit):
         menu.addAction("Copy", self.copy, copy_keys)
         menu.addAction("Paste", self.paste, paste_keys)
         menu.exec_(QCursor.pos())
-
-    def cursor_to_end(self):
-        """
-        Moves the cursor to the very end of the available text.
-        """
-        tc = self.textCursor()
-        tc.movePosition(QTextCursor.End)
-        self.setTextCursor(tc)
 
     def set_theme(self, theme):
         """
@@ -592,7 +584,7 @@ class PythonProcessPane(QTextEdit):
     history and simple buffer editing.
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.setFont(Font().load())
         self.setAcceptRichText(False)
@@ -600,11 +592,11 @@ class PythonProcessPane(QTextEdit):
         self.setUndoRedoEnabled(False)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.context_menu)
-        self.setObjectName('replpane')
+        self.setObjectName('PythonRunner')
         self.process = None  # Will eventually reference the running process.
         self.input_history = []  # history of inputs entered in this session.
-        self.start_of_current_line = 0 # start position of the input line.
-        self.history_position = 0 # current position when navigation history.
+        self.start_of_current_line = 0  # start position of the input line.
+        self.history_position = 0  # current position when navigation history.
 
     def start_process(self, script_name, working_directory, interactive=True,
                       debugger=False, command_args=None):
@@ -647,11 +639,13 @@ class PythonProcessPane(QTextEdit):
             args = [self.script, ] + command_args
             self.process.start('mu-debug', args)
         else:
-            # Start the script in interactive Python mode.
+            # Use the current system Python to run the script.
             python_exec = sys.executable
             if interactive:
+                # Start the script in interactive Python mode.
                 args = ['-i', self.script, ] + command_args
             else:
+                # Just run the command with no additional flags.
                 args = [self.script, ] + command_args
             self.process.start(python_exec, args)
 
@@ -688,60 +682,73 @@ class PythonProcessPane(QTextEdit):
         Grabs clipboard contents then writes to the REPL.
         """
         clipboard = QApplication.clipboard()
-        # TODO: write to current buffer and command history.
         if clipboard and clipboard.text():
-            self.write_to_stdin(bytes(clipboard.text(), 'utf8'))
+            self.parse_paste(clipboard.text())
 
-    def cursor_to_end(self):
+    def parse_paste(self, text):
         """
-        Moves the cursor to the very end of the available text.
+        Recursively takes characters from text to be parsed as input. We do
+        this so the event loop has time to respond to output from the process
+        to which the characters are sent (for example, when a newline is sent).
+
+        Yes, this is a quick and dirty hack, but ensures the pasted input is
+        also evaluated in an interactive manner rather than as a single-shot
+        splurge of data. Essentially, it's simulating someone typing in the
+        characters of the pasted text *really fast* but in such a way that the
+        event loop cycles.
         """
-        tc = self.textCursor()
-        tc.movePosition(QTextCursor.End)
-        self.setTextCursor(tc)
+        character = text[0]  # the current character to process.
+        remainder = text[1:]  # remaining characters to process in the future.
+        if character in string.printable:
+            if character == '\n' or character == '\r':
+                self.parse_input(Qt.Key_Enter, character, None)
+            else:
+                self.parse_input(None, character, None)
+        if remainder:
+            # Schedule a recursive call of parse_paste with the remaining text
+            # to process. This allows the event loop to cycle and handle any
+            # output from the child process as a result of the text pasted so
+            # far (especially useful for handling responses from newlines).
+            QTimer.singleShot(2, lambda text=remainder: self.parse_paste(text))
 
     def keyPressEvent(self, data):
         """
         Called when the user types something in the REPL.
-
-        Correctly encodes it and sends it to the connected device.
         """
         key = data.key()
-        msg = b''
+        text = data.text()
+        modifiers = data.modifiers()
+        self.parse_input(key, text, modifiers)
+
+    def parse_input(self, key, text, modifiers):
+        """
+        Correctly encodes user input and sends it to the connected process.
+
+        The key is a Qt.Key_Something value, text is the textual representation
+        of the input, and modifiers are the control keys (shift, CTRL, META,
+        etc) also used.
+        """
+        msg = b''  # Eventually to be inserted into the pane at the cursor.
         if key == Qt.Key_Enter or key == Qt.Key_Return:
             msg = b'\n'
         elif (platform.system() == 'Darwin' and
-                data.modifiers() == Qt.MetaModifier) or \
+                modifiers == Qt.MetaModifier) or \
              (platform.system() != 'Darwin' and
-                data.modifiers() == Qt.ControlModifier):
+                modifiers == Qt.ControlModifier):
             # Handle CTRL-C and CTRL-D
             if self.process:
                 pid = self.process.processId()
+                # NOTE: Windows related constraints don't allow us to send a
+                # CTRL-C, rather, the process will just terminate.
                 if key == Qt.Key_C:
                     os.kill(pid, signal.SIGINT)
                 if key == Qt.Key_D:
                     self.process.kill()
             return
         elif key == Qt.Key_Up:
-            if self.input_history:
-                self.history_position -= 1
-                history_pos = len(self.input_history) + self.history_position
-                if history_pos < 0:
-                    self.history_position += 1
-                    history_pos = 0
-                history_item = self.input_history[history_pos]
-                self.replace_input_line(history_item)
+            self.history_back()
         elif key == Qt.Key_Down:
-            if self.input_history:
-                self.history_position += 1
-                history_pos = len(self.input_history) + self.history_position
-                if history_pos >= len(self.input_history):
-                    # At the most recent command.
-                    self.history_position = 0
-                    self.clear_input_line()
-                    return
-                history_item = self.input_history[history_pos]
-                self.replace_input_line(history_item)
+            self.history_forward()
         elif key == Qt.Key_Right:
             cursor = self.textCursor()
             cursor.movePosition(QTextCursor.Right)
@@ -762,30 +769,58 @@ class PythonProcessPane(QTextEdit):
             cursor = self.textCursor()
             cursor.movePosition(QTextCursor.End)
             self.setTextCursor(cursor)
-        elif data.text() in string.printable:
-            # If the key is for a printable character then add it to the
-            # active buffer and display it.
-            msg = bytes(data.text(), 'utf8')
-        elif (data.modifiers() == Qt.ControlModifier | Qt.ShiftModifier) or \
+        elif (modifiers == Qt.ControlModifier | Qt.ShiftModifier) or \
                 (platform.system() == 'Darwin' and
-                    data.modifiers() == Qt.ControlModifier):
+                    modifiers == Qt.ControlModifier):
             # Command-key on Mac, Ctrl-Shift on Win/Lin
             if key == Qt.Key_C:
                 self.copy()
-                msg = b''
             elif key == Qt.Key_V:
                 self.paste()
-                msg = b''
+        elif text in string.printable:
+            # If the key is for a printable character then add it to the
+            # active buffer and display it.
+            msg = bytes(text, 'utf8')
         if key == Qt.Key_Backspace:
             self.delete()
-        if not self.isReadOnly():
+        if not self.isReadOnly() and msg:
             self.insert(msg)
         if key == Qt.Key_Enter or key == Qt.Key_Return:
-            text = self.toPlainText()
-            line = text[self.start_of_current_line:].encode('utf-8')
+            content = self.toPlainText()
+            line = content[self.start_of_current_line:].encode('utf-8')
             self.write_to_stdin(line)
             self.input_history.append(line.replace(b'\n', b''))
             self.history_position = 0
+
+    def history_back(self):
+        """
+        Replace the current input line with the next item BACK from the
+        current history position.
+        """
+        if self.input_history:
+            self.history_position -= 1
+            history_pos = len(self.input_history) + self.history_position
+            if history_pos < 0:
+                self.history_position += 1
+                history_pos = 0
+            history_item = self.input_history[history_pos]
+            self.replace_input_line(history_item)
+
+    def history_forward(self):
+        """
+        Replace the current input line with the next item FORWARD from the
+        current history position.
+        """
+        if self.input_history:
+            self.history_position += 1
+            history_pos = len(self.input_history) + self.history_position
+            if history_pos >= len(self.input_history):
+                # At the most recent command.
+                self.history_position = 0
+                self.clear_input_line()
+                return
+            history_item = self.input_history[history_pos]
+            self.replace_input_line(history_item)
 
     def read_from_stdout(self):
         """
@@ -849,12 +884,6 @@ class PythonProcessPane(QTextEdit):
         """
         self.clear_input_line()
         self.append(text)
-
-    def clear(self):
-        """
-        Clears the text of the REPL.
-        """
-        self.setText('')
 
     def zoomIn(self, delta=2):
         """
