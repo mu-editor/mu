@@ -114,11 +114,16 @@ installers. This process if coordinated by the amazing
 
     Thank you Thomas!
 
-In automated builds are unsigned, so Windows will complain about the software
+The configuration for ``pynsist`` are the ``win_installer32.cfg`` and
+``win_installer64.cfg`` files (one each for 32bit and 64bit installers) in the
+root of the repository. The specification for such configuration files can be
+`found here <https://pynsist.readthedocs.io/en/latest/cfgfile.html>`_.
+
+The automated builds are unsigned, so Windows will complain about the software
 coming from an untrusted source. The official releases will be signed by
-me (Nicholas Tollervey - the current maintainer) on my local machine and
-uploaded to GitHub and associated with the relevant release. The instructions
-for cyrptographically signing the installers can be
+me (Nicholas Tollervey - the current maintainer) on my local machine using
+a private key and uploaded to GitHub and associated with the relevant release.
+The instructions for cyrptographically signing the installers can be
 `found here <https://pynsist.readthedocs.io/en/latest/faq.html#code-signing>`_
 (the details of which are described
 `by Mozilla <https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Build_Instructions/Signing_an_executable_with_Authenticode>`_).

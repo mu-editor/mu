@@ -48,12 +48,12 @@ install:
 
   # Build mu using pynsist, rename dist folder and executable with timestamp
   # 64bit
-  - cmd: pynsist .\package\installer64.cfg
+  - cmd: pynsist win_installer64.cfg
   - ps: Rename-Item -path .\build upload64
   - cmd: dir upload64
   - ps: Rename-Item .\upload64\nsis\mu_1.0.0b13.exe mu_64bit_$(get-date -f yyyy-MM-dd_HH_mm)_$($env:APPVEYOR_REPO_BRANCH)_$($env:APPVEYOR_REPO_COMMIT.subString(0,7)).exe
   # 32bit
-  - cmd: pynsist .\package\installer32.cfg
+  - cmd: pynsist win_installer32.cfg
   - ps: Rename-Item -path .\build upload32
   - cmd: dir upload32
   - ps: Rename-Item .\upload32\nsis\mu_1.0.0b13.exe mu_32bit_$(get-date -f yyyy-MM-dd_HH_mm)_$($env:APPVEYOR_REPO_BRANCH)_$($env:APPVEYOR_REPO_COMMIT.subString(0,7)).exe
