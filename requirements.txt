@@ -14,3 +14,4 @@ scrapy
 beautifulsoup4
 wheel
 twine
+pynsist
