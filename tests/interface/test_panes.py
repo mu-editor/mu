@@ -1313,6 +1313,7 @@ def test_PythonProcessPane_keyPressEvent_a():
 
 def test_PythonProcessPane_parse_input_a():
     """
+    Ensure a regular printable character is inserted into the text area.
     """
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.insert = mock.MagicMock()
@@ -1646,15 +1647,34 @@ def test_PythonProcessPane_append():
     assert mock_cursor.movePosition.call_count == 2
 
 
+def test_PythonProcessPane_insert_within_input_line():
+    """
+    Ensure text is inserted at the end of the document if the current cursor
+    position is not within the bounds of the input line.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    mock_cursor = mock.MagicMock()
+    mock_cursor.position.return_value = 1
+    ppp.start_of_current_line = 100
+    ppp.setTextCursor = mock.MagicMock()
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.insert(b'hello')
+    mock_cursor.movePosition.assert_called_once_with(QTextCursor.End)
+    mock_cursor.insertText.assert_called_once_with('hello')
+
+
 def test_PythonProcessPane_insert():
     """
     Ensure text is inserted at the current cursor position.
     """
     ppp = mu.interface.panes.PythonProcessPane()
     mock_cursor = mock.MagicMock()
+    mock_cursor.position.return_value = 100
+    ppp.start_of_current_line = 1
     ppp.setTextCursor = mock.MagicMock()
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.insert(b'hello')
+    assert mock_cursor.movePosition.call_count == 0
     mock_cursor.insertText.assert_called_once_with('hello')
 
 

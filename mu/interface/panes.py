@@ -858,6 +858,8 @@ class PythonProcessPane(QTextEdit):
         Insert text to the text area at the current cursor position.
         """
         cursor = self.textCursor()
+        if cursor.position() < self.start_of_current_line:
+            cursor.movePosition(QTextCursor.End)
         cursor.insertText(msg.decode('utf-8'))
         self.setTextCursor(cursor)
 
