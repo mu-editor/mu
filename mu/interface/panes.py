@@ -683,7 +683,10 @@ class PythonProcessPane(QTextEdit):
         """
         clipboard = QApplication.clipboard()
         if clipboard and clipboard.text():
-            self.parse_paste(clipboard.text())
+            # normalize for Windows line-ends.
+            text = '\n'.join(clipboard.text().splitlines())
+            if text:
+                self.parse_paste(text)
 
     def parse_paste(self, text):
         """
@@ -789,7 +792,8 @@ class PythonProcessPane(QTextEdit):
             content = self.toPlainText()
             line = content[self.start_of_current_line:].encode('utf-8')
             self.write_to_stdin(line)
-            self.input_history.append(line.replace(b'\n', b''))
+            if line.strip():
+                self.input_history.append(line.replace(b'\n', b''))
             self.history_position = 0
 
     def history_back(self):

@@ -1236,6 +1236,21 @@ def test_PythonProcessPane_paste():
     ppp.parse_paste.assert_called_once_with('Hello')
 
 
+def test_PythonProcessPane_paste_normalize_windows_newlines():
+    """
+    Ensure that pasted text containing Windows style line-ends is normalised
+    to '\n'.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.parse_paste = mock.MagicMock()
+    mock_clipboard = mock.MagicMock()
+    mock_clipboard.text.return_value = 'h\r\ni'
+    with mock.patch('mu.interface.panes.QApplication.clipboard',
+                    return_value=mock_clipboard):
+        ppp.paste()
+    ppp.parse_paste.assert_called_once_with('h\ni')
+
+
 def test_PythonProcessPane_parse_paste():
     """
     Given some text ensure that the first character is correctly handled and
@@ -1507,6 +1522,25 @@ def test_PythonProcessPane_parse_input_newline():
     ppp.parse_input(key, text, modifiers)
     ppp.write_to_stdin.assert_called_once_with(b'abc\n')
     assert b'abc' in ppp.input_history
+    assert ppp.history_position == 0
+
+
+def test_PythonProcessPane_parse_input_newline_ignore_empty_input_in_history():
+    """
+    Newline causes the input line to be written to the child process's stdin,
+    but if the resulting line is either empty or only contains whitespace, do
+    not add it to the input_history.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.toPlainText = mock.MagicMock(return_value='   \n')
+    ppp.start_of_current_line = 0
+    ppp.write_to_stdin = mock.MagicMock()
+    key = Qt.Key_Enter
+    text = '\r'
+    modifiers = None
+    ppp.parse_input(key, text, modifiers)
+    ppp.write_to_stdin.assert_called_once_with(b'   \n')
+    assert len(ppp.input_history) == 0
     assert ppp.history_position == 0
 
 
