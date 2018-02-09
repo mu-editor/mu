@@ -62,8 +62,8 @@ install:
 build: None
 
 # Makefiles support provided by MinGW, which does POSIX translations, so run tests natively as well
-#test_script:
-#  - cmd: make coverage 
+test_script:
+  - cmd: make coverage 
 
 # Push artifacts to s3 bucket and list all
 before_deploy:
