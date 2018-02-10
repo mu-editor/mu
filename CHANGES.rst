@@ -1,6 +1,23 @@
 Release History
 ---------------
 
+1.0.0.beta.14
+=============
+
+* Add new PythonProcessPanel to better handle interactions with child
+  Python3 processes. Includes basic command history and command editing.
+* Move the old "run" functionality in Python3 mode into a new "Debug" button.
+* Create a new "Run" button in Python3 mode that uses the new
+  PythonProcessPanel.
+* Automation of 32bit and 64bit Windows installers (thanks to Thomas Kluyver
+  for his fantastic pynsist tool).
+* Add / revise developer documentation in light of changes above.
+* (All the changes mentioned above were supported by the Raspberry Pi
+  Foundation -- Thank you!)
+* Update / add USB PIDs for Adafruit boards (thanks Adafruit for the heads up).
+* Minor cosmetic changes.
+* Additional test cases.
+
 1.0.0.beta.13
 =============
 
