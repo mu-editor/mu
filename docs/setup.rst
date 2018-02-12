@@ -30,6 +30,17 @@ environment install all the dependencies into your virtualenv via the
     If in doubt, throw away your virtualenv and start again with a fresh
     install from ``requirements.txt`` as per the instructions above.
 
+Running Development Mu
+++++++++++++++++++++++
+
+.. note:: From this point onwards, instructions assume that you're using
+   a virtual environment.
+
+To run the local development version of Mu, in the root of
+the repository type::
+
+  python run.py
+
 Raspberry Pi
 ++++++++++++
 
@@ -38,29 +49,22 @@ development environment:
 
 1. Install the packaged Qt related dependencies::
 
-    apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-dev
+    sudo apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg python3-dev
 
 2. Create a virtualenv that uses Python 3 and allows the virtualenv access
    to the packages installed on your system via the ``--system-site-packages``
    flag::
 
-    virtualenv -p /usr/local/bin/python3 --system-site-packages ~/mu-venv
+    virtualenv -p /usr/bin/python3 --system-site-packages ~/mu-venv
 
 3. With the virtualenv enabled, pip install the Python packages for the
-   Raspberry Pi via the ``requirements-pi.txt`` file::
+   Raspberry Pi via the ``requirements_pi.txt`` file::
 
-    (mu-venv) $ pip install -r requirements-pi.txt
+    (mu-venv) $ pip3 install -r requirements_pi.txt
 
-Running Development Mu
-++++++++++++++++++++++
+4. Run mu::
 
-.. note:: From this point onwards, instructions assume that you're using
-   a virtual environment.
-
-On all platforms, to run the local development version of Mu, in the root of
-the repository type::
-
-  python run.py
+    python3 run.py
 
 Using ``make``
 ++++++++++++++
