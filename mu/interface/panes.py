@@ -599,7 +599,7 @@ class PythonProcessPane(QTextEdit):
         self.history_position = 0  # current position when navigation history.
 
     def start_process(self, script_name, working_directory, interactive=True,
-                      debugger=False, command_args=None):
+                      debugger=False, command_args=None, runner=None):
         """
         Start the child Python process.
 
@@ -615,6 +615,9 @@ class PythonProcessPane(QTextEdit):
 
         If there is a list of command_args (the default is None), then these
         will be passed as further arguments into the script to be run.
+
+        If runner is give, this is used as the command to start the Python
+        process.
         """
         self.script = os.path.abspath(os.path.normcase(script_name))
         logger.info('Running script: {}'.format(self.script))
@@ -639,8 +642,12 @@ class PythonProcessPane(QTextEdit):
             args = [self.script, ] + command_args
             self.process.start('mu-debug', args)
         else:
-            # Use the current system Python to run the script.
-            python_exec = sys.executable
+            if runner:
+                # Use the passed in Python "runner" to run the script.
+                python_exec = runner
+            else:
+                # Use the current system Python to run the script.
+                python_exec = sys.executable
             if interactive:
                 # Start the script in interactive Python mode.
                 args = ['-i', self.script, ] + command_args

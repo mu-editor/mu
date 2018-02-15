@@ -1178,6 +1178,46 @@ def test_Window_connect_tab_rename():
     mock_shortcut().activated.connect.assert_called_once_with(mock_handler)
 
 
+def test_Window_open_directory_from_os_windows():
+    """
+    Ensure the file explorer for Windows is called for the expected path.
+    """
+    w = mu.interface.main.Window()
+    with mock.patch('mu.interface.main.sys') as mock_sys, \
+            mock.patch('mu.interface.main.os') as mock_os:
+        path = 'c:\\a\\path\\'
+        mock_sys.platform = 'win32'
+        w.open_directory_from_os(path)
+        mock_os.startfile.assert_called_once_with(path)
+
+
+def test_Window_open_directory_from_os_darwin():
+    """
+    Ensure the file explorer for OSX is called for the expected path.
+    """
+    w = mu.interface.main.Window()
+    with mock.patch('mu.interface.main.sys') as mock_sys, \
+            mock.patch('mu.interface.main.os.system') as mock_system:
+        path = '/home/user/mu_code/images/'
+        mock_sys.platform = 'darwin'
+        w.open_directory_from_os(path)
+        mock_system.assert_called_once_with('open "{}"'.format(path))
+
+
+def test_Window_open_directory_from_os_freedesktop():
+    """
+    Ensure the file explorer for FreeDesktop (Linux) is called for the
+    expected path.
+    """
+    w = mu.interface.main.Window()
+    with mock.patch('mu.interface.main.sys') as mock_sys, \
+            mock.patch('mu.interface.main.os.system') as mock_system:
+        path = '/home/user/mu_code/images/'
+        mock_sys.platform = 'linux'
+        w.open_directory_from_os(path)
+        mock_system.assert_called_once_with('xdg-open "{}"'.format(path))
+
+
 def test_StatusBar_init():
     """
     Ensure the status bar is set up as expected.

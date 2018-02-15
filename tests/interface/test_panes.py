@@ -1152,6 +1152,25 @@ def test_PythonProcessPane_start_process_not_interactive():
     ppp.process.start.assert_called_once_with(runner, expected_args)
 
 
+def test_PythonProcessPane_start_process_custom_runner():
+    """
+    Ensure that if the runner is set, it is used as the command to start the
+    new child Python process.
+    """
+    mock_process = mock.MagicMock()
+    mock_process_class = mock.MagicMock(return_value=mock_process)
+    mock_merge_chans = mock.MagicMock()
+    mock_process_class.MergedChannels = mock_merge_chans
+    with mock.patch('mu.interface.panes.QProcess', mock_process_class):
+        ppp = mu.interface.panes.PythonProcessPane()
+        args = ['foo', 'bar', ]
+        ppp.start_process('script.py', 'workspace', interactive=False,
+                          command_args=args, runner='foo')
+    expected_script = os.path.abspath(os.path.normcase('script.py'))
+    expected_args = [expected_script, 'foo', 'bar', ]
+    ppp.process.start.assert_called_once_with('foo', expected_args)
+
+
 def test_PythonProcessPane_finished():
     """
     Check the functionality to handle the process finishing is correct.

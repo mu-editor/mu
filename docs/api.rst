@@ -140,6 +140,14 @@ The original BBC micro:bit mode.
 .. automodule:: mu.modes.microbit
     :members:
 
+``mu.modes.pygamezero``
++++++++++++++++++++++++
+
+The Pygame Zero / pygame mode.
+
+.. automodule:: mu.modes.pygamezero
+    :members:
+
 ``mu.modes.python3``
 ++++++++++++++++++++
 

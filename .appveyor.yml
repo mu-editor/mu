@@ -38,6 +38,7 @@ init:
 install:
   # Install / check python dependencies (v3.2 has VC++ redistributable dependencies)
   - cmd: pip install simplegeneric 
+  - cmd: pip install pgzero 
   - cmd: pip install pynsist
   - cmd: pip install -r requirements.txt
 
@@ -83,4 +84,4 @@ deploy:
   set_public: true
   folder: windows
   on:
-    branch: [master, new_python_runner]
+    branch: [master, pygamezero]

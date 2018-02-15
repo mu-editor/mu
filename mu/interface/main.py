@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import sys
 import logging
 import os.path
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer
@@ -359,7 +360,7 @@ class Window(QMainWindow):
 
     def add_python3_runner(self, script_name, working_directory,
                            interactive=False, debugger=False,
-                           command_args=None):
+                           command_args=None, runner=None):
         """
         Display console output for the referenced Python script.
 
@@ -376,6 +377,9 @@ class Window(QMainWindow):
         If there is a list of command_args (the default is None) then these
         will be passed as further arguments into the command run in the
         new process.
+
+        If runner is give, this is used as the command to start the Python
+        process.
         """
         self.process_runner = PythonProcessPane(self)
         self.runner = QDockWidget(_("Running: {}").format(
@@ -387,7 +391,8 @@ class Window(QMainWindow):
                                     Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
         self.process_runner.start_process(script_name, working_directory,
-                                          interactive, debugger, command_args)
+                                          interactive, debugger, command_args,
+                                          runner)
         self.process_runner.setFocus()
         self.connect_zoom(self.process_runner)
         return self.process_runner
@@ -715,6 +720,21 @@ class Window(QMainWindow):
         self.tabs.shortcut = QShortcut(QKeySequence(shortcut), self)
         self.tabs.shortcut.activated.connect(handler)
         self.tabs.tabBarDoubleClicked.connect(handler)
+
+    def open_directory_from_os(self, path):
+        """
+        Given the path to a directoy, open the OS's built in filesystem
+        explorer for that path. Works with Windows, OSX and Linux.
+        """
+        if sys.platform == 'win32':
+            # Windows
+            os.startfile(path)
+        elif sys.platform == 'darwin':
+            # OSX
+            os.system('open "{}"'.format(path))
+        else:
+            # Assume freedesktop.org on unix-y.
+            os.system('xdg-open "{}"'.format(path))
 
 
 class StatusBar(QStatusBar):
