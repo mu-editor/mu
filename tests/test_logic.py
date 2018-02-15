@@ -363,6 +363,33 @@ def test_editor_restore_session_missing_files():
     assert ed._view.add_tab.call_count == 0
 
 
+def test_editor_restore_session_invalid_mode():
+    """
+    As Mu's modes are added and/or renamed, invalid mode names may need to be
+    ignored (this happens regularly when changing versions when developing
+    Mu itself).
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.select_mode = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    api = ['API specification', ]
+    mock_mode.api.return_value = api
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    mock_mode.save_timeout = 5
+    ed.modes = {
+        'python': mock_mode,
+    }
+    mock_open = mock.mock_open(
+        read_data='{"paths": ["path/foo.py"], "mode": "numberwang"}')
+    mock_gettext = mock.MagicMock()
+    mock_gettext.return_value = '# Write your code here :-)'
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('os.path.exists', return_value=True):
+        ed.restore_session()
+    ed.select_mode.assert_called_once_with(None)
+
+
 def test_editor_restore_session_no_session_file():
     """
     If there's no prior session file (such as upon first start) then simply
@@ -842,6 +869,27 @@ def test_check_code_on():
         view.annotate_code.assert_has_calls([mock.call(flake, 'error'),
                                              mock.call(pep8, 'style')],
                                             any_order=True)
+
+
+def test_check_code_no_problems():
+    """
+    If no problems are found in the code, ensure a status message is shown to
+    the user to confirm the fact. See #337
+    """
+    view = mock.MagicMock()
+    tab = mock.MagicMock()
+    tab.has_annotations = False
+    tab.path = 'foo.py'
+    tab.text.return_value = 'import this\n'
+    view.current_tab = tab
+    flake = {}
+    pep8 = {}
+    with mock.patch('mu.logic.check_flake', return_value=flake), \
+            mock.patch('mu.logic.check_pycodestyle', return_value=pep8):
+        ed = mu.logic.Editor(view)
+        ed.show_status_message = mock.MagicMock()
+        ed.check_code()
+        assert ed.show_status_message.call_count == 1
 
 
 def test_check_code_off():

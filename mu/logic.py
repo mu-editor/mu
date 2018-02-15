@@ -391,7 +391,12 @@ class Editor:
                 if 'theme' in old_session:
                     self.theme = old_session['theme']
                 if 'mode' in old_session:
-                    self.mode = old_session['mode']
+                    old_mode = old_session['mode']
+                    if old_mode in self.modes:
+                        self.mode = old_session['mode']
+                    else:
+                        # Unknown mode (perhaps an old version?)
+                        self.select_mode(None)
                 else:
                     # So ask for the desired mode.
                     self.select_mode(None)
@@ -565,6 +570,17 @@ class Editor:
                 self._view.annotate_code(pep8, 'style')
             self._view.show_annotations()
             tab.has_annotations = bool(flake or pep8)
+            if not tab.has_annotations:
+                # No problems detected, so confirm this with a friendly
+                # message.
+                ok_messages = [
+                    _('Good job! No problems found.'),
+                    _('Hurrah! Checker turned up no problems.'),
+                    _('Nice one! Zero problems detected.'),
+                    _('Well done! No problems detected.'),
+                    _('Awesome! Zero problems found.'),
+                ]
+                self.show_status_message(random.choice(ok_messages))
         else:
             self._view.reset_annotations()
 

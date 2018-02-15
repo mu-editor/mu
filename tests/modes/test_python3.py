@@ -91,7 +91,11 @@ def test_python_run_toggle_on():
     view = mock.MagicMock()
     pm = PythonMode(editor, view)
     pm.runner = None
-    pm.run_script = mock.MagicMock()
+
+    def runner(pm=pm):
+        pm.runner = True
+
+    pm.run_script = mock.MagicMock(side_effect=runner)
     pm.run_toggle(None)
     pm.run_script.assert_called_once_with()
     slot = pm.view.button_bar.slots['run']
@@ -99,6 +103,22 @@ def test_python_run_toggle_on():
     slot.setText.assert_called_once_with('Stop')
     slot.setToolTip.assert_called_once_with('Stop your Python script.')
     pm.view.button_bar.slots['debug'].setEnabled.assert_called_once_with(False)
+
+
+def test_python_run_toggle_on_cancelled():
+    """
+    Ensure the button states are correct if running an unsaved script is
+    cancelled before the process is allowed to start. See issue #338.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.runner = None
+    pm.run_script = mock.MagicMock()
+    pm.run_toggle(None)
+    pm.run_script.assert_called_once_with()
+    slot = pm.view.button_bar.slots['run']
+    assert slot.setIcon.call_count == 0
 
 
 def test_python_run_toggle_off():
