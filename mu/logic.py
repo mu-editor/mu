@@ -29,6 +29,7 @@ import platform
 import webbrowser
 import random
 import locale
+import shutil
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 # Currently there is no pycodestyle deb packages, so fallback to old name
@@ -37,6 +38,7 @@ try:  # pragma: no cover
 except ImportError:  # pragma: no cover
     from pep8 import StyleGuide, Checker
 from mu.contrib import appdirs, uflash
+from mu.resources import path
 from mu import __version__
 
 
@@ -368,6 +370,21 @@ class Editor:
         if not os.path.exists(wd):
             logger.debug('Creating directory: {}'.format(wd))
             os.makedirs(wd)
+        # Ensure PyGameZero assets are copied over.
+        images_path = os.path.join(wd, 'images')
+        sounds_path = os.path.join(wd, 'sounds')
+        if not os.path.exists(images_path):
+            logger.debug('Creating directory: {}'.format(images_path))
+            os.makedirs(images_path)
+            shutil.copy(path('alien.png', 'pygamezero/'),
+                        os.path.join(images_path, 'alien.png'))
+            shutil.copy(path('alien_hurt.png', 'pygamezero/'),
+                        os.path.join(images_path, 'alien_hurt.png'))
+        if not os.path.exists(sounds_path):
+            logger.debug('Creating directory: {}'.format(sounds_path))
+            os.makedirs(sounds_path)
+            shutil.copy(path('eep.wav', 'pygamezero/'),
+                        os.path.join(sounds_path, 'eep.wav'))
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
@@ -401,11 +418,11 @@ class Editor:
                     # So ask for the desired mode.
                     self.select_mode(None)
                 if 'paths' in old_session:
-                    for path in old_session['paths']:
+                    for old_path in old_session['paths']:
                         # if the os passed in a file, defer loading it now
-                        if passed_filename and path in passed_filename:
+                        if passed_filename and old_path in passed_filename:
                             continue
-                        self.direct_load(path)
+                        self.direct_load(old_path)
                     logger.info('Loaded files.')
         # handle os passed file last,
         # so it will not be focused over by another tab

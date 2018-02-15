@@ -22,7 +22,6 @@ from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PYGAMEZERO_APIS
 from mu.logic import write_and_flush
 from mu.resources import load_icon
-from PyQt5.QtCore import QProcess
 
 
 logger = logging.getLogger(__name__)
@@ -50,6 +49,20 @@ class PyGameZeroMode(BaseMode):
                 'description': _('Play your PyGame Zero game.'),
                 'handler': self.play_toggle,
                 'shortcut': 'F5',
+            },
+            {
+                'name': 'images',
+                'display_name': _('Images'),
+                'description': _('Show the images used by PyGame Zero.'),
+                'handler': self.show_images,
+                'shortcut': 'Ctrl+Shift+I',
+            },
+            {
+                'name': 'sound',
+                'display_name': _('Sounds'),
+                'description': _('Show the sounds used by PyGame Zero.'),
+                'handler': self.show_sounds,
+                'shortcut': 'Ctrl+Shift+S',
             },
         ]
 
@@ -100,13 +113,11 @@ class PyGameZeroMode(BaseMode):
                     write_and_flush(f, tab.text())
                     tab.setModified(False)
             logger.debug(tab.text())
-            self.runner = QProcess(self.view)
-            self.runner.setProcessChannelMode(QProcess.MergedChannels)
-            logger.info('Working directory: {}'.format(self.workspace_dir()))
-            self.runner.setWorkingDirectory(self.workspace_dir())
-            script = os.path.abspath(os.path.normcase(tab.path))
-            self.runner.start('pgzrun', [script, ])
-            self.runner.waitForStarted()
+            self.runner = self.view.add_python3_runner(tab.path,
+                                                       self.workspace_dir(),
+                                                       interactive=False,
+                                                       runner='pgzrun')
+            self.runner.process.waitForStarted()
 
     def stop_game(self):
         """
@@ -114,6 +125,27 @@ class PyGameZeroMode(BaseMode):
         """
         logger.debug('Stopping script.')
         if self.runner:
-            self.runner.kill()
-            self.runner.waitForFinished()
+            self.runner.process.kill()
+            self.runner.process.waitForFinished()
             self.runner = None
+        self.view.remove_python_runner()
+
+    def show_images(self, event):
+        """
+        Open the directory containing the image assets used by PyGame Zero.
+
+        This should open the host OS's file system explorer so users can drag
+        new files into the opened folder.
+        """
+        image_dir = os.path.join(self.workspace_dir(), 'images')
+        self.view.open_directory_from_os(image_dir)
+
+    def show_sounds(self, event):
+        """
+        Open the directory containing the sound assets used by PyGame Zero.
+
+        This should open the host OS's file system explorer so users can drag
+        new files into the opened folder.
+        """
+        sound_dir = os.path.join(self.workspace_dir(), 'sounds')
+        self.view.open_directory_from_os(sound_dir)

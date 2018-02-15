@@ -83,4 +83,4 @@ deploy:
   set_public: true
   folder: windows
   on:
-    branch: [master, new_python_runner]
+    branch: [master, pygamezero]
