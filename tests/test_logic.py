@@ -308,10 +308,12 @@ def test_editor_setup():
         'python': mock_mode,
     }
     with mock.patch('os.path.exists', return_value=False), \
-            mock.patch('os.makedirs', return_value=None) as mkd:
+            mock.patch('os.makedirs', return_value=None) as mkd, \
+            mock.patch('shutil.copy') as mock_shutil:
         e.setup(mock_modes)
-        assert mkd.call_count == 1
+        assert mkd.call_count == 3
         assert mkd.call_args_list[0][0][0] == 'foo'
+        assert mock_shutil.call_count == 3
     assert e.modes == mock_modes
 
 
