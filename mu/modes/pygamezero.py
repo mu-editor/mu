@@ -49,21 +49,21 @@ class PyGameZeroMode(BaseMode):
             {
                 'name': 'play',
                 'display_name': _('Play'),
-                'description': _('Play your PyGame Zero game.'),
+                'description': _('Play your Pygame Zero game.'),
                 'handler': self.play_toggle,
                 'shortcut': 'F5',
             },
             {
                 'name': 'images',
                 'display_name': _('Images'),
-                'description': _('Show the images used by PyGame Zero.'),
+                'description': _('Show the images used by Pygame Zero.'),
                 'handler': self.show_images,
                 'shortcut': 'Ctrl+Shift+I',
             },
             {
                 'name': 'sounds',
                 'display_name': _('Sounds'),
-                'description': _('Show the sounds used by PyGame Zero.'),
+                'description': _('Show the sounds used by Pygame Zero.'),
                 'handler': self.show_sounds,
                 'shortcut': 'Ctrl+Shift+S',
             },
@@ -85,14 +85,14 @@ class PyGameZeroMode(BaseMode):
             play_slot = self.view.button_bar.slots['play']
             play_slot.setIcon(load_icon('play'))
             play_slot.setText(_('Play'))
-            play_slot.setToolTip(_('Play your PyGame Zero game.'))
+            play_slot.setToolTip(_('Play your Pygame Zero game.'))
         else:
             self.run_game()
             if self.runner:
                 play_slot = self.view.button_bar.slots['play']
                 play_slot.setIcon(load_icon('stop'))
                 play_slot.setText(_('Stop'))
-                play_slot.setToolTip(_('Stop your PyGame Zero game.'))
+                play_slot.setToolTip(_('Stop your Pygame Zero game.'))
 
     def run_game(self):
         """
