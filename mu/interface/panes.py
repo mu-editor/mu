@@ -962,7 +962,7 @@ class PlotterPane(QChartView):
         self.input_buffer = []
         self.setObjectName('plotterpane')
         self.x_range = [0, 100]   # start out with a dummy range, resize later
-        self.y_range = [-1000, 1000]  # ditto
+        self.max_y = 1000
 
         self.t = range(self.x_range[0], self.x_range[1])
         self.q = deque([0] * len(self.t))
@@ -975,7 +975,7 @@ class PlotterPane(QChartView):
         self.axis_x = QValueAxis()
         self.axis_y = QValueAxis()
         self.axis_x.setRange(self.x_range[0], self.x_range[1])
-        self.axis_y.setRange(self.y_range[0], self.y_range[1])
+        self.axis_y.setRange(-self.max_y, self.max_y)
         self.axis_x.setLabelFormat("")
         self.axis_y.setLabelFormat("%d")
         self.chart.setAxisX(self.axis_x, self.series)
@@ -983,8 +983,6 @@ class PlotterPane(QChartView):
 
         self.setChart(self.chart)
         self.setRenderHint(QPainter.Antialiasing)
-
-        self.resizeEvent = lambda e: self.on_resize(e)
 
     def process_bytes(self, data):
         """
@@ -1029,6 +1027,14 @@ class PlotterPane(QChartView):
         self.q.appendleft(value)
         if len(self.q) > len(self.t):
             self.q.pop()
+        # Re-scale y-axis.
+        max_y_range = max([max(self.q), abs(min(self.q))])
+        if max_y_range  > self.max_y:
+            self.max_y += self.max_y
+            self.axis_y.setRange(-self.max_y, self.max_y)
+        elif max_y_range < self.max_y / 2:
+            self.max_y = self.max_y / 2
+            self.axis_y.setRange(-self.max_y, self.max_y)
 
         p_list = []
         for i in range(0, len(self.t)):
@@ -1040,20 +1046,6 @@ class PlotterPane(QChartView):
         self.series.clear()
         for i in p_list:
             self.series.append(*i)
-
-    def on_resize(self, event):
-        return
-        x = event.size().width()
-        y = event.size().height()
-        self.chart.axisY().setMax(y)
-        self.chart.axisX().setMax(x)
-        self.t = range(0, x)
-        q_len = len(self.q)
-        if x > q_len:  # extend it!
-            self.q.extendleft([0] * (x - q_len))
-        if x < q_len:  # contract it
-            self.q = deque(islice(self.q, q_len - x, q_len))
-        self.chartView.update()
 
     def set_theme(self, theme):
         """

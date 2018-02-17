@@ -108,24 +108,18 @@ class MicroPythonMode(BaseMode):
     Includes functionality that works with a USB serial based REPL.
     """
     valid_boards = BOARD_IDS
-    pid = None
-    vid = None
 
     def find_device(self, with_logging=True):
         """
         Returns the port for the first MicroPython-ish device found connected
-        to the host computer. If no device is found, returns None.
+        to the host computer. If no device is found, return None.
         """
         available_ports = QSerialPortInfo.availablePorts()
         for port in available_ports:
-            new_pid = port.productIdentifier()
-            new_vid = port.vendorIdentifier()
-            if new_pid == self.pid and new_vid == self.vid:
-                return self.port_path(port.portName())
-            else:
-                self.pid, self.vid = new_pid, new_vid
+            pid = port.productIdentifier()
+            vid = port.vendorIdentifier()
             # Look for the port VID & PID in the list of know board IDs
-            if (self.vid, self.pid) in self.valid_boards:
+            if (vid, pid) in self.valid_boards:
                 port_name = port.portName()
                 logger.info('Found device on port: {}'.format(port_name))
                 return self.port_path(port_name)
@@ -154,11 +148,9 @@ class MicroPythonMode(BaseMode):
         Toggles the REPL on and off.
         """
         if self.repl:
-            self.repl = False
             self.remove_repl()
             logger.info('Toggle REPL off.')
         else:
-            self.repl = True
             self.add_repl()
             logger.info('Toggle REPL on.')
 
@@ -167,6 +159,7 @@ class MicroPythonMode(BaseMode):
         If there's an active REPL, disconnect and hide it.
         """
         self.view.remove_repl()
+        self.repl = False
 
     def add_repl(self):
         """
@@ -178,6 +171,7 @@ class MicroPythonMode(BaseMode):
             try:
                 self.view.add_micropython_repl(device_port, self.name)
                 logger.info('Started REPL on port: {}'.format(device_port))
+                self.repl = True
             except IOError as ex:
                 logger.error(ex)
                 self.repl = False
@@ -201,11 +195,9 @@ class MicroPythonMode(BaseMode):
         Toggles the plotter on and off.
         """
         if self.plotter:
-            self.plotter = False
             self.remove_plotter()
             logger.info('Toggle plotter off.')
         else:
-            self.plotter = True
             self.add_plotter()
             logger.info('Toggle plotter on.')
 
@@ -226,6 +218,7 @@ class MicroPythonMode(BaseMode):
             try:
                 self.view.add_micropython_plotter(device_port, self.name)
                 logger.info('Started plotter')
+                self.plotter = True
             except IOError as ex:
                 logger.error(ex)
                 self.plotter = False
