@@ -78,7 +78,7 @@ user's games. This makes it easy for the user to copy and paste new game assets
 into the right place.
 
 The standard Python3 mode (see below) is probably a better environment for more
-advanced pygame-only development. Mu ensures that all the game assests required
+advanced pygame-only development. Mu ensures that all the game assets required
 by the `Pygame Zero introductory tutorial <https://pygame-zero.readthedocs.io/en/stable/introduction.html>`_
 are available by default.
 
