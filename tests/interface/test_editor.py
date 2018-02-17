@@ -245,22 +245,24 @@ def test_EditorPane_annotate_code():
 
 def test_EditorPane_show_annotations():
     """
-    Ensure the annotations are shown.
+    Ensure the annotations are shown in "sentence" case and with an arrow to
+    indicate the line to which they refer.
     """
     ep = mu.interface.editor.EditorPane(None, 'baz')
     ep.check_indicators = {
         'error': {
             'markers': {
                 1: [
-                    {'message': 'a message', 'line_no': 1},
-                    {'message': 'another message', 'line_no': 1},
+                    {'message': 'message 1', 'line_no': 1},
+                    {'message': 'message 2', 'line_no': 1},
                 ]
             }
         }
     }
     ep.annotate = mock.MagicMock()
     ep.show_annotations()
-    ep.annotate.assert_called_once_with(1, 'a message\nanother message',
+    ep.annotate.assert_called_once_with(1,
+                                        '\u2BB4Message 1\n\u2BB4Message 2',
                                         ep.annotationDisplay())
 
 

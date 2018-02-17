@@ -8,6 +8,7 @@ import PyQt5
 pyqt_dir = os.path.dirname(getfile(PyQt5))
 
 
+# PyInstaller Cipher flag.
 block_cipher = None
 
 
@@ -23,6 +24,13 @@ for x in data_files_glob:
     data_files += [(os.path.join('..', x), os.path.dirname(x))]
 
 print('Spec file resources selected: %s' % data_files)
+
+# PyQt5 and dll location, specific to PyQt5 version
+pyqt_dir = os.path.dirname(getfile(PyQt5))
+pyqt_dlls = os.path.join(pyqt_dir, 'plugins', 'platforms')
+
+
+binary_files = []
 
 
 a = Analysis(['../run.py'],

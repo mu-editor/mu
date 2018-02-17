@@ -16,6 +16,15 @@ Mu uses Python's standard `gettext <https://docs.python.org/3.6/library/i18n.htm
 based internationalization API so we can make use of standard tools to help
 translators, such as `poedit <https://poedit.net/>`_.
 
+.. note::
+
+    You may need to run ``make translate`` as part of this process. This, in
+    turn, depends on the presence of the ``pygettext.py`` command on your
+    system. The ``pygettext.py`` command should come installed as part of the
+    Python language, but some operating systems don't include it by default. 
+    For example, to install ``pygettext.py`` on Fedora you must make
+    sure the ``python3-tools`` package is installed.
+
 To manually change the locale Mu uses for translation strings, look in
 ``mu/app.py`` for the following lines of code at the start of the file::
 

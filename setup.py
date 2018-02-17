@@ -20,8 +20,9 @@ setup(
     packages=['mu', 'mu.contrib', 'mu.resources', 'mu.modes', 'mu.debugger',
               'mu.interface', 'mu.modes.api', ],
     install_requires=['pycodestyle==2.3.1', 'pyflakes==1.6.0',
-                      'pyserial==3.4', 'pyqt5==5.9', 'qscintilla==2.10.1',
-                      'qtconsole==4.3.1', 'matplotlib==2.0.2', ],
+                      'pyserial==3.4', 'pyqt5==5.10', 'qscintilla==2.10.1',
+                      'qtconsole==4.3.1', 'matplotlib==2.0.2',
+                      'pgzero==1.1'],
     include_package_data=True,
     zip_safe=False,
     classifiers=[

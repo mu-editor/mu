@@ -25,6 +25,7 @@ def test_base_mode():
     assert bm.actions() == NotImplemented
     assert bm.workspace_dir()
     assert bm.api() == NotImplemented
+    assert bm.builtins is None
 
 
 def test_base_mode_workspace_dir():

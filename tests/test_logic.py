@@ -174,6 +174,22 @@ def test_check_flake_needing_expansion():
                                            mock_r)
 
 
+def test_check_flake_with_builtins():
+    """
+    If a list of assumed builtin symbols is passed, any "undefined name"
+    messages for them are ignored.
+    """
+    mock_r = mock.MagicMock()
+    mock_r.log = [{'line_no': 2, 'column': 0,
+                  'message': "undefined name 'foo'"}]
+    with mock.patch('mu.logic.MuFlakeCodeReporter', return_value=mock_r), \
+            mock.patch('mu.logic.check', return_value=None) as mock_check:
+        result = mu.logic.check_flake('foo.py', 'some code',
+                                      builtins=['foo', ])
+        assert result == {}
+        mock_check.assert_called_once_with('some code', 'foo.py', mock_r)
+
+
 def test_check_pycodestyle():
     """
     Ensure the expected result if generated from the PEP8 style validator.
@@ -308,10 +324,12 @@ def test_editor_setup():
         'python': mock_mode,
     }
     with mock.patch('os.path.exists', return_value=False), \
-            mock.patch('os.makedirs', return_value=None) as mkd:
+            mock.patch('os.makedirs', return_value=None) as mkd, \
+            mock.patch('shutil.copy') as mock_shutil:
         e.setup(mock_modes)
-        assert mkd.call_count == 1
+        assert mkd.call_count == 3
         assert mkd.call_args_list[0][0][0] == 'foo'
+        assert mock_shutil.call_count == 3
     assert e.modes == mock_modes
 
 
@@ -361,6 +379,33 @@ def test_editor_restore_session_missing_files():
             mock.patch('mu.logic.get_settings_path', get_test_settings_path):
         ed.restore_session()
     assert ed._view.add_tab.call_count == 0
+
+
+def test_editor_restore_session_invalid_mode():
+    """
+    As Mu's modes are added and/or renamed, invalid mode names may need to be
+    ignored (this happens regularly when changing versions when developing
+    Mu itself).
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.select_mode = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    api = ['API specification', ]
+    mock_mode.api.return_value = api
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    mock_mode.save_timeout = 5
+    ed.modes = {
+        'python': mock_mode,
+    }
+    mock_open = mock.mock_open(
+        read_data='{"paths": ["path/foo.py"], "mode": "numberwang"}')
+    mock_gettext = mock.MagicMock()
+    mock_gettext.return_value = '# Write your code here :-)'
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('os.path.exists', return_value=True):
+        ed.restore_session()
+    ed.select_mode.assert_called_once_with(None)
 
 
 def test_editor_restore_session_no_session_file():
@@ -833,15 +878,42 @@ def test_check_code_on():
     flake = {2: {'line_no': 2, 'message': 'a message', }, }
     pep8 = {2: [{'line_no': 2, 'message': 'another message', }],
             3: [{'line_no': 3, 'message': 'yet another message', }]}
+    mock_mode = mock.MagicMock()
+    mock_mode.builtins = None
     with mock.patch('mu.logic.check_flake', return_value=flake), \
             mock.patch('mu.logic.check_pycodestyle', return_value=pep8):
         ed = mu.logic.Editor(view)
+        ed.modes = {'python': mock_mode, }
         ed.check_code()
         assert tab.has_annotations is True
         view.reset_annotations.assert_called_once_with()
         view.annotate_code.assert_has_calls([mock.call(flake, 'error'),
                                              mock.call(pep8, 'style')],
                                             any_order=True)
+
+
+def test_check_code_no_problems():
+    """
+    If no problems are found in the code, ensure a status message is shown to
+    the user to confirm the fact. See #337
+    """
+    view = mock.MagicMock()
+    tab = mock.MagicMock()
+    tab.has_annotations = False
+    tab.path = 'foo.py'
+    tab.text.return_value = 'import this\n'
+    view.current_tab = tab
+    flake = {}
+    pep8 = {}
+    mock_mode = mock.MagicMock()
+    mock_mode.builtins = None
+    with mock.patch('mu.logic.check_flake', return_value=flake), \
+            mock.patch('mu.logic.check_pycodestyle', return_value=pep8):
+        ed = mu.logic.Editor(view)
+        ed.show_status_message = mock.MagicMock()
+        ed.modes = {'python': mock_mode, }
+        ed.check_code()
+        assert ed.show_status_message.call_count == 1
 
 
 def test_check_code_off():

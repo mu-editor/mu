@@ -1,7 +1,7 @@
 environment:
   matrix:
-    - PYTHON: "C:\\Python34"
-      PYTHON_VERSION: "3.4.4"
+    - PYTHON: "C:\\Python36"
+      PYTHON_VERSION: "3.6.4"
       PYTHON_ARCH: "32"
 
 platform: x86
@@ -36,16 +36,10 @@ init:
   - cmd: pip freeze
 
 install:
-  # Fix for PyQt not being installed in correct directory: https://github.com/appveyor/ci/issues/363
-  - cmd: REG ADD HKCU\Software\Python\PythonCore\3.4\InstallPath /f /ve /t REG_SZ /d C:\Python34
-
-  # Download PyQt5 with 10min timeout, rename to pyqt5_installer.exe, and install
-  - ps: Start-FileDownload 'http://downloads.sourceforge.net/project/pyqt/PyQt5/PyQt-5.5.1/PyQt5-5.5.1-gpl-Py3.4-Qt5.5.1-x32.exe' -FileName pyqt5_installer.exe -Timeout 600000
-
-  - cmd: pyqt5_installer.exe /S
-
-  # Install python dependencies (v3.2 has VC++ redistributable dependencies)
-  - cmd: pip install pyinstaller==3.1.1
+  # Install / check python dependencies (v3.2 has VC++ redistributable dependencies)
+  - cmd: pip install simplegeneric 
+  - cmd: pip install pgzero 
+  - cmd: pip install pynsist
   - cmd: pip install -r requirements.txt
 
   # Check installed packages
@@ -53,24 +47,29 @@ install:
   - cmd: python -c "import PyQt5"
   - cmd: python -c "import PyQt5.Qsci"
 
-  # Build mu using PyInstaller, rename dist folder and executable with timestamp
-  - cmd: pyinstaller package\pyinstaller.spec
-  - ps: Rename-Item -path .\dist upload
-  - cmd: dir upload
-  - ps: Rename-Item .\upload\mu.exe mu_$(get-date -f yyyy-MM-dd_HH_mm)_$($env:APPVEYOR_REPO_BRANCH)_$($env:APPVEYOR_REPO_COMMIT.subString(0,7)).exe
+  # Build mu using pynsist, rename dist folder and executable with timestamp
+  # 64bit
+  - cmd: pynsist win_installer64.cfg
+  - ps: Rename-Item -path .\build upload64
+  - cmd: dir upload64
+  - ps: Rename-Item .\upload64\nsis\mu_1.0.0b14.exe mu_$(get-date -f yyyy-MM-dd_HH_mm)_$($env:APPVEYOR_REPO_BRANCH)_$($env:APPVEYOR_REPO_COMMIT.subString(0,7))_64bit.exe
+  # 32bit
+  - cmd: pynsist win_installer32.cfg
+  - ps: Rename-Item -path .\build upload32
+  - cmd: dir upload32
+  - ps: Rename-Item .\upload32\nsis\mu_1.0.0b14.exe mu_$(get-date -f yyyy-MM-dd_HH_mm)_$($env:APPVEYOR_REPO_BRANCH)_$($env:APPVEYOR_REPO_COMMIT.subString(0,7))_32bit.exe
 
 # Not a project with an msbuild file, build done at install.
 build: None
 
 # Makefiles support provided by MinGW, which does POSIX translations, so run tests natively as well
 test_script:
-  - cmd: make clean
-  - cmd: py.test
-  - cmd: make check
+  - cmd: make coverage 
 
 # Push artifacts to s3 bucket and list all
 before_deploy:
-  - ps: Get-ChildItem .\upload\*.exe | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName mu-s3-deployment }
+  - ps: Get-ChildItem .\upload64\nsis\*.exe | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName mu-s3-deployment }
+  - ps: Get-ChildItem .\upload32\nsis\*.exe | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name -DeploymentName mu-s3-deployment }
   - ps: foreach($artifactName in $artifacts.keys) { $artifacts[$artifactName] }
 
 # Deploy build to Amazon S3 bucket

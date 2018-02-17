@@ -21,10 +21,11 @@ import os
 import re
 import platform
 import logging
+import signal
+import string
 import os.path
-import mu
 from PyQt5.QtCore import (Qt, QIODevice, QProcess, QProcessEnvironment,
-                          pyqtSignal)
+                          pyqtSignal, QTimer)
 from collections import deque
 from itertools import islice
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
@@ -148,14 +149,6 @@ class MicroPythonREPLPane(QTextEdit):
         menu.addAction("Copy", self.copy, copy_keys)
         menu.addAction("Paste", self.paste, paste_keys)
         menu.exec_(QCursor.pos())
-
-    def cursor_to_end(self):
-        """
-        Moves the cursor to the very end of the available text.
-        """
-        tc = self.textCursor()
-        tc.movePosition(QTextCursor.End)
-        self.setTextCursor(tc)
 
     def set_theme(self, theme):
         """
@@ -563,116 +556,323 @@ class FileSystemPane(QFrame):
 
 class PythonProcessPane(QTextEdit):
     """
-    Captures, displays and works with the stdin, stdout and stderr of a Python
-    process.
-
-    Used for running / debugging standard Python3 scripts.
+    Handles / displays a Python process's stdin/out with working command
+    history and simple buffer editing.
     """
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFont(Font().load())
-        self.input_buffer = []
+        self.setAcceptRichText(False)
+        self.setReadOnly(False)
+        self.setUndoRedoEnabled(False)
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.context_menu)
+        self.setObjectName('PythonRunner')
+        self.process = None  # Will eventually reference the running process.
+        self.input_history = []  # history of inputs entered in this session.
+        self.start_of_current_line = 0  # start position of the input line.
+        self.history_position = 0  # current position when navigation history.
 
-    def start_process(self, workspace, script):
+    def start_process(self, script_name, working_directory, interactive=True,
+                      debugger=False, command_args=None, runner=None):
         """
-        Start the child process from the workspace with the script.
+        Start the child Python process.
+
+        Will run the referenced Python script_name within the context of the
+        working directory.
+
+        If interactive is True (the default) the Python process will run in
+        interactive mode (dropping the user into the REPL when the script
+        completes).
+
+        If debugger is True (the default is False) then the script will run
+        within a debug runner session.
+
+        If there is a list of command_args (the default is None), then these
+        will be passed as further arguments into the script to be run.
+
+        If runner is give, this is used as the command to start the Python
+        process.
         """
-        self.script = os.path.abspath(os.path.normcase(script))
-        logger.info('Running script: {}'.format(script))
+        self.script = os.path.abspath(os.path.normcase(script_name))
+        logger.info('Running script: {}'.format(self.script))
+        if interactive:
+            logger.info('Running with interactive mode.')
+        if command_args is None:
+            command_args = []
+        logger.info('Command args: {}'.format(command_args))
         self.process = QProcess(self)
         self.process.setProcessChannelMode(QProcess.MergedChannels)
         # Force buffers to flush immediately.
         env = QProcessEnvironment.systemEnvironment()
         env.insert('PYTHONUNBUFFERED', '1')
+        logger.info('Working directory: {}'.format(working_directory))
+        self.process.setWorkingDirectory(working_directory)
         self.process.setProcessEnvironment(env)
-        logger.info('Working directory: {}'.format(workspace))
-        self.process.setWorkingDirectory(workspace)
-        self.process.readyRead.connect(self.read)
+        self.process.readyRead.connect(self.read_from_stdout)
         self.process.finished.connect(self.finished)
-        python_exec = sys.executable
-        mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
-        runner = os.path.join(mu_dir, 'mu-debug.py')
-        # Start the mu-debug runner within an interactive Python shell.
-        self.process.start(python_exec, [runner, self.script])
+        logger.info('Python path: {}'.format(sys.path))
+        if debugger:
+            # Start the mu-debug runner for the script.
+            args = [self.script, ] + command_args
+            self.process.start('mu-debug', args)
+        else:
+            if runner:
+                # Use the passed in Python "runner" to run the script.
+                python_exec = runner
+            else:
+                # Use the current system Python to run the script.
+                python_exec = sys.executable
+            if interactive:
+                # Start the script in interactive Python mode.
+                args = ['-i', self.script, ] + command_args
+            else:
+                # Just run the command with no additional flags.
+                args = [self.script, ] + command_args
+            self.process.start(python_exec, args)
 
     def finished(self, code, status):
         """
-        Called when the process is finished.
+        Handle when the child process finishes.
         """
         cursor = self.textCursor()
         cursor.movePosition(cursor.End)
-        cursor.insertText(_('\n\n---------- FINISHED ----------\n'))
-        msg = _('exit code: {} status: {}').format(code, status)
+        cursor.insertText('\n\n---------- FINISHED ----------\n')
+        msg = 'exit code: {} status: {}'.format(code, status)
         cursor.insertText(msg)
         cursor.movePosition(QTextCursor.End)
         self.setTextCursor(cursor)
         self.setReadOnly(True)
 
-    def append(self, byte_stream):
+    def context_menu(self):
         """
-        Append text to the text area.
+        Creates custom context menu with just copy and paste.
         """
-        cursor = self.textCursor()
-        cursor.movePosition(cursor.End)
-        cursor.insertText(byte_stream.decode('utf-8'))
-        cursor.movePosition(QTextCursor.End)
-        self.setTextCursor(cursor)
+        menu = QMenu(self)
+        if platform.system() == 'Darwin':
+            copy_keys = QKeySequence(Qt.CTRL + Qt.Key_C)
+            paste_keys = QKeySequence(Qt.CTRL + Qt.Key_V)
+        else:
+            copy_keys = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_C)
+            paste_keys = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_V)
+        menu.addAction("Copy", self.copy, copy_keys)
+        menu.addAction("Paste", self.paste, paste_keys)
+        menu.exec_(QCursor.pos())
 
-    def delete(self):
+    def paste(self):
         """
-        Removes a character from the end of the text (to facilitate when a
-        user presses the delete button).
+        Grabs clipboard contents then writes to the REPL.
         """
-        if self.input_buffer:
-            self.input_buffer.pop()
-            cursor = self.textCursor()
-            cursor.movePosition(cursor.End)
-            cursor.deletePreviousChar()
-            cursor.movePosition(QTextCursor.End)
-            self.setTextCursor(cursor)
+        clipboard = QApplication.clipboard()
+        if clipboard and clipboard.text():
+            # normalize for Windows line-ends.
+            text = '\n'.join(clipboard.text().splitlines())
+            if text:
+                self.parse_paste(text)
 
-    def read(self):
+    def parse_paste(self, text):
         """
-        From the process's stdout.
+        Recursively takes characters from text to be parsed as input. We do
+        this so the event loop has time to respond to output from the process
+        to which the characters are sent (for example, when a newline is sent).
+
+        Yes, this is a quick and dirty hack, but ensures the pasted input is
+        also evaluated in an interactive manner rather than as a single-shot
+        splurge of data. Essentially, it's simulating someone typing in the
+        characters of the pasted text *really fast* but in such a way that the
+        event loop cycles.
         """
-        self.input_buffer = []
-        data = self.process.readAll().data()
-        if data:
-            self.append(data)
+        character = text[0]  # the current character to process.
+        remainder = text[1:]  # remaining characters to process in the future.
+        if character in string.printable:
+            if character == '\n' or character == '\r':
+                self.parse_input(Qt.Key_Enter, character, None)
+            else:
+                self.parse_input(None, character, None)
+        if remainder:
+            # Schedule a recursive call of parse_paste with the remaining text
+            # to process. This allows the event loop to cycle and handle any
+            # output from the child process as a result of the text pasted so
+            # far (especially useful for handling responses from newlines).
+            QTimer.singleShot(2, lambda text=remainder: self.parse_paste(text))
 
     def keyPressEvent(self, data):
         """
         Called when the user types something in the REPL.
-
-        Correctly encodes it and sends it to the connected process.
         """
         key = data.key()
-        msg = bytes(data.text(), 'utf8')
-        if key == Qt.Key_Backspace:
-            msg = b'\b'
-        elif (data.modifiers() == Qt.ControlModifier | Qt.ShiftModifier) or \
+        text = data.text()
+        modifiers = data.modifiers()
+        self.parse_input(key, text, modifiers)
+
+    def parse_input(self, key, text, modifiers):
+        """
+        Correctly encodes user input and sends it to the connected process.
+
+        The key is a Qt.Key_Something value, text is the textual representation
+        of the input, and modifiers are the control keys (shift, CTRL, META,
+        etc) also used.
+        """
+        msg = b''  # Eventually to be inserted into the pane at the cursor.
+        if key == Qt.Key_Enter or key == Qt.Key_Return:
+            msg = b'\n'
+        elif (platform.system() == 'Darwin' and
+                modifiers == Qt.MetaModifier) or \
+             (platform.system() != 'Darwin' and
+                modifiers == Qt.ControlModifier):
+            # Handle CTRL-C and CTRL-D
+            if self.process:
+                pid = self.process.processId()
+                # NOTE: Windows related constraints don't allow us to send a
+                # CTRL-C, rather, the process will just terminate.
+                if key == Qt.Key_C:
+                    os.kill(pid, signal.SIGINT)
+                if key == Qt.Key_D:
+                    self.process.kill()
+            return
+        elif key == Qt.Key_Up:
+            self.history_back()
+        elif key == Qt.Key_Down:
+            self.history_forward()
+        elif key == Qt.Key_Right:
+            cursor = self.textCursor()
+            cursor.movePosition(QTextCursor.Right)
+            self.setTextCursor(cursor)
+        elif key == Qt.Key_Left:
+            cursor = self.textCursor()
+            if cursor.position() > self.start_of_current_line:
+                cursor.movePosition(QTextCursor.Left)
+                self.setTextCursor(cursor)
+        elif key == Qt.Key_Home:
+            cursor = self.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            buffer_len = len(self.toPlainText()) - self.start_of_current_line
+            for i in range(buffer_len):
+                cursor.movePosition(QTextCursor.Left)
+            self.setTextCursor(cursor)
+        elif key == Qt.Key_End:
+            cursor = self.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            self.setTextCursor(cursor)
+        elif (modifiers == Qt.ControlModifier | Qt.ShiftModifier) or \
                 (platform.system() == 'Darwin' and
-                    data.modifiers() == Qt.ControlModifier):
+                    modifiers == Qt.ControlModifier):
             # Command-key on Mac, Ctrl-Shift on Win/Lin
             if key == Qt.Key_C:
                 self.copy()
-                msg = b''
             elif key == Qt.Key_V:
                 self.paste()
-                msg = b''
-        elif key == Qt.Key_Enter or key == Qt.Key_Return:
-            msg = b'\n'
+        elif text in string.printable:
+            # If the key is for a printable character then add it to the
+            # active buffer and display it.
+            msg = bytes(text, 'utf8')
         if key == Qt.Key_Backspace:
             self.delete()
-        else:
-            self.input_buffer.append(msg)
-            if not self.isReadOnly():
-                self.append(msg)
-        if self.input_buffer and self.input_buffer[-1] == b'\n':
-            if hasattr(self, 'process') and self.process:
-                self.process.write(b''.join(self.input_buffer))
-            self.input_buffer = []
+        if not self.isReadOnly() and msg:
+            self.insert(msg)
+        if key == Qt.Key_Enter or key == Qt.Key_Return:
+            content = self.toPlainText()
+            line = content[self.start_of_current_line:].encode('utf-8')
+            self.write_to_stdin(line)
+            if line.strip():
+                self.input_history.append(line.replace(b'\n', b''))
+            self.history_position = 0
+
+    def history_back(self):
+        """
+        Replace the current input line with the next item BACK from the
+        current history position.
+        """
+        if self.input_history:
+            self.history_position -= 1
+            history_pos = len(self.input_history) + self.history_position
+            if history_pos < 0:
+                self.history_position += 1
+                history_pos = 0
+            history_item = self.input_history[history_pos]
+            self.replace_input_line(history_item)
+
+    def history_forward(self):
+        """
+        Replace the current input line with the next item FORWARD from the
+        current history position.
+        """
+        if self.input_history:
+            self.history_position += 1
+            history_pos = len(self.input_history) + self.history_position
+            if history_pos >= len(self.input_history):
+                # At the most recent command.
+                self.history_position = 0
+                self.clear_input_line()
+                return
+            history_item = self.input_history[history_pos]
+            self.replace_input_line(history_item)
+
+    def read_from_stdout(self):
+        """
+        Process incoming data from the process's stdout.
+        """
+        data = self.process.readAll().data()
+        if data:
+            self.append(data)
+            cursor = self.textCursor()
+            self.start_of_current_line = cursor.position()
+
+    def write_to_stdin(self, data):
+        """
+        Writes data from the Qt application to the child process's stdin.
+        """
+        if self.process:
+            self.process.write(data)
+
+    def append(self, msg):
+        """
+        Append text to the text area.
+        """
+        cursor = self.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        cursor.insertText(msg.decode('utf-8'))
+        cursor.movePosition(QTextCursor.End)
+        self.setTextCursor(cursor)
+
+    def insert(self, msg):
+        """
+        Insert text to the text area at the current cursor position.
+        """
+        cursor = self.textCursor()
+        if cursor.position() < self.start_of_current_line:
+            cursor.movePosition(QTextCursor.End)
+        cursor.insertText(msg.decode('utf-8'))
+        self.setTextCursor(cursor)
+
+    def delete(self):
+        """
+        Removes a character from the current buffer.
+        """
+        cursor = self.textCursor()
+        if cursor.position() > self.start_of_current_line:
+            cursor = self.textCursor()
+            cursor.deletePreviousChar()
+            self.setTextCursor(cursor)
+
+    def clear_input_line(self):
+        """
+        Remove all the characters currently in the input buffer line.
+        """
+        cursor = self.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        buffer_len = len(self.toPlainText()) - self.start_of_current_line
+        for i in range(buffer_len):
+            cursor.deletePreviousChar()
+        self.setTextCursor(cursor)
+
+    def replace_input_line(self, text):
+        """
+        Replace the current input line with the passed in text.
+        """
+        self.clear_input_line()
+        self.append(text)
 
     def zoomIn(self, delta=2):
         """

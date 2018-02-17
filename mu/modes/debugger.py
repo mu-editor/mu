@@ -90,7 +90,7 @@ class DebugMode(BaseMode):
 
     def start(self):
         """
-        Start running/debugging the current script.
+        Start debugging the current script.
         """
         # Grab the Python file.
         tab = self.view.current_tab
@@ -102,7 +102,6 @@ class DebugMode(BaseMode):
             # Unsaved file.
             self.editor.save()
         if tab.path:
-            logger.debug('Running / debugging script.')
             # If needed, save the script.
             if tab.isModified():
                 with open(tab.path, 'w', newline='') as f:
@@ -110,13 +109,10 @@ class DebugMode(BaseMode):
                     logger.debug(tab.text())
                     write_and_flush(f, tab.text())
                     tab.setModified(False)
-            logger.debug('Python script: {}'.format(tab.path))
-            logger.debug('Working directory: {}'.format(self.workspace_dir()))
             logger.debug(tab.text())
-            self.editor.show_status_message(_("Running script {}").format(
-                tab.path))
             self.runner = self.view.add_python3_runner(tab.path,
-                                                       self.workspace_dir())
+                                                       self.workspace_dir(),
+                                                       debugger=True)
             self.runner.process.waitForStarted()
             self.runner.process.finished.connect(self.finished)
             self.view.add_debug_inspector()
@@ -147,7 +143,7 @@ class DebugMode(BaseMode):
 
     def finished(self):
         """
-        Called when the running / debugged Python process is finished.
+        Called when the debugged Python process is finished.
         """
         for action in self.actions():
             if action['name'] != 'stop':

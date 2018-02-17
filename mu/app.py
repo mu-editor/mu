@@ -48,7 +48,8 @@ from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT
 from mu.interface import Window
 from mu.resources import load_pixmap
-from mu.modes import PythonMode, AdafruitMode, MicrobitMode, DebugMode
+from mu.modes import (PythonMode, AdafruitMode, MicrobitMode, DebugMode,
+                      PyGameZeroMode)
 from mu.debugger.runner import run as run_debugger
 
 
@@ -85,6 +86,7 @@ def setup_modes(editor, view):
         'adafruit': AdafruitMode(editor, view),
         'microbit': MicrobitMode(editor, view),
         'debugger': DebugMode(editor, view),
+        'pygamezero': PyGameZeroMode(editor, view),
     }
 
 
@@ -105,6 +107,7 @@ def run():
     setup_logging()
     logging.info('\n\n-----------------\n\nStarting Mu {}'.format(__version__))
     logging.info(platform.uname())
+    logging.info('Python path: {}'.format(sys.path))
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
     # Create the "window" we'll be looking at.

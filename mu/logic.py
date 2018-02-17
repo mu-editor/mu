@@ -29,6 +29,7 @@ import platform
 import webbrowser
 import random
 import locale
+import shutil
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 # Currently there is no pycodestyle deb packages, so fallback to old name
@@ -37,6 +38,7 @@ try:  # pragma: no cover
 except ImportError:  # pragma: no cover
     from pep8 import StyleGuide, Checker
 from mu.contrib import appdirs, uflash
+from mu.resources import path
 from mu import __version__
 
 
@@ -172,12 +174,15 @@ def get_settings_path():
     return settings_dir
 
 
-def check_flake(filename, code):
+def check_flake(filename, code, builtins=None):
     """
     Given a filename and some code to be checked, uses the PyFlakesmodule to
     return a dictionary describing issues of code quality per line. See:
 
     https://github.com/PyCQA/pyflakes
+
+    If a list symbols is passed in as "builtins" these are assumed to be
+    additional builtins available when run by Mu.
     """
     import_all = "from microbit import *" in code
     if import_all:
@@ -186,12 +191,18 @@ def check_flake(filename, code):
         code = code.replace("from microbit import *", EXPANDED_IMPORT)
     reporter = MuFlakeCodeReporter()
     check(code, filename, reporter)
+    if builtins:
+        builtins_regex = re.compile(r"^undefined name '(" +
+                                    '|'.join(builtins) + r")'")
     feedback = {}
     for log in reporter.log:
         if import_all:
             # Guard to stop unwanted "microbit.* imported but unused" messages.
             message = log['message']
             if EXPAND_FALSE_POSITIVE.match(message):
+                continue
+        if builtins:
+            if builtins_regex.match(log['message']):
                 continue
         if log['line_no'] not in feedback:
             feedback[log['line_no']] = []
@@ -368,6 +379,21 @@ class Editor:
         if not os.path.exists(wd):
             logger.debug('Creating directory: {}'.format(wd))
             os.makedirs(wd)
+        # Ensure PyGameZero assets are copied over.
+        images_path = os.path.join(wd, 'images')
+        sounds_path = os.path.join(wd, 'sounds')
+        if not os.path.exists(images_path):
+            logger.debug('Creating directory: {}'.format(images_path))
+            os.makedirs(images_path)
+            shutil.copy(path('alien.png', 'pygamezero/'),
+                        os.path.join(images_path, 'alien.png'))
+            shutil.copy(path('alien_hurt.png', 'pygamezero/'),
+                        os.path.join(images_path, 'alien_hurt.png'))
+        if not os.path.exists(sounds_path):
+            logger.debug('Creating directory: {}'.format(sounds_path))
+            os.makedirs(sounds_path)
+            shutil.copy(path('eep.wav', 'pygamezero/'),
+                        os.path.join(sounds_path, 'eep.wav'))
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
@@ -391,16 +417,21 @@ class Editor:
                 if 'theme' in old_session:
                     self.theme = old_session['theme']
                 if 'mode' in old_session:
-                    self.mode = old_session['mode']
+                    old_mode = old_session['mode']
+                    if old_mode in self.modes:
+                        self.mode = old_session['mode']
+                    else:
+                        # Unknown mode (perhaps an old version?)
+                        self.select_mode(None)
                 else:
                     # So ask for the desired mode.
                     self.select_mode(None)
                 if 'paths' in old_session:
-                    for path in old_session['paths']:
+                    for old_path in old_session['paths']:
                         # if the os passed in a file, defer loading it now
-                        if passed_filename and path in passed_filename:
+                        if passed_filename and old_path in passed_filename:
                             continue
-                        self.direct_load(path)
+                        self.direct_load(old_path)
                     logger.info('Loaded files.')
         # handle os passed file last,
         # so it will not be focused over by another tab
@@ -555,7 +586,8 @@ class Editor:
             logger.info('Checking code.')
             self._view.reset_annotations()
             filename = tab.path if tab.path else 'untitled'
-            flake = check_flake(filename, tab.text())
+            builtins = self.modes[self.mode].builtins
+            flake = check_flake(filename, tab.text(), builtins)
             if flake:
                 logger.info(flake)
                 self._view.annotate_code(flake, 'error')
@@ -565,6 +597,17 @@ class Editor:
                 self._view.annotate_code(pep8, 'style')
             self._view.show_annotations()
             tab.has_annotations = bool(flake or pep8)
+            if not tab.has_annotations:
+                # No problems detected, so confirm this with a friendly
+                # message.
+                ok_messages = [
+                    _('Good job! No problems found.'),
+                    _('Hurrah! Checker turned up no problems.'),
+                    _('Nice one! Zero problems detected.'),
+                    _('Well done! No problems here.'),
+                    _('Awesome! Zero problems found.'),
+                ]
+                self.show_status_message(random.choice(ok_messages))
         else:
             self._view.reset_annotations()
 
