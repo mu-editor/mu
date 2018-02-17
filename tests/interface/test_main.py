@@ -257,6 +257,7 @@ def test_SerialLink_init_unable_to_connect():
         with pytest.raises(IOError):
             mu.interface.main.SerialLink('COM0', mock_parent)
 
+
 def test_SerialLink_init_DTR_unset():
     """
     If data terminal ready (DTR) is unset (as can be the case on some
@@ -277,6 +278,7 @@ def test_SerialLink_init_DTR_unset():
     mock_pyser = mock_py_serial.Serial('COM0')
     assert mock_pyser.dtr is True
     mock_pyser.close.assert_called_once_with()
+
 
 def test_SerialLink_write():
     """
@@ -355,7 +357,7 @@ def test_SerialLink_on_read_overrun_input_buffer():
     mock_serial.open = mock.MagicMock(return_value=True)
     mock_serial.readAll.side_effect = [
         b'(1, 2.3, 4)\n',
-        b'(1, 2.', 
+        b'(1, 2.',
         b'3, 4)\n',
         b'(1, 2.3, 4)\n',
     ]

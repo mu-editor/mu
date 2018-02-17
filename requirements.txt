@@ -16,3 +16,4 @@ beautifulsoup4
 wheel
 twine
 pynsist
+pgzero

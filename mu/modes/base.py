@@ -144,7 +144,7 @@ class MicroPythonMode(BaseMode):
             return "/dev/{}".format(port_name)
         elif os.name == 'nt':
             # On Windows simply return the port (e.g. COM0).
-            return port_name 
+            return port_name
         else:
             # No idea how to deal with other OS's so fail.
             raise NotImplementedError('OS "{}" not supported.'.format(os.name))

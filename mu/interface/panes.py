@@ -24,21 +24,18 @@ import logging
 import signal
 import string
 import os.path
-from PyQt5.QtCore import (Qt, QIODevice, QProcess, QProcessEnvironment,
-                          pyqtSignal, QTimer)
+from PyQt5.QtCore import Qt, QProcess, QProcessEnvironment, pyqtSignal, QTimer
 from collections import deque
 from itertools import islice
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
                              QTreeView)
 from PyQt5.QtGui import QKeySequence, QTextCursor, QCursor, QPainter
-from PyQt5.QtSerialPort import QSerialPort
 from PyQt5.QtChart import QChart, QLineSeries, QChartView, QValueAxis
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from mu.interface.themes import Font
 from mu.interface.themes import (DEFAULT_FONT_SIZE, NIGHT_STYLE, DAY_STYLE,
                                  CONTRAST_STYLE)
-import serial
 
 
 logger = logging.getLogger(__name__)
