@@ -26,7 +26,6 @@ import string
 import os.path
 from PyQt5.QtCore import Qt, QProcess, QProcessEnvironment, pyqtSignal, QTimer
 from collections import deque
-from itertools import islice
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
                              QTreeView)
@@ -1029,7 +1028,7 @@ class PlotterPane(QChartView):
             self.q.pop()
         # Re-scale y-axis.
         max_y_range = max([max(self.q), abs(min(self.q))])
-        if max_y_range  > self.max_y:
+        if max_y_range > self.max_y:
             self.max_y += self.max_y
             self.axis_y.setRange(-self.max_y, self.max_y)
         elif max_y_range < self.max_y / 2:
