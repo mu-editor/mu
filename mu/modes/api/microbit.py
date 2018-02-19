@@ -52,6 +52,7 @@ MICROBIT_APIS = [
     _("microbit.accelerometer.is_gesture(name) \nReturn True or False to indicate if the named gesture is currently active.\nMicroPython understands the following gestures: 'up', 'down', 'left', 'right',\n'face up', 'face down', 'freefall', '3g', '6g', '8g' and 'shake'."),
     _("microbit.accelerometer.was_gesture(name) \nReturn True or False to indicate if the named gesture was active since the\nlast call.\nMicroPython understands the following gestures: 'up', 'down', 'left', 'right',\n'face up', 'face down', 'freefall', '3g', '6g', '8g' and 'shake'."),
     _("microbit.accelerometer.get_gestures() \nReturn a list indicating the gesture history. The most recent gesture is last.\nCalling this method also clears the gesture history.\nMicroPython understands the following gestures: 'up', 'down', 'left', 'right',\n'face up', 'face down', 'freefall', '3g', '6g', '8g' and 'shake'."),
+    _("microbit.accelerometer.get_values() \nGet the acceleration measurements in all axes at once, as a three-element tuple of integers ordered as X, Y, Z."),
     # Pushbutton
     _("microbit.button_a.is_pressed() \nIf button A is pressed down, is_pressed() is True, else False."),
     _("microbit.button_a.was_pressed() \nUse was_pressed() to learn if button A was pressed since the last time\nwas_pressed() was called. Returns True or False."),

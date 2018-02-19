@@ -440,7 +440,6 @@ class Window(QMainWindow):
                                      Qt.LeftDockWidgetArea |
                                      Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.plotter)
-        self.connect_zoom(self.plotter_pane)
         self.plotter_pane.set_theme(self.theme)
         self.plotter_pane.setFocus()
 
@@ -623,6 +622,8 @@ class Window(QMainWindow):
         self.button_bar.slots['theme'].setIcon(load_icon(new_icon))
         if hasattr(self, 'repl') and self.repl:
             self.repl_pane.set_theme(theme)
+        if hasattr(self, 'plotter') and self.plotter:
+            self.plotter_pane.set_theme(theme)
 
     def show_logs(self, log, theme):
         """

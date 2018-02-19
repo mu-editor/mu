@@ -18,6 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import json
 import os
+import os.path
+import csv
+import time
 import logging
 from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtCore import QObject
@@ -205,6 +208,16 @@ class MicroPythonMode(BaseMode):
         """
         If there's an active plotter, hide it.
         """
+        data_dir = os.path.join(self.workspace_dir(), 'data_capture')
+        if not os.path.exists(data_dir):
+            logger.debug('Creating directory: {}'.format(data_dir))
+            os.makedirs(data_dir)
+        # Save the raw data as CSV
+        filename = "{}.csv".format(time.strftime("%Y%m%d-%H%M%S"))
+        f = os.path.join(data_dir, filename)
+        with open(f, 'w') as csvfile:
+            csv_writer = csv.writer(csvfile)
+            csv_writer.writerows(self.view.plotter_pane.raw_data)
         self.view.remove_plotter()
         self.plotter = None
         logger.info('Removing plotter')

@@ -950,36 +950,40 @@ class PlotterPane(QChartView):
     """
     This plotter widget makes viewing sensor data easy!
 
-    This widget represents a chart that will look for CSV data on
-    the REPL and will auto-generate a graph
+    This widget represents a chart that will look for tuple data on
+    the REPL and will auto-generate a graph.
 
     The device MUST be flashed with MicroPython for this to work.
     """
 
     def __init__(self, theme='day', parent=None):
         super().__init__(parent)
+        # Holds the raw input to be checked for actionable data to display.
         self.input_buffer = []
+        # Holds the raw actionable data detected while plotting.
+        self.raw_data = []
         self.setObjectName('plotterpane')
-        self.x_range = [0, 100]   # start out with a dummy range, resize later
-        self.max_y = 1000
+        self.max_x = 100  # Maximum value along x axis
+        self.max_y = 1000  # Maximum value +/- along y axis
 
-        self.t = range(self.x_range[0], self.x_range[1])
-        self.q = deque([0] * len(self.t))
+        # Holds deques for each slot of incoming data (assumes 1 to start with)
+        self.data = [deque([0] * self.max_x), ]
+        # Holds line series for each slot of incoming data (assumes 1 to start
+        # with).
+        self.series = [QLineSeries(), ]
 
-        self.series = QLineSeries()
+        # Set up the chart with sensible defaults.
         self.chart = QChart()
         self.chart.legend().hide()
-        self.chart.addSeries(self.series)
-
+        self.chart.addSeries(self.series[0])
         self.axis_x = QValueAxis()
         self.axis_y = QValueAxis()
-        self.axis_x.setRange(self.x_range[0], self.x_range[1])
+        self.axis_x.setRange(0, self.max_x)
         self.axis_y.setRange(-self.max_y, self.max_y)
-        self.axis_x.setLabelFormat("")
+        self.axis_x.setLabelFormat("time")
         self.axis_y.setLabelFormat("%d")
-        self.chart.setAxisX(self.axis_x, self.series)
-        self.chart.setAxisY(self.axis_y, self.series)
-
+        self.chart.setAxisX(self.axis_x, self.series[0])
+        self.chart.setAxisY(self.axis_y, self.series[0])
         self.setChart(self.chart)
         self.setRenderHint(QPainter.Antialiasing)
 
@@ -1022,12 +1026,43 @@ class PlotterPane(QChartView):
             self.input_buffer.append(lines[-1])
 
     def add_data(self, values):
-        value = values[0]
-        self.q.appendleft(value)
-        if len(self.q) > len(self.t):
-            self.q.pop()
+        """
+        Given a tuple of values, ensures there are the required number of line
+        series, add the data to the line series, update the range of the chart
+        so the chart displays nicely.
+        """
+        self.raw_data.append(values)
+        if len(values) != len(self.series):
+            # Adjust the number of line series.
+            value_len = len(values)
+            series_len = len(self.series)
+            if value_len > series_len:
+                # Add new line series.
+                for i in range(value_len - series_len):
+                    new_series = QLineSeries()
+                    self.chart.addSeries(new_series)
+                    self.chart.setAxisX(self.axis_x, new_series)
+                    self.chart.setAxisY(self.axis_y, new_series)
+                    self.series.append(new_series)
+                    self.data.append(deque([0] * self.max_x))
+            else:
+                # Remove old line series.
+                for old_series in self.series[value_len:]:
+                    self.chart.removeSeries(old_series)
+                self.series = self.series[:value_len]
+                self.data = self.data[:value_len]
+
+        # Add the incoming values to the data to be displayed, and compute
+        # max range.
+        max_ranges = []
+        for i, value in enumerate(values):
+            self.data[i].appendleft(value)
+            max_ranges.append(max([max(self.data[i]), abs(min(self.data[i]))]))
+            if len(self.data[i]) > self.max_x:
+                self.data[i].pop()
+
         # Re-scale y-axis.
-        max_y_range = max([max(self.q), abs(min(self.q))])
+        max_y_range = max(max_ranges)
         if max_y_range > self.max_y:
             self.max_y += self.max_y
             self.axis_y.setRange(-self.max_y, self.max_y)
@@ -1035,36 +1070,26 @@ class PlotterPane(QChartView):
             self.max_y = self.max_y / 2
             self.axis_y.setRange(-self.max_y, self.max_y)
 
-        p_list = []
-        for i in range(0, len(self.t)):
-            if i > (len(self.q) - 1):
-                temp = 0
-            else:
-                temp = self.q[len(self.t) - 1 - i]
-            p_list.append((self.t[i], temp))
-        self.series.clear()
-        for i in p_list:
-            self.series.append(*i)
+        # Update the line series with the data.
+        for i, line_series in enumerate(self.series):
+            line_series.clear()
+            xy_vals = []
+            for j in range(self.max_x):
+                if j > (len(self.data[i]) - 1):
+                    val = 0
+                else:
+                    val = self.data[i][self.max_x - 1 - j]
+                xy_vals.append((j, val))
+            for point in xy_vals:
+                line_series.append(*point)
 
     def set_theme(self, theme):
         """
         Sets the theme / look for the plotter pane.
         """
         if theme == 'day':
-            self.setStyleSheet(DAY_STYLE)
+            self.chart.setTheme(QChart.ChartThemeLight)
         elif theme == 'night':
-            self.setStyleSheet(NIGHT_STYLE)
+            self.chart.setTheme(QChart.ChartThemeDark)
         else:
-            self.setStyleSheet(CONTRAST_STYLE)
-
-    def zoomIn(self, delta=2):
-        """
-        Zoom in (increase) does nothing yet
-        """
-        pass
-
-    def zoomOut(self, delta=2):
-        """
-        Zoom out (decrease) does nothing yet
-        """
-        pass
+            self.chart.setTheme(QChart.ChartThemeHighContrast)
