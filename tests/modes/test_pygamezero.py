@@ -63,7 +63,7 @@ def test_pgzero_play_toggle_on():
     slot = pm.view.button_bar.slots['play']
     assert slot.setIcon.call_count == 1
     slot.setText.assert_called_once_with('Stop')
-    slot.setToolTip.assert_called_once_with('Stop your PyGame Zero game.')
+    slot.setToolTip.assert_called_once_with('Stop your Pygame Zero game.')
 
 
 def test_pgzero_play_toggle_on_cancelled():
@@ -97,7 +97,7 @@ def test_pgzero_play_toggle_off():
     slot = pm.view.button_bar.slots['play']
     assert slot.setIcon.call_count == 1
     slot.setText.assert_called_once_with('Play')
-    slot.setToolTip.assert_called_once_with('Play your PyGame Zero game.')
+    slot.setToolTip.assert_called_once_with('Play your Pygame Zero game.')
 
 
 def test_pgzero_run_game():
