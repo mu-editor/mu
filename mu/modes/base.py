@@ -207,6 +207,10 @@ class MicroPythonMode(BaseMode):
     def remove_plotter(self):
         """
         If there's an active plotter, hide it.
+
+        Save any data captured while the plotter was active into a directory
+        called 'data_capture' in the workspace directory. The file contains
+        CSV data and is named with a timestamp for easy identification.
         """
         data_dir = os.path.join(self.workspace_dir(), 'data_capture')
         if not os.path.exists(data_dir):
