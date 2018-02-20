@@ -3,6 +3,7 @@
 Tests for the user interface elements of Mu.
 """
 from PyQt5.QtWidgets import QApplication, QMessageBox, QLabel
+from PyQt5.QtChart import QChart, QLineSeries, QValueAxis
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTextCursor
 from unittest import mock
@@ -11,6 +12,7 @@ import os
 import signal
 import mu
 import platform
+from collections import deque
 import mu.interface.panes
 
 # Required so the QWidget tests don't abort with the message:
@@ -1706,3 +1708,160 @@ def test_DebugInspector_set_theme_contrast():
     di.set_theme('contrast')
     di.setStyleSheet.assert_called_once_with(
         mu.interface.themes.CONTRAST_STYLE)
+
+
+def test_PlotterPane_init():
+    """
+    Ensure the plotter pane is created in the expected manner.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    assert pp.input_buffer == []
+    assert pp.raw_data == []
+    assert pp.max_x == 100
+    assert pp.max_y == 1000
+    assert len(pp.data) == 1
+    assert isinstance(pp.data[0], deque)
+    assert len(pp.series) == 1
+    assert isinstance(pp.series[0], QLineSeries)
+    assert isinstance(pp.chart, QChart)
+    assert isinstance(pp.axis_x, QValueAxis)
+    assert isinstance(pp.axis_y, QValueAxis)
+
+
+def test_PlotterPane_process_bytes():
+    """
+    If a byte representation of a Python tuple containing numeric values,
+    starting at the beginning of a new line and terminating with a new line is
+    received, then the add_data method is called with the resulting Python
+    tuple.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.add_data = mock.MagicMock()
+    pp.process_bytes(b'(1, 2.3, 4)\r\n')
+    pp.add_data.assert_called_once_with((1, 2.3, 4))
+
+
+def test_PlotterPane_process_bytes_tuple_not_numeric():
+    """
+    If a byte representation of a tuple is received but it doesn't contain
+    numeric values, then the add_data method MUST NOT be called.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.add_data = mock.MagicMock()
+    pp.process_bytes(b'("a", "b", "c")\r\n')
+    assert pp.add_data.call_count == 0
+
+
+def test_PlotterPane_process_bytes_overrun_input_buffer():
+    """
+    If the incoming bytes are not complete, ensure the input_buffer caches them
+    until the newline is detected.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.add_data = mock.MagicMock()
+    pp.process_bytes(b'(1, 2.3, 4)\r\n')
+    pp.add_data.assert_called_once_with((1, 2.3, 4))
+    pp.add_data.reset_mock()
+    pp.process_bytes(b'(1, 2.')
+    assert pp.add_data.call_count == 0
+    pp.process_bytes(b'3, 4)\r\n')
+    pp.add_data.assert_called_once_with((1, 2.3, 4))
+    pp.add_data.reset_mock()
+    pp.process_bytes(b'(1, 2.3, 4)\r\n')
+    pp.add_data.assert_called_once_with((1, 2.3, 4))
+
+
+def test_PlotterPane_add_data():
+    """
+    Given a tuple with a single value, ensure it is logged and correctly added
+    to the chart.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    mock_line_series = mock.MagicMock()
+    pp.series = [mock_line_series, ]
+    pp.add_data((1, ))
+    assert (1, ) in pp.raw_data
+    mock_line_series.clear.assert_called_once_with()
+    for i in range(99):
+        mock_line_series.append.call_args_list[i][0] == (i, 0)
+    mock_line_series.append.call_args_list[99][0] == (99, 1)
+
+
+def test_PlotterPane_add_data_adjust_values_up():
+    """
+    If more values than have been encountered before are added to the incoming
+    data then increase the number of QLineSeries instances.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.series = [mock.MagicMock(), ]
+    pp.chart = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QLineSeries'):
+        pp.add_data((1, 2, 3, 4))
+    assert len(pp.series) == 4
+    assert pp.chart.addSeries.call_count == 3
+    assert pp.chart.setAxisX.call_count == 3
+    assert pp.chart.setAxisY.call_count == 3
+    assert len(pp.data) == 4
+
+
+def test_PlotterPane_add_data_adjust_values_down():
+    """
+    If less values are encountered, before they are added to the incoming
+    data then decrease the number of QLineSeries instances.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.series = [mock.MagicMock(), mock.MagicMock(), mock.MagicMock()]
+    pp.data.append(mock.MagicMock())
+    pp.data.append(mock.MagicMock())
+    pp.chart = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QLineSeries'):
+        pp.add_data((1, ))
+    assert len(pp.series) == 1
+    assert len(pp.data) == 1
+    assert pp.chart.removeSeries.call_count == 2
+
+
+def test_PlotterPane_add_data_re_scale_up():
+    """
+    If the y axis contains data greater than the current range, then ensure
+    the range is doubled.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.axis_y = mock.MagicMock()
+    mock_line_series = mock.MagicMock()
+    pp.series = [mock_line_series, ]
+    pp.add_data((1001, ))
+    assert pp.max_y == 2000
+    pp.axis_y.setRange.assert_called_once_with(-2000, 2000)
+
+
+def test_PlotterPane_add_data_re_scale_down():
+    """
+    If the y axis contains data less than half of the current range, then
+    ensure the range is halved.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.max_y = 2000
+    pp.axis_y = mock.MagicMock()
+    mock_line_series = mock.MagicMock()
+    pp.series = [mock_line_series, ]
+    pp.add_data((1, ))
+    assert pp.max_y == 1000
+    pp.axis_y.setRange.assert_called_once_with(-1000, 1000)
+
+
+def test_PlotterPane_set_theme():
+    """
+    Ensure the themes for the chart relate correctly to the theme names used
+    by Mu.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.chart = mock.MagicMock()
+    pp.set_theme('day')
+    pp.chart.setTheme.assert_called_once_with(QChart.ChartThemeLight)
+    pp.chart.setTheme.reset_mock()
+    pp.set_theme('night')
+    pp.chart.setTheme.assert_called_once_with(QChart.ChartThemeDark)
+    pp.chart.setTheme.reset_mock()
+    pp.set_theme('contrast')
+    pp.chart.setTheme.assert_called_once_with(QChart.ChartThemeHighContrast)

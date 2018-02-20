@@ -37,9 +37,9 @@ from mu.interface.themes import (DEFAULT_FONT_SIZE, NIGHT_STYLE, DAY_STYLE,
 
 
 CHARTS = True
-try:
+try:  # pragma: no cover
     from PyQt5.QtChart import QChart, QLineSeries, QChartView, QValueAxis
-except ImportError:
+except ImportError:  # pragma: no cover
     QChartView = object
     CHARTS = False
 
@@ -996,7 +996,7 @@ class PlotterPane(QChartView):
 
     def process_bytes(self, data):
         """
-        Takes raw baytes and, if a valid tuple is detected, adds the data to
+        Takes raw bytes and, if a valid tuple is detected, adds the data to
         the plotter.
         """
         self.input_buffer.append(data)
@@ -1023,7 +1023,7 @@ class PlotterPane(QChartView):
                         # Not an int or float, so ignore this value.
                         continue
                 if numeric_values:
-                    # There were numeric values in the tuple, so emit them!
+                    # There were numeric values in the tuple, so use them!
                     self.add_data(tuple(numeric_values))
         # Reset the input buffer.
         self.input_buffer = []
@@ -1084,10 +1084,7 @@ class PlotterPane(QChartView):
             line_series.clear()
             xy_vals = []
             for j in range(self.max_x):
-                if j > (len(self.data[i]) - 1):
-                    val = 0
-                else:
-                    val = self.data[i][self.max_x - 1 - j]
+                val = self.data[i][self.max_x - 1 - j]
                 xy_vals.append((j, val))
             for point in xy_vals:
                 line_series.append(*point)
