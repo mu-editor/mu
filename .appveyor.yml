@@ -85,4 +85,4 @@ deploy:
   set_public: true
   folder: windows
   on:
-    branch: [master, plotter]
+    branch: [master]
