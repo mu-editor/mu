@@ -24,6 +24,7 @@ clean:
 	rm -rf mu_editor.egg-info
 	rm -rf .coverage
 	rm -rf docs/_build
+	rm -rf .pytest_cache
 	find . \( -name '*.py[co]' -o -name dropin.cache \) -delete
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete

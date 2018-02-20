@@ -3,7 +3,6 @@
 Tests for the BaseMode class.
 """
 import os
-import pytest
 import mu
 from mu.modes.base import BaseMode, MicroPythonMode
 from unittest import mock
@@ -125,8 +124,11 @@ def test_micropython_mode_find_device():
         mock_port.vendorIdentifier = mock.MagicMock()
         mock_port.vendorIdentifier.return_value = vid
         mock_port.portName = mock.MagicMock(return_value='COM0')
+        mock_os = mock.MagicMock()
+        mock_os.name = 'nt'
         with mock.patch('mu.modes.base.QSerialPortInfo.availablePorts',
-                        return_value=[mock_port, ]):
+                        return_value=[mock_port, ]), \
+                mock.patch('mu.modes.base.os', mock_os):
             assert mm.find_device() == 'COM0'
 
 
@@ -155,18 +157,6 @@ def test_micropython_mode_find_microbit_no_device():
     with mock.patch('mu.modes.base.QSerialPortInfo.availablePorts',
                     return_value=[mock_port, ]):
         assert mm.find_device() is None
-
-
-def test_micropython_mode_add_repl_already_exists():
-    """
-    Ensure the editor raises a RuntimeError if the repl already exists.
-    """
-    editor = mock.MagicMock()
-    view = mock.MagicMock()
-    mm = MicroPythonMode(editor, view)
-    mm.repl = True
-    with pytest.raises(RuntimeError):
-        mm.add_repl()
 
 
 def test_micropython_mode_add_repl_no_port():
@@ -232,19 +222,7 @@ def test_micropython_mode_add_repl():
     with mock.patch('os.name', 'nt'):
         mm.add_repl()
     assert view.show_message.call_count == 0
-    assert view.add_micropython_repl.call_args[0][0].port == 'COM0'
-
-
-def test_micropython_mode_remove_repl_is_none():
-    """
-    If there's no repl to remove raise a RuntimeError.
-    """
-    editor = mock.MagicMock()
-    view = mock.MagicMock()
-    mm = MicroPythonMode(editor, view)
-    mm.repl = None
-    with pytest.raises(RuntimeError):
-        mm.remove_repl()
+    assert view.add_micropython_repl.call_args[0][0] == 'COM0'
 
 
 def test_micropython_mode_remove_repl():
@@ -259,7 +237,7 @@ def test_micropython_mode_remove_repl():
     mm.repl = True
     mm.remove_repl()
     assert view.remove_repl.call_count == 1
-    assert mm.repl is None
+    assert mm.repl is False
 
 
 def test_micropython_mode_toggle_repl_on():

@@ -150,13 +150,33 @@ def test_microbit_mode():
     assert mm.view == view
 
     actions = mm.actions()
-    assert len(actions) == 3
+    assert len(actions) == 4
     assert actions[0]['name'] == 'flash'
     assert actions[0]['handler'] == mm.flash
     assert actions[1]['name'] == 'files'
     assert actions[1]['handler'] == mm.toggle_files
     assert actions[2]['name'] == 'repl'
     assert actions[2]['handler'] == mm.toggle_repl
+    assert actions[3]['name'] == 'plotter'
+    assert actions[3]['handler'] == mm.toggle_plotter
+
+
+def test_microbit_mode_no_charts():
+    """
+    If QCharts is not available, ensure plotter is not displayed.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    with mock.patch('mu.modes.microbit.CHARTS', False):
+        actions = mm.actions()
+        assert len(actions) == 3
+        assert actions[0]['name'] == 'flash'
+        assert actions[0]['handler'] == mm.flash
+        assert actions[1]['name'] == 'files'
+        assert actions[1]['handler'] == mm.toggle_files
+        assert actions[2]['name'] == 'repl'
+        assert actions[2]['handler'] == mm.toggle_repl
 
 
 def test_custom_hex_read():

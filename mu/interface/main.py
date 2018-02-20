@@ -316,7 +316,7 @@ class Window(QMainWindow):
 
     def open_serial_link(self, port):
         """
-        Creates a new serial link instance and starts it on a new thread.
+        Creates a new serial link instance.
         """
         self.input_buffer = []
         self.serial = QSerialPort()
@@ -343,13 +343,6 @@ class Window(QMainWindow):
         """
         self.serial.close()
         self.serial = None
-
-    def on_serial_close(self):
-        """
-        Clean up references once the serial link has stopped.
-        """
-        self.serial = None
-        self.serial_thread = None
 
     def add_filesystem(self, home, file_manager):
         """

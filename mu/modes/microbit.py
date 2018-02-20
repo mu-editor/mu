@@ -25,6 +25,7 @@ from mu.logic import get_settings_path, HOME_DIRECTORY
 from mu.contrib import uflash, microfs
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from mu.modes.base import MicroPythonMode
+from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
 
@@ -139,7 +140,7 @@ class MicrobitMode(MicroPythonMode):
         Return an ordered list of actions provided by this module. An action
         is a name (also used to identify the icon) , description, and handler.
         """
-        return [
+        buttons = [
             {
                 'name': 'flash',
                 'display_name': _('Flash'),
@@ -161,15 +162,16 @@ class MicrobitMode(MicroPythonMode):
                                  'micro:bit.'),
                 'handler': self.toggle_repl,
                 'shortcut': 'Ctrl+Shift+I',
-            },
-            {
+            }, ]
+        if CHARTS:
+            buttons.append({
                 'name': 'plotter',
                 'display_name': _('Plotter'),
                 'description': _('Plot incoming REPL data'),
                 'handler': self.toggle_plotter,
                 'shortcut': 'CTRL+Shift+P',
-            },
-        ]
+            })
+        return buttons
 
     def api(self):
         """

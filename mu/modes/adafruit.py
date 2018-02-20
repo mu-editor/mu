@@ -21,6 +21,7 @@ import ctypes
 from subprocess import check_output
 from mu.modes.base import MicroPythonMode
 from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
+from mu.interface.panes import CHARTS
 
 
 class AdafruitMode(MicroPythonMode):
@@ -54,22 +55,23 @@ class AdafruitMode(MicroPythonMode):
         Return an ordered list of actions provided by this module. An action
         is a name (also used to identify the icon) , description, and handler.
         """
-        return [
+        buttons = [
             {
                 'name': 'repl',
                 'display_name': _('REPL'),
                 'description': _('Use the REPL for live coding.'),
                 'handler': self.toggle_repl,
                 'shortcut': 'CTRL+Shift+I',
-            },
-            {
+            }, ]
+        if CHARTS:
+            buttons.append({
                 'name': 'plotter',
                 'display_name': _('Plotter'),
                 'description': _('Plot incoming REPL data'),
                 'handler': self.toggle_plotter,
                 'shortcut': 'CTRL+Shift+P',
-            },
-        ]
+            })
+        return buttons
 
     def workspace_dir(self):
         """

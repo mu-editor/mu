@@ -220,172 +220,6 @@ def test_FileTabs_change_tab_no_tabs():
     mock_window.update_title.assert_called_once_with(None)
 
 
-def test_SerialLink_init():
-    """
-    Ensure the serial port is opened in the expected manner.
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readyRead = mock.MagicMock()
-    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    mock_parent = mock.MagicMock()
-    with mock.patch('mu.interface.main.QSerialPort', mock_serial_class):
-        sl = mu.interface.main.SerialLink('COM0', mock_parent)
-        assert sl.input_buffer == []
-    mock_serial_class.assert_called_once_with(mock_parent)
-    mock_serial.setPortName.assert_called_once_with('COM0')
-    mock_serial.setBaudRate.assert_called_once_with(115200)
-    mock_serial.open.assert_called_once_with(QIODevice.ReadWrite)
-    mock_serial.readyRead.connect.assert_called_once_with(sl.on_serial_read)
-
-
-def test_SerialLink_init_unable_to_connect():
-    """
-    If serial.open fails raise an IOError.
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=False)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    mock_parent = mock.MagicMock()
-    with mock.patch('mu.interface.main.QSerialPort', mock_serial_class):
-        with pytest.raises(IOError):
-            mu.interface.main.SerialLink('COM0', mock_parent)
-
-
-def test_SerialLink_init_DTR_unset():
-    """
-    If data terminal ready (DTR) is unset (as can be the case on some
-    Windows / Qt combinations) then fall back to PySerial to correct. See
-    issues #281 and #302 for details.
-    """
-    mock_qt_serial = mock.MagicMock()
-    mock_qt_serial.isDataTerminalReady.return_value = False
-    mock_py_serial = mock.MagicMock()
-    mock_serial_class = mock.MagicMock(return_value=mock_qt_serial)
-    mock_parent = mock.MagicMock()
-    with mock.patch('mu.interface.main.QSerialPort', mock_serial_class):
-        with mock.patch('mu.interface.main.serial', mock_py_serial):
-            mu.interface.main.SerialLink('COM0', mock_parent)
-    mock_qt_serial.close.assert_called_once_with()
-    assert mock_qt_serial.open.call_count == 2
-    mock_py_serial.Serial.assert_called_once_with('COM0')
-    mock_pyser = mock_py_serial.Serial('COM0')
-    assert mock_pyser.dtr is True
-    mock_pyser.close.assert_called_once_with()
-
-
-def test_SerialLink_write():
-    """
-    Ensure bytes are written to the serial connection.
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    mock_parent = mock.MagicMock()
-    with mock.patch('mu.interface.main.QSerialPort', mock_serial_class):
-        sl = mu.interface.main.SerialLink('COM0', mock_parent)
-        sl.write(b'hello')
-    mock_serial.write.assert_called_once_with(b'hello')
-
-
-def test_SerialLink_on_read_emit_data_received():
-    """
-    When data is received the data_received signal should emit it.
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readAll.return_value = b'hello'
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    mock_parent = mock.MagicMock()
-    with mock.patch('mu.interface.main.QSerialPort', mock_serial_class):
-        sl = mu.interface.main.SerialLink('COM0', mock_parent)
-        sl.data_received = mock.MagicMock()
-        sl.on_serial_read()
-        sl.data_received.emit.assert_called_once_with(b'hello')
-
-
-def test_SerialLink_on_read_emit_tuple_received():
-    """
-    If a byte representation of a Python tuple containing numeric values,
-    starting at the beginning of a new line and terminating with a new line is
-    received, then the tuple_received signal is emitted with the resulting
-    Python tuple.
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readAll.return_value = b'(1, 2.3, 4)\n'
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    mock_parent = mock.MagicMock()
-    with mock.patch('mu.interface.main.QSerialPort', mock_serial_class):
-        sl = mu.interface.main.SerialLink('COM0', mock_parent)
-        sl.data_received = mock.MagicMock()
-        sl.tuple_received = mock.MagicMock()
-        sl.on_serial_read()
-        sl.data_received.emit.assert_called_once_with(b'(1, 2.3, 4)\n')
-        sl.tuple_received.emit.assert_called_once_with((1, 2.3, 4))
-
-
-def test_SerialLink_on_read_no_emit_tuple_received_if_not_numeric_values():
-    """
-    If a byte representation of a tuple is received but it doesn't contain
-    numeric values, then the tuple_received signal MUST NOT be emitted.
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readAll.return_value = b'("a", "b", "c")\n'
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    mock_parent = mock.MagicMock()
-    with mock.patch('mu.interface.main.QSerialPort', mock_serial_class):
-        sl = mu.interface.main.SerialLink('COM0', mock_parent)
-        sl.data_received = mock.MagicMock()
-        sl.tuple_received = mock.MagicMock()
-        sl.on_serial_read()
-        sl.data_received.emit.assert_called_once_with(b'("a", "b", "c")\n')
-        assert sl.tuple_received.emit.call_count == 0
-
-
-def test_SerialLink_on_read_overrun_input_buffer():
-    """
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readAll.side_effect = [
-        b'(1, 2.3, 4)\n',
-        b'(1, 2.',
-        b'3, 4)\n',
-        b'(1, 2.3, 4)\n',
-    ]
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    mock_parent = mock.MagicMock()
-    with mock.patch('mu.interface.main.QSerialPort', mock_serial_class):
-        sl = mu.interface.main.SerialLink('COM0', mock_parent)
-        sl.data_received = mock.MagicMock()
-        sl.tuple_received = mock.MagicMock()
-        sl.on_serial_read()
-        sl.data_received.emit.assert_called_once_with(b'(1, 2.3, 4)\n')
-        sl.tuple_received.emit.assert_called_once_with((1, 2.3, 4))
-        sl.data_received.emit.reset_mock()
-        sl.tuple_received.emit.reset_mock()
-        sl.on_serial_read()
-        sl.data_received.emit.assert_called_once_with(b'(1, 2.')
-        assert sl.tuple_received.emit.call_count == 0
-        sl.data_received.emit.reset_mock()
-        sl.on_serial_read()
-        sl.data_received.emit.assert_called_once_with(b'3, 4)\n')
-        sl.tuple_received.emit.assert_called_once_with((1, 2.3, 4))
-        sl.data_received.emit.reset_mock()
-        sl.tuple_received.emit.reset_mock()
-        sl.on_serial_read()
-        sl.data_received.emit.assert_called_once_with(b'(1, 2.3, 4)\n')
-        sl.tuple_received.emit.assert_called_once_with((1, 2.3, 4))
-
-
 def test_Window_attributes():
     """
     Expect the title and icon to be set correctly.
@@ -688,6 +522,88 @@ def test_Window_modified():
     assert w.modified
 
 
+def test_Window_on_serial_read():
+    """
+    When data is received the data_received signal should emit it.
+    """
+    w = mu.interface.main.Window()
+    w.serial = mock.MagicMock()
+    w.serial.readAll.return_value = b'hello'
+    w.data_received = mock.MagicMock()
+    w.on_serial_read()
+    w.data_received.emit.assert_called_once_with(b'hello')
+
+
+def test_Window_open_serial_link():
+    """
+    Ensure the serial port is opened in the expected manner.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=True)
+    mock_serial.readyRead = mock.MagicMock()
+    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    with mock.patch('mu.interface.main.QSerialPort', mock_serial_class):
+        w = mu.interface.main.Window()
+        w.open_serial_link('COM0')
+        assert w.input_buffer == []
+    mock_serial.setPortName.assert_called_once_with('COM0')
+    mock_serial.setBaudRate.assert_called_once_with(115200)
+    mock_serial.open.assert_called_once_with(QIODevice.ReadWrite)
+    mock_serial.readyRead.connect.assert_called_once_with(w.on_serial_read)
+
+
+def test_Window_open_serial_link_unable_to_connect():
+    """
+    If serial.open fails raise an IOError.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=False)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    with mock.patch('mu.interface.main.QSerialPort', mock_serial_class):
+        with pytest.raises(IOError):
+            w = mu.interface.main.Window()
+            w.open_serial_link('COM0')
+
+
+def test_Window_open_serial_link_DTR_unset():
+    """
+    If data terminal ready (DTR) is unset (as can be the case on some
+    Windows / Qt combinations) then fall back to PySerial to correct. See
+    issues #281 and #302 for details.
+    """
+    mock_qt_serial = mock.MagicMock()
+    mock_qt_serial.isDataTerminalReady.return_value = False
+    mock_py_serial = mock.MagicMock()
+    mock_serial_class = mock.MagicMock(return_value=mock_qt_serial)
+    with mock.patch('mu.interface.main.QSerialPort', mock_serial_class):
+        with mock.patch('mu.interface.main.serial', mock_py_serial):
+            w = mu.interface.main.Window()
+            w.open_serial_link('COM0')
+    mock_qt_serial.close.assert_called_once_with()
+    assert mock_qt_serial.open.call_count == 2
+    mock_py_serial.Serial.assert_called_once_with('COM0')
+    mock_pyser = mock_py_serial.Serial('COM0')
+    assert mock_pyser.dtr is True
+    mock_pyser.close.assert_called_once_with()
+
+
+def test_Window_close_serial_link():
+    """
+    Ensure the serial link is closed / cleaned up as expected.
+    """
+    mock_serial = mock.MagicMock()
+    w = mu.interface.main.Window()
+    w.serial = mock_serial
+    w.close_serial_link()
+    mock_serial.close.assert_called_once_with()
+    assert w.serial is None
+
+
 def test_Window_add_filesystem():
     """
     Ensure the expected settings are updated when adding a file system pane.
@@ -747,16 +663,21 @@ def test_Window_add_micropython_repl():
     """
     w = mu.interface.main.Window()
     w.theme = mock.MagicMock()
-    w.connect_zoom = mock.MagicMock(return_value=None)
     w.add_repl = mock.MagicMock()
+
+    def side_effect(self, w=w):
+        w.serial = mock.MagicMock()
+
+    w.open_serial_link = mock.MagicMock(side_effect=side_effect)
+    w.data_received = mock.MagicMock()
     mock_repl = mock.MagicMock()
     mock_repl_class = mock.MagicMock(return_value=mock_repl)
-    mock_repl_arg = mock.MagicMock()
-    mock_repl_arg.port = mock.MagicMock('COM0')
     with mock.patch('mu.interface.main.MicroPythonREPLPane', mock_repl_class):
-        w.add_micropython_repl(mock_repl_arg, 'Test REPL')
-    mock_repl_class.assert_called_once_with(port=mock_repl_arg.port,
-                                            theme=w.theme)
+        w.add_micropython_repl('COM0', 'Test REPL')
+    mock_repl_class.assert_called_once_with(serial=w.serial, theme=w.theme)
+    w.open_serial_link.assert_called_once_with('COM0')
+    w.serial.write.assert_called_once_with(b'\x03')
+    w.data_received.connect.assert_called_once_with(mock_repl.process_bytes)
     w.add_repl.assert_called_once_with(mock_repl, 'Test REPL')
 
 

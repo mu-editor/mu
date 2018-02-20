@@ -3,7 +3,7 @@
 Tests for the user interface elements of Mu.
 """
 from PyQt5.QtWidgets import QApplication, QMessageBox, QLabel
-from PyQt5.QtCore import QIODevice, Qt
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTextCursor
 from unittest import mock
 import sys
@@ -12,7 +12,6 @@ import signal
 import mu
 import platform
 import mu.interface.panes
-import pytest
 
 # Required so the QWidget tests don't abort with the message:
 # "QWidget: Must construct a QApplication before a QWidget"
@@ -25,56 +24,8 @@ def test_MicroPythonREPLPane_init_default_args():
     Ensure the MicroPython REPLPane object is instantiated as expected.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readyRead = mock.MagicMock()
-    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-    assert mock_serial_class.call_count == 1
-    mock_serial.setPortName.assert_called_once_with('COM0')
-    mock_serial.setBaudRate.assert_called_once_with(115200)
-    mock_serial.open.assert_called_once_with(QIODevice.ReadWrite)
-    mock_serial.readyRead.connect.assert_called_once_with(rp.on_serial_read)
-    mock_serial.write.assert_called_once_with(b'\x03')
-
-
-def test_MicroPythonREPLPane_init_cannot_open():
-    """
-    If serial.open fails raise an IOError.
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=False)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        with pytest.raises(IOError):
-            mu.interface.panes.MicroPythonREPLPane('COM0')
-
-
-def test_MicroPythonREPLPane_init_DTR_unset():
-    """
-    If data terminal ready (DTR) is unset (as can be the case on some
-    Windows / Qt combinations) then fall back to PySerial to correct. See
-    issues #281 and #302 for details.
-    """
-    mock_qt_serial = mock.MagicMock()
-    mock_qt_serial.isDataTerminalReady.return_value = False
-    mock_py_serial = mock.MagicMock()
-    mock_serial_class = mock.MagicMock(return_value=mock_qt_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        with mock.patch('mu.interface.panes.serial', mock_py_serial):
-            mu.interface.panes.MicroPythonREPLPane('COM0')
-    mock_qt_serial.close.assert_called_once_with()
-    assert mock_qt_serial.open.call_count == 2
-    mock_py_serial.Serial.assert_called_once_with('COM0')
-    mock_pyser = mock_py_serial.Serial('COM0')
-    assert mock_pyser.dtr is True
-    mock_pyser.close.assert_called_once_with()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    assert rp.serial == mock_serial
 
 
 def test_MicroPythonREPLPane_paste():
@@ -82,22 +33,13 @@ def test_MicroPythonREPLPane_paste():
     Pasting into the REPL should send bytes via the serial connection.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readyRead = mock.MagicMock()
-    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
     mock_clipboard = mock.MagicMock()
     mock_clipboard.text.return_value = 'paste me!'
     mock_application = mock.MagicMock()
     mock_application.clipboard.return_value = mock_clipboard
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        with mock.patch('mu.interface.panes.QApplication', mock_application):
-            rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-            mock_serial.write.reset_mock()
-            rp.paste()
+    with mock.patch('mu.interface.panes.QApplication', mock_application):
+        rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+        rp.paste()
     mock_serial.write.assert_called_once_with(bytes('paste me!', 'utf8'))
 
 
@@ -106,22 +48,13 @@ def test_MicroPythonREPLPane_paste_only_works_if_there_is_something_to_paste():
     Pasting into the REPL should send bytes via the serial connection.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readyRead = mock.MagicMock()
-    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
     mock_clipboard = mock.MagicMock()
     mock_clipboard.text.return_value = ''
     mock_application = mock.MagicMock()
     mock_application.clipboard.return_value = mock_clipboard
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        with mock.patch('mu.interface.panes.QApplication', mock_application):
-            rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-            mock_serial.write.reset_mock()
-            rp.paste()
+    with mock.patch('mu.interface.panes.QApplication', mock_application):
+        rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+        rp.paste()
     assert mock_serial.write.call_count == 0
 
 
@@ -131,22 +64,14 @@ def test_MicroPythonREPLPane_context_menu():
     platforms.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readyRead = mock.MagicMock()
-    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
     mock_platform = mock.MagicMock()
     mock_platform.system.return_value = 'WinNT'
     mock_qmenu = mock.MagicMock()
     mock_qmenu_class = mock.MagicMock(return_value=mock_qmenu)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class), \
-            mock.patch('mu.interface.panes.platform', mock_platform), \
+    with mock.patch('mu.interface.panes.platform', mock_platform), \
             mock.patch('mu.interface.panes.QMenu', mock_qmenu_class), \
             mock.patch('mu.interface.panes.QCursor'):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
+        rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
         rp.context_menu()
     assert mock_qmenu.addAction.call_count == 2
     copy_action = mock_qmenu.addAction.call_args_list[0][0]
@@ -166,22 +91,14 @@ def test_MicroPythonREPLPane_context_menu_darwin():
     platforms.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readyRead = mock.MagicMock()
-    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
     mock_platform = mock.MagicMock()
     mock_platform.system.return_value = 'Darwin'
     mock_qmenu = mock.MagicMock()
     mock_qmenu_class = mock.MagicMock(return_value=mock_qmenu)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class), \
-            mock.patch('mu.interface.panes.platform', mock_platform), \
+    with mock.patch('mu.interface.panes.platform', mock_platform), \
             mock.patch('mu.interface.panes.QMenu', mock_qmenu_class), \
             mock.patch('mu.interface.panes.QCursor'):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
+        rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
         rp.context_menu()
     assert mock_qmenu.addAction.call_count == 2
     copy_action = mock_qmenu.addAction.call_args_list[0][0]
@@ -200,40 +117,18 @@ def test_MicroPythonREPLPane_set_theme():
     Ensure the set_theme toggles as expected.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        rp.setStyleSheet = mock.MagicMock(return_value=None)
-        rp.set_theme('day')
-        rp.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-        rp.setStyleSheet.reset_mock()
-        rp.set_theme('night')
-        rp.setStyleSheet.assert_called_once_with(
-            mu.interface.themes.NIGHT_STYLE)
-        rp.setStyleSheet.reset_mock()
-        rp.set_theme('contrast')
-        rp.setStyleSheet.assert_called_once_with(
-            mu.interface.themes.CONTRAST_STYLE)
-
-
-def test_MicroPythonREPLPane_on_serial_read():
-    """
-    Ensure the method calls process_bytes.
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readAll = mock.MagicMock(return_value='abc'.encode('utf-8'))
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        rp.process_bytes = mock.MagicMock()
-        rp.on_serial_read()
-        rp.process_bytes.assert_called_once_with(bytes('abc'.encode('utf-8')))
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    rp.setStyleSheet = mock.MagicMock(return_value=None)
+    rp.set_theme('day')
+    rp.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
+    rp.setStyleSheet.reset_mock()
+    rp.set_theme('night')
+    rp.setStyleSheet.assert_called_once_with(
+        mu.interface.themes.NIGHT_STYLE)
+    rp.setStyleSheet.reset_mock()
+    rp.set_theme('contrast')
+    rp.setStyleSheet.assert_called_once_with(
+        mu.interface.themes.CONTRAST_STYLE)
 
 
 def test_MicroPythonREPLPane_keyPressEvent():
@@ -241,20 +136,13 @@ def test_MicroPythonREPLPane_keyPressEvent():
     Ensure key presses in the REPL are handled correctly.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        mock_serial.write.reset_mock()  # write is called during __init__()
-        data = mock.MagicMock
-        data.key = mock.MagicMock(return_value=Qt.Key_A)
-        data.text = mock.MagicMock(return_value='a')
-        data.modifiers = mock.MagicMock(return_value=None)
-        rp.keyPressEvent(data)
-        mock_serial.write.assert_called_once_with(bytes('a', 'utf-8'))
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_A)
+    data.text = mock.MagicMock(return_value='a')
+    data.modifiers = mock.MagicMock(return_value=None)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(bytes('a', 'utf-8'))
 
 
 def test_MicroPythonREPLPane_keyPressEvent_backspace():
@@ -262,20 +150,13 @@ def test_MicroPythonREPLPane_keyPressEvent_backspace():
     Ensure backspaces in the REPL are handled correctly.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        mock_serial.write.reset_mock()  # write is called during __init__()
-        data = mock.MagicMock
-        data.key = mock.MagicMock(return_value=Qt.Key_Backspace)
-        data.text = mock.MagicMock(return_value='\b')
-        data.modifiers = mock.MagicMock(return_value=None)
-        rp.keyPressEvent(data)
-        mock_serial.write.assert_called_once_with(b'\b')
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Backspace)
+    data.text = mock.MagicMock(return_value='\b')
+    data.modifiers = mock.MagicMock(return_value=None)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(b'\b')
 
 
 def test_MicroPythonREPLPane_keyPressEvent_up():
@@ -283,20 +164,13 @@ def test_MicroPythonREPLPane_keyPressEvent_up():
     Ensure up arrows in the REPL are handled correctly.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        mock_serial.write.reset_mock()  # write is called during __init__()
-        data = mock.MagicMock
-        data.key = mock.MagicMock(return_value=Qt.Key_Up)
-        data.text = mock.MagicMock(return_value='1b')
-        data.modifiers = mock.MagicMock(return_value=None)
-        rp.keyPressEvent(data)
-        mock_serial.write.assert_called_once_with(b'\x1B[A')
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Up)
+    data.text = mock.MagicMock(return_value='1b')
+    data.modifiers = mock.MagicMock(return_value=None)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(b'\x1B[A')
 
 
 def test_MicroPythonREPLPane_keyPressEvent_down():
@@ -304,20 +178,13 @@ def test_MicroPythonREPLPane_keyPressEvent_down():
     Ensure down arrows in the REPL are handled correctly.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        mock_serial.write.reset_mock()  # write is called during __init__()
-        data = mock.MagicMock
-        data.key = mock.MagicMock(return_value=Qt.Key_Down)
-        data.text = mock.MagicMock(return_value='1b')
-        data.modifiers = mock.MagicMock(return_value=None)
-        rp.keyPressEvent(data)
-        mock_serial.write.assert_called_once_with(b'\x1B[B')
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Down)
+    data.text = mock.MagicMock(return_value='1b')
+    data.modifiers = mock.MagicMock(return_value=None)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(b'\x1B[B')
 
 
 def test_MicroPythonREPLPane_keyPressEvent_right():
@@ -325,20 +192,13 @@ def test_MicroPythonREPLPane_keyPressEvent_right():
     Ensure right arrows in the REPL are handled correctly.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        mock_serial.write.reset_mock()  # write is called during __init__()
-        data = mock.MagicMock
-        data.key = mock.MagicMock(return_value=Qt.Key_Right)
-        data.text = mock.MagicMock(return_value='1b')
-        data.modifiers = mock.MagicMock(return_value=None)
-        rp.keyPressEvent(data)
-        mock_serial.write.assert_called_once_with(b'\x1B[C')
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Right)
+    data.text = mock.MagicMock(return_value='1b')
+    data.modifiers = mock.MagicMock(return_value=None)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(b'\x1B[C')
 
 
 def test_MicroPythonREPLPane_keyPressEvent_left():
@@ -346,20 +206,13 @@ def test_MicroPythonREPLPane_keyPressEvent_left():
     Ensure left arrows in the REPL are handled correctly.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        mock_serial.write.reset_mock()  # write is called during __init__()
-        data = mock.MagicMock
-        data.key = mock.MagicMock(return_value=Qt.Key_Left)
-        data.text = mock.MagicMock(return_value='1b')
-        data.modifiers = mock.MagicMock(return_value=None)
-        rp.keyPressEvent(data)
-        mock_serial.write.assert_called_once_with(b'\x1B[D')
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Left)
+    data.text = mock.MagicMock(return_value='1b')
+    data.modifiers = mock.MagicMock(return_value=None)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(b'\x1B[D')
 
 
 def test_MicroPythonREPLPane_keyPressEvent_home():
@@ -367,20 +220,13 @@ def test_MicroPythonREPLPane_keyPressEvent_home():
     Ensure home key in the REPL is handled correctly.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        mock_serial.write.reset_mock()  # write is called during __init__()
-        data = mock.MagicMock
-        data.key = mock.MagicMock(return_value=Qt.Key_Home)
-        data.text = mock.MagicMock(return_value='1b')
-        data.modifiers = mock.MagicMock(return_value=None)
-        rp.keyPressEvent(data)
-        mock_serial.write.assert_called_once_with(b'\x1B[H')
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Home)
+    data.text = mock.MagicMock(return_value='1b')
+    data.modifiers = mock.MagicMock(return_value=None)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(b'\x1B[H')
 
 
 def test_MicroPythonREPLPane_keyPressEvent_end():
@@ -388,20 +234,13 @@ def test_MicroPythonREPLPane_keyPressEvent_end():
     Ensure end key in the REPL is handled correctly.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        mock_serial.write.reset_mock()  # write is called during __init__()
-        data = mock.MagicMock
-        data.key = mock.MagicMock(return_value=Qt.Key_End)
-        data.text = mock.MagicMock(return_value='1b')
-        data.modifiers = mock.MagicMock(return_value=None)
-        rp.keyPressEvent(data)
-        mock_serial.write.assert_called_once_with(b'\x1B[F')
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_End)
+    data.text = mock.MagicMock(return_value='1b')
+    data.modifiers = mock.MagicMock(return_value=None)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(b'\x1B[F')
 
 
 def test_MicroPythonREPLPane_keyPressEvent_CTRL_C_Darwin():
@@ -409,21 +248,14 @@ def test_MicroPythonREPLPane_keyPressEvent_CTRL_C_Darwin():
     Ensure end key in the REPL is handled correctly.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        rp.copy = mock.MagicMock()
-        mock_serial.write.reset_mock()  # write is called during __init__()
-        data = mock.MagicMock
-        data.key = mock.MagicMock(return_value=Qt.Key_C)
-        data.text = mock.MagicMock(return_value='1b')
-        data.modifiers.return_value = Qt.ControlModifier | Qt.ShiftModifier
-        rp.keyPressEvent(data)
-        rp.copy.assert_called_once_with()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    rp.copy = mock.MagicMock()
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_C)
+    data.text = mock.MagicMock(return_value='1b')
+    data.modifiers.return_value = Qt.ControlModifier | Qt.ShiftModifier
+    rp.keyPressEvent(data)
+    rp.copy.assert_called_once_with()
 
 
 def test_MicroPythonREPLPane_keyPressEvent_CTRL_V_Darwin():
@@ -431,21 +263,14 @@ def test_MicroPythonREPLPane_keyPressEvent_CTRL_V_Darwin():
     Ensure end key in the REPL is handled correctly.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        rp.paste = mock.MagicMock()
-        mock_serial.write.reset_mock()  # write is called during __init__()
-        data = mock.MagicMock
-        data.key = mock.MagicMock(return_value=Qt.Key_V)
-        data.text = mock.MagicMock(return_value='1b')
-        data.modifiers.return_value = Qt.ControlModifier | Qt.ShiftModifier
-        rp.keyPressEvent(data)
-        rp.paste.assert_called_once_with()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    rp.paste = mock.MagicMock()
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_V)
+    data.text = mock.MagicMock(return_value='1b')
+    data.modifiers.return_value = Qt.ControlModifier | Qt.ShiftModifier
+    rp.keyPressEvent(data)
+    rp.paste.assert_called_once_with()
 
 
 def test_MicroPythonREPLPane_keyPressEvent_meta():
@@ -453,24 +278,17 @@ def test_MicroPythonREPLPane_keyPressEvent_meta():
     Ensure backspaces in the REPL are handled correctly.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.write = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        mock_serial.write.reset_mock()  # write is called during __init__()
-        data = mock.MagicMock
-        data.key = mock.MagicMock(return_value=Qt.Key_M)
-        data.text = mock.MagicMock(return_value='a')
-        if platform.system() == 'Darwin':
-            data.modifiers = mock.MagicMock(return_value=Qt.MetaModifier)
-        else:
-            data.modifiers = mock.MagicMock(return_value=Qt.ControlModifier)
-        rp.keyPressEvent(data)
-        expected = 1 + Qt.Key_M - Qt.Key_A
-        mock_serial.write.assert_called_once_with(bytes([expected]))
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_M)
+    data.text = mock.MagicMock(return_value='a')
+    if platform.system() == 'Darwin':
+        data.modifiers = mock.MagicMock(return_value=Qt.MetaModifier)
+    else:
+        data.modifiers = mock.MagicMock(return_value=Qt.ControlModifier)
+    rp.keyPressEvent(data)
+    expected = 1 + Qt.Key_M - Qt.Key_A
+    mock_serial.write.assert_called_once_with(bytes([expected]))
 
 
 def test_MicroPythonREPLPane_process_bytes():
@@ -481,36 +299,31 @@ def test_MicroPythonREPLPane_process_bytes():
     are simply inserted.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
     mock_tc = mock.MagicMock()
     mock_tc.movePosition = mock.MagicMock(side_effect=[True, False, True,
                                                        True])
     mock_tc.deleteChar = mock.MagicMock(return_value=None)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        rp.textCursor = mock.MagicMock(return_value=mock_tc)
-        rp.setTextCursor = mock.MagicMock(return_value=None)
-        rp.insertPlainText = mock.MagicMock(return_value=None)
-        rp.ensureCursorVisible = mock.MagicMock(return_value=None)
-        bs = bytes([8, 13, 10, 65, ])  # \b, \r, \n, 'A'
-        rp.process_bytes(bs)
-        rp.textCursor.assert_called_once_with()
-        assert mock_tc.movePosition.call_count == 4
-        assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
-        assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Down
-        assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Left
-        assert mock_tc.movePosition.call_args_list[3][0][0] == QTextCursor.End
-        assert rp.setTextCursor.call_count == 3
-        assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
-        assert rp.setTextCursor.call_args_list[1][0][0] == mock_tc
-        assert rp.setTextCursor.call_args_list[2][0][0] == mock_tc
-        assert rp.insertPlainText.call_count == 2
-        assert rp.insertPlainText.call_args_list[0][0][0] == chr(10)
-        assert rp.insertPlainText.call_args_list[1][0][0] == chr(65)
-        rp.ensureCursorVisible.assert_called_once_with()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    rp.textCursor = mock.MagicMock(return_value=mock_tc)
+    rp.setTextCursor = mock.MagicMock(return_value=None)
+    rp.insertPlainText = mock.MagicMock(return_value=None)
+    rp.ensureCursorVisible = mock.MagicMock(return_value=None)
+    bs = bytes([8, 13, 10, 65, ])  # \b, \r, \n, 'A'
+    rp.process_bytes(bs)
+    rp.textCursor.assert_called_once_with()
+    assert mock_tc.movePosition.call_count == 4
+    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Left
+    assert mock_tc.movePosition.call_args_list[3][0][0] == QTextCursor.End
+    assert rp.setTextCursor.call_count == 3
+    assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[1][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[2][0][0] == mock_tc
+    assert rp.insertPlainText.call_count == 2
+    assert rp.insertPlainText.call_args_list[0][0][0] == chr(10)
+    assert rp.insertPlainText.call_args_list[1][0][0] == chr(65)
+    rp.ensureCursorVisible.assert_called_once_with()
 
 
 def test_MicroPythonREPLPane_process_bytes_VT100():
@@ -519,48 +332,43 @@ def test_MicroPythonREPLPane_process_bytes_VT100():
     expected. In this case, make sure VT100 related codes are handled properly.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
     mock_tc = mock.MagicMock()
     mock_tc.movePosition = mock.MagicMock(return_value=False)
     mock_tc.removeSelectedText = mock.MagicMock()
     mock_tc.deleteChar = mock.MagicMock(return_value=None)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        rp.textCursor = mock.MagicMock(return_value=mock_tc)
-        rp.setTextCursor = mock.MagicMock(return_value=None)
-        rp.insertPlainText = mock.MagicMock(return_value=None)
-        rp.ensureCursorVisible = mock.MagicMock(return_value=None)
-        bs = bytes([
-            27, 91, ord('1'), ord('A'),  # <Esc>[1A
-            27, 91, ord('1'), ord('B'),  # <Esc>[1B
-            27, 91, ord('1'), ord('C'),  # <Esc>[1C
-            27, 91, ord('1'), ord('D'),  # <Esc>[1D
-            27, 91, ord('K'),  # <Esc>[K
-        ])
-        rp.process_bytes(bs)
-        rp.textCursor.assert_called_once_with()
-        assert mock_tc.movePosition.call_count == 6
-        assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
-        assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Up
-        assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Down
-        assert mock_tc.movePosition.call_args_list[3][0][0] == \
-            QTextCursor.Right
-        assert mock_tc.movePosition.call_args_list[4][0][0] == QTextCursor.Left
-        assert mock_tc.movePosition.call_args_list[5][0][0] == \
-            QTextCursor.EndOfLine
-        assert mock_tc.movePosition.call_args_list[5][1]['mode'] == \
-            QTextCursor.KeepAnchor
-        assert rp.setTextCursor.call_count == 5
-        assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
-        assert rp.setTextCursor.call_args_list[1][0][0] == mock_tc
-        assert rp.setTextCursor.call_args_list[2][0][0] == mock_tc
-        assert rp.setTextCursor.call_args_list[3][0][0] == mock_tc
-        assert rp.setTextCursor.call_args_list[4][0][0] == mock_tc
-        mock_tc.removeSelectedText.assert_called_once_with()
-        rp.ensureCursorVisible.assert_called_once_with()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    rp.textCursor = mock.MagicMock(return_value=mock_tc)
+    rp.setTextCursor = mock.MagicMock(return_value=None)
+    rp.insertPlainText = mock.MagicMock(return_value=None)
+    rp.ensureCursorVisible = mock.MagicMock(return_value=None)
+    bs = bytes([
+        27, 91, ord('1'), ord('A'),  # <Esc>[1A
+        27, 91, ord('1'), ord('B'),  # <Esc>[1B
+        27, 91, ord('1'), ord('C'),  # <Esc>[1C
+        27, 91, ord('1'), ord('D'),  # <Esc>[1D
+        27, 91, ord('K'),  # <Esc>[K
+    ])
+    rp.process_bytes(bs)
+    rp.textCursor.assert_called_once_with()
+    assert mock_tc.movePosition.call_count == 6
+    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Up
+    assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[3][0][0] == \
+        QTextCursor.Right
+    assert mock_tc.movePosition.call_args_list[4][0][0] == QTextCursor.Left
+    assert mock_tc.movePosition.call_args_list[5][0][0] == \
+        QTextCursor.EndOfLine
+    assert mock_tc.movePosition.call_args_list[5][1]['mode'] == \
+        QTextCursor.KeepAnchor
+    assert rp.setTextCursor.call_count == 5
+    assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[1][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[2][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[3][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[4][0][0] == mock_tc
+    mock_tc.removeSelectedText.assert_called_once_with()
+    rp.ensureCursorVisible.assert_called_once_with()
 
 
 def test_MicroPythonREPLPane_clear():
@@ -568,15 +376,10 @@ def test_MicroPythonREPLPane_clear():
     Ensure setText is called with an empty string.
     """
     mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch('mu.interface.panes.QSerialPort', mock_serial_class):
-        rp = mu.interface.panes.MicroPythonREPLPane('COM0')
-        rp.setText = mock.MagicMock(return_value=None)
-        rp.clear()
-        rp.setText.assert_called_once_with('')
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    rp.setText = mock.MagicMock(return_value=None)
+    rp.clear()
+    rp.setText.assert_called_once_with('')
 
 
 def test_MuFileList_show_confirm_overwrite_dialog():

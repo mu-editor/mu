@@ -30,11 +30,18 @@ from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
                              QTreeView)
 from PyQt5.QtGui import QKeySequence, QTextCursor, QCursor, QPainter
-from PyQt5.QtChart import QChart, QLineSeries, QChartView, QValueAxis
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from mu.interface.themes import Font
 from mu.interface.themes import (DEFAULT_FONT_SIZE, NIGHT_STYLE, DAY_STYLE,
                                  CONTRAST_STYLE)
+
+
+CHARTS = True
+try:
+    from PyQt5.QtChart import QChart, QLineSeries, QChartView, QValueAxis
+except ImportError:
+    QChartView = object
+    CHARTS = False
 
 
 logger = logging.getLogger(__name__)
@@ -1031,7 +1038,9 @@ class PlotterPane(QChartView):
         series, add the data to the line series, update the range of the chart
         so the chart displays nicely.
         """
+        # Store incoming data to dump as CSV at the end of the session.
         self.raw_data.append(values)
+        # Check the number of incoming values.
         if len(values) != len(self.series):
             # Adjust the number of line series.
             value_len = len(values)
