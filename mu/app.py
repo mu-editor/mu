@@ -40,6 +40,7 @@ gettext.translation('mu', localedir=localedir,
 import os
 import sys
 import platform
+import pkgutil
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from PyQt5.QtCore import QTimer
@@ -81,13 +82,16 @@ def setup_modes(editor, view):
     *PREMATURE OPTIMIZATION ALERT* This may become more complex in future so
     splitting things out here to contain the mess. ;-)
     """
-    return {
+    modes = {
         'python': PythonMode(editor, view),
         'adafruit': AdafruitMode(editor, view),
         'microbit': MicrobitMode(editor, view),
         'debugger': DebugMode(editor, view),
-        'pygamezero': PyGameZeroMode(editor, view),
     }
+    # Check if pgzero is available (without importing it)
+    if any([m for m in pkgutil.iter_modules() if 'pgzero' in m]):
+        modes['pygamezero'] = PyGameZeroMode(editor, view)
+    return modes
 
 
 def excepthook(*exc_args):

@@ -5,7 +5,7 @@ Tests for the app script.
 import sys
 import os.path
 from unittest import mock
-from mu.app import excepthook, run, setup_logging, debug
+from mu.app import excepthook, run, setup_logging, debug, setup_modes
 from mu.logic import LOG_FILE, LOG_DIR, DEBUGGER_PORT
 
 
@@ -23,6 +23,29 @@ def test_setup_logging():
                                          backupCount=5, delay=0)
         logging.getLogger.assert_called_once_with()
         assert sys.excepthook == excepthook
+
+
+def test_setup_modes_with_pgzero():
+    """
+    If pgzero is installed, allow Pygame Zero mode.
+    """
+    with mock.patch('mu.app.pkgutil.iter_modules', return_value=['pgzero', ]):
+        mock_editor = mock.MagicMock()
+        mock_view = mock.MagicMock()
+        modes = setup_modes(mock_editor, mock_view)
+        assert 'pygamezero' in modes
+
+
+def test_setup_modes_without_pgzero():
+    """
+    If pgzero is NOT installed, do not add Pygame Zero mode to the list of
+    available modes.
+    """
+    with mock.patch('mu.app.pkgutil.iter_modules', return_value=['foo', ]):
+        mock_editor = mock.MagicMock()
+        mock_view = mock.MagicMock()
+        modes = setup_modes(mock_editor, mock_view)
+        assert 'pygamezero' not in modes
 
 
 def test_run():
