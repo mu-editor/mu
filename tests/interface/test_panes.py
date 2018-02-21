@@ -1159,7 +1159,9 @@ def test_PythonProcessPane_parse_input_ctrl_c():
     text = ''
     modifiers = Qt.ControlModifier
     mock_kill = mock.MagicMock()
-    with mock.patch('mu.interface.panes.os.kill', mock_kill):
+    with mock.patch('mu.interface.panes.os.kill', mock_kill), \
+            mock.patch('mu.interface.panes.platform.system',
+                       return_value='win32'):
         ppp.parse_input(key, text, modifiers)
     mock_kill.assert_called_once_with(123, signal.SIGINT)
 
@@ -1173,8 +1175,10 @@ def test_PythonProcessPane_parse_input_ctrl_d():
     key = Qt.Key_D
     text = ''
     modifiers = Qt.ControlModifier
-    ppp.parse_input(key, text, modifiers)
-    ppp.process.kill.assert_called_once_with()
+    with mock.patch('mu.interface.panes.platform.system',
+                    return_value='win32'):
+        ppp.parse_input(key, text, modifiers)
+        ppp.process.kill.assert_called_once_with()
 
 
 def test_PythonProcessPane_parse_input_up_arrow():
