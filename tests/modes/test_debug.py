@@ -303,7 +303,7 @@ def test_debug_on_fail():
     view = mock.MagicMock()
     dm = DebugMode(editor, view)
     dm.finished = mock.MagicMock()
-    dm.debug_on_fail()
+    dm.debug_on_fail('This is a useful message')
     assert view.process_runner.append.call_count == 1  # message shown.
     dm.finished.assert_called_once_with()
     view.process_runner.finished.assert_called_once_with(1, -1)

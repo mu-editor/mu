@@ -102,9 +102,20 @@ class CommandBufferHandler(QObject):
                 # debug runner enough time to start up and start listening.
                 tries += 1
                 if tries >= connection_attempts:
-                    self.on_fail.emit('Could not connect to debug runner.')
+                    self.on_fail.emit(_('Connection timed out. Is your '
+                                        'machine slow or busy? Free up some '
+                                        "of the machine's resources and try "
+                                        "again."))
                     return
                 time.sleep(pause_between_attempts)
+            except OSError as e:
+                # This will catch address related errors. Especially on OSX
+                # this is usually solved by adding "127.0.0.1 localhost" to
+                # /etc/hosts.
+                self.on_fail.emit(_('Could not find localhost.\n'
+                                    "Ensure you have '127.0.0.1 localhost' in "
+                                    "your /etc/hosts file."))
+                return
         # Getting here means the connection has been established, so handle all
         # incoming data from the debug runner process.
         remainder = b''
@@ -182,7 +193,7 @@ class Debugger(QObject):
         Handle if there's a connection failure with the debug runner.
         """
         logger.error(message)
-        self.view.debug_on_fail()
+        self.view.debug_on_fail(message)
 
     def stop(self):
         """

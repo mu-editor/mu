@@ -206,7 +206,7 @@ class DebugMode(BaseMode):
             else:
                 self.debugger.create_breakpoint(tab.path, line + 1)
 
-    def debug_on_fail(self):
+    def debug_on_fail(self, message):
         """
         Called when, for any reason, the debug client was unable to connect to
         the debug runner. On a Raspberry Pi this is usually because it's an
@@ -216,9 +216,7 @@ class DebugMode(BaseMode):
         """
         # Report the problem.
         process_runner = self.view.process_runner
-        msg = _("Unable to connect to the Python runner. "
-                "This probably means your machine is slow or busy. "
-                "Free up some of the machine's resources and try again.")
+        msg = _("Unable to connect to the Python debugger.\n\n") + message
         process_runner.append(msg.encode('utf-8'))
         # Set the state to finished.
         self.finished()

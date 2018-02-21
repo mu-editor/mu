@@ -43,7 +43,7 @@ def test_CommandBufferHandler_init():
     assert cbh.debugger == mock_debugger
 
 
-def test_CommandBufferHandler_worker_with_error():
+def test_CommandBufferHandler_worker_with_connection_refused_error():
     """
     Check that the connection will try up to 10 times before emitting an
     on_fail signal.
@@ -62,10 +62,33 @@ def test_CommandBufferHandler_worker_with_error():
     with mock.patch('mu.debugger.client.socket', mock_socket_factory), \
             mock.patch('mu.debugger.client.time', mock_time):
         cbh.worker()
-    msg = 'Could not connect to debug runner.'
+    msg = ('Connection timed out. Is your machine slow or busy? Free up some '
+           "of the machine's resources and try again.")
     cbh.on_fail.emit.assert_called_once_with(msg)
     assert mock_socket.connect.call_count == 50
     assert mock_time.sleep.call_count == 49
+
+
+def test_CommandBufferHandler_worker_with_address_error():
+    """
+    Check that the connection will try up to 10 times before emitting an
+    on_fail signal.
+    """
+    mock_debugger = mock.MagicMock()
+    mock_debugger.host = 'localhost'
+    mock_debugger.port = 9999
+    mock_socket_factory = mock.MagicMock()
+    mock_socket = mock.MagicMock()
+    mock_socket.connect.side_effect = OSError()
+    mock_socket_factory.socket.return_value = mock_socket
+    mock_debugger = mock.MagicMock()
+    cbh = mu.debugger.client.CommandBufferHandler(mock_debugger)
+    cbh.on_fail = mock.MagicMock()
+    with mock.patch('mu.debugger.client.socket', mock_socket_factory):
+        cbh.worker()
+    msg = ('Could not find localhost.\n'
+           "Ensure you have '127.0.0.1 localhost' in your /etc/hosts file.")
+    cbh.on_fail.emit.assert_called_once_with(msg)
 
 
 def test_CommandBufferHandler_worker_break_loop():
@@ -193,7 +216,7 @@ def test_Debugger_on_fail():
     with mock.patch('mu.debugger.client.logger.error') as mock_log:
         db.on_fail('bang')
         mock_log.assert_called_once_with('bang')
-        db.view.debug_on_fail.assert_called_once_with()
+        db.view.debug_on_fail.assert_called_once_with('bang')
 
 
 def test_Debugger_stop():
