@@ -216,11 +216,12 @@ class DebugMode(BaseMode):
         """
         # Report the problem.
         process_runner = self.view.process_runner
-        msg = _("Unable to connect to the Python debugger.\n\n") + message
-        process_runner.append(msg.encode('utf-8'))
-        # Set the state to finished.
-        self.finished()
-        process_runner.finished(1, -1)
+        if process_runner:
+            msg = _("Unable to connect to the Python debugger.\n\n") + message
+            process_runner.append(msg.encode('utf-8'))
+            # Set the state to finished.
+            self.finished()
+            process_runner.finished(1, -1)
 
     def debug_on_bootstrap(self):
         """
