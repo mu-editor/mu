@@ -1,6 +1,13 @@
 Release History
 ---------------
 
+1.0.0.beta.16 (Unreleased)
+=============
+
+* Updated flashing in micro:bit mode so it is more robust and doesn't block
+  on Windows. Thank you to Carlos Pereira Atencio for issue #350 and the polite
+  reminder.
+
 1.0.0.beta.15
 =============
 
