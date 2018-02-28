@@ -44,10 +44,10 @@ the repository type::
 Raspberry Pi
 ++++++++++++
 
-If you are working on a Raspberry Pi there are three steps to create a working
+If you are working on a Raspberry Pi there are additional steps to create a working
 development environment:
 
-1. Install the packaged Qt related dependencies::
+1. Install the packaged Qt related dependencies ::
 
     sudo apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg python3-dev
 
@@ -57,12 +57,36 @@ development environment:
 
     virtualenv -p /usr/bin/python3 --system-site-packages ~/mu-venv
 
-3. With the virtualenv enabled, pip install the Python packages for the
+3. Activate the virtual environment ::
+
+    cd ~/mu-venv
+    source bin/activate
+
+4. Clone mu ::
+
+    (mu-venv) $ git clone https://github.com/mu-editor/mu.git
+
+4. With the virtualenv enabled, pip install the Python packages for the
    Raspberry Pi via the ``requirements_pi.txt`` file::
 
-    (mu-venv) $ pip3 install -r requirements_pi.txt
+    (mu-venv) $ cd mu
+    (mu-venv) $ sudo pip3 install -r requirements_pi.txt
 
-4. Run mu::
+5. Mu needs to be installed, but because the install requirements aren't available on Raspbian (hence installing them via apt), you need to comment out the install requires in ``mu/setup.py`` ::
+
+    (mu-venv) $ nano setup.py
+
+Comment out::
+
+    #install_requires=['pycodestyle==2.3.1', 'pyflakes==1.6.0',
+    #                'pyserial==3.4', 'pyqt5==5.10', 'qscintilla==2.10.1',
+    #                'qtconsole==4.3.1', 'matplotlib==2.0.2', ],
+
+6. Use ``pip3`` to install mu ::
+
+    (mu-venv) $ sudo pip3 install .
+
+7. Run mu::
 
     python3 run.py
 
