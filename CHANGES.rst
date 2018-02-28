@@ -1,12 +1,15 @@
 Release History
 ---------------
 
-1.0.0.beta.16 (Unreleased)
+1.0.0.beta.16
 =============
 
 * Updated flashing in micro:bit mode so it is more robust and doesn't block
   on Windows. Thank you to Carlos Pereira Atencio for issue #350 and the polite
   reminder.
+* Updated the mu-debug runner so if the required filename for the target isn't
+  passed into the command, a helpful message is displayed to the user.
+* Developer documentation updates.
 
 1.0.0.beta.15
 =============
