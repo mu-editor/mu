@@ -147,6 +147,10 @@ def debug():
     Create a debug runner in a new process. This is what the Mu debugger will
     drive. Uses the filename and associated args found in sys.argv.
     """
-    filename = os.path.normcase(os.path.abspath(sys.argv[1]))
-    args = sys.argv[2:]
-    run_debugger('localhost', DEBUGGER_PORT, filename, args)
+    if len(sys.argv) > 1:
+        filename = os.path.normcase(os.path.abspath(sys.argv[1]))
+        args = sys.argv[2:]
+        run_debugger('localhost', DEBUGGER_PORT, filename, args)
+    else:
+        print(_("Debug runner requires a filename for a Python script "
+                "to debug."))

@@ -114,7 +114,7 @@ SHARED_APIS = [
     _("open(file, mode='rt') \nOpen 'file' and return a corresponding file object. The 'mode' is an optional\nstring that specifies how the file is opened:\n'r' - open for reading\n'w' - open for writing\n'b' - binary mode\n't' - text mode."),
     _("ord(c) \nGiven a string representing one Unicode character, return an integer representing the Unicode code point of that character."),
     _("pow(x, y, z) \nReturn 'x' to the power of 'y'. If the optional 'z' is given, return 'x' to the power of 'y' modulo 'z' (giving the remainder)."),
-    _("print(*objects, sep=' ', end='\\n') \nPrint objects, separated by 'sep' and followed by 'end'. All non-keyword arguments are converted to strings."),
+    _("print(*objects, sep=' ', end='\\n') \nPrint objects, separated by 'sep' and followed by 'end'.\nAll non-keyword arguments are converted to strings."),
     _("range(start, stop, step) \nReturn an immutable sequence containing items between 'start' and 'stop' with 'step' difference between them."),
     _("repr(object) \nReturn a string containing a printable representation of an 'object'."),
     _("reversed(seq) \nReturn a reverse iterator of the sequence 'seq'."),

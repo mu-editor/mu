@@ -114,3 +114,18 @@ def test_debug():
     mock_runner.assert_called_once_with('localhost', DEBUGGER_PORT,
                                         expected_filename,
                                         ['foo', 'bar', 'baz', ])
+
+
+def test_debug_no_args():
+    """
+    If the debugger is accidentally started with no filename and/or associated
+    args, then emit a friendly message to indicate the problem.
+    """
+    mock_sys = mock.MagicMock()
+    mock_sys.argv = [None, ]
+    mock_print = mock.MagicMock()
+    with mock.patch('mu.app.sys', mock_sys), \
+            mock.patch('builtins.print', mock_print):
+        debug()
+    msg = "Debug runner requires a filename for a Python script to debug."
+    mock_print.assert_called_once_with(msg)
