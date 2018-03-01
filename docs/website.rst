@@ -77,6 +77,10 @@ include the window title bar (provided by the operating system). So far, we
 have found the `peek <https://github.com/phw/peek>`_ utility on Linux an
 excellent choice for making such GIF based screen captures.
 
+When adding such animated screen grabs please ensure the ``img`` element has
+the following classes (for the sake of visual consistency): ``img-responsive
+center-block img-rounded movie``.
+
 Internationalisation of the Website
 +++++++++++++++++++++++++++++++++++
 
