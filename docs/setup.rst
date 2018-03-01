@@ -26,9 +26,14 @@ environment install all the dependencies into your virtualenv via the
 
     Using a virtualenv will ensure your development environment is safely
     isolated from such problematic version conflicts.
-    
+
     If in doubt, throw away your virtualenv and start again with a fresh
     install from ``requirements.txt`` as per the instructions above.
+
+    On Windows, use the venv module from the standard library to avoid an
+    issue with the Qt modules missing a DLL::
+
+        py -3 -mvenv .venv
 
 Running Development Mu
 ++++++++++++++++++++++
