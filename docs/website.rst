@@ -69,6 +69,14 @@ a specific translation of the website, it should be in a subdirectory of
 ``img`` which is named after the ISO language code (for example, as there is
 for ``img/en``).
 
+.. image:: awesome.gif 
+
+We use GIF based screen captures throughout the site (such as on the front
+page). The dimensions for such captures of Mu are 1140x660 pixels and must not
+include the window title bar (provided by the operating system). So far, we
+have found the `peek <https://github.com/phw/peek>`_ utility on Linux an
+excellent choice for making such GIF based screen captures.
+
 Internationalisation of the Website
 +++++++++++++++++++++++++++++++++++
 
