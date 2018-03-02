@@ -812,6 +812,27 @@ def test_save_with_no_file_extension():
     assert view.get_save_path.call_count == 0
 
 
+def test_save_with_non_py_file_extension():
+    """
+    If the path ends in an extension, save it using the extension
+    """
+    view = mock.MagicMock()
+    view.current_tab = mock.MagicMock()
+    view.current_tab.path = 'foo.txt'
+    view.current_tab.text = mock.MagicMock(return_value='foo.txt')
+    view.get_save_path = mock.MagicMock(return_value='foo.txt')
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.write = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    with mock.patch('builtins.open', mock_open):
+        ed.save()
+    mock_open.assert_called_once_with('foo.txt', 'w', newline='')
+    mock_open.return_value.write.assert_called_once_with('foo.txt')
+    assert view.get_save_path.call_count == 0
+
+
 def test_get_tab_existing_tab():
     """
     Ensure that an existing tab is returned if its path matches.
