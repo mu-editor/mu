@@ -525,8 +525,8 @@ class Editor:
             tab.path = self._view.get_save_path(workspace)
         if tab.path:
             # The user specified a path to a file.
-            if not os.path.basename(tab.path).endswith('.py'):
-                # No extension given, default to .py
+            if os.path.splitext(os.path.basename(tab.path))[1] == '':
+                # the user didnt specify an extension, default to .py
                 tab.path += '.py'
             try:
                 with open(tab.path, 'w', newline='') as f:
