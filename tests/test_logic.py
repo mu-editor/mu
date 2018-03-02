@@ -812,6 +812,32 @@ def test_save_with_no_file_extension():
     assert view.get_save_path.call_count == 0
 
 
+def test_save_utf8():
+    """
+    Ensure the file is saved as UTF-8
+    """
+    #
+    # Construct the full set of BMP codepoints except surrogates
+    # This will confirm both that every possible codepoint can be
+    # saved, and that utf-8 is used for the encoding
+    #
+    text = "".join(chr(i) for i in range(0x10000) if i not in range(0xdc00, 0xe000) and i not in range(0xd800, 0xdc00))
+    utf8 = text.encode("utf-8")
+    view = mock.MagicMock()
+    view.current_tab = mock.MagicMock()
+    view.current_tab.path = 'foo.py'
+    view.current_tab.text = mock.MagicMock(return_value=text)
+    view.get_save_path = mock.MagicMock(return_value='foo.py')
+    view.current_tab.setModified = mock.MagicMock(return_value=None)
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.write = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    with mock.patch('builtins.open', mock_open):
+        ed.save()
+    mock_open.return_value.write.assert_called_once_with(utf8)
+
 def test_get_tab_existing_tab():
     """
     Ensure that an existing tab is returned if its path matches.
