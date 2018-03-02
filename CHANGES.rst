@@ -1,6 +1,34 @@
 Release History
 ---------------
 
+1.0.0.beta.16
+=============
+
+* Updated flashing in micro:bit mode so it is more robust and doesn't block
+  on Windows. Thank you to Carlos Pereira Atencio for issue #350 and the polite
+  reminder.
+* Updated the mu-debug runner so if the required filename for the target isn't
+  passed into the command, a helpful message is displayed to the user.
+* Developer documentation updates.
+
+1.0.0.beta.15
+=============
+
+* A new plotter works with CircuitPython and micro:bit modes. If you emit
+  tuples of numbers via the serial connection (e.g. ``print((1, 2, 3))`` as
+  three arbitrary values) over time these will be plotted as line graphs.
+  Many thanks to Limor "ladyada" Fried for contributing code for this feature.
+* Major refactoring of how Mu interacts with connected MicroPython based boards
+  in order to enable the plotter and REPL to work independently.
+* Mu has a new mode for Pygame Zero (version 1.1). Thanks to Dan Pope for
+  Pygame Zero and Rene Dudfield for being Pygame maintainer.
+* It's now possible to run mu "python3 -m mu". Thanks to Cefn Hoile for the
+  contribution.
+* Add support for pirkey Adafruit board. Thanks again Adafruit.
+* Updated all the dependencies to the latest upstream versions.
+* Various minor bug fixes and guards to make Mu more robust (although this will
+  always be bugs!).
+
 1.0.0.beta.14
 =============
 

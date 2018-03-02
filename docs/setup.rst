@@ -26,9 +26,14 @@ environment install all the dependencies into your virtualenv via the
 
     Using a virtualenv will ensure your development environment is safely
     isolated from such problematic version conflicts.
-    
+
     If in doubt, throw away your virtualenv and start again with a fresh
     install from ``requirements.txt`` as per the instructions above.
+
+    On Windows, use the venv module from the standard library to avoid an
+    issue with the Qt modules missing a DLL::
+
+        py -3 -mvenv .venv
 
 Running Development Mu
 ++++++++++++++++++++++
@@ -36,18 +41,29 @@ Running Development Mu
 .. note:: From this point onwards, instructions assume that you're using
    a virtual environment.
 
+For the debug runner to work, the ``mu-debug`` command must be available (it's
+used to launch user's Python script with the debugging scaffolding in place to
+communicate with Mu, acting as the debug client). As a result, it's essential
+to run the following to ensure this command is available in your virtualenv::
+
+  python setup.py develop
+
 To run the local development version of Mu, in the root of
 the repository type::
 
   python run.py
 
+An alternative form is to type::
+
+  python -m mu
+
 Raspberry Pi
 ++++++++++++
 
-If you are working on a Raspberry Pi there are additional steps to create a working
-development environment:
+If you are working on a Raspberry Pi there are additional steps to create a
+working development environment:
 
-1. Install the packaged Qt related dependencies ::
+1. Install the packaged Qt related dependencies::
 
     sudo apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg python3-dev
 
@@ -62,33 +78,39 @@ development environment:
     cd ~/mu-venv
     source bin/activate
 
-4. Clone mu ::
+4. Clone mu::
 
     (mu-venv) $ git clone https://github.com/mu-editor/mu.git
 
-4. With the virtualenv enabled, pip install the Python packages for the
+5. With the virtualenv enabled, pip install the Python packages for the
    Raspberry Pi via the ``requirements_pi.txt`` file::
 
     (mu-venv) $ cd mu
     (mu-venv) $ sudo pip3 install -r requirements_pi.txt
 
-5. Mu needs to be installed, but because the install requirements aren't available on Raspbian (hence installing them via apt), you need to comment out the install requires in ``mu/setup.py`` ::
+6. Mu needs to be installed, but because the install requirements aren't
+   available on Raspbian (hence installing them via apt), you need to comment
+   out the install requires in ``mu/setup.py``::
 
-    (mu-venv) $ nano setup.py
+     (mu-venv) $ nano setup.py
 
-Comment out::
+   Comment out::
 
-    #install_requires=['pycodestyle==2.3.1', 'pyflakes==1.6.0',
-    #                'pyserial==3.4', 'pyqt5==5.10', 'qscintilla==2.10.1',
-    #                'qtconsole==4.3.1', 'matplotlib==2.0.2', ],
+     #install_requires=['pycodestyle==2.3.1', 'pyflakes==1.6.0',
+     #                  'pyserial==3.4', 'pyqt5==5.10', 'qscintilla==2.10.1',
+     #                  'qtconsole==4.3.1', 'matplotlib==2.0.2', ],
 
-6. Use ``pip3`` to install mu ::
+7. Use ``pip3`` to install mu::
 
-    (mu-venv) $ sudo pip3 install .
+     (mu-venv) $ sudo pip3 install .
 
-7. Run mu::
+8. Run mu::
 
-    python3 run.py
+     python3 run.py
+
+   An alternative form is to type::
+
+     python -m mu
 
 Using ``make``
 ++++++++++++++

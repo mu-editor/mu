@@ -122,20 +122,21 @@ class PythonMode(BaseMode):
         """
         Handles the toggling of the run button to start/stop a script.
         """
+        run_slot = self.view.button_bar.slots['run']
         if self.runner:
             self.stop_script()
-            run_slot = self.view.button_bar.slots['run']
             run_slot.setIcon(load_icon('run'))
             run_slot.setText(_('Run'))
             run_slot.setToolTip(_('Run your Python script.'))
             self.view.button_bar.slots['debug'].setEnabled(True)
         else:
             self.run_script()
-            run_slot = self.view.button_bar.slots['run']
-            run_slot.setIcon(load_icon('stop'))
-            run_slot.setText(_('Stop'))
-            run_slot.setToolTip(_('Stop your Python script.'))
-            self.view.button_bar.slots['debug'].setEnabled(False)
+            if self.runner:
+                # If the script started, toggle the button state. See #338.
+                run_slot.setIcon(load_icon('stop'))
+                run_slot.setText(_('Stop'))
+                run_slot.setToolTip(_('Stop your Python script.'))
+                self.view.button_bar.slots['debug'].setEnabled(False)
 
     def run_script(self):
         """

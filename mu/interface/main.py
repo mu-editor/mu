@@ -16,14 +16,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import sys
 import logging
+import serial
 import os.path
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog, QMessageBox,
                              QLabel, QMainWindow, QStatusBar, QDockWidget,
                              QShortcut)
 from PyQt5.QtGui import QKeySequence, QStandardItemModel, QStandardItem
+from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
 from mu.interface.dialogs import LogDisplay, ModeSelector
 from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
@@ -31,7 +34,7 @@ from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
                                  CONTRAST_STYLE)
 from mu.interface.panes import (DebugInspector, PythonProcessPane,
                                 JupyterREPLPane, MicroPythonREPLPane,
-                                FileSystemPane)
+                                FileSystemPane, PlotterPane)
 from mu.interface.editor import EditorPane
 from mu.resources import load_icon, load_pixmap
 
@@ -173,9 +176,15 @@ class Window(QMainWindow):
     icon = "icon"
     timer = None
     usb_checker = None
+    serial = None
+    repl = None
+    plotter = None
 
     _zoom_in = pyqtSignal(int)
     _zoom_out = pyqtSignal(int)
+    close_serial = pyqtSignal()
+    write_to_serial = pyqtSignal(bytes)
+    data_received = pyqtSignal(bytes)
 
     def zoom_in(self):
         """
@@ -295,6 +304,46 @@ class Window(QMainWindow):
                 return True
         return False
 
+    def on_serial_read(self):
+        """
+        Called when the connected device is ready to send data via the serial
+        connection. It reads all the available data, emits the data_received
+        signal with the received bytes and, if appropriate, emits the
+        tuple_received signal with the tuple created from the bytes received.
+        """
+        data = bytes(self.serial.readAll())  # get all the available bytes.
+        self.data_received.emit(data)
+
+    def open_serial_link(self, port):
+        """
+        Creates a new serial link instance.
+        """
+        self.input_buffer = []
+        self.serial = QSerialPort()
+        self.serial.setPortName(port)
+        if self.serial.open(QIODevice.ReadWrite):
+            self.serial.dataTerminalReady = True
+            if not self.serial.isDataTerminalReady():
+                # Using pyserial as a 'hack' to open the port and set DTR
+                # as QtSerial does not seem to work on some Windows :(
+                # See issues #281 and #302 for details.
+                self.serial.close()
+                pyser = serial.Serial(port)  # open serial port w/pyserial
+                pyser.dtr = True
+                pyser.close()
+                self.serial.open(QIODevice.ReadWrite)
+            self.serial.setBaudRate(115200)
+            self.serial.readyRead.connect(self.on_serial_read)
+        else:
+            raise IOError("Cannot connect to device on port {}".format(port))
+
+    def close_serial_link(self):
+        """
+        Close and clean up the currently open serial link.
+        """
+        self.serial.close()
+        self.serial = None
+
     def add_filesystem(self, home, file_manager):
         """
         Adds the file system pane to the application.
@@ -323,12 +372,27 @@ class Window(QMainWindow):
         self.connect_zoom(self.fs_pane)
         return self.fs_pane
 
-    def add_micropython_repl(self, repl, name):
+    def add_micropython_repl(self, port, name):
         """
         Adds a MicroPython based REPL pane to the application.
         """
-        repl_pane = MicroPythonREPLPane(port=repl.port, theme=self.theme)
+        if not self.serial:
+            self.open_serial_link(port)
+            # Send a Control-C / keyboard interrupt.
+            self.serial.write(b'\x03')
+        repl_pane = MicroPythonREPLPane(serial=self.serial, theme=self.theme)
+        self.data_received.connect(repl_pane.process_bytes)
         self.add_repl(repl_pane, name)
+
+    def add_micropython_plotter(self, port, name):
+        """
+        Adds a plotter that reads data from a serial connection.
+        """
+        if not self.serial:
+            self.open_serial_link(port)
+        plotter_pane = PlotterPane(theme=self.theme)
+        self.data_received.connect(plotter_pane.process_bytes)
+        self.add_plotter(plotter_pane, name)
 
     def add_jupyter_repl(self, kernel_manager, kernel_client):
         """
@@ -357,9 +421,24 @@ class Window(QMainWindow):
         self.repl_pane.set_theme(self.theme)
         self.repl_pane.setFocus()
 
+    def add_plotter(self, plotter_pane, name):
+        """
+        Adds the referenced plotter pane to the application.
+        """
+        self.plotter_pane = plotter_pane
+        self.plotter = QDockWidget(_('{} Plotter').format(name))
+        self.plotter.setWidget(plotter_pane)
+        self.plotter.setFeatures(QDockWidget.DockWidgetMovable)
+        self.plotter.setAllowedAreas(Qt.BottomDockWidgetArea |
+                                     Qt.LeftDockWidgetArea |
+                                     Qt.RightDockWidgetArea)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.plotter)
+        self.plotter_pane.set_theme(self.theme)
+        self.plotter_pane.setFocus()
+
     def add_python3_runner(self, script_name, working_directory,
                            interactive=False, debugger=False,
-                           command_args=None):
+                           command_args=None, runner=None):
         """
         Display console output for the referenced Python script.
 
@@ -376,6 +455,9 @@ class Window(QMainWindow):
         If there is a list of command_args (the default is None) then these
         will be passed as further arguments into the command run in the
         new process.
+
+        If runner is give, this is used as the command to start the Python
+        process.
         """
         self.process_runner = PythonProcessPane(self)
         self.runner = QDockWidget(_("Running: {}").format(
@@ -387,7 +469,8 @@ class Window(QMainWindow):
                                     Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
         self.process_runner.start_process(script_name, working_directory,
-                                          interactive, debugger, command_args)
+                                          interactive, debugger, command_args,
+                                          runner)
         self.process_runner.setFocus()
         self.connect_zoom(self.process_runner)
         return self.process_runner
@@ -469,11 +552,25 @@ class Window(QMainWindow):
         """
         Removes the REPL pane from the application.
         """
-        if hasattr(self, 'repl') and self.repl:
+        if self.repl:
             self.repl_pane = None
             self.repl.setParent(None)
             self.repl.deleteLater()
             self.repl = None
+            if not self.plotter:
+                self.serial = None
+
+    def remove_plotter(self):
+        """
+        Removes the plotter pane from the application.
+        """
+        if self.plotter:
+            self.plotter_pane = None
+            self.plotter.setParent(None)
+            self.plotter.deleteLater()
+            self.plotter = None
+            if not self.repl:
+                self.serial = None
 
     def remove_python_runner(self):
         """
@@ -518,6 +615,8 @@ class Window(QMainWindow):
         self.button_bar.slots['theme'].setIcon(load_icon(new_icon))
         if hasattr(self, 'repl') and self.repl:
             self.repl_pane.set_theme(theme)
+        if hasattr(self, 'plotter') and self.plotter:
+            self.plotter_pane.set_theme(theme)
 
     def show_logs(self, log, theme):
         """
@@ -715,6 +814,21 @@ class Window(QMainWindow):
         self.tabs.shortcut = QShortcut(QKeySequence(shortcut), self)
         self.tabs.shortcut.activated.connect(handler)
         self.tabs.tabBarDoubleClicked.connect(handler)
+
+    def open_directory_from_os(self, path):
+        """
+        Given the path to a directoy, open the OS's built in filesystem
+        explorer for that path. Works with Windows, OSX and Linux.
+        """
+        if sys.platform == 'win32':
+            # Windows
+            os.startfile(path)
+        elif sys.platform == 'darwin':
+            # OSX
+            os.system('open "{}"'.format(path))
+        else:
+            # Assume freedesktop.org on unix-y.
+            os.system('xdg-open "{}"'.format(path))
 
 
 class StatusBar(QStatusBar):

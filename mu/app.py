@@ -40,6 +40,7 @@ gettext.translation('mu', localedir=localedir,
 import os
 import sys
 import platform
+import pkgutil
 import logging
 from logging.handlers import TimedRotatingFileHandler
 from PyQt5.QtCore import QTimer
@@ -48,7 +49,8 @@ from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT
 from mu.interface import Window
 from mu.resources import load_pixmap
-from mu.modes import PythonMode, AdafruitMode, MicrobitMode, DebugMode
+from mu.modes import (PythonMode, AdafruitMode, MicrobitMode, DebugMode,
+                      PyGameZeroMode)
 from mu.debugger.runner import run as run_debugger
 
 
@@ -80,12 +82,16 @@ def setup_modes(editor, view):
     *PREMATURE OPTIMIZATION ALERT* This may become more complex in future so
     splitting things out here to contain the mess. ;-)
     """
-    return {
+    modes = {
         'python': PythonMode(editor, view),
         'adafruit': AdafruitMode(editor, view),
         'microbit': MicrobitMode(editor, view),
         'debugger': DebugMode(editor, view),
     }
+    # Check if pgzero is available (without importing it)
+    if any([m for m in pkgutil.iter_modules() if 'pgzero' in m]):
+        modes['pygamezero'] = PyGameZeroMode(editor, view)
+    return modes
 
 
 def excepthook(*exc_args):
@@ -141,6 +147,10 @@ def debug():
     Create a debug runner in a new process. This is what the Mu debugger will
     drive. Uses the filename and associated args found in sys.argv.
     """
-    filename = os.path.normcase(os.path.abspath(sys.argv[1]))
-    args = sys.argv[2:]
-    run_debugger('localhost', DEBUGGER_PORT, filename, args)
+    if len(sys.argv) > 1:
+        filename = os.path.normcase(os.path.abspath(sys.argv[1]))
+        args = sys.argv[2:]
+        run_debugger('localhost', DEBUGGER_PORT, filename, args)
+    else:
+        print(_("Debug runner requires a filename for a Python script "
+                "to debug."))

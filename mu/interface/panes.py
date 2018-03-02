@@ -24,18 +24,24 @@ import logging
 import signal
 import string
 import os.path
-from PyQt5.QtCore import (Qt, QIODevice, QProcess, QProcessEnvironment,
-                          pyqtSignal, QTimer)
+from PyQt5.QtCore import Qt, QProcess, QProcessEnvironment, pyqtSignal, QTimer
+from collections import deque
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
                              QTreeView)
-from PyQt5.QtGui import QKeySequence, QTextCursor, QCursor
-from PyQt5.QtSerialPort import QSerialPort
+from PyQt5.QtGui import QKeySequence, QTextCursor, QCursor, QPainter
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from mu.interface.themes import Font
 from mu.interface.themes import (DEFAULT_FONT_SIZE, NIGHT_STYLE, DAY_STYLE,
                                  CONTRAST_STYLE)
-import serial
+
+
+CHARTS = True
+try:  # pragma: no cover
+    from PyQt5.QtChart import QChart, QLineSeries, QChartView, QValueAxis
+except ImportError:  # pragma: no cover
+    QChartView = object
+    CHARTS = False
 
 
 logger = logging.getLogger(__name__)
@@ -111,8 +117,9 @@ class MicroPythonREPLPane(QTextEdit):
     The device MUST be flashed with MicroPython for this to work.
     """
 
-    def __init__(self, port, theme='day', parent=None):
+    def __init__(self, serial, theme='day', parent=None):
         super().__init__(parent)
+        self.serial = serial
         self.setFont(Font().load())
         self.setAcceptRichText(False)
         self.setReadOnly(False)
@@ -120,28 +127,6 @@ class MicroPythonREPLPane(QTextEdit):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.context_menu)
         self.setObjectName('replpane')
-        # open the serial port
-        self.serial = QSerialPort(self)
-        self.serial.setPortName(port)
-        if self.serial.open(QIODevice.ReadWrite):
-            self.serial.dataTerminalReady = True
-            if not self.serial.isDataTerminalReady():
-                # Using pyserial as a 'hack' to open the port and set DTR
-                # as QtSerial does not seem to work on some Windows :(
-                # See issues #281 and #302 for details.
-                self.serial.close()
-                pyser = serial.Serial(port)  # open serial port w/pyserial
-                pyser.dtr = True
-                pyser.close()
-                self.serial.open(QIODevice.ReadWrite)
-            self.serial.setBaudRate(115200)
-            self.serial.readyRead.connect(self.on_serial_read)
-            # clear the text
-            self.clear()
-            # Send a Control-C
-            self.serial.write(b'\x03')
-        else:
-            raise IOError("Cannot connect to device on port {}".format(port))
         self.set_theme(theme)
 
     def paste(self):
@@ -178,12 +163,6 @@ class MicroPythonREPLPane(QTextEdit):
             self.setStyleSheet(NIGHT_STYLE)
         else:
             self.setStyleSheet(CONTRAST_STYLE)
-
-    def on_serial_read(self):
-        """
-        Called when the application gets data from the connected device.
-        """
-        self.process_bytes(bytes(self.serial.readAll()))
 
     def keyPressEvent(self, data):
         """
@@ -599,7 +578,7 @@ class PythonProcessPane(QTextEdit):
         self.history_position = 0  # current position when navigation history.
 
     def start_process(self, script_name, working_directory, interactive=True,
-                      debugger=False, command_args=None):
+                      debugger=False, command_args=None, runner=None):
         """
         Start the child Python process.
 
@@ -615,6 +594,9 @@ class PythonProcessPane(QTextEdit):
 
         If there is a list of command_args (the default is None), then these
         will be passed as further arguments into the script to be run.
+
+        If runner is give, this is used as the command to start the Python
+        process.
         """
         self.script = os.path.abspath(os.path.normcase(script_name))
         logger.info('Running script: {}'.format(self.script))
@@ -639,8 +621,12 @@ class PythonProcessPane(QTextEdit):
             args = [self.script, ] + command_args
             self.process.start('mu-debug', args)
         else:
-            # Use the current system Python to run the script.
-            python_exec = sys.executable
+            if runner:
+                # Use the passed in Python "runner" to run the script.
+                python_exec = runner
+            else:
+                # Use the current system Python to run the script.
+                python_exec = sys.executable
             if interactive:
                 # Start the script in interactive Python mode.
                 args = ['-i', self.script, ] + command_args
@@ -965,3 +951,151 @@ class DebugInspector(QTreeView):
             self.setStyleSheet(NIGHT_STYLE)
         else:
             self.setStyleSheet(CONTRAST_STYLE)
+
+
+class PlotterPane(QChartView):
+    """
+    This plotter widget makes viewing sensor data easy!
+
+    This widget represents a chart that will look for tuple data on
+    the REPL and will auto-generate a graph.
+
+    The device MUST be flashed with MicroPython for this to work.
+    """
+
+    def __init__(self, theme='day', parent=None):
+        super().__init__(parent)
+        # Holds the raw input to be checked for actionable data to display.
+        self.input_buffer = []
+        # Holds the raw actionable data detected while plotting.
+        self.raw_data = []
+        self.setObjectName('plotterpane')
+        self.max_x = 100  # Maximum value along x axis
+        self.max_y = 1000  # Maximum value +/- along y axis
+
+        # Holds deques for each slot of incoming data (assumes 1 to start with)
+        self.data = [deque([0] * self.max_x), ]
+        # Holds line series for each slot of incoming data (assumes 1 to start
+        # with).
+        self.series = [QLineSeries(), ]
+
+        # Set up the chart with sensible defaults.
+        self.chart = QChart()
+        self.chart.legend().hide()
+        self.chart.addSeries(self.series[0])
+        self.axis_x = QValueAxis()
+        self.axis_y = QValueAxis()
+        self.axis_x.setRange(0, self.max_x)
+        self.axis_y.setRange(-self.max_y, self.max_y)
+        self.axis_x.setLabelFormat("time")
+        self.axis_y.setLabelFormat("%d")
+        self.chart.setAxisX(self.axis_x, self.series[0])
+        self.chart.setAxisY(self.axis_y, self.series[0])
+        self.setChart(self.chart)
+        self.setRenderHint(QPainter.Antialiasing)
+
+    def process_bytes(self, data):
+        """
+        Takes raw bytes and, if a valid tuple is detected, adds the data to
+        the plotter.
+        """
+        self.input_buffer.append(data)
+        # Check if the data contains a Python tuple, containing numbers, on a
+        # single line (i.e. ends with \n).
+        input_bytes = b''.join(self.input_buffer)
+        lines = input_bytes.split(b'\r\n')
+        for line in lines:
+            if line.startswith(b'(') and line.endswith(b')'):
+                # Candidate tuple. Extract the raw bytes into a numeric tuple.
+                raw_values = [val.strip() for val in line[1:-1].split(b',')]
+                numeric_values = []
+                for raw in raw_values:
+                    try:
+                        numeric_values.append(int(raw))
+                        # It worked, so move onto the next value.
+                        continue
+                    except ValueError:
+                        # Try again as a float.
+                        pass
+                    try:
+                        numeric_values.append(float(raw))
+                    except ValueError:
+                        # Not an int or float, so ignore this value.
+                        continue
+                if numeric_values:
+                    # There were numeric values in the tuple, so use them!
+                    self.add_data(tuple(numeric_values))
+        # Reset the input buffer.
+        self.input_buffer = []
+        if lines[-1]:
+            # Append any bytes that are not yet at the end of a line, for
+            # processing next time we read data from self.serial.
+            self.input_buffer.append(lines[-1])
+
+    def add_data(self, values):
+        """
+        Given a tuple of values, ensures there are the required number of line
+        series, add the data to the line series, update the range of the chart
+        so the chart displays nicely.
+        """
+        # Store incoming data to dump as CSV at the end of the session.
+        self.raw_data.append(values)
+        # Check the number of incoming values.
+        if len(values) != len(self.series):
+            # Adjust the number of line series.
+            value_len = len(values)
+            series_len = len(self.series)
+            if value_len > series_len:
+                # Add new line series.
+                for i in range(value_len - series_len):
+                    new_series = QLineSeries()
+                    self.chart.addSeries(new_series)
+                    self.chart.setAxisX(self.axis_x, new_series)
+                    self.chart.setAxisY(self.axis_y, new_series)
+                    self.series.append(new_series)
+                    self.data.append(deque([0] * self.max_x))
+            else:
+                # Remove old line series.
+                for old_series in self.series[value_len:]:
+                    self.chart.removeSeries(old_series)
+                self.series = self.series[:value_len]
+                self.data = self.data[:value_len]
+
+        # Add the incoming values to the data to be displayed, and compute
+        # max range.
+        max_ranges = []
+        for i, value in enumerate(values):
+            self.data[i].appendleft(value)
+            max_ranges.append(max([max(self.data[i]), abs(min(self.data[i]))]))
+            if len(self.data[i]) > self.max_x:
+                self.data[i].pop()
+
+        # Re-scale y-axis.
+        max_y_range = max(max_ranges)
+        if max_y_range > self.max_y:
+            self.max_y += self.max_y
+            self.axis_y.setRange(-self.max_y, self.max_y)
+        elif max_y_range < self.max_y / 2:
+            self.max_y = self.max_y / 2
+            self.axis_y.setRange(-self.max_y, self.max_y)
+
+        # Update the line series with the data.
+        for i, line_series in enumerate(self.series):
+            line_series.clear()
+            xy_vals = []
+            for j in range(self.max_x):
+                val = self.data[i][self.max_x - 1 - j]
+                xy_vals.append((j, val))
+            for point in xy_vals:
+                line_series.append(*point)
+
+    def set_theme(self, theme):
+        """
+        Sets the theme / look for the plotter pane.
+        """
+        if theme == 'day':
+            self.chart.setTheme(QChart.ChartThemeLight)
+        elif theme == 'night':
+            self.chart.setTheme(QChart.ChartThemeDark)
+        else:
+            self.chart.setTheme(QChart.ChartThemeHighContrast)

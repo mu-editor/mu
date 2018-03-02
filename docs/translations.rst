@@ -5,10 +5,12 @@ A really useful and relatively simple way to contribute to Mu is to translate
 the user interface into a different language. The steps to do this are very
 simple and there exist plenty of tools to help you.
 
-You can contribute in two ways:
+You can contribute in three ways:
 
 * Improve or extend an existing translation.
 * Create a completely new translation for a new locale.
+* Make a translation of `Mu's website <https://codewith.mu/>`_ (see the
+  :doc:`website` guide for how to do this).
 
 In both cases you'll be using assets found in the ``mu/locale`` directory.
 

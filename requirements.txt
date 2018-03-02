@@ -6,6 +6,7 @@ sphinx
 pytest-cov
 pyserial
 pyqt5
+PyQtChart
 qscintilla
 qtconsole
 matplotlib
@@ -15,3 +16,4 @@ beautifulsoup4
 wheel
 twine
 pynsist
+pgzero
