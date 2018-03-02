@@ -724,7 +724,7 @@ def test_save_no_path():
     with mock.patch('builtins.open', mock_open):
         ed.save()
     assert mock_open.call_count == 1
-    mock_open.assert_called_with('foo.py', 'w', newline='')
+    mock_open.assert_called_with('foo.py', 'w', newline='', encoding="utf-8")
     mock_open.return_value.write.assert_called_once_with('foo')
     view.get_save_path.assert_called_once_with('/fake/path')
 
@@ -785,7 +785,7 @@ def test_save_python_file():
     ed = mu.logic.Editor(view)
     with mock.patch('builtins.open', mock_open):
         ed.save()
-    mock_open.assert_called_once_with('foo.py', 'w', newline='')
+    mock_open.assert_called_once_with('foo.py', 'w', newline='', encoding="utf-8")
     mock_open.return_value.write.assert_called_once_with('foo')
     assert view.get_save_path.call_count == 0
     view.current_tab.setModified.assert_called_once_with(False)
@@ -807,7 +807,7 @@ def test_save_with_no_file_extension():
     ed = mu.logic.Editor(view)
     with mock.patch('builtins.open', mock_open):
         ed.save()
-    mock_open.assert_called_once_with('foo.py', 'w', newline='')
+    mock_open.assert_called_once_with('foo.py', 'w', newline='', encoding="utf-8")
     mock_open.return_value.write.assert_called_once_with('foo')
     assert view.get_save_path.call_count == 0
 
@@ -821,12 +821,10 @@ def test_save_utf8():
     # This will confirm both that every possible codepoint can be
     # saved, and that utf-8 is used for the encoding
     #
-    text = "".join(chr(i) for i in range(0x10000) if i not in range(0xdc00, 0xe000) and i not in range(0xd800, 0xdc00))
-    utf8 = text.encode("utf-8")
     view = mock.MagicMock()
     view.current_tab = mock.MagicMock()
     view.current_tab.path = 'foo.py'
-    view.current_tab.text = mock.MagicMock(return_value=text)
+    view.current_tab.text = mock.MagicMock(return_value='foo')
     view.get_save_path = mock.MagicMock(return_value='foo.py')
     view.current_tab.setModified = mock.MagicMock(return_value=None)
     mock_open = mock.MagicMock()
@@ -836,7 +834,8 @@ def test_save_utf8():
     ed = mu.logic.Editor(view)
     with mock.patch('builtins.open', mock_open):
         ed.save()
-    mock_open.return_value.write.assert_called_once_with(utf8)
+    mock_open.assert_called_once_with('foo.py', 'w', newline='', encoding="utf-8")
+    mock_open.return_value.write.assert_called_once_with('foo')
 
 def test_get_tab_existing_tab():
     """
