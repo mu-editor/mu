@@ -529,7 +529,7 @@ class Editor:
                 # No extension given, default to .py
                 tab.path += '.py'
             try:
-                with open(tab.path, 'w', newline='') as f:
+                with open(tab.path, 'w', newline='', encoding="utf-8") as f:
                     logger.info('Saving script to: {}'.format(tab.path))
                     logger.debug(tab.text())
                     write_and_flush(f, tab.text())
