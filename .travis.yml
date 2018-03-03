@@ -6,9 +6,9 @@ matrix:
       sudo: required
       language: generic
 
-    # To maximise compatibility pick earliest image, 10.9 to be removed on 20/01/2017
+    # To maximise compatibility pick earliest image, 10.10 oldest available
     - os: osx
-      osx_image: beta-xcode6.1
+      osx_image: xcode6.4
       sudo: required
       language: generic
 
@@ -68,7 +68,7 @@ deploy:
   acl: public_read
   on:
     repo: mu-editor/mu
-    branch: [master, travis_bucket_move]
+    branch: [master]
 
 notifications:
   email:
