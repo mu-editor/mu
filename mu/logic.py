@@ -138,8 +138,8 @@ logger = logging.getLogger(__name__)
 
 def write_and_flush(fileobj, content):
     """
-    Writes content to the fd, then flushes and fsyncs to ensure the data is, in
-    fact, written.
+    Writes content to the fileobj, then flushes and fsyncs to ensure the data is, 
+    in fact, written.
     """
     fileobj.write(content)
     fileobj.flush()
