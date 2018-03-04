@@ -136,14 +136,19 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
 logger = logging.getLogger(__name__)
 
 
-def write_and_flush(fd, content):
+def write_and_flush(fileobj, content):
     """
-    Writes content to the fd, then flushes and fsyncs to ensure the data is, in
-    fact, written.
+    Writes content to the fileobj, then flushes and fsyncs to ensure the data is, 
+    in fact, written.
     """
-    fd.write(content)
-    fd.flush()
-    os.fsync(fd)
+    fileobj.write(content)
+    fileobj.flush()
+    #
+    # Theoretically this shouldn't work; fsync takes a file descriptor,
+    # not a file object. However, there's obviously some under-the-cover
+    # mechanism which converts one to the other (at least on Windows)
+    #
+    os.fsync(fileobj)
 
 
 def get_settings_path():
@@ -511,6 +516,22 @@ class Editor:
         """ for loading files passed from command line or the OS launch"""
         self._load(path)
 
+    def save_tab_to_file(self, tab):
+        try:
+            with open(tab.path, 'w', newline='', encoding="utf-8") as f:
+                logger.info('Saving script to: {}'.format(tab.path))
+                logger.debug(tab.text())
+                write_and_flush(f, tab.text())
+            tab.setModified(False)
+            self.show_status_message(_("Saved file: {}").format(tab.path))
+        except OSError as e:
+            logger.error(e)
+            message = _('Could not save file.')
+            information = _("Error saving file to disk. Ensure you have "
+                            "permission to write the file and "
+                            "sufficient disk space.")
+            self._view.show_message(message, information)
+    
     def save(self):
         """
         Save the content of the currently active editor tab.
@@ -528,20 +549,7 @@ class Editor:
             if os.path.splitext(os.path.basename(tab.path))[1] == '':
                 # the user didnt specify an extension, default to .py
                 tab.path += '.py'
-            try:
-                with open(tab.path, 'w', newline='') as f:
-                    logger.info('Saving script to: {}'.format(tab.path))
-                    logger.debug(tab.text())
-                    write_and_flush(f, tab.text())
-                tab.setModified(False)
-                self.show_status_message(_("Saved file: {}").format(tab.path))
-            except OSError as e:
-                logger.error(e)
-                message = _('Could not save file.')
-                information = _("Error saving file to disk. Ensure you have "
-                                "permission to write the file and "
-                                "sufficient disk space.")
-                self._view.show_message(message, information)
+            self.save_tab_to_file(tab)
         else:
             # The user cancelled the filename selection.
             tab.path = None
@@ -732,11 +740,7 @@ class Editor:
             logger.info('Autosave has detected changes.')
             for tab in self._view.widgets:
                 if tab.path and tab.isModified():
-                    with open(tab.path, 'w', newline='') as f:
-                        logger.info('Saving script to: {}'.format(tab.path))
-                        logger.debug(tab.text())
-                        write_and_flush(f, tab.text())
-                    tab.setModified(False)
+                    self.save_tab_to_file(tab)
 
     def check_usb(self):
         """
