@@ -22,6 +22,9 @@ import os
 import sys
 import os.path
 import logging
+import token
+import tokenize
+from io import BytesIO, StringIO
 from mu.logic import get_settings_path, HOME_DIRECTORY
 from mu.contrib import uflash, microfs
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
@@ -218,6 +221,64 @@ class MicrobitMode(MicroPythonMode):
         """
         return SHARED_APIS + MICROBIT_APIS
 
+    def prepare_script(self, text):
+        """
+        Takes a script and mangles it to fit inside 8192 bytes if necessary
+        """
+
+        text_bytes = text.encode('utf-8')
+        # No need to mangle if script is already small enough
+        if len(text_bytes) < 8192:
+            return text_bytes
+
+        # Wrap the input script as a byte stream
+        buff = BytesIO(text_bytes)
+        # String stream for the mangled script
+        mangled = StringIO()
+
+        last_tok = token.INDENT
+        last_line = -1
+        last_col = 0
+        try:
+            # Build tokens from the script
+            tokens = tokenize.tokenize(buff.readline)
+            for t, ttext, (line_s, col_s), (line_e, col_e), ltext in tokens:
+                if line_s > last_line:
+                    last_col = 0
+                # If this is a docstring comment
+                if t == token.STRING and \
+                   (last_tok == token.INDENT or last_tok == token.NEWLINE):
+                    # Output number of lines corresponding those in
+                    # the docstring comment
+                    for line in range(0, len(ttext.split('\n')) - 1):
+                        mangled.write('\n')
+                # Or is it a standard comment
+                elif t == tokenize.COMMENT:
+                    # Plain comment, just don't write it
+                    mangled.write('')
+                else:
+                    if col_s > last_col:
+                        mangled.write(" " * (col_s - last_col))
+                    # This is a bit odd by without it the script seems
+                    # to be prefixed with utf-8, making it invalid
+                    if ttext != 'utf-8' and last_line != -1:
+                        mangled.write(ttext)
+                last_tok = t
+                last_col = col_e
+                last_line = line_e
+        except tokenize.TokenError as e:
+        	# Tokenize failed so there is something wrong with the script
+            msg, (line, col) = e.args
+            message = _('Problem with script:')
+            information = _('"{}" [{}:{}]').format(msg, line, col)
+            # Ideally we would move the cursor to the relevent line
+            self.view.show_message(message, information, 'Warning')
+            # Tell self.flash we can't continue flashing
+            return False
+
+        # The flashing system expects bytes
+        return mangled.getvalue().encode('utf-8')
+
     def flash(self):
         """
         Takes the currently active tab, compiles the Python script therein into
@@ -229,7 +290,9 @@ class MicrobitMode(MicroPythonMode):
         if tab is None:
             # There is no active text editor.
             return
-        python_script = tab.text().encode('utf-8')
+        python_script = self.prepare_script(tab.text())
+        if not python_script:
+            return
         logger.debug('Python script:')
         logger.debug(python_script)
         if len(python_script) >= 8192:
