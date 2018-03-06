@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import os.path
 import sys
+import codecs
 import io
 import re
 import json
@@ -168,7 +169,7 @@ def save_and_encode(text, filepath):
     if ENCODING_COOKIE_RE.match(lines[0]):
         lines[0] = cookie
     else:
-        lines.insert(0, cookie)
+        lines.insert(0, ENCODING_COOKIE)
 
     with open(filepath, "w", encoding=ENCODING, newline='') as f:
         write_and_flush(f, os.linesep.join(lines))
@@ -201,7 +202,7 @@ def determine_encoding(filepath):
     #
     default_encoding = locale.getpreferredencoding()
     uline = line.decode(default_encoding)
-    match = encoding_cookie_re.match(uline)
+    match = ENCODING_COOKIE_RE.match(uline)
     if match:
         return match.group(1)
 
@@ -552,6 +553,8 @@ class Editor:
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
                 text = read_and_decode(path)
+                if not ENCODING_COOKIE_RE.match(text):
+                    text = ENCODING_COOKIE + os.linesep + text
                 name = path
             else:
                 # Open the hex, extract the Python script therein and set the
