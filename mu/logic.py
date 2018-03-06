@@ -132,13 +132,21 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Wisest are they that know they know nothing."),
 ]
 
+#
+# We write all files as UTF-8 with a PEP 263 encoding cookie
+# We also detect an encoding cookie in an inbound file
+#
+ENCODING = "utf-8"
+ENCODING_COOKIE_RE = re.compile("^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
+ENCODING_COOKIE = ("# -*- coding: %s-*- # Encoding cookie added by Mu Editor" % ENCODING) + os.linesep
+
 
 logger = logging.getLogger(__name__)
 
 
 def write_and_flush(fileobj, content):
     """
-    Writes content to the fileobj, then flushes and fsyncs to ensure the data is, 
+    Writes content to the fileobj, then flushes and fsyncs to ensure the data is,
     in fact, written.
     """
     fileobj.write(content)
@@ -150,6 +158,62 @@ def write_and_flush(fileobj, content):
     #
     os.fsync(fileobj)
 
+
+def save_and_encode(text, filepath):
+    #
+    # Strip any existing encoding cookie and replace by a Mu-generated
+    # UTF-8 cookie
+    #
+    lines = text.splitlines()
+    if ENCODING_COOKIE_RE.match(lines[0]):
+        lines[0] = cookie
+    else:
+        lines.insert(0, cookie)
+
+    with open(filepath, "w", encoding=ENCODING, newline='') as f:
+        write_and_flush(f, os.linesep.join(lines))
+
+
+def determine_encoding(filepath):
+    """Determine the encoding of a file:
+
+    * If there is a BOM, return the appropriate encoding
+    * If there is a PEP 263 encoding cookie, return the appropriate encoding
+    * Otherwise return the locale default encoding
+    """
+    boms = [
+        (codecs.BOM_UTF8, "utf-8-sig"),
+        (codecs.BOM_UTF16_BE, "utf-16"),
+        (codecs.BOM_UTF16_LE, "utf-16"),
+    ]
+    #
+    # Try for a BOM
+    # The UTF16BE/LE codecs
+    #
+    with open(filepath, "rb") as f:
+        line = f.readline()
+    for bom, encoding in boms:
+        if line.startswith(bom):
+            return encoding
+
+    #
+    # Look for a PEP 263 encoding cookie
+    #
+    default_encoding = locale.getpreferredencoding()
+    uline = line.decode(default_encoding)
+    match = encoding_cookie_re.match(uline)
+    if match:
+        return match.group(1)
+
+    #
+    # Fall back to the locale default
+    #
+    return default_encoding
+
+def read_and_decode(filepath):
+    encoding = determine_encoding(filepath)
+    with open(filepath, encoding=encoding, newline='') as f:
+        return f.read()
 
 def get_settings_path():
     """
@@ -487,8 +551,7 @@ class Editor:
             if path.endswith('.py'):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
-                with open(path, newline='') as f:
-                    text = f.read()
+                text = read_and_decode(path)
                 name = path
             else:
                 # Open the hex, extract the Python script therein and set the
@@ -518,10 +581,9 @@ class Editor:
 
     def save_tab_to_file(self, tab):
         try:
-            with open(tab.path, 'w', newline='', encoding="utf-8") as f:
-                logger.info('Saving script to: {}'.format(tab.path))
-                logger.debug(tab.text())
-                write_and_flush(f, tab.text())
+            logger.info('Saving script to: {}'.format(tab.path))
+            logger.debug(tab.text())
+            save_and_encode(tab.text(), tab.path)
             tab.setModified(False)
             self.show_status_message(_("Saved file: {}").format(tab.path))
         except OSError as e:
@@ -531,7 +593,7 @@ class Editor:
                             "permission to write the file and "
                             "sufficient disk space.")
             self._view.show_message(message, information)
-    
+
     def save(self):
         """
         Save the content of the currently active editor tab.
