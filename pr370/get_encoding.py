@@ -6,9 +6,9 @@ import re
 encoding_cookie = re.compile("^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
 
 boms = [
-    (codecs.BOM_UTF8, ("utf-8-sig", "")),
-    (codecs.BOM_UTF16_BE, ("utf-16-be", "\ufeff")),
-    (codecs.BOM_UTF16_LE, ("utf-16-le", "\ufeff")),
+    (codecs.BOM_UTF8, "utf-8-sig"),
+    (codecs.BOM_UTF16_BE, "utf-16"),
+    (codecs.BOM_UTF16_LE, "utf-16"),
 ]
 
 #
@@ -22,7 +22,7 @@ boms = [
 def determine_encoding(filepath):
     """Determine the encoding of a file:
 
-    * If there is a BOM, return the appropriate encoding and any prefix to strip
+    * If there is a BOM, return the appropriate encoding
     * If there is a PEP 263 encoding cookie, return the appropriate encoding
     * Return the locale default encoding
     """
@@ -32,9 +32,9 @@ def determine_encoding(filepath):
     #
     with open(filepath, "rb") as f:
         line = f.readline()
-    for bom, (encoding, prefix) in boms:
+    for bom, encoding in boms:
         if line.startswith(bom):
-            return encoding, prefix
+            return encoding
 
     #
     # Look for a PEP 263 encoding cookie
@@ -43,23 +43,40 @@ def determine_encoding(filepath):
     uline = line.decode(default_encoding)
     match = encoding_cookie.match(uline)
     if match:
-        return match.group(1), ""
+        return match.group(1)
 
     #
     # Fall back to the locale default
     #
-    return default_encoding, ""
+    return default_encoding
 
 def open_and_decode(filepath):
     #
     # Read one line with the default encoding
     #
-    encoding, prefix = determine_encoding(filepath)
+    encoding = determine_encoding(filepath)
     print("Encoding:", encoding)
-    return open(filepath, encoding=encoding).read().lstrip(prefix)
+    return open(filepath, encoding=encoding).read()
+
+def save_and_encode(text, filepath):
+    #
+    # Strip any existing encoding cookie and replace by a Mu-generated
+    # UTF-8 cookie
+    #
+    cookie = "# -*- coding: UTF-8 -*- # Encoding cookie added by Mu Editor\n"
+    lines = text.splitlines(True)
+    if encoding_cookie.match(lines[0]):
+        lines[0] = cookie
+    else:
+        lines.insert(0, cookie)
+
+    with open(filepath, "w", encoding="utf-8") as f:
+        f.writelines(lines)
 
 if __name__ == '__main__':
     import glob
     for filepath in glob.glob("*.txt"):
         print(filepath)
-        print(repr(open_and_decode(filepath)))
+        text = open_and_decode(filepath)
+        print(repr(text))
+        save_and_encode(text, filepath + ".mu")
