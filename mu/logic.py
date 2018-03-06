@@ -189,7 +189,6 @@ def determine_encoding(filepath):
     ]
     #
     # Try for a BOM
-    # The UTF16BE/LE codecs
     #
     with open(filepath, "rb") as f:
         line = f.readline()
@@ -552,7 +551,18 @@ class Editor:
             if path.endswith('.py'):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
-                text = read_and_decode(path)
+                try:
+                    text = read_and_decode(path)
+                except UnicodeDecodeError as exc:
+                    message = _("Mu cannot read the characters in {}")
+                    information = _("Mu is unable to read some of the characters in the file.\n\n"
+
+                    "This is because it contains some non-English characters which\n"
+                    "Mu expects to be encoded as UTF-8, but which are encoded in\n"
+                    "some other way. [FIXME!] Please try again later...\n"
+                    )
+                    self._view.show_message(message.format(path), information)
+                    return
                 if not ENCODING_COOKIE_RE.match(text):
                     text = ENCODING_COOKIE + os.linesep + text
                 name = path
