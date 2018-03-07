@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2017-09-13 17:50+0100\n"
-"PO-Revision-Date: 2017-12-20 13:54+0800\n"
+"PO-Revision-Date: 2018-03-07 11:54+0800\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -19,7 +19,7 @@ msgstr ""
 
 #: mu/app.py:61
 msgid "Logging to {}"
-msgstr "日志 TO {}"
+msgstr "记录日志到文件: {}"
 
 #: mu/interface.py:345
 msgid "untitled"
@@ -99,7 +99,7 @@ msgstr "退出MU."
 
 #: mu/interface.py:695
 msgid "Mu {}"
-msgstr "MU {}"
+msgstr "MU 编辑器{}"
 
 #: mu/interface.py:826
 msgid "Filesystem on micro:bit"
@@ -115,7 +115,7 @@ msgstr "{} REPL"
 
 #: mu/interface.py:894
 msgid "Debug Inspector"
-msgstr "DEBUG INSPECTOR"
+msgstr "调试检查器"
 
 #: mu/interface.py:912
 msgid "Name"
@@ -206,7 +206,7 @@ msgstr ""
 
 #: mu/interface.py:1828
 msgid "exit code: {} status: {}"
-msgstr "EXIT CODE: {} STATUS: {}"
+msgstr "退出码: {} STATUS: {}"
 
 #: mu/logic.py:72
 msgid "Hello, World!"
@@ -217,12 +217,12 @@ msgid ""
 "This editor is free software written in Python. You can modify it, add "
 "features or fix bugs if you like."
 msgstr ""
-"THIS EDITOR IS FREE SOFTWARE WRITTEN IN PYTHON. YOU CAN MODIFY IT, ADD "
-"FEATURES OR FIX BUGS IF YOU LIKE."
+"这是一个用python编写的开源软件。你可以修改，增加特性或者修复bug如果你愿意的"
+"话。"
 
 #: mu/logic.py:75
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
-msgstr "THIS EDITOR IS CALLED MU (YOU SAY IT \"MEW\" OR \"MOO\")."
+msgstr "这个编辑器的名字是Mu (发音 \"MEW\" OR \"MOO\")."
 
 #: mu/logic.py:76
 msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
@@ -438,11 +438,11 @@ msgstr "优秀的程序员要有耐心。"
 
 #: mu/logic.py:131
 msgid "A good programmer asks questions."
-msgstr "A GOOD PROGRAMMER ASKS QUESTIONS."
+msgstr "优秀的程序员善于提问。"
 
 #: mu/logic.py:132
 msgid "A good programmer is willing to say, 'I don't know'."
-msgstr "A GOOD PROGRAMMER IS WILLING TO SAY, \"I DON'T KNOW\"."
+msgstr "优秀的程序员不怕说我不知道。"
 
 #: mu/logic.py:133
 msgid "Wisest are they that know they know nothing."
@@ -450,57 +450,52 @@ msgstr "WISEST ARE THEY THAT KNOW THEY KNOW NOTHING."
 
 #: mu/logic.py:243
 msgid " above this line"
-msgstr "ABOVE THIS LINE"
+msgstr "在这一行上面。"
 
 #: mu/logic.py:288
 msgid ""
 "Syntax error. Python cannot understand this line. Check for missing "
 "characters!"
-msgstr ""
-"SYNTAX ERROR. PYTHON CANNOT UNDERSTAND THIS LINE. CHECK FOR MISSING "
-"CHARACTERS!"
+msgstr "语法错误，Python无法理解这行代码。请检查是否漏写字符。"
 
 #: mu/logic.py:418
 msgid "# Write your code here :-)"
-msgstr "# 在这里写你的代码 ;-)"
+msgstr "# 在这里开启你的代码世界 ;-)"
 
 #: mu/logic.py:452
 msgid "The file \"{}\" is already open."
-msgstr "FILE \"{}\" IS ALREADY OPEN."
+msgstr "您已经打开文件 {} 。"
 
 #: mu/logic.py:512
 msgid "Saved file: {}"
-msgstr "SAVED FILE: {}"
+msgstr "保存失败: {}"
 
 #: mu/logic.py:515
 msgid "Could not save file."
-msgstr "COULD NOT SAVE FILE."
+msgstr "文件保存失败。"
 
 #: mu/logic.py:516
 msgid ""
 "Error saving file to disk. Ensure you have permission to write the file and "
 "sufficient disk space."
-msgstr ""
-"ERROR SAVING FILE TO DISK. ENSURE YOU HAVE PERMISSION TO WRITE TH EFIILE AND "
-"SUFFICIENT DISK SPACE."
+msgstr "文件保存失败。确保你有文件读写权限和足够的空间。"
 
 #: mu/logic.py:585
 msgid ""
 "There is un-saved work, exiting the application will cause you to lose it."
-msgstr ""
-"THERE IS UN-SAVED WORK, EXITING THE APPLICATION WILL CAUSE YOU TO LOSE IT."
+msgstr "你有没有保存的代码，如果继续运行将会导致程序丢失。"
 
 #: mu/logic.py:638
 msgid "Changed to {} mode."
-msgstr "CHANGED TO {} MODE"
+msgstr "切换到 {} 模式。"
 
 #: mu/logic.py:723
 msgid "Connection from a new device detected."
-msgstr "CONNECTION TO A NEW DEVICE DETECTED."
+msgstr "链接到新检测到的硬件。"
 
 #: mu/logic.py:725
 msgid " Please switch to {} mode."
-msgstr "PLEASE SWITCH TO {} MODE."
+msgstr "请切换到 { }模式"
 
 #: mu/modes/adafruit.py:29
 msgid "Adafruit CircuitPython"
@@ -516,11 +511,11 @@ msgstr "repl"
 
 #: mu/modes/adafruit.py:53 mu/modes/python3.py:52
 msgid "Use the REPL for live coding."
-msgstr "USE THE REPL FOR LIVE CODING"
+msgstr "用REPL进行实时编程。"
 
 #: mu/modes/adafruit.py:118
 msgid "Could not find an attached Adafruit CircuitPython device."
-msgstr "COULD NOT FIND AN ATTACHED ADAFRUIT CIRCUITPYTHON DEVICE."
+msgstr "找不到已连接的 ADAFRUIT CIRCUITPYTHON."
 
 #: mu/modes/adafruit.py:120
 msgid ""
@@ -543,12 +538,11 @@ msgstr ""
 #: mu/modes/base.py:166
 msgid ""
 "Click on the device's reset button, wait a few seconds and then try again."
-msgstr ""
-"CLICK ON THE DEVICE'S RESET BUTTON, WAIT A FEW SECONDS AND THEN TRY AGAIN."
+msgstr "单击Mciro:bit的复位按钮，等几秒后尝试"
 
 #: mu/modes/base.py:172
 msgid "Could not find an attached device."
-msgstr "COULD NOT FIND AN ATTACHED DEVICE."
+msgstr "在你的电脑上找不到已经连接的硬件。"
 
 #: mu/modes/base.py:173
 msgid ""
@@ -570,11 +564,11 @@ msgstr ""
 
 #: mu/modes/debugger.py:33
 msgid "Graphical Debugger"
-msgstr "GRAPHICAL DEBUGGER"
+msgstr "图形化调试器。"
 
 #: mu/modes/debugger.py:34
 msgid "Debug your Python 3 code."
-msgstr "DEBUG YOUR PYTHON 3 CODE."
+msgstr "停止运行你的Python代码。"
 
 #: mu/modes/debugger.py:48
 msgid "Stop"
@@ -582,7 +576,7 @@ msgstr "停止"
 
 #: mu/modes/debugger.py:49
 msgid "Stop the running code."
-msgstr "STOP RUNNING THE CODE"
+msgstr "停止运行代码。"
 
 #: mu/modes/debugger.py:54
 msgid "Continue"
@@ -614,35 +608,35 @@ msgstr "STEP OUT"
 
 #: mu/modes/debugger.py:73
 msgid "Step out of a function."
-msgstr "STEP OUT OF A FUNCTION."
+msgstr "步出调试一个函数"
 
 #: mu/modes/debugger.py:110
 msgid "Running script {}"
-msgstr "RUNNING SCRIPT {}"
+msgstr "运行脚本: {}"
 
 #: mu/modes/debugger.py:149
 msgid "Your script has finished running."
-msgstr "YOUR SCRIPT HAS FINISHED RUNNING."
+msgstr "你的脚本运行结束"
 
 #: mu/modes/debugger.py:270
 msgid "Debugger info: {}"
-msgstr "DEBUGGER INFO: {}"
+msgstr "调试信息: {}"
 
 #: mu/modes/debugger.py:276
 msgid "Debugger warning: {}"
-msgstr "DEBUGGER WARNING: {}"
+msgstr "调试警告: {}"
 
 #: mu/modes/debugger.py:283
 msgid "Debugger error: {}"
-msgstr "DEBUGGER ERROR: {}"
+msgstr "调试错误: {}"
 
 #: mu/modes/microbit.py:34
 msgid "BBC micro:bit"
-msgstr "BBC MICRO:BIT"
+msgstr "BBC MICRO:BIT硬件"
 
 #: mu/modes/microbit.py:35
 msgid "Write MicroPython for the BBC micro:bit."
-msgstr "WRITE MICROPYTHON FOR THE BBC MICRO:BIT"
+msgstr "把MicroPython固件下载到MICRO:BIT"
 
 #: mu/modes/microbit.py:53
 msgid "Flash"
@@ -650,7 +644,7 @@ msgstr "刷入"
 
 #: mu/modes/microbit.py:54
 msgid "Flash your code onto the micro:bit."
-msgstr "FLASH YOUR CODE ONTO THE MICRO:BIT"
+msgstr "把你程序下载到MICRO:BIT"
 
 #: mu/modes/microbit.py:59
 msgid "Files"
@@ -658,11 +652,11 @@ msgstr "文件"
 
 #: mu/modes/microbit.py:60
 msgid "Access the file system on the micro:bit."
-msgstr "ACCESS THE FILE SYSTEM ON THE MICRO:BIT"
+msgstr "访问MICRO:BIT上的文件系统"
 
 #: mu/modes/microbit.py:66
 msgid "Use the REPL to live-code on the micro:bit."
-msgstr "USE THE REPL TO LIVE-CODE ON THE MICRO:BIT"
+msgstr "用REPL对Micro:bit实时编程"
 
 #: mu/modes/microbit.py:94
 msgid "Unable to flash \"{}\""
@@ -674,7 +668,7 @@ msgstr "你的脚本代码太多了"
 
 #: mu/modes/microbit.py:122
 msgid "Flashing \"{}\" onto the micro:bit."
-msgstr "FLASHING \"{}\" ONTO THE MICROBIT"
+msgstr "下载程序 \"{}\"到microbit"
 
 #: mu/modes/microbit.py:124
 msgid " Runtime: {}"
@@ -682,7 +676,7 @@ msgstr "RUNTIME: {}"
 
 #: mu/modes/microbit.py:133 mu/modes/microbit.py:187
 msgid "Could not find an attached BBC micro:bit."
-msgstr "COULD NOT FIND AN ATTACHED BBC MICRO:BIT"
+msgstr "没有在你的电脑上找到已连接的Micro:bit硬件。"
 
 #: mu/modes/microbit.py:134
 msgid ""
@@ -694,7 +688,9 @@ msgstr ""
 "PLEASE ENSURE YOU LEAVE ENOUGH TIME FOR THE BBC MICRO:BIT TO BE ATTACHED AND "
 "CONFIGURED CORRECTLY BY YOUR COMPUTER. THIS MAY TAKE SEVERAL SECONDS. "
 "ALTERNATIVELY, TRY REMOVING AND RE-ATTACHING THE DEVICE OR SAVING YOUR WORK "
-"AND RESTARTING MU IF THE DEVICE REMAINS UNFOUND."
+"AND RESTARTING MU IF THE DEVICE REMAINS UNFOUND.请给电脑侦测，链接和正确配置"
+"micro:bit留下足够的时间，这可能要花费几秒左右的时间。如果还是没有找到硬件，把"
+"USB数据线拔出然后重新链接micro:bit到计算机并且保存你的程序并且重启Micro:bit。"
 
 #: mu/modes/microbit.py:150
 msgid "REPL and file system cannot work at the same time."
