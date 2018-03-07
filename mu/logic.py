@@ -30,6 +30,7 @@ import webbrowser
 import random
 import locale
 import shutil
+import appdirs
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 # Currently there is no pycodestyle deb packages, so fallback to old name
@@ -37,7 +38,7 @@ try:  # pragma: no cover
     from pycodestyle import StyleGuide, Checker
 except ImportError:  # pragma: no cover
     from pep8 import StyleGuide, Checker
-from mu.contrib import appdirs, uflash
+from mu.contrib import uflash
 from mu.resources import path
 from mu import __version__
 

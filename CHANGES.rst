@@ -10,6 +10,9 @@ Release History
 * Updated the mu-debug runner so if the required filename for the target isn't
   passed into the command, a helpful message is displayed to the user.
 * Developer documentation updates.
+* Updated to the latest version of uflash, which contains the latest stable
+  release of MicroPython for the micro:bit. Many thanks to Damien George for
+  all his continuing hard work on MicroPython for the micro:bit.
 
 1.0.0.beta.15
 =============

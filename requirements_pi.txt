@@ -9,3 +9,4 @@ pyserial
 qtconsole
 matplotlib
 setuptools
+appdirs

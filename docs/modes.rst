@@ -22,7 +22,8 @@ some modes are only available as transitional modes (i.e. they may not be
 selected by the user). A good example of such a "transitional" mode is the
 Python 3 debugger, which can only be accessed from the standard Python 3 mode.
 
-Mu contains the following modes, although it is very easy to add more.
+Mu contains the following modes, although it is very easy to add more (the
+images below are used with permission, see :doc:`copyright`).
 
 Adafruit Mode
 +++++++++++++
