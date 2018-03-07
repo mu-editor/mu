@@ -1,0 +1,749 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2017-09-13 17:50+0100\n"
+"PO-Revision-Date: 2018-03-07 11:54+0800\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 2.0.4\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: zh_CN\n"
+
+#: mu/app.py:61
+msgid "Logging to {}"
+msgstr "记录日志到文件: {}"
+
+#: mu/interface.py:345
+msgid "untitled"
+msgstr "未命名"
+
+#: mu/interface.py:590
+msgid "New"
+msgstr "新建"
+
+#: mu/interface.py:591
+msgid "Create a new Python script."
+msgstr "新建Python脚本."
+
+#: mu/interface.py:592
+msgid "Load"
+msgstr "加载"
+
+#: mu/interface.py:593
+msgid "Load a Python script."
+msgstr "加载Python脚本."
+
+#: mu/interface.py:594
+msgid "Save"
+msgstr "保存"
+
+#: mu/interface.py:595
+msgid "Save the current Python script."
+msgstr "保存当前Python脚本."
+
+#: mu/interface.py:604
+msgid "Zoom-in"
+msgstr "放大"
+
+#: mu/interface.py:605
+msgid "Zoom in (to make the text bigger)."
+msgstr "放大编辑器文本."
+
+#: mu/interface.py:606
+msgid "Zoom-out"
+msgstr "缩小"
+
+#: mu/interface.py:607
+msgid "Zoom out (to make the text smaller)."
+msgstr "缩小编辑器文本."
+
+#: mu/interface.py:608
+msgid "Theme"
+msgstr "主题"
+
+#: mu/interface.py:609
+msgid "Toggle theme between day, night or high contrast."
+msgstr "切换白天，夜晚或者高对比度主题"
+
+#: mu/interface.py:611
+msgid "Check"
+msgstr "代码"
+
+#: mu/interface.py:612
+msgid "Check your code for mistakes."
+msgstr "代码检查。"
+
+#: mu/interface.py:613
+msgid "Help"
+msgstr "帮助"
+
+#: mu/interface.py:614
+msgid "Show help about Mu in a browser."
+msgstr "在浏览器中显示Mu编辑器帮助。"
+
+#: mu/interface.py:615
+msgid "Quit"
+msgstr "退出"
+
+#: mu/interface.py:616
+msgid "Quit Mu."
+msgstr "退出MU."
+
+#: mu/interface.py:695
+msgid "Mu {}"
+msgstr "MU 编辑器{}"
+
+#: mu/interface.py:826
+msgid "Filesystem on micro:bit"
+msgstr "micro:bit上的文件系统"
+
+#: mu/interface.py:852
+msgid "Python3 (Jupyter)"
+msgstr "PYTHON3 (JUPYTER)"
+
+#: mu/interface.py:859
+msgid "{} REPL"
+msgstr "{} REPL"
+
+#: mu/interface.py:894
+msgid "Debug Inspector"
+msgstr "调试检查器"
+
+#: mu/interface.py:912
+msgid "Name"
+msgstr "NAME"
+
+#: mu/interface.py:912
+msgid "Value"
+msgstr "值"
+
+#: mu/interface.py:929
+msgid "(A list of {} items.)"
+msgstr "(A LIST OF {} ITEMS)"
+
+#: mu/interface.py:941
+msgid "(A dict of {} items.)"
+msgstr "(A DICT OF {} ITEMS.)"
+
+#: mu/interface.py:1056
+msgid "Mu"
+msgstr "MU"
+
+#: mu/interface.py:1201
+msgid "Select edit mode."
+msgstr "选择编辑模式."
+
+#: mu/interface.py:1207
+msgid "View logs."
+msgstr "查看系统日志."
+
+#: mu/interface.py:1213
+msgid "Choose language."
+msgstr "选择界面语言."
+
+#: mu/interface.py:1276
+msgid "Select Mode"
+msgstr "选择模式."
+
+#: mu/interface.py:1278
+msgid ""
+"Please select the desired mode then click \"OK\". Otherwise, click \"Cancel"
+"\"."
+msgstr "选择你需要的模式，单击OK按钮，然后单击Cancel取消按钮。"
+
+#: mu/interface.py:1291
+msgid ""
+"You can change mode at any time by clicking the name of the current mode "
+"shown in the  bottom right-hand corner of Mu."
+msgstr "你可以随时单击右下角模式名称更换编辑器模式。"
+
+#: mu/interface.py:1323
+msgid "Mu Debug Log"
+msgstr "Mu调试模式"
+
+#: mu/interface.py:1326
+msgid ""
+"When reporting a bug, copy and paste the content of the following log file."
+msgstr "当有bug的时候赋值"
+
+#: mu/interface.py:1612
+msgid "File already exists; overwrite it?"
+msgstr "文件已存在，是否覆盖?"
+
+#: mu/interface.py:1613
+msgid "File already exists"
+msgstr "文件已存在"
+
+#: mu/interface.py:1652
+msgid "Delete (cannot be undone)"
+msgstr "删除，不可撤销"
+
+#: mu/interface.py:1721
+msgid "Files on your micro:bit:"
+msgstr "micro:bit上的文件:"
+
+#: mu/interface.py:1723
+msgid "Files on your computer:"
+msgstr "你电脑上的文件:"
+
+#: mu/interface.py:1827
+msgid ""
+"\n"
+"\n"
+"---------- FINISHED ----------\n"
+msgstr ""
+"\n"
+"\n"
+"---------- 完成-----------\n"
+
+#: mu/interface.py:1828
+msgid "exit code: {} status: {}"
+msgstr "退出码: {} STATUS: {}"
+
+#: mu/logic.py:72
+msgid "Hello, World!"
+msgstr "HELLO, WORLD!"
+
+#: mu/logic.py:73
+msgid ""
+"This editor is free software written in Python. You can modify it, add "
+"features or fix bugs if you like."
+msgstr ""
+"这是一个用python编写的开源软件。你可以修改，增加特性或者修复bug如果你愿意的"
+"话。"
+
+#: mu/logic.py:75
+msgid "This editor is called Mu (you say it 'mew' or 'moo')."
+msgstr "这个编辑器的名字是Mu (发音 \"MEW\" OR \"MOO\")."
+
+#: mu/logic.py:76
+msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
+msgstr "GOOGLE, FACEBOOK, NASA PIXAR, DISNEU AND MANY MORE USE PYTHON."
+
+#: mu/logic.py:77
+msgid ""
+"Programming is a form of magic. Learn to cast the right spells with code and "
+"you'll be a wizard."
+msgstr ""
+"PROGRAMMING IS A FORM OF MAGIC. LEARN TO CAST THE RIGHT SPELLS WITH CODE AND "
+"YOU'LL BE A WIZARD."
+
+#: mu/logic.py:79
+msgid ""
+"REPL stands for read, evaluate, print, loop. It's a fun way to talk to your "
+"computer! :-)"
+msgstr ""
+"REPL STANDS FOR READ, EVALUATE, PRINT, LOOP. IT'S A FUN WAY TO TALK TO YOUR "
+"COMPUTER! :-)"
+
+#: mu/logic.py:81
+msgid "Be brave, break things, learn and have fun!"
+msgstr "BE BRAVE, BREAK THINGS, LEARN AND HAVE FUN!"
+
+#: mu/logic.py:82
+msgid "Make your software both useful AND fun. Empower your users."
+msgstr "MAKE YOUR SOFTWARE BOTH USEFUL AND FUN. EMPOWER YOUR USERS."
+
+#: mu/logic.py:83
+msgid "For the Zen of Python: import this"
+msgstr "FOR THE ZEN OF PYTHON: IMPORT THIS"
+
+#: mu/logic.py:84
+msgid "Diversity promotes creativity."
+msgstr "DIVERSITY PROMOTES CREATIVITY."
+
+#: mu/logic.py:85
+msgid "An open mind, spirit of adventure and respect for diversity are key."
+msgstr "AN OPEN MIND, SPIRIT OF ADVENTURE AND RESPECT FOR DIVERSITY ARE KEY."
+
+#: mu/logic.py:86
+msgid ""
+"Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
+msgstr ""
+"DON'T WORRY IF IT DOESN'T WORK. LEARN THE LESSON, FIX IT AND TRY AGAIN! :-)"
+
+#: mu/logic.py:88
+msgid "Coding is collaboration."
+msgstr "CODING IS COLLABORATION."
+
+#: mu/logic.py:89
+msgid "Compliment and amplify the good things with code."
+msgstr "COMPLIMENT AND AMPLIFY THE GOOD THINGS WITH CODE."
+
+#: mu/logic.py:90
+msgid ""
+"In theory, theory and practice are the same. In practice, they're not. ;-)"
+msgstr ""
+"IN THEORY, THEORY AND PRACTICE ARE THE SAME. IN PRACTICE, THEY'RE NOT. ;-)"
+
+#: mu/logic.py:92
+msgid "Debugging is twice as hard as writing the code in the first place."
+msgstr "DEBUGGING IS TWICE AS HARD AS WRITING THE CODE IN THE FIRST PLACE."
+
+#: mu/logic.py:93
+msgid "It's fun to program."
+msgstr "IT'S FUN TO PROGRAM."
+
+#: mu/logic.py:94
+msgid "Programming has more to do with problem solving than writing code."
+msgstr "PROGRAMMING HAS MORE TO DO WITH PROBLEM SOLVING THAN WRITING CODE."
+
+#: mu/logic.py:95
+msgid "Start with your users' needs."
+msgstr "START WITH YOUR USER'S NEEDS."
+
+#: mu/logic.py:96
+msgid "Try to see things from your users' point of view."
+msgstr "TRY TO SEE THINGS FROM YOUR USERS' POINT OF VIEW."
+
+#: mu/logic.py:97
+msgid "Put yourself in your users' shoes."
+msgstr "PUT YOURSELF IN YOUR USERS' SHOES."
+
+#: mu/logic.py:98
+msgid ""
+"Explaining a programming problem to a friend often reveals the solution. :-)"
+msgstr ""
+"EXPLAINING A PROGRAMMING PROBLEM TO A FRIEND OFTEN REVEALS THE SOLUTION. :-)"
+
+#: mu/logic.py:100
+msgid "If you don't know, ask. Nobody to ask? Just look it up."
+msgstr "IF YOU DON'T KNOW, ASK. NOBODY TO ASK? JUST LOOK IT UP!"
+
+#: mu/logic.py:101
+msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
+msgstr "COMPLEXITY IS TH EENEMY. KISS - KEEP IT SIMPLE, STUPID."
+
+#: mu/logic.py:102
+msgid "Beautiful is better than ugly."
+msgstr "BEAUTIFUL IS BETTER THAN UGLY"
+
+#: mu/logic.py:103
+msgid "Explicit is better than implicit."
+msgstr "EXPLICIT IS BETTER THAN IMPLICIT"
+
+#: mu/logic.py:104
+msgid "Simple is better than complex. Complex is better than complicated."
+msgstr "SIMPLE IS BETTER THAN COMPLEX. COMPLEX IS BETTER THAN COMPLICATED."
+
+#: mu/logic.py:105
+msgid "Flat is better than nested."
+msgstr "FLAT IS BETTER THAN NESTED."
+
+#: mu/logic.py:106
+msgid "Sparse is better than dense."
+msgstr "SPARSE IS BETTER THAN DENSE."
+
+#: mu/logic.py:107
+msgid "Readability counts."
+msgstr "READABILITY COUNTS."
+
+#: mu/logic.py:108
+msgid ""
+"Special cases aren't special enough to break the rules. Although "
+"practicality beats purity."
+msgstr ""
+"SPECIAL CASES AREN'T SPECIAL ENOUGH TO BREAK THE RULES. ALTHOUGH "
+"PRACTICALITY BEATS PURITY."
+
+#: mu/logic.py:110
+msgid "Errors should never pass silently. Unless explicitly silenced."
+msgstr "ERRORS SHOULD NEVER PASS SILENTLY. UNLESS EXPLICITLY SILENCED."
+
+#: mu/logic.py:111
+msgid "In the face of ambiguity, refuse the temptation to guess."
+msgstr "IN THE FACE OF AMBIGUITY, REFUSE THE TEMPTATION TO GUESS."
+
+#: mu/logic.py:112
+msgid "There should be one-- and preferably only one --obvious way to do it."
+msgstr "THERE SHOULD BE ONE-- AND PREFERABLY ONLY ONE --OBVIOUS WAY TO DO IT."
+
+#: mu/logic.py:113
+msgid ""
+"Now is better than never. Although never is often better than *right* now."
+msgstr ""
+"NOW IS BETTER THAN NEVER. ALTHOUGH NEVER IS OFTEN BETTER THAN *RIGHT* NOW."
+
+#: mu/logic.py:115
+msgid "If the implementation is hard to explain, it's a bad idea."
+msgstr "IF THE IMPLEMENTATION IS HARD TO EXPLAIN, IT'S A BAD IDEA."
+
+#: mu/logic.py:116
+msgid "If the implementation is easy to explain, it may be a good idea."
+msgstr "IF THE IMPLEMENTATION IS EASY TO EXPLAIN, IT MAY BE A GOOD IDEA."
+
+#: mu/logic.py:117
+msgid "Namespaces are one honking great idea -- let's do more of those!"
+msgstr "NAMESPACES ARE ONE HONKING GREAT IDEA -- LET'S DO MORE OF THOSE!"
+
+#: mu/logic.py:118
+msgid "Mu was created by Nicholas H.Tollervey."
+msgstr "MU WAS CREATED BY NICHOLAS H.TOLLERVEY"
+
+#: mu/logic.py:119
+msgid "To understand what recursion is, you must first understand recursion."
+msgstr "TO UNDERSTAND WHAT RECURSION IS, YOU MUST FIRST UNDERSTAND RECURSION."
+
+#: mu/logic.py:120
+msgid ""
+"Algorithm: a word used by programmers when they don't want to explain what "
+"they did."
+msgstr ""
+"ALGORITHM: A WORD USED BY PROGRAMMERS WHEN THEY DON'T WANT TO EXPLAIN WHAT "
+"THEY DID."
+
+#: mu/logic.py:122
+msgid "Programmers count from zero."
+msgstr "程序员从0开始计数。"
+
+#: mu/logic.py:123
+msgid "Simplicity is the ultimate sophistication."
+msgstr "简洁是终极奥义。"
+
+#: mu/logic.py:124
+msgid "A good programmer is humble."
+msgstr "优秀的程序员是谦逊的 。"
+
+#: mu/logic.py:125
+msgid "A good programmer is playful."
+msgstr "优秀的的程序员一定是喜欢玩儿的有趣的。"
+
+#: mu/logic.py:126
+msgid "A good programmer learns to learn."
+msgstr "优秀的程序员会学习如何学习。"
+
+#: mu/logic.py:127
+msgid "A good programmer thinks beyond the obvious."
+msgstr "优秀的程序员能够透过现象看本质。"
+
+#: mu/logic.py:128
+msgid "A good programmer promotes simplicity."
+msgstr "优秀的程序员会尽力保证代码足够简介。"
+
+#: mu/logic.py:129
+msgid "A good programmer avoids complexity."
+msgstr "优秀的程序员避免把程序写的很复杂。"
+
+#: mu/logic.py:130
+msgid "A good programmer is patient."
+msgstr "优秀的程序员要有耐心。"
+
+#: mu/logic.py:131
+msgid "A good programmer asks questions."
+msgstr "优秀的程序员善于提问。"
+
+#: mu/logic.py:132
+msgid "A good programmer is willing to say, 'I don't know'."
+msgstr "优秀的程序员不怕说我不知道。"
+
+#: mu/logic.py:133
+msgid "Wisest are they that know they know nothing."
+msgstr "WISEST ARE THEY THAT KNOW THEY KNOW NOTHING."
+
+#: mu/logic.py:243
+msgid " above this line"
+msgstr "在这一行上面。"
+
+#: mu/logic.py:288
+msgid ""
+"Syntax error. Python cannot understand this line. Check for missing "
+"characters!"
+msgstr "语法错误，Python无法理解这行代码。请检查是否漏写字符。"
+
+#: mu/logic.py:418
+msgid "# Write your code here :-)"
+msgstr "# 在这里开启你的代码世界 ;-)"
+
+#: mu/logic.py:452
+msgid "The file \"{}\" is already open."
+msgstr "您已经打开文件 {} 。"
+
+#: mu/logic.py:512
+msgid "Saved file: {}"
+msgstr "保存失败: {}"
+
+#: mu/logic.py:515
+msgid "Could not save file."
+msgstr "文件保存失败。"
+
+#: mu/logic.py:516
+msgid ""
+"Error saving file to disk. Ensure you have permission to write the file and "
+"sufficient disk space."
+msgstr "文件保存失败。确保你有文件读写权限和足够的空间。"
+
+#: mu/logic.py:585
+msgid ""
+"There is un-saved work, exiting the application will cause you to lose it."
+msgstr "你有没有保存的代码，如果继续运行将会导致程序丢失。"
+
+#: mu/logic.py:638
+msgid "Changed to {} mode."
+msgstr "切换到 {} 模式。"
+
+#: mu/logic.py:723
+msgid "Connection from a new device detected."
+msgstr "链接到新检测到的硬件。"
+
+#: mu/logic.py:725
+msgid " Please switch to {} mode."
+msgstr "请切换到 { }模式"
+
+#: mu/modes/adafruit.py:29
+msgid "Adafruit CircuitPython"
+msgstr "ADAFRUIT CIRCUITPYTHON"
+
+#: mu/modes/adafruit.py:30
+msgid "Use CircuitPython on Adafruit's line of development boards."
+msgstr "USE CIRCUITPYTHON ON ADAFRUIT'S LINE OF DEVELOPMENT BOARDS."
+
+#: mu/modes/adafruit.py:52 mu/modes/microbit.py:65 mu/modes/python3.py:51
+msgid "REPL"
+msgstr "repl"
+
+#: mu/modes/adafruit.py:53 mu/modes/python3.py:52
+msgid "Use the REPL for live coding."
+msgstr "用REPL进行实时编程。"
+
+#: mu/modes/adafruit.py:118
+msgid "Could not find an attached Adafruit CircuitPython device."
+msgstr "找不到已连接的 ADAFRUIT CIRCUITPYTHON."
+
+#: mu/modes/adafruit.py:120
+msgid ""
+"Python files for Adafruit CircuitPython devices are stored on the device. "
+"Therefore, to edit these files you need to have the device plugged in. Until "
+"you plug in a device, Mu will use the directory found here:\n"
+"\n"
+" {}\n"
+"\n"
+"...to store your code."
+msgstr ""
+"PYTHON FILES FOR ADAFRUITCIRCUITPYTHON DEVICES ARE STORED ON THE DEVICE. "
+"THEREFORE, TO EDIT THESE FILES YOU NEED TO HAVE THE DEVICE PLUGGED IN. UNTIL "
+"YOU PLUG IN A DEVICE, MU WILL USE THE DIRECTORY FOUND HERE:\n"
+"\n"
+"{}\n"
+"\n"
+"...TO STORE YOUR CODE."
+
+#: mu/modes/base.py:166
+msgid ""
+"Click on the device's reset button, wait a few seconds and then try again."
+msgstr "单击Mciro:bit的复位按钮，等几秒后尝试"
+
+#: mu/modes/base.py:172
+msgid "Could not find an attached device."
+msgstr "在你的电脑上找不到已经连接的硬件。"
+
+#: mu/modes/base.py:173
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it "
+"before the REPL will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+"PLEASE MAKE SURE THE DEVICE IS PLUGGED INTO THIS COMPUTER.\n"
+"\n"
+"IT MUST HAVE A VERSION OF MICROPYTHON (OR CIRCUITPYTHON) FLASHED ONTO IT "
+"BEFORE THE REPL WILL WORK\n"
+"\n"
+"FINALLY, PRESS THE DEVICE'S RESET BUTTON AND WAIT A FEW SECONDS BEFORE "
+"TRYING AGAIN."
+
+#: mu/modes/debugger.py:33
+msgid "Graphical Debugger"
+msgstr "图形化调试器。"
+
+#: mu/modes/debugger.py:34
+msgid "Debug your Python 3 code."
+msgstr "停止运行你的Python代码。"
+
+#: mu/modes/debugger.py:48
+msgid "Stop"
+msgstr "停止"
+
+#: mu/modes/debugger.py:49
+msgid "Stop the running code."
+msgstr "停止运行代码。"
+
+#: mu/modes/debugger.py:54
+msgid "Continue"
+msgstr "继续"
+
+#: mu/modes/debugger.py:55
+msgid "Continue to run your Python script."
+msgstr "继续运行Python脚本"
+
+#: mu/modes/debugger.py:60
+msgid "Step Over"
+msgstr "步进调试"
+
+#: mu/modes/debugger.py:61
+msgid "Step over a line of code."
+msgstr "STEP OVER A LINE OF CODE."
+
+#: mu/modes/debugger.py:66
+msgid "Step In"
+msgstr "STEP IN"
+
+#: mu/modes/debugger.py:67
+msgid "Step into a function."
+msgstr "STEP INTO A FUNCTION."
+
+#: mu/modes/debugger.py:72
+msgid "Step Out"
+msgstr "STEP OUT"
+
+#: mu/modes/debugger.py:73
+msgid "Step out of a function."
+msgstr "步出调试一个函数"
+
+#: mu/modes/debugger.py:110
+msgid "Running script {}"
+msgstr "运行脚本: {}"
+
+#: mu/modes/debugger.py:149
+msgid "Your script has finished running."
+msgstr "你的脚本运行结束"
+
+#: mu/modes/debugger.py:270
+msgid "Debugger info: {}"
+msgstr "调试信息: {}"
+
+#: mu/modes/debugger.py:276
+msgid "Debugger warning: {}"
+msgstr "调试警告: {}"
+
+#: mu/modes/debugger.py:283
+msgid "Debugger error: {}"
+msgstr "调试错误: {}"
+
+#: mu/modes/microbit.py:34
+msgid "BBC micro:bit"
+msgstr "BBC MICRO:BIT硬件"
+
+#: mu/modes/microbit.py:35
+msgid "Write MicroPython for the BBC micro:bit."
+msgstr "把MicroPython固件下载到MICRO:BIT"
+
+#: mu/modes/microbit.py:53
+msgid "Flash"
+msgstr "刷入"
+
+#: mu/modes/microbit.py:54
+msgid "Flash your code onto the micro:bit."
+msgstr "把你程序下载到MICRO:BIT"
+
+#: mu/modes/microbit.py:59
+msgid "Files"
+msgstr "文件"
+
+#: mu/modes/microbit.py:60
+msgid "Access the file system on the micro:bit."
+msgstr "访问MICRO:BIT上的文件系统"
+
+#: mu/modes/microbit.py:66
+msgid "Use the REPL to live-code on the micro:bit."
+msgstr "用REPL对Micro:bit实时编程"
+
+#: mu/modes/microbit.py:94
+msgid "Unable to flash \"{}\""
+msgstr "无法写入固件 \"{}\""
+
+#: mu/modes/microbit.py:95
+msgid "Your script is too long!"
+msgstr "你的脚本代码太多了"
+
+#: mu/modes/microbit.py:122
+msgid "Flashing \"{}\" onto the micro:bit."
+msgstr "下载程序 \"{}\"到microbit"
+
+#: mu/modes/microbit.py:124
+msgid " Runtime: {}"
+msgstr "RUNTIME: {}"
+
+#: mu/modes/microbit.py:133 mu/modes/microbit.py:187
+msgid "Could not find an attached BBC micro:bit."
+msgstr "没有在你的电脑上找到已连接的Micro:bit硬件。"
+
+#: mu/modes/microbit.py:134
+msgid ""
+"Please ensure you leave enough time for the BBC micro:bit to be attached and "
+"configured correctly by your computer. This may take several seconds. "
+"Alternatively, try removing and re-attaching the device or saving your work "
+"and restarting Mu if the device remains unfound."
+msgstr ""
+"PLEASE ENSURE YOU LEAVE ENOUGH TIME FOR THE BBC MICRO:BIT TO BE ATTACHED AND "
+"CONFIGURED CORRECTLY BY YOUR COMPUTER. THIS MAY TAKE SEVERAL SECONDS. "
+"ALTERNATIVELY, TRY REMOVING AND RE-ATTACHING THE DEVICE OR SAVING YOUR WORK "
+"AND RESTARTING MU IF THE DEVICE REMAINS UNFOUND.请给电脑侦测，链接和正确配置"
+"micro:bit留下足够的时间，这可能要花费几秒左右的时间。如果还是没有找到硬件，把"
+"USB数据线拔出然后重新链接micro:bit到计算机并且保存你的程序并且重启Micro:bit。"
+
+#: mu/modes/microbit.py:150
+msgid "REPL and file system cannot work at the same time."
+msgstr "文件系统和REPL不能同时工作。"
+
+#: mu/modes/microbit.py:151
+msgid ""
+"The REPL and file system both use the same USB serial connection. Only one "
+"can be active at any time. Toggle the file system off and try again."
+msgstr ""
+"硬件的文件系统和REPL共用一个串口，所以文件系统和REPL同一时刻只有一个能用，关"
+"闭文件系统重新尝试REPL。"
+
+#: mu/modes/microbit.py:170
+msgid "File system and REPL cannot work at the same time."
+msgstr "文件系统和REPL不能同时工作。"
+
+#: mu/modes/microbit.py:171
+msgid ""
+"The file system and REPL both use the same USB serial connection. Only one "
+"can be active at any time. Toggle the REPL off and try again."
+msgstr ""
+"硬件的文件系统和REPL共用一个串口，所以文件系统和REPL同一时刻只有一个能用，关"
+"闭REPL重新尝试文件系统。"
+
+#: mu/modes/microbit.py:188
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"The device must have MicroPython flashed onto it before the file system will "
+"work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+"确保硬件已经链接到电脑.\n"
+"\n"
+"在读取文件系统之前，必须给硬件刷入micropython固件.\n"
+"\n"
+"最后，按一下硬件上的reset按钮，重试之前等几秒."
+
+#: mu/modes/python3.py:31
+msgid "Python 3"
+msgstr "PYTHON 3"
+
+#: mu/modes/python3.py:32
+msgid "Create code using standard Python 3."
+msgstr "用标准Python3创建脚本"
+
+#: mu/modes/python3.py:45
+msgid "Run"
+msgstr "运行"
+
+#: mu/modes/python3.py:46
+msgid "Run and debug your Python script."
+msgstr "运行并调试你的脚本."
