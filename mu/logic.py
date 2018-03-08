@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import os.path
 import sys
+import codecs
 import io
 import re
 import json
@@ -132,19 +133,87 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Wisest are they that know they know nothing."),
 ]
 
+#
+# We write all files as UTF-8 with a PEP 263 encoding cookie
+# We also detect an encoding cookie in an inbound file
+#
+ENCODING = "utf-8"
+ENCODING_COOKIE_RE = re.compile("^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
+ENCODING_COOKIE = ("# -*- coding: %s-*- # Encoding cookie added by Mu Editor" % ENCODING) + os.linesep
+
 
 logger = logging.getLogger(__name__)
 
 
-def write_and_flush(fd, content):
+def write_and_flush(fileobj, content):
     """
-    Writes content to the fd, then flushes and fsyncs to ensure the data is, in
-    fact, written.
+    Writes content to the fileobj, then flushes and fsyncs to ensure the data is,
+    in fact, written.
     """
-    fd.write(content)
-    fd.flush()
-    os.fsync(fd)
+    fileobj.write(content)
+    fileobj.flush()
+    #
+    # Theoretically this shouldn't work; fsync takes a file descriptor,
+    # not a file object. However, there's obviously some under-the-cover
+    # mechanism which converts one to the other (at least on Windows)
+    #
+    os.fsync(fileobj)
 
+
+def save_and_encode(text, filepath):
+    #
+    # Strip any existing encoding cookie and replace by a Mu-generated
+    # UTF-8 cookie
+    #
+    lines = text.splitlines()
+    if ENCODING_COOKIE_RE.match(lines[0]):
+        lines[0] = cookie
+    else:
+        lines.insert(0, ENCODING_COOKIE)
+
+    with open(filepath, "w", encoding=ENCODING, newline='') as f:
+        write_and_flush(f, os.linesep.join(lines))
+
+
+def determine_encoding(filepath):
+    """Determine the encoding of a file:
+
+    * If there is a BOM, return the appropriate encoding
+    * If there is a PEP 263 encoding cookie, return the appropriate encoding
+    * Otherwise return the locale default encoding
+    """
+    boms = [
+        (codecs.BOM_UTF8, "utf-8-sig"),
+        (codecs.BOM_UTF16_BE, "utf-16"),
+        (codecs.BOM_UTF16_LE, "utf-16"),
+    ]
+    #
+    # Try for a BOM
+    #
+    with open(filepath, "rb") as f:
+        line = f.readline()
+    for bom, encoding in boms:
+        if line.startswith(bom):
+            return encoding
+
+    #
+    # Look for a PEP 263 encoding cookie
+    #
+    default_encoding = locale.getpreferredencoding()
+    uline = line.decode(default_encoding)
+    match = ENCODING_COOKIE_RE.match(uline)
+    if match:
+        return match.group(1)
+
+    #
+    # Fall back to the locale default
+    #
+    return default_encoding
+
+def read_and_decode(filepath):
+    encoding = determine_encoding(filepath)
+    with open(filepath, encoding=encoding, newline='') as f:
+        return f.read()
 
 def get_settings_path():
     """
@@ -482,8 +551,20 @@ class Editor:
             if path.endswith('.py'):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
-                with open(path, newline='') as f:
-                    text = f.read()
+                try:
+                    text = read_and_decode(path)
+                except UnicodeDecodeError as exc:
+                    message = _("Mu cannot read the characters in {}")
+                    information = _("Mu is unable to read some of the characters in the file.\n\n"
+
+                    "This is because it contains some non-English characters which\n"
+                    "Mu expects to be encoded as UTF-8, but which are encoded in\n"
+                    "some other way. [FIXME!] Please try again later...\n"
+                    )
+                    self._view.show_message(message.format(path), information)
+                    return
+                if not ENCODING_COOKIE_RE.match(text):
+                    text = ENCODING_COOKIE + os.linesep + text
                 name = path
             else:
                 # Open the hex, extract the Python script therein and set the
@@ -511,6 +592,21 @@ class Editor:
         """ for loading files passed from command line or the OS launch"""
         self._load(path)
 
+    def save_tab_to_file(self, tab):
+        try:
+            logger.info('Saving script to: {}'.format(tab.path))
+            logger.debug(tab.text())
+            save_and_encode(tab.text(), tab.path)
+            tab.setModified(False)
+            self.show_status_message(_("Saved file: {}").format(tab.path))
+        except OSError as e:
+            logger.error(e)
+            message = _('Could not save file.')
+            information = _("Error saving file to disk. Ensure you have "
+                            "permission to write the file and "
+                            "sufficient disk space.")
+            self._view.show_message(message, information)
+
     def save(self):
         """
         Save the content of the currently active editor tab.
@@ -528,20 +624,7 @@ class Editor:
             if os.path.splitext(os.path.basename(tab.path))[1] == '':
                 # the user didnt specify an extension, default to .py
                 tab.path += '.py'
-            try:
-                with open(tab.path, 'w', newline='') as f:
-                    logger.info('Saving script to: {}'.format(tab.path))
-                    logger.debug(tab.text())
-                    write_and_flush(f, tab.text())
-                tab.setModified(False)
-                self.show_status_message(_("Saved file: {}").format(tab.path))
-            except OSError as e:
-                logger.error(e)
-                message = _('Could not save file.')
-                information = _("Error saving file to disk. Ensure you have "
-                                "permission to write the file and "
-                                "sufficient disk space.")
-                self._view.show_message(message, information)
+            self.save_tab_to_file(tab)
         else:
             # The user cancelled the filename selection.
             tab.path = None
@@ -732,11 +815,7 @@ class Editor:
             logger.info('Autosave has detected changes.')
             for tab in self._view.widgets:
                 if tab.path and tab.isModified():
-                    with open(tab.path, 'w', newline='') as f:
-                        logger.info('Saving script to: {}'.format(tab.path))
-                        logger.debug(tab.text())
-                        write_and_flush(f, tab.text())
-                    tab.setModified(False)
+                    self.save_tab_to_file(tab)
 
     def check_usb(self):
         """
