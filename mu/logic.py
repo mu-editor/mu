@@ -241,7 +241,6 @@ def sniff_newline_convention(text):
         instances = re.findall(pattern, text)
         conventions_found.append((len(instances), candidate == os.linesep, candidate))
     majority_convention = max(conventions_found)
-    print("Majority:", majority_convention)
     return majority_convention[-1]
 
 

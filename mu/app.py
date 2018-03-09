@@ -19,24 +19,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import locale
-import os.path
-import gettext
-
-
-# Configure locale and language
-# Define where the translation assets are to be found.
-localedir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'locale'))
-# Use the operating system's locale.
-current_locale, encoding = locale.getdefaultlocale()
-# Get the language code.
-language_code = current_locale[:2]
-# DEBUG/TRANSLATE: override the language code here (e.g. to Chinese).
-# language_code = 'zh'
-gettext.translation('mu', localedir=localedir,
-                    languages=[language_code], fallback=True).install()
-
-
 import os
 import sys
 import platform
