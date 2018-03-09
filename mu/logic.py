@@ -142,7 +142,6 @@ ENCODING = "utf-8"
 ENCODING_COOKIE_RE = re.compile("^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
 ENCODING_COOKIE = ("# -*- coding: %s-*- # Encoding cookie added by Mu Editor" % ENCODING) + os.linesep
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -161,22 +160,22 @@ def write_and_flush(fileobj, content):
     os.fsync(fileobj)
 
 
-def save_and_encode(text, filepath):
+def save_and_encode(text, filepath, newline=os.linesep):
     #
     # Strip any existing encoding cookie and replace by a Mu-generated
     # UTF-8 cookie
     #
     lines = text.splitlines()
     if ENCODING_COOKIE_RE.match(lines[0]):
-        lines[0] = cookie
+        lines[0] = ENCODING_COOKIE
     else:
         lines.insert(0, ENCODING_COOKIE)
 
     with open(filepath, "w", encoding=ENCODING, newline='') as f:
-        write_and_flush(f, os.linesep.join(lines))
+        write_and_flush(f, newline.join(lines))
 
 
-def determine_encoding(filepath):
+def sniff_encoding(filepath):
     """Determine the encoding of a file:
 
     * If there is a BOM, return the appropriate encoding
@@ -211,31 +210,53 @@ def determine_encoding(filepath):
     #
     return default_encoding
 
-def note_majority_newline(text):
+
+def sniff_newline_convention(text):
     """Determine which line-ending convention predominates in the text.
 
     Windows usually has U+000D U+000A
     Posix usually has U+000A
     But editors can produce either convention from either platform. And
     a file which has been copied and edited around might even have both!
+
+    TODO:
+    * Test empty file --> os.linesep
+    * Test only \r\n --> \r\n
+    * Test only \n --> \n
+    * Test majority \r\n --> \r\n
+    * Test majority \n --> \n
+    * Test equal --> os.linesep
     """
-    conventions = ["\r\n", "[^\r]\n"]
+    candidates = [
+        ("\r\n", "\r\n"),
+        ("\n", "[^\r]\n")
+    ]
     #
     # If no lines are present, default to the platform newline
     # If there's a tie, use the platform default
     #
     conventions_found = [(0, 1, os.linesep)]
-    for convention in conventions:
-        instances = re.findall(convention, text)
-        conventions_found.append((len(instances), instances[0] == os.linesep, instances[0]))
-    majority_convention = max(conventions)
+    for candidate, pattern in candidates:
+        instances = re.findall(pattern, text)
+        conventions_found.append((len(instances), candidate == os.linesep, candidate))
+    majority_convention = max(conventions_found)
     print("Majority:", majority_convention)
     return majority_convention[-1]
 
+
 def read_and_decode(filepath):
-    encoding = determine_encoding(filepath)
+    encoding = sniff_encoding(filepath)
     with open(filepath, encoding=encoding, newline='') as f:
-        return f.read()
+        text = f.read()
+        #
+        # Sniff and convert newlines here so that, by the time
+        # the text reaches the editor it is ready to use. Then
+        # convert everything to the Mu internal newline character
+        #
+        newline = sniff_newline_convention(text)
+        text = re.sub("\r\n", "\n", text)
+        return text, newline
+
 
 def get_settings_path():
     """
@@ -574,7 +595,7 @@ class Editor:
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
                 try:
-                    text = read_and_decode(path)
+                    text, newline = read_and_decode(path)
                 except UnicodeDecodeError as exc:
                     message = _("Mu cannot read the characters in {}")
                     information = _("Mu is unable to read some of the characters in the file.\n\n"
@@ -585,8 +606,9 @@ class Editor:
                     )
                     self._view.show_message(message.format(path), information)
                     return
+
                 if not ENCODING_COOKIE_RE.match(text):
-                    text = ENCODING_COOKIE + os.linesep + text
+                    text = ENCODING_COOKIE + "\n" + text
                 name = path
             else:
                 # Open the hex, extract the Python script therein and set the
@@ -594,12 +616,13 @@ class Editor:
                 # the recovered script.
                 with open(path, newline='') as f:
                     text = uflash.extract_script(f.read())
+                    newline = sniff_newline_convention(text)
                 name = None
         except (PermissionError, FileNotFoundError):
             logger.warning('could not load {}'.format(path))
         else:
             logger.debug(text)
-            self._view.add_tab(name, text, self.modes[self.mode].api())
+            tab = self._view.add_tab(name, text, self.modes[self.mode].api(), newline)
 
     def load(self):
         """
@@ -618,7 +641,7 @@ class Editor:
         try:
             logger.info('Saving script to: {}'.format(tab.path))
             logger.debug(tab.text())
-            save_and_encode(tab.text(), tab.path)
+            save_and_encode(tab.text(), tab.path, tab.newline)
             tab.setModified(False)
             self.show_status_message(_("Saved file: {}").format(tab.path))
         except OSError as e:
