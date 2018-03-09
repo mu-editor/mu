@@ -19,6 +19,24 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import locale
+import os.path
+import gettext
+
+
+# Configure locale and language
+# Define where the translation assets are to be found.
+localedir = os.path.join('mu', 'locale')
+# Use the operating system's locale.
+current_locale, encoding = locale.getdefaultlocale()
+# Get the language code.
+language_code = current_locale[:2]
+# DEBUG/TRANSLATE: override the language code here (e.g. to Spanish).
+# language_code = 'es'
+gettext.translation('mu', localedir=localedir,
+                    languages=[language_code], fallback=True).install()
+
+
 import os
 import sys
 import platform
@@ -34,6 +52,7 @@ from mu.resources import load_pixmap
 from mu.modes import (PythonMode, AdafruitMode, MicrobitMode, DebugMode,
                       PyGameZeroMode)
 from mu.debugger.runner import run as run_debugger
+
 
 def setup_logging():
     """
