@@ -4,7 +4,7 @@ import os
 
 # Configure locale and language
 # Define where the translation assets are to be found.
-localedir = os.path.join('mu', 'locale')
+localedir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'locale'))
 # Use the operating system's locale.
 current_locale, encoding = locale.getdefaultlocale()
 # Get the language code.
