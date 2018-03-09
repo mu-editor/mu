@@ -30,8 +30,7 @@ class AdafruitMode(MicroPythonMode):
     """
 
     name = _('Adafruit CircuitPython')
-    description = _("Use CircuitPython on Adafruit's line of development "
-                    "boards.")
+    description = _("Use CircuitPython on Adafruit's line of boards.")
     icon = 'adafruit'
     save_timeout = 0  #: Don't autosave on Adafruit boards. Casues a restart.
     connected = True  #: is the Adafruit board connected.

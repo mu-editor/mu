@@ -23,6 +23,7 @@ import platform
 import logging
 import signal
 import string
+import bisect
 import os.path
 from PyQt5.QtCore import Qt, QProcess, QProcessEnvironment, pyqtSignal, QTimer
 from collections import deque
@@ -979,6 +980,10 @@ class PlotterPane(QChartView):
         # with).
         self.series = [QLineSeries(), ]
 
+        # Ranges used for the Y axis (up to 1000, after which we just double
+        # the range).
+        self.y_ranges = [1, 5, 10, 25, 50, 100, 250, 500, 1000]
+
         # Set up the chart with sensible defaults.
         self.chart = QChart()
         self.chart.legend().hide()
@@ -1072,12 +1077,20 @@ class PlotterPane(QChartView):
 
         # Re-scale y-axis.
         max_y_range = max(max_ranges)
-        if max_y_range > self.max_y:
+        y_range = bisect.bisect_left(self.y_ranges, max_y_range)
+        if y_range < len(self.y_ranges):
+            self.max_y = self.y_ranges[y_range]
+        elif max_y_range > self.max_y:
             self.max_y += self.max_y
-            self.axis_y.setRange(-self.max_y, self.max_y)
         elif max_y_range < self.max_y / 2:
             self.max_y = self.max_y / 2
-            self.axis_y.setRange(-self.max_y, self.max_y)
+        self.axis_y.setRange(-self.max_y, self.max_y)
+
+        # Ensure floats are used to label y axis if the range is small.
+        if self.max_y <= 5:
+            self.axis_y.setLabelFormat("%2.2f")
+        else:
+            self.axis_y.setLabelFormat("%d")
 
         # Update the line series with the data.
         for i, line_series in enumerate(self.series):

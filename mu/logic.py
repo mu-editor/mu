@@ -32,6 +32,7 @@ import webbrowser
 import random
 import locale
 import shutil
+import appdirs
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 # Currently there is no pycodestyle deb packages, so fallback to old name
@@ -39,7 +40,7 @@ try:  # pragma: no cover
     from pycodestyle import StyleGuide, Checker
 except ImportError:  # pragma: no cover
     from pep8 import StyleGuide, Checker
-from mu.contrib import appdirs, uflash
+from mu.contrib import uflash
 from mu.resources import path
 from mu import __version__
 
@@ -666,8 +667,8 @@ class Editor:
             tab.path = self._view.get_save_path(workspace)
         if tab.path:
             # The user specified a path to a file.
-            if os.path.splitext(os.path.basename(tab.path))[1] == '':
-                # the user didnt specify an extension, default to .py
+            if os.path.splitext(tab.path)[1] == '':
+                # the user didn't specify an extension, default to .py
                 tab.path += '.py'
             self.save_tab_to_file(tab)
         else:

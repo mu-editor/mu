@@ -32,10 +32,17 @@ Feedback may be given for contributions and, where necessary, changes will
 be politely requested and discussed with the originating author. Respectful
 yet robust argument is most welcome.
 
-Finally, contributions are subject to the following caveat: the contribution
-was created by the contributor who, by submitting the contribution, is
-confirming that they have the authority to submit the contribution and place it
-under the license as defined in the LICENSE file found within this repository.
+.. warning::
+
+    **Contributions are subject to the following caveats**: the contribution
+    was created by the contributor who, by submitting the contribution, is
+    confirming that they have the authority to submit the contribution and
+    place it under the license as defined in the LICENSE file found within
+    this repository (see :doc:`license`). If this is a significant contribution
+    the contributor should add themselves to the AUTHORS file found in the
+    root of Mu's repository, otherwise they agree, for the sake of convenience,
+    that copyright passes exclusively to Nicholas H.Tollervey on behalf of the
+    Mu project.
 
 Checklist
 +++++++++

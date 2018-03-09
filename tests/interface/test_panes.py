@@ -1845,13 +1845,45 @@ def test_PlotterPane_add_data_re_scale_down():
     ensure the range is halved.
     """
     pp = mu.interface.panes.PlotterPane()
-    pp.max_y = 2000
+    pp.max_y = 4000
+    pp.axis_y = mock.MagicMock()
+    mock_line_series = mock.MagicMock()
+    pp.series = [mock_line_series, ]
+    pp.add_data((1999, ))
+    assert pp.max_y == 2000
+    pp.axis_y.setRange.assert_called_once_with(-2000, 2000)
+
+
+def test_PlotterPane_set_label_format_to_float_when_range_small():
+    """
+    If the max_y is 5 or less, make sure the label format is set to being a
+    float with two decimal places.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.max_y = 10
     pp.axis_y = mock.MagicMock()
     mock_line_series = mock.MagicMock()
     pp.series = [mock_line_series, ]
     pp.add_data((1, ))
-    assert pp.max_y == 1000
-    pp.axis_y.setRange.assert_called_once_with(-1000, 1000)
+    assert pp.max_y == 1
+    pp.axis_y.setRange.assert_called_once_with(-1, 1)
+    pp.axis_y.setLabelFormat.assert_called_once_with("%2.2f")
+
+
+def test_PlotterPane_set_label_format_to_int_when_range_large():
+    """
+    If the max_y is 5 or less, make sure the label format is set to being a
+    float with two decimal places.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.max_y = 5
+    pp.axis_y = mock.MagicMock()
+    mock_line_series = mock.MagicMock()
+    pp.series = [mock_line_series, ]
+    pp.add_data((10, ))
+    assert pp.max_y == 10
+    pp.axis_y.setRange.assert_called_once_with(-10, 10)
+    pp.axis_y.setLabelFormat.assert_called_once_with("%d")
 
 
 def test_PlotterPane_set_theme():
