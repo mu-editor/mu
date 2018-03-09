@@ -21,6 +21,7 @@ import os
 import os.path
 import sys
 import codecs
+import gettext
 import io
 import re
 import json
@@ -209,6 +210,27 @@ def determine_encoding(filepath):
     # Fall back to the locale default
     #
     return default_encoding
+
+def note_majority_newline(text):
+    """Determine which line-ending convention predominates in the text.
+
+    Windows usually has U+000D U+000A
+    Posix usually has U+000A
+    But editors can produce either convention from either platform. And
+    a file which has been copied and edited around might even have both!
+    """
+    conventions = ["\r\n", "[^\r]\n"]
+    #
+    # If no lines are present, default to the platform newline
+    # If there's a tie, use the platform default
+    #
+    conventions_found = [(0, 1, os.linesep)]
+    for convention in conventions:
+        instances = re.findall(convention, text)
+        conventions_found.append((len(instances), instances[0] == os.linesep, instances[0]))
+    majority_convention = max(conventions)
+    print("Majority:", majority_convention)
+    return majority_convention[-1]
 
 def read_and_decode(filepath):
     encoding = determine_encoding(filepath)
