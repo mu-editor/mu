@@ -254,8 +254,8 @@ class MicrobitMode(MicroPythonMode):
                         mangled.write(' \\\n')
 
                 # If this is a docstring comment
-                if t == token.STRING and \
-                   (last_tok == token.INDENT or last_tok == token.NEWLINE):
+                if t == token.STRING and (last_tok == token.INDENT or
+                   last_tok == token.NEWLINE or last_tok == tokenize.NL):
                     # Output number of lines corresponding those in
                     # the docstring comment
                     mangled.write('\n' * (len(text.split('\n')) - 1))
