@@ -284,7 +284,7 @@ class MicrobitMode(MicroPythonMode):
             # Ideally we would move the cursor to the relevent line
             self.view.show_message(message, information, 'Warning')
             # Tell self.flash we can't continue flashing
-            return False
+            return e
 
         # The flashing system expects bytes
         result = mangled.getvalue().encode('utf-8')
@@ -305,7 +305,8 @@ class MicrobitMode(MicroPythonMode):
             # There is no active text editor.
             return
         python_script = self.prepare_script(tab.text())
-        if not python_script:
+        # The script has a syntax error, no point flashing it
+        if type(python_script) is tokenize.TokenError:
             return
         logger.debug('Python script:')
         logger.debug(python_script)
