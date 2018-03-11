@@ -1,23 +1,70 @@
-QStackedWidget, QWidget {
-    background-color: #EEE;
-    color: black;
+QToolBar, QToolButton {
+    background: transparent;
+    margin: 0;
+    border: none;
+    padding: 0;
+}
+
+QToolButton {
+    padding: 4px 2px;
 }
 
 QToolButton:hover {
     background-color: #cccccc;
-    border: #999999;
+}
+
+QStackedWidget, QWidget, QApplication, QDialog, QLabel, QStatusBar, QTabBar {
+    background-color: #EEE;
+    color: black;
 }
 
 QTextEdit {
     background-color: white;
     color: black;
+    border: none;
 }
 
-QToolBar, QToolButton {
-    background: transparent;
+QTabBar {
+    border: none;
+}
+
+QTabBar::tab, QListWidget::item:hover, QListWidget::item:focus {
+    background: #d4d4d4;
+    border: none;
+    padding: 4px 8px;
+    margin: 0;
+}
+
+QTabBar::tab::hover, QListWidget::item::selected  {
+    background: #c4c4c4;
+    border: none;
+    padding: 4px 8px;
+    margin: 0;
+}
+
+QTabBar::tab::selected {
+    background: #9e9e9e;
+    border: none;
+    padding: 4px 8px;
+    margin: 0;
+}
+
+QTabWidget::pane {
+    border: none;
+    border-top: 2px solid #9e9e9e;
+    border-bottom: 2px solid #9e9e9e;
+}
+
+QsciScintilla {
+    border: none;
 }
 
 QListWidget {
     background-color: white;
+    color: black;
+}
+
+QListWidget::item:selected, QListWidget::item:hover, QListWidget::item:focus {
+    padding: 0;
     color: black;
 }
