@@ -239,35 +239,45 @@ class MicrobitMode(MicroPythonMode):
         last_tok = token.INDENT
         last_line = -1
         last_col = 0
+        last_line_text = ''
         try:
             # Build tokens from the script
             tokens = tokenize.tokenize(buff.readline)
-            for t, ttext, (line_s, col_s), (line_e, col_e), ltext in tokens:
-                if line_s > last_line:
+            for t, text, (line_s, col_s), (line_e, col_e), line in tokens:
+                # If this is a new line (except the very first)
+                if line_s > last_line and last_line != -1:
+                    # Reset the column
                     last_col = 0
+                    # If the last line ended in a '\' (continuation)
+                    if last_line_text.rstrip()[-1:] == '\\':
+                        # Recreate it
+                        mangled.write(' \\\n')
+
                 # If this is a docstring comment
                 if t == token.STRING and \
                    (last_tok == token.INDENT or last_tok == token.NEWLINE):
                     # Output number of lines corresponding those in
                     # the docstring comment
-                    for line in range(0, len(ttext.split('\n')) - 1):
-                        mangled.write('\n')
+                    mangled.write('\n' * (len(text.split('\n')) - 1))
                 # Or is it a standard comment
                 elif t == tokenize.COMMENT:
                     # Plain comment, just don't write it
-                    mangled.write('')
+                    pass
                 else:
+                    # Recreate indentation, ideally we should use tabs
                     if col_s > last_col:
                         mangled.write(" " * (col_s - last_col))
                     # This is a bit odd by without it the script seems
                     # to be prefixed with utf-8, making it invalid
-                    if ttext != 'utf-8' and last_line != -1:
-                        mangled.write(ttext)
+                    if text != 'utf-8' and last_line != -1:
+                        mangled.write(text)
+
                 last_tok = t
                 last_col = col_e
                 last_line = line_e
+                last_line_text = line
         except tokenize.TokenError as e:
-        	# Tokenize failed so there is something wrong with the script
+            # Tokenize failed so there is something wrong with the script
             msg, (line, col) = e.args
             message = _('Problem with script:')
             information = _('"{}" [{}:{}]').format(msg, line, col)
@@ -277,7 +287,11 @@ class MicrobitMode(MicroPythonMode):
             return False
 
         # The flashing system expects bytes
-        return mangled.getvalue().encode('utf-8')
+        result = mangled.getvalue().encode('utf-8')
+        saved = len(text_bytes) - len(result)
+        percent = saved / len(text_bytes) * 100
+        logger.info('{} bytes ({:.2f}%) saved'.format(saved, percent))
+        return result
 
     def flash(self):
         """
