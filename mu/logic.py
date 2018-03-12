@@ -147,32 +147,63 @@ def write_and_flush(fd, content):
     os.fsync(fd)
 
 
-def get_settings_path():
+def get_admin_file_path(filename):
     """
-    The settings file default location is the application data directory.
-    However, a settings file in  the same directory than the application itself
-    takes preference.
+    Given an admin related filename, this function will attempt to get the
+    most relevant version of this file (the default location is the application
+    data directory, although a file of the same name in the same directory as
+    the application itself takes preference). If this file isn't found, an
+    empty one is created in the default location.
     """
-    settings_filename = 'settings.json'
     # App location depends on being interpreted by normal Python or bundled
     app_path = sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
     app_dir = os.path.dirname(os.path.abspath(app_path))
     # The os x bundled application is placed 3 levels deep in the .app folder
     if platform.system() == 'Darwin' and getattr(sys, 'frozen', False):
         app_dir = os.path.dirname(os.path.dirname(os.path.dirname(app_dir)))
-    settings_dir = os.path.join(app_dir, settings_filename)
-    if not os.path.exists(settings_dir):
-        settings_dir = os.path.join(DATA_DIR, settings_filename)
-        if not os.path.exists(settings_dir):
+    file_path = os.path.join(app_dir, filename)
+    if not os.path.exists(file_path):
+        file_path = os.path.join(DATA_DIR, filename)
+        if not os.path.exists(file_path):
             try:
-                with open(settings_dir, 'w') as f:
-                    logger.debug('Creating settings file: {}'.format(
-                                 settings_dir))
+                with open(file_path, 'w') as f:
+                    logger.debug('Creating admin file: {}'.format(
+                                 file_path))
                     json.dump({}, f)
             except FileNotFoundError:
-                logger.error('Unable to create settings file: {}'.format(
-                             settings_dir))
-    return settings_dir
+                logger.error('Unable to create admin file: {}'.format(
+                             file_path))
+    return file_path
+
+
+def get_session_path():
+    """
+    The session file stores details about the state of Mu from the user's
+    perspective (tabs open, current mode etc...).
+
+    The session file default location is the application data directory.
+    However, a session file in the same directory as the application itself
+    takes preference.
+
+    If no session file is detected a blank one in the default location is
+    automatically created.
+    """
+    return get_admin_file_path('session.json')
+
+
+def get_settings_path():
+    """
+    The settings file stores details about the configuration of Mu from an
+    administrators' perspective (default workspace etc...).
+
+    The settings file default location is the application data directory.
+    However, a settings file in the same directory as the application itself
+    takes preference.
+
+    If no settings file is detected a blank one in the default location is
+    automatically created.
+    """
+    return get_admin_file_path('settings.json')
 
 
 def check_flake(filename, code, builtins=None):
@@ -365,6 +396,7 @@ class Editor:
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
         logger.info('Settings path: {}'.format(get_settings_path()))
+        logger.info('Session path: {}'.format(get_session_path()))
         logger.info('Log directory: {}'.format(LOG_DIR))
         logger.info('Data directory: {}'.format(DATA_DIR))
 
@@ -404,7 +436,7 @@ class Editor:
         Attempts to recreate the tab state from the last time the editor was
         run.
         """
-        settings_path = get_settings_path()
+        settings_path = get_session_path()
         self.change_mode(self.mode)
         with open(settings_path) as f:
             try:
@@ -650,13 +682,11 @@ class Editor:
             'theme': self.theme,
             'mode': self.mode,
             'paths': paths,
-            'workspace': self.modes[self.mode].workspace_dir(),
-            'microbit_runtime_hex': self.modes['microbit'].get_hex_path()
         }
-        settings_path = get_settings_path()
-        with open(settings_path, 'w') as out:
+        session_path = get_session_path()
+        with open(session_path, 'w') as out:
             logger.debug('Session: {}'.format(session))
-            logger.debug('Saving session to: {}'.format(settings_path))
+            logger.debug('Saving session to: {}'.format(session_path))
             json.dump(session, out, indent=2)
         logger.info('Quitting.\n\n')
         sys.exit(0)
