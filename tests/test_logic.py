@@ -387,7 +387,7 @@ def test_editor_restore_session_missing_files():
     Missing files that were opened tabs in the previous session are safely
     ignored when attempting to restore them.
     """
-    fake_settings = os.path.join(os.path.dirname(__file__), 'settings.json')
+    fake_session = os.path.join(os.path.dirname(__file__), 'session.json')
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
@@ -399,10 +399,10 @@ def test_editor_restore_session_missing_files():
     }
     mock_gettext = mock.MagicMock()
     mock_gettext.return_value = '# Write your code here :-)'
-    get_test_settings_path = mock.MagicMock()
-    get_test_settings_path.return_value = fake_settings
+    get_test_session_path = mock.MagicMock()
+    get_test_session_path.return_value = fake_session
     with mock.patch('os.path.exists', return_value=True), \
-            mock.patch('mu.logic.get_settings_path', get_test_settings_path):
+            mock.patch('mu.logic.get_session_path', get_test_session_path):
         ed.restore_session()
     assert ed._view.add_tab.call_count == 0
 
