@@ -142,14 +142,23 @@ SETTINGS_FILENAME = "settings.json"
 logger = logging.getLogger(__name__)
 
 
-def write_and_flush(fd, content):
+def write_and_flush(fileobj, content):
     """
-    Writes content to the fd, then flushes and fsyncs to ensure the data is, in
-    fact, written.
+    Writes content to the fileobj, then flushes and fsyncs to ensure the data is,
+    in fact, written.
+
+    This is especially necessary for USB-attached devices
     """
-    fd.write(content)
-    fd.flush()
-    os.fsync(fd)
+    fileobj.write(content)
+    fileobj.flush()
+    #
+    # Theoretically this shouldn't work; fsync takes a file descriptor,
+    # not a file object. However, there's obviously some under-the-cover
+    # mechanism which converts one to the other (at least on Windows)
+    #
+    os.fsync(fileobj)
+
+
 
 
 def get_admin_file_path(filename):
