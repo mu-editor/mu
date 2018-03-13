@@ -140,7 +140,7 @@ class FileTabs(QTabWidget):
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.removeTab)
         self.currentChanged.connect(self.change_tab)
-
+        
     def removeTab(self, tab_id):
         """
         Ask the user before closing the file.
@@ -185,6 +185,7 @@ class Window(QMainWindow):
     close_serial = pyqtSignal()
     write_to_serial = pyqtSignal(bytes)
     data_received = pyqtSignal(bytes)
+    open_file = pyqtSignal(str)
 
     def zoom_in(self):
         """
@@ -265,6 +266,11 @@ class Window(QMainWindow):
             modified_tab_index = self.tabs.currentIndex()
             self.tabs.setTabText(modified_tab_index, new_tab.label)
             self.update_title(new_tab.label)
+
+        @new_tab.open_file.connect
+        def on_open_file(file):
+            # Bubble the signal up
+            self.open_file.emit(file)
 
         self.tabs.setCurrentIndex(new_tab_index)
         self.connect_zoom(new_tab)
