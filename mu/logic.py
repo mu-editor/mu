@@ -133,6 +133,11 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Wisest are they that know they know nothing."),
 ]
 
+DEFAULT_MODE = "python"
+THEMES = ["day", "night", "contrast"]
+DEFAULT_THEME = THEMES[0]
+SESSION_FILENAME = "session.json"
+SETTINGS_FILENAME = "settings.json"
 
 logger = logging.getLogger(__name__)
 
@@ -388,8 +393,8 @@ class Editor:
         self._view = view
         self._status_bar = status_bar
         self.fs = None
-        self.theme = 'day'
-        self.mode = 'python'
+        self.theme = DEFAULT_THEME
+        self.mode = DEFAULT_MODE
         self.modes = {}  # See set_modes.
         self.connected_devices = set()
         if not os.path.exists(DATA_DIR):
