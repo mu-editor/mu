@@ -1,12 +1,19 @@
-# Travis can building for Linux (Ubuntu 14.04 x64) and OS X (El Capitan)
+# Travis can building for Linux and macOS
 matrix:
   include:
+    # To maximise compatibility pick earliest image, Ubuntu 14.04.5 x64
     - os: linux
       dist: trusty
       sudo: required
-      language: generic
+      language: python
+      python: 3.5
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: python
+      python: 3.6
 
-    # To maximise compatibility pick earliest image, 10.10 oldest available
+    # To maximise compatibility pick earliest image, OS X 10.10 Yosemite
     - os: osx
       osx_image: xcode6.4
       sudo: required
@@ -16,20 +23,10 @@ before_install:
   # OS and default Python info
   - uname -a
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sw_vers; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then python3 -c "import sys; print(sys.executable)"; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo python3 -c "import sys; print(sys.executable)"; fi
-
-install:
-  # Python 3 and pip 3 installation are OS dependent
+  # Python 3 and pip 3 installation required in macOS
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_linux.sh; fi
-
-  # Install Mu dependencies
-  - sudo pip3 install -r requirements.txt
-
-  # Install packaging dependencies
-  - sudo pip3 install pyinstaller==3.3.1
-
+  # Linux needs to install pip again to have pip3 for the right Python version
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_pip3.sh; fi
   # Check everything was correctly installed
   - echo $PATH
   - python3 --version
@@ -37,13 +34,23 @@ install:
   - python3 -c "import sys; print(sys.executable)"
   - python3 -m pip --version
   - pip3 --version
-  - sudo pip3 --version
+
+install:
+  # Install Mu dependencies
+  - pip3 install -r requirements.txt
+  # Install packaging dependencies
+  - pip3 install pyinstaller==3.3.1
+  # Install helpful pytest plug-in
+  - pip3 install pytest-faulthandler
+  # Check everything was correctly installed
   - pip3 freeze
 
 script:
-  # Run the tests, at the moment there is a segmentation fault on Linux
+  # Run the tests
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make check; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make clean; fi
+  # PyQt crashes without a frame buffer, so Linux needs "X Virtual Framebuffer"
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run make check; fi
+  - make clean
 
   # Package it
   - pyinstaller package/pyinstaller.spec
@@ -66,6 +73,7 @@ deploy:
   on:
     repo: mu-editor/mu
     branch: [master]
+    python: 3.6
 
 notifications:
   email:
