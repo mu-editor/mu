@@ -725,6 +725,7 @@ class Editor:
         # Update buttons.
         self._view.change_mode(self.modes[mode])
         button_bar = self._view.button_bar
+        button_bar.connect('modes', self.select_mode, 'Ctrl+Shift+M')
         button_bar.connect("new", self.new, "Ctrl+N")
         button_bar.connect("load", self.load, "Ctrl+O")
         button_bar.connect("save", self.save, "Ctrl+S")

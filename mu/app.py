@@ -129,7 +129,6 @@ def run():
     editor_window.connect_tab_rename(editor.rename_tab, 'Ctrl+Shift+S')
     status_bar = editor_window.status_bar
     status_bar.connect_logs(editor.show_logs, 'Ctrl+Shift+D')
-    status_bar.connect_mode(editor.select_mode, 'Ctrl+Shift+M')
     # Display a friendly "splash" icon.
     splash = QSplashScreen(load_pixmap('splash-screen'))
     splash.show()

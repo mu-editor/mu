@@ -89,6 +89,11 @@ def test_python_run_toggle_on():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.button_bar.slots = {
+        'debug': mock.MagicMock(),
+        'modes': mock.MagicMock(),
+        'run': mock.MagicMock(),
+    }
     pm = PythonMode(editor, view)
     pm.runner = None
 
@@ -103,6 +108,7 @@ def test_python_run_toggle_on():
     slot.setText.assert_called_once_with('Stop')
     slot.setToolTip.assert_called_once_with('Stop your Python script.')
     pm.view.button_bar.slots['debug'].setEnabled.assert_called_once_with(False)
+    pm.view.button_bar.slots['modes'].setEnabled.assert_called_once_with(False)
 
 
 def test_python_run_toggle_on_cancelled():
@@ -128,6 +134,11 @@ def test_python_run_toggle_off():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.button_bar.slots = {
+        'debug': mock.MagicMock(),
+        'modes': mock.MagicMock(),
+        'run': mock.MagicMock(),
+    }
     pm = PythonMode(editor, view)
     pm.runner = True
     pm.stop_script = mock.MagicMock()
@@ -138,6 +149,7 @@ def test_python_run_toggle_off():
     slot.setText.assert_called_once_with('Run')
     slot.setToolTip.assert_called_once_with('Run your Python script.')
     pm.view.button_bar.slots['debug'].setEnabled.assert_called_once_with(True)
+    pm.view.button_bar.slots['modes'].setEnabled.assert_called_once_with(True)
 
 
 def test_python_run_script():

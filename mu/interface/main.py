@@ -66,6 +66,9 @@ class ButtonBar(QToolBar):
 
     def change_mode(self, mode):
         self.reset()
+        self.addAction(name="modes", display_name=_("Mode"),
+                       tool_text=_("Change Mu's mode of behaviour."))
+        self.addSeparator()
         self.addAction(name="new", display_name=_("New"),
                        tool_text=_("Create a new Python script."))
         self.addAction(name="load", display_name=_("Load"),
@@ -735,7 +738,7 @@ class Window(QMainWindow):
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
         self.read_only_tabs = False
-        self.setMinimumSize(800, 400)
+        self.setMinimumSize(820, 400)
 
         self.widget = QWidget()
 
@@ -841,7 +844,7 @@ class StatusBar(QStatusBar):
         self.mode = mode
         # Mode selector.
         self.mode_label = QLabel()
-        self.mode_label.setToolTip(_("Select edit mode."))
+        self.mode_label.setToolTip(_("Mu's current mode of behaviour."))
         self.addPermanentWidget(self.mode_label)
         self.set_mode(mode)
         # Logs viewer
