@@ -252,7 +252,7 @@ def test_MicroPythonREPLPane_keyPressEvent_CTRL_C_Darwin():
     mock_serial = mock.MagicMock()
     rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
     rp.copy = mock.MagicMock()
-    data = mock.MagicMock
+    data = mock.MagicMock()
     data.key = mock.MagicMock(return_value=Qt.Key_C)
     data.text = mock.MagicMock(return_value='1b')
     data.modifiers.return_value = Qt.ControlModifier | Qt.ShiftModifier

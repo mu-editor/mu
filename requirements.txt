@@ -18,3 +18,4 @@ twine
 pynsist
 pgzero
 appdirs
+pytest-random-order
