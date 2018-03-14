@@ -339,4 +339,3 @@ def test_python_on_kernel_stop():
     view.button_bar.slots['repl'].setEnabled.assert_called_once_with(True)
     editor.show_status_message.assert_called_once_with('REPL stopped.')
     assert pm.kernel_runner is None
-    assert pm.kernel_thread is None

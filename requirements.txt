@@ -19,3 +19,9 @@ pynsist
 pgzero
 appdirs
 pytest-random-order
+gpiozero
+guizero
+pigpio
+Pillow
+requests
+
