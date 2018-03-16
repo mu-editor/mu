@@ -57,19 +57,15 @@ def _walk(
 
 def _check_code(executable, *args):
     for filepath in _walk(".", INCLUDE_PATTERNS, EXCLUDE_PATTERNS, False):
-        print(filepath)
         subprocess.run([executable, filepath] + list(args))
     for filepath in _walk("mu", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
-        print(filepath)
         subprocess.run([executable, filepath] + list(args))
     for filepath in _walk("tests", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
-        print(filepath)
         subprocess.run([executable, filepath] + list(args))
 
 
 def _rmtree(dirpath, cascade_errors=False):
     try:
-        print("Removing directory", dirpath)
         shutil.rmtree(dirpath)
     except OSError:
         if cascade_errors:
@@ -83,7 +79,6 @@ def _rmfiles(start_from, pattern):
     remove all files which match `pattern`, eg *.pyc
     """
     for filepath in _walk(start_from, {pattern}):
-        print("Removing", filepath)
         os.remove(filepath)
 
 
@@ -100,10 +95,12 @@ def export(function):
 def test(*pytest_args):
     """Run the test suite
 
-    Call py.test to run the test suite with additional args
+    Call py.test to run the test suite with additional args.
+    The subprocess runner will raise an exception if py.test exits
+    with a failure value. This forces things to stop if tests fail.
     """
     print("\ntest")
-    return subprocess.run([PYTEST] + list(pytest_args))
+    return subprocess.run([PYTEST] + list(pytest_args), check=True)
 
 
 @export
@@ -180,10 +177,6 @@ def clean():
 @export
 def translate():
     """Translate
-
-    find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils -o -path ./mu/modes/api \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pygettext
-    @echo "\nNew messages.pot file created."
-    @echo "Remember to update the translation strings found in the locale directory."
     """
     raise NotImplementedError
 
@@ -195,9 +188,81 @@ def translateall():
     pygettext = os.path.join(sys.base_prefix, "tools", "i18n", "pygettext.py")
     if not os.path.exists(pygettext):
         raise RuntimeError("Unable to locate pygettext.py in %s" % pygettext)
-    subprocess.run([sys.executable, pygettext, "mu/*", "mu/debugger/*", "mu/modes/*", "mu/resources/*"])
+    subprocess.run([
+        "python", pygettext,
+        "mu/*", "mu/debugger/*", "mu/modes/*", "mu/resources/*"
+    ])
     print("\nNew messages.pot file created.")
-    print("Remember to update the translation strings found in the locale directory.")
+    print("Remember to update the translation strings"
+          "found in the locale directory.")
+
+
+@export
+def run():
+    """Run Mu from within a virtual environment
+    """
+    clean()
+    if not os.environ.get("VIRTUAL_ENV"):
+        raise RuntimeError("Cannot run Mu;"
+                           "your Python virtualenv is not activated")
+    subprocess.run(["python", "-m", "mu"])
+
+
+@export
+def dist():
+    """Generate a source distribution and a binary wheel
+    """
+    check()
+    print("Checks pass; good to package")
+    subprocess.run(["python", "setup.py", "sdist", "bdist_wheel"])
+
+
+@export
+def publish_test():
+    """Upload to a test PyPI
+    """
+    dist()
+    print("Packaging complete; upload to PyPI")
+    subprocess.run(["twine", "upload", "-r", "test", "--sign", "dist/*"])
+
+
+@export
+def publish_live():
+    """Upload to PyPI
+    """
+    dist()
+    print("Packaging complete; upload to PyPI")
+    subprocess.run(["twine", "upload", "--sign", "dist/*"])
+
+
+@export
+def win32():
+    """Build 32-bit Windows installer
+    """
+    check()
+    print("Building 32-bit Windows installer")
+    subprocess.run(["python", "win_installer.py", "32"])
+
+
+@export
+def win64():
+    """Build 64-bit Windows installer
+    """
+    check()
+    print("Building 64-bit Windows installer")
+    subprocess.run(["python", "win_installer.py", "64"])
+
+
+@export
+def docs():
+    """Build the docs
+    """
+    cwd = os.getcwd()
+    os.chdir("docs")
+    try:
+        subprocess.run(["cmd", "/c", "make.bat", "html"])
+    finally:
+        os.chdir(cwd)
 
 
 @export
