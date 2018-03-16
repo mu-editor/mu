@@ -16,7 +16,8 @@ EXCLUDE_PATTERNS = {
     "build/*",
     "docs/*",
     "mu/contrib/*",
-    "mu/resources/api.py",
+    "mu/modes/api/*",
+    "utils/*",
 }
 _exported = {}
 
@@ -57,13 +58,13 @@ def _walk(
 def _check_code(executable, *args):
     for filepath in _walk(".", INCLUDE_PATTERNS, EXCLUDE_PATTERNS, False):
         print(filepath)
-        subprocess.call([executable, filepath] + list(args))
+        subprocess.run([executable, filepath] + list(args))
     for filepath in _walk("mu", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
         print(filepath)
-        subprocess.call([executable, filepath] + list(args))
+        subprocess.run([executable, filepath] + list(args))
     for filepath in _walk("tests", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
         print(filepath)
-        subprocess.call([executable, filepath] + list(args))
+        subprocess.run([executable, filepath] + list(args))
 
 
 def _rmtree(dirpath, cascade_errors=False):
@@ -102,7 +103,7 @@ def test(*pytest_args):
     Call py.test to run the test suite with additional args
     """
     print("\ntest")
-    return subprocess.call([PYTEST] + list(pytest_args))
+    return subprocess.run([PYTEST] + list(pytest_args))
 
 
 @export
@@ -112,7 +113,7 @@ def coverage():
     Call py.test with coverage turned on
     """
     print("\ncoverage")
-    return subprocess.call([
+    return subprocess.run([
         PYTEST,
         "--cov-config",
         ".coveragerc",
@@ -130,6 +131,7 @@ def pyflakes(*pyflakes_args):
     Call pyflakes on all .py files outside the docs and contrib directories
     """
     print("\npyflakes")
+    os.environ["PYFLAKES_BUILTINS"] = "_"
     return _check_code(PYFLAKES, *pyflakes_args)
 
 
@@ -154,6 +156,7 @@ def check():
     """Run all the checkers and tests
     """
     print("\nCheck")
+    clean()
     pyflakes()
     pycodestyle()
     coverage()
