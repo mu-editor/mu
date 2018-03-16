@@ -45,6 +45,18 @@ into a virtual environment with ``pip``::
 
     $ pip install mu-editor
 
+.. note::
+
+    By design, ``pip`` will not create any shortcuts for applications that it
+    installs.
+
+    If you want to add a shortcut for Mu to your desktop/start menu you can
+    use Martin O'Hanlon's amazingly useful
+    `Shortcut tool <https://shortcut.readthedocs.io/en/latest/>`_ like this::
+
+        $ pip install shortcut
+        $ shortcut mu
+
 As per conventions, the ``setup.py`` file contains all the details used by
 ``pip`` to install it. We use `twine <https://github.com/pypa/twine>`_ to push
 releases to PyPI and I (Nicholas - maintainer) simply use a Makefile to
