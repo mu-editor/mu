@@ -176,6 +176,29 @@ def clean():
 
 
 @export
+def translate():
+    """Translate
+
+    find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils -o -path ./mu/modes/api \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pygettext
+    @echo "\nNew messages.pot file created."
+    @echo "Remember to update the translation strings found in the locale directory."
+    """
+    raise NotImplementedError
+
+
+@export
+def translateall():
+    """Translate All The Things
+    """
+    pygettext = os.path.join(sys.base_prefix, "tools", "i18n", "pygettext.py")
+    if not os.path.exists(pygettext):
+        raise RuntimeError("Unable to locate pygettext.py in %s" % pygettext)
+    subprocess.run([sys.executable, pygettext, "mu/*", "mu/debugger/*", "mu/modes/*", "mu/resources/*"])
+    print("\nNew messages.pot file created.")
+    print("Remember to update the translation strings found in the locale directory.")
+
+
+@export
 def help():
     """Display all commands with their description in alphabetical order
     """
