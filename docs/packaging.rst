@@ -136,6 +136,18 @@ explain this process more fully
 (the details of which are described
 `by Mozilla <https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Build_Instructions/Signing_an_executable_with_Authenticode>`_).
 
+Use the ``make`` command to build your own installers::
+
+    $ make win32
+    $ make win64
+
+This will clean the repository before running the ``win_installer.py`` command
+for the requested bitness.
+
+Because Mu depends on the availability of tkinter, part of the build process is
+to download the appropriate tkinter-related resources from
+`Mu's tkinter assets repository <https://github.com/mu-editor/mu_tkinter>`_.
+
 OSX App Installer
 +++++++++++++++++
 
