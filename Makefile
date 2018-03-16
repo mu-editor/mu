@@ -25,6 +25,9 @@ clean:
 	rm -rf .coverage
 	rm -rf docs/_build
 	rm -rf .pytest_cache
+	rm -rf lib
+	rm -rf pynsist_pkgs
+	rm -rf pynsist_tkinter*
 	find . \( -name '*.py[co]' -o -name dropin.cache \) -delete
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
@@ -78,3 +81,11 @@ translateall:
 	pygettext mu/* mu/debugger/* mu/modes/* mu/resources/*
 	@echo "\nNew messages.pot file created."
 	@echo "Remember to update the translation strings found in the locale directory."
+
+win32: check
+	@echo "\nBuilding 32bit Windows installer."
+	python win_installer.py 32
+
+win64: check
+	@echo "\nBuilding 64bit Windows installer."
+	python win_installer.py 64
