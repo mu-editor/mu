@@ -245,4 +245,3 @@ class PythonMode(BaseMode):
             self.view.button_bar.slots['repl'].setEnabled(True)
         self.editor.show_status_message(_("REPL stopped."))
         self.kernel_runner = None
-        self.kernel_thread = None

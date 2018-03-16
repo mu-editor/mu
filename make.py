@@ -172,6 +172,8 @@ def clean():
     _rmtree("mu.egg-info")
     _rmtree("coverage")
     _rmtree("docs/build")
+    _rmtree("lib")
+    _rmtree("pynsist_pkgs")
     _rmfiles(".", "*.pyc")
 
 
