@@ -20,6 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import os.path
 import sys
+import codecs
+import gettext
 import io
 import re
 import json
@@ -133,18 +135,127 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Wisest are they that know they know nothing."),
 ]
 
+#
+# We write all files as UTF-8 with a PEP 263 encoding cookie
+# We also detect an encoding cookie in an inbound file
+#
+ENCODING = "utf-8"
+ENCODING_COOKIE_RE = re.compile("^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
+ENCODING_COOKIE = ("# -*- coding: %s-*- # Encoding cookie added by Mu Editor" % ENCODING) + os.linesep
 
 logger = logging.getLogger(__name__)
 
 
-def write_and_flush(fd, content):
+def write_and_flush(fileobj, content):
     """
-    Writes content to the fd, then flushes and fsyncs to ensure the data is, in
-    fact, written.
+    Writes content to the fileobj, then flushes and fsyncs to ensure the data is,
+    in fact, written.
     """
-    fd.write(content)
-    fd.flush()
-    os.fsync(fd)
+    fileobj.write(content)
+    fileobj.flush()
+    #
+    # Theoretically this shouldn't work; fsync takes a file descriptor,
+    # not a file object. However, there's obviously some under-the-cover
+    # mechanism which converts one to the other (at least on Windows)
+    #
+    os.fsync(fileobj)
+
+
+def save_and_encode(text, filepath, newline=os.linesep):
+    #
+    # Strip any existing encoding cookie and replace by a Mu-generated
+    # UTF-8 cookie
+    #
+    lines = text.splitlines()
+    if ENCODING_COOKIE_RE.match(lines[0]):
+        lines[0] = ENCODING_COOKIE
+    else:
+        lines.insert(0, ENCODING_COOKIE)
+
+    with open(filepath, "w", encoding=ENCODING, newline='') as f:
+        write_and_flush(f, newline.join(lines))
+
+
+def sniff_encoding(filepath):
+    """Determine the encoding of a file:
+
+    * If there is a BOM, return the appropriate encoding
+    * If there is a PEP 263 encoding cookie, return the appropriate encoding
+    * Otherwise return the locale default encoding
+    """
+    boms = [
+        (codecs.BOM_UTF8, "utf-8-sig"),
+        (codecs.BOM_UTF16_BE, "utf-16"),
+        (codecs.BOM_UTF16_LE, "utf-16"),
+    ]
+    #
+    # Try for a BOM
+    #
+    with open(filepath, "rb") as f:
+        line = f.readline()
+    for bom, encoding in boms:
+        if line.startswith(bom):
+            return encoding
+
+    #
+    # Look for a PEP 263 encoding cookie
+    #
+    default_encoding = locale.getpreferredencoding()
+    uline = line.decode(default_encoding)
+    match = ENCODING_COOKIE_RE.match(uline)
+    if match:
+        return match.group(1)
+
+    #
+    # Fall back to the locale default
+    #
+    return default_encoding
+
+
+def sniff_newline_convention(text):
+    """Determine which line-ending convention predominates in the text.
+
+    Windows usually has U+000D U+000A
+    Posix usually has U+000A
+    But editors can produce either convention from either platform. And
+    a file which has been copied and edited around might even have both!
+
+    TODO:
+    * Test empty file --> os.linesep
+    * Test only \r\n --> \r\n
+    * Test only \n --> \n
+    * Test majority \r\n --> \r\n
+    * Test majority \n --> \n
+    * Test equal --> os.linesep
+    """
+    candidates = [
+        ("\r\n", "\r\n"),
+        ("\n", "[^\r]\n")
+    ]
+    #
+    # If no lines are present, default to the platform newline
+    # If there's a tie, use the platform default
+    #
+    conventions_found = [(0, 1, os.linesep)]
+    for candidate, pattern in candidates:
+        instances = re.findall(pattern, text)
+        conventions_found.append((len(instances), candidate == os.linesep, candidate))
+    majority_convention = max(conventions_found)
+    return majority_convention[-1]
+
+
+def read_and_decode(filepath):
+    encoding = sniff_encoding(filepath)
+    with open(filepath, encoding=encoding, newline='') as f:
+        text = f.read()
+        #
+        # Sniff and convert newlines here so that, by the time
+        # the text reaches the editor it is ready to use. Then
+        # convert everything to the Mu internal newline character
+        #
+        newline = sniff_newline_convention(text)
+        text = re.sub("\r\n", "\n", text)
+        return text, newline
 
 
 def get_admin_file_path(filename):
@@ -515,8 +626,21 @@ class Editor:
             if path.endswith('.py'):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
-                with open(path, newline='') as f:
-                    text = f.read()
+                try:
+                    text, newline = read_and_decode(path)
+                except UnicodeDecodeError as exc:
+                    message = _("Mu cannot read the characters in {}")
+                    information = _("Mu is unable to read some of the characters in the file.\n\n"
+
+                    "This is because it contains some non-English characters which\n"
+                    "Mu expects to be encoded as UTF-8, but which are encoded in\n"
+                    "some other way. [FIXME!] Please try again later...\n"
+                    )
+                    self._view.show_message(message.format(path), information)
+                    return
+
+                if not ENCODING_COOKIE_RE.match(text):
+                    text = ENCODING_COOKIE + "\n" + text
                 name = path
             else:
                 # Open the hex, extract the Python script therein and set the
@@ -524,12 +648,13 @@ class Editor:
                 # the recovered script.
                 with open(path, newline='') as f:
                     text = uflash.extract_script(f.read())
+                    newline = sniff_newline_convention(text)
                 name = None
         except (PermissionError, FileNotFoundError):
             logger.warning('could not load {}'.format(path))
         else:
             logger.debug(text)
-            self._view.add_tab(name, text, self.modes[self.mode].api())
+            tab = self._view.add_tab(name, text, self.modes[self.mode].api(), newline)
 
     def load(self):
         """
@@ -543,6 +668,21 @@ class Editor:
     def direct_load(self, path):
         """ for loading files passed from command line or the OS launch"""
         self._load(path)
+
+    def save_tab_to_file(self, tab):
+        try:
+            logger.info('Saving script to: {}'.format(tab.path))
+            logger.debug(tab.text())
+            save_and_encode(tab.text(), tab.path, tab.newline)
+            tab.setModified(False)
+            self.show_status_message(_("Saved file: {}").format(tab.path))
+        except OSError as e:
+            logger.error(e)
+            message = _('Could not save file.')
+            information = _("Error saving file to disk. Ensure you have "
+                            "permission to write the file and "
+                            "sufficient disk space.")
+            self._view.show_message(message, information)
 
     def save(self):
         """
@@ -561,20 +701,7 @@ class Editor:
             if os.path.splitext(tab.path)[1] == '':
                 # the user didn't specify an extension, default to .py
                 tab.path += '.py'
-            try:
-                with open(tab.path, 'w', newline='') as f:
-                    logger.info('Saving script to: {}'.format(tab.path))
-                    logger.debug(tab.text())
-                    write_and_flush(f, tab.text())
-                tab.setModified(False)
-                self.show_status_message(_("Saved file: {}").format(tab.path))
-            except OSError as e:
-                logger.error(e)
-                message = _('Could not save file.')
-                information = _("Error saving file to disk. Ensure you have "
-                                "permission to write the file and "
-                                "sufficient disk space.")
-                self._view.show_message(message, information)
+            self.save_tab_to_file(tab)
         else:
             # The user cancelled the filename selection.
             tab.path = None
@@ -764,11 +891,7 @@ class Editor:
             logger.info('Autosave has detected changes.')
             for tab in self._view.widgets:
                 if tab.path and tab.isModified():
-                    with open(tab.path, 'w', newline='') as f:
-                        logger.info('Saving script to: {}'.format(tab.path))
-                        logger.debug(tab.text())
-                        write_and_flush(f, tab.text())
-                    tab.setModified(False)
+                    self.save_tab_to_file(tab)
 
     def check_usb(self):
         """

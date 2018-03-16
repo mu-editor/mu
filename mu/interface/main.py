@@ -254,14 +254,16 @@ class Window(QMainWindow):
         logger.debug('Getting micro:bit path: {}'.format(path))
         return path
 
-    def add_tab(self, path, text, api):
+    def add_tab(self, path, text, api, newline="\n"):
         """
         Adds a tab with the referenced path and text to the editor.
         """
+
         new_tab = EditorPane(path, text)
         new_tab.connect_margin(self.breakpoint_toggle)
         new_tab_index = self.tabs.addTab(new_tab, new_tab.label)
         new_tab.set_api(api)
+        new_tab.newline = newline
 
         @new_tab.modificationChanged.connect
         def on_modified():
