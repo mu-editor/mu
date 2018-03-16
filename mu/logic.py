@@ -176,7 +176,7 @@ def save_and_encode(text, filepath, newline=os.linesep):
     #
     encoding_cookie = ENCODING_COOKIE.strip()
     lines = text.splitlines()
-    if ENCODING_COOKIE_RE.match(lines[0]):
+    if lines and ENCODING_COOKIE_RE.match(lines[0]):
         lines[0] = encoding_cookie
     else:
         lines.insert(0, encoding_cookie)

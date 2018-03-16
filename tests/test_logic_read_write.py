@@ -114,6 +114,12 @@ def test_write_newline_to_windows():
             #
             assert text.count("\r\n") == 1 + test_string.count("\n")
 
+
+#
+# Generate a Unicode test string which includes all the usual
+# 7-bit characters but also an 8th-bit range which tends to
+# trip things up between encodings
+#
 UNICODE_TEST_STRING = (bytes(range(0x20, 0x80)) + bytes(range(0xa0, 0xff))).decode("iso-8859-1")
 
 #
@@ -149,7 +155,6 @@ def test_read_utf16lebom():
     """
     with support.generate_python_files([""]) as filepaths:
         for filepath in filepaths:
-
             with open(filepath, "wb") as f:
                 f.write(codecs.BOM_UTF16_LE)
                 f.write(UNICODE_TEST_STRING.encode("utf-16-le"))
@@ -177,7 +182,48 @@ def test_read_encoding_default():
                 f.write(UNICODE_TEST_STRING.encode(locale.getpreferredencoding()))
             text, _ = mu.logic.read_and_decode(filepath)
             assert text == UNICODE_TEST_STRING
-#
-# When writing, Mu should use utf-8 and prefix with a PEP 263 encoding cookie
-#
 
+#
+# When writing, Mu should use utf-8 (without a BOM) and ensure the text is
+# prefixed with a PEP 263 encoding cookie
+# If the file already has an encoding cookie it should be replaced by the Mu cookie
+#
+def test_write_utf8():
+    """The text should be saved encoded as utf8
+    """
+    with support.generate_python_files([""]) as filepaths:
+        for filepath in filepaths:
+            mu.logic.save_and_encode(UNICODE_TEST_STRING, filepath)
+            with open(filepath, encoding="utf-8") as f:
+                text = f.read()
+                assert text == mu.logic.ENCODING_COOKIE + UNICODE_TEST_STRING
+
+def test_write_encoding_cookie_no_cookie():
+    """If the text has no cookie of its own the first line of the saved
+    file will be the Mu encoding cookie
+    """
+    test_string = "This is a test"
+    with support.generate_python_files([""]) as filepaths:
+        for filepath in filepaths:
+            mu.logic.save_and_encode(test_string, filepath)
+            with open(filepath, encoding="utf-8") as f:
+                for line in f:
+                    assert line == mu.logic.ENCODING_COOKIE
+                    break
+                else:
+                    assert False, "No cookie found"
+
+def test_write_encoding_cookie_existing_cookie():
+    """If the text has a cookie of its own it will be replaced by the Mu cookie
+    """
+    cookie = mu.logic.ENCODING_COOKIE.replace(mu.logic.ENCODING, "iso-8859-1")
+    test_string = cookie + "This is a test"
+    with support.generate_python_files([""]) as filepaths:
+        for filepath in filepaths:
+            mu.logic.save_and_encode(test_string, filepath)
+            with open(filepath, encoding="utf-8") as f:
+                for line in f:
+                    assert line == mu.logic.ENCODING_COOKIE
+                    break
+                else:
+                    assert False, "No cookie found"
