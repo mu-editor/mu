@@ -87,4 +87,4 @@ deploy:
   set_public: true
   folder: windows
   on:
-    branch: [master, tkinter_build]
+    branch: [master]
