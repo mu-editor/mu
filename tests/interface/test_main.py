@@ -83,8 +83,8 @@ def test_ButtonBar_change_mode():
         mock_reset.reset_mock()
         b.change_mode(mock_mode)
         mock_reset.assert_called_once_with()
-        assert mock_add_action.call_count == 10
-        assert mock_add_separator.call_count == 3
+        assert mock_add_action.call_count == 11
+        assert mock_add_separator.call_count == 4
 
 
 def test_ButtonBar_set_responsive_mode():
@@ -1293,7 +1293,7 @@ def test_Window_setup():
     assert w.setWindowIcon.call_count == 1
     assert isinstance(w.setWindowIcon.call_args[0][0], QIcon)
     w.update_title.assert_called_once_with()
-    w.setMinimumSize.assert_called_once_with(800, 400)
+    w.setMinimumSize.assert_called_once_with(820, 400)
     assert w.widget == mock_widget
     assert w.button_bar == mock_button_bar
     assert w.tabs == mock_qtw
