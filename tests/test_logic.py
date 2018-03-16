@@ -11,7 +11,6 @@ from PyQt5.QtWidgets import QMessageBox
 from unittest import mock
 from mu import __version__
 
-from . import support
 
 SESSION = json.dumps({
     'theme': 'night',

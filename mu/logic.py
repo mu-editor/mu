@@ -133,12 +133,7 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Wisest are they that know they know nothing."),
 ]
 
-DEFAULT_MODE = "python"
-THEMES = ["day", "night", "contrast"]
-DEFAULT_THEME = THEMES[0]
-SESSION_FILENAME = "session.json"
-SETTINGS_FILENAME = "settings.json"
-MU_NEWLINE = "\n"
+NEWLINE = "\n"
 
 #
 # We write all files as UTF-8 with a PEP 263 encoding cookie
@@ -146,7 +141,7 @@ MU_NEWLINE = "\n"
 #
 ENCODING = "utf-8"
 ENCODING_COOKIE_RE = re.compile("^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
-ENCODING_COOKIE = ("# -*- coding: %s-*- # Encoding cookie added by Mu Editor" % ENCODING) + MU_NEWLINE
+ENCODING_COOKIE = ("# -*- coding: %s-*- # Encoding cookie added by Mu Editor" % ENCODING) + NEWLINE
 
 logger = logging.getLogger(__name__)
 
@@ -257,7 +252,7 @@ def read_and_decode(filepath):
         # convert everything to the Mu internal newline character
         #
         newline = sniff_newline_convention(text)
-        text = re.sub("\r\n", MU_NEWLINE, text)
+        text = re.sub("\r\n", NEWLINE, text)
         return text, newline
 
 
@@ -502,8 +497,8 @@ class Editor:
         self._view = view
         self._status_bar = status_bar
         self.fs = None
-        self.theme = DEFAULT_THEME
-        self.mode = DEFAULT_MODE
+        self.theme = 'day'
+        self.mode = 'python'
         self.modes = {}  # See set_modes.
         self.connected_devices = set()
         if not os.path.exists(DATA_DIR):

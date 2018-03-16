@@ -28,8 +28,8 @@ def generate_python_files(contents, dirpath=None):
 
 @contextlib.contextmanager
 def generate_session(
-    theme=mu.logic.DEFAULT_THEME,
-    mode=mu.logic.DEFAULT_MODE,
+    theme="day",
+    mode="python",
     n_paths=0,
     filepath=None,
     **kwargs
@@ -74,7 +74,7 @@ def generate_session(
     session_data.update(**kwargs)
 
     if filepath is None:
-        filepath = os.path.join(dirpath, mu.logic.SESSION_FILENAME)
+        filepath = os.path.join(dirpath, "session.json")
     if session_data:
         with open(filepath, "w") as f:
             f.write(json.dumps(session_data))
