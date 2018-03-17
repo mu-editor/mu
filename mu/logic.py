@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import os.path
 import sys
+import codecs
 import io
 import re
 import json
@@ -133,18 +133,130 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Wisest are they that know they know nothing."),
 ]
 
+NEWLINE = "\n"
+
+#
+# We write all files as UTF-8 with a PEP 263 encoding cookie
+# We also detect an encoding cookie in an inbound file
+#
+ENCODING = "utf-8"
+ENCODING_COOKIE_RE = re.compile(
+    "^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
+ENCODING_COOKIE = "# -*- coding: %s-*-" \
+    "# Encoding cookie added by Mu Editor" % ENCODING + NEWLINE
 
 logger = logging.getLogger(__name__)
 
 
-def write_and_flush(fd, content):
+def write_and_flush(fileobj, content):
     """
-    Writes content to the fd, then flushes and fsyncs to ensure the data is, in
-    fact, written.
+    Write content to the fileobj then flush and fsync to ensure the data is,
+    in fact, written.
+
+    This is especially necessary for USB-attached devices
     """
-    fd.write(content)
-    fd.flush()
-    os.fsync(fd)
+    fileobj.write(content)
+    fileobj.flush()
+    #
+    # Theoretically this shouldn't work; fsync takes a file descriptor,
+    # not a file object. However, there's obviously some under-the-cover
+    # mechanism which converts one to the other (at least on Windows)
+    #
+    os.fsync(fileobj)
+
+
+def save_and_encode(text, filepath, newline=os.linesep):
+    #
+    # Strip any existing encoding cookie and replace by a Mu-generated
+    # UTF-8 cookie. We need to strip any existing line-endings off the
+    # encoding cookie so we don't double up.
+    #
+    encoding_cookie = ENCODING_COOKIE.strip()
+    lines = text.splitlines()
+    if lines and ENCODING_COOKIE_RE.match(lines[0]):
+        lines[0] = encoding_cookie
+    else:
+        lines.insert(0, encoding_cookie)
+
+    with open(filepath, "w", encoding=ENCODING, newline='') as f:
+        write_and_flush(f, newline.join(lines))
+
+
+def sniff_encoding(filepath):
+    """Determine the encoding of a file:
+
+    * If there is a BOM, return the appropriate encoding
+    * If there is a PEP 263 encoding cookie, return the appropriate encoding
+    * Otherwise return the locale default encoding
+    """
+    boms = [
+        (codecs.BOM_UTF8, "utf-8-sig"),
+        (codecs.BOM_UTF16_BE, "utf-16"),
+        (codecs.BOM_UTF16_LE, "utf-16"),
+    ]
+    #
+    # Try for a BOM
+    #
+    with open(filepath, "rb") as f:
+        line = f.readline()
+    for bom, encoding in boms:
+        if line.startswith(bom):
+            return encoding
+
+    #
+    # Look for a PEP 263 encoding cookie
+    #
+    default_encoding = locale.getpreferredencoding()
+    uline = line.decode(default_encoding)
+    match = ENCODING_COOKIE_RE.match(uline)
+    if match:
+        return match.group(1)
+
+    #
+    # Fall back to the locale default
+    #
+    return default_encoding
+
+
+def sniff_newline_convention(text):
+    """Determine which line-ending convention predominates in the text.
+
+    Windows usually has U+000D U+000A
+    Posix usually has U+000A
+    But editors can produce either convention from either platform. And
+    a file which has been copied and edited around might even have both!
+    """
+    candidates = [
+        ("\r\n", "\r\n"),
+        # Match \n at the start of the string
+        # or \n preceded by any character other than \r
+        ("\n", "^\n|[^\r]\n")
+    ]
+    #
+    # If no lines are present, default to the platform newline
+    # If there's a tie, use the platform default
+    #
+    conventions_found = [(0, 1, os.linesep)]
+    for candidate, pattern in candidates:
+        instances = re.findall(pattern, text)
+        convention = (len(instances), candidate == os.linesep, candidate)
+        conventions_found.append(convention)
+    majority_convention = max(conventions_found)
+    return majority_convention[-1]
+
+
+def read_and_decode(filepath):
+    encoding = sniff_encoding(filepath)
+    with open(filepath, encoding=encoding, newline='') as f:
+        text = f.read()
+        #
+        # Sniff and convert newlines here so that, by the time
+        # the text reaches the editor it is ready to use. Then
+        # convert everything to the Mu internal newline character
+        #
+        newline = sniff_newline_convention(text)
+        text = re.sub("\r\n", NEWLINE, text)
+        return text, newline
 
 
 def get_admin_file_path(filename):
