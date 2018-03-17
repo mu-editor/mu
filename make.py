@@ -203,7 +203,7 @@ def translateall():
         raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
 
     subprocess.run([
-        "python", pygettext,
+        "python", PYGETTEXT,
         "mu/*", "mu/debugger/*", "mu/modes/*", "mu/resources/*"
     ])
     print("\nNew messages.pot file created.")
