@@ -1,10 +1,12 @@
 import os
 import contextlib
+import json
 import shutil
 import tempfile
 import uuid
 
 import mu.logic
+
 
 def _generate_python_files(contents, dirpath):
     for i, c in enumerate(contents):
@@ -20,11 +22,13 @@ def _generate_python_files(contents, dirpath):
             f.write(c)
         yield filepath
 
+
 @contextlib.contextmanager
 def generate_python_files(contents, dirpath=None):
     dirpath = dirpath or tempfile.mkdtemp(prefix="mu-")
     yield list(_generate_python_files(contents, dirpath))
     shutil.rmtree(dirpath)
+
 
 @contextlib.contextmanager
 def generate_session(
@@ -46,8 +50,8 @@ def generate_session(
     will be created at those filepaths, os.path.join-ed to a temporary
     directory.
 
-    If None is passed to any of the parameters, that item will not be included
-    in the session data. Once all parameters have been considered: if no session
+    If None is passed to any of the parameters that item will not be included
+    in the session data. Once all parameters have been considered if no session
     data is present, the file will *not* be created.
 
     By default, the file will be named according to the Mu default and placed
@@ -70,7 +74,8 @@ def generate_session(
     if mode:
         session_data['mode'] = mode
     if n_paths:
-        session_data['paths'] = list(_generate_python_files(["" for p in range(n_paths)], dirpath))
+        paths = _generate_python_files(["" for p in range(n_paths)], dirpath)
+        session_data['paths'] = list(paths)
     session_data.update(**kwargs)
 
     if filepath is None:
@@ -82,5 +87,3 @@ def generate_session(
     session['session_filepath'] = filepath
     yield session
     shutil.rmtree(dirpath)
-
-

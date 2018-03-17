@@ -6,12 +6,8 @@ import os
 import codecs
 import locale
 import re
-from unittest import mock
-
-import pytest
 
 import mu.logic
-from PyQt5.QtWidgets import QMessageBox
 
 from . import support
 
@@ -22,6 +18,7 @@ from . import support
 # the file out again. Internally all newlines are MU_NEWLINE
 #
 
+
 def test_read_newline_no_text():
     """If the file being loaded is empty, use the platform default newline
     """
@@ -30,6 +27,7 @@ def test_read_newline_no_text():
             text, newline = mu.logic.read_and_decode(filepath)
             assert text.count("\r\n") == 0
             assert newline == os.linesep
+
 
 def test_read_newline_all_unix():
     """If the file being loaded has only the Unix convention, use that
@@ -40,6 +38,7 @@ def test_read_newline_all_unix():
             assert text.count("\r\n") == 0
             assert newline == "\n"
 
+
 def test_read_newline_all_windows():
     """If the file being loaded has only the Windows convention, use that
     """
@@ -48,6 +47,7 @@ def test_read_newline_all_windows():
             text, newline = mu.logic.read_and_decode(filepath)
             assert text.count("\r\n") == 0
             assert newline == "\r\n"
+
 
 def test_read_newline_most_unix():
     """If the file being loaded has mostly the Unix convention, use that
@@ -58,6 +58,7 @@ def test_read_newline_most_unix():
             assert text.count("\r\n") == 0
             assert newline == "\n"
 
+
 def test_read_newline_most_windows():
     """If the file being loaded has mostly the Windows convention, use that
     """
@@ -66,6 +67,7 @@ def test_read_newline_most_windows():
             text, newline = mu.logic.read_and_decode(filepath)
             assert text.count("\r\n") == 0
             assert newline == "\r\n"
+
 
 def test_read_newline_equal_match():
     """If the file being loaded has an equal number of Windows and
@@ -76,6 +78,7 @@ def test_read_newline_equal_match():
             text, newline = mu.logic.read_and_decode(filepath)
             assert text.count("\r\n") == 0
             assert newline == os.linesep
+
 
 #
 # When writing Mu should honour the line-ending convention found inbound
@@ -95,9 +98,10 @@ def test_write_newline_to_unix():
             text = f.read()
             assert text.count("\r\n") == 0
             #
-            # There will be one more line-ending because of the encoding cookie prefix
+            # There will be one more line-ending because of the encoding cookie
             #
             assert text.count("\n") == 1 + test_string.count("\r\n")
+
 
 def test_write_newline_to_windows():
     """If the file had Windows newlines it should be saved with Windows newlines
@@ -110,7 +114,7 @@ def test_write_newline_to_windows():
             text = f.read()
             assert len(re.findall("[^\r]\n", text)) == 0
             #
-            # There will be one more line-ending because of the encoding cookie prefix
+            # There will be one more line-ending because of the encoding cookie
             #
             assert text.count("\r\n") == 1 + test_string.count("\n")
 
@@ -120,7 +124,9 @@ def test_write_newline_to_windows():
 # 7-bit characters but also an 8th-bit range which tends to
 # trip things up between encodings
 #
-UNICODE_TEST_STRING = (bytes(range(0x20, 0x80)) + bytes(range(0xa0, 0xff))).decode("iso-8859-1")
+BYTES_TEST_STRING = bytes(range(0x20, 0x80)) + bytes(range(0xa0, 0xff))
+UNICODE_TEST_STRING = BYTES_TEST_STRING.decode("iso-8859-1")
+
 
 #
 # Tests for encoding detection
@@ -139,6 +145,7 @@ def test_read_utf8bom():
             text, _ = mu.logic.read_and_decode(filepath)
             assert text == UNICODE_TEST_STRING
 
+
 def test_read_utf16bebom():
     """Successfully decode from utf-16 BE encoded with BOM
     """
@@ -149,6 +156,7 @@ def test_read_utf16bebom():
                 f.write(UNICODE_TEST_STRING.encode("utf-16-be"))
             text, _ = mu.logic.read_and_decode(filepath)
             assert text == UNICODE_TEST_STRING
+
 
 def test_read_utf16lebom():
     """Successfully decode from utf-16 LE encoded with BOM
@@ -161,10 +169,12 @@ def test_read_utf16lebom():
             text, _ = mu.logic.read_and_decode(filepath)
             assert text == UNICODE_TEST_STRING
 
+
 def test_read_encoding_cookie():
     """Successfully decode from iso-8859-1 with an encoding cookie
     """
-    encoding_cookie = mu.logic.ENCODING_COOKIE.replace(mu.logic.ENCODING, "iso-8859-1")
+    encoding_cookie = mu.logic.ENCODING_COOKIE.replace(
+        mu.logic.ENCODING, "iso-8859-1")
     test_string = encoding_cookie + UNICODE_TEST_STRING
     with support.generate_python_files([""]) as filepaths:
         for filepath in filepaths:
@@ -173,20 +183,24 @@ def test_read_encoding_cookie():
             text, _ = mu.logic.read_and_decode(filepath)
             assert text == test_string
 
+
 def test_read_encoding_default():
     """Successfully decode from the default locale
     """
+    test_string = UNICODE_TEST_STRING.encode(locale.getpreferredencoding())
     with support.generate_python_files([""]) as filepaths:
         for filepath in filepaths:
             with open(filepath, "wb") as f:
-                f.write(UNICODE_TEST_STRING.encode(locale.getpreferredencoding()))
+                f.write(test_string)
             text, _ = mu.logic.read_and_decode(filepath)
             assert text == UNICODE_TEST_STRING
+
 
 #
 # When writing, Mu should use utf-8 (without a BOM) and ensure the text is
 # prefixed with a PEP 263 encoding cookie
-# If the file already has an encoding cookie it should be replaced by the Mu cookie
+# If the file already has an encoding cookie it should be replaced by
+# the Mu cookie
 #
 def test_write_utf8():
     """The text should be saved encoded as utf8
@@ -197,6 +211,7 @@ def test_write_utf8():
             with open(filepath, encoding="utf-8") as f:
                 text = f.read()
                 assert text == mu.logic.ENCODING_COOKIE + UNICODE_TEST_STRING
+
 
 def test_write_encoding_cookie_no_cookie():
     """If the text has no cookie of its own the first line of the saved
@@ -212,6 +227,7 @@ def test_write_encoding_cookie_no_cookie():
                     break
                 else:
                     assert False, "No cookie found"
+
 
 def test_write_encoding_cookie_existing_cookie():
     """If the text has a cookie of its own it will be replaced by the Mu cookie

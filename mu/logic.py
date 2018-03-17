@@ -140,15 +140,17 @@ NEWLINE = "\n"
 # We also detect an encoding cookie in an inbound file
 #
 ENCODING = "utf-8"
-ENCODING_COOKIE_RE = re.compile("^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
-ENCODING_COOKIE = ("# -*- coding: %s-*- # Encoding cookie added by Mu Editor" % ENCODING) + NEWLINE
+ENCODING_COOKIE_RE = re.compile(
+    "^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
+ENCODING_COOKIE = "# -*- coding: %s-*-" \
+    "# Encoding cookie added by Mu Editor" % ENCODING + NEWLINE
 
 logger = logging.getLogger(__name__)
 
 
 def write_and_flush(fileobj, content):
     """
-    Writes content to the fileobj, then flushes and fsyncs to ensure the data is,
+    Write content to the fileobj then flush and fsync to ensure the data is,
     in fact, written.
 
     This is especially necessary for USB-attached devices
@@ -237,7 +239,8 @@ def sniff_newline_convention(text):
     conventions_found = [(0, 1, os.linesep)]
     for candidate, pattern in candidates:
         instances = re.findall(pattern, text)
-        conventions_found.append((len(instances), candidate == os.linesep, candidate))
+        convention = (len(instances), candidate == os.linesep, candidate)
+        conventions_found.append(convention)
     majority_convention = max(conventions_found)
     return majority_convention[-1]
 
