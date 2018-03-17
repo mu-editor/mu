@@ -371,11 +371,7 @@ def test_editor_restore_session():
     file_contents = ["", ""]
     ed = mocked_editor(mode)
 
-    with generate_session(
-        mode=mode, theme=theme, file_contents=file_contents
-    ) as session, mock.patch(
-        "mu.logic.get_session_path", return_value=session['session_filepath']
-    ):
+    with generate_session(theme, mode, file_contents) as session:
         ed.restore_session()
 
     assert ed.theme == theme

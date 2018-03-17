@@ -80,7 +80,8 @@ def generate_session(
             f.write(json.dumps(session_data))
     session = dict(session_data)
     session['session_filepath'] = filepath
-    yield session
+    with mock.patch("mu.logic.get_session_path", return_value=filepath):
+        yield session
     shutil.rmtree(dirpath)
 
 
