@@ -5,6 +5,7 @@ Tests for the Editor and REPL logic.
 import sys
 import os.path
 import json
+import subprocess
 import pytest
 import mu.logic
 from PyQt5.QtWidgets import QMessageBox
@@ -1483,3 +1484,21 @@ def test_rename_tab_avoid_duplicating_other_tab_name():
                                               'A file of that name is already '
                                               'open in Mu.')
     assert mock_tab.path == 'old.py'
+
+
+def test_logic_independent_import_logic():
+    """
+    It should be possible to import the logic and app
+    modules from the mu package independently of each
+    other.
+    """
+    subprocess.run([sys.executable, "-c", "from mu import logic"], check=True)
+
+
+def test_logic_independent_import_app():
+    """
+    It should be possible to import the logic and app
+    modules from the mu package independently of each
+    other.
+    """
+    subprocess.run([sys.executable, "-c", "from mu import app"], check=True)
