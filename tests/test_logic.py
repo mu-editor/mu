@@ -1485,6 +1485,7 @@ def test_rename_tab_avoid_duplicating_other_tab_name():
                                               'open in Mu.')
     assert mock_tab.path == 'old.py'
 
+
 def test_logic_independent_import_logic():
     """
     It should be possible to import the logic and app
@@ -1492,6 +1493,7 @@ def test_logic_independent_import_logic():
     other.
     """
     subprocess.run([sys.executable, "-c", "from mu import logic"], check=True)
+
 
 def test_logic_independent_import_app():
     """
