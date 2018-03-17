@@ -238,7 +238,7 @@ class EditorPane(QsciScintilla):
             markers = self.check_indicators[indicator]['markers']
             for k, marker_list in markers.items():
                 for m in marker_list:
-                    lines[m['line_no']].append('\u2BB4' +
+                    lines[m['line_no']].append('\u2191' +
                                                m['message'].capitalize())
         for line, messages in lines.items():
             text = '\n'.join(messages).strip()
