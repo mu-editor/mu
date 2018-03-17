@@ -8,6 +8,7 @@ import subprocess
 PYTEST = "pytest"
 PYFLAKES = "pyflakes"
 PYCODESTYLE = "pycodestyle"
+PYGETTEXT = os.path.join(sys.base_prefix, "tools", "i18n", "pygettext.py")
 
 INCLUDE_PATTERNS = {
     "*.py"
@@ -55,13 +56,20 @@ def _walk(
             break
 
 
-def _check_code(executable, *args):
+def _process_code(executable, use_python, *args):
+    """Perform some action (check, translate etc.) across the .py files
+    in the codebase, skipping docs and build artefacts
+    """
+    if use_python:
+        execution = ["python", executable]
+    else:
+        execution = [executable]
     for filepath in _walk(".", INCLUDE_PATTERNS, EXCLUDE_PATTERNS, False):
-        subprocess.run([executable, filepath] + list(args))
+        subprocess.run(execution + [filepath] + list(args))
     for filepath in _walk("mu", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
-        subprocess.run([executable, filepath] + list(args))
+        subprocess.run(execution + [filepath] + list(args))
     for filepath in _walk("tests", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
-        subprocess.run([executable, filepath] + list(args))
+        subprocess.run(execution + [filepath] + list(args))
 
 
 def _rmtree(dirpath, cascade_errors=False):
@@ -129,7 +137,7 @@ def pyflakes(*pyflakes_args):
     """
     print("\npyflakes")
     os.environ["PYFLAKES_BUILTINS"] = "_"
-    return _check_code(PYFLAKES, *pyflakes_args)
+    return _process_code(PYFLAKES, False, *pyflakes_args)
 
 
 @export
@@ -138,7 +146,7 @@ def pycodestyle(*pycodestyle_args):
     """
     print("\nPEP8")
     args = ("--ignore=E731,E402",) + pycodestyle_args
-    return _check_code(PYCODESTYLE, *args)
+    return _process_code(PYCODESTYLE, False, *args)
 
 
 @export
@@ -178,16 +186,22 @@ def clean():
 def translate():
     """Translate
     """
-    raise NotImplementedError
+    if not os.path.exists(PYGETTEXT):
+        raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
+
+    _process_code(PYGETTEXT, True)
+    print("\nNew messages.pot file created.")
+    print("Remember to update the translation strings"
+          "found in the locale directory.")
 
 
 @export
 def translateall():
     """Translate All The Things
     """
-    pygettext = os.path.join(sys.base_prefix, "tools", "i18n", "pygettext.py")
-    if not os.path.exists(pygettext):
-        raise RuntimeError("Unable to locate pygettext.py in %s" % pygettext)
+    if not os.path.exists(PYGETTEXT):
+        raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
+
     subprocess.run([
         "python", pygettext,
         "mu/*", "mu/debugger/*", "mu/modes/*", "mu/resources/*"
