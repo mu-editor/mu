@@ -13,6 +13,8 @@ Release History
 * Updated to the latest version of uflash, which contains the latest stable
   release of MicroPython for the micro:bit. Many thanks to Damien George for
   all his continuing hard work on MicroPython for the micro:bit.
+* Inclusion of tkinter, turtle, gpiozero, guizero, pigpio, pillow and requests
+  libraries as built-in modules.
 
 1.0.0.beta.15
 =============
