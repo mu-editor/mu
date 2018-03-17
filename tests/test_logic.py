@@ -14,7 +14,7 @@ import mu.logic
 from PyQt5.QtWidgets import QMessageBox
 from unittest import mock
 from mu import __version__
-from . import support
+from .support import generate_session, generate_python_files, mocked_editor
 
 SESSION = json.dumps({
     'theme': 'night',
@@ -367,23 +367,20 @@ def test_editor_restore_session():
     """
     A correctly specified session is restored properly.
     """
-    view = mock.MagicMock()
-    view.set_theme = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed._view.add_tab = mock.MagicMock()
-    mock_mode = mock.MagicMock()
-    mock_mode.save_timeout = 5
-    ed.modes = {
-        'python': mock_mode,
-    }
-    mock_open = mock.mock_open(read_data=SESSION)
-    with mock.patch('builtins.open', mock_open), \
-            mock.patch('os.path.exists', return_value=True):
+    mode, theme = "python", "night"
+    file_contents = ["", ""]
+    ed = mocked_editor(mode)
+
+    with generate_session(
+        mode=mode, theme=theme, file_contents=file_contents
+    ) as session, mock.patch(
+        "mu.logic.get_session_path", return_value=session['session_filepath']
+    ):
         ed.restore_session()
-    assert ed.theme == 'night'
-    assert mock_open.return_value.read.call_count == 3
-    assert ed._view.add_tab.call_count == 2
-    view.set_theme.assert_called_once_with('night')
+
+    assert ed.theme == theme
+    assert ed._view.add_tab.call_count == len(file_contents)
+    ed._view.set_theme.assert_called_once_with(theme)
 
 
 def test_editor_restore_session_missing_files():
@@ -1517,7 +1514,7 @@ def test_logic_independent_import_app():
 def test_read_newline_no_text():
     """If the file being loaded is empty, use the platform default newline
     """
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_files([""]) as filepaths:
         for filepath in filepaths:
             text, newline = mu.logic.read_and_decode(filepath)
             assert text.count("\r\n") == 0
@@ -1527,7 +1524,7 @@ def test_read_newline_no_text():
 def test_read_newline_all_unix():
     """If the file being loaded has only the Unix convention, use that
     """
-    with support.generate_python_files(["abc\ndef"]) as filepaths:
+    with generate_python_files(["abc\ndef"]) as filepaths:
         for filepath in filepaths:
             text, newline = mu.logic.read_and_decode(filepath)
             assert text.count("\r\n") == 0
@@ -1537,7 +1534,7 @@ def test_read_newline_all_unix():
 def test_read_newline_all_windows():
     """If the file being loaded has only the Windows convention, use that
     """
-    with support.generate_python_files(["abc\r\ndef"]) as filepaths:
+    with generate_python_files(["abc\r\ndef"]) as filepaths:
         for filepath in filepaths:
             text, newline = mu.logic.read_and_decode(filepath)
             assert text.count("\r\n") == 0
@@ -1547,7 +1544,7 @@ def test_read_newline_all_windows():
 def test_read_newline_most_unix():
     """If the file being loaded has mostly the Unix convention, use that
     """
-    with support.generate_python_files(["\nabc\r\ndef\n"]) as filepaths:
+    with generate_python_files(["\nabc\r\ndef\n"]) as filepaths:
         for filepath in filepaths:
             text, newline = mu.logic.read_and_decode(filepath)
             assert text.count("\r\n") == 0
@@ -1557,7 +1554,7 @@ def test_read_newline_most_unix():
 def test_read_newline_most_windows():
     """If the file being loaded has mostly the Windows convention, use that
     """
-    with support.generate_python_files(["\r\nabc\ndef\r\n"]) as filepaths:
+    with generate_python_files(["\r\nabc\ndef\r\n"]) as filepaths:
         for filepath in filepaths:
             text, newline = mu.logic.read_and_decode(filepath)
             assert text.count("\r\n") == 0
@@ -1568,7 +1565,7 @@ def test_read_newline_equal_match():
     """If the file being loaded has an equal number of Windows and
     Unix newlines, use the platform default
     """
-    with support.generate_python_files(["\r\nabc\ndef"]) as filepaths:
+    with generate_python_files(["\r\nabc\ndef"]) as filepaths:
         for filepath in filepaths:
             text, newline = mu.logic.read_and_decode(filepath)
             assert text.count("\r\n") == 0
@@ -1585,7 +1582,7 @@ def test_write_newline_to_unix():
     the Mu internal default; but we leave it here in case that situation
     changes)
     """
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_files([""]) as filepaths:
         test_string = "\r\n".join("the cat sat on the mat".split())
         for filepath in filepaths:
             mu.logic.save_and_encode(test_string, filepath, "\n")
@@ -1601,7 +1598,7 @@ def test_write_newline_to_unix():
 def test_write_newline_to_windows():
     """If the file had Windows newlines it should be saved with Windows newlines
     """
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_files([""]) as filepaths:
         test_string = "\n".join("the cat sat on the mat".split())
         for filepath in filepaths:
             mu.logic.save_and_encode(test_string, filepath, "\r\n")
@@ -1633,7 +1630,7 @@ UNICODE_TEST_STRING = BYTES_TEST_STRING.decode("iso-8859-1")
 def test_read_utf8bom():
     """Successfully decode from utf-8 encoded with BOM
     """
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_files([""]) as filepaths:
         for filepath in filepaths:
             with open(filepath, "w", encoding="utf-8-sig") as f:
                 f.write(UNICODE_TEST_STRING)
@@ -1644,7 +1641,7 @@ def test_read_utf8bom():
 def test_read_utf16bebom():
     """Successfully decode from utf-16 BE encoded with BOM
     """
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_files([""]) as filepaths:
         for filepath in filepaths:
             with open(filepath, "wb") as f:
                 f.write(codecs.BOM_UTF16_BE)
@@ -1656,7 +1653,7 @@ def test_read_utf16bebom():
 def test_read_utf16lebom():
     """Successfully decode from utf-16 LE encoded with BOM
     """
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_files([""]) as filepaths:
         for filepath in filepaths:
             with open(filepath, "wb") as f:
                 f.write(codecs.BOM_UTF16_LE)
@@ -1671,7 +1668,7 @@ def test_read_encoding_cookie():
     encoding_cookie = mu.logic.ENCODING_COOKIE.replace(
         mu.logic.ENCODING, "iso-8859-1")
     test_string = encoding_cookie + UNICODE_TEST_STRING
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_files([""]) as filepaths:
         for filepath in filepaths:
             with open(filepath, "wb") as f:
                 f.write(test_string.encode("iso-8859-1"))
@@ -1683,7 +1680,7 @@ def test_read_encoding_default():
     """Successfully decode from the default locale
     """
     test_string = UNICODE_TEST_STRING.encode(locale.getpreferredencoding())
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_files([""]) as filepaths:
         for filepath in filepaths:
             with open(filepath, "wb") as f:
                 f.write(test_string)
@@ -1700,7 +1697,7 @@ def test_read_encoding_default():
 def test_write_utf8():
     """The text should be saved encoded as utf8
     """
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_files([""]) as filepaths:
         for filepath in filepaths:
             mu.logic.save_and_encode(UNICODE_TEST_STRING, filepath)
             with open(filepath, encoding="utf-8") as f:
@@ -1713,7 +1710,7 @@ def test_write_encoding_cookie_no_cookie():
     file will be the Mu encoding cookie
     """
     test_string = "This is a test"
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_files([""]) as filepaths:
         for filepath in filepaths:
             mu.logic.save_and_encode(test_string, filepath)
             with open(filepath, encoding="utf-8") as f:
@@ -1729,7 +1726,7 @@ def test_write_encoding_cookie_existing_cookie():
     """
     cookie = mu.logic.ENCODING_COOKIE.replace(mu.logic.ENCODING, "iso-8859-1")
     test_string = cookie + "This is a test"
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_files([""]) as filepaths:
         for filepath in filepaths:
             mu.logic.save_and_encode(test_string, filepath)
             with open(filepath, encoding="utf-8") as f:

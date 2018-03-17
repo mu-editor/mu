@@ -3,6 +3,7 @@ import contextlib
 import json
 import shutil
 import tempfile
+from unittest import mock
 import uuid
 
 import mu.logic
@@ -34,29 +35,23 @@ def generate_python_files(contents, dirpath=None):
 def generate_session(
     theme="day",
     mode="python",
-    n_paths=0,
+    file_contents=None,
     filepath=None,
     **kwargs
 ):
     """Generate a temporary session file for one test
 
-    By default, the session file will contain the data in SESSION_DATA above
-    and will be created inside a temporary directory which will be removed
-    afterwards. If filepath is specified a temporary the session file will
-    be created with that fully-specified path and filename.
+    By default, the session file will be created inside a temporary directory
+    which will be removed afterwards. If filepath is specified the session
+    file will be created with that fully-specified path and filename.
 
-    If any paths are specified (referring to text files to reload from a
-    previous session) and create_paths is True (the default) then empty files
-    will be created at those filepaths, os.path.join-ed to a temporary
-    directory.
+    If an iterable of file contents is specified (referring to text files to
+    be reloaded from a previous session) then files will be created in the
+    a directory with the contents provided.
 
     If None is passed to any of the parameters that item will not be included
     in the session data. Once all parameters have been considered if no session
     data is present, the file will *not* be created.
-
-    By default, the file will be named according to the Mu default and placed
-    in the temporary directory created for the test. If filepath is passed,
-    the session file is created there instead.
 
     Any additional kwargs are created as items in the data (eg to generate
     invalid file contents)
@@ -73,8 +68,8 @@ def generate_session(
         session_data['theme'] = theme
     if mode:
         session_data['mode'] = mode
-    if n_paths:
-        paths = _generate_python_files(["" for p in range(n_paths)], dirpath)
+    if file_contents:
+        paths = _generate_python_files(file_contents, dirpath)
         session_data['paths'] = list(paths)
     session_data.update(**kwargs)
 
@@ -87,3 +82,16 @@ def generate_session(
     session['session_filepath'] = filepath
     yield session
     shutil.rmtree(dirpath)
+
+
+def mocked_editor(mode="python"):
+    view = mock.MagicMock()
+    view.set_theme = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed._view.add_tab = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    mock_mode.save_timeout = 5
+    ed.modes = {
+        mode: mock_mode,
+    }
+    return ed
