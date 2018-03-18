@@ -506,7 +506,7 @@ def test_editor_restore_session():
     file_contents = ["", ""]
     ed = mocked_editor(mode)
 
-    with generate_session(theme, mode, file_contents) as session:
+    with generate_session(theme, mode, file_contents):
         ed.restore_session()
 
     assert ed.theme == theme
@@ -547,7 +547,7 @@ def test_editor_restore_session_invalid_mode():
     """
     valid_mode, invalid_mode = "python", uuid.uuid1().hex
     ed = mocked_editor(valid_mode)
-    with generate_session(mode=invalid_mode) as session:
+    with generate_session(mode=invalid_mode):
         ed.restore_session()
     ed.select_mode.assert_called_once_with(None)
 
@@ -729,7 +729,7 @@ def test_load_python_file():
     """
     If the user specifies a Python file (*.py) then ensure it's loaded and
     added as a tab.
-    
+
     The Python code loaded will have a Mu encoding cookie prepended to it
     or have its own one replaced by a Mu cookie
     """
@@ -742,11 +742,11 @@ def test_load_python_file():
                 mock_read.return_value = text, newline
                 ed.load()
                 break
-    
+
     mock_read.assert_called_once_with(filepath)
     ed._view.add_tab.assert_called_once_with(
-        filepath, 
-        mu.logic.ENCODING_COOKIE + mu.logic.NEWLINE + text, 
+        filepath,
+        mu.logic.ENCODING_COOKIE + mu.logic.NEWLINE + text,
         ed.modes[ed.mode].api(),
         newline)
 
@@ -860,14 +860,14 @@ def test_save_no_path():
         ed.save()
     ed._view.get_save_path.assert_called()
     mock_save.assert_called_with(text, path, newline)
-    
+
 
 def test_save_no_path_no_path_given():
     """
     If there's no path associated with the tab and the user cancels providing
     one, ensure the path is correctly re-set.
     """
-    text, path, newline = "foo", "foo.py", "\n"
+    text, newline = "foo", "\n"
     ed = mocked_editor(text=text, path=None, newline=newline)
     ed._view.get_save_path.return_value = ''
     ed.save()
@@ -909,7 +909,7 @@ def test_save_python_file():
     ed = mu.logic.Editor(view)
     with mock.patch("mu.logic.save_and_encode") as mock_save:
         ed.save()
-    
+
     mock_save.assert_called_once_with(contents, path, newline)
     assert view.get_save_path.call_count == 0
     view.current_tab.setModified.assert_called_once_with(False)
@@ -1410,7 +1410,6 @@ def test_autosave():
     mock_tab.isModified.return_value = True
     view.widgets = [mock_tab, ]
     ed = mu.logic.Editor(view)
-    mock_open = mock.MagicMock()
     with mock.patch('mu.logic.save_and_encode') as mock_save:
         ed.autosave()
     assert mock_save.call_count == 1

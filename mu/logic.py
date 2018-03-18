@@ -654,7 +654,7 @@ class Editor:
             logger.warning('could not load {}'.format(path))
         else:
             logger.debug(text)
-            tab = self._view.add_tab(
+            self._view.add_tab(
                 name, text, self.modes[self.mode].api(), newline)
 
     def load(self):
