@@ -56,6 +56,9 @@ def generate_session(
     Any additional kwargs are created as items in the data (eg to generate
     invalid file contents)
 
+    The mu.logic.get_session_path function is mocked to return the
+    temporary filepath from this session.
+
     The session is yielded to the contextmanager so the typical usage is:
 
     with generate_session(mode="night") as session:
@@ -90,8 +93,13 @@ def mocked_editor(mode="python"):
     view.set_theme = mock.MagicMock()
     ed = mu.logic.Editor(view)
     ed._view.add_tab = mock.MagicMock()
+    ed.select_mode = mock.MagicMock()
     mock_mode = mock.MagicMock()
     mock_mode.save_timeout = 5
+    ##
+    ## FIXME: I'm not actually sure what the workspace_dir fakery is for
+    ##
+    mock_mode.workspace_dir.return_value = '/fake/path'
     ed.modes = {
         mode: mock_mode,
     }
