@@ -13,6 +13,7 @@ import pytest
 import mu.logic
 from PyQt5.QtWidgets import QMessageBox
 from unittest import mock
+import uuid
 from mu import __version__
 from .support import generate_session, generate_python_files, mocked_editor
 
@@ -410,23 +411,9 @@ def test_editor_restore_session_invalid_mode():
     ignored (this happens regularly when changing versions when developing
     Mu itself).
     """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.select_mode = mock.MagicMock()
-    mock_mode = mock.MagicMock()
-    api = ['API specification', ]
-    mock_mode.api.return_value = api
-    mock_mode.workspace_dir.return_value = '/fake/path'
-    mock_mode.save_timeout = 5
-    ed.modes = {
-        'python': mock_mode,
-    }
-    mock_open = mock.mock_open(
-        read_data='{"paths": ["path/foo.py"], "mode": "numberwang"}')
-    mock_gettext = mock.MagicMock()
-    mock_gettext.return_value = '# Write your code here :-)'
-    with mock.patch('builtins.open', mock_open), \
-            mock.patch('os.path.exists', return_value=True):
+    valid_mode, invalid_mode = "python", uuid.uuid1().hex
+    ed = mocked_editor(valid_mode)
+    with generate_session(mode=invalid_mode) as session:
         ed.restore_session()
     ed.select_mode.assert_called_once_with(None)
 
