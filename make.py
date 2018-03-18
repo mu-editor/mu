@@ -108,7 +108,7 @@ def test(*pytest_args):
     with a failure value. This forces things to stop if tests fail.
     """
     print("\ntest")
-    return subprocess.run([PYTEST] + list(pytest_args), check=True)
+    return subprocess.run([PYTEST] + list(pytest_args)).returncode
 
 
 @export
@@ -126,7 +126,7 @@ def coverage():
         "term-missing",
         "--cov=mu",
         "tests/"
-    ])
+    ]).returncode
 
 
 @export
@@ -189,7 +189,7 @@ def translate():
     if not os.path.exists(PYGETTEXT):
         raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
 
-    _process_code(PYGETTEXT, True)
+    return _process_code(PYGETTEXT, True)
     print("\nNew messages.pot file created.")
     print("Remember to update the translation strings"
           "found in the locale directory.")
@@ -205,7 +205,7 @@ def translateall():
     subprocess.run([
         "python", PYGETTEXT,
         "mu/*", "mu/debugger/*", "mu/modes/*", "mu/resources/*"
-    ])
+    ]).returncode
     print("\nNew messages.pot file created.")
     print("Remember to update the translation strings"
           "found in the locale directory.")
@@ -219,7 +219,7 @@ def run():
     if not os.environ.get("VIRTUAL_ENV"):
         raise RuntimeError("Cannot run Mu;"
                            "your Python virtualenv is not activated")
-    subprocess.run(["python", "-m", "mu"])
+    subprocess.run(["python", "-m", "mu"]).returncode
 
 
 @export
@@ -228,7 +228,7 @@ def dist():
     """
     check()
     print("Checks pass; good to package")
-    subprocess.run(["python", "setup.py", "sdist", "bdist_wheel"])
+    subprocess.run(["python", "setup.py", "sdist", "bdist_wheel"]).returncode
 
 
 @export
@@ -237,7 +237,10 @@ def publish_test():
     """
     dist()
     print("Packaging complete; upload to PyPI")
-    subprocess.run(["twine", "upload", "-r", "test", "--sign", "dist/*"])
+    return subprocess.run([
+        "twine", "upload",
+        "-r", "test", "--sign", "dist/*"]
+    ).returncode
 
 
 @export
@@ -246,7 +249,7 @@ def publish_live():
     """
     dist()
     print("Packaging complete; upload to PyPI")
-    subprocess.run(["twine", "upload", "--sign", "dist/*"])
+    return subprocess.run(["twine", "upload", "--sign", "dist/*"]).returncode
 
 
 @export
@@ -255,7 +258,7 @@ def win32():
     """
     check()
     print("Building 32-bit Windows installer")
-    subprocess.run(["python", "win_installer.py", "32"])
+    return subprocess.run(["python", "win_installer.py", "32"]).returncode
 
 
 @export
@@ -264,7 +267,7 @@ def win64():
     """
     check()
     print("Building 64-bit Windows installer")
-    subprocess.run(["python", "win_installer.py", "64"])
+    return subprocess.run(["python", "win_installer.py", "64"]).returncode
 
 
 @export
@@ -274,7 +277,7 @@ def docs():
     cwd = os.getcwd()
     os.chdir("docs")
     try:
-        subprocess.run(["cmd", "/c", "make.bat", "html"])
+        return subprocess.run(["cmd", "/c", "make.bat", "html"]).returncode
     finally:
         os.chdir(cwd)
 
