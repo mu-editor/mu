@@ -126,24 +126,35 @@ def generate_session(
     shutil.rmtree(dirpath)
 
 
-def mocked_editor(mode="python"):
+def mocked_view(text, path, newline):
+    """Create a mocked view with path, newline and text
+    """
+    view = mock.MagicMock()
+    view.current_tab = mock.MagicMock()
+    view.current_tab.path = path
+    view.current_tab.newline = newline
+    view.current_tab.text = mock.MagicMock(return_value=text)
+    view.add_tab = mock.MagicMock()
+    view.get_save_path = mock.MagicMock(return_value=path)
+    view.get_load_path = mock.MagicMock()
+    view.add_tab = mock.MagicMock()
+    return view
+
+
+def mocked_editor(mode="python", text=None, path=None, newline=None):
     """Return a mocked editor with a mocked view
 
     This is intended to assist the several tests where a mocked editor
     is needed but where the length of setup code to get there tends to
     obscure the intent of the test
     """
-    view = mock.MagicMock()
-    view.set_theme = mock.MagicMock()
+    view = mocked_view(text, path, newline)
     ed = mu.logic.Editor(view)
-    ed._view.add_tab = mock.MagicMock()
     ed.select_mode = mock.MagicMock()
     mock_mode = mock.MagicMock()
     mock_mode.save_timeout = 5
-    ##
-    ## FIXME: I'm not actually sure what the workspace_dir fakery is for
-    ##
     mock_mode.workspace_dir.return_value = '/fake/path'
+    mock_mode.api.return_value = ["API Specification"]
     ed.modes = {
         mode: mock_mode,
     }
@@ -718,23 +729,26 @@ def test_load_python_file():
     """
     If the user specifies a Python file (*.py) then ensure it's loaded and
     added as a tab.
+    
+    The Python code loaded will have a Mu encoding cookie prepended to it
+    or have its own one replaced by a Mu cookie
     """
-    view = mock.MagicMock()
-    view.get_load_path = mock.MagicMock(return_value='foo.py')
-    view.add_tab = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    mock_mode = mock.MagicMock()
-    api = ['API specification', ]
-    mock_mode.api.return_value = api
-    mock_mode.workspace_dir.return_value = '/fake/path'
-    ed.modes = {
-        'python': mock_mode,
-    }
-    mock_open = mock.mock_open(read_data='PYTHON')
-    with mock.patch('builtins.open', mock_open):
-        ed.load()
-    assert view.get_load_path.call_count == 1
-    view.add_tab.assert_called_once_with('foo.py', 'PYTHON', api)
+    text, newline = "python", "\n"
+    ed = mocked_editor()
+    with generate_python_files([text]) as filepaths:
+        for filepath in filepaths:
+            ed._view.get_load_path.return_value = filepath
+            with mock.patch("mu.logic.read_and_decode") as mock_read:
+                mock_read.return_value = text, newline
+                ed.load()
+                break
+    
+    mock_read.assert_called_once_with(filepath)
+    ed._view.add_tab.assert_called_once_with(
+        filepath, 
+        mu.logic.ENCODING_COOKIE + mu.logic.NEWLINE + text, 
+        ed.modes[ed.mode].api(),
+        newline)
 
 
 def test_no_duplicate_load_python_file():
@@ -839,47 +853,26 @@ def test_save_no_path():
     If there's no path associated with the tab then request the user provide
     one.
     """
-    view = mock.MagicMock()
-    view.current_tab = mock.MagicMock()
-    view.current_tab.path = None
-    view.current_tab.text = mock.MagicMock(return_value='foo')
-    view.get_save_path = mock.MagicMock(return_value='foo.py')
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    mock_mode = mock.MagicMock()
-    mock_mode.workspace_dir.return_value = '/fake/path'
-    ed.modes = {
-        'python': mock_mode,
-    }
-    with mock.patch('builtins.open', mock_open):
+    text, path, newline = "foo", "foo.py", "\n"
+    ed = mocked_editor(text=text, path=None, newline=newline)
+    ed._view.get_save_path.return_value = path
+    with mock.patch("mu.logic.save_and_encode") as mock_save:
         ed.save()
-    assert mock_open.call_count == 1
-    mock_open.assert_called_with('foo.py', 'w', newline='')
-    mock_open.return_value.write.assert_called_once_with('foo')
-    view.get_save_path.assert_called_once_with('/fake/path')
-
+    ed._view.get_save_path.assert_called()
+    mock_save.assert_called_with(text, path, newline)
+    
 
 def test_save_no_path_no_path_given():
     """
     If there's no path associated with the tab and the user cancels providing
     one, ensure the path is correctly re-set.
     """
-    view = mock.MagicMock()
-    view.current_tab = mock.MagicMock()
-    view.current_tab.path = None
-    view.get_save_path = mock.MagicMock(return_value='')
-    ed = mu.logic.Editor(view)
-    mock_mode = mock.MagicMock()
-    mock_mode.workspace_dir.return_value = 'foo/bar'
-    ed.modes = {
-        'python': mock_mode,
-    }
+    text, path, newline = "foo", "foo.py", "\n"
+    ed = mocked_editor(text=text, path=None, newline=newline)
+    ed._view.get_save_path.return_value = ''
     ed.save()
     # The path isn't the empty string returned from get_save_path.
-    assert view.current_tab.path is None
+    assert ed._view.current_tab.path is None
 
 
 def test_save_file_with_exception():
@@ -905,22 +898,19 @@ def test_save_python_file():
     If the path is a Python file (ending in *.py) then save it and reset the
     modified flag.
     """
+    path, contents, newline = "foo.py", "foo", "\n"
     view = mock.MagicMock()
     view.current_tab = mock.MagicMock()
-    view.current_tab.path = 'foo.py'
-    view.current_tab.text = mock.MagicMock(return_value='foo')
-    view.get_save_path = mock.MagicMock(return_value='foo.py')
+    view.current_tab.path = path
+    view.current_tab.text = mock.MagicMock(return_value=contents)
+    view.current_tab.newline = "\n"
+    view.get_save_path = mock.MagicMock(return_value=path)
     view.current_tab.setModified = mock.MagicMock(return_value=None)
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    with mock.patch('builtins.open', mock_open):
+    with mock.patch("mu.logic.save_and_encode") as mock_save:
         ed.save()
-    # mock_open.assert_called_once_with(
-    #   'foo.py', 'w', encoding=mu.logic.ENCODING, newline='')
-    mock_open.return_value.write.assert_called_once_with('foo')
+    
+    mock_save.assert_called_once_with(contents, path, newline)
     assert view.get_save_path.call_count == 0
     view.current_tab.setModified.assert_called_once_with(False)
 
@@ -929,42 +919,25 @@ def test_save_with_no_file_extension():
     """
     If the path doesn't end in *.py then append it to the filename.
     """
-    view = mock.MagicMock()
-    view.current_tab = mock.MagicMock()
-    view.current_tab.path = 'foo'
-    view.current_tab.text = mock.MagicMock(return_value='foo')
-    view.get_save_path = mock.MagicMock(return_value='foo')
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    with mock.patch('builtins.open', mock_open):
+    text, path, newline = "foo", "foo", "\n"
+    ed = mocked_editor(text=text, path=path, newline=newline)
+    with mock.patch('mu.logic.save_and_encode') as mock_save:
         ed.save()
-    mock_open.assert_called_once_with('foo.py', 'w', newline='')
-    mock_open.return_value.write.assert_called_once_with('foo')
-    assert view.get_save_path.call_count == 0
+    mock_save.assert_called_once_with(text, path + ".py", newline)
+    ed._view.get_save_path.call_count == 0
 
 
 def test_save_with_non_py_file_extension():
     """
     If the path ends in an extension, save it using the extension
     """
-    view = mock.MagicMock()
-    view.current_tab = mock.MagicMock()
-    view.current_tab.path = 'foo.txt'
-    view.current_tab.text = mock.MagicMock(return_value='foo.txt')
-    view.get_save_path = mock.MagicMock(return_value='foo.txt')
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    with mock.patch('builtins.open', mock_open):
+    text, path, newline = "foo", "foo.txt", "\n"
+    ed = mocked_editor(text=text, path=path, newline=newline)
+    ed._view.get_save_path.return_value = path
+    with mock.patch('mu.logic.save_and_encode') as mock_save:
         ed.save()
-    mock_open.assert_called_once_with('foo.txt', 'w', newline='')
-    mock_open.return_value.write.assert_called_once_with('foo.txt')
-    assert view.get_save_path.call_count == 0
+    mock_save.assert_called_once_with(text, path, newline)
+    ed._view.get_save_path.call_count == 0
 
 
 def test_get_tab_existing_tab():
@@ -1438,10 +1411,9 @@ def test_autosave():
     view.widgets = [mock_tab, ]
     ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock()
-    with mock.patch('builtins.open', mock_open), \
-            mock.patch('mu.logic.os'):
+    with mock.patch('mu.logic.save_and_encode') as mock_save:
         ed.autosave()
-    assert mock_open.call_count == 1
+    assert mock_save.call_count == 1
     mock_tab.setModified.assert_called_once_with(False)
 
 

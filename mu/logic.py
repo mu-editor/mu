@@ -613,6 +613,11 @@ class Editor:
 
     def _load(self, path):
         logger.info('Loading script from: {}'.format(path))
+        error = _("""Mu is unable to read some of the characters in the file.
+
+        This is because it contains some non-English characters which
+        Mu expects to be encoded as UTF-8, but which are encoded in
+        some other way.""")
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
@@ -631,17 +636,11 @@ class Editor:
                     text, newline = read_and_decode(path)
                 except UnicodeDecodeError as exc:
                     message = _("Mu cannot read the characters in {}")
-                    information = _("Mu is unable to read some of the characters in the file.\n\n"
-
-                    "This is because it contains some non-English characters which\n"
-                    "Mu expects to be encoded as UTF-8, but which are encoded in\n"
-                    "some other way. [FIXME!] Please try again later...\n"
-                    )
-                    self._view.show_message(message.format(path), information)
+                    self._view.show_message(message.format(path), error)
                     return
 
                 if not ENCODING_COOKIE_RE.match(text):
-                    text = ENCODING_COOKIE + "\n" + text
+                    text = ENCODING_COOKIE + NEWLINE + text
                 name = path
             else:
                 # Open the hex, extract the Python script therein and set the
@@ -655,7 +654,8 @@ class Editor:
             logger.warning('could not load {}'.format(path))
         else:
             logger.debug(text)
-            tab = self._view.add_tab(name, text, self.modes[self.mode].api(), newline)
+            tab = self._view.add_tab(
+                name, text, self.modes[self.mode].api(), newline)
 
     def load(self):
         """
