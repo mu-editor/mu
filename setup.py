@@ -43,7 +43,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            "mu = mu.app:run",
+            "mu-editor = mu.app:run",
             "mu-debug = mu.app:debug",
         ],
     }
