@@ -189,10 +189,11 @@ def translate():
     if not os.path.exists(PYGETTEXT):
         raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
 
-    return _process_code(PYGETTEXT, True)
+    result = _process_code(PYGETTEXT, True)
     print("\nNew messages.pot file created.")
     print("Remember to update the translation strings"
           "found in the locale directory.")
+    return result
 
 
 @export
@@ -202,13 +203,14 @@ def translateall():
     if not os.path.exists(PYGETTEXT):
         raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
 
-    subprocess.run([
+    result = subprocess.run([
         "python", PYGETTEXT,
         "mu/*", "mu/debugger/*", "mu/modes/*", "mu/resources/*"
     ]).returncode
     print("\nNew messages.pot file created.")
     print("Remember to update the translation strings"
           "found in the locale directory.")
+    return result
 
 
 @export
