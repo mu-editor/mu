@@ -842,7 +842,7 @@ def test_load_stores_newline():
         editor.load()
 
     assert editor._view.add_tab.called_with(
-                filepath, text, editor.modes[editor.mode].api(), "\r\n")
+        filepath, text, editor.modes[editor.mode].api(), "\r\n")
 
 
 def test_save_restores_newline():
