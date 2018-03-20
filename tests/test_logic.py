@@ -904,7 +904,6 @@ def test_save_no_path():
     ed._view.get_save_path.return_value = path
     with mock.patch("mu.logic.save_and_encode") as mock_save:
         ed.save()
-    ed._view.get_save_path.assert_called()
     mock_save.assert_called_with(text, path, newline)
 
 
