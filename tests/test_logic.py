@@ -751,7 +751,6 @@ def test_load_python_file():
         with mock.patch("mu.logic.read_and_decode") as mock_read:
             mock_read.return_value = text, newline
             ed.load()
-            break
 
     mock_read.assert_called_once_with(filepath)
     ed._view.add_tab.assert_called_once_with(
@@ -852,14 +851,15 @@ def test_save_restores_newline():
     be used.
     """
     newline = "\r\n"
-    text = mu.logic.NEWLINE.join("the cat sat on the mat".split())
-    editor = mocked_editor(text=text)
-    assert editor._view.current_tab.newline == newline
-    with generate_python_file(text) as filepath:
-        editor._view.current_tab.path = filepath
-        editor.save()
-        with open(filepath, newline="") as f:
-            assert f.read() == newline.join(text.split(mu.logic.NEWLINE))
+    test_text = mu.logic.NEWLINE.join(
+        [mu.logic.ENCODING_COOKIE] +
+        "the cat sat on the mat".split()
+    )
+    with generate_python_file(test_text) as filepath:
+        with mock.patch("mu.logic.save_and_encode") as mock_save:
+            ed = mocked_editor(text=test_text, newline=newline, path=filepath)
+            ed.save()
+            assert mock_save.called_with(test_text, filepath, newline)
 
 
 def test_load_error():
@@ -1665,7 +1665,7 @@ def test_read_newline_all_windows():
 def test_read_newline_most_unix():
     """If the file being loaded has mostly the Unix convention, use that
     """
-    with generate_python_files(["\nabc\r\ndef\n"]) as filepath:
+    with generate_python_file("\nabc\r\ndef\n") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
         assert newline == "\n"
@@ -1674,7 +1674,7 @@ def test_read_newline_most_unix():
 def test_read_newline_most_windows():
     """If the file being loaded has mostly the Windows convention, use that
     """
-    with generate_python_files(["\r\nabc\ndef\r\n"]) as filepath:
+    with generate_python_file("\r\nabc\ndef\r\n") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
         assert newline == "\r\n"
