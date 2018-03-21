@@ -21,6 +21,13 @@ import sys
 from subprocess import check_output
 import time
 
+# nudatus is an optional dependancy
+can_minify = True
+try:
+    import nudatus
+except ImportError:  # pragma: no cover
+    can_minify = False
+
 #: The magic start address in flash memory for a Python script.
 _SCRIPT_ADDR = 0x3e000
 
@@ -40,7 +47,8 @@ Documentation is here: https://uflash.readthedocs.io/en/latest/
 
 
 #: MAJOR, MINOR, RELEASE, STATUS [alpha, beta, final], VERSION
-_VERSION = (1, 1, 1, )
+_VERSION = (1, 1, 2, )
+_MAX_SIZE = 8188
 
 
 def get_version():
@@ -50,6 +58,15 @@ def get_version():
     return '.'.join([str(i) for i in _VERSION])
 
 
+def get_minifier():
+    """
+    Report the minifier will be used when minify=True
+    """
+    if can_minify:
+        return 'nudatus'
+    return None
+
+
 def strfunc(raw):
     """
     Compatibility for 2 & 3 str()
@@ -57,7 +74,7 @@ def strfunc(raw):
     return str(raw) if sys.version_info[0] == 2 else str(raw, 'utf-8')
 
 
-def hexlify(script):
+def hexlify(script, minify=False):
     """
     Takes the byte content of a Python script and returns a hex encoded
     version of it.
@@ -69,11 +86,15 @@ def hexlify(script):
     # Convert line endings in case the file was created on Windows.
     script = script.replace(b'\r\n', b'\n')
     script = script.replace(b'\r', b'\n')
+    if minify:
+        if not can_minify:
+            raise ValueError("No minifier is available")
+        script = nudatus.mangle(script.decode('utf-8')).encode('utf-8')
     # Add header, pad to multiple of 16 bytes.
     data = b'MP' + struct.pack('<H', len(script)) + script
     # Padding with null bytes in a 2/3 compatible way
     data = data + (b'\x00' * (16 - len(data) % 16))
-    if len(data) > 8192:
+    if len(data) > _MAX_SIZE:
         # 'MP' = 2 bytes, script length is another 2 bytes.
         raise ValueError("Python script must be less than 8188 bytes.")
     # Convert to .hex format.
@@ -252,7 +273,7 @@ def save_hex(hex_file, path):
 
 
 def flash(path_to_python=None, paths_to_microbits=None,
-          path_to_runtime=None, python_script=None):
+          path_to_runtime=None, python_script=None, minify=False):
     """
     Given a path to or source of a Python file will attempt to create a hex
     file and then flash it onto the referenced BBC micro:bit.
@@ -285,9 +306,9 @@ def flash(path_to_python=None, paths_to_microbits=None,
         if not path_to_python.endswith('.py'):
             raise ValueError('Python files must end in ".py".')
         with open(path_to_python, 'rb') as python_script:
-            python_hex = hexlify(python_script.read())
+            python_hex = hexlify(python_script.read(), minify)
     elif python_script:
-        python_hex = hexlify(python_script)
+        python_hex = hexlify(python_script, minify)
 
     runtime = _RUNTIME
     # Load the hex for the runtime.
@@ -374,6 +395,9 @@ def main(argv=None):
     parser.add_argument('-w', '--watch',
                         action='store_true',
                         help='Watch the source file for changes.')
+    parser.add_argument('-m', '--minify',
+                        action='store_true',
+                        help='Minify the source')
     parser.add_argument('--version', action='version',
                         version='%(prog)s ' + get_version())
     args = parser.parse_args(argv)
@@ -402,7 +426,7 @@ def main(argv=None):
     else:
         try:
             flash(path_to_python=args.source, paths_to_microbits=args.target,
-                  path_to_runtime=args.runtime)
+                  path_to_runtime=args.runtime, minify=args.minify)
         except Exception as ex:
             error_message = (
                 "Error flashing {source} to {target}{runtime}: {error!s}"
