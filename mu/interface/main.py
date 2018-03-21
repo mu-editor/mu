@@ -149,7 +149,7 @@ class FileTabs(QTabWidget):
         Ask the user before closing the file.
         """
         window = self.nativeParentWidget()
-        modified = window.current_tab.isModified()
+        modified = self.widget(tab_id).isModified()
         if modified:
             msg = ('There is un-saved work, closing the tab will cause you '
                    'to lose it.')

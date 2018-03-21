@@ -157,9 +157,11 @@ def test_FileTabs_removeTab_cancel():
     to the tab. If "cancel" is selected, the parent removeTab is NOT called.
     """
     qtw = mu.interface.main.FileTabs()
+    mock_tab = mock.MagicMock()
+    mock_tab.isModified.return_value = True
+    qtw.widget = mock.MagicMock(return_value=mock_tab)
     mock_window = mock.MagicMock()
     mock_window.show_confirmation.return_value = QMessageBox.Cancel
-    mock_window.current_tab.isModified.return_value = True
     qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
     tab_id = 1
     with mock.patch('mu.interface.main.QTabWidget.removeTab',
@@ -169,6 +171,8 @@ def test_FileTabs_removeTab_cancel():
               'lose it.'
         mock_window.show_confirmation.assert_called_once_with(msg)
         assert rt.call_count == 0
+        qtw.widget.assert_called_once_with(tab_id)
+        assert mock_tab.isModified.call_count == 1
 
 
 def test_FileTabs_removeTab_ok():
@@ -177,9 +181,11 @@ def test_FileTabs_removeTab_ok():
     to the tab. If user responds with "OK", the parent removeTab IS called.
     """
     qtw = mu.interface.main.FileTabs()
+    mock_tab = mock.MagicMock()
+    mock_tab.isModified.return_value = True
+    qtw.widget = mock.MagicMock(return_value=mock_tab)
     mock_window = mock.MagicMock()
     mock_window.show_confirmation.return_value = QMessageBox.Ok
-    mock_window.current_tab.isModified.return_value = True
     qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
     tab_id = 1
     with mock.patch('mu.interface.main.QTabWidget.removeTab',
@@ -189,6 +195,8 @@ def test_FileTabs_removeTab_ok():
               'lose it.'
         mock_window.show_confirmation.assert_called_once_with(msg)
         rt.assert_called_once_with(tab_id)
+        qtw.widget.assert_called_once_with(tab_id)
+        assert mock_tab.isModified.call_count == 1
 
 
 def test_FileTabs_change_tab():
