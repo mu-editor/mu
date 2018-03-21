@@ -514,7 +514,7 @@ def test_flash_failed():
     mock_timer.stop.assert_called_once_with()
 
 
-def test_add_fs_no_repl():
+def test_add_fs():
     """
     It's possible to add the file system pane if the REPL is inactive.
     """
@@ -529,19 +529,6 @@ def test_add_fs_no_repl():
         workspace = mm.workspace_dir()
         view.add_filesystem.assert_called_once_with(workspace, mock_fm())
         assert mm.fs
-
-
-def test_add_fs_with_repl():
-    """
-    If the REPL is active, you can't add the file system pane.
-    """
-    view = mock.MagicMock()
-    editor = mock.MagicMock()
-    mm = MicrobitMode(editor, view)
-    mm.repl = True
-    with mock.patch('mu.modes.microbit.microfs.get_serial', return_value=True):
-        mm.add_fs()
-    assert view.add_filesystem.call_count == 0
 
 
 def test_add_fs_no_device():
@@ -589,13 +576,23 @@ def test_toggle_files_on():
     If the fs is off, toggle it on.
     """
     view = mock.MagicMock()
+    view.button_bar.slots = {
+        'repl': mock.MagicMock(),
+        'plotter': mock.MagicMock(),
+    }
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
-    mm.add_fs = mock.MagicMock()
+
+    def side_effect(*args, **kwargs):
+        mm.fs = True
+
+    mm.add_fs = mock.MagicMock(side_effect=side_effect)
     mm.repl = None
     mm.fs = None
     mm.toggle_files(None)
     assert mm.add_fs.call_count == 1
+    view.button_bar.slots['repl'].setEnabled.assert_called_once_with(False)
+    view.button_bar.slots['plotter'].setEnabled.assert_called_once_with(False)
 
 
 def test_toggle_files_off():
@@ -627,18 +624,62 @@ def test_toggle_files_with_repl():
     assert view.show_message.call_count == 1
 
 
-def test_toggle_repl():
+def test_toggle_files_with_plotter():
     """
-    If the file system is active, show a helpful message instead.
+    If the plotter is active, ensure a helpful message is displayed.
     """
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
-    with mock.patch('mu.modes.microbit.MicroPythonMode.toggle_repl') as tr:
+    mm.plotter = True
+    mm.fs = None
+    mm.toggle_files(None)
+    assert view.show_message.call_count == 1
+
+
+def test_toggle_repl():
+    """
+    Ensure the REPL is able to toggle on if there's no file system pane.
+    """
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+
+    def side_effect(*args, **kwargs):
+        mm.repl = True
+
+    with mock.patch('mu.modes.microbit.MicroPythonMode.toggle_repl',
+                    side_effect=side_effect) as tr:
         mm.repl = None
         mm.toggle_repl(None)
         tr.assert_called_once_with(None)
+        view.button_bar.slots['files'].\
+            setEnabled.assert_called_once_with(False)
+
+
+def test_toggle_repl_no_repl_or_plotter():
+    """
+    Ensure the file system button is enabled if the repl toggles off and the
+    plotter isn't active.
+    """
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+
+    def side_effect(*args, **kwargs):
+        mm.repl = False
+        mm.plotter = False
+
+    with mock.patch('mu.modes.microbit.MicroPythonMode.toggle_repl',
+                    side_effect=side_effect) as tr:
+        mm.repl = None
+        mm.toggle_repl(None)
+        tr.assert_called_once_with(None)
+        view.button_bar.slots['files'].\
+            setEnabled.assert_called_once_with(True)
 
 
 def test_toggle_repl_with_fs():
@@ -653,6 +694,65 @@ def test_toggle_repl_with_fs():
     mm.repl = None
     mm.fs = True
     mm.toggle_repl(None)
+    assert view.show_message.call_count == 1
+
+
+def test_toggle_plotter():
+    """
+    Ensure the plotter is toggled on if the file system pane is absent.
+    """
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+
+    def side_effect(*args, **kwargs):
+        mm.plotter = True
+
+    with mock.patch('mu.modes.microbit.MicroPythonMode.toggle_plotter',
+                    side_effect=side_effect) as tp:
+        mm.plotter = None
+        mm.toggle_plotter(None)
+        tp.assert_called_once_with(None)
+        view.button_bar.slots['files'].\
+            setEnabled.assert_called_once_with(False)
+
+
+def test_toggle_plotter_no_repl_or_plotter():
+    """
+    Ensure the file system button is enabled if the plotter toggles off and the
+    repl isn't active.
+    """
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+
+    def side_effect(*args, **kwargs):
+        mm.plotter = False
+        mm.repl = False
+
+    with mock.patch('mu.modes.microbit.MicroPythonMode.toggle_plotter',
+                    side_effect=side_effect) as tp:
+        mm.plotter = None
+        mm.toggle_plotter(None)
+        tp.assert_called_once_with(None)
+        view.button_bar.slots['files'].\
+            setEnabled.assert_called_once_with(True)
+
+
+def test_toggle_plotter_with_fs():
+    """
+    If the file system is active, show a helpful message instead.
+    """
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    mm.remove_plotter = mock.MagicMock()
+    mm.plotter = None
+    mm.fs = True
+    mm.toggle_plotter(None)
     assert view.show_message.call_count == 1
 
 
