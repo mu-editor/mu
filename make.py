@@ -65,11 +65,11 @@ def _process_code(executable, use_python, *args):
     else:
         execution = [executable]
     for filepath in _walk(".", INCLUDE_PATTERNS, EXCLUDE_PATTERNS, False):
-        subprocess.run(execution + [filepath] + list(args))
+        return subprocess.run(execution + [filepath] + list(args))
     for filepath in _walk("mu", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
-        subprocess.run(execution + [filepath] + list(args))
+        return subprocess.run(execution + [filepath] + list(args))
     for filepath in _walk("tests", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
-        subprocess.run(execution + [filepath] + list(args))
+        return subprocess.run(execution + [filepath] + list(args))
 
 
 def _rmtree(dirpath, cascade_errors=False):

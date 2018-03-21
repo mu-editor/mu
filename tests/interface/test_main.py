@@ -449,8 +449,8 @@ def test_Window_add_tab():
     api = ['API definition', ]
     w.breakpoint_toggle = mock.MagicMock()
     with mock.patch('mu.interface.main.EditorPane', mock_ed):
-        w.add_tab(path, text, api)
-    mock_ed.assert_called_once_with(path, text)
+        w.add_tab(path, text, api, '\n')
+    mock_ed.assert_called_once_with(path, text, '\n')
     w.tabs.addTab.assert_called_once_with(ep, ep.label)
     w.tabs.setCurrentIndex.assert_called_once_with(new_tab_index)
     w.connect_zoom.assert_called_once_with(ep)

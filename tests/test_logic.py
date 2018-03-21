@@ -587,7 +587,7 @@ def test_editor_restore_session_no_session_file():
         ed.restore_session()
     py = '# Write your code here :-)'.format(
         os.linesep, os.linesep)
-    ed._view.add_tab.assert_called_once_with(None, py, api)
+    ed._view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
     ed.select_mode.assert_called_once_with(None)
 
 
@@ -616,7 +616,7 @@ def test_editor_restore_session_invalid_file():
             mock.patch('os.path.exists', return_value=True):
         ed.restore_session()
     py = '# Write your code here :-)'
-    ed._view.add_tab.assert_called_once_with(None, py, api)
+    ed._view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
 
 
 def test_editor_open_focus_passed_file():
@@ -733,7 +733,7 @@ def test_new():
         'python': mock_mode,
     }
     ed.new()
-    view.add_tab.assert_called_once_with(None, '', api)
+    view.add_tab.assert_called_once_with(None, '', api, mu.logic.NEWLINE)
 
 
 def test_load_python_file():
@@ -758,6 +758,23 @@ def test_load_python_file():
         mu.logic.ENCODING_COOKIE + mu.logic.NEWLINE + text,
         ed.modes[ed.mode].api(),
         newline)
+
+
+def test_load_python_unicode_error():
+    """
+    If Mu encounters a UnicodeDecodeError when trying to read and decode the
+    file, it should display a helpful message explaining the problem.
+    """
+    text = "not utf encoded content"
+    ed = mocked_editor()
+    with generate_python_file(text) as filepath:
+        ed._view.get_load_path.return_value = filepath
+        with mock.patch("mu.logic.read_and_decode") as mock_read:
+            mock_read.side_effect = UnicodeDecodeError('funnycodec',
+                                                       b'\x00\x00', 1, 2,
+                                                       'A fake reason!')
+            ed.load()
+    assert ed._view.show_message.call_count == 1
 
 
 def test_no_duplicate_load_python_file():

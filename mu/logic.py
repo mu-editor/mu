@@ -585,7 +585,7 @@ class Editor:
             self.direct_load(passed_filename)
         if not self._view.tab_count:
             py = _('# Write your code here :-)')
-            self._view.add_tab(None, py, self.modes[self.mode].api())
+            self._view.add_tab(None, py, self.modes[self.mode].api(), NEWLINE)
             logger.info('Starting with blank file.')
         self.change_mode(self.mode)
         self._view.set_theme(self.theme)
@@ -609,15 +609,14 @@ class Editor:
         Adds a new tab to the editor.
         """
         logger.info('Added a new tab.')
-        self._view.add_tab(None, '', self.modes[self.mode].api())
+        self._view.add_tab(None, '', self.modes[self.mode].api(), NEWLINE)
 
     def _load(self, path):
         logger.info('Loading script from: {}'.format(path))
-        error = _("""Mu is unable to read some of the characters in the file.
-
-        This is because it contains some non-English characters which
-        Mu expects to be encoded as UTF-8, but which are encoded in
-        some other way.""")
+        error = _("The file contains characters Mu expects to be encoded as "
+                  "UTF-8, but which are encoded in some other way.\n\nIf this "
+                  "file was saved in another application, re-save the file "
+                  "via the 'Save as' option and set the encoding to UTF-8.")
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
