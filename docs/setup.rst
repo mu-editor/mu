@@ -148,6 +148,12 @@ code coverage.)
     On Windows there is a ``make.cmd`` file that works in a similar way to the
     ``make`` command on Unix-like operating systems.
 
+.. warning::
+
+    In order to use the MicroPython REPL via USB serial you may need to add
+    yourself to the ``dialout`` group on Linux, or, if you're on some versions
+    of Windows, install the `Windows serial driver <https://os.mbed.com/handbook/Windows-serial-configuration>`_.
+
 Before Submitting
 +++++++++++++++++
 
