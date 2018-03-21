@@ -75,12 +75,3 @@ QListWidget::item:selected, QListWidget::item:hover, QListWidget::item:focus {
 QMessageBox {
     border: 1px solid white;
 }
-
-QStatusBar QLabel {
-    padding: 2px;
-    margin: 0;
-}
-
-QStatusBar QLabel:hover, QStatusBar QLabel:focus {
-    background: #666;
-}

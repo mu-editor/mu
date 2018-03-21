@@ -68,12 +68,3 @@ QListWidget::item:selected, QListWidget::item:hover, QListWidget::item:focus {
     padding: 0;
     color: white;
 }
-
-QStatusBar QLabel {
-    padding: 2px;
-    margin: 0;
-}
-
-QStatusBar QLabel:hover, QStatusBar QLabel:focus {
-    background: #333;
-}
