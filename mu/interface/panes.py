@@ -37,15 +37,16 @@ from mu.interface.themes import (DEFAULT_FONT_SIZE, NIGHT_STYLE, DAY_STYLE,
                                  CONTRAST_STYLE)
 
 
+logger = logging.getLogger(__name__)
+
+
 CHARTS = True
 try:  # pragma: no cover
     from PyQt5.QtChart import QChart, QLineSeries, QChartView, QValueAxis
 except ImportError:  # pragma: no cover
+    logger.info('Unable to find QChart. Plotter button will not display.')
     QChartView = object
     CHARTS = False
-
-
-logger = logging.getLogger(__name__)
 
 
 class JupyterREPLPane(RichJupyterWidget):

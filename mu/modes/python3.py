@@ -129,6 +129,7 @@ class PythonMode(BaseMode):
             run_slot.setText(_('Run'))
             run_slot.setToolTip(_('Run your Python script.'))
             self.view.button_bar.slots['debug'].setEnabled(True)
+            self.view.button_bar.slots['modes'].setEnabled(True)
         else:
             self.run_script()
             if self.runner:
@@ -137,6 +138,7 @@ class PythonMode(BaseMode):
                 run_slot.setText(_('Stop'))
                 run_slot.setToolTip(_('Stop your Python script.'))
                 self.view.button_bar.slots['debug'].setEnabled(False)
+                self.view.button_bar.slots['modes'].setEnabled(False)
 
     def run_script(self):
         """
@@ -243,4 +245,3 @@ class PythonMode(BaseMode):
             self.view.button_bar.slots['repl'].setEnabled(True)
         self.editor.show_status_message(_("REPL stopped."))
         self.kernel_runner = None
-        self.kernel_thread = None

@@ -110,6 +110,7 @@ class DebugMode(BaseMode):
                     write_and_flush(f, tab.text())
                     tab.setModified(False)
             logger.debug(tab.text())
+            self.view.button_bar.slots['modes'].setEnabled(False)
             self.runner = self.view.add_python3_runner(tab.path,
                                                        self.workspace_dir(),
                                                        debugger=True)
@@ -137,6 +138,7 @@ class DebugMode(BaseMode):
             self.debugger = None
             self.view.remove_python_runner()
             self.view.remove_debug_inspector()
+        self.view.button_bar.slots['modes'].setEnabled(True)
         self.editor.change_mode('python')
         self.editor.mode = 'python'
         self.view.set_read_only(False)

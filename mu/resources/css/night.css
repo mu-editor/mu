@@ -1,23 +1,79 @@
-QStackedWidget, QWidget, QApplication {
-    background-color: #222;
-    color: #CCC;
+QToolBar, QToolButton {
+    background: transparent;
+    margin: 0;
+    border: none;
+    padding: 0;
+}
+
+QToolButton {
+    padding: 4px 2px;
 }
 
 QToolButton:hover {
     background-color: #333;
-    border: #CCC;
+}
+
+QStackedWidget, QWidget, QApplication, QDialog, QLabel, QStatusBar, QTabBar {
+    background-color: #222;
+    color: white;
 }
 
 QTextEdit {
     background-color: #222;
-    color: #CCC;
+    color: white;
+    border: none;
 }
 
-QToolBar, QToolButton {
-    background: transparent;
+QTabBar {
+    border: none;
+}
+
+QTabBar::tab, QListWidget::item:hover, QListWidget::item:focus {
+    background: #474747;
+    border: none;
+    padding: 4px 8px;
+    margin: 0;
+}
+
+QTabBar::tab::hover, QListWidget::item::selected  {
+    background: #5c5c5c;
+    border: none;
+    padding: 4px 8px;
+    margin: 0;
+}
+
+QTabBar::tab::selected {
+    background: #6b6b6b;
+    border: none;
+    padding: 4px 8px;
+    margin: 0;
+}
+
+QTabWidget::pane {
+    border: none;
+    border-top: 2px solid #6b6b6b;
+    border-bottom: 2px solid #6b6b6b;
+}
+
+QsciScintilla {
+    border: none;
 }
 
 QListWidget {
     background-color: #222;
-    color: #CCC;
+    color: white;
+}
+
+QListWidget::item:selected, QListWidget::item:hover, QListWidget::item:focus {
+    padding: 0;
+    color: white;
+}
+
+QStatusBar QLabel {
+    padding: 2px;
+    margin: 0;
+}
+
+QStatusBar QLabel:hover, QStatusBar QLabel:focus {
+    background: #333;
 }

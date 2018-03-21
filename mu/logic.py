@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import os.path
 import sys
+import codecs
 import io
 import re
 import json
@@ -133,46 +133,189 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Wisest are they that know they know nothing."),
 ]
 
+NEWLINE = "\n"
+
+#
+# We write all files as UTF-8 with a PEP 263 encoding cookie
+# We also detect an encoding cookie in an inbound file
+#
+ENCODING = "utf-8"
+ENCODING_COOKIE_RE = re.compile(
+    "^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
+ENCODING_COOKIE = "# -*- coding: %s-*-" \
+    "# Encoding cookie added by Mu Editor" % ENCODING + NEWLINE
 
 logger = logging.getLogger(__name__)
 
 
-def write_and_flush(fd, content):
+def write_and_flush(fileobj, content):
     """
-    Writes content to the fd, then flushes and fsyncs to ensure the data is, in
-    fact, written.
+    Write content to the fileobj then flush and fsync to ensure the data is,
+    in fact, written.
+
+    This is especially necessary for USB-attached devices
     """
-    fd.write(content)
-    fd.flush()
-    os.fsync(fd)
+    fileobj.write(content)
+    fileobj.flush()
+    #
+    # Theoretically this shouldn't work; fsync takes a file descriptor,
+    # not a file object. However, there's obviously some under-the-cover
+    # mechanism which converts one to the other (at least on Windows)
+    #
+    os.fsync(fileobj)
 
 
-def get_settings_path():
+def save_and_encode(text, filepath, newline=os.linesep):
+    #
+    # Strip any existing encoding cookie and replace by a Mu-generated
+    # UTF-8 cookie. We need to strip any existing line-endings off the
+    # encoding cookie so we don't double up.
+    #
+    encoding_cookie = ENCODING_COOKIE.strip()
+    lines = text.splitlines()
+    if lines and ENCODING_COOKIE_RE.match(lines[0]):
+        lines[0] = encoding_cookie
+    else:
+        lines.insert(0, encoding_cookie)
+
+    with open(filepath, "w", encoding=ENCODING, newline='') as f:
+        write_and_flush(f, newline.join(lines))
+
+
+def sniff_encoding(filepath):
+    """Determine the encoding of a file:
+
+    * If there is a BOM, return the appropriate encoding
+    * If there is a PEP 263 encoding cookie, return the appropriate encoding
+    * Otherwise return the locale default encoding
     """
-    The settings file default location is the application data directory.
-    However, a settings file in  the same directory than the application itself
-    takes preference.
+    boms = [
+        (codecs.BOM_UTF8, "utf-8-sig"),
+        (codecs.BOM_UTF16_BE, "utf-16"),
+        (codecs.BOM_UTF16_LE, "utf-16"),
+    ]
+    #
+    # Try for a BOM
+    #
+    with open(filepath, "rb") as f:
+        line = f.readline()
+    for bom, encoding in boms:
+        if line.startswith(bom):
+            return encoding
+
+    #
+    # Look for a PEP 263 encoding cookie
+    #
+    default_encoding = locale.getpreferredencoding()
+    uline = line.decode(default_encoding)
+    match = ENCODING_COOKIE_RE.match(uline)
+    if match:
+        return match.group(1)
+
+    #
+    # Fall back to the locale default
+    #
+    return default_encoding
+
+
+def sniff_newline_convention(text):
+    """Determine which line-ending convention predominates in the text.
+
+    Windows usually has U+000D U+000A
+    Posix usually has U+000A
+    But editors can produce either convention from either platform. And
+    a file which has been copied and edited around might even have both!
     """
-    settings_filename = 'settings.json'
+    candidates = [
+        ("\r\n", "\r\n"),
+        # Match \n at the start of the string
+        # or \n preceded by any character other than \r
+        ("\n", "^\n|[^\r]\n")
+    ]
+    #
+    # If no lines are present, default to the platform newline
+    # If there's a tie, use the platform default
+    #
+    conventions_found = [(0, 1, os.linesep)]
+    for candidate, pattern in candidates:
+        instances = re.findall(pattern, text)
+        convention = (len(instances), candidate == os.linesep, candidate)
+        conventions_found.append(convention)
+    majority_convention = max(conventions_found)
+    return majority_convention[-1]
+
+
+def read_and_decode(filepath):
+    encoding = sniff_encoding(filepath)
+    with open(filepath, encoding=encoding, newline='') as f:
+        text = f.read()
+        #
+        # Sniff and convert newlines here so that, by the time
+        # the text reaches the editor it is ready to use. Then
+        # convert everything to the Mu internal newline character
+        #
+        newline = sniff_newline_convention(text)
+        text = re.sub("\r\n", NEWLINE, text)
+        return text, newline
+
+
+def get_admin_file_path(filename):
+    """
+    Given an admin related filename, this function will attempt to get the
+    most relevant version of this file (the default location is the application
+    data directory, although a file of the same name in the same directory as
+    the application itself takes preference). If this file isn't found, an
+    empty one is created in the default location.
+    """
     # App location depends on being interpreted by normal Python or bundled
     app_path = sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
     app_dir = os.path.dirname(os.path.abspath(app_path))
     # The os x bundled application is placed 3 levels deep in the .app folder
     if platform.system() == 'Darwin' and getattr(sys, 'frozen', False):
         app_dir = os.path.dirname(os.path.dirname(os.path.dirname(app_dir)))
-    settings_dir = os.path.join(app_dir, settings_filename)
-    if not os.path.exists(settings_dir):
-        settings_dir = os.path.join(DATA_DIR, settings_filename)
-        if not os.path.exists(settings_dir):
+    file_path = os.path.join(app_dir, filename)
+    if not os.path.exists(file_path):
+        file_path = os.path.join(DATA_DIR, filename)
+        if not os.path.exists(file_path):
             try:
-                with open(settings_dir, 'w') as f:
-                    logger.debug('Creating settings file: {}'.format(
-                                 settings_dir))
+                with open(file_path, 'w') as f:
+                    logger.debug('Creating admin file: {}'.format(
+                                 file_path))
                     json.dump({}, f)
             except FileNotFoundError:
-                logger.error('Unable to create settings file: {}'.format(
-                             settings_dir))
-    return settings_dir
+                logger.error('Unable to create admin file: {}'.format(
+                             file_path))
+    return file_path
+
+
+def get_session_path():
+    """
+    The session file stores details about the state of Mu from the user's
+    perspective (tabs open, current mode etc...).
+
+    The session file default location is the application data directory.
+    However, a session file in the same directory as the application itself
+    takes preference.
+
+    If no session file is detected a blank one in the default location is
+    automatically created.
+    """
+    return get_admin_file_path('session.json')
+
+
+def get_settings_path():
+    """
+    The settings file stores details about the configuration of Mu from an
+    administrators' perspective (default workspace etc...).
+
+    The settings file default location is the application data directory.
+    However, a settings file in the same directory as the application itself
+    takes preference.
+
+    If no settings file is detected a blank one in the default location is
+    automatically created.
+    """
+    return get_admin_file_path('settings.json')
 
 
 def check_flake(filename, code, builtins=None):
@@ -365,6 +508,7 @@ class Editor:
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
         logger.info('Settings path: {}'.format(get_settings_path()))
+        logger.info('Session path: {}'.format(get_session_path()))
         logger.info('Log directory: {}'.format(LOG_DIR))
         logger.info('Data directory: {}'.format(DATA_DIR))
 
@@ -409,7 +553,7 @@ class Editor:
         Attempts to recreate the tab state from the last time the editor was
         run.
         """
-        settings_path = get_settings_path()
+        settings_path = get_session_path()
         self.change_mode(self.mode)
         with open(settings_path) as f:
             try:
@@ -446,7 +590,7 @@ class Editor:
             self.direct_load(passed_filename)
         if not self._view.tab_count:
             py = _('# Write your code here :-)')
-            self._view.add_tab(None, py, self.modes[self.mode].api())
+            self._view.add_tab(None, py, self.modes[self.mode].api(), NEWLINE)
             logger.info('Starting with blank file.')
         self.change_mode(self.mode)
         self._view.set_theme(self.theme)
@@ -470,10 +614,14 @@ class Editor:
         Adds a new tab to the editor.
         """
         logger.info('Added a new tab.')
-        self._view.add_tab(None, '', self.modes[self.mode].api())
+        self._view.add_tab(None, '', self.modes[self.mode].api(), NEWLINE)
 
     def _load(self, path):
         logger.info('Loading script from: {}'.format(path))
+        error = _("The file contains characters Mu expects to be encoded as "
+                  "UTF-8, but which are encoded in some other way.\n\nIf this "
+                  "file was saved in another application, re-save the file "
+                  "via the 'Save as' option and set the encoding to UTF-8.")
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
@@ -485,24 +633,55 @@ class Editor:
                 self._view.focus_tab(widget)
                 return
         try:
-            if path.endswith('.py'):
+            if path.lower().endswith('.py'):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
-                with open(path, newline='') as f:
-                    text = f.read()
+                try:
+                    text, newline = read_and_decode(path)
+                except UnicodeDecodeError as exc:
+                    message = _("Mu cannot read the characters in {}")
+                    filename = os.path.basename(path)
+                    self._view.show_message(message.format(filename), error)
+                    return
+
+                if not ENCODING_COOKIE_RE.match(text):
+                    text = ENCODING_COOKIE + NEWLINE + text
                 name = path
-            else:
+            elif path.lower().endswith('.hex'):
                 # Open the hex, extract the Python script therein and set the
                 # name to None, thus forcing the user to work out what to name
                 # the recovered script.
-                with open(path, newline='') as f:
-                    text = uflash.extract_script(f.read())
+                try:
+                    with open(path, newline='') as f:
+                        text = uflash.extract_script(f.read())
+                        newline = sniff_newline_convention(text)
+                except Exception:
+                    filename = os.path.basename(path)
+                    message = _("Unable to load file {}").format(filename)
+                    info = _("Mu doesn't understand the hex file and cannot "
+                             "extract any Python code. Are you sure this is "
+                             "a hex file created with MicroPython?")
+                    self._view.show_message(message, info)
+                    return
                 name = None
+            else:
+                # Mu won't open other file types, although this may change in
+                # the future.
+                message = _("Mu only opens .py and .hex files")
+                info = _("Currently Mu only works with Python source files or "
+                         "hex files created with embedded MicroPython code.")
+                self._view.show_message(message, info)
+                return
         except (PermissionError, FileNotFoundError):
-            logger.warning('could not load {}'.format(path))
+            message = _("Could not load {}").format(path)
+            logger.warning('Could not load {}'.format(path))
+            info = _("Does this file exist? If it does, do you have "
+                     "permission to read it?\n\nPlease cheack and try again.")
+            self._view.show_message(message, info)
         else:
             logger.debug(text)
-            self._view.add_tab(name, text, self.modes[self.mode].api())
+            self._view.add_tab(
+                name, text, self.modes[self.mode].api(), newline)
 
     def load(self):
         """
@@ -516,6 +695,21 @@ class Editor:
     def direct_load(self, path):
         """ for loading files passed from command line or the OS launch"""
         self._load(path)
+
+    def save_tab_to_file(self, tab):
+        try:
+            logger.info('Saving script to: {}'.format(tab.path))
+            logger.debug(tab.text())
+            save_and_encode(tab.text(), tab.path, tab.newline)
+            tab.setModified(False)
+            self.show_status_message(_("Saved file: {}").format(tab.path))
+        except OSError as e:
+            logger.error(e)
+            message = _('Could not save file.')
+            information = _("Error saving file to disk. Ensure you have "
+                            "permission to write the file and "
+                            "sufficient disk space.")
+            self._view.show_message(message, information)
 
     def save(self):
         """
@@ -534,20 +728,7 @@ class Editor:
             if os.path.splitext(tab.path)[1] == '':
                 # the user didn't specify an extension, default to .py
                 tab.path += '.py'
-            try:
-                with open(tab.path, 'w', newline='') as f:
-                    logger.info('Saving script to: {}'.format(tab.path))
-                    logger.debug(tab.text())
-                    write_and_flush(f, tab.text())
-                tab.setModified(False)
-                self.show_status_message(_("Saved file: {}").format(tab.path))
-            except OSError as e:
-                logger.error(e)
-                message = _('Could not save file.')
-                information = _("Error saving file to disk. Ensure you have "
-                                "permission to write the file and "
-                                "sufficient disk space.")
-                self._view.show_message(message, information)
+            self.save_tab_to_file(tab)
         else:
             # The user cancelled the filename selection.
             tab.path = None
@@ -655,13 +836,11 @@ class Editor:
             'theme': self.theme,
             'mode': self.mode,
             'paths': paths,
-            'workspace': self.modes[self.mode].workspace_dir(),
-            'microbit_runtime_hex': self.modes['microbit'].get_hex_path()
         }
-        settings_path = get_settings_path()
-        with open(settings_path, 'w') as out:
+        session_path = get_session_path()
+        with open(session_path, 'w') as out:
             logger.debug('Session: {}'.format(session))
-            logger.debug('Saving session to: {}'.format(settings_path))
+            logger.debug('Saving session to: {}'.format(session_path))
             json.dump(session, out, indent=2)
         logger.info('Quitting.\n\n')
         sys.exit(0)
@@ -700,6 +879,7 @@ class Editor:
         # Update buttons.
         self._view.change_mode(self.modes[mode])
         button_bar = self._view.button_bar
+        button_bar.connect('modes', self.select_mode, 'Ctrl+Shift+M')
         button_bar.connect("new", self.new, "Ctrl+N")
         button_bar.connect("load", self.load, "Ctrl+O")
         button_bar.connect("save", self.save, "Ctrl+S")
@@ -738,11 +918,7 @@ class Editor:
             logger.info('Autosave has detected changes.')
             for tab in self._view.widgets:
                 if tab.path and tab.isModified():
-                    with open(tab.path, 'w', newline='') as f:
-                        logger.info('Saving script to: {}'.format(tab.path))
-                        logger.debug(tab.text())
-                        write_and_flush(f, tab.text())
-                    tab.setModified(False)
+                    self.save_tab_to_file(tab)
 
     def check_usb(self):
         """

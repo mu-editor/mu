@@ -70,9 +70,8 @@ class ModeSelector(QDialog):
                 ModeItem(item.name, item.description, item.icon,
                          self.mode_list)
         self.mode_list.sortItems()
-        instructions = QLabel(_('You can change mode at any time by clicking '
-                                'the name of the current mode shown in the '
-                                'bottom right-hand corner of Mu.'))
+        instructions = QLabel(_('Change mode at any time by clicking '
+                                'the "Mode" button containing Mu\'s logo.'))
         instructions.setWordWrap(True)
         widget_layout.addWidget(instructions)
         button_box = QDialogButtonBox(QDialogButtonBox.Ok |

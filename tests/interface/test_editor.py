@@ -37,10 +37,12 @@ def test_EditorPane_init():
                        mock_configure):
         path = '/foo/bar.py'
         text = 'print("Hello, World!")'
-        mu.interface.editor.EditorPane(path, text)
+        editor = mu.interface.editor.EditorPane(path, text, '\r\n')
         mock_text.assert_called_once_with(text)
         mock_modified.assert_called_once_with(False)
         mock_configure.assert_called_once_with()
+        assert editor.isUtf8()
+        assert editor.newline == '\r\n'
 
 
 def test_EditorPane_configure():
@@ -262,7 +264,7 @@ def test_EditorPane_show_annotations():
     ep.annotate = mock.MagicMock()
     ep.show_annotations()
     ep.annotate.assert_called_once_with(1,
-                                        '\u2BB4Message 1\n\u2BB4Message 2',
+                                        '\u2191Message 1\n\u2191Message 2',
                                         ep.annotationDisplay())
 
 

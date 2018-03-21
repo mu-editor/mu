@@ -25,6 +25,7 @@ from collections import defaultdict
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
 from PyQt5.QtCore import Qt, pyqtSignal
 from mu.interface.themes import Font, DayTheme
+from mu.logic import NEWLINE
 
 
 # Regular Expression for valid individual code 'words'
@@ -65,10 +66,12 @@ class EditorPane(QsciScintilla):
     # Signal fired when a script or hex is droped on this editor
     open_file = pyqtSignal(str)
 
-    def __init__(self, path, text):
+    def __init__(self, path, text, newline=NEWLINE):
         super().__init__()
+        self.setUtf8(True)
         self.path = path
         self.setText(text)
+        self.newline = newline
         self.check_indicators = {  # IDs are arbitrary
             'error': {'id': 19, 'markers': {}},
             'style': {'id': 20, 'markers': {}}
@@ -280,7 +283,7 @@ class EditorPane(QsciScintilla):
             markers = self.check_indicators[indicator]['markers']
             for k, marker_list in markers.items():
                 for m in marker_list:
-                    lines[m['line_no']].append('\u2BB4' +
+                    lines[m['line_no']].append('\u2191' +
                                                m['message'].capitalize())
         for line, messages in lines.items():
             text = '\n'.join(messages).strip()

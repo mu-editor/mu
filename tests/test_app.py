@@ -81,7 +81,7 @@ def test_run():
         assert ed.call_count == 1
         assert len(ed.mock_calls) == 3
         assert win.call_count == 1
-        assert len(win.mock_calls) == 5
+        assert len(win.mock_calls) == 4
         assert ex.call_count == 1
 
 
@@ -94,7 +94,7 @@ def test_excepthook():
 
     with mock.patch('mu.app.logging.error') as error, \
             mock.patch('mu.app.sys.exit') as exit:
-        sys.excepthook(*exc_args)
+        excepthook(*exc_args)
         error.assert_called_once_with('Unrecoverable error', exc_info=exc_args)
         exit.assert_called_once_with(1)
 

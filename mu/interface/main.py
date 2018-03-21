@@ -66,6 +66,9 @@ class ButtonBar(QToolBar):
 
     def change_mode(self, mode):
         self.reset()
+        self.addAction(name="modes", display_name=_("Mode"),
+                       tool_text=_("Change Mu's mode of behaviour."))
+        self.addSeparator()
         self.addAction(name="new", display_name=_("New"),
                        tool_text=_("Create a new Python script."))
         self.addAction(name="load", display_name=_("Load"),
@@ -252,11 +255,11 @@ class Window(QMainWindow):
         logger.debug('Getting micro:bit path: {}'.format(path))
         return path
 
-    def add_tab(self, path, text, api):
+    def add_tab(self, path, text, api, newline):
         """
         Adds a tab with the referenced path and text to the editor.
         """
-        new_tab = EditorPane(path, text)
+        new_tab = EditorPane(path, text, newline)
         new_tab.connect_margin(self.breakpoint_toggle)
         new_tab_index = self.tabs.addTab(new_tab, new_tab.label)
         new_tab.set_api(api)
@@ -741,7 +744,7 @@ class Window(QMainWindow):
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
         self.read_only_tabs = False
-        self.setMinimumSize(800, 400)
+        self.setMinimumSize(820, 400)
 
         self.widget = QWidget()
 
@@ -847,7 +850,7 @@ class StatusBar(QStatusBar):
         self.mode = mode
         # Mode selector.
         self.mode_label = QLabel()
-        self.mode_label.setToolTip(_("Select edit mode."))
+        self.mode_label.setToolTip(_("Mu's current mode of behaviour."))
         self.addPermanentWidget(self.mode_label)
         self.set_mode(mode)
         # Logs viewer

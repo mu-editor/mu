@@ -45,6 +45,18 @@ into a virtual environment with ``pip``::
 
     $ pip install mu-editor
 
+.. note::
+
+    By design, ``pip`` will not create any shortcuts for applications that it
+    installs.
+
+    If you want to add a shortcut for Mu to your desktop/start menu you can
+    use Martin O'Hanlon's amazingly useful
+    `Shortcut tool <https://shortcut.readthedocs.io/en/latest/>`_ like this::
+
+        $ pip install shortcut
+        $ shortcut mu
+
 As per conventions, the ``setup.py`` file contains all the details used by
 ``pip`` to install it. We use `twine <https://github.com/pypa/twine>`_ to push
 releases to PyPI and I (Nicholas - maintainer) simply use a Makefile to
@@ -135,6 +147,18 @@ a private key and uploaded to GitHub and associated with the relevant release.
 explain this process more fully
 (the details of which are described
 `by Mozilla <https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Build_Instructions/Signing_an_executable_with_Authenticode>`_).
+
+Use the ``make`` command to build your own installers::
+
+    $ make win32
+    $ make win64
+
+This will clean the repository before running the ``win_installer.py`` command
+for the requested bitness.
+
+Because Mu depends on the availability of tkinter, part of the build process is
+to download the appropriate tkinter-related resources from
+`Mu's tkinter assets repository <https://github.com/mu-editor/mu_tkinter>`_.
 
 OSX App Installer
 +++++++++++++++++

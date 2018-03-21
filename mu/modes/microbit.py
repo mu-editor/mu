@@ -322,10 +322,14 @@ class MicrobitMode(MicroPythonMode):
 
     def toggle_repl(self, event):
         """
-        Check for the existence of the file dialog before toggling REPL.
+        Check for the existence of the file pane before toggling REPL.
         """
         if self.fs is None:
             super().toggle_repl(event)
+            if self.repl:
+                self.view.button_bar.slots['files'].setEnabled(False)
+            elif not (self.repl or self.plotter):
+                self.view.button_bar.slots['files'].setEnabled(True)
         else:
             message = _("REPL and file system cannot work at the same time.")
             information = _("The REPL and file system both use the same USB "
@@ -334,60 +338,83 @@ class MicrobitMode(MicroPythonMode):
                             "try again.")
             self.view.show_message(message, information)
 
+    def toggle_plotter(self, event):
+        """
+        Check for the existence of the file pane before toggling plotter.
+        """
+        if self.fs is None:
+            super().toggle_plotter(event)
+            if self.plotter:
+                self.view.button_bar.slots['files'].setEnabled(False)
+            elif not (self.repl or self.plotter):
+                self.view.button_bar.slots['files'].setEnabled(True)
+        else:
+            message = _("The plotter and file system cannot work at the same "
+                        "time.")
+            information = _("The plotter and file system both use the same "
+                            "USB serial connection. Only one can be active "
+                            "at any time. Toggle the file system off and "
+                            "try again.")
+            self.view.show_message(message, information)
+
     def toggle_files(self, event):
         """
-        Check for the existence of the REPL before toggling the file system
-        navigator for the micro:bit on or off.
+        Check for the existence of the REPL or plotter before toggling the file
+        system navigator for the micro:bit on or off.
         """
-        if self.repl is None:
+        if (self.repl or self.plotter):
+            message = _("File system cannot work at the same time as the "
+                        "REPL or plotter.")
+            information = _("The file system and the REPL and plotter "
+                            "use the same USB serial connection. Toggle the "
+                            "REPL and plotter off and try again.")
+            self.view.show_message(message, information)
+        else:
             if self.fs is None:
                 self.add_fs()
-                logger.info('Toggle filesystem on.')
+                if self.fs:
+                    logger.info('Toggle filesystem on.')
+                    self.view.button_bar.slots['repl'].setEnabled(False)
+                    self.view.button_bar.slots['plotter'].setEnabled(False)
             else:
                 self.remove_fs()
                 logger.info('Toggle filesystem off.')
-        else:
-            message = _("File system and REPL cannot work at the same time.")
-            information = _("The file system and REPL both use the same USB "
-                            "serial connection. Only one can be active "
-                            "at any time. Toggle the REPL off and try again.")
-            self.view.show_message(message, information)
+                self.view.button_bar.slots['repl'].setEnabled(True)
+                self.view.button_bar.slots['plotter'].setEnabled(True)
 
     def add_fs(self):
         """
-        If the REPL is not active, add the file system navigator to the UI.
+        Add the file system navigator to the UI.
         """
-        if self.repl is None and self.fs is None:
-            # Check for micro:bit
-            try:
-                microfs.get_serial()
-            except IOError:
-                # abort
-                message = _('Could not find an attached BBC micro:bit.')
-                information = _("Please make sure the device is plugged "
-                                "into this computer.\n\nThe device must "
-                                "have MicroPython flashed onto it before "
-                                "the file system will work.\n\n"
-                                "Finally, press the device's reset button "
-                                "and wait a few seconds before trying "
-                                "again.")
-                self.view.show_message(message, information)
-                return
-            self.file_manager_thread = QThread(self)
-            self.file_manager = FileManager()
-            self.file_manager.moveToThread(self.file_manager_thread)
-            self.file_manager_thread.started.\
-                connect(self.file_manager.on_start)
-            self.fs = self.view.add_filesystem(self.workspace_dir(),
-                                               self.file_manager)
-            self.fs.set_message.connect(self.editor.show_status_message)
-            self.fs.set_warning.connect(self.view.show_message)
-            self.file_manager_thread.start()
+        # Check for micro:bit
+        try:
+            microfs.get_serial()
+        except IOError:
+            # abort
+            message = _('Could not find an attached BBC micro:bit.')
+            information = _("Please make sure the device is plugged "
+                            "into this computer.\n\nThe device must "
+                            "have MicroPython flashed onto it before "
+                            "the file system will work.\n\n"
+                            "Finally, press the device's reset button "
+                            "and wait a few seconds before trying "
+                            "again.")
+            self.view.show_message(message, information)
+            return
+        self.file_manager_thread = QThread(self)
+        self.file_manager = FileManager()
+        self.file_manager.moveToThread(self.file_manager_thread)
+        self.file_manager_thread.started.\
+            connect(self.file_manager.on_start)
+        self.fs = self.view.add_filesystem(self.workspace_dir(),
+                                           self.file_manager)
+        self.fs.set_message.connect(self.editor.show_status_message)
+        self.fs.set_warning.connect(self.view.show_message)
+        self.file_manager_thread.start()
 
     def remove_fs(self):
         """
-        If the REPL is not active, remove the file system navigator from
-        the UI.
+        Remove the file system navigator from the UI.
         """
         if self.fs is None:
             raise RuntimeError("File system not running")
