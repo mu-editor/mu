@@ -628,29 +628,51 @@ class Editor:
                 self._view.focus_tab(widget)
                 return
         try:
-            if path.endswith('.py'):
+            if path.lower().endswith('.py'):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
                 try:
                     text, newline = read_and_decode(path)
                 except UnicodeDecodeError as exc:
                     message = _("Mu cannot read the characters in {}")
-                    self._view.show_message(message.format(path), error)
+                    filename = os.path.basename(path)
+                    self._view.show_message(message.format(filename), error)
                     return
 
                 if not ENCODING_COOKIE_RE.match(text):
                     text = ENCODING_COOKIE + NEWLINE + text
                 name = path
-            else:
+            elif path.lower().endswith('.hex'):
                 # Open the hex, extract the Python script therein and set the
                 # name to None, thus forcing the user to work out what to name
                 # the recovered script.
-                with open(path, newline='') as f:
-                    text = uflash.extract_script(f.read())
-                    newline = sniff_newline_convention(text)
+                try:
+                    with open(path, newline='') as f:
+                        text = uflash.extract_script(f.read())
+                        newline = sniff_newline_convention(text)
+                except Exception:
+                    filename = os.path.basename(path)
+                    message = _("Unable to load file {}").format(filename)
+                    info = _("Mu doesn't understand the hex file and cannot "
+                             "extract any Python code. Are you sure this is "
+                             "a hex file created with MicroPython?")
+                    self._view.show_message(message, info)
+                    return
                 name = None
+            else:
+                # Mu won't open other file types, although this may change in
+                # the future.
+                message = _("Mu only opens .py and .hex files")
+                info = _("Currently Mu only works with Python source files or "
+                         "hex files created with embedded MicroPython code.")
+                self._view.show_message(message, info)
+                return
         except (PermissionError, FileNotFoundError):
-            logger.warning('could not load {}'.format(path))
+            message = _("Could not load {}").format(path)
+            logger.warning('Could not load {}'.format(path))
+            info = _("Does this file exist? If it does, do you have "
+                     "permission to read it?\n\nPlease cheack and try again.")
+            self._view.show_message(message, info)
         else:
             logger.debug(text)
             self._view.add_tab(

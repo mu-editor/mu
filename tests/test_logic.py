@@ -761,6 +761,30 @@ def test_load_python_file():
         newline)
 
 
+def test_load_python_file_case_insensitive_file_type():
+    """
+    If the user specifies a Python file (*.PY) then ensure it's loaded and
+    added as a tab.
+
+    The Python code loaded will have a Mu encoding cookie prepended to it
+    or have its own one replaced by a Mu cookie
+    """
+    text, newline = "python", "\n"
+    ed = mocked_editor()
+    with generate_python_file(text) as filepath:
+        ed._view.get_load_path.return_value = filepath.upper()
+        with mock.patch("mu.logic.read_and_decode") as mock_read:
+            mock_read.return_value = text, newline
+            ed.load()
+
+    mock_read.assert_called_once_with(filepath.upper())
+    ed._view.add_tab.assert_called_once_with(
+        filepath.upper(),
+        mu.logic.ENCODING_COOKIE + mu.logic.NEWLINE + text,
+        ed.modes[ed.mode].api(),
+        newline)
+
+
 def test_load_python_unicode_error():
     """
     If Mu encounters a UnicodeDecodeError when trying to read and decode the
@@ -841,6 +865,43 @@ def test_load_hex_file():
     assert view.get_load_path.call_count == 1
     assert s.call_count == 1
     view.add_tab.assert_called_once_with(None, 'RECOVERED', api, os.linesep)
+
+
+def test_load_hex_file_breaks():
+    """
+    If the user specifies a hex file (*.hex) and an error is encountered ensure
+    Mu reports a helpful message.
+    """
+    view = mock.MagicMock()
+    view.get_load_path = mock.MagicMock(return_value='foo.hex')
+    view.add_tab = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    mock_mode = mock.MagicMock()
+    api = ['API specification', ]
+    mock_mode.api.return_value = api
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    ed.modes = {
+        'python': mock_mode,
+    }
+    mock_open = mock.mock_open(read_data='PYTHON')
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.logic.uflash.extract_script',
+                       side_effect=Exception('BOOM')) as s:
+        ed.load()
+    assert view.get_load_path.call_count == 1
+    assert s.call_count == 1
+    assert view.show_message.call_count == 1
+
+
+def test_load_not_python_or_hex():
+    """
+    If the user tries to open a file that isn't .py or .hex then Mu should
+    report a helpful message.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed._load('unknown_filetype.foo')
+    assert view.show_message.call_count == 1
 
 
 #
