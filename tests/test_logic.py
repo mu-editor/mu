@@ -3,18 +3,23 @@
 Tests for the Editor and REPL logic.
 """
 import sys
-import os.path
+import os
 import codecs
+import contextlib
 import json
 import locale
 import re
+import shutil
 import subprocess
+import tempfile
+from unittest import mock
+import uuid
+
 import pytest
 import mu.logic
 from PyQt5.QtWidgets import QMessageBox
-from unittest import mock
+
 from mu import __version__
-from . import support
 
 SESSION = json.dumps({
     'theme': 'night',
@@ -24,6 +29,147 @@ SESSION = json.dumps({
         'path/bar.py',
     ],
 })
+
+
+#
+# Testing support functions
+# These functions generate testing scenarios or mocks making
+# the test more readable and easier to spot the element being
+# tested from among the boilerplate setup code
+#
+
+def _generate_python_files(contents, dirpath):
+    """Generate a series of .py files, one for each element in an iterable
+
+    contents should be an iterable (typically a list) containing one
+    string for each of a the number of files to be created. The files
+    will be created in the dirpath directory passed in which will neither
+    be created nor destroyed by this function.
+    """
+    for i, c in enumerate(contents):
+        name = uuid.uuid1().hex
+        filepath = os.path.join(dirpath, "%03d-%s.py" % (1 + i, name))
+        #
+        # Write using newline="" so line-ending tests can work!
+        # If a binary write is needed (eg for an encoding test) pass
+        # a list of empty strings as contents and then write the bytes
+        # as part of the test.
+        #
+        with open(filepath, "w", encoding=mu.logic.ENCODING, newline="") as f:
+            f.write(c)
+        yield filepath
+
+
+@contextlib.contextmanager
+def generate_python_files(contents, dirpath=None):
+    """Create a temp directory and populate it with .py files, then remove it
+    """
+    dirpath = dirpath or tempfile.mkdtemp(prefix="mu-")
+    yield list(_generate_python_files(contents, dirpath))
+    shutil.rmtree(dirpath)
+
+
+@contextlib.contextmanager
+def generate_python_file(text="", dirpath=None):
+    """Create a temp directory and populate it with on .py file, then remove it
+    """
+    dirpath = dirpath or tempfile.mkdtemp(prefix="mu-")
+    for filepath in _generate_python_files([text], dirpath):
+        yield filepath
+        break
+    shutil.rmtree(dirpath)
+
+
+@contextlib.contextmanager
+def generate_session(
+    theme="day",
+    mode="python",
+    file_contents=None,
+    filepath=None,
+    **kwargs
+):
+    """Generate a temporary session file for one test
+
+    By default, the session file will be created inside a temporary directory
+    which will be removed afterwards. If filepath is specified the session
+    file will be created with that fully-specified path and filename.
+
+    If an iterable of file contents is specified (referring to text files to
+    be reloaded from a previous session) then files will be created in the
+    a directory with the contents provided.
+
+    If None is passed to any of the parameters that item will not be included
+    in the session data. Once all parameters have been considered if no session
+    data is present, the file will *not* be created.
+
+    Any additional kwargs are created as items in the data (eg to generate
+    invalid file contents)
+
+    The mu.logic.get_session_path function is mocked to return the
+    temporary filepath from this session.
+
+    The session is yielded to the contextmanager so the typical usage is:
+
+    with generate_session(mode="night") as session:
+        # do some test
+        assert <whatever>.mode == session['mode']
+    """
+    dirpath = tempfile.mkdtemp(prefix="mu-")
+    session_data = {}
+    if theme:
+        session_data['theme'] = theme
+    if mode:
+        session_data['mode'] = mode
+    if file_contents:
+        paths = _generate_python_files(file_contents, dirpath)
+        session_data['paths'] = list(paths)
+    session_data.update(**kwargs)
+
+    if filepath is None:
+        filepath = os.path.join(dirpath, "session.json")
+    if session_data:
+        with open(filepath, "w") as f:
+            f.write(json.dumps(session_data))
+    session = dict(session_data)
+    session['session_filepath'] = filepath
+    with mock.patch("mu.logic.get_session_path", return_value=filepath):
+        yield session
+    shutil.rmtree(dirpath)
+
+
+def mocked_view(text, path, newline):
+    """Create a mocked view with path, newline and text
+    """
+    view = mock.MagicMock()
+    view.current_tab = mock.MagicMock()
+    view.current_tab.path = path
+    view.current_tab.newline = newline
+    view.current_tab.text = mock.MagicMock(return_value=text)
+    view.add_tab = mock.MagicMock()
+    view.get_save_path = mock.MagicMock(return_value=path)
+    view.get_load_path = mock.MagicMock()
+    view.add_tab = mock.MagicMock()
+    return view
+
+
+def mocked_editor(mode="python", text=None, path=None, newline=None):
+    """Return a mocked editor with a mocked view
+
+    This is intended to assist the several tests where a mocked editor
+    is needed but where the length of setup code to get there tends to
+    obscure the intent of the test
+    """
+    view = mocked_view(text, path, newline)
+    ed = mu.logic.Editor(view)
+    ed.select_mode = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    mock_mode.save_timeout = 5
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    mock_mode.api.return_value = ["API Specification"]
+    ed.modes = {
+        mode: mock_mode,
+    }
+    return ed
 
 
 def test_CONSTANTS():
@@ -367,23 +513,16 @@ def test_editor_restore_session():
     """
     A correctly specified session is restored properly.
     """
-    view = mock.MagicMock()
-    view.set_theme = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed._view.add_tab = mock.MagicMock()
-    mock_mode = mock.MagicMock()
-    mock_mode.save_timeout = 5
-    ed.modes = {
-        'python': mock_mode,
-    }
-    mock_open = mock.mock_open(read_data=SESSION)
-    with mock.patch('builtins.open', mock_open), \
-            mock.patch('os.path.exists', return_value=True):
+    mode, theme = "python", "night"
+    file_contents = ["", ""]
+    ed = mocked_editor(mode)
+
+    with generate_session(theme, mode, file_contents):
         ed.restore_session()
-    assert ed.theme == 'night'
-    assert mock_open.return_value.read.call_count == 3
-    assert ed._view.add_tab.call_count == 2
-    view.set_theme.assert_called_once_with('night')
+
+    assert ed.theme == theme
+    assert ed._view.add_tab.call_count == len(file_contents)
+    ed._view.set_theme.assert_called_once_with(theme)
 
 
 def test_editor_restore_session_missing_files():
@@ -417,23 +556,9 @@ def test_editor_restore_session_invalid_mode():
     ignored (this happens regularly when changing versions when developing
     Mu itself).
     """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.select_mode = mock.MagicMock()
-    mock_mode = mock.MagicMock()
-    api = ['API specification', ]
-    mock_mode.api.return_value = api
-    mock_mode.workspace_dir.return_value = '/fake/path'
-    mock_mode.save_timeout = 5
-    ed.modes = {
-        'python': mock_mode,
-    }
-    mock_open = mock.mock_open(
-        read_data='{"paths": ["path/foo.py"], "mode": "numberwang"}')
-    mock_gettext = mock.MagicMock()
-    mock_gettext.return_value = '# Write your code here :-)'
-    with mock.patch('builtins.open', mock_open), \
-            mock.patch('os.path.exists', return_value=True):
+    valid_mode, invalid_mode = "python", uuid.uuid1().hex
+    ed = mocked_editor(valid_mode)
+    with generate_session(mode=invalid_mode):
         ed.restore_session()
     ed.select_mode.assert_called_once_with(None)
 
@@ -615,23 +740,24 @@ def test_load_python_file():
     """
     If the user specifies a Python file (*.py) then ensure it's loaded and
     added as a tab.
+
+    The Python code loaded will have a Mu encoding cookie prepended to it
+    or have its own one replaced by a Mu cookie
     """
-    view = mock.MagicMock()
-    view.get_load_path = mock.MagicMock(return_value='foo.py')
-    view.add_tab = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    mock_mode = mock.MagicMock()
-    api = ['API specification', ]
-    mock_mode.api.return_value = api
-    mock_mode.workspace_dir.return_value = '/fake/path'
-    ed.modes = {
-        'python': mock_mode,
-    }
-    mock_open = mock.mock_open(read_data='PYTHON')
-    with mock.patch('builtins.open', mock_open):
-        ed.load()
-    assert view.get_load_path.call_count == 1
-    view.add_tab.assert_called_once_with('foo.py', 'PYTHON', api)
+    text, newline = "python", "\n"
+    ed = mocked_editor()
+    with generate_python_file(text) as filepath:
+        ed._view.get_load_path.return_value = filepath
+        with mock.patch("mu.logic.read_and_decode") as mock_read:
+            mock_read.return_value = text, newline
+            ed.load()
+
+    mock_read.assert_called_once_with(filepath)
+    ed._view.add_tab.assert_called_once_with(
+        filepath,
+        mu.logic.ENCODING_COOKIE + mu.logic.NEWLINE + text,
+        ed.modes[ed.mode].api(),
+        newline)
 
 
 def test_no_duplicate_load_python_file():
@@ -696,7 +822,44 @@ def test_load_hex_file():
         ed.load()
     assert view.get_load_path.call_count == 1
     assert s.call_count == 1
-    view.add_tab.assert_called_once_with(None, 'RECOVERED', api)
+    view.add_tab.assert_called_once_with(None, 'RECOVERED', api, os.linesep)
+
+
+#
+# When loading files Mu makes a note of the majority line-ending convention
+# in use in the file. When it is saved, that convention is used.
+#
+def test_load_stores_newline():
+    """
+    When a file is loaded, its newline convention should be held on the tab
+    for use when saving.
+    """
+    newline = "r\n"
+    text = newline.join("the cat sat on the mat".split())
+    editor = mocked_editor()
+    with generate_python_file("abc\r\ndef") as filepath:
+        editor._view.get_load_path.return_value = filepath
+        editor.load()
+
+    assert editor._view.add_tab.called_with(
+        filepath, text, editor.modes[editor.mode].api(), "\r\n")
+
+
+def test_save_restores_newline():
+    """
+    When a file is saved the newline convention noted originally should
+    be used.
+    """
+    newline = "\r\n"
+    test_text = mu.logic.NEWLINE.join(
+        [mu.logic.ENCODING_COOKIE] +
+        "the cat sat on the mat".split()
+    )
+    with generate_python_file(test_text) as filepath:
+        with mock.patch("mu.logic.save_and_encode") as mock_save:
+            ed = mocked_editor(text=test_text, newline=newline, path=filepath)
+            ed.save()
+            assert mock_save.called_with(test_text, filepath, newline)
 
 
 def test_load_error():
@@ -736,27 +899,12 @@ def test_save_no_path():
     If there's no path associated with the tab then request the user provide
     one.
     """
-    view = mock.MagicMock()
-    view.current_tab = mock.MagicMock()
-    view.current_tab.path = None
-    view.current_tab.text = mock.MagicMock(return_value='foo')
-    view.get_save_path = mock.MagicMock(return_value='foo.py')
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    mock_mode = mock.MagicMock()
-    mock_mode.workspace_dir.return_value = '/fake/path'
-    ed.modes = {
-        'python': mock_mode,
-    }
-    with mock.patch('builtins.open', mock_open):
+    text, path, newline = "foo", "foo.py", "\n"
+    ed = mocked_editor(text=text, path=None, newline=newline)
+    ed._view.get_save_path.return_value = path
+    with mock.patch("mu.logic.save_and_encode") as mock_save:
         ed.save()
-    assert mock_open.call_count == 1
-    mock_open.assert_called_with('foo.py', 'w', newline='')
-    mock_open.return_value.write.assert_called_once_with('foo')
-    view.get_save_path.assert_called_once_with('/fake/path')
+    mock_save.assert_called_with(text, path, newline)
 
 
 def test_save_no_path_no_path_given():
@@ -764,19 +912,12 @@ def test_save_no_path_no_path_given():
     If there's no path associated with the tab and the user cancels providing
     one, ensure the path is correctly re-set.
     """
-    view = mock.MagicMock()
-    view.current_tab = mock.MagicMock()
-    view.current_tab.path = None
-    view.get_save_path = mock.MagicMock(return_value='')
-    ed = mu.logic.Editor(view)
-    mock_mode = mock.MagicMock()
-    mock_mode.workspace_dir.return_value = 'foo/bar'
-    ed.modes = {
-        'python': mock_mode,
-    }
+    text, newline = "foo", "\n"
+    ed = mocked_editor(text=text, path=None, newline=newline)
+    ed._view.get_save_path.return_value = ''
     ed.save()
     # The path isn't the empty string returned from get_save_path.
-    assert view.current_tab.path is None
+    assert ed._view.current_tab.path is None
 
 
 def test_save_file_with_exception():
@@ -802,21 +943,19 @@ def test_save_python_file():
     If the path is a Python file (ending in *.py) then save it and reset the
     modified flag.
     """
+    path, contents, newline = "foo.py", "foo", "\n"
     view = mock.MagicMock()
     view.current_tab = mock.MagicMock()
-    view.current_tab.path = 'foo.py'
-    view.current_tab.text = mock.MagicMock(return_value='foo')
-    view.get_save_path = mock.MagicMock(return_value='foo.py')
+    view.current_tab.path = path
+    view.current_tab.text = mock.MagicMock(return_value=contents)
+    view.current_tab.newline = "\n"
+    view.get_save_path = mock.MagicMock(return_value=path)
     view.current_tab.setModified = mock.MagicMock(return_value=None)
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    with mock.patch('builtins.open', mock_open):
+    with mock.patch("mu.logic.save_and_encode") as mock_save:
         ed.save()
-    mock_open.assert_called_once_with('foo.py', 'w', newline='')
-    mock_open.return_value.write.assert_called_once_with('foo')
+
+    mock_save.assert_called_once_with(contents, path, newline)
     assert view.get_save_path.call_count == 0
     view.current_tab.setModified.assert_called_once_with(False)
 
@@ -825,42 +964,25 @@ def test_save_with_no_file_extension():
     """
     If the path doesn't end in *.py then append it to the filename.
     """
-    view = mock.MagicMock()
-    view.current_tab = mock.MagicMock()
-    view.current_tab.path = 'foo'
-    view.current_tab.text = mock.MagicMock(return_value='foo')
-    view.get_save_path = mock.MagicMock(return_value='foo')
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    with mock.patch('builtins.open', mock_open):
+    text, path, newline = "foo", "foo", "\n"
+    ed = mocked_editor(text=text, path=path, newline=newline)
+    with mock.patch('mu.logic.save_and_encode') as mock_save:
         ed.save()
-    mock_open.assert_called_once_with('foo.py', 'w', newline='')
-    mock_open.return_value.write.assert_called_once_with('foo')
-    assert view.get_save_path.call_count == 0
+    mock_save.assert_called_once_with(text, path + ".py", newline)
+    ed._view.get_save_path.call_count == 0
 
 
 def test_save_with_non_py_file_extension():
     """
     If the path ends in an extension, save it using the extension
     """
-    view = mock.MagicMock()
-    view.current_tab = mock.MagicMock()
-    view.current_tab.path = 'foo.txt'
-    view.current_tab.text = mock.MagicMock(return_value='foo.txt')
-    view.get_save_path = mock.MagicMock(return_value='foo.txt')
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    with mock.patch('builtins.open', mock_open):
+    text, path, newline = "foo", "foo.txt", "\n"
+    ed = mocked_editor(text=text, path=path, newline=newline)
+    ed._view.get_save_path.return_value = path
+    with mock.patch('mu.logic.save_and_encode') as mock_save:
         ed.save()
-    mock_open.assert_called_once_with('foo.txt', 'w', newline='')
-    mock_open.return_value.write.assert_called_once_with('foo.txt')
-    assert view.get_save_path.call_count == 0
+    mock_save.assert_called_once_with(text, path, newline)
+    ed._view.get_save_path.call_count == 0
 
 
 def test_get_tab_existing_tab():
@@ -1333,11 +1455,9 @@ def test_autosave():
     mock_tab.isModified.return_value = True
     view.widgets = [mock_tab, ]
     ed = mu.logic.Editor(view)
-    mock_open = mock.MagicMock()
-    with mock.patch('builtins.open', mock_open), \
-            mock.patch('mu.logic.os'):
+    with mock.patch('mu.logic.save_and_encode') as mock_save:
         ed.autosave()
-    assert mock_open.call_count == 1
+    assert mock_save.call_count == 1
     mock_tab.setModified.assert_called_once_with(False)
 
 
@@ -1517,62 +1637,56 @@ def test_logic_independent_import_app():
 def test_read_newline_no_text():
     """If the file being loaded is empty, use the platform default newline
     """
-    with support.generate_python_files([""]) as filepaths:
-        for filepath in filepaths:
-            text, newline = mu.logic.read_and_decode(filepath)
-            assert text.count("\r\n") == 0
-            assert newline == os.linesep
+    with generate_python_file() as filepath:
+        text, newline = mu.logic.read_and_decode(filepath)
+        assert text.count("\r\n") == 0
+        assert newline == os.linesep
 
 
 def test_read_newline_all_unix():
     """If the file being loaded has only the Unix convention, use that
     """
-    with support.generate_python_files(["abc\ndef"]) as filepaths:
-        for filepath in filepaths:
-            text, newline = mu.logic.read_and_decode(filepath)
-            assert text.count("\r\n") == 0
-            assert newline == "\n"
+    with generate_python_file("abc\ndef") as filepath:
+        text, newline = mu.logic.read_and_decode(filepath)
+        assert text.count("\r\n") == 0
+        assert newline == "\n"
 
 
 def test_read_newline_all_windows():
     """If the file being loaded has only the Windows convention, use that
     """
-    with support.generate_python_files(["abc\r\ndef"]) as filepaths:
-        for filepath in filepaths:
-            text, newline = mu.logic.read_and_decode(filepath)
-            assert text.count("\r\n") == 0
-            assert newline == "\r\n"
+    with generate_python_file("abc\r\ndef") as filepath:
+        text, newline = mu.logic.read_and_decode(filepath)
+        assert text.count("\r\n") == 0
+        assert newline == "\r\n"
 
 
 def test_read_newline_most_unix():
     """If the file being loaded has mostly the Unix convention, use that
     """
-    with support.generate_python_files(["\nabc\r\ndef\n"]) as filepaths:
-        for filepath in filepaths:
-            text, newline = mu.logic.read_and_decode(filepath)
-            assert text.count("\r\n") == 0
-            assert newline == "\n"
+    with generate_python_file("\nabc\r\ndef\n") as filepath:
+        text, newline = mu.logic.read_and_decode(filepath)
+        assert text.count("\r\n") == 0
+        assert newline == "\n"
 
 
 def test_read_newline_most_windows():
     """If the file being loaded has mostly the Windows convention, use that
     """
-    with support.generate_python_files(["\r\nabc\ndef\r\n"]) as filepaths:
-        for filepath in filepaths:
-            text, newline = mu.logic.read_and_decode(filepath)
-            assert text.count("\r\n") == 0
-            assert newline == "\r\n"
+    with generate_python_file("\r\nabc\ndef\r\n") as filepath:
+        text, newline = mu.logic.read_and_decode(filepath)
+        assert text.count("\r\n") == 0
+        assert newline == "\r\n"
 
 
 def test_read_newline_equal_match():
     """If the file being loaded has an equal number of Windows and
     Unix newlines, use the platform default
     """
-    with support.generate_python_files(["\r\nabc\ndef"]) as filepaths:
-        for filepath in filepaths:
-            text, newline = mu.logic.read_and_decode(filepath)
-            assert text.count("\r\n") == 0
-            assert newline == os.linesep
+    with generate_python_file("\r\nabc\ndef") as filepath:
+        text, newline = mu.logic.read_and_decode(filepath)
+        assert text.count("\r\n") == 0
+        assert newline == os.linesep
 
 
 #
@@ -1585,10 +1699,9 @@ def test_write_newline_to_unix():
     the Mu internal default; but we leave it here in case that situation
     changes)
     """
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_file() as filepath:
         test_string = "\r\n".join("the cat sat on the mat".split())
-        for filepath in filepaths:
-            mu.logic.save_and_encode(test_string, filepath, "\n")
+        mu.logic.save_and_encode(test_string, filepath, "\n")
         with open(filepath, newline="") as f:
             text = f.read()
             assert text.count("\r\n") == 0
@@ -1601,10 +1714,9 @@ def test_write_newline_to_unix():
 def test_write_newline_to_windows():
     """If the file had Windows newlines it should be saved with Windows newlines
     """
-    with support.generate_python_files([""]) as filepaths:
+    with generate_python_file() as filepath:
         test_string = "\n".join("the cat sat on the mat".split())
-        for filepath in filepaths:
-            mu.logic.save_and_encode(test_string, filepath, "\r\n")
+        mu.logic.save_and_encode(test_string, filepath, "\r\n")
         with open(filepath, newline="") as f:
             text = f.read()
             assert len(re.findall("[^\r]\n", text)) == 0
@@ -1633,36 +1745,33 @@ UNICODE_TEST_STRING = BYTES_TEST_STRING.decode("iso-8859-1")
 def test_read_utf8bom():
     """Successfully decode from utf-8 encoded with BOM
     """
-    with support.generate_python_files([""]) as filepaths:
-        for filepath in filepaths:
-            with open(filepath, "w", encoding="utf-8-sig") as f:
-                f.write(UNICODE_TEST_STRING)
-            text, _ = mu.logic.read_and_decode(filepath)
-            assert text == UNICODE_TEST_STRING
+    with generate_python_file() as filepath:
+        with open(filepath, "w", encoding="utf-8-sig") as f:
+            f.write(UNICODE_TEST_STRING)
+        text, _ = mu.logic.read_and_decode(filepath)
+        assert text == UNICODE_TEST_STRING
 
 
 def test_read_utf16bebom():
     """Successfully decode from utf-16 BE encoded with BOM
     """
-    with support.generate_python_files([""]) as filepaths:
-        for filepath in filepaths:
-            with open(filepath, "wb") as f:
-                f.write(codecs.BOM_UTF16_BE)
-                f.write(UNICODE_TEST_STRING.encode("utf-16-be"))
-            text, _ = mu.logic.read_and_decode(filepath)
-            assert text == UNICODE_TEST_STRING
+    with generate_python_file() as filepath:
+        with open(filepath, "wb") as f:
+            f.write(codecs.BOM_UTF16_BE)
+            f.write(UNICODE_TEST_STRING.encode("utf-16-be"))
+        text, _ = mu.logic.read_and_decode(filepath)
+        assert text == UNICODE_TEST_STRING
 
 
 def test_read_utf16lebom():
     """Successfully decode from utf-16 LE encoded with BOM
     """
-    with support.generate_python_files([""]) as filepaths:
-        for filepath in filepaths:
-            with open(filepath, "wb") as f:
-                f.write(codecs.BOM_UTF16_LE)
-                f.write(UNICODE_TEST_STRING.encode("utf-16-le"))
-            text, _ = mu.logic.read_and_decode(filepath)
-            assert text == UNICODE_TEST_STRING
+    with generate_python_file() as filepath:
+        with open(filepath, "wb") as f:
+            f.write(codecs.BOM_UTF16_LE)
+            f.write(UNICODE_TEST_STRING.encode("utf-16-le"))
+        text, _ = mu.logic.read_and_decode(filepath)
+        assert text == UNICODE_TEST_STRING
 
 
 def test_read_encoding_cookie():
@@ -1671,24 +1780,22 @@ def test_read_encoding_cookie():
     encoding_cookie = mu.logic.ENCODING_COOKIE.replace(
         mu.logic.ENCODING, "iso-8859-1")
     test_string = encoding_cookie + UNICODE_TEST_STRING
-    with support.generate_python_files([""]) as filepaths:
-        for filepath in filepaths:
-            with open(filepath, "wb") as f:
-                f.write(test_string.encode("iso-8859-1"))
-            text, _ = mu.logic.read_and_decode(filepath)
-            assert text == test_string
+    with generate_python_file() as filepath:
+        with open(filepath, "wb") as f:
+            f.write(test_string.encode("iso-8859-1"))
+        text, _ = mu.logic.read_and_decode(filepath)
+        assert text == test_string
 
 
 def test_read_encoding_default():
     """Successfully decode from the default locale
     """
     test_string = UNICODE_TEST_STRING.encode(locale.getpreferredencoding())
-    with support.generate_python_files([""]) as filepaths:
-        for filepath in filepaths:
-            with open(filepath, "wb") as f:
-                f.write(test_string)
-            text, _ = mu.logic.read_and_decode(filepath)
-            assert text == UNICODE_TEST_STRING
+    with generate_python_file() as filepath:
+        with open(filepath, "wb") as f:
+            f.write(test_string)
+        text, _ = mu.logic.read_and_decode(filepath)
+        assert text == UNICODE_TEST_STRING
 
 
 #
@@ -1700,12 +1807,11 @@ def test_read_encoding_default():
 def test_write_utf8():
     """The text should be saved encoded as utf8
     """
-    with support.generate_python_files([""]) as filepaths:
-        for filepath in filepaths:
-            mu.logic.save_and_encode(UNICODE_TEST_STRING, filepath)
-            with open(filepath, encoding="utf-8") as f:
-                text = f.read()
-                assert text == mu.logic.ENCODING_COOKIE + UNICODE_TEST_STRING
+    with generate_python_file() as filepath:
+        mu.logic.save_and_encode(UNICODE_TEST_STRING, filepath)
+        with open(filepath, encoding="utf-8") as f:
+            text = f.read()
+            assert text == mu.logic.ENCODING_COOKIE + UNICODE_TEST_STRING
 
 
 def test_write_encoding_cookie_no_cookie():
@@ -1713,15 +1819,14 @@ def test_write_encoding_cookie_no_cookie():
     file will be the Mu encoding cookie
     """
     test_string = "This is a test"
-    with support.generate_python_files([""]) as filepaths:
-        for filepath in filepaths:
-            mu.logic.save_and_encode(test_string, filepath)
-            with open(filepath, encoding="utf-8") as f:
-                for line in f:
-                    assert line == mu.logic.ENCODING_COOKIE
-                    break
-                else:
-                    assert False, "No cookie found"
+    with generate_python_file() as filepath:
+        mu.logic.save_and_encode(test_string, filepath)
+        with open(filepath, encoding="utf-8") as f:
+            for line in f:
+                assert line == mu.logic.ENCODING_COOKIE
+                break
+            else:
+                assert False, "No cookie found"
 
 
 def test_write_encoding_cookie_existing_cookie():
@@ -1729,12 +1834,11 @@ def test_write_encoding_cookie_existing_cookie():
     """
     cookie = mu.logic.ENCODING_COOKIE.replace(mu.logic.ENCODING, "iso-8859-1")
     test_string = cookie + "This is a test"
-    with support.generate_python_files([""]) as filepaths:
-        for filepath in filepaths:
-            mu.logic.save_and_encode(test_string, filepath)
-            with open(filepath, encoding="utf-8") as f:
-                for line in f:
-                    assert line == mu.logic.ENCODING_COOKIE
-                    break
-                else:
-                    assert False, "No cookie found"
+    with generate_python_file() as filepath:
+        mu.logic.save_and_encode(test_string, filepath)
+        with open(filepath, encoding="utf-8") as f:
+            for line in f:
+                assert line == mu.logic.ENCODING_COOKIE
+                break
+            else:
+                assert False, "No cookie found"

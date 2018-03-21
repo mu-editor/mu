@@ -613,6 +613,11 @@ class Editor:
 
     def _load(self, path):
         logger.info('Loading script from: {}'.format(path))
+        error = _("""Mu is unable to read some of the characters in the file.
+
+        This is because it contains some non-English characters which
+        Mu expects to be encoded as UTF-8, but which are encoded in
+        some other way.""")
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
@@ -627,8 +632,15 @@ class Editor:
             if path.endswith('.py'):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
-                with open(path, newline='') as f:
-                    text = f.read()
+                try:
+                    text, newline = read_and_decode(path)
+                except UnicodeDecodeError as exc:
+                    message = _("Mu cannot read the characters in {}")
+                    self._view.show_message(message.format(path), error)
+                    return
+
+                if not ENCODING_COOKIE_RE.match(text):
+                    text = ENCODING_COOKIE + NEWLINE + text
                 name = path
             else:
                 # Open the hex, extract the Python script therein and set the
@@ -636,12 +648,14 @@ class Editor:
                 # the recovered script.
                 with open(path, newline='') as f:
                     text = uflash.extract_script(f.read())
+                    newline = sniff_newline_convention(text)
                 name = None
         except (PermissionError, FileNotFoundError):
             logger.warning('could not load {}'.format(path))
         else:
             logger.debug(text)
-            self._view.add_tab(name, text, self.modes[self.mode].api())
+            self._view.add_tab(
+                name, text, self.modes[self.mode].api(), newline)
 
     def load(self):
         """
@@ -655,6 +669,21 @@ class Editor:
     def direct_load(self, path):
         """ for loading files passed from command line or the OS launch"""
         self._load(path)
+
+    def save_tab_to_file(self, tab):
+        try:
+            logger.info('Saving script to: {}'.format(tab.path))
+            logger.debug(tab.text())
+            save_and_encode(tab.text(), tab.path, tab.newline)
+            tab.setModified(False)
+            self.show_status_message(_("Saved file: {}").format(tab.path))
+        except OSError as e:
+            logger.error(e)
+            message = _('Could not save file.')
+            information = _("Error saving file to disk. Ensure you have "
+                            "permission to write the file and "
+                            "sufficient disk space.")
+            self._view.show_message(message, information)
 
     def save(self):
         """
@@ -673,20 +702,7 @@ class Editor:
             if os.path.splitext(tab.path)[1] == '':
                 # the user didn't specify an extension, default to .py
                 tab.path += '.py'
-            try:
-                with open(tab.path, 'w', newline='') as f:
-                    logger.info('Saving script to: {}'.format(tab.path))
-                    logger.debug(tab.text())
-                    write_and_flush(f, tab.text())
-                tab.setModified(False)
-                self.show_status_message(_("Saved file: {}").format(tab.path))
-            except OSError as e:
-                logger.error(e)
-                message = _('Could not save file.')
-                information = _("Error saving file to disk. Ensure you have "
-                                "permission to write the file and "
-                                "sufficient disk space.")
-                self._view.show_message(message, information)
+            self.save_tab_to_file(tab)
         else:
             # The user cancelled the filename selection.
             tab.path = None
@@ -876,11 +892,7 @@ class Editor:
             logger.info('Autosave has detected changes.')
             for tab in self._view.widgets:
                 if tab.path and tab.isModified():
-                    with open(tab.path, 'w', newline='') as f:
-                        logger.info('Saving script to: {}'.format(tab.path))
-                        logger.debug(tab.text())
-                        write_and_flush(f, tab.text())
-                    tab.setModified(False)
+                    self.save_tab_to_file(tab)
 
     def check_usb(self):
         """
