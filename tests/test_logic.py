@@ -639,8 +639,9 @@ def test_editor_open_focus_passed_file():
         'contains_red.py'
     )
     ed.select_mode = mock.MagicMock()
-    ed.restore_session(file_path)
-    ed._load.assert_called_once_with(file_path)
+    with mock.patch("builtins.open", mock.mock_open(read_data="data")):
+        ed.restore_session(file_path)
+        ed._load.assert_called_once_with(file_path)
 
 
 def test_editor_session_and_open_focus_passed_file():
