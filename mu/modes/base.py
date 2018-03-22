@@ -124,7 +124,8 @@ class MicroPythonMode(BaseMode):
             # Look for the port VID & PID in the list of know board IDs
             if (vid, pid) in self.valid_boards:
                 port_name = port.portName()
-                logger.info('Found device on port: {}'.format(port_name))
+                if with_logging:
+                    logger.info('Found device on port: {}'.format(port_name))
                 return self.port_path(port_name)
         if with_logging:
             logger.warning('Could not find device.')
