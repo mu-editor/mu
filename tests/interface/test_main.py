@@ -3,7 +3,7 @@
 Tests for the user interface elements of Mu.
 """
 from PyQt5.QtWidgets import QAction, QWidget, QFileDialog, QMessageBox
-from PyQt5.QtCore import Qt, QSize, QIODevice
+from PyQt5.QtCore import Qt, QSize, QIODevice, pyqtSignal, QObject
 from PyQt5.QtGui import QIcon, QKeySequence
 from unittest import mock
 from mu import __version__
@@ -1401,6 +1401,31 @@ def test_Window_open_directory_from_os_freedesktop():
         mock_sys.platform = 'linux'
         w.open_directory_from_os(path)
         mock_system.assert_called_once_with('xdg-open "{}"'.format(path))
+
+
+def test_Window_open_file_event():
+    editor = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
+    window = mu.interface.main.Window()
+    window.breakpoint_toggle = mock.MagicMock()
+    window.tabs = mock.MagicMock()
+    window.theme = 'day'
+    window.button_bar = mock.MagicMock()
+    window.read_only_tabs = False
+
+    mock_emit = mock.MagicMock()
+    window.open_file = mock.MagicMock()
+    window.open_file.emit = mock_emit
+
+    path = '/foo/bar.py'
+    text = 'print("Hello, World!")'
+    api = ['API definition', ]
+
+    mock_editor = mock.MagicMock(return_value=editor)
+    with mock.patch('mu.interface.main.EditorPane', mock_editor):
+        window.add_tab(path, text, api, '\n')
+    mock_editor.assert_called_once_with(path, text, '\n')
+    editor.open_file.emit('/foo/bar.py')
+    mock_emit.assert_called_once_with('/foo/bar.py')
 
 
 def test_StatusBar_init():

@@ -111,10 +111,10 @@ class EditorPane(QsciScintilla):
                     # Grab a 'real' path from the url
                     path = url.toLocalFile()
                     # If the dropped file is a script or hex
-                    if os.path.splitext(path)[1] in ['.py', '.hex']:
+                    if os.path.splitext(path)[1].lower() in ['.py', '.hex']:
                         # Add it to the list of valid links
                         links.append(path)
-            
+
             # Did we get any?
             if len(links) > 0:
                 # Only accept now we actually know we can do
@@ -123,7 +123,7 @@ class EditorPane(QsciScintilla):
                 for link in links:
                     # Start bubbling an open file request
                     self.open_file.emit(link)
-        
+
         # If the event wasn't handled let QsciScintilla have a go
         if not event.isAccepted():
             super().dropEvent(event)

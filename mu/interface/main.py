@@ -143,7 +143,7 @@ class FileTabs(QTabWidget):
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.removeTab)
         self.currentChanged.connect(self.change_tab)
-        
+
     def removeTab(self, tab_id):
         """
         Ask the user before closing the file.
