@@ -43,6 +43,7 @@ def test_debug_start():
     Ensure the handling of starting the debugger works as expected.
     """
     editor = mock.MagicMock()
+    editor.envars = [['name', 'value'], ]
     view = mock.MagicMock()
     view.current_tab.path = '/foo'
     view.current_tab.isModified.return_value = True
@@ -58,7 +59,8 @@ def test_debug_start():
         dm.start()
         oa.assert_called_once_with('/foo', 'w', newline='')
     view.add_python3_runner.assert_called_once_with('/foo', '/bar',
-                                                    debugger=True)
+                                                    debugger=True,
+                                                    envars=[['name', 'value']])
     mock_runner.process.waitForStarted.assert_called_once_with()
     mock_runner.process.finished.connect.assert_called_once_with(dm.finished)
     view.add_debug_inspector.assert_called_once_with()

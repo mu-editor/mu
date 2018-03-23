@@ -111,9 +111,11 @@ class DebugMode(BaseMode):
                     tab.setModified(False)
             logger.debug(tab.text())
             self.view.button_bar.slots['modes'].setEnabled(False)
+            envars = self.editor.envars
             self.runner = self.view.add_python3_runner(tab.path,
                                                        self.workspace_dir(),
-                                                       debugger=True)
+                                                       debugger=True,
+                                                       envars=envars)
             self.runner.process.waitForStarted()
             self.runner.process.finished.connect(self.finished)
             self.view.add_debug_inspector()
