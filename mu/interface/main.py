@@ -188,6 +188,7 @@ class Window(QMainWindow):
     close_serial = pyqtSignal()
     write_to_serial = pyqtSignal(bytes)
     data_received = pyqtSignal(bytes)
+    open_file = pyqtSignal(str)
 
     def zoom_in(self):
         """
@@ -268,6 +269,11 @@ class Window(QMainWindow):
             modified_tab_index = self.tabs.currentIndex()
             self.tabs.setTabText(modified_tab_index, new_tab.label)
             self.update_title(new_tab.label)
+
+        @new_tab.open_file.connect
+        def on_open_file(file):
+            # Bubble the signal up
+            self.open_file.emit(file)
 
         self.tabs.setCurrentIndex(new_tab_index)
         self.connect_zoom(new_tab)
@@ -849,6 +855,7 @@ class StatusBar(QStatusBar):
         self.set_mode(mode)
         # Logs viewer
         self.logs_label = QLabel()
+        self.logs_label.setObjectName('AdministrationLabel')
         self.logs_label.setPixmap(load_pixmap('logs').scaledToHeight(24))
         self.logs_label.setToolTip(_('View logs.'))
         self.addPermanentWidget(self.logs_label)

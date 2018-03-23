@@ -6,6 +6,8 @@ from unittest import mock
 import mu.interface.editor
 import keyword
 import re
+from PyQt5.QtCore import Qt, QMimeData, QUrl, QPointF
+from PyQt5.QtGui import QDropEvent
 
 
 def test_pythonlexer_keywords():
@@ -450,3 +452,34 @@ def test_EditorPane_selection_change_listener():
     assert ep.previous_selection['line_end'] == 2
     assert ep.previous_selection['col_end'] == 2
     assert ep.highlight_selected_matches.call_count == 1
+
+
+def test_EditorPane_drop_event():
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    m = mock.MagicMock()
+    ep.open_file = mock.MagicMock()
+    ep.open_file.emit = m
+    data = QMimeData()
+    data.setUrls([QUrl('file://test/path.py'), QUrl('file://test/path.hex')])
+    evt = QDropEvent(QPointF(0, 0), Qt.CopyAction, data,
+                     Qt.LeftButton, Qt.NoModifier)
+    ep.dropEvent(evt)
+    assert m.call_count == 2
+
+    m = mock.MagicMock()
+    ep.open_file.emit = m
+    data = QMimeData()
+    data.setUrls([QUrl('file://test/path.txt'), QUrl('file://test/path.hex')])
+    evt = QDropEvent(QPointF(0, 0), Qt.CopyAction, data,
+                     Qt.LeftButton, Qt.NoModifier)
+    ep.dropEvent(evt)
+    assert m.call_count == 1
+
+    m = mock.MagicMock()
+    ep.open_file.emit = m
+    data = QMimeData()
+    data.setUrls([QUrl('file://test/path.txt')])
+    evt = QDropEvent(QPointF(0, 0), Qt.CopyAction, data,
+                     Qt.LeftButton, Qt.NoModifier)
+    ep.dropEvent(evt)
+    assert m.call_count == 0

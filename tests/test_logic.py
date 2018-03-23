@@ -18,6 +18,7 @@ import uuid
 import pytest
 import mu.logic
 from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import pyqtSignal, QObject
 
 from mu import __version__
 
@@ -1921,3 +1922,14 @@ def test_write_encoding_cookie_existing_cookie():
                 break
             else:
                 assert False, "No cookie found"
+
+
+def test_handle_open_file():
+    class Dummy(QObject):
+        open_file = pyqtSignal(str)
+    view = Dummy()
+    edit = mu.logic.Editor(view)
+    m = mock.MagicMock()
+    edit.direct_load = m
+    view.open_file.emit('/test/path.py')
+    m.assert_called_once_with('/test/path.py')
