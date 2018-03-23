@@ -19,9 +19,15 @@ QStackedWidget, QWidget, QApplication, QLabel, QStatusBar, QTabBar {
     color: white;
 }
 
-QDialog, QTextEdit {
+QDialog {
     background-color: black;
     color: white;
+    border: 1px solid white;
+}
+
+QPlainTextEdit {
+    background-color: white;
+    color: black;
     border: 1px solid white;
 }
 
@@ -30,31 +36,36 @@ QTabBar {
     background: black;
 }
 
+QTabBar::tab {
+    border-top: 1px solid #555;
+    border-left: 1px solid #555;
+    border-right: 1px solid #555;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
 QTabBar::tab, QListWidget::item:hover, QListWidget::item:focus {
     background: #3b3b3b;
-    border: none;
     padding: 4px 8px;
     margin: 0;
 }
 
 QTabBar::tab::hover, QListWidget::item::selected  {
     background: #666;
-    border: none;
     padding: 4px 8px;
     margin: 0;
 }
 
 QTabBar::tab::selected {
     background: #555;
-    border: none;
     padding: 4px 8px;
     margin: 0;
 }
 
 QTabWidget::pane {
     border: none;
-    border-top: 2px solid #555;
-    border-bottom: 2px solid #555;
+    border-top: 1px solid #555;
+    border-bottom: 1px solid #555;
 }
 
 QsciScintilla {
@@ -81,6 +92,6 @@ QStatusBar QLabel {
     margin: 0;
 }
 
-QStatusBar QLabel:hover, QStatusBar QLabel:focus {
+#AdministrationLabel:hover, #AdministrationLabel:focus {
     background: #666;
 }
