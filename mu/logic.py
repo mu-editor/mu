@@ -512,6 +512,11 @@ class Editor:
         logger.info('Log directory: {}'.format(LOG_DIR))
         logger.info('Data directory: {}'.format(DATA_DIR))
 
+        @view.open_file.connect
+        def on_open_file(file):
+            # Open the file
+            self.direct_load(file)
+
     def setup(self, modes):
         """
         Define the available modes and ensure there's a default working
