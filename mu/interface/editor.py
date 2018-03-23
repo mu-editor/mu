@@ -110,10 +110,8 @@ class EditorPane(QsciScintilla):
                 if url.isLocalFile():
                     # Grab a 'real' path from the url
                     path = url.toLocalFile()
-                    # If the dropped file is a script or hex
-                    if os.path.splitext(path)[1].lower() in ['.py', '.hex']:
-                        # Add it to the list of valid links
-                        links.append(path)
+                    # Add it to the list of valid links
+                    links.append(path)
 
             # Did we get any?
             if len(links) > 0:

@@ -3,7 +3,7 @@
 Tests for the user interface elements of Mu.
 """
 from PyQt5.QtWidgets import QAction, QWidget, QFileDialog, QMessageBox
-from PyQt5.QtCore import Qt, QSize, QIODevice, pyqtSignal, QObject
+from PyQt5.QtCore import Qt, QSize, QIODevice
 from PyQt5.QtGui import QIcon, QKeySequence
 from unittest import mock
 from mu import __version__
