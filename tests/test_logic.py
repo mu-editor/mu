@@ -29,6 +29,9 @@ SESSION = json.dumps({
         'path/foo.py',
         'path/bar.py',
     ],
+    'envars': [
+        ['name', 'value'],
+    ],
 })
 
 
@@ -87,6 +90,7 @@ def generate_session(
     mode="python",
     file_contents=None,
     filepath=None,
+    envars=[['name', 'value'], ],
     **kwargs
 ):
     """Generate a temporary session file for one test
@@ -124,6 +128,8 @@ def generate_session(
     if file_contents:
         paths = _generate_python_files(file_contents, dirpath)
         session_data['paths'] = list(paths)
+    if envars:
+        session_data['envars'] = envars
     session_data.update(**kwargs)
 
     if filepath is None:
@@ -318,6 +324,19 @@ def test_get_settings_path():
     with mock.patch('mu.logic.get_admin_file_path', mock_func):
         assert mu.logic.get_settings_path() == 'foo'
         mock_func.assert_called_once_with('settings.json')
+
+
+def test_extract_envars():
+    """
+    Given a correct textual representation, get the expected list
+    representation of user defined environment variables.
+    """
+    raw = "FOO=BAR\n BAZ = Q=X    \n\n\n"
+    expected = mu.logic.extract_envars(raw)
+    assert expected == [
+        ['FOO', 'BAR'],
+        ['BAZ', 'Q=X'],
+    ]
 
 
 def test_check_flake():
@@ -524,6 +543,7 @@ def test_editor_restore_session():
     assert ed.theme == theme
     assert ed._view.add_tab.call_count == len(file_contents)
     ed._view.set_theme.assert_called_once_with(theme)
+    assert ed.envars == [['name', 'value'], ]
 
 
 def test_editor_restore_session_missing_files():
@@ -1365,6 +1385,49 @@ def test_quit_save_theme():
     assert session['theme'] == 'night'
 
 
+def test_quit_save_envars():
+    """
+    When saving the session, ensure the user defined envars are logged in the
+    session file.
+    """
+    view = mock.MagicMock()
+    view.modified = True
+    view.show_confirmation = mock.MagicMock(return_value=True)
+    w1 = mock.MagicMock()
+    w1.path = 'foo.py'
+    view.widgets = [w1, ]
+    ed = mu.logic.Editor(view)
+    ed.theme = 'night'
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = 'foo/bar'
+    mock_mode.get_hex_path.return_value = 'foo/bar'
+    ed.modes = {
+        'python': mock_mode,
+        'microbit': mock_mode,
+    }
+    ed.envars = [
+        ['name1', 'value1'],
+        ['name2', 'value2'],
+    ]
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.write = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    mock_event.ignore = mock.MagicMock(return_value=None)
+    with mock.patch('sys.exit', return_value=None), \
+            mock.patch('builtins.open', mock_open):
+        ed.quit(mock_event)
+    assert view.show_confirmation.call_count == 1
+    assert mock_event.ignore.call_count == 0
+    assert mock_open.call_count == 1
+    assert mock_open.return_value.write.call_count > 0
+    recovered = ''.join([i[0][0] for i
+                        in mock_open.return_value.write.call_args_list])
+    session = json.loads(recovered)
+    assert session['envars'] == [['name1', 'value1'], ['name2', 'value2'], ]
+
+
 def test_quit_calls_sys_exit():
     """
     Ensure that sys.exit(0) is called.
@@ -1393,17 +1456,19 @@ def test_quit_calls_sys_exit():
     ex.assert_called_once_with(0)
 
 
-def test_show_logs():
+def test_show_admin():
     """
-    Ensure the expected log file is displayed to the end user.
+    Ensure the expected admin dialog is displayed to the end user.
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.envars = [['name', 'value'], ]
     mock_open = mock.mock_open()
     with mock.patch('builtins.open', mock_open):
-        ed.show_logs(None)
+        ed.show_admin(None)
         mock_open.assert_called_once_with(mu.logic.LOG_FILE, 'r')
-        assert view.show_logs.call_count == 1
+        assert view.show_admin.call_count == 1
+        assert view.show_admin.call_args[0][1] == 'name=value'
 
 
 def test_select_mode():

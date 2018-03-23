@@ -116,9 +116,11 @@ class PyGameZeroMode(BaseMode):
                     write_and_flush(f, tab.text())
                     tab.setModified(False)
             logger.debug(tab.text())
+            envars = self.editor.envars
             self.runner = self.view.add_python3_runner(tab.path,
                                                        self.workspace_dir(),
                                                        interactive=False,
+                                                       envars=envars,
                                                        runner='pgzrun')
             self.runner.process.waitForStarted()
 

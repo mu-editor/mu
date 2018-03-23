@@ -957,6 +957,31 @@ def test_PythonProcessPane_start_process_not_interactive():
     ppp.process.start.assert_called_once_with(runner, expected_args)
 
 
+def test_PythonProcessPane_start_process_user_enviroment_variables():
+    """
+    Ensure that if environment variables are set, they are set in the context
+    of the new child Python process.
+    """
+    mock_process = mock.MagicMock()
+    mock_process_class = mock.MagicMock(return_value=mock_process)
+    mock_merge_chans = mock.MagicMock()
+    mock_process_class.MergedChannels = mock_merge_chans
+    mock_environment = mock.MagicMock()
+    mock_environment_class = mock.MagicMock()
+    mock_environment_class.systemEnvironment.return_value = mock_environment
+    with mock.patch('mu.interface.panes.QProcess', mock_process_class), \
+            mock.patch('mu.interface.panes.QProcessEnvironment',
+                       mock_environment_class):
+        ppp = mu.interface.panes.PythonProcessPane()
+        envars = [['name', 'value'], ]
+        ppp.start_process('script.py', 'workspace', interactive=False,
+                          envars=envars, runner='foo')
+    assert mock_environment.insert.call_count == 2
+    assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
+                                                            '1')
+    assert mock_environment.insert.call_args_list[1][0] == ('name', 'value')
+
+
 def test_PythonProcessPane_start_process_custom_runner():
     """
     Ensure that if the runner is set, it is used as the command to start the

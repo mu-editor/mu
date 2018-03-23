@@ -580,7 +580,8 @@ class PythonProcessPane(QTextEdit):
         self.history_position = 0  # current position when navigation history.
 
     def start_process(self, script_name, working_directory, interactive=True,
-                      debugger=False, command_args=None, runner=None):
+                      debugger=False, command_args=None, envars=None,
+                      runner=None):
         """
         Start the child Python process.
 
@@ -597,6 +598,9 @@ class PythonProcessPane(QTextEdit):
         If there is a list of command_args (the default is None), then these
         will be passed as further arguments into the script to be run.
 
+        If there is a list of environment variables, these will be part of the
+        context of the new child process.
+
         If runner is give, this is used as the command to start the Python
         process.
         """
@@ -612,6 +616,11 @@ class PythonProcessPane(QTextEdit):
         # Force buffers to flush immediately.
         env = QProcessEnvironment.systemEnvironment()
         env.insert('PYTHONUNBUFFERED', '1')
+        if envars:
+            logger.info('Running with environment variables: '
+                        '{}'.format(envars))
+            for name, value in envars:
+                env.insert(name, value)
         logger.info('Working directory: {}'.format(working_directory))
         self.process.setWorkingDirectory(working_directory)
         self.process.setProcessEnvironment(env)

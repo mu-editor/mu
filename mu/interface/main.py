@@ -28,7 +28,7 @@ from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
 from PyQt5.QtGui import QKeySequence, QStandardItemModel, QStandardItem
 from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
-from mu.interface.dialogs import LogDisplay, ModeSelector
+from mu.interface.dialogs import ModeSelector, AdminDialog
 from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
                                  DEFAULT_FONT_SIZE, DAY_STYLE, NIGHT_STYLE,
                                  CONTRAST_STYLE)
@@ -447,7 +447,7 @@ class Window(QMainWindow):
 
     def add_python3_runner(self, script_name, working_directory,
                            interactive=False, debugger=False,
-                           command_args=None, runner=None):
+                           command_args=None, runner=None, envars=None):
         """
         Display console output for the referenced Python script.
 
@@ -479,7 +479,7 @@ class Window(QMainWindow):
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
         self.process_runner.start_process(script_name, working_directory,
                                           interactive, debugger, command_args,
-                                          runner)
+                                          envars, runner)
         self.process_runner.setFocus()
         self.connect_zoom(self.process_runner)
         return self.process_runner
@@ -627,13 +627,16 @@ class Window(QMainWindow):
         if hasattr(self, 'plotter') and self.plotter:
             self.plotter_pane.set_theme(theme)
 
-    def show_logs(self, log, theme):
+    def show_admin(self, log, envars, theme):
         """
-        Display the referenced content of the log.
+        Display the administrivite dialog with referenced content of the log
+        and envars. Return the raw string representation of the environment
+        variables to be used whenever a (regular) Python script is run.
         """
-        log_box = LogDisplay()
-        log_box.setup(log, theme)
-        log_box.exec()
+        admin_box = AdminDialog()
+        admin_box.setup(log, envars, theme)
+        admin_box.exec()
+        return admin_box.envars()
 
     def show_message(self, message, information=None, icon=None):
         """
@@ -857,7 +860,7 @@ class StatusBar(QStatusBar):
         self.logs_label = QLabel()
         self.logs_label.setObjectName('AdministrationLabel')
         self.logs_label.setPixmap(load_pixmap('logs').scaledToHeight(24))
-        self.logs_label.setToolTip(_('View logs.'))
+        self.logs_label.setToolTip(_('Mu Administration'))
         self.addPermanentWidget(self.logs_label)
 
     def connect_logs(self, handler, shortcut):

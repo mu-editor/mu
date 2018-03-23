@@ -1058,19 +1058,22 @@ def test_Window_set_theme():
     w.plotter_pane.set_theme.assert_called_once_with('day')
 
 
-def test_Window_show_logs():
+def test_Window_show_admin():
     """
-    Ensure the modal widget for showing the log file is correctly configured.
+    Ensure the modal widget for showing the admin features is correctly
+    configured.
     """
-    mock_log_display = mock.MagicMock()
-    mock_log_box = mock.MagicMock()
-    mock_log_display.return_value = mock_log_box
-    with mock.patch('mu.interface.main.LogDisplay', mock_log_display):
+    mock_admin_display = mock.MagicMock()
+    mock_admin_box = mock.MagicMock()
+    mock_admin_box.envars.return_value = 'this is the expected result'
+    mock_admin_display.return_value = mock_admin_box
+    with mock.patch('mu.interface.main.AdminDialog', mock_admin_display):
         w = mu.interface.main.Window()
-        w.show_logs('foo', 'day')
-        mock_log_display.assert_called_once_with()
-        mock_log_box.setup.assert_called_once_with('foo', 'day')
-        mock_log_box.exec.assert_called_once_with()
+        result = w.show_admin('log', 'envars', 'day')
+        mock_admin_display.assert_called_once_with()
+        mock_admin_box.setup.assert_called_once_with('log', 'envars', 'day')
+        mock_admin_box.exec.assert_called_once_with()
+        assert result == 'this is the expected result'
 
 
 def test_Window_show_message():

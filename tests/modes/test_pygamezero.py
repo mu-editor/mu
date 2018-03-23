@@ -105,6 +105,7 @@ def test_pgzero_run_game():
     Ensure that running the game launches the process as expected.
     """
     editor = mock.MagicMock()
+    editor.envars = [['name', 'value'], ]
     view = mock.MagicMock()
     view.current_tab.path = '/foo'
     view.current_tab.isModified.return_value = True
@@ -118,6 +119,7 @@ def test_pgzero_run_game():
         oa.assert_called_once_with('/foo', 'w', newline='')
     view.add_python3_runner.assert_called_once_with('/foo', '/bar',
                                                     interactive=False,
+                                                    envars=editor.envars,
                                                     runner='pgzrun')
     mock_runner.process.waitForStarted.assert_called_once_with()
 

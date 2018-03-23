@@ -318,6 +318,19 @@ def get_settings_path():
     return get_admin_file_path('settings.json')
 
 
+def extract_envars(raw):
+    """
+    Returns a list of environment variables given a string containing
+    NAME=VALUE definitions on separate lines.
+    """
+    result = []
+    for line in raw.split('\n'):
+        definition = line.split('=', 1)
+        if len(definition) == 2:
+            result.append([definition[0].strip(), definition[1].strip()])
+    return result
+
+
 def check_flake(filename, code, builtins=None):
     """
     Given a filename and some code to be checked, uses the PyFlakesmodule to
@@ -503,6 +516,7 @@ class Editor:
         self.theme = 'day'
         self.mode = 'python'
         self.modes = {}  # See set_modes.
+        self.envars = []  # See restore session and show_admin
         self.connected_devices = set()
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
@@ -583,6 +597,10 @@ class Editor:
                             continue
                         self.direct_load(old_path)
                     logger.info('Loaded files.')
+                if 'envars' in old_session:
+                    self.envars = old_session['envars']
+                    logger.info('User defined environment variables: '
+                                '{}'.format(self.envars))
         # handle os passed file last,
         # so it will not be focused over by another tab
         if passed_filename:
@@ -836,6 +854,7 @@ class Editor:
             'theme': self.theme,
             'mode': self.mode,
             'paths': paths,
+            'envars': self.envars,
         }
         session_path = get_session_path()
         with open(session_path, 'w') as out:
@@ -845,14 +864,18 @@ class Editor:
         logger.info('Quitting.\n\n')
         sys.exit(0)
 
-    def show_logs(self, event=None):
+    def show_admin(self, event=None):
         """
-        Cause the editor's logs to be displayed to the user to help with ease
-        of bug reporting.
+        Cause the editor's admin dialog to be displayed to the user.
+
+        Ensure any changes to the envars is updated.
         """
         logger.info('Showing logs from {}'.format(LOG_FILE))
+        envars = '\n'.join(['{}={}'.format(name, value) for name, value in
+                            self.envars])
         with open(LOG_FILE, 'r') as logfile:
-            self._view.show_logs(logfile.read(), self.theme)
+            envars = self._view.show_admin(logfile.read(), envars, self.theme)
+            self.envars = extract_envars(envars)
 
     def select_mode(self, event=None):
         """

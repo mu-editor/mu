@@ -39,12 +39,13 @@ class KernelRunner(QObject):
     kernel_started = pyqtSignal(QtKernelManager, QtKernelClient)
     kernel_finished = pyqtSignal()
 
-    def __init__(self, cwd):
+    def __init__(self, cwd, envars):
         """
         Initialise the kernel runner with a target current working directory.
         """
         super().__init__()
         self.cwd = cwd
+        self.envars = dict(envars)
 
     def start_kernel(self):
         """
@@ -52,8 +53,10 @@ class KernelRunner(QObject):
         started.
         """
         logger.info(sys.path)
+        logger.info('Starting iPython kernel with environment: '
+                    '{}'.format(self.envars))
         os.chdir(self.cwd)  # Ensure the kernel runs with the expected CWD.
-        self.repl_kernel_manager = QtKernelManager()
+        self.repl_kernel_manager = QtKernelManager(extra_env=self.envars)
         self.repl_kernel_manager.start_kernel()
         self.repl_kernel_client = self.repl_kernel_manager.client()
         self.kernel_started.emit(self.repl_kernel_manager,
@@ -162,9 +165,11 @@ class PythonMode(BaseMode):
                     write_and_flush(f, tab.text())
                     tab.setModified(False)
             logger.debug(tab.text())
+            envars = self.editor.envars
             self.runner = self.view.add_python3_runner(tab.path,
                                                        self.workspace_dir(),
-                                                       interactive=True)
+                                                       interactive=True,
+                                                       envars=envars)
             self.runner.process.waitForStarted()
 
     def stop_script(self):
@@ -208,7 +213,8 @@ class PythonMode(BaseMode):
         """
         self.view.button_bar.slots['repl'].setEnabled(False)
         self.kernel_thread = QThread()
-        self.kernel_runner = KernelRunner(cwd=self.workspace_dir())
+        self.kernel_runner = KernelRunner(cwd=self.workspace_dir(),
+                                          envars=self.editor.envars)
         self.kernel_runner.moveToThread(self.kernel_thread)
         self.kernel_runner.kernel_started.connect(self.on_kernel_start)
         self.kernel_runner.kernel_finished.connect(self.kernel_thread.quit)
