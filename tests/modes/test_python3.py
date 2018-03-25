@@ -20,6 +20,7 @@ def test_kernel_runner_start_kernel():
     kr = KernelRunner(cwd='/a/path/to/mu_code', envars=envars)
     kr.kernel_started = mock.MagicMock()
     mock_os = mock.MagicMock()
+    mock_os.environ = {}
     mock_kernel_manager_class = mock.MagicMock()
     mock_kernel_manager_class.return_value = mock_kernel_manager
     with mock.patch('mu.modes.python3.os', mock_os), \
@@ -27,9 +28,9 @@ def test_kernel_runner_start_kernel():
                        mock_kernel_manager_class):
         kr.start_kernel()
     mock_os.chdir.assert_called_once_with('/a/path/to/mu_code')
-    assert kr.envars == dict(envars)
+    assert mock_os.environ['name'] == 'value'
     assert kr.repl_kernel_manager == mock_kernel_manager
-    mock_kernel_manager_class.assert_called_once_with(extra_env=dict(envars))
+    mock_kernel_manager_class.assert_called_once_with()
     mock_kernel_manager.start_kernel.assert_called_once_with()
     assert kr.repl_kernel_client == mock_client
     kr.kernel_started.emit.assert_called_once_with(mock_kernel_manager,
@@ -46,7 +47,14 @@ def test_kernel_runner_stop_kernel():
     kr.repl_kernel_client = mock.MagicMock()
     kr.repl_kernel_manager = mock.MagicMock()
     kr.kernel_finished = mock.MagicMock()
-    kr.stop_kernel()
+    mock_os = mock.MagicMock()
+    mock_os.environ = {
+        'old_mu_context': 'to_be_deleted',
+    }
+    with mock.patch('mu.modes.python3.os', mock_os):
+        kr.stop_kernel()
+    assert 'old_mu_context' not in mock_os.environ
+    assert len(mock_os.environ) == len(kr.default_envars)
     kr.repl_kernel_client.stop_channels.assert_called_once_with()
     kr.repl_kernel_manager.shutdown_kernel.assert_called_once_with(now=True)
     kr.kernel_finished.emit.assert_called_once_with()

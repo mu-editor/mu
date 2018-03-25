@@ -38,6 +38,8 @@ class KernelRunner(QObject):
     """
     kernel_started = pyqtSignal(QtKernelManager, QtKernelClient)
     kernel_finished = pyqtSignal()
+    # Used to build context with user defined envars when running the REPL.
+    default_envars = os.environ.copy()
 
     def __init__(self, cwd, envars):
         """
@@ -49,14 +51,18 @@ class KernelRunner(QObject):
 
     def start_kernel(self):
         """
-        Start the kernel, obtain a client and emit a signal when both are
-        started.
+        Create the expected context, start the kernel, obtain a client and
+        emit a signal when both are started.
         """
         logger.info(sys.path)
-        logger.info('Starting iPython kernel with environment: '
-                    '{}'.format(self.envars))
         os.chdir(self.cwd)  # Ensure the kernel runs with the expected CWD.
-        self.repl_kernel_manager = QtKernelManager(extra_env=self.envars)
+        # Add user defined envars to os.environ so they can be picked up by
+        # the child process running the kernel.
+        logger.info('Starting iPython kernel with user defined envars: '
+                    '{}'.format(self.envars))
+        for k, v in self.envars.items():
+            os.environ[k] = v
+        self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.start_kernel()
         self.repl_kernel_client = self.repl_kernel_manager.client()
         self.kernel_started.emit(self.repl_kernel_manager,
@@ -64,9 +70,12 @@ class KernelRunner(QObject):
 
     def stop_kernel(self):
         """
-        Stop the client connections to the kernel, affect an immediate
-        shutdown of the kernel and emit a "finished" signal.
+        Clean up the context, stop the client connections to the kernel, affect
+        an immediate shutdown of the kernel and emit a "finished" signal.
         """
+        os.environ.clear()
+        for k, v in self.default_envars.items():
+            os.environ[k] = v
         self.repl_kernel_client.stop_channels()
         self.repl_kernel_manager.shutdown_kernel(now=True)
         self.kernel_finished.emit()
