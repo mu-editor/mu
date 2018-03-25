@@ -142,8 +142,9 @@ NEWLINE = "\n"
 ENCODING = "utf-8"
 ENCODING_COOKIE_RE = re.compile(
     "^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
-ENCODING_COOKIE = "# -*- coding: %s-*-" \
-    "# Encoding cookie added by Mu Editor" % ENCODING + NEWLINE
+#~ ENCODING_COOKIE = "# -*- coding: %s-*-" \
+    #~ "# Encoding cookie added by Mu Editor" % ENCODING + NEWLINE
+ENCODING_COOKIE = ""
 
 logger = logging.getLogger(__name__)
 
@@ -173,10 +174,11 @@ def save_and_encode(text, filepath, newline=os.linesep):
     #
     encoding_cookie = ENCODING_COOKIE.strip()
     lines = text.splitlines()
-    if lines and ENCODING_COOKIE_RE.match(lines[0]):
-        lines[0] = encoding_cookie
-    else:
-        lines.insert(0, encoding_cookie)
+    if encoding_cookie:
+        if lines and ENCODING_COOKIE_RE.match(lines[0]):
+            lines[0] = encoding_cookie
+        else:
+            lines.insert(0, encoding_cookie)
 
     with open(filepath, "w", encoding=ENCODING, newline='') as f:
         write_and_flush(f, newline.join(lines))
