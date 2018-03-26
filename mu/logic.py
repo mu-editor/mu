@@ -845,7 +845,7 @@ class Editor:
         paths = []
         for widget in self._view.widgets:
             if widget.path:
-                paths.append(widget.path)
+                paths.append(os.path.abspath(widget.path))
         if self.modes[self.mode].is_debugger:
             # If quitting while debugging, make sure everything is cleaned
             # up.

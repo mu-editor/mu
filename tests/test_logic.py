@@ -1344,7 +1344,7 @@ def test_quit_save_tabs_with_paths():
     recovered = ''.join([i[0][0] for i
                         in mock_open.return_value.write.call_args_list])
     session = json.loads(recovered)
-    assert 'foo.py' in session['paths']
+    assert os.path.abspath('foo.py') in session['paths']
 
 
 def test_quit_save_theme():
