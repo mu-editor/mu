@@ -167,11 +167,16 @@ def write_and_flush(fileobj, content):
 
 def save_and_encode(text, filepath, newline=os.linesep):
     #
-    # Strip any existing encoding cookie and replace by a Mu-generated
-    # UTF-8 cookie. We need to strip any existing line-endings off the
-    # encoding cookie so we don't double up.
+    # Detect the presence of an encoding cookie and use that encoding; if
+    # none is present, do not add one and use the Mu default encoding.
     #
-    with open(filepath, "w", encoding=ENCODING, newline='') as f:
+    match = ENCODING_COOKIE_RE.match(text)
+    if match:
+        encoding = match.group(1)
+    else:
+        encoding = ENCODING
+
+    with open(filepath, "w", encoding=encoding, newline='') as f:
         write_and_flush(f, newline.join(text.splitlines()))
 
 
