@@ -106,6 +106,16 @@ def test_ModeSelector_setup_contrast_theme():
     mock_css.assert_called_once_with(mu.interface.themes.CONTRAST_STYLE)
 
 
+def test_ModeSelector_select_and_accept():
+    """
+    Ensure the accept slot is fired when this event handler is called.
+    """
+    ms = mu.interface.dialogs.ModeSelector()
+    ms.accept = mock.MagicMock()
+    ms.select_and_accept()
+    ms.accept.assert_called_once_with()
+
+
 def test_ModeSelector_get_mode():
     """
     Ensure that the ModeSelector will correctly return a selected mode (or
