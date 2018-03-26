@@ -1879,12 +1879,12 @@ def test_read_encoding_default():
 #
 def test_write_encoding_cookie_no_cookie():
     """If the text has no cookie of its own utf-8 will be used
-    and no cookie added
+    when saving and no cookie added
     """
     test_string = UNICODE_TEST_STRING
     with generate_python_file() as filepath:
         mu.logic.save_and_encode(test_string, filepath)
-        with open(filepath, encoding="utf-8") as f:
+        with open(filepath, encoding=mu.logic.ENCODING) as f:
             for line in f:
                 assert line == test_string
                 break
@@ -1892,7 +1892,7 @@ def test_write_encoding_cookie_no_cookie():
 
 def test_write_encoding_cookie_existing_cookie():
     """If the text has a encoding cookie of its own then that encoding will
-    be used an no change made to the cookie
+    be used when saving and no change made to the cookie
     """
     encoding = "iso-8859-1"
     cookie = mu.logic.ENCODING_COOKIE. replace(mu.logic.ENCODING, encoding)

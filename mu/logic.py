@@ -136,8 +136,8 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
 NEWLINE = "\n"
 
 #
-# We write all files as UTF-8 with a PEP 263 encoding cookie
-# We also detect an encoding cookie in an inbound file
+# We write all files as UTF-8 unless they arrived with a PEP 263 encoding
+# cookie, in which case we honour that encoding.
 #
 ENCODING = "utf-8"
 ENCODING_COOKIE_RE = re.compile(
@@ -617,9 +617,11 @@ class Editor:
     def _load(self, path):
         logger.info('Loading script from: {}'.format(path))
         error = _("The file contains characters Mu expects to be encoded as "
-                  "UTF-8, but which are encoded in some other way.\n\nIf this "
-                  "file was saved in another application, re-save the file "
-                  "via the 'Save as' option and set the encoding to UTF-8.")
+                  "{0} or as the computer's default encoding {1}, but which are "
+                  "encoded in some other way.\n\nIf this file was saved in "
+                  "another application, re-save the file via the 'Save as' "
+                  "option and set the encoding to {0}".format(
+                  ENCODING, locale.getpreferredencoding()))
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
