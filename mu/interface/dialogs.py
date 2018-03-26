@@ -64,6 +64,7 @@ class ModeSelector(QDialog):
         widget_layout.addWidget(label)
         self.setLayout(widget_layout)
         self.mode_list = QListWidget()
+        self.mode_list.itemDoubleClicked.connect(self.select_and_accept)
         widget_layout.addWidget(self.mode_list)
         self.mode_list.setIconSize(QSize(48, 48))
         for name, item in modes.items():
@@ -80,6 +81,12 @@ class ModeSelector(QDialog):
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         widget_layout.addWidget(button_box)
+
+    def select_and_accept(self):
+        """
+        Handler for when an item is double-clicked.
+        """
+        self.accept()
 
     def get_mode(self):
         """
