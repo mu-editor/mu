@@ -1853,7 +1853,7 @@ def test_write_newline_to_unix():
             #
             # There will be one more line-ending because of the encoding cookie
             #
-            assert text.count("\n") == mu.logic.ENCODING_COOKIE.count("\n") + test_string.count("\r\n")
+            assert text.count("\n") == 1 + test_string.count("\r\n")
 
 
 def test_write_newline_to_windows():
@@ -1868,7 +1868,7 @@ def test_write_newline_to_windows():
             #
             # There will be one more line-ending because of the encoding cookie
             #
-            assert text.count("\r\n") == mu.logic.ENCODING_COOKIE.count("\n") + test_string.count("\n")
+            assert text.count("\r\n") == 1 + test_string.count("\n")
 
 
 #
@@ -1961,40 +1961,32 @@ def test_write_utf8():
 
 def test_write_encoding_cookie_no_cookie():
     """If the text has no cookie of its own the first line of the saved
-    file will be the Mu encoding cookie.
-
-    NB This tests the situation when Mu *has* an encoding cookie
-    defined.
+    file will be the Mu encoding cookie
     """
     test_string = "This is a test"
     with generate_python_file() as filepath:
-        with mock.patch("mu.logic.ENCODING_COOKIE", "# coding: utf-8\n"):
-            mu.logic.save_and_encode(test_string, filepath)
-            with open(filepath, encoding="utf-8") as f:
-                for line in f:
-                    assert line == mu.logic.ENCODING_COOKIE
-                    break
-                else:
-                    assert False, "No cookie found"
+        mu.logic.save_and_encode(test_string, filepath)
+        with open(filepath, encoding="utf-8") as f:
+            for line in f:
+                assert line == mu.logic.ENCODING_COOKIE
+                break
+            else:
+                assert False, "No cookie found"
 
 
 def test_write_encoding_cookie_existing_cookie():
     """If the text has a cookie of its own it will be replaced by the Mu cookie
-
-    NB This tests the situation when Mu *has* an encoding cookie
-    defined.
     """
-    with mock.patch("mu.logic.ENCODING_COOKIE", "# coding: utf-8\n"):
-        cookie = mu.logic.ENCODING_COOKIE.replace(mu.logic.ENCODING, "iso-8859-1")
-        test_string = cookie + "This is a test"
-        with generate_python_file() as filepath:
-            mu.logic.save_and_encode(test_string, filepath)
-            with open(filepath, encoding="utf-8") as f:
-                for line in f:
-                    assert line == mu.logic.ENCODING_COOKIE
-                    break
-                else:
-                    assert False, "No cookie found"
+    cookie = mu.logic.ENCODING_COOKIE.replace(mu.logic.ENCODING, "iso-8859-1")
+    test_string = cookie + "This is a test"
+    with generate_python_file() as filepath:
+        mu.logic.save_and_encode(test_string, filepath)
+        with open(filepath, encoding="utf-8") as f:
+            for line in f:
+                assert line == mu.logic.ENCODING_COOKIE
+                break
+            else:
+                assert False, "No cookie found"
 
 
 def test_handle_open_file():
