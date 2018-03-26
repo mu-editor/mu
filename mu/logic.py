@@ -136,8 +136,8 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
 NEWLINE = "\n"
 
 #
-# We write all files as UTF-8 with a PEP 263 encoding cookie
-# We also detect an encoding cookie in an inbound file
+# We write all files as UTF-8 unless they arrived with a PEP 263 encoding
+# cookie, in which case we honour that encoding.
 #
 ENCODING = "utf-8"
 ENCODING_COOKIE_RE = re.compile(
@@ -167,19 +167,17 @@ def write_and_flush(fileobj, content):
 
 def save_and_encode(text, filepath, newline=os.linesep):
     #
-    # Strip any existing encoding cookie and replace by a Mu-generated
-    # UTF-8 cookie. We need to strip any existing line-endings off the
-    # encoding cookie so we don't double up.
+    # Detect the presence of an encoding cookie and use that encoding; if
+    # none is present, do not add one and use the Mu default encoding.
     #
-    encoding_cookie = ENCODING_COOKIE.strip()
-    lines = text.splitlines()
-    if lines and ENCODING_COOKIE_RE.match(lines[0]):
-        lines[0] = encoding_cookie
+    match = ENCODING_COOKIE_RE.match(text)
+    if match:
+        encoding = match.group(1)
     else:
-        lines.insert(0, encoding_cookie)
+        encoding = ENCODING
 
-    with open(filepath, "w", encoding=ENCODING, newline='') as f:
-        write_and_flush(f, newline.join(lines))
+    with open(filepath, "w", encoding=encoding, newline='') as f:
+        write_and_flush(f, newline.join(text.splitlines()))
 
 
 def sniff_encoding(filepath):
@@ -637,9 +635,11 @@ class Editor:
     def _load(self, path):
         logger.info('Loading script from: {}'.format(path))
         error = _("The file contains characters Mu expects to be encoded as "
-                  "UTF-8, but which are encoded in some other way.\n\nIf this "
-                  "file was saved in another application, re-save the file "
-                  "via the 'Save as' option and set the encoding to UTF-8.")
+                  "{0} or as the computer's default encoding {1}, but which are "
+                  "encoded in some other way.\n\nIf this file was saved in "
+                  "another application, re-save the file via the 'Save as' "
+                  "option and set the encoding to {0}".format(
+                  ENCODING, locale.getpreferredencoding()))
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
