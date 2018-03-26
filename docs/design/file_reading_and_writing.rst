@@ -4,9 +4,12 @@ Reading and writing code files
 Decision
 --------
 
-Mu will always save files encoded as UTF-8 and with a PEP 263
-encoding cookie as the first line. When reading files, Mu will detect UTF8/16
-BOMs and encoding cookies. If no other clue is present, the OS default will
+By default Mu will save files encoded as UTF-8 without a PEP 263 encoding cookie.
+However, if the file as loaded started with an encoding cookie, then the file
+will be saved again with that encoding.
+
+When reading files, Mu will detect UTF8/16 BOMs and encoding cookies.
+In their absence, UTF-8 will be attempted. If that fails, the OS default will
 be used (ie locale.getpreferredencoding()).
 
 If the file cannot be decoded according to these rules, refuse to guess. Instead,
@@ -45,6 +48,11 @@ Instead it was decided to offer an informative message box which could explain
 the situation in enough terms to offer the user a way forward without risking
 the integrity of their code.
 
+UPDATE: After initial implementation of the encoding cookie, it was thought
+that it was too arcane for beginner coders. It was decided then to save as
+UTF-8 by default, although without a cookie. But if a file already has an
+encoding cookie, that should be preserved and the encoding honoured.
+
 Implemented via:
 ~~~~~~~~~~~~~~~~
 
@@ -54,7 +62,10 @@ Implemented via:
 Discussion in:
 ~~~~~~~~~~~~~~
 
+(Initial)
 * https://github.com/mu-editor/mu/issues/370
 * https://github.com/mu-editor/mu/pull/364
 * https://github.com/mu-editor/mu/pull/371
 
+(Later)
+* https://github.com/mu-editor/mu/issues/402
