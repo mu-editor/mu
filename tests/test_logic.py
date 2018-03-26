@@ -1785,10 +1785,7 @@ def test_write_newline_to_unix():
         with open(filepath, newline="") as f:
             text = f.read()
             assert text.count("\r\n") == 0
-            #
-            # There will be one more line-ending because of the encoding cookie
-            #
-            assert text.count("\n") == 1 + test_string.count("\r\n")
+            assert text.count("\n") == test_string.count("\r\n")
 
 
 def test_write_newline_to_windows():
@@ -1800,10 +1797,7 @@ def test_write_newline_to_windows():
         with open(filepath, newline="") as f:
             text = f.read()
             assert len(re.findall("[^\r]\n", text)) == 0
-            #
-            # There will be one more line-ending because of the encoding cookie
-            #
-            assert text.count("\r\n") == 1 + test_string.count("\n")
+            assert text.count("\r\n") == test_string.count("\n")
 
 
 #
@@ -1891,34 +1885,31 @@ def test_write_utf8():
         mu.logic.save_and_encode(UNICODE_TEST_STRING, filepath)
         with open(filepath, encoding="utf-8") as f:
             text = f.read()
-            assert text == mu.logic.ENCODING_COOKIE + UNICODE_TEST_STRING
+            assert text == UNICODE_TEST_STRING
 
 
 def test_write_encoding_cookie_no_cookie():
-    """If the text has no cookie of its own the first line of the saved
-    file will be the Mu encoding cookie
+    """If the text has no cookie of its own none will be added
     """
     test_string = "This is a test"
     with generate_python_file() as filepath:
         mu.logic.save_and_encode(test_string, filepath)
         with open(filepath, encoding="utf-8") as f:
             for line in f:
-                assert line == mu.logic.ENCODING_COOKIE
+                assert line == test_string
                 break
-            else:
-                assert False, "No cookie found"
 
 
 def test_write_encoding_cookie_existing_cookie():
-    """If the text has a cookie of its own it will be replaced by the Mu cookie
+    """If the text has a cookie of its own it will be retained
     """
     cookie = mu.logic.ENCODING_COOKIE.replace(mu.logic.ENCODING, "iso-8859-1")
     test_string = cookie + "This is a test"
     with generate_python_file() as filepath:
         mu.logic.save_and_encode(test_string, filepath)
-        with open(filepath, encoding="utf-8") as f:
+        with open(filepath, encoding="iso-8859-1") as f:
             for line in f:
-                assert line == mu.logic.ENCODING_COOKIE
+                assert line == cookie
                 break
             else:
                 assert False, "No cookie found"
