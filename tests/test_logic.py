@@ -33,6 +33,9 @@ SESSION = json.dumps({
         ['name', 'value'],
     ],
 })
+ENCODING_COOKIE = "# -*- coding: %s-*- " \
+    "# Encoding cookie added by Mu Editor" % mu.logic.ENCODING + \
+    mu.logic.NEWLINE
 
 
 #
@@ -777,7 +780,7 @@ def test_load_python_file():
     mock_read.assert_called_once_with(filepath)
     ed._view.add_tab.assert_called_once_with(
         filepath,
-        mu.logic.ENCODING_COOKIE + mu.logic.NEWLINE + text,
+        text,
         ed.modes[ed.mode].api(),
         newline)
 
@@ -801,7 +804,7 @@ def test_load_python_file_case_insensitive_file_type():
     mock_read.assert_called_once_with(filepath.upper())
     ed._view.add_tab.assert_called_once_with(
         filepath.upper(),
-        mu.logic.ENCODING_COOKIE + mu.logic.NEWLINE + text,
+        text,
         ed.modes[ed.mode].api(),
         newline)
 
@@ -952,7 +955,6 @@ def test_save_restores_newline():
     """
     newline = "\r\n"
     test_text = mu.logic.NEWLINE.join(
-        [mu.logic.ENCODING_COOKIE] +
         "the cat sat on the mat".split()
     )
     with generate_python_file(test_text) as filepath:
@@ -1916,7 +1918,7 @@ def test_read_utf16lebom():
 def test_read_encoding_cookie():
     """Successfully decode from iso-8859-1 with an encoding cookie
     """
-    encoding_cookie = mu.logic.ENCODING_COOKIE.replace(
+    encoding_cookie = ENCODING_COOKIE.replace(
         mu.logic.ENCODING, "iso-8859-1")
     test_string = encoding_cookie + UNICODE_TEST_STRING
     with generate_python_file() as filepath:
@@ -1924,6 +1926,17 @@ def test_read_encoding_cookie():
             f.write(test_string.encode("iso-8859-1"))
         text, _ = mu.logic.read_and_decode(filepath)
         assert text == test_string
+
+
+def test_read_encoding_mu_default():
+    """Successfully decode from the mu default
+    """
+    test_string = UNICODE_TEST_STRING.encode(mu.logic.ENCODING)
+    with generate_python_file() as filepath:
+        with open(filepath, "wb") as f:
+            f.write(test_string)
+        text, _ = mu.logic.read_and_decode(filepath)
+        assert text == UNICODE_TEST_STRING
 
 
 def test_read_encoding_default():
@@ -1936,6 +1949,22 @@ def test_read_encoding_default():
         text, _ = mu.logic.read_and_decode(filepath)
         assert text == UNICODE_TEST_STRING
 
+
+def test_read_encoding_unsuccessful():
+    """Fail to decode encoded text
+    """
+    #
+    # Have to work quite hard to produce text which fill definitely
+    # fail to decode since UTF-8 and cp1252 (the default on this
+    # computer) will, between them, decode  nearly anything!
+    #
+    test_string = UNICODE_TEST_STRING.encode("utf-8")
+    with generate_python_file() as filepath:
+        with open(filepath, "wb") as f:
+            f.write(codecs.BOM_UTF8)
+            f.write(b"\xd8\x00")
+        with pytest.raises(UnicodeDecodeError):
+            text, _ = mu.logic.read_and_decode(filepath)
 
 #
 # When writing, if the text has an encoding cookie, then that encoding
@@ -1960,7 +1989,7 @@ def test_write_encoding_cookie_existing_cookie():
     be used when saving and no change made to the cookie
     """
     encoding = "iso-8859-1"
-    cookie = mu.logic.ENCODING_COOKIE. replace(mu.logic.ENCODING, encoding)
+    cookie = ENCODING_COOKIE.replace(mu.logic.ENCODING, encoding)
     test_string = cookie + UNICODE_TEST_STRING
     with generate_python_file() as filepath:
         mu.logic.save_and_encode(test_string, filepath)
