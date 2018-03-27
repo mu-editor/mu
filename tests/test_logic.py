@@ -1998,3 +1998,16 @@ def test_handle_open_file():
     edit.direct_load = m
     view.open_file.emit('/test/path.py')
     m.assert_called_once_with('/test/path.py')
+
+
+def test_load_cli():
+    ed = mu.logic.Editor(mock.MagicMock())
+    m = mock.MagicMock()
+    ed.direct_load = m
+    ed.load_cli(['test.py'])
+    m.assert_called_once_with(os.path.abspath('test.py'))
+
+    m = mock.MagicMock()
+    ed.direct_load = m
+    ed.load_cli([None])
+    assert m.call_count == 0

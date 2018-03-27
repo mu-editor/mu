@@ -714,6 +714,16 @@ class Editor:
         """ for loading files passed from command line or the OS launch"""
         self._load(path)
 
+    def load_cli(self, paths):
+        for path in paths:
+            try:
+                # abspath will fail for non-paths
+                self.direct_load(os.path.abspath(path))
+            except Exception as e:
+                self._view.show_message(_('Can\'t open {}'.format(path)))
+                logging.warning('Can\'t open file from command line {}'.
+                                format(path), exc_info=e)
+
     def save_tab_to_file(self, tab):
         try:
             logger.info('Saving script to: {}'.format(tab.path))
