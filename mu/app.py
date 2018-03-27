@@ -106,7 +106,9 @@ def run():
     editor_window.setup(editor.debug_toggle_breakpoint, editor.theme)
     # capture the filename passed by the os, if there was one
     passed_filename = sys.argv[1] if len(sys.argv) > 1 else None
-    editor.restore_session(os.path.abspath(passed_filename))
+    if passed_filename:
+        passed_filename = os.path.abspath(passed_filename)
+    editor.restore_session(passed_filename)
     # Connect the various UI elements in the window to the editor.
     editor_window.connect_tab_rename(editor.rename_tab, 'Ctrl+Shift+S')
     status_bar = editor_window.status_bar
