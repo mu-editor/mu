@@ -80,29 +80,9 @@ def test_run():
         assert timer.call_count == 1
         assert len(timer.mock_calls) == 4
         assert ed.call_count == 1
-        assert len(ed.mock_calls) == 4
+        assert len(ed.mock_calls) == 3
         assert win.call_count == 1
         assert len(win.mock_calls) == 4
-        assert ex.call_count == 1
-
-
-def test_run_with_file():
-    """
-    Check files are opened from the cli
-    """
-    ed = mock.MagicMock()
-    ed.direct_load = mock.MagicMock()
-    with mock.patch('mu.app.setup_logging'), \
-            mock.patch('mu.app.QApplication'), \
-            mock.patch('mu.app.QSplashScreen'), \
-            mock.patch('mu.app.Editor', mock.MagicMock(return_value=ed)), \
-            mock.patch('mu.app.load_pixmap'), \
-            mock.patch('mu.app.Window'), \
-            mock.patch('mu.app.QTimer'), \
-            mock.patch('sys.argv', ['mu', 'file.py']), \
-            mock.patch('sys.exit') as ex:
-        run()
-        ed.load_cli.assert_called_once_with(['file.py'])
         assert ex.call_count == 1
 
 

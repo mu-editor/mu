@@ -104,10 +104,8 @@ def run():
     # Setup the window.
     editor_window.closeEvent = editor.quit
     editor_window.setup(editor.debug_toggle_breakpoint, editor.theme)
-    # Restore the previous session
-    editor.restore_session(without_empty=len(sys.argv[1:]) > 0)
-    # capture the filenames passed by the os, if there were any
-    editor.load_cli(sys.argv[1:])
+    # Restore the previous session along with files passed by the os
+    editor.restore_session(sys.argv[1:])
     # Connect the various UI elements in the window to the editor.
     editor_window.connect_tab_rename(editor.rename_tab, 'Ctrl+Shift+S')
     status_bar = editor_window.status_bar

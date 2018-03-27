@@ -661,7 +661,7 @@ def test_editor_open_focus_passed_file():
     )
     ed.select_mode = mock.MagicMock()
     with mock.patch("builtins.open", mock.mock_open(read_data="data")):
-        ed.restore_session(file_path)
+        ed.restore_session([file_path])
         ed._load.assert_called_once_with(file_path)
 
 
@@ -688,15 +688,17 @@ def test_editor_session_and_open_focus_passed_file():
     mock_open = mock.mock_open(read_data=settings)
     with mock.patch('builtins.open', mock_open), \
             mock.patch('os.path.exists', return_value=True):
-        ed.restore_session(passed_filename='path/foo.py')
+        ed.restore_session(paths=['path/foo.py'])
 
     # direct_load should be called twice (once for each path)
     assert ed.direct_load.call_count == 2
     # However, "foo.py" as the passed_filename should be direct_load-ed
     # at the end so it has focus, despite being the first file listed in
     # the restored session.
-    assert ed.direct_load.call_args_list[0][0][0] == 'path/bar.py'
-    assert ed.direct_load.call_args_list[1][0][0] == 'path/foo.py'
+    assert ed.direct_load.call_args_list[0][0][0] == os.path.abspath(
+        'path/bar.py')
+    assert ed.direct_load.call_args_list[1][0][0] == os.path.abspath(
+        'path/foo.py')
 
 
 def test_toggle_theme_to_night():
