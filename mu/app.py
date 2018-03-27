@@ -28,7 +28,7 @@ from logging.handlers import TimedRotatingFileHandler
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 from mu import __version__
-from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT
+from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface import Window
 from mu.resources import load_pixmap
 from mu.modes import (PythonMode, AdafruitMode, MicrobitMode, DebugMode,
@@ -46,7 +46,8 @@ def setup_logging():
                '%(levelname)s: %(message)s')
     formatter = logging.Formatter(log_fmt)
     handler = TimedRotatingFileHandler(LOG_FILE, when='midnight',
-                                       backupCount=5, delay=0)
+                                       backupCount=5, delay=0,
+                                       encoding=ENCODING)
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG)
 
