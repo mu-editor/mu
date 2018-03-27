@@ -562,7 +562,7 @@ class Editor:
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
 
-    def restore_session(self, passed_filename=None):
+    def restore_session(self, passed_filename=None, without_empty=False):
         """
         Attempts to recreate the tab state from the last time the editor was
         run.
@@ -606,7 +606,7 @@ class Editor:
         if passed_filename:
             logger.info('Passed-in filename: {}'.format(passed_filename))
             self.direct_load(passed_filename)
-        if not self._view.tab_count:
+        if not self._view.tab_count and not without_empty:
             py = _('# Write your code here :-)')
             self._view.add_tab(None, py, self.modes[self.mode].api(), NEWLINE)
             logger.info('Starting with blank file.')

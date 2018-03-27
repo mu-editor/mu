@@ -105,15 +105,17 @@ def run():
     editor_window.closeEvent = editor.quit
     editor_window.setup(editor.debug_toggle_breakpoint, editor.theme)
     # Restore the previous session
-    editor.restore_session()
+    editor.restore_session(without_empty=len(sys.argv[1:]) > 0)
     # capture the filename passed by the os, if there were any
     for passed_filename in sys.argv[1:]:
         try:
             # abspath will fail for non-paths
             editor.direct_load(os.path.abspath(passed_filename))
-        except:
+        except Exception as e:
+            editor_window.show_message(_('Can\'t open {}'.
+                                       format(passed_filename)))
             logging.warning('Can\'t open file from command line {}'.
-                            format(passed_filename))
+                            format(passed_filename), exc_info=e)
     # Connect the various UI elements in the window to the editor.
     editor_window.connect_tab_rename(editor.rename_tab, 'Ctrl+Shift+S')
     status_bar = editor_window.status_bar
