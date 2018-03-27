@@ -644,7 +644,7 @@ class Editor:
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
                 continue
-            if path in widget.path:
+            if os.path.samefile(path, widget.path):
                 logger.info('Script already open.')
                 msg = _('The file "{}" is already open.')
                 self._view.show_message(msg.format(os.path.basename(path)))
@@ -693,8 +693,8 @@ class Editor:
         except (PermissionError, FileNotFoundError):
             message = _("Could not load {}").format(path)
             logger.warning('Could not load {}'.format(path))
-            info = _("Does this file exist? If it does, do you have "
-                     "permission to read it?\n\nPlease cheack and try again.")
+            info = _("Does this file exist?\nIf it does, do you have "
+                     "permission to read it?\n\nPlease check and try again.")
             self._view.show_message(message, info)
         else:
             logger.debug(text)
