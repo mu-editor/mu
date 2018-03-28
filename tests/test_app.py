@@ -6,7 +6,7 @@ import sys
 import os.path
 from unittest import mock
 from mu.app import excepthook, run, setup_logging, debug, setup_modes
-from mu.logic import LOG_FILE, LOG_DIR, DEBUGGER_PORT
+from mu.logic import LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 
 
 def test_setup_logging():
@@ -20,7 +20,8 @@ def test_setup_logging():
         setup_logging()
         mkdir.assert_called_once_with(LOG_DIR)
         log_conf.assert_called_once_with(LOG_FILE, when='midnight',
-                                         backupCount=5, delay=0)
+                                         backupCount=5, delay=0,
+                                         encoding=ENCODING)
         logging.getLogger.assert_called_once_with()
         assert sys.excepthook == excepthook
 
