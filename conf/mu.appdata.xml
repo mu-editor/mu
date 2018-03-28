@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+	<id>mu.desktop</id>
+	<metadata_license>CC0-1.0</metadata_license>
+	<project_license>GPL-3.0</project_license>
+	<name>Mu</name>
+	<summary>A Python editor for beginner programmers</summary>
+	<description>
+		<p>Less is More.</p>
+		<p>Mu has only the most essential features, so users are not intimidated by a baffling interface.</p>
+		<p>Tread the Path of Least Resistance.</p>
+		<p>Whatever the task, there is always only one obvious way to do it with Mu.</p>
+		<p>Keep it Simple.</p>
+		<p>It's quick and easy to learn Mu ~ complexity impedes a novice programmer's first steps.</p>
+		<p>Have fun!</p>
+		<p>Learning should inspire fun ~ Mu helps learners quickly create and test working code.</p>
+		<p>Alan Kay's quote about learning to program summarizes Mu's outlook. Mu aspires to be "the real thing" as a development environment for beginner programmers taking their first steps with Python.</p>
+	</description>
+	<url type="homepage">http://codewith.mu/</url>
+	<url type="help">http://codewith.mu/tutorials/</url>
+	<url type="bugtracker">https://github.com/mu-editor/mu/issues</url>
+	<project_group>mu-editor</project_group>
+	<_developer_name>Nicholas H.Tollervey</_developer_name>
+	<translation type="gettext">mu</translation>
+</component>
