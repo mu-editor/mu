@@ -9,4 +9,4 @@ Exec=mu
 Terminal=false
 Categories=Application;Development;
 Keywords=Python;Editor;microbit;micro:bit;
-
+StartupWMClass=mu
