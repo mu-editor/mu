@@ -562,7 +562,7 @@ class Editor:
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
 
-    def restore_session(self, passed_filename=None):
+    def restore_session(self, paths=None):
         """
         Attempts to recreate the tab state from the last time the editor was
         run.
@@ -591,9 +591,16 @@ class Editor:
                     # So ask for the desired mode.
                     self.select_mode(None)
                 if 'paths' in old_session:
-                    for old_path in old_session['paths']:
+                    old_paths = []
+                    launch_paths = None
+                    try:
+                        old_paths = self._abspath(old_session['paths'])
+                        launch_paths = self._abspath(paths) if paths else None
+                    except Exception:  # pragma: no cover
+                        pass
+                    for old_path in old_paths:
                         # if the os passed in a file, defer loading it now
-                        if passed_filename and old_path in passed_filename:
+                        if launch_paths and old_path in launch_paths:
                             continue
                         self.direct_load(old_path)
                     logger.info('Loaded files.')
@@ -603,9 +610,8 @@ class Editor:
                                 '{}'.format(self.envars))
         # handle os passed file last,
         # so it will not be focused over by another tab
-        if passed_filename:
-            logger.info('Passed-in filename: {}'.format(passed_filename))
-            self.direct_load(passed_filename)
+        if paths and len(paths) > 0:
+            self.load_cli(paths)
         if not self._view.tab_count:
             py = _('# Write your code here :-)')
             self._view.add_tab(None, py, self.modes[self.mode].api(), NEWLINE)
@@ -644,7 +650,7 @@ class Editor:
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
                 continue
-            if path in widget.path:
+            if os.path.samefile(path, widget.path):
                 logger.info('Script already open.')
                 msg = _('The file "{}" is already open.')
                 self._view.show_message(msg.format(os.path.basename(path)))
@@ -693,8 +699,8 @@ class Editor:
         except (PermissionError, FileNotFoundError):
             message = _("Could not load {}").format(path)
             logger.warning('Could not load {}'.format(path))
-            info = _("Does this file exist? If it does, do you have "
-                     "permission to read it?\n\nPlease cheack and try again.")
+            info = _("Does this file exist?\nIf it does, do you have "
+                     "permission to read it?\n\nPlease check and try again.")
             self._view.show_message(message, info)
         else:
             logger.debug(text)
@@ -713,6 +719,24 @@ class Editor:
     def direct_load(self, path):
         """ for loading files passed from command line or the OS launch"""
         self._load(path)
+
+    def load_cli(self, paths):
+        for path in paths:
+            try:
+                logger.info('Passed-in filename: {}'.format(path))
+                # abspath will fail for non-paths
+                self.direct_load(os.path.abspath(path))
+            except Exception as e:
+                self._view.show_message(_('Can\'t open {}'.format(path)))
+                logging.warning('Can\'t open file from command line {}'.
+                                format(path), exc_info=e)
+
+    def _abspath(self, paths):
+        """
+        Convert an arrary of paths to their absolute forms
+        and removing duplicate items
+        """
+        return set(map(os.path.abspath, paths))
 
     def save_tab_to_file(self, tab):
         try:
