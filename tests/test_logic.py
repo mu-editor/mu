@@ -661,7 +661,7 @@ def test_editor_open_focus_passed_file():
     )
     ed.select_mode = mock.MagicMock()
     with mock.patch("builtins.open", mock.mock_open(read_data="data")):
-        ed.restore_session(file_path)
+        ed.restore_session([file_path])
         ed._load.assert_called_once_with(file_path)
 
 
@@ -688,15 +688,17 @@ def test_editor_session_and_open_focus_passed_file():
     mock_open = mock.mock_open(read_data=settings)
     with mock.patch('builtins.open', mock_open), \
             mock.patch('os.path.exists', return_value=True):
-        ed.restore_session(passed_filename='path/foo.py')
+        ed.restore_session(paths=['path/foo.py'])
 
     # direct_load should be called twice (once for each path)
     assert ed.direct_load.call_count == 2
     # However, "foo.py" as the passed_filename should be direct_load-ed
     # at the end so it has focus, despite being the first file listed in
     # the restored session.
-    assert ed.direct_load.call_args_list[0][0][0] == 'path/bar.py'
-    assert ed.direct_load.call_args_list[1][0][0] == 'path/foo.py'
+    assert ed.direct_load.call_args_list[0][0][0] == os.path.abspath(
+        'path/bar.py')
+    assert ed.direct_load.call_args_list[1][0][0] == os.path.abspath(
+        'path/foo.py')
 
 
 def test_toggle_theme_to_night():
@@ -1990,6 +1992,10 @@ def test_write_encoding_cookie_existing_cookie():
 
 
 def test_handle_open_file():
+    """
+    Ensure on_open_file event handler fires as expected with the editor's
+    direct_load when the view's open_file signal is emitted.
+    """
     class Dummy(QObject):
         open_file = pyqtSignal(str)
     view = Dummy()
@@ -1998,3 +2004,49 @@ def test_handle_open_file():
     edit.direct_load = m
     view.open_file.emit('/test/path.py')
     m.assert_called_once_with('/test/path.py')
+
+
+def test_load_cli():
+    """
+    Ensure loading paths specified from the command line works as expected.
+    """
+    mock_view = mock.MagicMock()
+    ed = mu.logic.Editor(mock_view)
+    m = mock.MagicMock()
+    ed.direct_load = m
+    ed.load_cli(['test.py'])
+    m.assert_called_once_with(os.path.abspath('test.py'))
+
+    m = mock.MagicMock()
+    ed.direct_load = m
+    ed.load_cli([None])
+    assert m.call_count == 0
+    assert mock_view.show_message.call_count == 1
+
+
+def test_abspath():
+    """
+    Ensure a set of unique absolute paths is returned, given a list of
+    arbitrary paths.
+    """
+    ed = mu.logic.Editor(mock.MagicMock())
+    paths = ['foo', 'bar', 'bar']
+    result = ed._abspath(paths)
+    assert len(result) == 2
+    assert os.path.abspath('foo') in result
+    assert os.path.abspath('bar') in result
+
+
+def test_abspath_fail():
+    """
+    If given a problematic arbitrary path, _abspath will log the problem but
+    continue to process the "good" paths.
+    """
+    ed = mu.logic.Editor(mock.MagicMock())
+    paths = ['foo', 'bar', None, 'bar']
+    with mock.patch('mu.logic.logger.error') as mock_error:
+        result = ed._abspath(paths)
+        assert mock_error.call_count == 1
+    assert len(result) == 2
+    assert os.path.abspath('foo') in result
+    assert os.path.abspath('bar') in result

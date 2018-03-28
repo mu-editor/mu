@@ -68,6 +68,7 @@ def test_run():
             mock.patch('mu.app.load_pixmap'), \
             mock.patch('mu.app.Window') as win, \
             mock.patch('mu.app.QTimer') as timer, \
+            mock.patch('sys.argv', ['mu']), \
             mock.patch('sys.exit') as ex:
         run()
         assert set_log.call_count == 1
