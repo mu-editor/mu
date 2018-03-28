@@ -565,7 +565,9 @@ class Editor:
     def restore_session(self, paths=None):
         """
         Attempts to recreate the tab state from the last time the editor was
-        run.
+        run. If paths contains a collection of additional paths specified by
+        the user, they are also "restored" at the same time (duplicates will be
+        ignored).
         """
         settings_path = get_session_path()
         self.change_mode(self.mode)
@@ -591,16 +593,11 @@ class Editor:
                     # So ask for the desired mode.
                     self.select_mode(None)
                 if 'paths' in old_session:
-                    old_paths = []
-                    launch_paths = None
-                    try:
-                        old_paths = self._abspath(old_session['paths'])
-                        launch_paths = self._abspath(paths) if paths else None
-                    except Exception:  # pragma: no cover
-                        pass
+                    old_paths = self._abspath(old_session['paths'])
+                    launch_paths = self._abspath(paths) if paths else set()
                     for old_path in old_paths:
                         # if the os passed in a file, defer loading it now
-                        if launch_paths and old_path in launch_paths:
+                        if old_path in launch_paths:
                             continue
                         self.direct_load(old_path)
                     logger.info('Loaded files.')
@@ -622,7 +619,7 @@ class Editor:
 
     def toggle_theme(self):
         """
-        Switches between themes (night or day).
+        Switches between themes (night, day or high-contrast).
         """
         if self.theme == 'day':
             self.theme = 'night'
@@ -641,6 +638,15 @@ class Editor:
         self._view.add_tab(None, '', self.modes[self.mode].api(), NEWLINE)
 
     def _load(self, path):
+        """
+        Attempt to load a Python script from the passed in path. This path may
+        be a .py file containing Python source code, or a .hex file, created
+        for a micro:bit like device, with the source code embedded therein.
+
+        This method will work its way around duplicate paths and also attempt
+        to cleanly handle / report / log errors when encountered in a helpful
+        manner.
+        """
         logger.info('Loading script from: {}'.format(path))
         error = _("The file contains characters Mu expects to be encoded as "
                   "UTF-8, but which are encoded in some other way.\n\nIf this "
@@ -721,24 +727,40 @@ class Editor:
         self._load(path)
 
     def load_cli(self, paths):
-        for path in paths:
+        """
+        Given a set of paths, passed in by the user when Mu starts, this
+        method will attempt to load them and log / report a problem if Mu is
+        unable to open a passed in path.
+        """
+        for p in paths:
             try:
-                logger.info('Passed-in filename: {}'.format(path))
+                logger.info('Passed-in filename: {}'.format(p))
                 # abspath will fail for non-paths
-                self.direct_load(os.path.abspath(path))
+                self.direct_load(os.path.abspath(p))
             except Exception as e:
-                self._view.show_message(_('Can\'t open {}'.format(path)))
+                self._view.show_message(_('Can\'t open {}'.format(p)))
                 logging.warning('Can\'t open file from command line {}'.
-                                format(path), exc_info=e)
+                                format(p), exc_info=e)
 
     def _abspath(self, paths):
         """
-        Convert an arrary of paths to their absolute forms
-        and removing duplicate items
+        Safely convert an arrary of paths to their absolute forms and remove
+        duplicate items.
         """
-        return set(map(os.path.abspath, paths))
+        result = set()
+        for p in paths:
+            try:
+                result.add(os.path.abspath(p))
+            except Exception as ex:
+                logger.error('Could not get path for {}: {}'.format(p, ex))
+        return result
 
     def save_tab_to_file(self, tab):
+        """
+        Given a tab, will attempt to save the script in the tab to the path
+        associated with the tab. If there's a problem this will be logged and
+        reported.
+        """
         try:
             logger.info('Saving script to: {}'.format(tab.path))
             logger.debug(tab.text())

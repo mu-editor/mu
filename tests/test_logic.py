@@ -1992,6 +1992,10 @@ def test_write_encoding_cookie_existing_cookie():
 
 
 def test_handle_open_file():
+    """
+    Ensure on_open_file event handler fires as expected with the editor's
+    direct_load when the view's open_file signal is emitted.
+    """
     class Dummy(QObject):
         open_file = pyqtSignal(str)
     view = Dummy()
@@ -2003,7 +2007,11 @@ def test_handle_open_file():
 
 
 def test_load_cli():
-    ed = mu.logic.Editor(mock.MagicMock())
+    """
+    Ensure loading paths specified from the command line works as expected.
+    """
+    mock_view = mock.MagicMock()
+    ed = mu.logic.Editor(mock_view)
     m = mock.MagicMock()
     ed.direct_load = m
     ed.load_cli(['test.py'])
@@ -2013,3 +2021,32 @@ def test_load_cli():
     ed.direct_load = m
     ed.load_cli([None])
     assert m.call_count == 0
+    assert mock_view.show_message.call_count == 1
+
+
+def test_abspath():
+    """
+    Ensure a set of unique absolute paths is returned, given a list of
+    arbitrary paths.
+    """
+    ed = mu.logic.Editor(mock.MagicMock())
+    paths = ['foo', 'bar', 'bar']
+    result = ed._abspath(paths)
+    assert len(result) == 2
+    assert os.path.abspath('foo') in result
+    assert os.path.abspath('bar') in result
+
+
+def test_abspath_fail():
+    """
+    If given a problematic arbitrary path, _abspath will log the problem but
+    continue to process the "good" paths.
+    """
+    ed = mu.logic.Editor(mock.MagicMock())
+    paths = ['foo', 'bar', None, 'bar']
+    with mock.patch('mu.logic.logger.error') as mock_error:
+        result = ed._abspath(paths)
+        assert mock_error.call_count == 1
+    assert len(result) == 2
+    assert os.path.abspath('foo') in result
+    assert os.path.abspath('bar') in result
