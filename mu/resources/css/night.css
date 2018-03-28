@@ -84,7 +84,7 @@ QStatusBar QLabel {
 }
 
 QMenu {
-    border: none;
+    border: 1px solid #6b6b6b;
     min-width: 100px;
 }
 
