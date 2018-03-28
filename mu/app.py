@@ -25,7 +25,7 @@ import platform
 import pkgutil
 import logging
 from logging.handlers import TimedRotatingFileHandler
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
@@ -97,6 +97,7 @@ def run():
     logging.info('Python path: {}'.format(sys.path))
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
+    app.setAttribute(Qt.AA_DontShowIconsInMenus)
     # Create the "window" we'll be looking at.
     editor_window = Window()
     # Create the "editor" that'll control the "window".
