@@ -100,7 +100,7 @@ def run():
     # By default PyQt uses the script name (run.py)
     app.setApplicationName('mu')
     # Set hint as to the .desktop files name
-    app.setDesktopFileName('mu')
+    app.setDesktopFileName('mu.codewith.editor')
     app.setApplicationVersion(__version__)
     # Create the "window" we'll be looking at.
     editor_window = Window()
