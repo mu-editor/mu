@@ -25,7 +25,7 @@ import platform
 import pkgutil
 import logging
 from logging.handlers import TimedRotatingFileHandler
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
@@ -97,6 +97,7 @@ def run():
     logging.info('Python path: {}'.format(sys.path))
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
+    app.setAttribute(Qt.AA_DontShowIconsInMenus)
     # Create the "window" we'll be looking at.
     editor_window = Window()
     # Create the "editor" that'll control the "window".
@@ -105,11 +106,8 @@ def run():
     # Setup the window.
     editor_window.closeEvent = editor.quit
     editor_window.setup(editor.debug_toggle_breakpoint, editor.theme)
-    # capture the filename passed by the os, if there was one
-    passed_filename = sys.argv[1] if len(sys.argv) > 1 else None
-    if passed_filename:
-        passed_filename = os.path.abspath(passed_filename)
-    editor.restore_session(passed_filename)
+    # Restore the previous session along with files passed by the os
+    editor.restore_session(sys.argv[1:])
     # Connect the various UI elements in the window to the editor.
     editor_window.connect_tab_rename(editor.rename_tab, 'Ctrl+Shift+S')
     status_bar = editor_window.status_bar

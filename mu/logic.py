@@ -590,10 +590,12 @@ class Editor:
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
 
-    def restore_session(self, passed_filename=None):
+    def restore_session(self, paths=None):
         """
         Attempts to recreate the tab state from the last time the editor was
-        run.
+        run. If paths contains a collection of additional paths specified by
+        the user, they are also "restored" at the same time (duplicates will be
+        ignored).
         """
         settings_path = get_session_path()
         self.change_mode(self.mode)
@@ -619,9 +621,11 @@ class Editor:
                     # So ask for the desired mode.
                     self.select_mode(None)
                 if 'paths' in old_session:
-                    for old_path in old_session['paths']:
+                    old_paths = self._abspath(old_session['paths'])
+                    launch_paths = self._abspath(paths) if paths else set()
+                    for old_path in old_paths:
                         # if the os passed in a file, defer loading it now
-                        if passed_filename and old_path in passed_filename:
+                        if old_path in launch_paths:
                             continue
                         self.direct_load(old_path)
                     logger.info('Loaded files.')
@@ -631,9 +635,8 @@ class Editor:
                                 '{}'.format(self.envars))
         # handle os passed file last,
         # so it will not be focused over by another tab
-        if passed_filename:
-            logger.info('Passed-in filename: {}'.format(passed_filename))
-            self.direct_load(passed_filename)
+        if paths and len(paths) > 0:
+            self.load_cli(paths)
         if not self._view.tab_count:
             py = _('# Write your code here :-)')
             self._view.add_tab(None, py, self.modes[self.mode].api(), NEWLINE)
@@ -644,7 +647,7 @@ class Editor:
 
     def toggle_theme(self):
         """
-        Switches between themes (night or day).
+        Switches between themes (night, day or high-contrast).
         """
         if self.theme == 'day':
             self.theme = 'night'
@@ -663,6 +666,15 @@ class Editor:
         self._view.add_tab(None, '', self.modes[self.mode].api(), NEWLINE)
 
     def _load(self, path):
+        """
+        Attempt to load a Python script from the passed in path. This path may
+        be a .py file containing Python source code, or a .hex file, created
+        for a micro:bit like device, with the source code embedded therein.
+
+        This method will work its way around duplicate paths and also attempt
+        to cleanly handle / report / log errors when encountered in a helpful
+        manner.
+        """
         logger.info('Loading script from: {}'.format(path))
         error = _("The file contains characters Mu expects to be encoded as "
                   "{0} or as the computer's default encoding {1}, but which are "
@@ -674,7 +686,7 @@ class Editor:
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
                 continue
-            if path in widget.path:
+            if os.path.samefile(path, widget.path):
                 logger.info('Script already open.')
                 msg = _('The file "{}" is already open.')
                 self._view.show_message(msg.format(os.path.basename(path)))
@@ -720,8 +732,8 @@ class Editor:
         except (PermissionError, FileNotFoundError):
             message = _("Could not load {}").format(path)
             logger.warning('Could not load {}'.format(path))
-            info = _("Does this file exist? If it does, do you have "
-                     "permission to read it?\n\nPlease cheack and try again.")
+            info = _("Does this file exist?\nIf it does, do you have "
+                     "permission to read it?\n\nPlease check and try again.")
             self._view.show_message(message, info)
         else:
             logger.debug(text)
@@ -741,7 +753,41 @@ class Editor:
         """ for loading files passed from command line or the OS launch"""
         self._load(path)
 
+    def load_cli(self, paths):
+        """
+        Given a set of paths, passed in by the user when Mu starts, this
+        method will attempt to load them and log / report a problem if Mu is
+        unable to open a passed in path.
+        """
+        for p in paths:
+            try:
+                logger.info('Passed-in filename: {}'.format(p))
+                # abspath will fail for non-paths
+                self.direct_load(os.path.abspath(p))
+            except Exception as e:
+                self._view.show_message(_('Can\'t open {}'.format(p)))
+                logging.warning('Can\'t open file from command line {}'.
+                                format(p), exc_info=e)
+
+    def _abspath(self, paths):
+        """
+        Safely convert an arrary of paths to their absolute forms and remove
+        duplicate items.
+        """
+        result = set()
+        for p in paths:
+            try:
+                result.add(os.path.abspath(p))
+            except Exception as ex:
+                logger.error('Could not get path for {}: {}'.format(p, ex))
+        return result
+
     def save_tab_to_file(self, tab):
+        """
+        Given a tab, will attempt to save the script in the tab to the path
+        associated with the tab. If there's a problem this will be logged and
+        reported.
+        """
         try:
             logger.info('Saving script to: {}'.format(tab.path))
             logger.debug(tab.text())

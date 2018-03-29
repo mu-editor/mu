@@ -9,11 +9,12 @@ QToolButton {
     padding: 4px 2px;
 }
 
-QToolButton:hover {
+QToolButton:hover, QMenu::item:selected  {
     background-color: #cccccc;
 }
 
-QStackedWidget, QWidget, QApplication, QDialog, QLabel, QStatusBar, QTabBar {
+QStackedWidget, QWidget, QApplication, QDialog,
+QLabel, QStatusBar, QTabBar, QMenu {
     background-color: #EEE;
     color: black;
 }
@@ -82,4 +83,30 @@ QStatusBar QLabel {
 
 #AdministrationLabel:hover, #AdministrationLabel:focus {
     background: #cccccc;
+}
+
+QMenu {
+    border: none;
+    min-width: 100px;
+}
+
+QMenu::item {
+    border: none;
+    padding: 5px 15px;
+    width: 100%;
+}
+
+QMenu::item:selected {
+    border: none;
+}
+
+QMenu::item:disabled {
+    color: #cccccc;
+}
+
+QMenu::separator {
+    border: none;
+    border-bottom: 1px solid #cccccc;
+    padding: 0px;
+    margin: 0px;
 }
