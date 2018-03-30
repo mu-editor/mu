@@ -2043,7 +2043,7 @@ def test_abspath_fail():
     continue to process the "good" paths.
     """
     ed = mu.logic.Editor(mock.MagicMock())
-    paths = ['foo', 'bar', None, 'bar']
+    paths = ['foo', 'bar', lambda: None, 'bar']
     with mock.patch('mu.logic.logger.error') as mock_error:
         result = ed._abspath(paths)
         assert mock_error.call_count == 1
