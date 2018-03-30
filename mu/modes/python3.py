@@ -23,6 +23,7 @@ from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from mu.logic import write_and_flush
 from mu.resources import load_icon
+from mu.interface.panes import CHARTS
 from qtconsole.manager import QtKernelManager
 from qtconsole.client import QtKernelClient
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
@@ -99,7 +100,7 @@ class PythonMode(BaseMode):
         Return an ordered list of actions provided by this module. An action
         is a name (also used to identify the icon) , description, and handler.
         """
-        return [
+        buttons = [
             {
                 'name': 'run',
                 'display_name': _('Run'),
@@ -122,6 +123,15 @@ class PythonMode(BaseMode):
                 'shortcut': 'Ctrl+Shift+I',
             },
         ]
+        if CHARTS:
+            buttons.append({
+                'name': 'plotter',
+                'display_name': _('Plotter'),
+                'description': _('Plot incoming REPL data'),
+                'handler': self.toggle_plotter,
+                'shortcut': 'CTRL+Shift+P',
+            })
+        return buttons
 
     def api(self):
         """
@@ -240,6 +250,12 @@ class PythonMode(BaseMode):
         self.view.button_bar.slots['repl'].setEnabled(False)
         # Don't block the GUI
         self.stop_kernel.emit()
+
+    def toggle_plotter(self):
+        """
+
+        """
+        pass
 
     def on_kernel_start(self, kernel_manager, kernel_client):
         """
