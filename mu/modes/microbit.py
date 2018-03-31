@@ -375,12 +375,14 @@ class MicrobitMode(MicroPythonMode):
                 if self.fs:
                     logger.info('Toggle filesystem on.')
                     self.view.button_bar.slots['repl'].setEnabled(False)
-                    self.view.button_bar.slots['plotter'].setEnabled(False)
+                    if CHARTS:
+                        self.view.button_bar.slots['plotter'].setEnabled(False)
             else:
                 self.remove_fs()
                 logger.info('Toggle filesystem off.')
                 self.view.button_bar.slots['repl'].setEnabled(True)
-                self.view.button_bar.slots['plotter'].setEnabled(True)
+                if CHARTS:
+                    self.view.button_bar.slots['plotter'].setEnabled(True)
 
     def add_fs(self):
         """
