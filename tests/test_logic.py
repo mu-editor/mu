@@ -1228,7 +1228,10 @@ def test_show_help():
                        return_value=('en_GB', 'UTF-8')):
         ed.show_help()
         version = '.'.join(__version__.split('.')[:2])
-        url = 'https://codewith.mu/en/help/{}'.format(version)
+        if len(__version__.split('.')) > 3:
+            url = 'https://codewith.mu/help/latest'
+        else:
+            url = 'https://codewith.mu/en/help/{}'.format(version)
         wb.assert_called_once_with(url)
 
 
