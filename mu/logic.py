@@ -872,7 +872,7 @@ class Editor:
         major_version = '.'.join(__version__.split('.')[:2])
 
         logger.info('Open help URL for {} version {}'.format(language_code,
-            __version__))
+                                                             __version__))
         if (len(__version__.split('.')) > 3):
             # pre-release so show latest
             url = 'https://codewith.mu/help/latest'
