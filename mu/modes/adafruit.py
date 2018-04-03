@@ -82,11 +82,15 @@ class AdafruitMode(MicroPythonMode):
         # plugged in CIRCUITPY board.
         if os.name == 'posix':
             # We're on Linux or OSX
-            mount_output = check_output('mount').splitlines()
-            mounted_volumes = [x.split()[2] for x in mount_output]
-            for volume in mounted_volumes:
-                if volume.endswith(b'CIRCUITPY'):
-                    device_dir = volume.decode('utf-8')
+            for mount_command in [ 'mount', '/sbin/mount' ]:
+                try:
+                    mount_output = check_output(mount_command).splitlines()
+                    mounted_volumes = [x.split()[2] for x in mount_output]
+                    for volume in mounted_volumes:
+                        if volume.endswith(b'CIRCUITPY'):
+                            device_dir = volume.decode('utf-8')
+                except FileNotFoundError:
+                    next
         elif os.name == 'nt':
             # We're on Windows.
 
