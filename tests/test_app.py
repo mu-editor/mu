@@ -129,5 +129,5 @@ def test_debug_no_args():
     with mock.patch('mu.app.sys', mock_sys), \
             mock.patch('builtins.print', mock_print):
         debug()
-    msg = "Debug runner requires a filename for a Python script to debug."
+    msg = "Debugger requires a Python script filename to run."
     mock_print.assert_called_once_with(msg)
