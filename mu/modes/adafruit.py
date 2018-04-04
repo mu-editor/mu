@@ -82,7 +82,7 @@ class AdafruitMode(MicroPythonMode):
         # plugged in CIRCUITPY board.
         if os.name == 'posix':
             # We're on Linux or OSX
-            for mount_command in [ 'mount', '/sbin/mount' ]:
+            for mount_command in ['mount', '/sbin/mount']:
                 try:
                     mount_output = check_output(mount_command).splitlines()
                     mounted_volumes = [x.split()[2] for x in mount_output]
