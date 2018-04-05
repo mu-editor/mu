@@ -19,14 +19,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os
-import sys
-import platform
-import pkgutil
 import logging
 from logging.handlers import TimedRotatingFileHandler
+import os
+import platform
+import pkgutil
+import sys
+
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QApplication, QSplashScreen
+
 from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface import Window
@@ -42,15 +44,20 @@ def setup_logging():
     """
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
+
+    # set logging format
     log_fmt = ('%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) '
                '%(levelname)s: %(message)s')
     formatter = logging.Formatter(log_fmt)
+
+    # define log handlers such as for rotating log files
     handler = TimedRotatingFileHandler(LOG_FILE, when='midnight',
                                        backupCount=5, delay=0,
                                        encoding=ENCODING)
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG)
 
+    # set up primary log
     log = logging.getLogger()
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
@@ -71,9 +78,12 @@ def setup_modes(editor, view):
         'microbit': MicrobitMode(editor, view),
         'debugger': DebugMode(editor, view),
     }
+
     # Check if pgzero is available (without importing it)
     if any([m for m in pkgutil.iter_modules() if 'pgzero' in m]):
         modes['pygamezero'] = PyGameZeroMode(editor, view)
+
+    # return available modes
     return modes
 
 
@@ -89,15 +99,23 @@ def excepthook(*exc_args):
 def run():
     """
     Creates all the top-level assets for the application, sets things up and
-    then runs the application.
+    then runs the application. Specific tasks include:
+
+    - set up logging
+    - create an application object
+    - create an editor window and status bar
+    - display a splash screen while starting
+    - close the splash screen after startup timer ends
     """
     setup_logging()
     logging.info('\n\n-----------------\n\nStarting Mu {}'.format(__version__))
     logging.info(platform.uname())
     logging.info('Python path: {}'.format(sys.path))
+
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
+
     # Create the "window" we'll be looking at.
     editor_window = Window()
     # Create the "editor" that'll control the "window".
@@ -112,27 +130,31 @@ def run():
     editor_window.connect_tab_rename(editor.rename_tab, 'Ctrl+Shift+S')
     status_bar = editor_window.status_bar
     status_bar.connect_logs(editor.show_admin, 'Ctrl+Shift+D')
+
     # Display a friendly "splash" icon.
     splash = QSplashScreen(load_pixmap('splash-screen'))
     splash.show()
+
     # Finished starting up the application, so hide the splash icon.
     splash_be_gone = QTimer()
     splash_be_gone.timeout.connect(lambda: splash.finish(editor_window))
     splash_be_gone.setSingleShot(True)
     splash_be_gone.start(5000)
+
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
 
 
 def debug():
     """
-    Create a debug runner in a new process. This is what the Mu debugger will
-    drive. Uses the filename and associated args found in sys.argv.
+    Create a debug runner in a new process.
+
+    This is what the Mu debugger will drive. Uses the filename and associated
+    args found in sys.argv.
     """
     if len(sys.argv) > 1:
         filename = os.path.normcase(os.path.abspath(sys.argv[1]))
         args = sys.argv[2:]
         run_debugger('localhost', DEBUGGER_PORT, filename, args)
     else:
-        print(_("Debug runner requires a filename for a Python script "
-                "to debug."))
+        print(_("Debugger requires a Python script filename to run."))
