@@ -62,6 +62,20 @@ QTabBar::tab::selected {
     margin: 0;
 }
 
+QTabBar::close-button {
+    image: url(images:close-tab.png);
+    border: none;
+    padding: 3px;
+}
+
+QTabBar::close-button:hover {
+    image: url(images:close-tab-hover.png);
+    border: none;
+    padding: 3px;
+    background: #d50000;
+    border-radius: 3px;
+}
+
 QTabWidget::pane {
     border: none;
     border-top: 1px solid #555;

@@ -9,7 +9,7 @@ QToolButton {
     padding: 4px 2px;
 }
 
-QToolButton:hover, QMenu::item:selected  {
+QToolButton:hover, QMenu::item:selected {
     background-color: #cccccc;
 }
 
@@ -54,6 +54,20 @@ QTabBar::tab::selected {
     background: #eeeeee;
     padding: 4px 8px;
     margin: 0;
+}
+
+QTabBar::close-button {
+    image: url(images:close-tab.png);
+    border: none;
+    padding: 3px;
+}
+
+QTabBar::close-button:hover {
+    image: url(images:close-tab-hover.png);
+    border: none;
+    padding: 3px;
+    background: #d50000;
+    border-radius: 3px;
 }
 
 QTabWidget::pane {
