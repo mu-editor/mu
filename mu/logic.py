@@ -167,10 +167,16 @@ def save_and_encode(text, filepath, newline=os.linesep):
     #
     # Detect the presence of an encoding cookie and use that encoding; if
     # none is present, do not add one and use the Mu default encoding.
+    # If the codec is invalid, log a warning and fall back to the default
     #
     match = ENCODING_COOKIE_RE.match(text)
     if match:
         encoding = match.group(1)
+        try:
+            codecs.lookup(encoding)
+        except LookupError:
+            logger.warn("Invalid codec in encoding cookie: %s", encoding)
+            encoding = ENCODING
     else:
         encoding = ENCODING
 
