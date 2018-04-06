@@ -794,19 +794,29 @@ class Editor:
         associated with the tab. If there's a problem this will be logged and
         reported.
         """
+        logger.info('Saving script to: {}'.format(tab.path))
+        logger.debug(tab.text())
         try:
-            logger.info('Saving script to: {}'.format(tab.path))
-            logger.debug(tab.text())
             save_and_encode(tab.text(), tab.path, tab.newline)
-            tab.setModified(False)
-            self.show_status_message(_("Saved file: {}").format(tab.path))
         except OSError as e:
             logger.error(e)
-            message = _('Could not save file.')
+            error_message = _('Could not save file (disk problem)')
             information = _("Error saving file to disk. Ensure you have "
                             "permission to write the file and "
                             "sufficient disk space.")
+        except UnicodeEncodeError:
+            logger.exception()
+            error_message = _("Could not save file (encoding problem)")
+            information = _("Unable to convert all the characters. If you have"
+                            "an encoding line at the top of the file, remove"
+                            "it and try again.")
+        else:
+            error_message = information = None
+        if error_message:
             self._view.show_message(message, information)
+        else:
+            tab.setModified(False)
+            self.show_status_message(_("Saved file: {}").format(tab.path))
 
     def save(self):
         """
