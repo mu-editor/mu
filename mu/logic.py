@@ -870,8 +870,15 @@ class Editor:
         current_locale, encoding = locale.getdefaultlocale()
         language_code = current_locale[:2]
         major_version = '.'.join(__version__.split('.')[:2])
-        url = 'https://codewith.mu/{}/help/{}'.format(language_code,
-                                                      major_version)
+
+        logger.info('Open help URL for {} version {}'.format(language_code,
+                                                             __version__))
+        if (len(__version__.split('.')) > 3):
+            # pre-release so show latest
+            url = 'https://codewith.mu/help/latest'
+        else:
+            url = 'https://codewith.mu/{}/help/{}'.format(language_code,
+                                                          major_version)
         webbrowser.open_new(url)
 
     def quit(self, *args, **kwargs):
