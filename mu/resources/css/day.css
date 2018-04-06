@@ -63,10 +63,10 @@ QTabBar::close-button {
 }
 
 QTabBar::close-button:hover {
-    image: url(images:close-tab-hover.png);
+    image: url(images:close-tab.png);
     border: none;
     padding: 3px;
-    background: #d50000;
+    background: #e97867;
     border-radius: 3px;
 }
 
