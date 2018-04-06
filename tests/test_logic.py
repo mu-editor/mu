@@ -33,7 +33,7 @@ SESSION = json.dumps({
         ['name', 'value'],
     ],
 })
-ENCODING_COOKIE = "# -*- coding: %s-*- " \
+ENCODING_COOKIE = "# -*- coding: %s -*- " \
     "# Encoding cookie added by Mu Editor" % mu.logic.ENCODING + \
     mu.logic.NEWLINE
 
@@ -1996,6 +1996,20 @@ def test_write_encoding_cookie_existing_cookie():
     with generate_python_file() as filepath:
         mu.logic.save_and_encode(test_string, filepath)
         with open(filepath, encoding=encoding) as f:
+            assert next(f) == cookie
+            assert next(f) == UNICODE_TEST_STRING
+
+
+def test_write_invalid_codec():
+    """If an encoding cookie is present but specifies an unknown codec,
+    utf-8 will be used instead
+    """
+    encoding = "INVALID"
+    cookie = ENCODING_COOKIE.replace(mu.logic.ENCODING, encoding)
+    test_string = cookie + UNICODE_TEST_STRING
+    with generate_python_file() as filepath:
+        mu.logic.save_and_encode(test_string, filepath)
+        with open(filepath, encoding=mu.logic.ENCODING) as f:
             assert next(f) == cookie
             assert next(f) == UNICODE_TEST_STRING
 

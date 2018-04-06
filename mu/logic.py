@@ -813,7 +813,7 @@ class Editor:
         else:
             error_message = information = None
         if error_message:
-            self._view.show_message(message, information)
+            self._view.show_message(error_message, information)
         else:
             tab.setModified(False)
             self.show_status_message(_("Saved file: {}").format(tab.path))
