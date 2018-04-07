@@ -1050,7 +1050,8 @@ def test_save_file_with_encoding_error():
     text, path, newline = "foo", "foo", "\n"
     ed = mocked_editor(text=text, path=path, newline=newline)
     with mock.patch("mu.logic.save_and_encode") as mock_save:
-        mock_save.side_effect = UnicodeEncodeError
+        mock_save.side_effect = UnicodeEncodeError(mu.logic.ENCODING, "",
+                                                   0, 0, "Unable to encode")
         ed.save()
 
     assert ed._view.current_tab.setModified.call_count == 0
