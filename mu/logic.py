@@ -792,7 +792,7 @@ class Editor:
         """
         Given a tab, will attempt to save the script in the tab to the path
         associated with the tab. If there's a problem this will be logged and
-        reported.
+        reported and the tab status will continue to show as Modified.
         """
         logger.info('Saving script to: {}'.format(tab.path))
         logger.debug(tab.text())
@@ -805,10 +805,10 @@ class Editor:
                             "permission to write the file and "
                             "sufficient disk space.")
         except UnicodeEncodeError:
-            logger.exception()
             error_message = _("Could not save file (encoding problem)")
-            information = _("Unable to convert all the characters. If you have"
-                            "an encoding line at the top of the file, remove"
+            logger.exception(error_message)
+            information = _("Unable to convert all the characters. If you have "
+                            "an encoding line at the top of the file, remove "
                             "it and try again.")
         else:
             error_message = information = None
