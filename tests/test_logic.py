@@ -1042,6 +1042,20 @@ def test_save_file_with_exception():
     assert view.show_message.call_count == 1
 
 
+def test_save_file_with_encoding_error():
+    """
+    If Mu encounters a UnicodeEncodeError when trying to write the file,
+    it should display a helpful message explaining the problem.
+    """
+    text, path, newline = "foo", "foo", "\n"
+    ed = mocked_editor(text=text, path=path, newline=newline)
+    with mock.patch("mu.logic.save_and_encode") as mock_save:
+        mock_save.side_effect = UnicodeEncodeError
+        ed.save()
+
+    assert ed._view.current_tab.setModified.call_count == 0
+
+
 def test_save_python_file():
     """
     If the path is a Python file (ending in *.py) then save it and reset the
