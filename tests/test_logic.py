@@ -1971,17 +1971,17 @@ def test_read_encoding_unsuccessful():
     """Fail to decode encoded text
     """
     #
-    # Have to work quite hard to produce text which fill definitely
+    # Have to work quite hard to produce text which will definitely
     # fail to decode since UTF-8 and cp1252 (the default on this
-    # computer) will, between them, decode  nearly anything!
+    # computer) will, between them, decode nearly anything!
     #
-    test_string = UNICODE_TEST_STRING.encode("utf-8")
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
             f.write(codecs.BOM_UTF8)
             f.write(b"\xd8\x00")
         with pytest.raises(UnicodeDecodeError):
             text, _ = mu.logic.read_and_decode(filepath)
+
 
 #
 # When writing, if the text has an encoding cookie, then that encoding

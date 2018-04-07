@@ -683,11 +683,11 @@ class Editor:
         """
         logger.info('Loading script from: {}'.format(path))
         error = _("The file contains characters Mu expects to be encoded as "
-                  "{0} or as the computer's default encoding {1}, but which are "
-                  "encoded in some other way.\n\nIf this file was saved in "
-                  "another application, re-save the file via the 'Save as' "
-                  "option and set the encoding to {0}".format(
-                  ENCODING, locale.getpreferredencoding()))
+                  "{0} or as the computer's default encoding {1}, but which "
+                  "are encoded in some other way.\n\nIf this file was saved "
+                  "in another application, re-save the file via the "
+                  "'Save as' option and set the encoding to {0}".
+                  format(ENCODING, locale.getpreferredencoding()))
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
@@ -807,9 +807,9 @@ class Editor:
         except UnicodeEncodeError:
             error_message = _("Could not save file (encoding problem)")
             logger.exception(error_message)
-            information = _("Unable to convert all the characters. If you have "
-                            "an encoding line at the top of the file, remove "
-                            "it and try again.")
+            information = _("Unable to convert all the characters. If you "
+                            "have an encoding line at the top of the file, "
+                            "remove it and try again.")
         else:
             error_message = information = None
         if error_message:
