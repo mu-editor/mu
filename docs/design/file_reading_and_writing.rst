@@ -58,6 +58,7 @@ Implemented via:
 
 * https://github.com/mu-editor/mu/pull/390
 * https://github.com/mu-editor/mu/pull/399
+* https://github.com/mu-editor/mu/pull/418
 
 Discussion in:
 ~~~~~~~~~~~~~~
