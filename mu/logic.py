@@ -702,9 +702,13 @@ class Editor:
                          "hex files created with embedded MicroPython code.")
                 self._view.show_message(message, info)
                 return
-        except (PermissionError, FileNotFoundError):
+        except (PermissionError, FileNotFoundError, OSError) as ex:
+            # PermissionError - user not allowed to read file.
+            # FileNotFoundError - the file no longer exists.
+            # OSError - the device containing the file no longer exists.
             message = _("Could not load {}").format(path)
             logger.warning('Could not load {}'.format(path))
+            logger.error(ex)
             info = _("Does this file exist?\nIf it does, do you have "
                      "permission to read it?\n\nPlease check and try again.")
             self._view.show_message(message, info)
