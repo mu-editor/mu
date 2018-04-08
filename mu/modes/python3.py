@@ -127,7 +127,7 @@ class PythonMode(BaseMode):
             buttons.append({
                 'name': 'plotter',
                 'display_name': _('Plotter'),
-                'description': _('Plot incoming REPL data'),
+                'description': _('Plot data from your script or the REPL.'),
                 'handler': self.toggle_plotter,
                 'shortcut': 'CTRL+Shift+P',
             })
@@ -253,7 +253,7 @@ class PythonMode(BaseMode):
 
     def toggle_plotter(self):
         """
-
+        
         """
         pass
 

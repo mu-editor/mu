@@ -205,7 +205,7 @@ class MicrobitMode(MicroPythonMode):
             buttons.append({
                 'name': 'plotter',
                 'display_name': _('Plotter'),
-                'description': _('Plot incoming REPL data'),
+                'description': _('Plot incoming REPL data.'),
                 'handler': self.toggle_plotter,
                 'shortcut': 'CTRL+Shift+P',
             })
