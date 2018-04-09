@@ -1,14 +1,21 @@
-# Travis can building for Linux (Ubuntu 14.04 x64) and OS X (El Capitan)
+# Travis can building for Linux and macOS
 matrix:
   include:
+    # To maximise compatibility pick earliest image, Ubuntu 14.04.5 x64
     - os: linux
       dist: trusty
       sudo: required
-      language: generic
+      language: python
+      python: 3.5
+    - os: linux
+      dist: trusty
+      sudo: required
+      language: python
+      python: 3.6
 
-    # To maximise compatibility pick earliest image, 10.9 to be removed on 20/01/2017
+    # To maximise compatibility pick earliest image, OS X 10.10 Yosemite
     - os: osx
-      osx_image: beta-xcode6.1
+      osx_image: xcode6.4
       sudo: required
       language: generic
 
@@ -16,37 +23,34 @@ before_install:
   # OS and default Python info
   - uname -a
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sw_vers; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then python3 -c "import sys; print(sys.executable)"; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo python3 -c "import sys; print(sys.executable)"; fi
-
-install:
-  # Python 3 and pip 3 installation are OS dependent
+  # Python 3 and pip 3 installation required in macOS
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_linux.sh; fi
-
-  # Install Mu dependencies (PyQt & QScintilla will be absorbed in requirements.txt once ready)
-  - sudo pip3 install -r requirements.txt
-  - sudo pip3 install PyQt5
-  - sudo pip3 install QScintilla
-
-  # Install packaging dependencies, macOS depends on update not yet released https://github.com/pyinstaller/pyinstaller/pull/1965
-  - sudo pip3 install git+git://github.com/pyinstaller/pyinstaller.git@483c819d6a256b58db6740696a901bd41c313f0c
-
+  # Linux needs to install pip again to have pip3 for the right Python version
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_pip3.sh; fi
   # Check everything was correctly installed
   - echo $PATH
   - python3 --version
   - python3 -c "import struct; print(struct.calcsize('P') * 8)"
   - python3 -c "import sys; print(sys.executable)"
+  - python3 -m pip --version
   - pip3 --version
-  - sudo pip3 --version
+
+install:
+  # Install Mu dependencies
+  - pip3 install -r requirements.txt
+  # Install packaging dependencies
+  - pip3 install pyinstaller==3.3.1
+  # Install helpful pytest plug-in
+  - pip3 install pytest-faulthandler
+  # Check everything was correctly installed
   - pip3 freeze
-  - python3 -c "import PyQt5"
-  - python3 -c "import PyQt5.Qsci"
 
 script:
-  # Run the tests, at the moment there is a segmentation fault on Linux, this will go away with Py3.5
+  # Run the tests
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make check; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make clean; fi
+  # PyQt crashes without a frame buffer, so Linux needs "X Virtual Framebuffer"
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run make check; fi
+  - make clean
 
   # Package it
   - pyinstaller package/pyinstaller.spec
@@ -68,7 +72,8 @@ deploy:
   acl: public_read
   on:
     repo: mu-editor/mu
-    branch: [master, travis_bucket_move]
+    branch: [master]
+    python: 3.6
 
 notifications:
   email:

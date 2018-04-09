@@ -119,7 +119,7 @@ class DayTheme(Theme):
     FunctionMethodName = ClassName = Font(color='#0000a0')
     UnclosedString = Font(paper='#FFDDDD')
     Comment = CommentBlock = Font(color='gray')
-    Keyword = Font(color='#008080', bold=True)
+    Keyword = Font(color='#005050', bold=True)
     SingleQuotedString = DoubleQuotedString = Font(color='#800000')
     TripleSingleQuotedString = TripleDoubleQuotedString = Font(color='#060')
     Number = Font(color='#00008B')
@@ -148,19 +148,19 @@ class NightTheme(Theme):
     This is the dark theme.
     """
 
-    FunctionMethodName = ClassName = Font(color='#336699', paper='#222')
+    FunctionMethodName = ClassName = Font(color='#81a2be', paper='#222')
     UnclosedString = Font(paper='#c93827')
-    Comment = CommentBlock = Font(color='#919191', paper='#222')
+    Comment = CommentBlock = Font(color='#969896', paper='#222')
     Keyword = Font(color='#73a46a', bold=True, paper='#222')
-    SingleQuotedString = DoubleQuotedString = Font(color='#fbd126',
+    SingleQuotedString = DoubleQuotedString = Font(color='#f0c674',
                                                    paper='#222')
-    TripleSingleQuotedString = TripleDoubleQuotedString = Font(color='#f14721',
+    TripleSingleQuotedString = TripleDoubleQuotedString = Font(color='#f0c674',
                                                                paper='#222')
-    Number = Font(color='#51aee6', paper='#222')
-    Decorator = Font(color='#b83920', paper='#222')
+    Number = Font(color='#b5bd68', paper='#222')
+    Decorator = Font(color='#cc6666', paper='#222')
     Default = Identifier = Font(color='#DDD', paper='#222')
-    Operator = Font(color='#c93827', paper='#222')
-    HighlightedIdentifier = Font(color='#336699', paper='#222')
+    Operator = Font(color='#b294bb', paper='#222')
+    HighlightedIdentifier = Font(color='#de935f', paper='#222')
     Paper = QColor('#222')
     Caret = QColor('#c6c6c6')
     Margin = QColor('#424446')

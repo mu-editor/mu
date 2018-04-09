@@ -6,6 +6,8 @@ from unittest import mock
 import mu.interface.editor
 import keyword
 import re
+from PyQt5.QtCore import Qt, QMimeData, QUrl, QPointF
+from PyQt5.QtGui import QDropEvent
 
 
 def test_pythonlexer_keywords():
@@ -37,10 +39,12 @@ def test_EditorPane_init():
                        mock_configure):
         path = '/foo/bar.py'
         text = 'print("Hello, World!")'
-        mu.interface.editor.EditorPane(path, text)
+        editor = mu.interface.editor.EditorPane(path, text, '\r\n')
         mock_text.assert_called_once_with(text)
         mock_modified.assert_called_once_with(False)
         mock_configure.assert_called_once_with()
+        assert editor.isUtf8()
+        assert editor.newline == '\r\n'
 
 
 def test_EditorPane_configure():
@@ -245,22 +249,24 @@ def test_EditorPane_annotate_code():
 
 def test_EditorPane_show_annotations():
     """
-    Ensure the annotations are shown.
+    Ensure the annotations are shown in "sentence" case and with an arrow to
+    indicate the line to which they refer.
     """
     ep = mu.interface.editor.EditorPane(None, 'baz')
     ep.check_indicators = {
         'error': {
             'markers': {
                 1: [
-                    {'message': 'a message', 'line_no': 1},
-                    {'message': 'another message', 'line_no': 1},
+                    {'message': 'message 1', 'line_no': 1},
+                    {'message': 'message 2', 'line_no': 1},
                 ]
             }
         }
     }
     ep.annotate = mock.MagicMock()
     ep.show_annotations()
-    ep.annotate.assert_called_once_with(1, 'a message\nanother message',
+    ep.annotate.assert_called_once_with(1,
+                                        '\u2191Message 1\n\u2191Message 2',
                                         ep.annotationDisplay())
 
 
@@ -446,3 +452,36 @@ def test_EditorPane_selection_change_listener():
     assert ep.previous_selection['line_end'] == 2
     assert ep.previous_selection['col_end'] == 2
     assert ep.highlight_selected_matches.call_count == 1
+
+
+def test_EditorPane_drop_event():
+    """
+    If there's a drop event associated with files, cause them to be passed into
+    Mu's existing file loading code.
+    """
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    m = mock.MagicMock()
+    ep.open_file = mock.MagicMock()
+    ep.open_file.emit = m
+    data = QMimeData()
+    data.setUrls([QUrl('file://test/path.py'), QUrl('file://test/path.hex'),
+                  QUrl('file://test/path.txt')])
+    evt = QDropEvent(QPointF(0, 0), Qt.CopyAction, data,
+                     Qt.LeftButton, Qt.NoModifier)
+    ep.dropEvent(evt)
+    # Upstream _load will handle invalid file type (.txt).
+    assert m.call_count == 3
+
+
+def test_EditorPane_drop_event_not_file():
+    """
+    If the drop event isn't for files (for example, it may be for dragging and
+    dropping text into the editor), then pass the handling up to QScintilla.
+    """
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    event = mock.MagicMock()
+    event.mimeData().hasUrls.return_value = False
+    event.isAccepted.return_value = False
+    with mock.patch('mu.interface.editor.QsciScintilla.dropEvent') as mock_de:
+        ep.dropEvent(event)
+        mock_de.assert_called_once_with(event)

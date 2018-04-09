@@ -16,10 +16,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import sys
 import os
 import logging
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
+from mu.logic import write_and_flush
+from mu.resources import load_icon
 from qtconsole.manager import QtKernelManager
 from qtconsole.client import QtKernelClient
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
@@ -35,20 +38,30 @@ class KernelRunner(QObject):
     """
     kernel_started = pyqtSignal(QtKernelManager, QtKernelClient)
     kernel_finished = pyqtSignal()
+    # Used to build context with user defined envars when running the REPL.
+    default_envars = os.environ.copy()
 
-    def __init__(self, cwd):
+    def __init__(self, cwd, envars):
         """
         Initialise the kernel runner with a target current working directory.
         """
         super().__init__()
         self.cwd = cwd
+        self.envars = dict(envars)
 
     def start_kernel(self):
         """
-        Start the kernel, obtain a client and emit a signal when both are
-        started.
+        Create the expected context, start the kernel, obtain a client and
+        emit a signal when both are started.
         """
+        logger.info(sys.path)
         os.chdir(self.cwd)  # Ensure the kernel runs with the expected CWD.
+        # Add user defined envars to os.environ so they can be picked up by
+        # the child process running the kernel.
+        logger.info('Starting iPython kernel with user defined envars: '
+                    '{}'.format(self.envars))
+        for k, v in self.envars.items():
+            os.environ[k] = v
         self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.start_kernel()
         self.repl_kernel_client = self.repl_kernel_manager.client()
@@ -57,9 +70,12 @@ class KernelRunner(QObject):
 
     def stop_kernel(self):
         """
-        Stop the client connections to the kernel, affect an immediate
-        shutdown of the kernel and emit a "finished" signal.
+        Clean up the context, stop the client connections to the kernel, affect
+        an immediate shutdown of the kernel and emit a "finished" signal.
         """
+        os.environ.clear()
+        for k, v in self.default_envars.items():
+            os.environ[k] = v
         self.repl_kernel_client.stop_channels()
         self.repl_kernel_manager.shutdown_kernel(now=True)
         self.kernel_finished.emit()
@@ -87,9 +103,16 @@ class PythonMode(BaseMode):
             {
                 'name': 'run',
                 'display_name': _('Run'),
-                'description': _('Run and debug your Python script.'),
-                'handler': self.run,
+                'description': _('Run your Python script.'),
+                'handler': self.run_toggle,
                 'shortcut': 'F5',
+            },
+            {
+                'name': 'debug',
+                'display_name': _('Debug'),
+                'description': _('Debug your Python script.'),
+                'handler': self.debug,
+                'shortcut': 'F6',
             },
             {
                 'name': 'repl',
@@ -107,9 +130,71 @@ class PythonMode(BaseMode):
         """
         return SHARED_APIS + PYTHON3_APIS + PI_APIS
 
-    def run(self, event):
+    def run_toggle(self, event):
         """
-        Run and debug the script using the debug mode.
+        Handles the toggling of the run button to start/stop a script.
+        """
+        run_slot = self.view.button_bar.slots['run']
+        if self.runner:
+            self.stop_script()
+            run_slot.setIcon(load_icon('run'))
+            run_slot.setText(_('Run'))
+            run_slot.setToolTip(_('Run your Python script.'))
+            self.view.button_bar.slots['debug'].setEnabled(True)
+            self.view.button_bar.slots['modes'].setEnabled(True)
+        else:
+            self.run_script()
+            if self.runner:
+                # If the script started, toggle the button state. See #338.
+                run_slot.setIcon(load_icon('stop'))
+                run_slot.setText(_('Stop'))
+                run_slot.setToolTip(_('Stop your Python script.'))
+                self.view.button_bar.slots['debug'].setEnabled(False)
+                self.view.button_bar.slots['modes'].setEnabled(False)
+
+    def run_script(self):
+        """
+        Run the current script.
+        """
+        # Grab the Python file.
+        tab = self.view.current_tab
+        if tab is None:
+            logger.debug('There is no active text editor.')
+            self.stop_script()
+            return
+        if tab.path is None:
+            # Unsaved file.
+            self.editor.save()
+        if tab.path:
+            # If needed, save the script.
+            if tab.isModified():
+                with open(tab.path, 'w', newline='') as f:
+                    logger.info('Saving script to: {}'.format(tab.path))
+                    logger.debug(tab.text())
+                    write_and_flush(f, tab.text())
+                    tab.setModified(False)
+            logger.debug(tab.text())
+            envars = self.editor.envars
+            self.runner = self.view.add_python3_runner(tab.path,
+                                                       self.workspace_dir(),
+                                                       interactive=True,
+                                                       envars=envars)
+            self.runner.process.waitForStarted()
+
+    def stop_script(self):
+        """
+        Stop the currently running script.
+        """
+        logger.debug('Stopping script.')
+        if self.runner:
+            self.runner.process.kill()
+            self.runner.process.waitForFinished()
+            self.runner = None
+        self.view.remove_python_runner()
+
+    def debug(self, event):
+        """
+        Debug the script using the debug mode.
         """
         logger.info("Starting debug mode.")
         self.editor.change_mode('debugger')
@@ -137,7 +222,8 @@ class PythonMode(BaseMode):
         """
         self.view.button_bar.slots['repl'].setEnabled(False)
         self.kernel_thread = QThread()
-        self.kernel_runner = KernelRunner(cwd=self.workspace_dir())
+        self.kernel_runner = KernelRunner(cwd=self.workspace_dir(),
+                                          envars=self.editor.envars)
         self.kernel_runner.moveToThread(self.kernel_thread)
         self.kernel_runner.kernel_started.connect(self.on_kernel_start)
         self.kernel_runner.kernel_finished.connect(self.kernel_thread.quit)
@@ -174,4 +260,3 @@ class PythonMode(BaseMode):
             self.view.button_bar.slots['repl'].setEnabled(True)
         self.editor.show_status_message(_("REPL stopped."))
         self.kernel_runner = None
-        self.kernel_thread = None

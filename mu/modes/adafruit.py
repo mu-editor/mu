@@ -21,6 +21,7 @@ import ctypes
 from subprocess import check_output
 from mu.modes.base import MicroPythonMode
 from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
+from mu.interface.panes import CHARTS
 
 
 class AdafruitMode(MicroPythonMode):
@@ -29,8 +30,7 @@ class AdafruitMode(MicroPythonMode):
     """
 
     name = _('Adafruit CircuitPython')
-    description = _("Use CircuitPython on Adafruit's line of development "
-                    "boards.")
+    description = _("Use CircuitPython on Adafruit's line of boards.")
     icon = 'adafruit'
     save_timeout = 0  #: Don't autosave on Adafruit boards. Casues a restart.
     connected = True  #: is the Adafruit board connected.
@@ -43,6 +43,10 @@ class AdafruitMode(MicroPythonMode):
         (0x239A, 0x801D),  # Adafruit Gemma M0
         (0x239A, 0x801F),  # Adafruit Trinket M0
         (0x239A, 0x8012),  # Adafruit ItsyBitsy M0
+        (0x239A, 0x8021),  # Adafruit Metro M4
+        (0x239A, 0x8025),  # Adafruit Feather RadioFruit
+        (0x239A, 0x8026),  # Adafruit Feather M4
+        (0x239A, 0x8028),  # Adafruit pIRKey M0
     ]
 
     def actions(self):
@@ -50,15 +54,23 @@ class AdafruitMode(MicroPythonMode):
         Return an ordered list of actions provided by this module. An action
         is a name (also used to identify the icon) , description, and handler.
         """
-        return [
+        buttons = [
             {
                 'name': 'repl',
                 'display_name': _('REPL'),
                 'description': _('Use the REPL for live coding.'),
                 'handler': self.toggle_repl,
                 'shortcut': 'CTRL+Shift+I',
-            },
-        ]
+            }, ]
+        if CHARTS:
+            buttons.append({
+                'name': 'plotter',
+                'display_name': _('Plotter'),
+                'description': _('Plot incoming REPL data'),
+                'handler': self.toggle_plotter,
+                'shortcut': 'CTRL+Shift+P',
+            })
+        return buttons
 
     def workspace_dir(self):
         """
@@ -70,11 +82,15 @@ class AdafruitMode(MicroPythonMode):
         # plugged in CIRCUITPY board.
         if os.name == 'posix':
             # We're on Linux or OSX
-            mount_output = check_output('mount').splitlines()
-            mounted_volumes = [x.split()[2] for x in mount_output]
-            for volume in mounted_volumes:
-                if volume.endswith(b'CIRCUITPY'):
-                    device_dir = volume.decode('utf-8')
+            for mount_command in ['mount', '/sbin/mount']:
+                try:
+                    mount_output = check_output(mount_command).splitlines()
+                    mounted_volumes = [x.split()[2] for x in mount_output]
+                    for volume in mounted_volumes:
+                        if volume.endswith(b'CIRCUITPY'):
+                            device_dir = volume.decode('utf-8')
+                except FileNotFoundError:
+                    next
         elif os.name == 'nt':
             # We're on Windows.
 

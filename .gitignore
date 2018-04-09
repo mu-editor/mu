@@ -9,6 +9,7 @@ __pycache__
 # Distribution / packaging
 .Python
 env/
+.env/
 build/
 develop-eggs/
 dist/
@@ -47,6 +48,7 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *,cover
+.pytest_cache/*
 
 # Translations
 *.mo
@@ -66,6 +68,9 @@ target/
 
 # Pycharm
 .idea/
+
+# Visual Studio Code
+.vscode
 
 # OSX
 .DS_Store

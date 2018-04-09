@@ -19,7 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import (QVBoxLayout, QListWidget, QLabel, QListWidgetItem,
-                             QDialog, QDialogButtonBox, QPlainTextEdit)
+                             QDialog, QDialogButtonBox, QPlainTextEdit,
+                             QTabWidget, QWidget)
 from mu.resources import load_icon
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
@@ -63,6 +64,7 @@ class ModeSelector(QDialog):
         widget_layout.addWidget(label)
         self.setLayout(widget_layout)
         self.mode_list = QListWidget()
+        self.mode_list.itemDoubleClicked.connect(self.select_and_accept)
         widget_layout.addWidget(self.mode_list)
         self.mode_list.setIconSize(QSize(48, 48))
         for name, item in modes.items():
@@ -70,9 +72,8 @@ class ModeSelector(QDialog):
                 ModeItem(item.name, item.description, item.icon,
                          self.mode_list)
         self.mode_list.sortItems()
-        instructions = QLabel(_('You can change mode at any time by clicking '
-                                'the name of the current mode shown in the '
-                                'bottom right-hand corner of Mu.'))
+        instructions = QLabel(_('Change mode at any time by clicking '
+                                'the "Mode" button containing Mu\'s logo.'))
         instructions.setWordWrap(True)
         widget_layout.addWidget(instructions)
         button_box = QDialogButtonBox(QDialogButtonBox.Ok |
@@ -80,6 +81,12 @@ class ModeSelector(QDialog):
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         widget_layout.addWidget(button_box)
+
+    def select_and_accept(self):
+        """
+        Handler for when an item is double-clicked.
+        """
+        self.accept()
 
     def get_mode(self):
         """
@@ -91,20 +98,12 @@ class ModeSelector(QDialog):
             raise RuntimeError('Mode change cancelled.')
 
 
-class LogDisplay(QDialog):
+class LogWidget(QWidget):
     """
-    Defines the UI for displaying the logs produced by Mu.
+    Used to display Mu's logs.
     """
 
-    def setup(self, log, theme):
-        if theme == 'day':
-            self.setStyleSheet(DAY_STYLE)
-        elif theme == 'night':
-            self.setStyleSheet(NIGHT_STYLE)
-        else:
-            self.setStyleSheet(CONTRAST_STYLE)
-        self.setMinimumSize(600, 400)
-        self.setWindowTitle(_('Mu Debug Log'))
+    def setup(self, log):
         widget_layout = QVBoxLayout()
         self.setLayout(widget_layout)
         label = QLabel(_('When reporting a bug, copy and paste the content of '
@@ -116,6 +115,63 @@ class LogDisplay(QDialog):
         self.log_text_area.setLineWrapMode(QPlainTextEdit.NoWrap)
         self.log_text_area.setPlainText(log)
         widget_layout.addWidget(self.log_text_area)
+
+
+class EnvironmentVariablesWidget(QWidget):
+    """
+    Used for editing and displaying environment variables used with Python 3
+    mode.
+    """
+
+    def setup(self, envars):
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+        label = QLabel(_('The environment variables shown below will be '
+                         'set each time you run a Python 3 script.\n\n'
+                         'Each separate enviroment variable should be on a '
+                         'new line and of the form:\nNAME=VALUE'))
+        label.setWordWrap(True)
+        widget_layout.addWidget(label)
+        self.text_area = QPlainTextEdit()
+        self.text_area.setLineWrapMode(QPlainTextEdit.NoWrap)
+        self.text_area.setPlainText(envars)
+        widget_layout.addWidget(self.text_area)
+
+
+class AdminDialog(QDialog):
+    """
+    Displays administrative related information and settings (logs, environment
+    variables etc...).
+    """
+
+    def setup(self, log, envars, theme):
+        if theme == 'day':
+            self.setStyleSheet(DAY_STYLE)
+        elif theme == 'night':
+            self.setStyleSheet(NIGHT_STYLE)
+        else:
+            self.setStyleSheet(CONTRAST_STYLE)
+        self.setMinimumSize(600, 400)
+        self.setWindowTitle(_('Mu Administration'))
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+        self.tabs = QTabWidget()
+        widget_layout.addWidget(self.tabs)
         button_box = QDialogButtonBox(QDialogButtonBox.Ok)
         button_box.accepted.connect(self.accept)
         widget_layout.addWidget(button_box)
+        # Tabs
+        self.log_widget = LogWidget()
+        self.log_widget.setup(log)
+        self.tabs.addTab(self.log_widget, _("Current Log"))
+        self.envar_widget = EnvironmentVariablesWidget()
+        self.envar_widget.setup(envars)
+        self.tabs.addTab(self.envar_widget, _('Python3 Environment'))
+        self.log_widget.log_text_area.setFocus()
+
+    def envars(self):
+        """
+        Return the raw textual definition of the environment variables created
+        by the user.
+        """
+        return self.envar_widget.text_area.toPlainText()

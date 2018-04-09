@@ -1,23 +1,124 @@
-QStackedWidget, QWidget, QApplication {
-    background-color: #222;
-    color: #CCC;
-}
-
-QToolButton:hover {
-    background-color: #333;
-    border: #CCC;
-}
-
-QTextEdit {
-    background-color: #222;
-    color: #CCC;
-}
-
 QToolBar, QToolButton {
     background: transparent;
+    margin: 0;
+    border: none;
+    padding: 0;
+}
+
+QToolButton {
+    padding: 4px 2px;
+}
+
+QToolButton:hover, QMenu::item:selected {
+    background-color: #333;
+}
+
+QStackedWidget, QWidget, QApplication, QDialog,
+QLabel, QStatusBar, QTabBar, QMenu {
+    background-color: #222;
+    color: white;
+}
+
+QTextEdit, QPlainTextEdit {
+    background-color: #373737;
+    color: white;
+    border: none;
+}
+
+QTabBar {
+    border: none;
+}
+
+QTabBar::tab {
+    border-top: 1px solid #6b6b6b;
+    border-left: 1px solid #6b6b6b;
+    border-right: 1px solid #6b6b6b;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+QTabBar::tab, QListWidget::item:hover, QListWidget::item:focus {
+    background: #474747;
+    padding: 4px 8px;
+    margin: 0;
+}
+
+QTabBar::tab::hover, QListWidget::item::selected  {
+    background: #5c5c5c;
+    padding: 4px 8px;
+    margin: 0;
+}
+
+QTabBar::tab::selected {
+    background: #6b6b6b;
+    padding: 4px 8px;
+    margin: 0;
+}
+
+QTabBar::close-button {
+    image: url(images:close-tab.png);
+    border: none;
+    padding: 3px;
+}
+
+QTabBar::close-button:hover {
+    image: url(images:close-tab.png);
+    border: none;
+    padding: 3px;
+    background: #c93827;
+    border-radius: 3px;
+}
+
+QTabWidget::pane {
+    border-top: 1px solid #6b6b6b;
+    border-bottom: 1px solid #6b6b6b;
+}
+
+QsciScintilla {
+    border: none;
 }
 
 QListWidget {
     background-color: #222;
-    color: #CCC;
+    color: white;
+}
+
+QListWidget::item:selected, QListWidget::item:hover, QListWidget::item:focus {
+    padding: 0;
+    color: white;
+}
+
+QStatusBar QLabel {
+    padding: 2px;
+    margin: 0;
+}
+
+#AdministrationLabel:hover, #AdministrationLabel:focus {
+    background: #444;
+}
+
+QMenu {
+    border: 1px solid #6b6b6b;
+    min-width: 100px;
+}
+
+QMenu::item {
+    border: none;
+    padding: 5px 15px;
+    width: 100%;
+}
+
+QMenu::item:selected {
+    border: none;
+}
+
+QMenu::item:disabled {
+    color: #333;
+}
+
+QMenu::separator {
+    border: none;
+    border-bottom: 1px solid #333;
+    padding: 0px;
+    margin: 0px;
 }

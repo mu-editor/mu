@@ -122,3 +122,5 @@ Contents:
    api.rst
    authors.rst
    changes.rst
+   license.rst
+   copyright.rst

@@ -17,6 +17,10 @@ These include (but are not limited to):
 * Tibs / Tony Ibbs (tibs@tonyibbs.co.uk)
 * Zander Brown
 * Alistair Broomhead (alistair.broomhead@gmail.com)
+* Frank Morton (fmorton@mac.com)
 
-We welcome contributions from anyone! If you have made a contribution to Mu and
-would like to be recognised, please feel to add yourself to the list above.
+We welcome contributions from anyone! Please see :doc:`contributing` for more
+information.
+
+If you have made a contribution to Mu and would like to be recognised, please
+feel to add yourself to the list above.

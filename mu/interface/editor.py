@@ -23,7 +23,9 @@ import logging
 import os.path
 from collections import defaultdict
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
+from PyQt5.QtCore import Qt, pyqtSignal
 from mu.interface.themes import Font, DayTheme
+from mu.logic import NEWLINE
 
 
 # Regular Expression for valid individual code 'words'
@@ -61,10 +63,15 @@ class EditorPane(QsciScintilla):
     Represents the text editor.
     """
 
-    def __init__(self, path, text):
+    # Signal fired when a script or hex is droped on this editor
+    open_file = pyqtSignal(str)
+
+    def __init__(self, path, text, newline=NEWLINE):
         super().__init__()
+        self.setUtf8(True)
         self.path = path
         self.setText(text)
+        self.newline = newline
         self.check_indicators = {  # IDs are arbitrary
             'error': {'id': 19, 'markers': {}},
             'style': {'id': 20, 'markers': {}}
@@ -82,6 +89,42 @@ class EditorPane(QsciScintilla):
         self.setModified(False)
         self.breakpoint_lines = set()
         self.configure()
+
+    def dropEvent(self, event):
+        """
+        Run by Qt when *something* is dropped on this editor
+        """
+
+        # Does the drag event have any urls?
+        # Files are transfered as a url (by path not value)
+        if event.mimeData().hasUrls():
+            # Qt doesn't seem to have an 'open' action,
+            # this seems the most appropriate
+            event.setDropAction(Qt.CopyAction)
+            # Valid links
+            links = []
+            # Iterate over each of the urls attached to the event
+            for url in event.mimeData().urls():
+                # Check the url is to a local file
+                # (not a webpage for example)
+                if url.isLocalFile():
+                    # Grab a 'real' path from the url
+                    path = url.toLocalFile()
+                    # Add it to the list of valid links
+                    links.append(path)
+
+            # Did we get any?
+            if len(links) > 0:
+                # Only accept now we actually know we can do
+                # something with the drop event
+                event.accept()
+                for link in links:
+                    # Start bubbling an open file request
+                    self.open_file.emit(link)
+
+        # If the event wasn't handled let QsciScintilla have a go
+        if not event.isAccepted():
+            super().dropEvent(event)
 
     def configure(self):
         """
@@ -238,7 +281,8 @@ class EditorPane(QsciScintilla):
             markers = self.check_indicators[indicator]['markers']
             for k, marker_list in markers.items():
                 for m in marker_list:
-                    lines[m['line_no']].append(m['message'])
+                    lines[m['line_no']].append('\u2191' +
+                                               m['message'].capitalize())
         for line, messages in lines.items():
             text = '\n'.join(messages).strip()
             if text:

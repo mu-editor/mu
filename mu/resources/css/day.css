@@ -1,23 +1,126 @@
-QStackedWidget, QWidget {
+QToolBar, QToolButton {
+    background: transparent;
+    margin: 0;
+    border: none;
+    padding: 0;
+}
+
+QToolButton {
+    padding: 4px 2px;
+}
+
+QToolButton:hover, QMenu::item:selected {
+    background-color: #cccccc;
+}
+
+QStackedWidget, QWidget, QApplication, QDialog,
+QLabel, QStatusBar, QTabBar, QMenu {
     background-color: #EEE;
     color: black;
 }
 
-QToolButton:hover {
-    background-color: #cccccc;
-    border: #999999;
+QTextEdit, QPlainTextEdit {
+    background-color: white;
+    color: black;
+    border: none;
 }
 
-QTextEdit {
-    background-color: white;
+QTabBar {
+    border: none;
+}
+
+QTabBar::tab {
+    border-top: 1px solid #b4b4b4;
+    border-left: 1px solid #b4b4b4;
+    border-right: 1px solid #b4b4b4;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
     color: black;
 }
 
-QToolBar, QToolButton {
-    background: transparent;
+QTabBar::tab, QListWidget::item:selected, QListWidget::item:focus {
+    background: #c4c4c4;
+    padding: 4px 8px;
+    margin: 0;
+}
+
+QTabBar::tab::hover, QListWidget::item::hover {
+    background: #d4d4d4;
+    padding: 4px 8px;
+    margin: 0;
+}
+
+QTabBar::tab::selected {
+    background: #eeeeee;
+    padding: 4px 8px;
+    margin: 0;
+}
+
+QTabBar::close-button {
+    image: url(images:close-tab.png);
+    border: none;
+    padding: 3px;
+}
+
+QTabBar::close-button:hover {
+    image: url(images:close-tab.png);
+    border: none;
+    padding: 3px;
+    background: #e97867;
+    border-radius: 3px;
+}
+
+QTabWidget::pane {
+    border: none;
+    border-top: 1px solid #b4b4b4;
+    border-bottom: 1px solid #b4b4b4;
+}
+
+QsciScintilla {
+    border: none;
 }
 
 QListWidget {
     background-color: white;
     color: black;
+}
+
+QListWidget::item:selected, QListWidget::item:hover, QListWidget::item:focus {
+    padding: 0;
+    color: black;
+}
+
+QStatusBar QLabel {
+    padding: 2px;
+    margin: 0;
+}
+
+#AdministrationLabel:hover, #AdministrationLabel:focus {
+    background: #cccccc;
+}
+
+QMenu {
+    border: none;
+    min-width: 100px;
+}
+
+QMenu::item {
+    border: none;
+    padding: 5px 15px;
+    width: 100%;
+}
+
+QMenu::item:selected {
+    border: none;
+}
+
+QMenu::item:disabled {
+    color: #cccccc;
+}
+
+QMenu::separator {
+    border: none;
+    border-bottom: 1px solid #cccccc;
+    padding: 0px;
+    margin: 0px;
 }

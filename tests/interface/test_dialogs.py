@@ -106,6 +106,16 @@ def test_ModeSelector_setup_contrast_theme():
     mock_css.assert_called_once_with(mu.interface.themes.CONTRAST_STYLE)
 
 
+def test_ModeSelector_select_and_accept():
+    """
+    Ensure the accept slot is fired when this event handler is called.
+    """
+    ms = mu.interface.dialogs.ModeSelector()
+    ms.accept = mock.MagicMock()
+    ms.select_and_accept()
+    ms.accept.assert_called_once_with()
+
+
 def test_ModeSelector_get_mode():
     """
     Ensure that the ModeSelector will correctly return a selected mode (or
@@ -124,27 +134,55 @@ def test_ModeSelector_get_mode():
         ms.get_mode()
 
 
-def test_LogDisplay_setup():
+def test_LogWidget_setup():
     """
-    Ensure the log display dialog is setup properly given the content of a log
-    file.
-    """
-    log = 'this is the contents of a log file'
-    ld = mu.interface.dialogs.LogDisplay()
-    ld.setup(log, 'day')
-    assert ld.log_text_area.toPlainText() == log
-
-
-def test_LogDisplay_setup_night():
-    """
-    Ensure the log display dialog can start with the night theme.
+    Ensure the log widget displays the referenced log file string in the
+    expected way.
     """
     log = 'this is the contents of a log file'
-    ld = mu.interface.dialogs.LogDisplay()
-    ld.setStyleSheet = mock.MagicMock()
-    ld.setup(log, 'night')
-    assert ld.log_text_area.toPlainText() == log
-    ld.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
+    lw = mu.interface.dialogs.LogWidget()
+    lw.setup(log)
+    assert lw.log_text_area.toPlainText() == log
+    assert lw.log_text_area.isReadOnly()
+
+
+def test_EnvironmentVariablesWidget_setup():
+    """
+    Ensure the widget for editing user defined environment variables displays
+    the referenced string in the expected way.
+    """
+    envars = 'name=value'
+    evw = mu.interface.dialogs.EnvironmentVariablesWidget()
+    evw.setup(envars)
+    assert evw.text_area.toPlainText() == envars
+    assert not evw.text_area.isReadOnly()
+
+
+def test_AdminDialog_setup():
+    """
+    Ensure the admin dialog is setup properly given the content of a log
+    file and envars.
+    """
+    log = 'this is the contents of a log file'
+    envars = 'name=value'
+    ad = mu.interface.dialogs.AdminDialog()
+    ad.setStyleSheet = mock.MagicMock()
+    ad.setup(log, envars, 'day')
+    assert ad.log_widget.log_text_area.toPlainText() == log
+    assert ad.envars() == envars
+    ad.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
+
+
+def test_AdminDialog_setup_night():
+    """
+    Ensure the admin dialog can start with the night theme.
+    """
+    log = 'this is the contents of a log file'
+    envars = 'name=value'
+    ad = mu.interface.dialogs.AdminDialog()
+    ad.setStyleSheet = mock.MagicMock()
+    ad.setup(log, envars, 'night')
+    ad.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
 
 
 def test_LogDisplay_setup_contrast():
@@ -152,9 +190,9 @@ def test_LogDisplay_setup_contrast():
     Ensure the log display dialog can start with the high contrast theme.
     """
     log = 'this is the contents of a log file'
-    ld = mu.interface.dialogs.LogDisplay()
-    ld.setStyleSheet = mock.MagicMock()
-    ld.setup(log, 'contrast')
-    assert ld.log_text_area.toPlainText() == log
-    ld.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
+    envars = 'name=value'
+    ad = mu.interface.dialogs.AdminDialog()
+    ad.setStyleSheet = mock.MagicMock()
+    ad.setup(log, envars, 'contrast')
+    ad.setStyleSheet.\
+        assert_called_once_with(mu.interface.themes.CONTRAST_STYLE)

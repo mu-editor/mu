@@ -30,7 +30,7 @@ usability and a great experience before looks.
 
 This beautiful yet inconvenient wine glass from
 `the uncomfortable <https://www.theuncomfortable.com/>`_ illustrates what I
-mean.
+mean (used with permission, see :doc:`copyright`).
 
 .. image:: beautifully_useless.jpg 
 

@@ -90,7 +90,7 @@ class DebugMode(BaseMode):
 
     def start(self):
         """
-        Start running/debugging the current script.
+        Start debugging the current script.
         """
         # Grab the Python file.
         tab = self.view.current_tab
@@ -102,7 +102,6 @@ class DebugMode(BaseMode):
             # Unsaved file.
             self.editor.save()
         if tab.path:
-            logger.debug('Running / debugging script.')
             # If needed, save the script.
             if tab.isModified():
                 with open(tab.path, 'w', newline='') as f:
@@ -110,13 +109,13 @@ class DebugMode(BaseMode):
                     logger.debug(tab.text())
                     write_and_flush(f, tab.text())
                     tab.setModified(False)
-            logger.debug('Python script: {}'.format(tab.path))
-            logger.debug('Working directory: {}'.format(self.workspace_dir()))
             logger.debug(tab.text())
-            self.editor.show_status_message(_("Running script {}").format(
-                tab.path))
+            self.view.button_bar.slots['modes'].setEnabled(False)
+            envars = self.editor.envars
             self.runner = self.view.add_python3_runner(tab.path,
-                                                       self.workspace_dir())
+                                                       self.workspace_dir(),
+                                                       debugger=True,
+                                                       envars=envars)
             self.runner.process.waitForStarted()
             self.runner.process.finished.connect(self.finished)
             self.view.add_debug_inspector()
@@ -141,13 +140,14 @@ class DebugMode(BaseMode):
             self.debugger = None
             self.view.remove_python_runner()
             self.view.remove_debug_inspector()
+        self.view.button_bar.slots['modes'].setEnabled(True)
         self.editor.change_mode('python')
         self.editor.mode = 'python'
         self.view.set_read_only(False)
 
     def finished(self):
         """
-        Called when the running / debugged Python process is finished.
+        Called when the debugged Python process is finished.
         """
         for action in self.actions():
             if action['name'] != 'stop':
@@ -210,7 +210,7 @@ class DebugMode(BaseMode):
             else:
                 self.debugger.create_breakpoint(tab.path, line + 1)
 
-    def debug_on_fail(self):
+    def debug_on_fail(self, message):
         """
         Called when, for any reason, the debug client was unable to connect to
         the debug runner. On a Raspberry Pi this is usually because it's an
@@ -220,13 +220,12 @@ class DebugMode(BaseMode):
         """
         # Report the problem.
         process_runner = self.view.process_runner
-        msg = _("Unable to connect to the Python runner. "
-                "This probably means your machine is slow or busy. "
-                "Free up some of the machine's resources and try again.")
-        process_runner.append(msg.encode('utf-8'))
-        # Set the state to finished.
-        self.finished()
-        process_runner.finished(1, -1)
+        if process_runner:
+            msg = _("Unable to connect to the Python debugger.\n\n") + message
+            process_runner.append(msg.encode('utf-8'))
+            # Set the state to finished.
+            self.finished()
+            process_runner.finished(1, -1)
 
     def debug_on_bootstrap(self):
         """
