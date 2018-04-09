@@ -33,6 +33,9 @@ SESSION = json.dumps({
         ['name', 'value'],
     ],
 })
+ENCODING_COOKIE = "# -*- coding: %s -*- " \
+    "# Encoding cookie added by Mu Editor" % mu.logic.ENCODING + \
+    mu.logic.NEWLINE
 
 
 #
@@ -200,6 +203,104 @@ def test_write_and_flush():
         fsync.assert_called_once_with(mock_fd)
     mock_fd.write.assert_called_once_with(mock_content)
     mock_fd.flush.assert_called_once_with()
+
+
+def test_save_and_encode():
+    """
+    When saving, ensure that encoding cookies are honoured, otherwise fall back
+    to the default encoding (UTF-8 -- as per Python standard practice).
+    """
+    encoding_cookie = '# -*- coding: latin-1 -*-'
+    text = encoding_cookie + '\n\nprint("Hello")'
+    mock_open = mock.MagicMock()
+    mock_wandf = mock.MagicMock()
+    # Valid cookie
+    with mock.patch('mu.logic.open', mock_open), \
+            mock.patch('mu.logic.write_and_flush', mock_wandf):
+        mu.logic.save_and_encode(text, 'foo.py')
+    mock_open.assert_called_once_with('foo.py', 'w', encoding='latin-1',
+                                      newline='')
+    mock_wandf.call_count == 1
+    mock_open.reset_mock()
+    mock_wandf.reset_mock()
+    # Invalid cookie
+    encoding_cookie = '# -*- coding: utf-42 -*-'
+    text = encoding_cookie + '\n\nprint("Hello")'
+    with mock.patch('mu.logic.open', mock_open), \
+            mock.patch('mu.logic.write_and_flush', mock_wandf):
+        mu.logic.save_and_encode(text, 'foo.py')
+    mock_open.assert_called_once_with('foo.py', 'w',
+                                      encoding=mu.logic.ENCODING,
+                                      newline='')
+    mock_wandf.call_count == 1
+    mock_open.reset_mock()
+    mock_wandf.reset_mock()
+    # No cookie
+    text = 'print("Hello")'
+    with mock.patch('mu.logic.open', mock_open), \
+            mock.patch('mu.logic.write_and_flush', mock_wandf):
+        mu.logic.save_and_encode(text, 'foo.py')
+    mock_open.assert_called_once_with('foo.py', 'w',
+                                      encoding=mu.logic.ENCODING,
+                                      newline='')
+    mock_wandf.call_count == 1
+
+
+def test_sniff_encoding_from_BOM():
+    """
+    Ensure an expected BOM detected at the start of the referenced file is
+    used to set the expected encoding.
+    """
+    with mock.patch('mu.logic.open',
+                    mock.mock_open(read_data=codecs.BOM_UTF8 + b'# hello')):
+        assert mu.logic.sniff_encoding('foo.py') == 'utf-8-sig'
+
+
+def test_sniff_encoding_from_cookie():
+    """
+    If there's a cookie present, then use that to work out the expected
+    encoding.
+    """
+    encoding_cookie = b'# -*- coding: latin-1 -*-'
+    mock_locale = mock.MagicMock()
+    mock_locale.getpreferredencoding.return_value = 'UTF-8'
+    with mock.patch('mu.logic.open',
+                    mock.mock_open(read_data=encoding_cookie)), \
+            mock.patch('mu.logic.locale', mock_locale):
+        assert mu.logic.sniff_encoding('foo.py') == 'latin-1'
+
+
+def test_sniff_encoding_from_bad_cookie():
+    """
+    If there's a cookie present but we can't even read it, then return None.
+    """
+    encoding_cookie = '# -*- coding: silly-你好 -*-'.encode('utf-8')
+    mock_locale = mock.MagicMock()
+    mock_locale.getpreferredencoding.return_value = 'ascii'
+    with mock.patch('mu.logic.open',
+                    mock.mock_open(read_data=encoding_cookie)), \
+            mock.patch('mu.logic.locale', mock_locale):
+        assert mu.logic.sniff_encoding('foo.py') is None
+
+
+def test_sniff_encoding_fallback_to_locale():
+    """
+    If there's no encoding information in the file, just return None.
+    """
+    mock_locale = mock.MagicMock()
+    mock_locale.getpreferredencoding.return_value = 'ascii'
+    with mock.patch('mu.logic.open',
+                    mock.mock_open(read_data=b'# hello')), \
+            mock.patch('mu.logic.locale', mock_locale):
+        assert mu.logic.sniff_encoding('foo.py') is None
+
+
+def test_sniff_newline_convention():
+    """
+    Ensure sniff_newline_convention returns the expected newline convention.
+    """
+    text = 'the\r\ncat\nsat\non\nthe\r\nmat'
+    assert mu.logic.sniff_newline_convention(text) == '\n'
 
 
 def test_get_admin_file_path():
@@ -779,7 +880,7 @@ def test_load_python_file():
     mock_read.assert_called_once_with(filepath)
     ed._view.add_tab.assert_called_once_with(
         filepath,
-        mu.logic.ENCODING_COOKIE + mu.logic.NEWLINE + text,
+        text,
         ed.modes[ed.mode].api(),
         newline)
 
@@ -803,7 +904,7 @@ def test_load_python_file_case_insensitive_file_type():
     mock_read.assert_called_once_with(filepath.upper())
     ed._view.add_tab.assert_called_once_with(
         filepath.upper(),
-        mu.logic.ENCODING_COOKIE + mu.logic.NEWLINE + text,
+        text,
         ed.modes[ed.mode].api(),
         newline)
 
@@ -954,7 +1055,6 @@ def test_save_restores_newline():
     """
     newline = "\r\n"
     test_text = mu.logic.NEWLINE.join(
-        [mu.logic.ENCODING_COOKIE] +
         "the cat sat on the mat".split()
     )
     with generate_python_file(test_text) as filepath:
@@ -1038,6 +1138,21 @@ def test_save_file_with_exception():
         ed.save()
     assert view.current_tab.setModified.call_count == 0
     assert view.show_message.call_count == 1
+
+
+def test_save_file_with_encoding_error():
+    """
+    If Mu encounters a UnicodeEncodeError when trying to write the file,
+    it should display a helpful message explaining the problem.
+    """
+    text, path, newline = "foo", "foo", "\n"
+    ed = mocked_editor(text=text, path=path, newline=newline)
+    with mock.patch("mu.logic.save_and_encode") as mock_save:
+        mock_save.side_effect = UnicodeEncodeError(mu.logic.ENCODING, "",
+                                                   0, 0, "Unable to encode")
+        ed.save()
+
+    assert ed._view.current_tab.setModified.call_count == 0
 
 
 def test_save_python_file():
@@ -1852,10 +1967,7 @@ def test_write_newline_to_unix():
         with open(filepath, newline="") as f:
             text = f.read()
             assert text.count("\r\n") == 0
-            #
-            # There will be one more line-ending because of the encoding cookie
-            #
-            assert text.count("\n") == 1 + test_string.count("\r\n")
+            assert text.count("\n") == test_string.count("\r\n")
 
 
 def test_write_newline_to_windows():
@@ -1867,10 +1979,7 @@ def test_write_newline_to_windows():
         with open(filepath, newline="") as f:
             text = f.read()
             assert len(re.findall("[^\r]\n", text)) == 0
-            #
-            # There will be one more line-ending because of the encoding cookie
-            #
-            assert text.count("\r\n") == 1 + test_string.count("\n")
+            assert text.count("\r\n") == test_string.count("\n")
 
 
 #
@@ -1924,7 +2033,7 @@ def test_read_utf16lebom():
 def test_read_encoding_cookie():
     """Successfully decode from iso-8859-1 with an encoding cookie
     """
-    encoding_cookie = mu.logic.ENCODING_COOKIE.replace(
+    encoding_cookie = ENCODING_COOKIE.replace(
         mu.logic.ENCODING, "iso-8859-1")
     test_string = encoding_cookie + UNICODE_TEST_STRING
     with generate_python_file() as filepath:
@@ -1932,6 +2041,17 @@ def test_read_encoding_cookie():
             f.write(test_string.encode("iso-8859-1"))
         text, _ = mu.logic.read_and_decode(filepath)
         assert text == test_string
+
+
+def test_read_encoding_mu_default():
+    """Successfully decode from the mu default
+    """
+    test_string = UNICODE_TEST_STRING.encode(mu.logic.ENCODING)
+    with generate_python_file() as filepath:
+        with open(filepath, "wb") as f:
+            f.write(test_string)
+        text, _ = mu.logic.read_and_decode(filepath)
+        assert text == UNICODE_TEST_STRING
 
 
 def test_read_encoding_default():
@@ -1945,50 +2065,66 @@ def test_read_encoding_default():
         assert text == UNICODE_TEST_STRING
 
 
-#
-# When writing, Mu should use utf-8 (without a BOM) and ensure the text is
-# prefixed with a PEP 263 encoding cookie
-# If the file already has an encoding cookie it should be replaced by
-# the Mu cookie
-#
-def test_write_utf8():
-    """The text should be saved encoded as utf8
+def test_read_encoding_unsuccessful():
+    """Fail to decode encoded text
     """
+    #
+    # Have to work quite hard to produce text which will definitely
+    # fail to decode since UTF-8 and cp1252 (the default on this
+    # computer) will, between them, decode nearly anything!
+    #
     with generate_python_file() as filepath:
-        mu.logic.save_and_encode(UNICODE_TEST_STRING, filepath)
-        with open(filepath, encoding="utf-8") as f:
-            text = f.read()
-            assert text == mu.logic.ENCODING_COOKIE + UNICODE_TEST_STRING
+        with open(filepath, "wb") as f:
+            f.write(codecs.BOM_UTF8)
+            f.write(b"\xd8\x00")
+        with pytest.raises(UnicodeDecodeError):
+            text, _ = mu.logic.read_and_decode(filepath)
 
 
+#
+# When writing, if the text has an encoding cookie, then that encoding
+# should be used. Otherwise, UTF-8 should be used and no encoding cookie
+# added
+#
 def test_write_encoding_cookie_no_cookie():
-    """If the text has no cookie of its own the first line of the saved
-    file will be the Mu encoding cookie
+    """If the text has no cookie of its own utf-8 will be used
+    when saving and no cookie added
     """
-    test_string = "This is a test"
+    test_string = UNICODE_TEST_STRING
     with generate_python_file() as filepath:
         mu.logic.save_and_encode(test_string, filepath)
-        with open(filepath, encoding="utf-8") as f:
+        with open(filepath, encoding=mu.logic.ENCODING) as f:
             for line in f:
-                assert line == mu.logic.ENCODING_COOKIE
+                assert line == test_string
                 break
-            else:
-                assert False, "No cookie found"
 
 
 def test_write_encoding_cookie_existing_cookie():
-    """If the text has a cookie of its own it will be replaced by the Mu cookie
+    """If the text has a encoding cookie of its own then that encoding will
+    be used when saving and no change made to the cookie
     """
-    cookie = mu.logic.ENCODING_COOKIE.replace(mu.logic.ENCODING, "iso-8859-1")
-    test_string = cookie + "This is a test"
+    encoding = "iso-8859-1"
+    cookie = ENCODING_COOKIE.replace(mu.logic.ENCODING, encoding)
+    test_string = cookie + UNICODE_TEST_STRING
     with generate_python_file() as filepath:
         mu.logic.save_and_encode(test_string, filepath)
-        with open(filepath, encoding="utf-8") as f:
-            for line in f:
-                assert line == mu.logic.ENCODING_COOKIE
-                break
-            else:
-                assert False, "No cookie found"
+        with open(filepath, encoding=encoding) as f:
+            assert next(f) == cookie
+            assert next(f) == UNICODE_TEST_STRING
+
+
+def test_write_invalid_codec():
+    """If an encoding cookie is present but specifies an unknown codec,
+    utf-8 will be used instead
+    """
+    encoding = "INVALID"
+    cookie = ENCODING_COOKIE.replace(mu.logic.ENCODING, encoding)
+    test_string = cookie + UNICODE_TEST_STRING
+    with generate_python_file() as filepath:
+        mu.logic.save_and_encode(test_string, filepath)
+        with open(filepath, encoding=mu.logic.ENCODING) as f:
+            assert next(f) == cookie
+            assert next(f) == UNICODE_TEST_STRING
 
 
 def test_handle_open_file():

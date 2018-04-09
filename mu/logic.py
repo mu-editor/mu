@@ -136,14 +136,12 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
 NEWLINE = "\n"
 
 #
-# We write all files as UTF-8 with a PEP 263 encoding cookie
-# We also detect an encoding cookie in an inbound file
+# We write all files as UTF-8 unless they arrived with a PEP 263 encoding
+# cookie, in which case we honour that encoding.
 #
 ENCODING = "utf-8"
 ENCODING_COOKIE_RE = re.compile(
     "^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
-ENCODING_COOKIE = "# -*- coding: %s-*-" \
-    "# Encoding cookie added by Mu Editor" % ENCODING + NEWLINE
 
 logger = logging.getLogger(__name__)
 
@@ -166,20 +164,24 @@ def write_and_flush(fileobj, content):
 
 
 def save_and_encode(text, filepath, newline=os.linesep):
-    #
-    # Strip any existing encoding cookie and replace by a Mu-generated
-    # UTF-8 cookie. We need to strip any existing line-endings off the
-    # encoding cookie so we don't double up.
-    #
-    encoding_cookie = ENCODING_COOKIE.strip()
-    lines = text.splitlines()
-    if lines and ENCODING_COOKIE_RE.match(lines[0]):
-        lines[0] = encoding_cookie
+    """
+    Detect the presence of an encoding cookie and use that encoding; if
+    none is present, do not add one and use the Mu default encoding.
+    If the codec is invalid, log a warning and fall back to the default.
+    """
+    match = ENCODING_COOKIE_RE.match(text)
+    if match:
+        encoding = match.group(1)
+        try:
+            codecs.lookup(encoding)
+        except LookupError:
+            logger.warn("Invalid codec in encoding cookie: %s", encoding)
+            encoding = ENCODING
     else:
-        lines.insert(0, encoding_cookie)
+        encoding = ENCODING
 
-    with open(filepath, "w", encoding=ENCODING, newline='') as f:
-        write_and_flush(f, newline.join(lines))
+    with open(filepath, "w", encoding=encoding, newline='') as f:
+        write_and_flush(f, newline.join(text.splitlines()))
 
 
 def sniff_encoding(filepath):
@@ -187,7 +189,7 @@ def sniff_encoding(filepath):
 
     * If there is a BOM, return the appropriate encoding
     * If there is a PEP 263 encoding cookie, return the appropriate encoding
-    * Otherwise return the locale default encoding
+    * Otherwise return None for read_and_decode to attempt several defaults
     """
     boms = [
         (codecs.BOM_UTF8, "utf-8-sig"),
@@ -207,15 +209,22 @@ def sniff_encoding(filepath):
     # Look for a PEP 263 encoding cookie
     #
     default_encoding = locale.getpreferredencoding()
-    uline = line.decode(default_encoding)
-    match = ENCODING_COOKIE_RE.match(uline)
-    if match:
-        return match.group(1)
+    try:
+        uline = line.decode(default_encoding)
+    except UnicodeDecodeError:
+        #
+        # Can't even decode the line in order to match the cookie
+        #
+        pass
+    else:
+        match = ENCODING_COOKIE_RE.match(uline)
+        if match:
+            return match.group(1)
 
     #
     # Fall back to the locale default
     #
-    return default_encoding
+    return None
 
 
 def sniff_newline_convention(text):
@@ -246,17 +255,42 @@ def sniff_newline_convention(text):
 
 
 def read_and_decode(filepath):
-    encoding = sniff_encoding(filepath)
-    with open(filepath, encoding=encoding, newline='') as f:
-        text = f.read()
-        #
-        # Sniff and convert newlines here so that, by the time
-        # the text reaches the editor it is ready to use. Then
-        # convert everything to the Mu internal newline character
-        #
-        newline = sniff_newline_convention(text)
-        text = re.sub("\r\n", NEWLINE, text)
-        return text, newline
+    """
+    Read the contents of a file,
+    """
+    sniffed_encoding = sniff_encoding(filepath)
+    #
+    # If sniff_encoding has found enough clues to indicate an encoding,
+    # use that. Otherwise try a series of defaults before giving up.
+    #
+    if sniffed_encoding:
+        logger.debug("Detected encoding %s", sniffed_encoding)
+        candidate_encodings = [sniffed_encoding]
+    else:
+        candidate_encodings = [ENCODING, locale.getpreferredencoding()]
+
+    with open(filepath, "rb") as f:
+        btext = f.read()
+    for encoding in candidate_encodings:
+        logger.debug("Trying to decode with %s", encoding)
+        try:
+            text = btext.decode(encoding)
+            logger.info("Decoded with %s", encoding)
+            break
+        except UnicodeDecodeError as exc:
+            continue
+    else:
+        raise UnicodeDecodeError(encoding, btext, 0, 0, "Unable to decode")
+
+    #
+    # Sniff and convert newlines here so that, by the time
+    # the text reaches the editor it is ready to use. Then
+    # convert everything to the Mu internal newline character
+    #
+    newline = sniff_newline_convention(text)
+    logger.debug("Detected newline %r", newline)
+    text = re.sub("\r\n", NEWLINE, text)
+    return text, newline
 
 
 def get_admin_file_path(filename):
@@ -649,9 +683,11 @@ class Editor:
         """
         logger.info('Loading script from: {}'.format(path))
         error = _("The file contains characters Mu expects to be encoded as "
-                  "UTF-8, but which are encoded in some other way.\n\nIf this "
-                  "file was saved in another application, re-save the file "
-                  "via the 'Save as' option and set the encoding to UTF-8.")
+                  "{0} or as the computer's default encoding {1}, but which "
+                  "are encoded in some other way.\n\nIf this file was saved "
+                  "in another application, re-save the file via the "
+                  "'Save as' option and set the encoding to {0}".
+                  format(ENCODING, locale.getpreferredencoding()))
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
@@ -673,9 +709,6 @@ class Editor:
                     filename = os.path.basename(path)
                     self._view.show_message(message.format(filename), error)
                     return
-
-                if not ENCODING_COOKIE_RE.match(text):
-                    text = ENCODING_COOKIE + NEWLINE + text
                 name = path
             elif path.lower().endswith('.hex'):
                 # Open the hex, extract the Python script therein and set the
@@ -702,9 +735,9 @@ class Editor:
                          "hex files created with embedded MicroPython code.")
                 self._view.show_message(message, info)
                 return
-        except (PermissionError, FileNotFoundError):
+        except OSError:
             message = _("Could not load {}").format(path)
-            logger.warning('Could not load {}'.format(path))
+            logger.exception('Could not load {}'.format(path))
             info = _("Does this file exist?\nIf it does, do you have "
                      "permission to read it?\n\nPlease check and try again.")
             self._view.show_message(message, info)
@@ -759,21 +792,31 @@ class Editor:
         """
         Given a tab, will attempt to save the script in the tab to the path
         associated with the tab. If there's a problem this will be logged and
-        reported.
+        reported and the tab status will continue to show as Modified.
         """
+        logger.info('Saving script to: {}'.format(tab.path))
+        logger.debug(tab.text())
         try:
-            logger.info('Saving script to: {}'.format(tab.path))
-            logger.debug(tab.text())
             save_and_encode(tab.text(), tab.path, tab.newline)
-            tab.setModified(False)
-            self.show_status_message(_("Saved file: {}").format(tab.path))
         except OSError as e:
             logger.error(e)
-            message = _('Could not save file.')
+            error_message = _('Could not save file (disk problem)')
             information = _("Error saving file to disk. Ensure you have "
                             "permission to write the file and "
                             "sufficient disk space.")
-            self._view.show_message(message, information)
+        except UnicodeEncodeError:
+            error_message = _("Could not save file (encoding problem)")
+            logger.exception(error_message)
+            information = _("Unable to convert all the characters. If you "
+                            "have an encoding line at the top of the file, "
+                            "remove it and try again.")
+        else:
+            error_message = information = None
+        if error_message:
+            self._view.show_message(error_message, information)
+        else:
+            tab.setModified(False)
+            self.show_status_message(_("Saved file: {}").format(tab.path))
 
     def save(self):
         """
