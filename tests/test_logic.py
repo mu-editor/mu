@@ -205,6 +205,104 @@ def test_write_and_flush():
     mock_fd.flush.assert_called_once_with()
 
 
+def test_save_and_encode():
+    """
+    When saving, ensure that encoding cookies are honoured, otherwise fall back
+    to the default encoding (UTF-8 -- as per Python standard practice).
+    """
+    encoding_cookie = '# -*- coding: latin-1 -*-'
+    text = encoding_cookie + '\n\nprint("Hello")'
+    mock_open = mock.MagicMock()
+    mock_wandf = mock.MagicMock()
+    # Valid cookie
+    with mock.patch('mu.logic.open', mock_open), \
+            mock.patch('mu.logic.write_and_flush', mock_wandf):
+        mu.logic.save_and_encode(text, 'foo.py')
+    mock_open.assert_called_once_with('foo.py', 'w', encoding='latin-1',
+                                      newline='')
+    mock_wandf.call_count == 1
+    mock_open.reset_mock()
+    mock_wandf.reset_mock()
+    # Invalid cookie
+    encoding_cookie = '# -*- coding: utf-42 -*-'
+    text = encoding_cookie + '\n\nprint("Hello")'
+    with mock.patch('mu.logic.open', mock_open), \
+            mock.patch('mu.logic.write_and_flush', mock_wandf):
+        mu.logic.save_and_encode(text, 'foo.py')
+    mock_open.assert_called_once_with('foo.py', 'w',
+                                      encoding=mu.logic.ENCODING,
+                                      newline='')
+    mock_wandf.call_count == 1
+    mock_open.reset_mock()
+    mock_wandf.reset_mock()
+    # No cookie
+    text = 'print("Hello")'
+    with mock.patch('mu.logic.open', mock_open), \
+            mock.patch('mu.logic.write_and_flush', mock_wandf):
+        mu.logic.save_and_encode(text, 'foo.py')
+    mock_open.assert_called_once_with('foo.py', 'w',
+                                      encoding=mu.logic.ENCODING,
+                                      newline='')
+    mock_wandf.call_count == 1
+
+
+def test_sniff_encoding_from_BOM():
+    """
+    Ensure an expected BOM detected at the start of the referenced file is
+    used to set the expected encoding.
+    """
+    with mock.patch('mu.logic.open',
+                    mock.mock_open(read_data=codecs.BOM_UTF8 + b'# hello')):
+        assert mu.logic.sniff_encoding('foo.py') == 'utf-8-sig'
+
+
+def test_sniff_encoding_from_cookie():
+    """
+    If there's a cookie present, then use that to work out the expected
+    encoding.
+    """
+    encoding_cookie = b'# -*- coding: latin-1 -*-'
+    mock_locale = mock.MagicMock()
+    mock_locale.getpreferredencoding.return_value = 'UTF-8'
+    with mock.patch('mu.logic.open',
+                    mock.mock_open(read_data=encoding_cookie)), \
+            mock.patch('mu.logic.locale', mock_locale):
+        assert mu.logic.sniff_encoding('foo.py') == 'latin-1'
+
+
+def test_sniff_encoding_from_bad_cookie():
+    """
+    If there's a cookie present but we can't even read it, then return None.
+    """
+    encoding_cookie = '# -*- coding: silly-你好 -*-'.encode('utf-8')
+    mock_locale = mock.MagicMock()
+    mock_locale.getpreferredencoding.return_value = 'ascii'
+    with mock.patch('mu.logic.open',
+                    mock.mock_open(read_data=encoding_cookie)), \
+            mock.patch('mu.logic.locale', mock_locale):
+        assert mu.logic.sniff_encoding('foo.py') is None
+
+
+def test_sniff_encoding_fallback_to_locale():
+    """
+    If there's no encoding information in the file, just return None.
+    """
+    mock_locale = mock.MagicMock()
+    mock_locale.getpreferredencoding.return_value = 'ascii'
+    with mock.patch('mu.logic.open',
+                    mock.mock_open(read_data=b'# hello')), \
+            mock.patch('mu.logic.locale', mock_locale):
+        assert mu.logic.sniff_encoding('foo.py') is None
+
+
+def test_sniff_newline_convention():
+    """
+    Ensure sniff_newline_convention returns the expected newline convention.
+    """
+    text = 'the\r\ncat\nsat\non\nthe\r\nmat'
+    assert mu.logic.sniff_newline_convention(text) == '\n'
+
+
 def test_get_admin_file_path():
     """
     Finds an admin file in the application location, when Mu is run as if
