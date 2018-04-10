@@ -258,6 +258,60 @@ def test_flash_no_tab():
     mm = MicrobitMode(editor, view)
     assert mm.flash() is None
 
+def test_prepare_script():
+    """
+    Check that prepare_script returns the expected output
+    and without showing a message
+    """
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    script = ''
+    real_mangled = b''
+    with open('tests/bigscript.py') as f:
+        script = f.read()
+    assert len(script) > 0
+    with open('tests/bigscript_mangled.py') as f:
+        real_mangled = f.read().encode('utf-8')
+    assert len(real_mangled) > 0
+    mangled = mm.prepare_script(script)
+    assert view.show_message.call_count == 0
+    assert mangled == real_mangled
+
+def test_prepare_script_with_bad_syntax():
+    """
+    Check that prepare_script shows a message and returns
+    and exception for a badly formatted script
+    """
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    editor = mock.MagicMock()
+    script = ''
+    with open('tests/bigscript_bad.py') as f:
+        script = f.read()
+    assert len(script) > 0
+    mm = MicrobitMode(editor, view)
+    mangled = mm.prepare_script(script)
+    assert isinstance(mangled, Exception)
+    assert view.show_message.call_count == 1
+
+def test_flash_with_bad_syntax():
+    """
+    Check that flash calls prepare_script which shows a
+    message when working on a badly formatted script
+    """
+    view = mock.MagicMock()
+    script = ''
+    with open('tests/bigscript_bad.py') as f:
+        script = f.read()
+    assert len(script) > 0
+    view.current_tab.text = mock.MagicMock(return_value=script)
+    view.show_message = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    mm.flash()
+    assert view.show_message.call_count == 1
 
 def test_flash_with_attached_device_as_windows():
     """
