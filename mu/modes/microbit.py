@@ -262,7 +262,7 @@ class MicrobitMode(MicroPythonMode):
             if (rt_hex_path is not None and os.path.exists(rt_hex_path)):
                 message = message + _(" Runtime: {}").format(rt_hex_path)
             self.editor.show_status_message(message, 10)
-            self.view.button_bar.slots['flash'].setEnabled(False)
+            self.set_buttons(flash=False)
             self.flash_thread = DeviceFlasher([path_to_microbit],
                                               python_script, rt_hex_path)
             if sys.platform == 'win32':
@@ -299,7 +299,7 @@ class MicrobitMode(MicroPythonMode):
         """
         Called when the thread used to flash the micro:bit has finished.
         """
-        self.view.button_bar.slots['flash'].setEnabled(True)
+        self.set_buttons(flash=True)
         self.editor.show_status_message(_("Finished flashing."))
         self.flash_thread = None
         self.flash_timer = None
@@ -317,7 +317,7 @@ class MicrobitMode(MicroPythonMode):
         if self.flash_timer:
             self.flash_timer.stop()
             self.flash_timer = None
-        self.view.button_bar.slots['flash'].setEnabled(True)
+        self.set_buttons(flash=True)
         self.flash_thread = None
 
     def toggle_repl(self, event):
@@ -327,9 +327,9 @@ class MicrobitMode(MicroPythonMode):
         if self.fs is None:
             super().toggle_repl(event)
             if self.repl:
-                self.view.button_bar.slots['files'].setEnabled(False)
+                self.set_buttons(files=False)
             elif not (self.repl or self.plotter):
-                self.view.button_bar.slots['files'].setEnabled(True)
+                self.set_buttons(files=True)
         else:
             message = _("REPL and file system cannot work at the same time.")
             information = _("The REPL and file system both use the same USB "
@@ -345,9 +345,9 @@ class MicrobitMode(MicroPythonMode):
         if self.fs is None:
             super().toggle_plotter(event)
             if self.plotter:
-                self.view.button_bar.slots['files'].setEnabled(False)
+                self.set_buttons(files=False)
             elif not (self.repl or self.plotter):
-                self.view.button_bar.slots['files'].setEnabled(True)
+                self.set_buttons(files=True)
         else:
             message = _("The plotter and file system cannot work at the same "
                         "time.")
@@ -374,15 +374,11 @@ class MicrobitMode(MicroPythonMode):
                 self.add_fs()
                 if self.fs:
                     logger.info('Toggle filesystem on.')
-                    self.view.button_bar.slots['repl'].setEnabled(False)
-                    if CHARTS:
-                        self.view.button_bar.slots['plotter'].setEnabled(False)
+                    self.set_buttons(repl=False, plotter=False)
             else:
                 self.remove_fs()
                 logger.info('Toggle filesystem off.')
-                self.view.button_bar.slots['repl'].setEnabled(True)
-                if CHARTS:
-                    self.view.button_bar.slots['plotter'].setEnabled(True)
+                self.set_buttons(repl=True, plotter=True)
 
     def add_fs(self):
         """

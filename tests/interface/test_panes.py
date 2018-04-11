@@ -781,6 +781,15 @@ def test_JupyterREPLPane_init():
     assert jw.console_height == 10
 
 
+def test_JupyterREPLPane_append_plain_text():
+    """
+    """
+    jw = mu.interface.panes.JupyterREPLPane()
+    jw.on_append_text = mock.MagicMock()
+    jw._append_plain_text('hello')
+    jw.on_append_text.emit.assert_called_once_with('hello'.encode('utf-8'))
+
+
 def test_JupyterREPLPane_set_font_size():
     """
     Check the correct stylesheet values are being set.
@@ -1470,10 +1479,13 @@ def test_PythonProcessPane_read_from_stdout():
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.append = mock.MagicMock()
     ppp.process = mock.MagicMock()
+    ppp.process.readAll().data.return_value = b'hello world'
+    ppp.on_append_text = mock.MagicMock()
     ppp.read_from_stdout()
     assert ppp.append.call_count == 1
     assert ppp.process.readAll().data.call_count == 1
     assert ppp.start_of_current_line == 123
+    ppp.on_append_text.emit.assert_called_once_with(b'hello world')
 
 
 def test_PythonProcessPane_write_to_stdin():

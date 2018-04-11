@@ -536,9 +536,19 @@ def test_Window_on_serial_read():
     """
     w = mu.interface.main.Window()
     w.serial = mock.MagicMock()
-    w.serial.readAll.return_value = b'hello'
+    w.serial.readAll.return_value = b'Hello'
     w.data_received = mock.MagicMock()
     w.on_serial_read()
+    w.data_received.emit.assert_called_once_with(b'Hello')
+
+
+def test_Window_on_stdout_write():
+    """
+    Ensure the data_received signal is emitted with the data.
+    """
+    w = mu.interface.main.Window()
+    w.data_received = mock.MagicMock()
+    w.on_stdout_write(b'hello')
     w.data_received.emit.assert_called_once_with(b'hello')
 
 
@@ -711,6 +721,22 @@ def test_Window_add_micropython_plotter():
     w.open_serial_link.assert_called_once_with('COM0')
     w.data_received.connect.assert_called_once_with(mock_plotter.process_bytes)
     w.add_plotter.assert_called_once_with(mock_plotter, 'MicroPython Plotter')
+
+
+def test_Window_add_python3_plotter():
+    """
+    Ensure the plotter is created correctly when in Python 3 mode.
+    """
+    w = mu.interface.main.Window()
+    w.theme = mock.MagicMock()
+    w.add_plotter = mock.MagicMock()
+    w.data_received = mock.MagicMock()
+    mock_plotter = mock.MagicMock()
+    mock_plotter_class = mock.MagicMock(return_value=mock_plotter)
+    with mock.patch('mu.interface.main.PlotterPane', mock_plotter_class):
+        w.add_python3_plotter()
+    w.data_received.connect.assert_called_once_with(mock_plotter.process_bytes)
+    w.add_plotter.assert_called_once_with(mock_plotter, 'Python3 data tuple')
 
 
 def test_Window_add_jupyter_repl():

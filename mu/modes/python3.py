@@ -150,8 +150,7 @@ class PythonMode(BaseMode):
             run_slot.setIcon(load_icon('run'))
             run_slot.setText(_('Run'))
             run_slot.setToolTip(_('Run your Python script.'))
-            self.view.button_bar.slots['debug'].setEnabled(True)
-            self.view.button_bar.slots['modes'].setEnabled(True)
+            self.set_buttons(debug=True, modes=True)
         else:
             self.run_script()
             if self.runner:
@@ -159,8 +158,7 @@ class PythonMode(BaseMode):
                 run_slot.setIcon(load_icon('stop'))
                 run_slot.setText(_('Stop'))
                 run_slot.setToolTip(_('Stop your Python script.'))
-                self.view.button_bar.slots['debug'].setEnabled(False)
-                self.view.button_bar.slots['modes'].setEnabled(False)
+                self.set_buttons(debug=False, modes=False)
 
     def run_script(self):
         """
@@ -190,6 +188,10 @@ class PythonMode(BaseMode):
                                                        interactive=True,
                                                        envars=envars)
             self.runner.process.waitForStarted()
+            if self.kernel_runner:
+                self.set_buttons(plotter=False)
+            elif self.plotter:
+                self.set_buttons(repl=False)
 
     def stop_script(self):
         """
@@ -201,6 +203,7 @@ class PythonMode(BaseMode):
             self.runner.process.waitForFinished()
             self.runner = None
         self.view.remove_python_runner()
+        self.set_buttons(plotter=True, repl=True)
 
     def debug(self, event):
         """
@@ -230,7 +233,7 @@ class PythonMode(BaseMode):
         """
         Create a new Jupyter REPL session in a non-blocking way.
         """
-        self.view.button_bar.slots['repl'].setEnabled(False)
+        self.set_buttons(repl=False)
         self.kernel_thread = QThread()
         self.kernel_runner = KernelRunner(cwd=self.workspace_dir(),
                                           envars=self.editor.envars)
@@ -247,15 +250,40 @@ class PythonMode(BaseMode):
         Remove the Jupyter REPL session.
         """
         self.view.remove_repl()
-        self.view.button_bar.slots['repl'].setEnabled(False)
+        self.set_buttons(repl=False)
         # Don't block the GUI
         self.stop_kernel.emit()
 
     def toggle_plotter(self):
         """
-        
+        Toggles the plotter on and off.
         """
-        pass
+        if self.plotter is None:
+            logger.info('Toggle plotter on.')
+            self.add_plotter()
+        else:
+            logger.info('Toggle plotter off.')
+            self.remove_plotter()
+
+    def add_plotter(self):
+        """
+        Add a plotter pane.
+        """
+        self.view.add_python3_plotter()
+        logger.info('Started plotter')
+        self.plotter = True
+        self.set_buttons(debug=False)
+        if self.repl:
+            self.set_buttons(run=False)
+        elif self.runner:
+            self.set_buttons(repl=False)
+
+    def remove_plotter(self):
+        """
+        Remove the plotter pane, dump data and clean things up.
+        """
+        self.set_buttons(run=True, repl=True, debug=True)
+        super().remove_plotter()
 
     def on_kernel_start(self, kernel_manager, kernel_client):
         """
@@ -263,7 +291,11 @@ class PythonMode(BaseMode):
         kernel.
         """
         self.view.add_jupyter_repl(kernel_manager, kernel_client)
-        self.view.button_bar.slots['repl'].setEnabled(True)
+        self.set_buttons(repl=True)
+        if self.runner:
+            self.set_buttons(plotter=False)
+        elif self.plotter:
+            self.set_buttons(run=False, debug=False)
         self.editor.show_status_message(_("REPL started."))
 
     def on_kernel_stop(self):
@@ -272,7 +304,6 @@ class PythonMode(BaseMode):
         iPython kernel.
         """
         self.repl_kernel_manager = None
-        if 'repl' in self.view.button_bar.slots:
-            self.view.button_bar.slots['repl'].setEnabled(True)
+        self.set_buttons(repl=True, plotter=True, run=True)
         self.editor.show_status_message(_("REPL stopped."))
         self.kernel_runner = None

@@ -277,11 +277,11 @@ def test_flash_with_attached_device_as_windows():
         view.show_message = mock.MagicMock()
         editor = mock.MagicMock()
         mm = MicrobitMode(editor, view)
+        mm.set_buttons = mock.MagicMock()
         mm.flash()
         assert mm.flash_thread == mock_flasher
         assert editor.show_status_message.call_count == 1
-        view.button_bar.slots['flash'].setEnabled.\
-            assert_called_once_with(False)
+        mm.set_buttons.assert_called_once_with(flash=False)
         mock_flasher_class.assert_called_once_with(['bar', ], b'foo', None)
         mock_flasher.finished.connect.\
             assert_called_once_with(mm.flash_finished)
@@ -311,11 +311,11 @@ def test_flash_with_attached_device_as_not_windows():
         view.show_message = mock.MagicMock()
         editor = mock.MagicMock()
         mm = MicrobitMode(editor, view)
+        mm.set_buttons = mock.MagicMock()
         mm.flash()
         assert mm.flash_timer == mock_timer
         assert editor.show_status_message.call_count == 1
-        view.button_bar.slots['flash'].setEnabled.\
-            assert_called_once_with(False)
+        mm.set_buttons.assert_called_once_with(flash=False)
         mock_flasher_class.assert_called_once_with(['bar', ], b'foo', None)
         assert mock_flasher.finished.connect.call_count == 0
         mock_timer.timeout.connect.assert_called_once_with(mm.flash_finished)
@@ -487,10 +487,11 @@ def test_flash_finished():
     view = mock.MagicMock()
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
+    mm.set_buttons = mock.MagicMock()
     mm.flash_thread = mock.MagicMock()
     mm.flash_timer = mock.MagicMock()
     mm.flash_finished()
-    view.button_bar.slots['flash'].setEnabled.assert_called_once_with(True)
+    mm.set_buttons.assert_called_once_with(flash=True)
     editor.show_status_message.assert_called_once_with("Finished flashing.")
     assert mm.flash_thread is None
     assert mm.flash_timer is None
@@ -503,12 +504,13 @@ def test_flash_failed():
     view = mock.MagicMock()
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
+    mm.set_buttons = mock.MagicMock()
     mock_timer = mock.MagicMock()
     mm.flash_timer = mock_timer
     mm.flash_thread = mock.MagicMock()
     mm.flash_failed('Boom')
     assert view.show_message.call_count == 1
-    view.button_bar.slots['flash'].setEnabled.assert_called_once_with(True)
+    mm.set_buttons.assert_called_once_with(flash=True)
     assert mm.flash_thread is None
     assert mm.flash_timer is None
     mock_timer.stop.assert_called_once_with()
@@ -646,6 +648,7 @@ def test_toggle_repl():
     view.show_message = mock.MagicMock()
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
+    mm.set_buttons = mock.MagicMock()
 
     def side_effect(*args, **kwargs):
         mm.repl = True
@@ -655,8 +658,7 @@ def test_toggle_repl():
         mm.repl = None
         mm.toggle_repl(None)
         tr.assert_called_once_with(None)
-        view.button_bar.slots['files'].\
-            setEnabled.assert_called_once_with(False)
+        mm.set_buttons.assert_called_once_with(files=False)
 
 
 def test_toggle_repl_no_repl_or_plotter():
@@ -668,6 +670,7 @@ def test_toggle_repl_no_repl_or_plotter():
     view.show_message = mock.MagicMock()
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
+    mm.set_buttons = mock.MagicMock()
 
     def side_effect(*args, **kwargs):
         mm.repl = False
@@ -678,8 +681,7 @@ def test_toggle_repl_no_repl_or_plotter():
         mm.repl = None
         mm.toggle_repl(None)
         tr.assert_called_once_with(None)
-        view.button_bar.slots['files'].\
-            setEnabled.assert_called_once_with(True)
+        mm.set_buttons.assert_called_once_with(files=True)
 
 
 def test_toggle_repl_with_fs():
@@ -705,6 +707,7 @@ def test_toggle_plotter():
     view.show_message = mock.MagicMock()
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
+    mm.set_buttons = mock.MagicMock()
 
     def side_effect(*args, **kwargs):
         mm.plotter = True
@@ -714,8 +717,7 @@ def test_toggle_plotter():
         mm.plotter = None
         mm.toggle_plotter(None)
         tp.assert_called_once_with(None)
-        view.button_bar.slots['files'].\
-            setEnabled.assert_called_once_with(False)
+        mm.set_buttons.assert_called_once_with(files=False)
 
 
 def test_toggle_plotter_no_repl_or_plotter():
@@ -727,6 +729,7 @@ def test_toggle_plotter_no_repl_or_plotter():
     view.show_message = mock.MagicMock()
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
+    mm.set_buttons = mock.MagicMock()
 
     def side_effect(*args, **kwargs):
         mm.plotter = False
@@ -737,8 +740,7 @@ def test_toggle_plotter_no_repl_or_plotter():
         mm.plotter = None
         mm.toggle_plotter(None)
         tp.assert_called_once_with(None)
-        view.button_bar.slots['files'].\
-            setEnabled.assert_called_once_with(True)
+        mm.set_buttons.assert_called_once_with(files=True)
 
 
 def test_toggle_plotter_with_fs():

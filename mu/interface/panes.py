@@ -56,10 +56,16 @@ class JupyterREPLPane(RichJupyterWidget):
     Displays a Jupyter iPython session.
     """
 
+    on_append_text = pyqtSignal(bytes)
+
     def __init__(self, theme='day', parent=None):
         super().__init__(parent)
         self.set_theme(theme)
         self.console_height = 10
+
+    def _append_plain_text(self, text, **kwargs):
+        super()._append_plain_text(text, **kwargs)
+        self.on_append_text.emit(text.encode('utf-8'))
 
     def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
         """
@@ -565,6 +571,8 @@ class PythonProcessPane(QTextEdit):
     history and simple buffer editing.
     """
 
+    on_append_text = pyqtSignal(bytes)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFont(Font().load())
@@ -830,6 +838,7 @@ class PythonProcessPane(QTextEdit):
         data = self.process.readAll().data()
         if data:
             self.append(data)
+            self.on_append_text.emit(data)
             cursor = self.textCursor()
             self.start_of_current_line = cursor.position()
 
@@ -968,10 +977,9 @@ class PlotterPane(QChartView):
     """
     This plotter widget makes viewing sensor data easy!
 
-    This widget represents a chart that will look for tuple data on
-    the REPL and will auto-generate a graph.
-
-    The device MUST be flashed with MicroPython for this to work.
+    This widget represents a chart that will look for tuple data from
+    the MicroPython REPL, Python 3 REPL or Python 3 code runner and will
+    auto-generate a graph.
     """
 
     def __init__(self, theme='day', parent=None):
@@ -1014,11 +1022,12 @@ class PlotterPane(QChartView):
         Takes raw bytes and, if a valid tuple is detected, adds the data to
         the plotter.
         """
+        data = data.replace(b'\r\n', b'\n')
         self.input_buffer.append(data)
         # Check if the data contains a Python tuple, containing numbers, on a
         # single line (i.e. ends with \n).
         input_bytes = b''.join(self.input_buffer)
-        lines = input_bytes.split(b'\r\n')
+        lines = input_bytes.split(b'\n')
         for line in lines:
             if line.startswith(b'(') and line.endswith(b')'):
                 # Candidate tuple. Extract the raw bytes into a numeric tuple.

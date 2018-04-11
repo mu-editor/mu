@@ -1,7 +1,5 @@
 * Minification
 * Add files to hex
-* Plotter in Python 3
-* UTF-8 support
 * Bug fixes to the debugger
 * Installer for OSX
 
