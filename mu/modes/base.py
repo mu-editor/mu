@@ -154,6 +154,28 @@ class BaseMode(QObject):
         self.plotter = None
         logger.info('Removing plotter')
 
+    def on_data_flood(self):
+        """
+        Handle when the plotter is being flooded by data (which usually causes
+        Mu to become unresponsive). In this case, remove the plotter and
+        display a warning dialog to explain what's happened and how to fix
+        things (usually, put a time.sleep(x) into the code generating the
+        data).
+        """
+        logger.error('Plotting data flood detected.')
+        self.view.remove_plotter()
+        self.plotter = None
+        msg = _('Data Flood Detected!')
+        info = _("The plotter is flooded with data which will make Mu "
+                 "unresponsive and freeze. As a safeguard, the plotter has "
+                 "been stopped.\n\n"
+                 "Flooding is when chunks of data of more than 1024 bytes are "
+                 "repeatedly sent to the plotter.\n\n"
+                 "To fix this, make sure your code prints small tuples of "
+                 "data between calls to 'sleep' for a very short period of "
+                 "time.")
+        self.view.show_message(msg, info)
+
 
 class MicroPythonMode(BaseMode):
     """
@@ -261,7 +283,7 @@ class MicroPythonMode(BaseMode):
         device_port = self.find_device()
         if device_port:
             try:
-                self.view.add_micropython_plotter(device_port, self.name)
+                self.view.add_micropython_plotter(device_port, self.name, self)
                 logger.info('Started plotter')
                 self.plotter = True
             except IOError as ex:
@@ -281,3 +303,10 @@ class MicroPythonMode(BaseMode):
                             " the device's reset button and wait a few seconds"
                             ' before trying again.')
             self.view.show_message(message, information)
+
+    def on_data_flood(self):
+        """
+        Ensure the REPL is stopped if there is data flooding of the plotter.
+        """
+        self.remove_repl()
+        super().on_data_flood()

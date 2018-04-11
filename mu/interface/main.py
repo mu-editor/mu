@@ -399,7 +399,7 @@ class Window(QMainWindow):
         self.data_received.connect(repl_pane.process_bytes)
         self.add_repl(repl_pane, name)
 
-    def add_micropython_plotter(self, port, name):
+    def add_micropython_plotter(self, port, name, mode):
         """
         Adds a plotter that reads data from a serial connection.
         """
@@ -407,9 +407,10 @@ class Window(QMainWindow):
             self.open_serial_link(port)
         plotter_pane = PlotterPane(theme=self.theme)
         self.data_received.connect(plotter_pane.process_bytes)
+        plotter_pane.data_flood.connect(mode.on_data_flood)
         self.add_plotter(plotter_pane, name)
 
-    def add_python3_plotter(self):
+    def add_python3_plotter(self, mode):
         """
         Add a plotter that reads from either the REPL or a running script.
         Since this function will only be called when either the REPL or a
@@ -418,6 +419,7 @@ class Window(QMainWindow):
         """
         plotter_pane = PlotterPane(theme=self.theme)
         self.data_received.connect(plotter_pane.process_bytes)
+        plotter_pane.data_flood.connect(mode.on_data_flood)
         self.add_plotter(plotter_pane, _('Python3 data tuple'))
 
     def add_jupyter_repl(self, kernel_manager, kernel_client):

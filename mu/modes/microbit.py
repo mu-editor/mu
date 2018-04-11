@@ -451,3 +451,11 @@ class MicrobitMode(MicroPythonMode):
                     if not os.path.exists(runtime_hex_path):
                         runtime_hex_path = None
         return runtime_hex_path
+
+    def on_data_flood(self):
+        """
+        Ensure the Files button is active before the REPL is killed off when
+        a data flood of the plotter is detected.
+        """
+        self.set_buttons(files=True)
+        super().on_data_flood()

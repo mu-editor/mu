@@ -715,11 +715,14 @@ def test_Window_add_micropython_plotter():
     w.data_received = mock.MagicMock()
     mock_plotter = mock.MagicMock()
     mock_plotter_class = mock.MagicMock(return_value=mock_plotter)
+    mock_mode = mock.MagicMock()
     with mock.patch('mu.interface.main.PlotterPane', mock_plotter_class):
-        w.add_micropython_plotter('COM0', 'MicroPython Plotter')
+        w.add_micropython_plotter('COM0', 'MicroPython Plotter', mock_mode)
     mock_plotter_class.assert_called_once_with(theme=w.theme)
     w.open_serial_link.assert_called_once_with('COM0')
     w.data_received.connect.assert_called_once_with(mock_plotter.process_bytes)
+    mock_plotter.data_flood.connect.\
+        assert_called_once_with(mock_mode.on_data_flood)
     w.add_plotter.assert_called_once_with(mock_plotter, 'MicroPython Plotter')
 
 
@@ -733,9 +736,12 @@ def test_Window_add_python3_plotter():
     w.data_received = mock.MagicMock()
     mock_plotter = mock.MagicMock()
     mock_plotter_class = mock.MagicMock(return_value=mock_plotter)
+    mock_mode = mock.MagicMock()
     with mock.patch('mu.interface.main.PlotterPane', mock_plotter_class):
-        w.add_python3_plotter()
+        w.add_python3_plotter(mock_mode)
     w.data_received.connect.assert_called_once_with(mock_plotter.process_bytes)
+    mock_plotter.data_flood.connect.\
+        assert_called_once_with(mock_mode.on_data_flood)
     w.add_plotter.assert_called_once_with(mock_plotter, 'Python3 data tuple')
 
 

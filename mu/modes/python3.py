@@ -269,7 +269,7 @@ class PythonMode(BaseMode):
         """
         Add a plotter pane.
         """
-        self.view.add_python3_plotter()
+        self.view.add_python3_plotter(self)
         logger.info('Started plotter')
         self.plotter = True
         self.set_buttons(debug=False)
@@ -284,6 +284,19 @@ class PythonMode(BaseMode):
         """
         self.set_buttons(run=True, repl=True, debug=True)
         super().remove_plotter()
+
+    def on_data_flood(self):
+        """
+        Ensure the process (REPL or runner) causing the data flood is stopped
+        *before* the base on_data_flood is called to turn off the plotter and
+        tell the user what to fix.
+        """
+        self.set_buttons(run=True, repl=True, debug=True)
+        if self.kernel_runner:
+            self.remove_repl()
+        elif self.runner:
+            self.run_toggle(None)
+        super().on_data_flood()
 
     def on_kernel_start(self, kernel_manager, kernel_client):
         """

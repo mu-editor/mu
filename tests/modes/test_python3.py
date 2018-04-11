@@ -367,7 +367,7 @@ def test_python_add_plotter():
     pm = PythonMode(editor, view)
     pm.set_buttons = mock.MagicMock()
     pm.add_plotter()
-    view.add_python3_plotter.assert_called_once_with()
+    view.add_python3_plotter.assert_called_once_with(pm)
     assert pm.plotter
     pm.set_buttons.assert_called_once_with(debug=False)
     # Check button states are updated depending on other aspects of the mode

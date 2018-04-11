@@ -982,6 +982,8 @@ class PlotterPane(QChartView):
     auto-generate a graph.
     """
 
+    data_flood = pyqtSignal()
+
     def __init__(self, theme='day', parent=None):
         super().__init__(parent)
         # Holds the raw input to be checked for actionable data to display.
@@ -991,6 +993,7 @@ class PlotterPane(QChartView):
         self.setObjectName('plotterpane')
         self.max_x = 100  # Maximum value along x axis
         self.max_y = 1000  # Maximum value +/- along y axis
+        self.flooded = False  # Flag to indicate if data flooding is happening.
 
         # Holds deques for each slot of incoming data (assumes 1 to start with)
         self.data = [deque([0] * self.max_x), ]
@@ -1021,7 +1024,17 @@ class PlotterPane(QChartView):
         """
         Takes raw bytes and, if a valid tuple is detected, adds the data to
         the plotter.
+
+        The the length of the bytes data > 1024 then a data_flood signal is
+        emitted to ensure Mu can take action to remain responsive.
         """
+        # Data flooding guards.
+        if self.flooded:
+            return
+        if len(data) > 1024:
+            self.flooded = True
+            self.data_flood.emit()
+            return
         data = data.replace(b'\r\n', b'\n')
         self.input_buffer.append(data)
         # Check if the data contains a Python tuple, containing numbers, on a
