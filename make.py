@@ -150,7 +150,7 @@ def pycodestyle(*pycodestyle_args):
     """Run the PEP8 style checker
     """
     print("\nPEP8")
-    args = ("--ignore=E731,E402",) + pycodestyle_args
+    args = ("--ignore=E731,E402,W504",) + pycodestyle_args
     return _process_code(PYCODESTYLE, False, *args)
 
 

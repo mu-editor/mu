@@ -1971,7 +1971,8 @@ def test_write_newline_to_unix():
 
 
 def test_write_newline_to_windows():
-    """If the file had Windows newlines it should be saved with Windows newlines
+    """If the file had Windows newlines it should be saved with Windows
+    newlines
     """
     with generate_python_file() as filepath:
         test_string = "\n".join("the cat sat on the mat".split())
