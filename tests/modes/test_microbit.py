@@ -767,3 +767,17 @@ def test_api():
     mm = MicrobitMode(editor, view)
     api = mm.api()
     assert api == SHARED_APIS + MICROBIT_APIS
+
+
+def test_on_data_flood():
+    """
+    Ensure the "Files" button is re-enabled before calling the base method.
+    """
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    mm.set_buttons = mock.MagicMock()
+    with mock.patch('builtins.super') as mock_super:
+        mm.on_data_flood()
+        mm.set_buttons.assert_called_once_with(files=True)
+        mock_super().on_data_flood.assert_called_once_with()

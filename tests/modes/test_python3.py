@@ -405,6 +405,34 @@ def test_python_remove_plotter():
         mock_super().remove_plotter.assert_called_once_with()
 
 
+def test_python_on_data_flood():
+    """
+    Ensure that Python 3 mode cleans up correctly after a data flood of the
+    plotter is detected: reset the buttons, stop either the REPL or runner and
+    then call the base method.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.set_buttons = mock.MagicMock()
+    pm.run_toggle = mock.MagicMock()
+    pm.remove_repl = mock.MagicMock()
+    pm.runner = True
+    with mock.patch('builtins.super') as mock_super:
+        pm.on_data_flood()
+        pm.set_buttons.assert_called_once_with(run=True, repl=True, debug=True)
+        pm.run_toggle.assert_called_once_with(None)
+        mock_super().on_data_flood.assert_called_once_with()
+    pm.set_buttons.reset_mock()
+    pm.runner = False
+    pm.kernel_runner = True
+    with mock.patch('builtins.super') as mock_super:
+        pm.on_data_flood()
+        pm.set_buttons.assert_called_once_with(run=True, repl=True, debug=True)
+        pm.remove_repl.assert_called_once_with()
+        mock_super().on_data_flood.assert_called_once_with()
+
+
 def test_python_on_kernel_start():
     """
     Ensure the handler for when the kernel has started updates the UI such that

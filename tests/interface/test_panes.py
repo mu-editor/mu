@@ -1782,6 +1782,27 @@ def test_PlotterPane_process_bytes():
     pp.add_data.assert_called_once_with((1, 2.3, 4))
 
 
+def test_PlotterPane_process_bytes_guards_against_data_flood():
+    """
+    If the process_bytes method gets data of more than 1024 bytes then trigger
+    a data_flood signal and ensure the plotter no longer processes incoming
+    bytes.
+
+    (The assumption is that Mu will clean up once the data_flood signal is
+    emitted.)
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.data_flood = mock.MagicMock()
+    pp.add_data = mock.MagicMock()
+    data_flood = b'X' * 1025
+    pp.process_bytes(data_flood)
+    assert pp.flooded is True
+    pp.data_flood.emit.assert_called_once_with()
+    assert pp.add_data.call_count == 0
+    pp.process_bytes(data_flood)
+    assert pp.add_data.call_count == 0
+
+
 def test_PlotterPane_process_bytes_tuple_not_numeric():
     """
     If a byte representation of a tuple is received but it doesn't contain
