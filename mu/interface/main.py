@@ -393,6 +393,8 @@ class Window(QMainWindow):
         """
         if not self.serial:
             self.open_serial_link(port)
+            # Send a Control-B / exit raw mode.
+            self.serial.write(b'\x02')
             # Send a Control-C / keyboard interrupt.
             self.serial.write(b'\x03')
         repl_pane = MicroPythonREPLPane(serial=self.serial, theme=self.theme)
