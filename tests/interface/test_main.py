@@ -694,7 +694,9 @@ def test_Window_add_micropython_repl():
         w.add_micropython_repl('COM0', 'Test REPL')
     mock_repl_class.assert_called_once_with(serial=w.serial, theme=w.theme)
     w.open_serial_link.assert_called_once_with('COM0')
-    w.serial.write.assert_called_once_with(b'\x03')
+    assert w.serial.write.call_count == 2
+    assert w.serial.write.call_args_list[0][0][0] == b'\x02'
+    assert w.serial.write.call_args_list[1][0][0] == b'\x03'
     w.data_received.connect.assert_called_once_with(mock_repl.process_bytes)
     w.add_repl.assert_called_once_with(mock_repl, 'Test REPL')
 
