@@ -308,7 +308,7 @@ def test_get_admin_file_path():
     Finds an admin file in the application location, when Mu is run as if
     NOT frozen by PyInstaller.
     """
-    fake_app_path = os.path.dirname(__file__)
+    fake_app_path = os.path.join(os.path.dirname(__file__), 'settings')
     fake_app_script = os.path.join(fake_app_path, 'run.py')
     wrong_fake_path = 'wrong/path/to/executable'
     fake_local_settings = os.path.join(fake_app_path, 'settings.json')
@@ -323,7 +323,7 @@ def test_get_admin_file_path_frozen():
     Find an admin file in the application location when it has been frozen
     using PyInstaller.
     """
-    fake_app_path = os.path.dirname(__file__)
+    fake_app_path = os.path.join(os.path.dirname(__file__), 'settings')
     fake_app_script = os.path.join(fake_app_path, 'mu.exe')
     wrong_fake_path = 'wrong/path/to/executable'
     fake_local_settings = os.path.join(fake_app_path, 'settings.json')
@@ -340,7 +340,8 @@ def test_get_admin_file_path_frozen_osx():
     Find an admin file in the application location when it has been frozen
     using PyInstaller on macOS (as the path is different in the app bundle).
     """
-    fake_app_path = os.path.join(os.path.dirname(__file__), 'a', 'b', 'c')
+    fake_app_path = os.path.join(
+        os.path.dirname(__file__), 'settings', 'a', 'b', 'c')
     fake_app_script = os.path.join(fake_app_path, 'mu.exe')
     wrong_fake_path = 'wrong/path/to/executable'
     fake_local_settings = os.path.abspath(os.path.join(

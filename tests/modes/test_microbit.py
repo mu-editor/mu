@@ -223,8 +223,8 @@ def test_custom_hex_read():
     view = mock.MagicMock()
     mm = MicrobitMode(editor, view)
     with mock.patch('mu.modes.microbit.get_settings_path',
-                    return_value='tests/settingswithcustomhex.json'), \
-            mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
+                    return_value='tests/settings/settings_customhex.json'), \
+            mock.patch('mu.modes.microbit.os.path.isfile', return_value=True),\
             mock.patch('mu.modes.base.BaseMode.workspace_dir',
                        return_value=TEST_ROOT):
         assert "customhextest.hex" in mm.get_hex_path()
@@ -233,16 +233,35 @@ def test_custom_hex_read():
     runtime hex path
     """
     with mock.patch('mu.modes.microbit.get_settings_path',
-                    return_value='tests/settingscorrupt.json'), \
+                    return_value='tests/settings/settings_corrupt.json'), \
             mock.patch('mu.modes.base.BaseMode.workspace_dir',
                        return_value=TEST_ROOT):
         assert mm.get_hex_path() is None
     """
-    Test that a missing settings file returns None for the
-    runtime hex path
+    Test that a settings file with a missing custom hex returns None
     """
     with mock.patch('mu.modes.microbit.get_settings_path',
-                    return_value='tests/settingswithmissingcustomhex.json'), \
+                    return_value='tests/settings/'
+                                 'settings_customhex_hexmissing.json'), \
+            mock.patch('mu.modes.base.BaseMode.workspace_dir',
+                       return_value=TEST_ROOT):
+        assert mm.get_hex_path() is None
+    """
+    Test that a settings file with an empty value for a custom hex returns None
+    """
+    with mock.patch('mu.modes.microbit.get_settings_path',
+                    return_value='tests/settings/'
+                                 'settings_customhex_empty.json'), \
+            mock.patch('mu.modes.base.BaseMode.workspace_dir',
+                       return_value=TEST_ROOT):
+        assert mm.get_hex_path() is None
+    """
+    Test that a settings file with an custom hex pointing to a directory
+    returns None
+    """
+    with mock.patch('mu.modes.microbit.get_settings_path',
+                    return_value='tests/settings/'
+                                 'settings_customhex_folder.json'), \
             mock.patch('mu.modes.base.BaseMode.workspace_dir',
                        return_value=TEST_ROOT):
         assert mm.get_hex_path() is None
@@ -333,7 +352,7 @@ def test_flash_with_attached_device_and_custom_runtime():
     mock_flasher = mock.MagicMock()
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
     with mock.patch('mu.modes.microbit.get_settings_path',
-                    return_value='tests/settingswithcustomhex.json'), \
+                    return_value='tests/settings/settings_customhex.json'), \
             mock.patch('mu.modes.base.BaseMode.workspace_dir',
                        return_value=TEST_ROOT), \
             mock.patch('mu.modes.microbit.DeviceFlasher',
