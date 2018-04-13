@@ -90,6 +90,10 @@ QListWidget::item:selected, QListWidget::item:hover, QListWidget::item:focus {
     color: black;
 }
 
+QListView::item:selected:active {
+    background: red;
+}
+
 QStatusBar QLabel {
     padding: 2px;
     margin: 0;
@@ -127,6 +131,7 @@ QMenu::separator {
 
 QLineEdit {
     background: #FFF;
+    border: none;
 }
 
 QCheckBox::indicator {
@@ -137,4 +142,10 @@ QCheckBox::indicator {
 
 QCheckBox::indicator:checked {
     image: url(images:checked.png);
+}
+
+QPushButton {
+    background: #c4c4c4;
+    border: 1px solid #b4b4b4;
+    padding: 6px 20px;
 }
