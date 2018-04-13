@@ -10,3 +10,4 @@ qtconsole
 matplotlib
 setuptools
 appdirs
+nudatus

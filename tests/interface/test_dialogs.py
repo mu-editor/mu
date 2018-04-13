@@ -158,18 +158,35 @@ def test_EnvironmentVariablesWidget_setup():
     assert not evw.text_area.isReadOnly()
 
 
+def test_MicrobitSettingsWidget_setup():
+    """
+    Ensure the widget for editing settings related to the BBC microbit
+    displays the referenced settings data in the expected way.
+    """
+    minify = True
+    custom_runtime_path = '/foo/bar'
+    mbsw = mu.interface.dialogs.MicrobitSettingsWidget()
+    mbsw.setup(minify, custom_runtime_path)
+    assert mbsw.minify.isChecked()
+    assert mbsw.runtime_path.text() == '/foo/bar'
+
+
 def test_AdminDialog_setup():
     """
     Ensure the admin dialog is setup properly given the content of a log
     file and envars.
     """
     log = 'this is the contents of a log file'
-    envars = 'name=value'
+    settings = {
+        'envars': 'name=value',
+        'minify': True,
+        'microbit_runtime': '/foo/bar',
+    }
     ad = mu.interface.dialogs.AdminDialog()
     ad.setStyleSheet = mock.MagicMock()
-    ad.setup(log, envars, 'day')
+    ad.setup(log, settings, 'day')
     assert ad.log_widget.log_text_area.toPlainText() == log
-    assert ad.envars() == envars
+    assert ad.settings() == settings
     ad.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
 
 
@@ -178,10 +195,14 @@ def test_AdminDialog_setup_night():
     Ensure the admin dialog can start with the night theme.
     """
     log = 'this is the contents of a log file'
-    envars = 'name=value'
+    settings = {
+        'envars': 'name=value',
+        'minify': True,
+        'microbit_runtime': '/foo/bar',
+    }
     ad = mu.interface.dialogs.AdminDialog()
     ad.setStyleSheet = mock.MagicMock()
-    ad.setup(log, envars, 'night')
+    ad.setup(log, settings, 'night')
     ad.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
 
 
@@ -190,9 +211,13 @@ def test_LogDisplay_setup_contrast():
     Ensure the log display dialog can start with the high contrast theme.
     """
     log = 'this is the contents of a log file'
-    envars = 'name=value'
+    settings = {
+        'envars': 'name=value',
+        'minify': True,
+        'microbit_runtime': '/foo/bar',
+    }
     ad = mu.interface.dialogs.AdminDialog()
     ad.setStyleSheet = mock.MagicMock()
-    ad.setup(log, envars, 'contrast')
+    ad.setup(log, settings, 'contrast')
     ad.setStyleSheet.\
         assert_called_once_with(mu.interface.themes.CONTRAST_STYLE)

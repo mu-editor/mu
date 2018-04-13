@@ -124,3 +124,17 @@ QMenu::separator {
     padding: 0px;
     margin: 0px;
 }
+
+QLineEdit {
+    background: #FFF;
+}
+
+QCheckBox::indicator {
+    border: 1px solid #222;
+    width: 16px;
+    height: 16px;
+}
+
+QCheckBox::indicator:checked {
+    image: url(images:checked.png);
+}

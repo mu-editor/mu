@@ -551,6 +551,8 @@ class Editor:
         self.mode = 'python'
         self.modes = {}  # See set_modes.
         self.envars = []  # See restore session and show_admin
+        self.minify = False
+        self.microbit_runtime = ''
         self.connected_devices = set()
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
@@ -639,6 +641,20 @@ class Editor:
                     self.envars = old_session['envars']
                     logger.info('User defined environment variables: '
                                 '{}'.format(self.envars))
+                if 'minify' in old_session:
+                    self.minify = old_session['minify']
+                    logger.info('Minify scripts on micro:bit? '
+                                '{}'.format(self.minify))
+                if 'microbit_runtime' in old_session:
+                    self.microbit_runtime = old_session['microbit_runtime']
+                    if self.microbit_runtime:
+                        logger.info('Custom micro:bit runtime path: '
+                                    '{}'.format(self.microbit_runtime))
+                        if not os.path.isfile(self.microbit_runtime):
+                            self.microbit_runtime = ''
+                            logger.warning('The specified micro:bit runtime '
+                                           'does not exist. Using default '
+                                           'runtime instead.')
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
@@ -944,6 +960,8 @@ class Editor:
             'mode': self.mode,
             'paths': paths,
             'envars': self.envars,
+            'minify': self.minify,
+            'microbit_runtime': self.microbit_runtime,
         }
         session_path = get_session_path()
         with open(session_path, 'w') as out:
@@ -962,9 +980,26 @@ class Editor:
         logger.info('Showing logs from {}'.format(LOG_FILE))
         envars = '\n'.join(['{}={}'.format(name, value) for name, value in
                             self.envars])
+        settings = {
+            'envars': envars,
+            'minify': self.minify,
+            'microbit_runtime': self.microbit_runtime,
+        }
         with open(LOG_FILE, 'r') as logfile:
-            envars = self._view.show_admin(logfile.read(), envars, self.theme)
-            self.envars = extract_envars(envars)
+            new_settings = self._view.show_admin(logfile.read(), settings,
+                                                 self.theme)
+            self.envars = extract_envars(new_settings['envars'])
+            self.minify = new_settings['minify']
+            runtime = new_settings['microbit_runtime'].strip()
+            if runtime and not os.path.isfile(runtime):
+                self.microbit_runtime = ''
+                message = _('Could not find MicroPython runtime.')
+                information = _("The micro:bit runtime you specified ('{}') "
+                                "does not exist. "
+                                "Please try again.".format(runtime))
+                self._view.show_message(message, information)
+            else:
+                self.microbit_runtime = runtime
 
     def select_mode(self, event=None):
         """

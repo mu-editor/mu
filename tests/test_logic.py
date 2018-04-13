@@ -88,14 +88,9 @@ def generate_python_file(text="", dirpath=None):
 
 
 @contextlib.contextmanager
-def generate_session(
-    theme="day",
-    mode="python",
-    file_contents=None,
-    filepath=None,
-    envars=[['name', 'value'], ],
-    **kwargs
-):
+def generate_session(theme="day", mode="python", file_contents=None,
+                     filepath=None, envars=[['name', 'value'], ], minify=False,
+                     microbit_runtime=None, **kwargs):
     """Generate a temporary session file for one test
 
     By default, the session file will be created inside a temporary directory
@@ -133,6 +128,10 @@ def generate_session(
         session_data['paths'] = list(paths)
     if envars:
         session_data['envars'] = envars
+    if minify is not None:
+        session_data['minify'] = minify
+    if microbit_runtime:
+        session_data['microbit_runtime'] = microbit_runtime
     session_data.update(**kwargs)
 
     if filepath is None:
@@ -630,21 +629,44 @@ def test_editor_setup():
     assert e.modes == mock_modes
 
 
-def test_editor_restore_session():
+def test_editor_restore_session_existing_runtime():
     """
     A correctly specified session is restored properly.
     """
     mode, theme = "python", "night"
     file_contents = ["", ""]
     ed = mocked_editor(mode)
+    with mock.patch('os.path.isfile', return_value=True):
+        with generate_session(theme, mode, file_contents,
+                              microbit_runtime='/foo'):
+            ed.restore_session()
 
-    with generate_session(theme, mode, file_contents):
+    assert ed.theme == theme
+    assert ed._view.add_tab.call_count == len(file_contents)
+    ed._view.set_theme.assert_called_once_with(theme)
+    assert ed.envars == [['name', 'value'], ]
+    assert ed.minify is False
+    assert ed.microbit_runtime == '/foo'
+
+
+def test_editor_restore_session_missing_runtime():
+    """
+    If the referenced microbit_runtime file doesn't exist, reset to '' so Mu
+    uses the built-in runtime.
+    """
+    mode, theme = "python", "night"
+    file_contents = ["", ""]
+    ed = mocked_editor(mode)
+
+    with generate_session(theme, mode, file_contents, microbit_runtime='/foo'):
         ed.restore_session()
 
     assert ed.theme == theme
     assert ed._view.add_tab.call_count == len(file_contents)
     ed._view.set_theme.assert_called_once_with(theme)
     assert ed.envars == [['name', 'value'], ]
+    assert ed.minify is False
+    assert ed.microbit_runtime == ''  # File does not exist so set to ''
 
 
 def test_editor_restore_session_missing_files():
@@ -1580,12 +1602,53 @@ def test_show_admin():
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
     ed.envars = [['name', 'value'], ]
+    ed.minify = True
+    ed.microbit_runtime = '/foo/bar'
+    settings = {
+        'envars': 'name=value',
+        'minify': True,
+        'microbit_runtime': '/foo/bar'
+    }
+    view.show_admin.return_value = settings
     mock_open = mock.mock_open()
-    with mock.patch('builtins.open', mock_open):
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('os.path.isfile', return_value=True):
         ed.show_admin(None)
         mock_open.assert_called_once_with(mu.logic.LOG_FILE, 'r')
         assert view.show_admin.call_count == 1
-        assert view.show_admin.call_args[0][1] == 'name=value'
+        assert view.show_admin.call_args[0][1] == settings
+        assert ed.envars == [['name', 'value']]
+        assert ed.minify is True
+        assert ed.microbit_runtime == '/foo/bar'
+
+
+def test_show_admin_missing_microbit_runtime():
+    """
+    Ensure the microbit_runtime result is '' and a warning message is displayed
+    if the specified microbit_runtime doesn't actually exist.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.envars = [['name', 'value'], ]
+    ed.minify = True
+    ed.microbit_runtime = '/foo/bar'
+    settings = {
+        'envars': 'name=value',
+        'minify': True,
+        'microbit_runtime': '/foo/bar'
+    }
+    view.show_admin.return_value = settings
+    mock_open = mock.mock_open()
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('os.path.isfile', return_value=False):
+        ed.show_admin(None)
+        mock_open.assert_called_once_with(mu.logic.LOG_FILE, 'r')
+        assert view.show_admin.call_count == 1
+        assert view.show_admin.call_args[0][1] == settings
+        assert ed.envars == [['name', 'value']]
+        assert ed.minify is True
+        assert ed.microbit_runtime == ''
+        assert view.show_message.call_count == 1
 
 
 def test_select_mode():

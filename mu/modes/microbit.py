@@ -17,12 +17,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import json
 import os
 import sys
 import os.path
 import logging
-from mu.logic import get_settings_path, HOME_DIRECTORY
+from mu.logic import HOME_DIRECTORY
 from mu.contrib import uflash, microfs
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from mu.modes.base import MicroPythonMode
@@ -40,18 +39,21 @@ class DeviceFlasher(QThread):
     # Emitted when flashing the micro:bit fails for any reason.
     on_flash_fail = pyqtSignal(str)
 
-    def __init__(self, paths_to_microbits, python_script, path_to_runtime):
+    def __init__(self, paths_to_microbits, python_script, minify,
+                 path_to_runtime):
         """
         The paths_to_microbits should be a list containing filesystem paths to
         attached micro:bits to flash. The python_script should be the text of
-        the script to flash onto the device. The path_to_runtime should be the
-        path of the hex file for the MicroPython runtime to use. If the
-        path_to_runtime is None, the default MicroPython runtime is used by
-        default.
+        the script to flash onto the device. Minify should be a boolean to
+        indicate if the Python code is to be minified before flashing. The
+        path_to_runtime should be the path of the hex file for the MicroPython
+        runtime to use. If the path_to_runtime is None, the default MicroPython
+        runtime is used by default.
         """
         QThread.__init__(self)
         self.paths_to_microbits = paths_to_microbits
         self.python_script = python_script
+        self.minify = minify
         self.path_to_runtime = path_to_runtime
 
     def run(self):
@@ -61,6 +63,7 @@ class DeviceFlasher(QThread):
         try:
             uflash.flash(paths_to_microbits=self.paths_to_microbits,
                          python_script=self.python_script,
+                         minify=self.minify,
                          path_to_runtime=self.path_to_runtime)
         except Exception as ex:
             # Catch everything so Mu can recover from all of the wide variety
@@ -257,14 +260,23 @@ class MicrobitMode(MicroPythonMode):
         if path_to_microbit and os.path.exists(path_to_microbit):
             logger.debug('Flashing to device.')
             # Flash the microbit
-            rt_hex_path = self.get_hex_path()
+            # Check minification status.
+            minify = False
+            if uflash.get_minifier():
+                minify = self.editor.minify
+            # Check use of custom runtime.
+            rt_hex_path = self.editor.microbit_runtime.strip()
             message = _('Flashing "{}" onto the micro:bit.').format(tab.label)
-            if (rt_hex_path is not None and os.path.exists(rt_hex_path)):
+            if (rt_hex_path and os.path.exists(rt_hex_path)):
                 message = message + _(" Runtime: {}").format(rt_hex_path)
+            else:
+                rt_hex_path = None
+                self.editor.microbit_runtime = ''
             self.editor.show_status_message(message, 10)
             self.set_buttons(flash=False)
             self.flash_thread = DeviceFlasher([path_to_microbit],
-                                              python_script, rt_hex_path)
+                                              python_script, minify,
+                                              rt_hex_path)
             if sys.platform == 'win32':
                 # Windows blocks on write.
                 self.flash_thread.finished.connect(self.flash_finished)
@@ -310,7 +322,7 @@ class MicrobitMode(MicroPythonMode):
         problem.
         """
         logger.error(error)
-        message = _("There was a problem flashing the micro:bit")
+        message = _("There was a problem flashing the micro:bit.")
         information = _("Please do not disconnect the device until flashing"
                         " has completed.")
         self.view.show_message(message, information, 'Warning')
@@ -420,37 +432,6 @@ class MicrobitMode(MicroPythonMode):
         self.file_manager = None
         self.file_manager_thread = None
         self.fs = None
-
-    def get_hex_path(self):
-        """
-        Returns the path to the hex runtime file - if this has been
-        specified under element 'microbit_runtime_hex' in settings.json.
-        This can be a fully-qualified file path, or just a file name
-        in which case the file should be located in the workspace directory.
-        Returns None if no path is specified or if the file is not present.
-        """
-        runtime_hex_path = None
-        sp = get_settings_path()
-        settings = {}
-        try:
-            with open(sp) as f:
-                settings = json.load(f)
-        except FileNotFoundError:
-            logger.error('Settings file {} does not exist.'.format(sp))
-        except ValueError:
-            logger.error('Settings file {} could not be parsed.'.format(sp))
-        else:
-            if 'microbit_runtime_hex' in settings and \
-                    settings['microbit_runtime_hex'] is not None:
-                if os.path.exists(settings['microbit_runtime_hex']):
-                    runtime_hex_path = settings['microbit_runtime_hex']
-                else:
-                    expected_path = settings['microbit_runtime_hex']
-                    runtime_hex_path = os.path.join(self.workspace_dir(),
-                                                    expected_path)
-                    if not os.path.exists(runtime_hex_path):
-                        runtime_hex_path = None
-        return runtime_hex_path
 
     def on_data_flood(self):
         """
