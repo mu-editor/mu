@@ -259,7 +259,7 @@ class MicrobitMode(MicroPythonMode):
             # Flash the microbit
             rt_hex_path = self.get_hex_path()
             message = _('Flashing "{}" onto the micro:bit.').format(tab.label)
-            if (rt_hex_path is not None and os.path.exists(rt_hex_path)):
+            if rt_hex_path:
                 message = message + _(" Runtime: {}").format(rt_hex_path)
             self.editor.show_status_message(message, 10)
             self.set_buttons(flash=False)
@@ -441,14 +441,14 @@ class MicrobitMode(MicroPythonMode):
             logger.error('Settings file {} could not be parsed.'.format(sp))
         else:
             if 'microbit_runtime_hex' in settings and \
-                    settings['microbit_runtime_hex'] is not None:
-                if os.path.exists(settings['microbit_runtime_hex']):
+                    settings['microbit_runtime_hex']:
+                if os.path.isfile(settings['microbit_runtime_hex']):
                     runtime_hex_path = settings['microbit_runtime_hex']
                 else:
                     expected_path = settings['microbit_runtime_hex']
                     runtime_hex_path = os.path.join(self.workspace_dir(),
                                                     expected_path)
-                    if not os.path.exists(runtime_hex_path):
+                    if not os.path.isfile(runtime_hex_path):
                         runtime_hex_path = None
         return runtime_hex_path
 

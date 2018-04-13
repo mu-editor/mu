@@ -34,7 +34,7 @@ def test_base_mode_workspace_dir():
     """
     # read from our demo settings.json
     with mock.patch('mu.modes.base.get_settings_path',
-                    return_value='tests/settings.json'), \
+                    return_value='tests/settings/settings.json'), \
             mock.patch('os.path.isdir', return_value=True):
         editor = mock.MagicMock()
         view = mock.MagicMock()
@@ -49,7 +49,8 @@ def test_base_mode_workspace_not_present():
     default_workspace = os.path.join(mu.logic.HOME_DIRECTORY,
                                      mu.logic.WORKSPACE_NAME)
     with mock.patch('mu.modes.base.get_settings_path',
-                    return_value='tests/settingswithoutworkspace.json'):
+                    return_value='tests/settings/'
+                                 'settings_workspace_missing.json'):
         editor = mock.MagicMock()
         view = mock.MagicMock()
         bm = BaseMode(editor, view)
@@ -64,7 +65,7 @@ def test_base_mode_workspace_invalid_value():
                                      mu.logic.WORKSPACE_NAME)
     # read from our demo settings.json
     with mock.patch('mu.modes.base.get_settings_path',
-                    return_value='tests/settings.json'), \
+                    return_value='tests/settings/settings.json'), \
             mock.patch('os.path.isdir', return_value=False), \
             mock.patch('mu.modes.base.logger', return_value=None) as logger:
         editor = mock.MagicMock()
@@ -100,7 +101,7 @@ def test_base_mode_workspace_no_settings_file():
                                      mu.logic.WORKSPACE_NAME)
     mock_open = mock.MagicMock(side_effect=FileNotFoundError())
     with mock.patch('mu.modes.base.get_settings_path',
-                    return_value='tests/settings.json'), \
+                    return_value='tests/settings/settings.json'), \
             mock.patch('builtins.open', mock_open), \
             mock.patch('mu.modes.base.logger', return_value=None) as logger:
         editor = mock.MagicMock()
