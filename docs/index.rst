@@ -120,6 +120,7 @@ Contents:
    packaging.rst
    website.rst
    api.rst
+   design.rst
    authors.rst
    changes.rst
    license.rst

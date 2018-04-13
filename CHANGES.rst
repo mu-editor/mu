@@ -15,6 +15,35 @@ Release History
   all his continuing hard work on MicroPython for the micro:bit.
 * Inclusion of tkinter, turtle, gpiozero, guizero, pigpio, pillow and requests
   libraries as built-in modules.
+* Update to latest version of Pygame Zero.
+* Fix plotter axis label bug which wouldn't display numbers if value was a
+  float.
+* Separate session and settings into two different files. Session includes
+  user defined changes to configuration whereas settings contains sys-admin-y
+  configuration.
+* Update the CSS for the three themes so they display consistently on all
+  supported platforms. Thanks to Zander Brown for his efforts on this.
+* Move the mode selection to the "Mode" button in the top left of the window.
+* Support for different encodings and default to UTF-8 where possible. Many
+  thanks to Tim Golden for all the hard work on this rather involved fix.
+* Consistent end of line support on all platforms. Once again, many thanks to
+  Tim Golden for his work on this difficult problem.
+* Use ``mu-editor`` instead of ``mu`` to launch the editor from the command
+  line.
+* More sanity when dealing with cross platform paths and ensure filetypes are
+  treated in a case insensitive manner.
+* Add support for minification of Python scripts to be flashed onto a micro:bit
+  thanks to Zander Brown's nudatus module.
+* Clean up logging about device discovery (it's much less verbose).
+* Drag and drop files onto Mu to open them. Thanks to Zander Brown for this
+  *really useful* feature.
+* The old logs dialog is now an admin dialog which allows users to inspect the
+  logs, but also make various user defined configuration changes to Mu.
+* Plotter now works in Python 3 mode.
+* Fix problem in OSX with the ``mount`` command when detecting Circuit Python
+  boards. Thanks to Frank Morton for finding and fixing this.
+* Add data flood avoidance to the plotter.
+* A huge number of minor bug fixes, UI clean-ups and simplifications.
 
 1.0.0.beta.15
 =============
