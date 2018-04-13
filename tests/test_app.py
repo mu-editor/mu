@@ -68,13 +68,14 @@ def test_run():
             mock.patch('mu.app.load_pixmap'), \
             mock.patch('mu.app.Window') as win, \
             mock.patch('mu.app.QTimer') as timer, \
+            mock.patch('sys.argv', ['mu']), \
             mock.patch('sys.exit') as ex:
         run()
         assert set_log.call_count == 1
         # foo.call_count is instantiating the class
         assert qa.call_count == 1
         # foo.mock_calls are method calls on the object
-        assert len(qa.mock_calls) == 2
+        assert len(qa.mock_calls) == 3
         assert qsp.call_count == 1
         assert len(qsp.mock_calls) == 2
         assert timer.call_count == 1
@@ -128,5 +129,5 @@ def test_debug_no_args():
     with mock.patch('mu.app.sys', mock_sys), \
             mock.patch('builtins.print', mock_print):
         debug()
-    msg = "Debug runner requires a filename for a Python script to debug."
+    msg = "Debugger requires a Python script filename to run."
     mock_print.assert_called_once_with(msg)

@@ -323,6 +323,12 @@ class Window(QMainWindow):
         data = bytes(self.serial.readAll())  # get all the available bytes.
         self.data_received.emit(data)
 
+    def on_stdout_write(self, data):
+        """
+        Called when either a running script or the REPL write to STDOUT.
+        """
+        self.data_received.emit(data)
+
     def open_serial_link(self, port):
         """
         Creates a new serial link instance.
@@ -387,13 +393,15 @@ class Window(QMainWindow):
         """
         if not self.serial:
             self.open_serial_link(port)
+            # Send a Control-B / exit raw mode.
+            self.serial.write(b'\x02')
             # Send a Control-C / keyboard interrupt.
             self.serial.write(b'\x03')
         repl_pane = MicroPythonREPLPane(serial=self.serial, theme=self.theme)
         self.data_received.connect(repl_pane.process_bytes)
         self.add_repl(repl_pane, name)
 
-    def add_micropython_plotter(self, port, name):
+    def add_micropython_plotter(self, port, name, mode):
         """
         Adds a plotter that reads data from a serial connection.
         """
@@ -401,7 +409,20 @@ class Window(QMainWindow):
             self.open_serial_link(port)
         plotter_pane = PlotterPane(theme=self.theme)
         self.data_received.connect(plotter_pane.process_bytes)
+        plotter_pane.data_flood.connect(mode.on_data_flood)
         self.add_plotter(plotter_pane, name)
+
+    def add_python3_plotter(self, mode):
+        """
+        Add a plotter that reads from either the REPL or a running script.
+        Since this function will only be called when either the REPL or a
+        running script are running (but not at the same time), it'll just grab
+        data emitted by the REPL or script via data_received.
+        """
+        plotter_pane = PlotterPane(theme=self.theme)
+        self.data_received.connect(plotter_pane.process_bytes)
+        plotter_pane.data_flood.connect(mode.on_data_flood)
+        self.add_plotter(plotter_pane, _('Python3 data tuple'))
 
     def add_jupyter_repl(self, kernel_manager, kernel_client):
         """
@@ -412,6 +433,7 @@ class Window(QMainWindow):
         ipython_widget = JupyterREPLPane(theme=self.theme)
         ipython_widget.kernel_manager = kernel_manager
         ipython_widget.kernel_client = kernel_client
+        ipython_widget.on_append_text.connect(self.on_stdout_write)
         self.add_repl(ipython_widget, _('Python3 (Jupyter)'))
 
     def add_repl(self, repl_pane, name):
@@ -481,6 +503,7 @@ class Window(QMainWindow):
                                           interactive, debugger, command_args,
                                           envars, runner)
         self.process_runner.setFocus()
+        self.process_runner.on_append_text.connect(self.on_stdout_write)
         self.connect_zoom(self.process_runner)
         return self.process_runner
 
@@ -627,16 +650,16 @@ class Window(QMainWindow):
         if hasattr(self, 'plotter') and self.plotter:
             self.plotter_pane.set_theme(theme)
 
-    def show_admin(self, log, envars, theme):
+    def show_admin(self, log, settings, theme):
         """
         Display the administrivite dialog with referenced content of the log
-        and envars. Return the raw string representation of the environment
-        variables to be used whenever a (regular) Python script is run.
+        and settings. Return a dictionary of the settings that may have been
+        changed by the admin dialog.
         """
         admin_box = AdminDialog()
-        admin_box.setup(log, envars, theme)
+        admin_box.setup(log, settings, theme)
         admin_box.exec()
-        return admin_box.envars()
+        return admin_box.settings()
 
     def show_message(self, message, information=None, icon=None):
         """

@@ -75,13 +75,15 @@ def test_python_mode():
     assert pm.view == view
 
     actions = pm.actions()
-    assert len(actions) == 3
+    assert len(actions) == 4
     assert actions[0]['name'] == 'run'
     assert actions[0]['handler'] == pm.run_toggle
     assert actions[1]['name'] == 'debug'
     assert actions[1]['handler'] == pm.debug
     assert actions[2]['name'] == 'repl'
     assert actions[2]['handler'] == pm.toggle_repl
+    assert actions[3]['name'] == 'plotter'
+    assert actions[3]['handler'] == pm.toggle_plotter
 
 
 def test_python_api():
@@ -186,6 +188,21 @@ def test_python_run_script():
                                                     interactive=True,
                                                     envars=editor.envars)
     mock_runner.process.waitForStarted.assert_called_once_with()
+    # Check the buttons are set to the correct state when other aspects of the
+    # mode are also in play.
+    pm.set_buttons = mock.MagicMock()
+    pm.kernel_runner = True
+    with mock.patch('builtins.open') as oa, \
+            mock.patch('mu.modes.python3.write_and_flush'):
+        pm.run_script()
+    pm.set_buttons.assert_called_once_with(plotter=False)
+    pm.set_buttons.reset_mock()
+    pm.kernel_runner = False
+    pm.plotter = True
+    with mock.patch('builtins.open') as oa, \
+            mock.patch('mu.modes.python3.write_and_flush'):
+        pm.run_script()
+    pm.set_buttons.assert_called_once_with(repl=False)
 
 
 def test_python_run_script_no_editor():
@@ -286,6 +303,7 @@ def test_python_add_repl():
     editor.envars = [['name', 'value'], ]
     view = mock.MagicMock()
     pm = PythonMode(editor, view)
+    pm.set_buttons = mock.MagicMock()
     pm.stop_kernel = mock.MagicMock()
     with mock.patch('mu.modes.python3.QThread', mock_qthread), \
             mock.patch('mu.modes.python3.KernelRunner', mock_kernel_runner):
@@ -295,7 +313,7 @@ def test_python_add_repl():
                                                envars=editor.envars)
     assert pm.kernel_thread == mock_qthread()
     assert pm.kernel_runner == mock_kernel_runner()
-    view.button_bar.slots['repl'].setEnabled.assert_called_once_with(False)
+    pm.set_buttons.assert_called_once_with(repl=False)
     pm.kernel_runner.moveToThread.assert_called_once_with(pm.kernel_thread)
     pm.kernel_runner.kernel_started.connect.\
         assert_called_once_with(pm.on_kernel_start)
@@ -317,10 +335,102 @@ def test_python_remove_repl():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pm = PythonMode(editor, view)
+    pm.set_buttons = mock.MagicMock()
     pm.stop_kernel = mock.MagicMock()
     pm.remove_repl()
     pm.stop_kernel.emit.assert_called_once_with()
-    view.button_bar.slots['repl'].setEnabled.assert_called_once_with(False)
+    pm.set_buttons.assert_called_once_with(repl=False)
+
+
+def test_python_toggle_plotter():
+    """
+    Ensure toggling the plotter causes it to be added/removed.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.add_plotter = mock.MagicMock()
+    pm.remove_plotter = mock.MagicMock()
+    pm.toggle_plotter()
+    pm.add_plotter.assert_called_once_with()
+    pm.plotter = True
+    pm.toggle_plotter()
+    pm.remove_plotter.assert_called_once_with()
+
+
+def test_python_add_plotter():
+    """
+    Ensure the plotter is added as expected.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.set_buttons = mock.MagicMock()
+    pm.add_plotter()
+    view.add_python3_plotter.assert_called_once_with(pm)
+    assert pm.plotter
+    pm.set_buttons.assert_called_once_with(debug=False)
+    # Check button states are updated depending on other aspects of the mode
+    # being enabled.
+    # REPL active.
+    pm.set_buttons.reset_mock()
+    pm.repl = True
+    pm.add_plotter()
+    assert pm.set_buttons.call_count == 2
+    assert pm.set_buttons.call_args_list[0][1]['debug'] is False
+    assert pm.set_buttons.call_args_list[1][1]['run'] is False
+    # Runner active.
+    pm.set_buttons.reset_mock()
+    pm.repl = False
+    pm.runner = True
+    pm.add_plotter()
+    assert pm.set_buttons.call_count == 2
+    assert pm.set_buttons.call_args_list[0][1]['debug'] is False
+    assert pm.set_buttons.call_args_list[1][1]['repl'] is False
+
+
+def test_python_remove_plotter():
+    """
+    Ensure the button states are returned to normal before calling super
+    method.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    with mock.patch('builtins.super') as mock_super:
+        pm = PythonMode(editor, view)
+        pm.set_buttons = mock.MagicMock()
+        mock_super.reset_mock()
+        pm.remove_plotter()
+        pm.set_buttons.assert_called_once_with(run=True, repl=True, debug=True)
+        mock_super().remove_plotter.assert_called_once_with()
+
+
+def test_python_on_data_flood():
+    """
+    Ensure that Python 3 mode cleans up correctly after a data flood of the
+    plotter is detected: reset the buttons, stop either the REPL or runner and
+    then call the base method.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.set_buttons = mock.MagicMock()
+    pm.run_toggle = mock.MagicMock()
+    pm.remove_repl = mock.MagicMock()
+    pm.runner = True
+    with mock.patch('builtins.super') as mock_super:
+        pm.on_data_flood()
+        pm.set_buttons.assert_called_once_with(run=True, repl=True, debug=True)
+        pm.run_toggle.assert_called_once_with(None)
+        mock_super().on_data_flood.assert_called_once_with()
+    pm.set_buttons.reset_mock()
+    pm.runner = False
+    pm.kernel_runner = True
+    with mock.patch('builtins.super') as mock_super:
+        pm.on_data_flood()
+        pm.set_buttons.assert_called_once_with(run=True, repl=True, debug=True)
+        pm.remove_repl.assert_called_once_with()
+        mock_super().on_data_flood.assert_called_once_with()
 
 
 def test_python_on_kernel_start():
@@ -332,13 +442,32 @@ def test_python_on_kernel_start():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pm = PythonMode(editor, view)
+    pm.set_buttons = mock.MagicMock()
     mock_kernel_manager = mock.MagicMock()
     mock_client = mock.MagicMock()
     pm.on_kernel_start(mock_kernel_manager, mock_client)
     view.add_jupyter_repl.assert_called_once_with(mock_kernel_manager,
                                                   mock_client)
-    view.button_bar.slots['repl'].setEnabled.assert_called_once_with(True)
+    pm.set_buttons.assert_called_once_with(repl=True)
     editor.show_status_message.assert_called_once_with('REPL started.')
+    # Check button states are set according to what other aspects of the mode
+    # are currently enabled.
+    # With Runner enabled.
+    pm.set_buttons.reset_mock()
+    pm.runner = True
+    pm.on_kernel_start(mock_kernel_manager, mock_client)
+    assert pm.set_buttons.call_count == 2
+    assert pm.set_buttons.call_args_list[0][1]['repl'] is True
+    assert pm.set_buttons.call_args_list[1][1]['plotter'] is False
+    # With Plotter enabled.
+    pm.set_buttons.reset_mock()
+    pm.runner = False
+    pm.plotter = True
+    pm.on_kernel_start(mock_kernel_manager, mock_client)
+    assert pm.set_buttons.call_count == 2
+    assert pm.set_buttons.call_args_list[0][1]['repl'] is True
+    assert pm.set_buttons.call_args_list[1][1]['run'] is False
+    assert pm.set_buttons.call_args_list[1][1]['debug'] is False
 
 
 def test_python_on_kernel_stop():

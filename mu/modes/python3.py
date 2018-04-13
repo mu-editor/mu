@@ -23,6 +23,7 @@ from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from mu.logic import write_and_flush
 from mu.resources import load_icon
+from mu.interface.panes import CHARTS
 from qtconsole.manager import QtKernelManager
 from qtconsole.client import QtKernelClient
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
@@ -99,7 +100,7 @@ class PythonMode(BaseMode):
         Return an ordered list of actions provided by this module. An action
         is a name (also used to identify the icon) , description, and handler.
         """
-        return [
+        buttons = [
             {
                 'name': 'run',
                 'display_name': _('Run'),
@@ -122,6 +123,15 @@ class PythonMode(BaseMode):
                 'shortcut': 'Ctrl+Shift+I',
             },
         ]
+        if CHARTS:
+            buttons.append({
+                'name': 'plotter',
+                'display_name': _('Plotter'),
+                'description': _('Plot data from your script or the REPL.'),
+                'handler': self.toggle_plotter,
+                'shortcut': 'CTRL+Shift+P',
+            })
+        return buttons
 
     def api(self):
         """
@@ -140,8 +150,7 @@ class PythonMode(BaseMode):
             run_slot.setIcon(load_icon('run'))
             run_slot.setText(_('Run'))
             run_slot.setToolTip(_('Run your Python script.'))
-            self.view.button_bar.slots['debug'].setEnabled(True)
-            self.view.button_bar.slots['modes'].setEnabled(True)
+            self.set_buttons(debug=True, modes=True)
         else:
             self.run_script()
             if self.runner:
@@ -149,8 +158,7 @@ class PythonMode(BaseMode):
                 run_slot.setIcon(load_icon('stop'))
                 run_slot.setText(_('Stop'))
                 run_slot.setToolTip(_('Stop your Python script.'))
-                self.view.button_bar.slots['debug'].setEnabled(False)
-                self.view.button_bar.slots['modes'].setEnabled(False)
+                self.set_buttons(debug=False, modes=False)
 
     def run_script(self):
         """
@@ -180,6 +188,10 @@ class PythonMode(BaseMode):
                                                        interactive=True,
                                                        envars=envars)
             self.runner.process.waitForStarted()
+            if self.kernel_runner:
+                self.set_buttons(plotter=False)
+            elif self.plotter:
+                self.set_buttons(repl=False)
 
     def stop_script(self):
         """
@@ -191,6 +203,7 @@ class PythonMode(BaseMode):
             self.runner.process.waitForFinished()
             self.runner = None
         self.view.remove_python_runner()
+        self.set_buttons(plotter=True, repl=True)
 
     def debug(self, event):
         """
@@ -220,7 +233,7 @@ class PythonMode(BaseMode):
         """
         Create a new Jupyter REPL session in a non-blocking way.
         """
-        self.view.button_bar.slots['repl'].setEnabled(False)
+        self.set_buttons(repl=False)
         self.kernel_thread = QThread()
         self.kernel_runner = KernelRunner(cwd=self.workspace_dir(),
                                           envars=self.editor.envars)
@@ -237,9 +250,53 @@ class PythonMode(BaseMode):
         Remove the Jupyter REPL session.
         """
         self.view.remove_repl()
-        self.view.button_bar.slots['repl'].setEnabled(False)
+        self.set_buttons(repl=False)
         # Don't block the GUI
         self.stop_kernel.emit()
+
+    def toggle_plotter(self):
+        """
+        Toggles the plotter on and off.
+        """
+        if self.plotter is None:
+            logger.info('Toggle plotter on.')
+            self.add_plotter()
+        else:
+            logger.info('Toggle plotter off.')
+            self.remove_plotter()
+
+    def add_plotter(self):
+        """
+        Add a plotter pane.
+        """
+        self.view.add_python3_plotter(self)
+        logger.info('Started plotter')
+        self.plotter = True
+        self.set_buttons(debug=False)
+        if self.repl:
+            self.set_buttons(run=False)
+        elif self.runner:
+            self.set_buttons(repl=False)
+
+    def remove_plotter(self):
+        """
+        Remove the plotter pane, dump data and clean things up.
+        """
+        self.set_buttons(run=True, repl=True, debug=True)
+        super().remove_plotter()
+
+    def on_data_flood(self):
+        """
+        Ensure the process (REPL or runner) causing the data flood is stopped
+        *before* the base on_data_flood is called to turn off the plotter and
+        tell the user what to fix.
+        """
+        self.set_buttons(run=True, repl=True, debug=True)
+        if self.kernel_runner:
+            self.remove_repl()
+        elif self.runner:
+            self.run_toggle(None)
+        super().on_data_flood()
 
     def on_kernel_start(self, kernel_manager, kernel_client):
         """
@@ -247,7 +304,11 @@ class PythonMode(BaseMode):
         kernel.
         """
         self.view.add_jupyter_repl(kernel_manager, kernel_client)
-        self.view.button_bar.slots['repl'].setEnabled(True)
+        self.set_buttons(repl=True)
+        if self.runner:
+            self.set_buttons(plotter=False)
+        elif self.plotter:
+            self.set_buttons(run=False, debug=False)
         self.editor.show_status_message(_("REPL started."))
 
     def on_kernel_stop(self):
@@ -256,7 +317,6 @@ class PythonMode(BaseMode):
         iPython kernel.
         """
         self.repl_kernel_manager = None
-        if 'repl' in self.view.button_bar.slots:
-            self.view.button_bar.slots['repl'].setEnabled(True)
+        self.set_buttons(repl=True, plotter=True, run=True)
         self.editor.show_status_message(_("REPL stopped."))
         self.kernel_runner = None

@@ -17,6 +17,7 @@ These include (but are not limited to):
 * Tibs / Tony Ibbs (tibs@tonyibbs.co.uk)
 * Zander Brown
 * Alistair Broomhead (alistair.broomhead@gmail.com)
+* Frank Morton (fmorton@mac.com)
 
 We welcome contributions from anyone! Please see :doc:`contributing` for more
 information.

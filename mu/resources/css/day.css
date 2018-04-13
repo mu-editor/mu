@@ -9,11 +9,12 @@ QToolButton {
     padding: 4px 2px;
 }
 
-QToolButton:hover {
+QToolButton:hover, QMenu::item:selected {
     background-color: #cccccc;
 }
 
-QStackedWidget, QWidget, QApplication, QDialog, QLabel, QStatusBar, QTabBar {
+QStackedWidget, QWidget, QApplication, QDialog,
+QLabel, QStatusBar, QTabBar, QMenu {
     background-color: #EEE;
     color: black;
 }
@@ -55,6 +56,20 @@ QTabBar::tab::selected {
     margin: 0;
 }
 
+QTabBar::close-button {
+    image: url(images:close-tab.png);
+    border: none;
+    padding: 3px;
+}
+
+QTabBar::close-button:hover {
+    image: url(images:close-tab.png);
+    border: none;
+    padding: 3px;
+    background: #e97867;
+    border-radius: 3px;
+}
+
 QTabWidget::pane {
     border: none;
     border-top: 1px solid #b4b4b4;
@@ -82,4 +97,44 @@ QStatusBar QLabel {
 
 #AdministrationLabel:hover, #AdministrationLabel:focus {
     background: #cccccc;
+}
+
+QMenu {
+    border: none;
+    min-width: 100px;
+}
+
+QMenu::item {
+    border: none;
+    padding: 5px 15px;
+    width: 100%;
+}
+
+QMenu::item:selected {
+    border: none;
+}
+
+QMenu::item:disabled {
+    color: #cccccc;
+}
+
+QMenu::separator {
+    border: none;
+    border-bottom: 1px solid #cccccc;
+    padding: 0px;
+    margin: 0px;
+}
+
+QLineEdit {
+    background: #FFF;
+}
+
+QCheckBox::indicator {
+    border: 1px solid #222;
+    width: 16px;
+    height: 16px;
+}
+
+QCheckBox::indicator:checked {
+    image: url(images:checked.png);
 }

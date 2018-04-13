@@ -136,14 +136,12 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
 NEWLINE = "\n"
 
 #
-# We write all files as UTF-8 with a PEP 263 encoding cookie
-# We also detect an encoding cookie in an inbound file
+# We write all files as UTF-8 unless they arrived with a PEP 263 encoding
+# cookie, in which case we honour that encoding.
 #
 ENCODING = "utf-8"
 ENCODING_COOKIE_RE = re.compile(
     "^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
-ENCODING_COOKIE = "# -*- coding: %s-*-" \
-    "# Encoding cookie added by Mu Editor" % ENCODING + NEWLINE
 
 logger = logging.getLogger(__name__)
 
@@ -166,20 +164,24 @@ def write_and_flush(fileobj, content):
 
 
 def save_and_encode(text, filepath, newline=os.linesep):
-    #
-    # Strip any existing encoding cookie and replace by a Mu-generated
-    # UTF-8 cookie. We need to strip any existing line-endings off the
-    # encoding cookie so we don't double up.
-    #
-    encoding_cookie = ENCODING_COOKIE.strip()
-    lines = text.splitlines()
-    if lines and ENCODING_COOKIE_RE.match(lines[0]):
-        lines[0] = encoding_cookie
+    """
+    Detect the presence of an encoding cookie and use that encoding; if
+    none is present, do not add one and use the Mu default encoding.
+    If the codec is invalid, log a warning and fall back to the default.
+    """
+    match = ENCODING_COOKIE_RE.match(text)
+    if match:
+        encoding = match.group(1)
+        try:
+            codecs.lookup(encoding)
+        except LookupError:
+            logger.warn("Invalid codec in encoding cookie: %s", encoding)
+            encoding = ENCODING
     else:
-        lines.insert(0, encoding_cookie)
+        encoding = ENCODING
 
-    with open(filepath, "w", encoding=ENCODING, newline='') as f:
-        write_and_flush(f, newline.join(lines))
+    with open(filepath, "w", encoding=encoding, newline='') as f:
+        write_and_flush(f, newline.join(text.splitlines()))
 
 
 def sniff_encoding(filepath):
@@ -187,7 +189,7 @@ def sniff_encoding(filepath):
 
     * If there is a BOM, return the appropriate encoding
     * If there is a PEP 263 encoding cookie, return the appropriate encoding
-    * Otherwise return the locale default encoding
+    * Otherwise return None for read_and_decode to attempt several defaults
     """
     boms = [
         (codecs.BOM_UTF8, "utf-8-sig"),
@@ -207,15 +209,22 @@ def sniff_encoding(filepath):
     # Look for a PEP 263 encoding cookie
     #
     default_encoding = locale.getpreferredencoding()
-    uline = line.decode(default_encoding)
-    match = ENCODING_COOKIE_RE.match(uline)
-    if match:
-        return match.group(1)
+    try:
+        uline = line.decode(default_encoding)
+    except UnicodeDecodeError:
+        #
+        # Can't even decode the line in order to match the cookie
+        #
+        pass
+    else:
+        match = ENCODING_COOKIE_RE.match(uline)
+        if match:
+            return match.group(1)
 
     #
     # Fall back to the locale default
     #
-    return default_encoding
+    return None
 
 
 def sniff_newline_convention(text):
@@ -246,17 +255,42 @@ def sniff_newline_convention(text):
 
 
 def read_and_decode(filepath):
-    encoding = sniff_encoding(filepath)
-    with open(filepath, encoding=encoding, newline='') as f:
-        text = f.read()
-        #
-        # Sniff and convert newlines here so that, by the time
-        # the text reaches the editor it is ready to use. Then
-        # convert everything to the Mu internal newline character
-        #
-        newline = sniff_newline_convention(text)
-        text = re.sub("\r\n", NEWLINE, text)
-        return text, newline
+    """
+    Read the contents of a file,
+    """
+    sniffed_encoding = sniff_encoding(filepath)
+    #
+    # If sniff_encoding has found enough clues to indicate an encoding,
+    # use that. Otherwise try a series of defaults before giving up.
+    #
+    if sniffed_encoding:
+        logger.debug("Detected encoding %s", sniffed_encoding)
+        candidate_encodings = [sniffed_encoding]
+    else:
+        candidate_encodings = [ENCODING, locale.getpreferredencoding()]
+
+    with open(filepath, "rb") as f:
+        btext = f.read()
+    for encoding in candidate_encodings:
+        logger.debug("Trying to decode with %s", encoding)
+        try:
+            text = btext.decode(encoding)
+            logger.info("Decoded with %s", encoding)
+            break
+        except UnicodeDecodeError as exc:
+            continue
+    else:
+        raise UnicodeDecodeError(encoding, btext, 0, 0, "Unable to decode")
+
+    #
+    # Sniff and convert newlines here so that, by the time
+    # the text reaches the editor it is ready to use. Then
+    # convert everything to the Mu internal newline character
+    #
+    newline = sniff_newline_convention(text)
+    logger.debug("Detected newline %r", newline)
+    text = re.sub("\r\n", NEWLINE, text)
+    return text, newline
 
 
 def get_admin_file_path(filename):
@@ -517,6 +551,8 @@ class Editor:
         self.mode = 'python'
         self.modes = {}  # See set_modes.
         self.envars = []  # See restore session and show_admin
+        self.minify = False
+        self.microbit_runtime = ''
         self.connected_devices = set()
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
@@ -562,10 +598,12 @@ class Editor:
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
 
-    def restore_session(self, passed_filename=None):
+    def restore_session(self, paths=None):
         """
         Attempts to recreate the tab state from the last time the editor was
-        run.
+        run. If paths contains a collection of additional paths specified by
+        the user, they are also "restored" at the same time (duplicates will be
+        ignored).
         """
         settings_path = get_session_path()
         self.change_mode(self.mode)
@@ -591,9 +629,11 @@ class Editor:
                     # So ask for the desired mode.
                     self.select_mode(None)
                 if 'paths' in old_session:
-                    for old_path in old_session['paths']:
+                    old_paths = self._abspath(old_session['paths'])
+                    launch_paths = self._abspath(paths) if paths else set()
+                    for old_path in old_paths:
                         # if the os passed in a file, defer loading it now
-                        if passed_filename and old_path in passed_filename:
+                        if old_path in launch_paths:
                             continue
                         self.direct_load(old_path)
                     logger.info('Loaded files.')
@@ -601,11 +641,24 @@ class Editor:
                     self.envars = old_session['envars']
                     logger.info('User defined environment variables: '
                                 '{}'.format(self.envars))
+                if 'minify' in old_session:
+                    self.minify = old_session['minify']
+                    logger.info('Minify scripts on micro:bit? '
+                                '{}'.format(self.minify))
+                if 'microbit_runtime' in old_session:
+                    self.microbit_runtime = old_session['microbit_runtime']
+                    if self.microbit_runtime:
+                        logger.info('Custom micro:bit runtime path: '
+                                    '{}'.format(self.microbit_runtime))
+                        if not os.path.isfile(self.microbit_runtime):
+                            self.microbit_runtime = ''
+                            logger.warning('The specified micro:bit runtime '
+                                           'does not exist. Using default '
+                                           'runtime instead.')
         # handle os passed file last,
         # so it will not be focused over by another tab
-        if passed_filename:
-            logger.info('Passed-in filename: {}'.format(passed_filename))
-            self.direct_load(passed_filename)
+        if paths and len(paths) > 0:
+            self.load_cli(paths)
         if not self._view.tab_count:
             py = _('# Write your code here :-)')
             self._view.add_tab(None, py, self.modes[self.mode].api(), NEWLINE)
@@ -616,7 +669,7 @@ class Editor:
 
     def toggle_theme(self):
         """
-        Switches between themes (night or day).
+        Switches between themes (night, day or high-contrast).
         """
         if self.theme == 'day':
             self.theme = 'night'
@@ -635,16 +688,27 @@ class Editor:
         self._view.add_tab(None, '', self.modes[self.mode].api(), NEWLINE)
 
     def _load(self, path):
+        """
+        Attempt to load a Python script from the passed in path. This path may
+        be a .py file containing Python source code, or a .hex file, created
+        for a micro:bit like device, with the source code embedded therein.
+
+        This method will work its way around duplicate paths and also attempt
+        to cleanly handle / report / log errors when encountered in a helpful
+        manner.
+        """
         logger.info('Loading script from: {}'.format(path))
         error = _("The file contains characters Mu expects to be encoded as "
-                  "UTF-8, but which are encoded in some other way.\n\nIf this "
-                  "file was saved in another application, re-save the file "
-                  "via the 'Save as' option and set the encoding to UTF-8.")
+                  "{0} or as the computer's default encoding {1}, but which "
+                  "are encoded in some other way.\n\nIf this file was saved "
+                  "in another application, re-save the file via the "
+                  "'Save as' option and set the encoding to {0}".
+                  format(ENCODING, locale.getpreferredencoding()))
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
                 continue
-            if path in widget.path:
+            if os.path.samefile(path, widget.path):
                 logger.info('Script already open.')
                 msg = _('The file "{}" is already open.')
                 self._view.show_message(msg.format(os.path.basename(path)))
@@ -661,9 +725,6 @@ class Editor:
                     filename = os.path.basename(path)
                     self._view.show_message(message.format(filename), error)
                     return
-
-                if not ENCODING_COOKIE_RE.match(text):
-                    text = ENCODING_COOKIE + NEWLINE + text
                 name = path
             elif path.lower().endswith('.hex'):
                 # Open the hex, extract the Python script therein and set the
@@ -690,11 +751,11 @@ class Editor:
                          "hex files created with embedded MicroPython code.")
                 self._view.show_message(message, info)
                 return
-        except (PermissionError, FileNotFoundError):
+        except OSError:
             message = _("Could not load {}").format(path)
-            logger.warning('Could not load {}'.format(path))
-            info = _("Does this file exist? If it does, do you have "
-                     "permission to read it?\n\nPlease cheack and try again.")
+            logger.exception('Could not load {}'.format(path))
+            info = _("Does this file exist?\nIf it does, do you have "
+                     "permission to read it?\n\nPlease check and try again.")
             self._view.show_message(message, info)
         else:
             logger.debug(text)
@@ -714,20 +775,64 @@ class Editor:
         """ for loading files passed from command line or the OS launch"""
         self._load(path)
 
+    def load_cli(self, paths):
+        """
+        Given a set of paths, passed in by the user when Mu starts, this
+        method will attempt to load them and log / report a problem if Mu is
+        unable to open a passed in path.
+        """
+        for p in paths:
+            try:
+                logger.info('Passed-in filename: {}'.format(p))
+                # abspath will fail for non-paths
+                self.direct_load(os.path.abspath(p))
+            except Exception as e:
+                self._view.show_message(_('Can\'t open {}'.format(p)))
+                logging.warning('Can\'t open file from command line {}'.
+                                format(p), exc_info=e)
+
+    def _abspath(self, paths):
+        """
+        Safely convert an arrary of paths to their absolute forms and remove
+        duplicate items.
+        """
+        result = set()
+        for p in paths:
+            try:
+                result.add(os.path.abspath(p))
+            except Exception as ex:
+                logger.error('Could not get path for {}: {}'.format(p, ex))
+        return result
+
     def save_tab_to_file(self, tab):
+        """
+        Given a tab, will attempt to save the script in the tab to the path
+        associated with the tab. If there's a problem this will be logged and
+        reported and the tab status will continue to show as Modified.
+        """
+        logger.info('Saving script to: {}'.format(tab.path))
+        logger.debug(tab.text())
         try:
-            logger.info('Saving script to: {}'.format(tab.path))
-            logger.debug(tab.text())
             save_and_encode(tab.text(), tab.path, tab.newline)
-            tab.setModified(False)
-            self.show_status_message(_("Saved file: {}").format(tab.path))
         except OSError as e:
             logger.error(e)
-            message = _('Could not save file.')
+            error_message = _('Could not save file (disk problem)')
             information = _("Error saving file to disk. Ensure you have "
                             "permission to write the file and "
                             "sufficient disk space.")
-            self._view.show_message(message, information)
+        except UnicodeEncodeError:
+            error_message = _("Could not save file (encoding problem)")
+            logger.exception(error_message)
+            information = _("Unable to convert all the characters. If you "
+                            "have an encoding line at the top of the file, "
+                            "remove it and try again.")
+        else:
+            error_message = information = None
+        if error_message:
+            self._view.show_message(error_message, information)
+        else:
+            tab.setModified(False)
+            self.show_status_message(_("Saved file: {}").format(tab.path))
 
     def save(self):
         """
@@ -855,6 +960,8 @@ class Editor:
             'mode': self.mode,
             'paths': paths,
             'envars': self.envars,
+            'minify': self.minify,
+            'microbit_runtime': self.microbit_runtime,
         }
         session_path = get_session_path()
         with open(session_path, 'w') as out:
@@ -873,9 +980,26 @@ class Editor:
         logger.info('Showing logs from {}'.format(LOG_FILE))
         envars = '\n'.join(['{}={}'.format(name, value) for name, value in
                             self.envars])
+        settings = {
+            'envars': envars,
+            'minify': self.minify,
+            'microbit_runtime': self.microbit_runtime,
+        }
         with open(LOG_FILE, 'r') as logfile:
-            envars = self._view.show_admin(logfile.read(), envars, self.theme)
-            self.envars = extract_envars(envars)
+            new_settings = self._view.show_admin(logfile.read(), settings,
+                                                 self.theme)
+            self.envars = extract_envars(new_settings['envars'])
+            self.minify = new_settings['minify']
+            runtime = new_settings['microbit_runtime'].strip()
+            if runtime and not os.path.isfile(runtime):
+                self.microbit_runtime = ''
+                message = _('Could not find MicroPython runtime.')
+                information = _("The micro:bit runtime you specified ('{}') "
+                                "does not exist. "
+                                "Please try again.".format(runtime))
+                self._view.show_message(message, information)
+            else:
+                self.microbit_runtime = runtime
 
     def select_mode(self, event=None):
         """

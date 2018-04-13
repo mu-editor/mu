@@ -110,7 +110,7 @@ class DebugMode(BaseMode):
                     write_and_flush(f, tab.text())
                     tab.setModified(False)
             logger.debug(tab.text())
-            self.view.button_bar.slots['modes'].setEnabled(False)
+            self.set_buttons(modes=False)
             envars = self.editor.envars
             self.runner = self.view.add_python3_runner(tab.path,
                                                        self.workspace_dir(),
@@ -140,7 +140,7 @@ class DebugMode(BaseMode):
             self.debugger = None
             self.view.remove_python_runner()
             self.view.remove_debug_inspector()
-        self.view.button_bar.slots['modes'].setEnabled(True)
+        self.set_buttons(modes=True)
         self.editor.change_mode('python')
         self.editor.mode = 'python'
         self.view.set_read_only(False)
@@ -149,9 +149,9 @@ class DebugMode(BaseMode):
         """
         Called when the debugged Python process is finished.
         """
-        for action in self.actions():
-            if action['name'] != 'stop':
-                self.view.button_bar.slots[action['name']].setEnabled(False)
+        buttons = {action['name']: False for action in self.actions()
+                   if action['name'] is not 'stop'}
+        self.set_buttons(**buttons)
         self.editor.show_status_message(_("Your script has finished running."))
         for tab in self.view.widgets:
             tab.markerDeleteAll()

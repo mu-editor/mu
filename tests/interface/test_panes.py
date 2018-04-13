@@ -781,6 +781,15 @@ def test_JupyterREPLPane_init():
     assert jw.console_height == 10
 
 
+def test_JupyterREPLPane_append_plain_text():
+    """
+    """
+    jw = mu.interface.panes.JupyterREPLPane()
+    jw.on_append_text = mock.MagicMock()
+    jw._append_plain_text('hello')
+    jw.on_append_text.emit.assert_called_once_with('hello'.encode('utf-8'))
+
+
 def test_JupyterREPLPane_set_font_size():
     """
     Check the correct stylesheet values are being set.
@@ -1470,10 +1479,13 @@ def test_PythonProcessPane_read_from_stdout():
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.append = mock.MagicMock()
     ppp.process = mock.MagicMock()
+    ppp.process.readAll().data.return_value = b'hello world'
+    ppp.on_append_text = mock.MagicMock()
     ppp.read_from_stdout()
     assert ppp.append.call_count == 1
     assert ppp.process.readAll().data.call_count == 1
     assert ppp.start_of_current_line == 123
+    ppp.on_append_text.emit.assert_called_once_with(b'hello world')
 
 
 def test_PythonProcessPane_write_to_stdin():
@@ -1768,6 +1780,27 @@ def test_PlotterPane_process_bytes():
     pp.add_data = mock.MagicMock()
     pp.process_bytes(b'(1, 2.3, 4)\r\n')
     pp.add_data.assert_called_once_with((1, 2.3, 4))
+
+
+def test_PlotterPane_process_bytes_guards_against_data_flood():
+    """
+    If the process_bytes method gets data of more than 1024 bytes then trigger
+    a data_flood signal and ensure the plotter no longer processes incoming
+    bytes.
+
+    (The assumption is that Mu will clean up once the data_flood signal is
+    emitted.)
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.data_flood = mock.MagicMock()
+    pp.add_data = mock.MagicMock()
+    data_flood = b'X' * 1025
+    pp.process_bytes(data_flood)
+    assert pp.flooded is True
+    pp.data_flood.emit.assert_called_once_with()
+    assert pp.add_data.call_count == 0
+    pp.process_bytes(data_flood)
+    assert pp.add_data.call_count == 0
 
 
 def test_PlotterPane_process_bytes_tuple_not_numeric():
