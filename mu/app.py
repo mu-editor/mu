@@ -123,6 +123,7 @@ def run():
 
     # Create the "window" we'll be looking at.
     editor_window = Window()
+    # Make sure all windows have the Mu icon as a fallback
     app.setWindowIcon(load_icon(editor_window.icon))
     # Create the "editor" that'll control the "window".
     editor = Editor(view=editor_window)
