@@ -150,7 +150,7 @@ class DebugMode(BaseMode):
         Called when the debugged Python process is finished.
         """
         buttons = {action['name']: False for action in self.actions()
-                   if action['name'] is not 'stop'}
+                   if action['name'] != 'stop'}
         self.set_buttons(**buttons)
         self.editor.show_status_message(_("Your script has finished running."))
         for tab in self.view.widgets:
