@@ -1378,6 +1378,9 @@ def test_PythonProcessPane_parse_input_newline():
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.toPlainText = mock.MagicMock(return_value='abc\n')
     ppp.start_of_current_line = 0
+    ppp.textCursor = mock.MagicMock()
+    ppp.textCursor().position.return_value = 666
+    ppp.insert = mock.MagicMock()
     ppp.write_to_stdin = mock.MagicMock()
     key = Qt.Key_Enter
     text = '\r'
@@ -1386,6 +1389,8 @@ def test_PythonProcessPane_parse_input_newline():
     ppp.write_to_stdin.assert_called_once_with(b'abc\n')
     assert b'abc' in ppp.input_history
     assert ppp.history_position == 0
+    # On newline, the start of the current line should be set correctly.
+    assert ppp.start_of_current_line == 666
 
 
 def test_PythonProcessPane_parse_input_newline_ignore_empty_input_in_history():

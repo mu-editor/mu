@@ -800,6 +800,7 @@ class PythonProcessPane(QTextEdit):
             if line.strip():
                 self.input_history.append(line.replace(b'\n', b''))
             self.history_position = 0
+            self.start_of_current_line = self.textCursor().position()
 
     def history_back(self):
         """
