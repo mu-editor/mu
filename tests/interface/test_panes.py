@@ -881,6 +881,7 @@ def test_PythonProcessPane_init():
     assert ppp.input_history == []
     assert ppp.start_of_current_line == 0
     assert ppp.history_position == 0
+    assert ppp.running is False
 
 
 def test_PythonProcessPane_start_process():
@@ -906,6 +907,7 @@ def test_PythonProcessPane_start_process():
     runner = sys.executable
     expected_args = ['-i', expected_script, ]  # called with interactive flag.
     ppp.process.start.assert_called_once_with(runner, expected_args)
+    assert ppp.running is True
 
 
 def test_PythonProcessPane_start_process_command_args():
@@ -1189,6 +1191,7 @@ def test_PythonProcessPane_parse_input_ctrl_c():
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.process = mock.MagicMock()
     ppp.process.processId.return_value = 123
+    ppp.running = True
     key = Qt.Key_C
     text = ''
     modifiers = Qt.ControlModifier
@@ -1206,6 +1209,7 @@ def test_PythonProcessPane_parse_input_ctrl_d():
     """
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.process = mock.MagicMock()
+    ppp.running = True
     key = Qt.Key_D
     text = ''
     modifiers = Qt.ControlModifier
@@ -1213,6 +1217,41 @@ def test_PythonProcessPane_parse_input_ctrl_d():
                     return_value='win32'):
         ppp.parse_input(key, text, modifiers)
         ppp.process.kill.assert_called_once_with()
+
+
+def test_PythonProcessPane_parse_input_ctrl_c_after_process_finished():
+    """
+    Control-C (SIGINT / KeyboardInterrupt) character is typed.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.processId.return_value = 123
+    ppp.running = False
+    key = Qt.Key_C
+    text = ''
+    modifiers = Qt.ControlModifier
+    mock_kill = mock.MagicMock()
+    with mock.patch('mu.interface.panes.os.kill', mock_kill), \
+            mock.patch('mu.interface.panes.platform.system',
+                       return_value='win32'):
+        ppp.parse_input(key, text, modifiers)
+    assert mock_kill.call_count == 0
+
+
+def test_PythonProcessPane_parse_input_ctrl_d_after_process_finished():
+    """
+    Control-D (Kill process) character is typed.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.running = False
+    key = Qt.Key_D
+    text = ''
+    modifiers = Qt.ControlModifier
+    with mock.patch('mu.interface.panes.platform.system',
+                    return_value='win32'):
+        ppp.parse_input(key, text, modifiers)
+        assert ppp.process.kill.call_count == 0
 
 
 def test_PythonProcessPane_parse_input_up_arrow():

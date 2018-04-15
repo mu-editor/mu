@@ -581,6 +581,7 @@ class PythonProcessPane(QTextEdit):
         self.setUndoRedoEnabled(False)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.context_menu)
+        self.running = False  # Flag to show the child process is running.
         self.setObjectName('PythonRunner')
         self.process = None  # Will eventually reference the running process.
         self.input_history = []  # history of inputs entered in this session.
@@ -653,11 +654,13 @@ class PythonProcessPane(QTextEdit):
                 # Just run the command with no additional flags.
                 args = [self.script, ] + command_args
             self.process.start(python_exec, args)
+            self.running = True
 
     def finished(self, code, status):
         """
         Handle when the child process finishes.
         """
+        self.running = False
         cursor = self.textCursor()
         cursor.movePosition(cursor.End)
         cursor.insertText('\n\n---------- FINISHED ----------\n')
@@ -744,7 +747,7 @@ class PythonProcessPane(QTextEdit):
              (platform.system() != 'Darwin' and
                 modifiers == Qt.ControlModifier):
             # Handle CTRL-C and CTRL-D
-            if self.process:
+            if self.process and self.running:
                 pid = self.process.processId()
                 # NOTE: Windows related constraints don't allow us to send a
                 # CTRL-C, rather, the process will just terminate.
