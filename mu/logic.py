@@ -985,7 +985,7 @@ class Editor:
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
         }
-        with open(LOG_FILE, 'r') as logfile:
+        with open(LOG_FILE, 'r', encoding='utf8') as logfile:
             new_settings = self._view.show_admin(logfile.read(), settings,
                                                  self.theme)
             self.envars = extract_envars(new_settings['envars'])

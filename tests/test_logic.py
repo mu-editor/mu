@@ -1614,7 +1614,8 @@ def test_show_admin():
     with mock.patch('builtins.open', mock_open), \
             mock.patch('os.path.isfile', return_value=True):
         ed.show_admin(None)
-        mock_open.assert_called_once_with(mu.logic.LOG_FILE, 'r')
+        mock_open.assert_called_once_with(mu.logic.LOG_FILE, 'r',
+                                          encoding='utf8')
         assert view.show_admin.call_count == 1
         assert view.show_admin.call_args[0][1] == settings
         assert ed.envars == [['name', 'value']]
@@ -1642,7 +1643,8 @@ def test_show_admin_missing_microbit_runtime():
     with mock.patch('builtins.open', mock_open), \
             mock.patch('os.path.isfile', return_value=False):
         ed.show_admin(None)
-        mock_open.assert_called_once_with(mu.logic.LOG_FILE, 'r')
+        mock_open.assert_called_once_with(mu.logic.LOG_FILE, 'r',
+                                          encoding='utf8')
         assert view.show_admin.call_count == 1
         assert view.show_admin.call_args[0][1] == settings
         assert ed.envars == [['name', 'value']]
