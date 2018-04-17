@@ -1399,11 +1399,25 @@ def test_PythonProcessPane_parse_input_copy():
 
 def test_PythonProcessPane_parse_input_backspace():
     """
-    Backspace deletes the character at the cursor position.
+    Backspace call causes a backspace from the character at the cursor
+    position.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.backspace = mock.MagicMock()
+    key = Qt.Key_Backspace
+    text = '\b'
+    modifiers = None
+    ppp.parse_input(key, text, modifiers)
+    ppp.backspace.assert_called_once_with()
+
+
+def test_PythonProcessPane_parse_input_delete():
+    """
+    Delete deletes the character to the right of the cursor position.
     """
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.delete = mock.MagicMock()
-    key = Qt.Key_Backspace
+    key = Qt.Key_Delete
     text = '\b'
     modifiers = None
     ppp.parse_input(key, text, modifiers)
@@ -1587,10 +1601,42 @@ def test_PythonProcessPane_insert():
     mock_cursor.insertText.assert_called_once_with('hello')
 
 
+def test_PythonProcessPane_backspace():
+    """
+    Make sure that removing a character to the left of the current cursor
+    position works as expected.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.start_of_current_line = 123
+    mock_cursor = mock.MagicMock()
+    mock_cursor.position.return_value = 124
+    mock_cursor.deletePreviousChar = mock.MagicMock()
+    ppp.setTextCursor = mock.MagicMock()
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.backspace()
+    mock_cursor.deletePreviousChar.assert_called_once_with()
+    ppp.setTextCursor.assert_called_once_with(mock_cursor)
+
+
+def test_PythonProcessPane_backspace_at_start_of_input_line():
+    """
+    Make sure that removing a character will not work if the cursor is at the
+    left-hand boundary of the input line.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.start_of_current_line = 123
+    mock_cursor = mock.MagicMock()
+    mock_cursor.position.return_value = 123
+    mock_cursor.deletePreviousChar = mock.MagicMock()
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.backspace()
+    assert mock_cursor.deletePreviousChar.call_count == 0
+
+
 def test_PythonProcessPane_delete():
     """
-    Make sure that removing a character at the current cursor position works as
-    expected.
+    Make sure that removing a character to the right of the current cursor
+    position works as expected.
     """
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.start_of_current_line = 123
@@ -1600,7 +1646,7 @@ def test_PythonProcessPane_delete():
     ppp.setTextCursor = mock.MagicMock()
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.delete()
-    mock_cursor.deletePreviousChar.assert_called_once_with()
+    mock_cursor.deleteChar.assert_called_once_with()
     ppp.setTextCursor.assert_called_once_with(mock_cursor)
 
 
@@ -1612,11 +1658,11 @@ def test_PythonProcessPane_delete_at_start_of_input_line():
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.start_of_current_line = 123
     mock_cursor = mock.MagicMock()
-    mock_cursor.position.return_value = 123
+    mock_cursor.position.return_value = 122
     mock_cursor.deletePreviousChar = mock.MagicMock()
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.delete()
-    assert mock_cursor.deletePreviousChar.call_count == 0
+    assert mock_cursor.deleteChar.call_count == 0
 
 
 def test_PythonProcessPane_clear_input_line():

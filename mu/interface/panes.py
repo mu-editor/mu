@@ -793,6 +793,8 @@ class PythonProcessPane(QTextEdit):
             # active buffer and display it.
             msg = bytes(text, 'utf8')
         if key == Qt.Key_Backspace:
+            self.backspace()
+        if key == Qt.Key_Delete:
             self.delete()
         if not self.isReadOnly() and msg:
             self.insert(msg)
@@ -873,14 +875,23 @@ class PythonProcessPane(QTextEdit):
         cursor.insertText(msg.decode('utf-8'))
         self.setTextCursor(cursor)
 
-    def delete(self):
+    def backspace(self):
         """
-        Removes a character from the current buffer.
+        Removes a character from the current buffer -- to the left of cursor.
         """
         cursor = self.textCursor()
         if cursor.position() > self.start_of_current_line:
             cursor = self.textCursor()
             cursor.deletePreviousChar()
+            self.setTextCursor(cursor)
+
+    def delete(self):
+        """
+        Removes a character from the current buffer -- to the right of cursor.
+        """
+        cursor = self.textCursor()
+        if cursor.position() >= self.start_of_current_line:
+            cursor.deleteChar()
             self.setTextCursor(cursor)
 
     def clear_input_line(self):
