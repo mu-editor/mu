@@ -63,8 +63,8 @@ class JupyterREPLPane(RichJupyterWidget):
         self.set_theme(theme)
         self.console_height = 10
 
-    def _append_plain_text(self, text, **kwargs):
-        super()._append_plain_text(text, **kwargs)
+    def _append_plain_text(self, text, *args, **kwargs):
+        super()._append_plain_text(text, *args, **kwargs)
         self.on_append_text.emit(text.encode('utf-8'))
 
     def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
