@@ -351,7 +351,14 @@ def get_settings_path():
     """
     return get_admin_file_path('settings.json')
 
+def get_view(self):
+    return self.view
 
+def get_pathname(self):
+    view = get_view(self)
+    tab = get_view(self).current_tab
+    return tab.path
+    
 def extract_envars(raw):
     """
     Returns a list of environment variables given a string containing
@@ -452,7 +459,6 @@ def check_pycodestyle(code):
                 'code': code,
             })
     return style_feedback
-
 
 class MuFlakeCodeReporter:
     """
