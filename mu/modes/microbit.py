@@ -45,21 +45,18 @@ class DeviceFlasher(QThread):
     # Emitted when flashing the micro:bit fails for any reason.
     on_flash_fail = pyqtSignal(str)
 
-    def __init__(self, paths_to_microbits, python_script, minify,
-                 path_to_runtime):
+    def __init__(self, paths_to_microbits, python_script, path_to_runtime):
         """
         The paths_to_microbits should be a list containing filesystem paths to
         attached micro:bits to flash. The python_script should be the text of
-        the script to flash onto the device. Minify should be a boolean to
-        indicate if the Python code is to be minified before flashing. The
-        path_to_runtime should be the path of the hex file for the MicroPython
-        runtime to use. If the path_to_runtime is None, the default MicroPython
-        runtime is used by default.
+        the script to flash onto the device. The path_to_runtime should be the
+        path of the hex file for the MicroPython runtime to use. If the
+        path_to_runtime is None, the default MicroPython runtime is used by
+        default.
         """
         QThread.__init__(self)
         self.paths_to_microbits = paths_to_microbits
         self.python_script = python_script
-        self.minify = minify
         self.path_to_runtime = path_to_runtime
 
     def run(self):
@@ -69,7 +66,6 @@ class DeviceFlasher(QThread):
         try:
             uflash.flash(paths_to_microbits=self.paths_to_microbits,
                          python_script=self.python_script,
-                         minify=self.minify,
                          path_to_runtime=self.path_to_runtime)
         except Exception as ex:
             # Catch everything so Mu can recover from all of the wide variety
@@ -297,8 +293,7 @@ class MicrobitMode(MicroPythonMode):
             self.editor.show_status_message(message, 10)
             self.set_buttons(flash=False)
             self.flash_thread = DeviceFlasher([path_to_microbit],
-                                              python_script, minify,
-                                              rt_hex_path)
+                                              python_script, rt_hex_path)
             if sys.platform == 'win32':
                 # Windows blocks on write.
                 self.flash_thread.finished.connect(self.flash_finished)
