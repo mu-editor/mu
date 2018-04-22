@@ -19,10 +19,14 @@ QLabel, QStatusBar, QTabBar, QMenu {
     color: black;
 }
 
-QTextEdit, QPlainTextEdit {
+QTextEdit, QPlainTextEdit, QLineEdit {
     background-color: white;
     color: black;
     border: none;
+}
+
+QDialog QTextEdit, QDialog QPlainTextEdit, QDialog QLineEdit {
+    border: 1px solid #cccccc;
 }
 
 QTabBar {
@@ -30,29 +34,29 @@ QTabBar {
 }
 
 QTabBar::tab {
-    border-top: 1px solid #b4b4b4;
-    border-left: 1px solid #b4b4b4;
-    border-right: 1px solid #b4b4b4;
+    border-top: 1px solid #b4b4b4;   /* Border */
+    border-left: 1px solid #b4b4b4;  /* Border */
+    border-right: 1px solid #b4b4b4; /* Border */
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     color: black;
 }
 
 QTabBar::tab, QListWidget::item:selected, QListWidget::item:focus {
-    background: #c4c4c4;
-    padding: 4px 8px;
+    background: #c4c4c4; /* Background Tab */
+    padding: 4px 8px;      /* Tab Padding */
     margin: 0;
 }
 
 QTabBar::tab::hover, QListWidget::item::hover {
-    background: #d4d4d4;
-    padding: 4px 8px;
+    background: #d4d4d4; /* Hover */
+    padding: 4px 8px;      /* Tab Padding */
     margin: 0;
 }
 
 QTabBar::tab::selected {
-    background: #eeeeee;
-    padding: 4px 8px;
+    background: #eeeeee; /* Border */
+    padding: 4px 8px;      /* Tab Padding */
     margin: 0;
 }
 
@@ -72,8 +76,8 @@ QTabBar::close-button:hover {
 
 QTabWidget::pane {
     border: none;
-    border-top: 1px solid #b4b4b4;
-    border-bottom: 1px solid #b4b4b4;
+    border-top: 1px solid #b4b4b4;    /* Border */
+    border-bottom: 1px solid #b4b4b4; /* Border */
 }
 
 QsciScintilla {
@@ -88,6 +92,7 @@ QListWidget {
 QListWidget::item:selected, QListWidget::item:hover, QListWidget::item:focus {
     padding: 0;
     color: black;
+    outline: none;
 }
 
 QStatusBar QLabel {
@@ -125,11 +130,6 @@ QMenu::separator {
     margin: 0px;
 }
 
-QLineEdit {
-    background: #FFF;
-    border: none;
-}
-
 QCheckBox::indicator {
     border: 1px solid #222;
     width: 16px;
@@ -146,15 +146,21 @@ QDialogButtonBox {
 }
 
 QPushButton {
-    background: #c4c4c4;
-    border: 1px solid #b4b4b4;
-    padding: 8px 16px;
+    background: #c4c4c4;            /* Background Tab */
+    border: 1px solid #b4b4b4;      /* Border */
+    padding: 6px 12px;                /* 1.5 * Tab Padding */
+    margin: 2px;
 }
 
 QPushButton:focus {
-    background: #eeeeee;
+    margin: 1px;
+    border: 2px solid #b4b4b4;      /* Border */
 }
 
 QPushButton:hover {
-    background: #d4d4d4;
+    background: #d4d4d4;            /* Hover */
+}
+
+QPushButton:pressed {
+    background: #eeeeee;            /* Border */
 }
