@@ -1104,7 +1104,7 @@ def test_Window_show_admin():
     with mock.patch('mu.interface.main.AdminDialog', mock_admin_display):
         w = mu.interface.main.Window()
         result = w.show_admin('log', 'envars', 'day')
-        mock_admin_display.assert_called_once_with()
+        mock_admin_display.assert_called_once_with(w)
         mock_admin_box.setup.assert_called_once_with('log', 'envars', 'day')
         mock_admin_box.exec.assert_called_once_with()
         assert result == 'this is the expected result'

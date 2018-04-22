@@ -72,8 +72,10 @@ class ModeSelector(QDialog):
         self.mode_list.setIconSize(QSize(48, 48))
         for name, item in modes.items():
             if not item.is_debugger:
-                ModeItem(item.name, item.description, item.icon,
+                litem = ModeItem(item.name, item.description, item.icon,
                          self.mode_list)
+                if item.icon == current_mode:
+                    self.mode_list.setCurrentItem(litem)
         self.mode_list.sortItems()
         instructions = QLabel(_('Change mode at any time by clicking '
                                 'the "Mode" button containing Mu\'s logo.'))
