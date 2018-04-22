@@ -21,6 +21,7 @@ import os
 import sys
 import os.path
 import logging
+from tokenize import TokenError
 from mu.logic import HOME_DIRECTORY
 from mu.contrib import uflash, microfs
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
@@ -246,7 +247,16 @@ class MicrobitMode(MicroPythonMode):
             if minify and can_minify:
                 orginal = len(python_script)
                 script = python_script.decode('utf-8')
-                mangled = nudatus.mangle(script).encode('utf-8')
+                try:
+                    mangled = nudatus.mangle(script).encode('utf-8')
+                except TokenError as e:
+                    msg, (line, col) = e.args
+                    logger.debug('Minify failed')
+                    logger.exception(e)
+                    message = _("Problem with script")
+                    information = _("{} [{}:{}]").format(msg, line, col)
+                    self.view.show_message(message, information, 'Warning')
+                    return
                 saved = orginal - len(mangled)
                 percent = saved / orginal * 100
                 logger.debug('Script minified, {} bytes ({:.2f}%) saved:'
