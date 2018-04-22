@@ -9,6 +9,7 @@ from mu.logic import HOME_DIRECTORY
 from mu.modes.microbit import MicrobitMode, FileManager, DeviceFlasher
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from unittest import mock
+from tokenize import TokenError
 
 
 TEST_ROOT = os.path.split(os.path.dirname(__file__))[0]
@@ -518,6 +519,7 @@ def test_flash_minify():
     view = mock.MagicMock()
     script = '#' + ('x' * 8193) + '\n'
     view.current_tab.text = mock.MagicMock(return_value=script)
+    view.show_message = mock.MagicMock()
     editor = mock.MagicMock()
     editor.minify = True
     mm = MicrobitMode(editor, view)
@@ -526,6 +528,12 @@ def test_flash_minify():
         with mock.patch('nudatus.mangle', return_value='') as m:
             mm.flash()
             m.assert_called_once_with(script)
+
+    ex = TokenError('Bad', (1,0))
+    with mock.patch('nudatus.mangle', side_effect=ex) as m:
+        mm.flash()
+        view.show_message.assert_called_once_with('Problem with script',
+                                                  'Bad [1:0]', 'Warning')
 
 
 def test_flash_minify_no_minify():
@@ -543,9 +551,9 @@ def test_flash_minify_no_minify():
             mm.flash()
             assert m.call_count == 0
             view.show_message.assert_called_once_with('Unable to flash "foo"',
-                                              'Your script is too long and the'
-                                              ' minifier isn\'t available',
-                                              'Warning')
+                                                      'Your script is too long '
+                                                      'and the minifier isn\'t '
+                                                      'available', 'Warning')
 
 
 def test_add_fs():
