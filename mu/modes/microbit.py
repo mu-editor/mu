@@ -245,18 +245,22 @@ class MicrobitMode(MicroPythonMode):
             message = _('Unable to flash "{}"').format(tab.label)
             if minify and can_minify:
                 orginal = len(python_script)
-                mangled = nudatus.mangle(python_script.decode('utf-8')).encode('utf-8')
+                script = python_script.decode('utf-8')
+                mangled = nudatus.mangle(script).encode('utf-8')
                 saved = orginal - len(mangled)
                 percent = saved / orginal * 100
-                logger.debug('Script minified, {} bytes ({:.2f}%) saved:'.format(saved, percent))
+                logger.debug('Script minified, {} bytes ({:.2f}%) saved:'
+                             .format(saved, percent))
                 logger.debug(mangled)
                 python_script = mangled
                 if len(python_script) >= 8192:
-                    information = _("Our minifier tried but your script is too long!")
+                    information = _("Our minifier tried but your "
+                                    "script is too long!")
                     self.view.show_message(message, information, 'Warning')
                     return
             elif minify and not can_minify:
-                information = _("Your script is too long and the minifier isn't available")
+                information = _("Your script is too long and the minifier"
+                                " isn't available")
                 self.view.show_message(message, information, 'Warning')
                 return
             else:
