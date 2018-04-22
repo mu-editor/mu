@@ -28,6 +28,12 @@ from mu.modes.base import MicroPythonMode
 from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
 
+# We can run without nudatus
+can_minify = True
+try:
+    import nudatus
+except ImportError:  # pragma: no cover
+    can_minify = False
 
 logger = logging.getLogger(__name__)
 
@@ -235,11 +241,32 @@ class MicrobitMode(MicroPythonMode):
         python_script = tab.text().encode('utf-8')
         logger.debug('Python script:')
         logger.debug(python_script)
+        # Check minification status.
+        minify = False
+        if uflash.get_minifier():
+            minify = self.editor.minify
         if len(python_script) >= 8192:
             message = _('Unable to flash "{}"').format(tab.label)
-            information = _("Your script is too long!")
-            self.view.show_message(message, information, 'Warning')
-            return
+            if minify and can_minify:
+                orginal = len(python_script)
+                mangled = nudatus.mangle(python_script.decode('utf-8')).encode('utf-8')
+                saved = orginal - len(mangled)
+                percent = saved / orginal * 100
+                logger.debug('Script minified, {} bytes ({:.2f}%) saved:'.format(saved, percent))
+                logger.debug(mangled)
+                python_script = mangled
+                if len(python_script) >= 8192:
+                    information = _("Our minifier tried but your script is too long!")
+                    self.view.show_message(message, information, 'Warning')
+                    return
+            elif minify and not can_minify:
+                information = _("Your script is too long and the minifier isn't available")
+                self.view.show_message(message, information, 'Warning')
+                return
+            else:
+                information = _("Your script is too long!")
+                self.view.show_message(message, information, 'Warning')
+                return
         # Determine the location of the BBC micro:bit. If it can't be found
         # fall back to asking the user to locate it.
         path_to_microbit = uflash.find_microbit()
@@ -259,11 +286,6 @@ class MicrobitMode(MicroPythonMode):
         logger.debug('Path to micro:bit: {}'.format(path_to_microbit))
         if path_to_microbit and os.path.exists(path_to_microbit):
             logger.debug('Flashing to device.')
-            # Flash the microbit
-            # Check minification status.
-            minify = False
-            if uflash.get_minifier():
-                minify = self.editor.minify
             # Check use of custom runtime.
             rt_hex_path = self.editor.microbit_runtime.strip()
             message = _('Flashing "{}" onto the micro:bit.').format(tab.label)
