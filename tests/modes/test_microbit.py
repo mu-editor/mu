@@ -252,7 +252,7 @@ def test_flash_with_attached_device_as_windows():
         assert mm.flash_thread == mock_flasher
         assert editor.show_status_message.call_count == 1
         mm.set_buttons.assert_called_once_with(flash=False)
-        mock_flasher_class.assert_called_once_with(['bar', ], b'foo', 
+        mock_flasher_class.assert_called_once_with(['bar', ], b'foo',
                                                    '/foo/bar')
         mock_flasher.finished.connect.\
             assert_called_once_with(mm.flash_finished)
@@ -529,7 +529,7 @@ def test_flash_minify():
             mm.flash()
             m.assert_called_once_with(script)
 
-    ex = TokenError('Bad', (1,0))
+    ex = TokenError('Bad', (1, 0))
     with mock.patch('nudatus.mangle', side_effect=ex) as m:
         mm.flash()
         view.show_message.assert_called_once_with('Problem with script',
@@ -551,9 +551,10 @@ def test_flash_minify_no_minify():
             mm.flash()
             assert m.call_count == 0
             view.show_message.assert_called_once_with('Unable to flash "foo"',
-                                                      'Your script is too long '
-                                                      'and the minifier isn\'t '
-                                                      'available', 'Warning')
+                                                      'Your script is too long'
+                                                      ' and the minifier '
+                                                      'isn\'t available',
+                                                      'Warning')
 
 
 def test_add_fs():
