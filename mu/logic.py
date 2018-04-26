@@ -1010,17 +1010,16 @@ class Editor:
         logger.info('Showing available modes: {}'.format(
             list(self.modes.keys())))
         new_mode = self._view.select_mode(self.modes, self.mode, self.theme)
-        if new_mode and new_mode is not self.mode:
-            self.mode = new_mode
-            self.change_mode(self.mode)
-            self.show_status_message(_('Changed to {} mode.').format(
-                                     self.mode.capitalize()))
+        if new_mode and new_mode != self.mode:
+            logger.info('New mode selected: {}'.format(new_mode))
+            self.change_mode(new_mode)
 
     def change_mode(self, mode):
         """
         Given the name of a mode, will make the necessary changes to put the
         editor into the new mode.
         """
+        self.mode = mode
         # Remove the old mode's REPL.
         self._view.remove_repl()
         # Update buttons.
@@ -1055,6 +1054,8 @@ class Editor:
             for tab in self._view.widgets:
                 tab.breakpoint_lines = set()
                 tab.reset_annotations()
+        self.show_status_message(_('Changed to {} mode.').format(
+            mode.capitalize()))
 
     def autosave(self):
         """
@@ -1071,20 +1072,35 @@ class Editor:
         """
         Ensure connected USB devices are polled. If there's a change and a new
         recognised device is attached, inform the user via a status message.
+        If a single device is found and Mu is in a different mode ask the user
+        if they'd like to change mode.
         """
+        devices = []
+        device_types = set()
         for name, mode in self.modes.items():
-            if hasattr(mode, "find_device"):
+            if hasattr(mode, 'find_device'):
                 # The mode can detect an attached device.
-                device = mode.find_device(with_logging=False)
-                if device and (device, mode) not in self.connected_devices:
-                    self.connected_devices = set()
-                    self.connected_devices.add((device, mode))
-                    msg = _("Connection from a new device detected.")
-                    if self.mode != name:
-                        msg += _(" Please switch to {} mode.").format(
-                            name.capitalize())
-                    self.show_status_message(msg)
-                    break
+                port = mode.find_device(with_logging=False)
+                if port:
+                    devices.append((name, port))
+                    device_types.add(name)
+        for device in devices:
+            if device not in self.connected_devices:
+                # self.connected_devices = set()
+                self.connected_devices.add(device)
+                mode_name = device[0]
+                device_name = self.modes[mode_name].name
+                msg = _('A new {} device detected').format(device_name)
+                self.show_status_message(msg)
+                # Only ask to switch mode if a single device type is connected
+                if len(device_types) == 1 and self.mode != mode_name:
+                    msg_body = _('Looks like you\'ve plugged-in a new device!'
+                                 '\n\nWould you like to change Mu to the {} '
+                                 'mode?').format(device_name)
+                    change_confirmation = self._view.show_confirmation(
+                        msg, msg_body, icon='Question')
+                    if change_confirmation == QMessageBox.Ok:
+                        self.change_mode(mode_name)
 
     def show_status_message(self, message, duration=5):
         """
