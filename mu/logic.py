@@ -787,7 +787,16 @@ class Editor:
         Loads a Python file from the file system or extracts a Python script
         from a hex file.
         """
-        path = self._view.get_load_path(self.modes[self.mode].workspace_dir())
+        # Get all supported extensions from the different modes
+        extensions = ['py']
+        for mode_name, mode in self.modes.items():
+            if mode.file_extensions:
+                extensions += mode.file_extensions
+        extensions = set([e.lower() for e in extensions])
+        extensions = '*.{} *.{}'.format(' *.'.join(extensions),
+                                        ' *.'.join(extensions).upper())
+        path = self._view.get_load_path(self.modes[self.mode].workspace_dir(),
+                                        extensions)
         if path:
             self._load(path)
 

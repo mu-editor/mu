@@ -169,6 +169,7 @@ class MicrobitMode(MicroPythonMode):
     fs = None  #: Reference to filesystem navigator.
     flash_thread = None
     flash_timer = None
+    file_extensions = ['hex']
 
     valid_boards = [
         (0x0D28, 0x0204),  # micro:bit USB VID, PID

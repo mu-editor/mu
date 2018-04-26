@@ -86,6 +86,7 @@ class BaseMode(QObject):
     has_debugger = False
     save_timeout = 5  #: Number of seconds to wait before saving work.
     builtins = None  #: Symbols to assume as builtins when checking code style.
+    file_extensions = []
 
     def __init__(self, editor, view):
         self.editor = editor
