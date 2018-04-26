@@ -465,3 +465,17 @@ class MicrobitMode(MicroPythonMode):
         """
         self.set_buttons(files=True)
         super().on_data_flood()
+
+    def open_file(self, path):
+        """
+        Tries to open a MicroPython hex file with an embedded Python script.
+        """
+        text = None
+        if path.lower().endswith('.hex'):
+            # Try to open the hex and extract the Python script
+            try:
+                with open(path, newline='') as f:
+                    text = uflash.extract_script(f.read())
+            except Exception:
+                return None
+        return text

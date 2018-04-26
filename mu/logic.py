@@ -38,7 +38,6 @@ try:  # pragma: no cover
     from pycodestyle import StyleGuide, Checker
 except ImportError:  # pragma: no cover
     from pep8 import StyleGuide, Checker
-from mu.contrib import uflash
 from mu.resources import path
 from mu import __version__
 
@@ -726,43 +725,43 @@ class Editor:
                 self._view.show_message(msg.format(os.path.basename(path)))
                 self._view.focus_tab(widget)
                 return
+        name, text, newline, file_mode = None, None, None, None
         try:
             if path.lower().endswith('.py'):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
                 try:
                     text, newline = read_and_decode(path)
-                except UnicodeDecodeError as exc:
-                    message = _("Mu cannot read the characters in {}")
+                except UnicodeDecodeError:
+                    message = _('Mu cannot read the characters in {}')
                     filename = os.path.basename(path)
                     self._view.show_message(message.format(filename), error)
                     return
                 name = path
-            elif path.lower().endswith('.hex'):
-                # Open the hex, extract the Python script therein and set the
-                # name to None, thus forcing the user to work out what to name
-                # the recovered script.
-                try:
-                    with open(path, newline='') as f:
-                        text = uflash.extract_script(f.read())
-                        newline = sniff_newline_convention(text)
-                except Exception:
-                    filename = os.path.basename(path)
-                    message = _("Unable to load file {}").format(filename)
-                    info = _("Mu doesn't understand the hex file and cannot "
-                             "extract any Python code. Are you sure this is "
-                             "a hex file created with MicroPython?")
+            else:
+                # Delegate the open operation to the Mu modes. Leave the name
+                # as None, thus forcing the user to work out what to name the
+                # recovered script.
+                for mode_name, mode in self.modes.items():
+                    try:
+                        text = mode.open_file(path)
+                    except Exception as exc:
+                        # No worries, log it and try the next mode
+                        logger.warning('Error when mode {} try to open the '
+                                       '{} file.'.format(mode_name, path),
+                                       exc_info=exc)
+                    else:
+                        if text:
+                            newline = sniff_newline_convention(text)
+                            file_mode = mode_name
+                            break
+                else:
+                    message = _('Mu was not able to open this file')
+                    info = _('Currently Mu only works with Python source '
+                             'files or hex files created with embedded '
+                             'MicroPython code.')
                     self._view.show_message(message, info)
                     return
-                name = None
-            else:
-                # Mu won't open other file types, although this may change in
-                # the future.
-                message = _("Mu only opens .py and .hex files")
-                info = _("Currently Mu only works with Python source files or "
-                         "hex files created with embedded MicroPython code.")
-                self._view.show_message(message, info)
-                return
         except OSError:
             message = _("Could not load {}").format(path)
             logger.exception('Could not load {}'.format(path))
@@ -770,6 +769,15 @@ class Editor:
                      "permission to read it?\n\nPlease check and try again.")
             self._view.show_message(message, info)
         else:
+            if file_mode and self.mode != file_mode:
+                device_name = self.modes[file_mode].name
+                message = _('Is this a {} file?').format(device_name)
+                info = _('It looks like this could be a {} file.\n\n'
+                         'Would you like to change Mu to the {}'
+                         'mode?').format(device_name, device_name)
+                if self._view.show_confirmation(
+                        message, info, icon='Question') == QMessageBox.Ok:
+                    self.change_mode(file_mode)
             logger.debug(text)
             self._view.add_tab(
                 name, text, self.modes[self.mode].api(), newline)

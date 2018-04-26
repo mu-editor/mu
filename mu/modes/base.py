@@ -176,6 +176,12 @@ class BaseMode(QObject):
                  "time.")
         self.view.show_message(msg, info)
 
+    def open_file(self, path):
+        """
+        Some files are not plain text and each mode can attempt to decode them.
+        """
+        return None
+
 
 class MicroPythonMode(BaseMode):
     """
