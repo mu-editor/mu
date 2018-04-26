@@ -1808,7 +1808,7 @@ def test_check_usb():
     ed.check_usb()
     expected = 'A new BBC micro:bit device detected'
     ed.show_status_message.assert_called_with(expected)
-    view.show_confirmation.assert_called()
+    assert view.show_confirmation.called
     ed.change_mode.assert_called_once_with('microbit')
 
 
@@ -1830,7 +1830,7 @@ def test_check_usb_change_mode_cancel():
     ed.check_usb()
     expected = 'A new CircuitPlayground device detected'
     ed.show_status_message.assert_called_with(expected)
-    view.show_confirmation.assert_called()
+    assert view.show_confirmation.called
     ed.change_mode.assert_not_called()
 
 
