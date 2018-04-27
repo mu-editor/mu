@@ -1806,7 +1806,7 @@ def test_check_usb():
     }
     ed.show_status_message = mock.MagicMock()
     ed.check_usb()
-    expected = 'A new BBC micro:bit device detected'
+    expected = 'Detected new BBC micro:bit device.'
     ed.show_status_message.assert_called_with(expected)
     assert view.show_confirmation.called
     ed.change_mode.assert_called_once_with('microbit')
@@ -1828,7 +1828,7 @@ def test_check_usb_change_mode_cancel():
     }
     ed.show_status_message = mock.MagicMock()
     ed.check_usb()
-    expected = 'A new CircuitPlayground device detected'
+    expected = 'Detected new CircuitPlayground device.'
     ed.show_status_message.assert_called_with(expected)
     assert view.show_confirmation.called
     ed.change_mode.assert_not_called()
@@ -1878,12 +1878,26 @@ def test_check_usb_multiple_devices():
     }
     ed.show_status_message = mock.MagicMock()
     ed.check_usb()
-    expected_mb = mock.call('A new BBC micro:bit device detected')
-    expected_cp = mock.call('A new CircuitPlayground device detected')
+    expected_mb = mock.call('Detected new BBC micro:bit device.')
+    expected_cp = mock.call('Detected new CircuitPlayground device.')
     ed.show_status_message.assert_has_calls((expected_mb, expected_cp),
                                             any_order=True)
     view.show_confirmation.assert_not_called()
     ed.change_mode.assert_not_called()
+
+
+def test_check_usb_remove_disconnected_devices():
+    """
+    Ensure that if a device is no longer connected, it is removed from
+    the set of connected devices.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.modes = {}
+    ed.show_status_message = mock.MagicMock()
+    ed.connected_devices = {('microbit', '/dev/ttyACM1')}
+    ed.check_usb()
+    assert len(ed.connected_devices) == 0
 
 
 def test_show_status_message():

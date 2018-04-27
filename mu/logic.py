@@ -1077,6 +1077,7 @@ class Editor:
         """
         devices = []
         device_types = set()
+        # Detect connected devices.
         for name, mode in self.modes.items():
             if hasattr(mode, 'find_device'):
                 # The mode can detect an attached device.
@@ -1084,18 +1085,24 @@ class Editor:
                 if port:
                     devices.append((name, port))
                     device_types.add(name)
+        # Remove no-longer connected devices.
+        to_remove = []
+        for connected in self.connected_devices:
+            if connected not in devices:
+                to_remove.append(connected)
+        for device in to_remove:
+            self.connected_devices.remove(device)
+        # Add newly connected devices.
         for device in devices:
             if device not in self.connected_devices:
-                # self.connected_devices = set()
                 self.connected_devices.add(device)
                 mode_name = device[0]
                 device_name = self.modes[mode_name].name
-                msg = _('A new {} device detected').format(device_name)
+                msg = _('Detected new {} device.').format(device_name)
                 self.show_status_message(msg)
                 # Only ask to switch mode if a single device type is connected
                 if len(device_types) == 1 and self.mode != mode_name:
-                    msg_body = _('Looks like you\'ve plugged-in a new device!'
-                                 '\n\nWould you like to change Mu to the {} '
+                    msg_body = _('Would you like to change Mu to the {} '
                                  'mode?').format(device_name)
                     change_confirmation = self._view.show_confirmation(
                         msg, msg_body, icon='Question')
