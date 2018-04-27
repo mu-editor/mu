@@ -5,6 +5,7 @@ coverage
 guizero
 pigpio
 matplotlib
+nudatus
 qtconsole
 Pillow
 pycodestyle

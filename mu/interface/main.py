@@ -650,16 +650,16 @@ class Window(QMainWindow):
         if hasattr(self, 'plotter') and self.plotter:
             self.plotter_pane.set_theme(theme)
 
-    def show_admin(self, log, envars, theme):
+    def show_admin(self, log, settings, theme):
         """
         Display the administrivite dialog with referenced content of the log
-        and envars. Return the raw string representation of the environment
-        variables to be used whenever a (regular) Python script is run.
+        and settings. Return a dictionary of the settings that may have been
+        changed by the admin dialog.
         """
         admin_box = AdminDialog()
-        admin_box.setup(log, envars, theme)
+        admin_box.setup(log, settings, theme)
         admin_box.exec()
-        return admin_box.envars()
+        return admin_box.settings()
 
     def show_message(self, message, information=None, icon=None):
         """

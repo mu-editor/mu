@@ -881,6 +881,7 @@ def test_PythonProcessPane_init():
     assert ppp.input_history == []
     assert ppp.start_of_current_line == 0
     assert ppp.history_position == 0
+    assert ppp.running is False
 
 
 def test_PythonProcessPane_start_process():
@@ -906,6 +907,7 @@ def test_PythonProcessPane_start_process():
     runner = sys.executable
     expected_args = ['-i', expected_script, ]  # called with interactive flag.
     ppp.process.start.assert_called_once_with(runner, expected_args)
+    assert ppp.running is True
 
 
 def test_PythonProcessPane_start_process_command_args():
@@ -1189,6 +1191,7 @@ def test_PythonProcessPane_parse_input_ctrl_c():
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.process = mock.MagicMock()
     ppp.process.processId.return_value = 123
+    ppp.running = True
     key = Qt.Key_C
     text = ''
     modifiers = Qt.ControlModifier
@@ -1206,6 +1209,7 @@ def test_PythonProcessPane_parse_input_ctrl_d():
     """
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.process = mock.MagicMock()
+    ppp.running = True
     key = Qt.Key_D
     text = ''
     modifiers = Qt.ControlModifier
@@ -1213,6 +1217,41 @@ def test_PythonProcessPane_parse_input_ctrl_d():
                     return_value='win32'):
         ppp.parse_input(key, text, modifiers)
         ppp.process.kill.assert_called_once_with()
+
+
+def test_PythonProcessPane_parse_input_ctrl_c_after_process_finished():
+    """
+    Control-C (SIGINT / KeyboardInterrupt) character is typed.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.processId.return_value = 123
+    ppp.running = False
+    key = Qt.Key_C
+    text = ''
+    modifiers = Qt.ControlModifier
+    mock_kill = mock.MagicMock()
+    with mock.patch('mu.interface.panes.os.kill', mock_kill), \
+            mock.patch('mu.interface.panes.platform.system',
+                       return_value='win32'):
+        ppp.parse_input(key, text, modifiers)
+    assert mock_kill.call_count == 0
+
+
+def test_PythonProcessPane_parse_input_ctrl_d_after_process_finished():
+    """
+    Control-D (Kill process) character is typed.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.running = False
+    key = Qt.Key_D
+    text = ''
+    modifiers = Qt.ControlModifier
+    with mock.patch('mu.interface.panes.platform.system',
+                    return_value='win32'):
+        ppp.parse_input(key, text, modifiers)
+        assert ppp.process.kill.call_count == 0
 
 
 def test_PythonProcessPane_parse_input_up_arrow():
@@ -1360,11 +1399,25 @@ def test_PythonProcessPane_parse_input_copy():
 
 def test_PythonProcessPane_parse_input_backspace():
     """
-    Backspace deletes the character at the cursor position.
+    Backspace call causes a backspace from the character at the cursor
+    position.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.backspace = mock.MagicMock()
+    key = Qt.Key_Backspace
+    text = '\b'
+    modifiers = None
+    ppp.parse_input(key, text, modifiers)
+    ppp.backspace.assert_called_once_with()
+
+
+def test_PythonProcessPane_parse_input_delete():
+    """
+    Delete deletes the character to the right of the cursor position.
     """
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.delete = mock.MagicMock()
-    key = Qt.Key_Backspace
+    key = Qt.Key_Delete
     text = '\b'
     modifiers = None
     ppp.parse_input(key, text, modifiers)
@@ -1378,6 +1431,9 @@ def test_PythonProcessPane_parse_input_newline():
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.toPlainText = mock.MagicMock(return_value='abc\n')
     ppp.start_of_current_line = 0
+    ppp.textCursor = mock.MagicMock()
+    ppp.textCursor().position.return_value = 666
+    ppp.insert = mock.MagicMock()
     ppp.write_to_stdin = mock.MagicMock()
     key = Qt.Key_Enter
     text = '\r'
@@ -1386,6 +1442,8 @@ def test_PythonProcessPane_parse_input_newline():
     ppp.write_to_stdin.assert_called_once_with(b'abc\n')
     assert b'abc' in ppp.input_history
     assert ppp.history_position == 0
+    # On newline, the start of the current line should be set correctly.
+    assert ppp.start_of_current_line == 666
 
 
 def test_PythonProcessPane_parse_input_newline_ignore_empty_input_in_history():
@@ -1543,10 +1601,42 @@ def test_PythonProcessPane_insert():
     mock_cursor.insertText.assert_called_once_with('hello')
 
 
+def test_PythonProcessPane_backspace():
+    """
+    Make sure that removing a character to the left of the current cursor
+    position works as expected.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.start_of_current_line = 123
+    mock_cursor = mock.MagicMock()
+    mock_cursor.position.return_value = 124
+    mock_cursor.deletePreviousChar = mock.MagicMock()
+    ppp.setTextCursor = mock.MagicMock()
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.backspace()
+    mock_cursor.deletePreviousChar.assert_called_once_with()
+    ppp.setTextCursor.assert_called_once_with(mock_cursor)
+
+
+def test_PythonProcessPane_backspace_at_start_of_input_line():
+    """
+    Make sure that removing a character will not work if the cursor is at the
+    left-hand boundary of the input line.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.start_of_current_line = 123
+    mock_cursor = mock.MagicMock()
+    mock_cursor.position.return_value = 123
+    mock_cursor.deletePreviousChar = mock.MagicMock()
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.backspace()
+    assert mock_cursor.deletePreviousChar.call_count == 0
+
+
 def test_PythonProcessPane_delete():
     """
-    Make sure that removing a character at the current cursor position works as
-    expected.
+    Make sure that removing a character to the right of the current cursor
+    position works as expected.
     """
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.start_of_current_line = 123
@@ -1556,7 +1646,7 @@ def test_PythonProcessPane_delete():
     ppp.setTextCursor = mock.MagicMock()
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.delete()
-    mock_cursor.deletePreviousChar.assert_called_once_with()
+    mock_cursor.deleteChar.assert_called_once_with()
     ppp.setTextCursor.assert_called_once_with(mock_cursor)
 
 
@@ -1568,11 +1658,11 @@ def test_PythonProcessPane_delete_at_start_of_input_line():
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.start_of_current_line = 123
     mock_cursor = mock.MagicMock()
-    mock_cursor.position.return_value = 123
+    mock_cursor.position.return_value = 122
     mock_cursor.deletePreviousChar = mock.MagicMock()
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.delete()
-    assert mock_cursor.deletePreviousChar.call_count == 0
+    assert mock_cursor.deleteChar.call_count == 0
 
 
 def test_PythonProcessPane_clear_input_line():

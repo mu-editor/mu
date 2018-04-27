@@ -17,6 +17,9 @@ Mu: A Python Code Editor
     For tutorials, how-to guides and user related discussion, please see the
     project's website for users of Mu at: https://codewith.mu/
 
+    If you're interested in the fun, educational, inspiring and sometimes
+    hilarious ways in which people use Mu, check out: https://madewith.mu/
+
 What?
 -----
 
@@ -120,6 +123,7 @@ Contents:
    packaging.rst
    website.rst
    api.rst
+   design.rst
    authors.rst
    changes.rst
    license.rst

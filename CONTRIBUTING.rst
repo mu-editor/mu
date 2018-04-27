@@ -47,6 +47,10 @@ yet robust argument is most welcome.
 Checklist
 +++++++++
 
+* If your contribution includes non-obvious technical decision making please
+  make sure you document this in the
+  `design decisions <https://mu.readthedocs.io/en/latest/design.html>`_
+  section.
 * Your code should be commented in *plain English* (British spelling).
 * If your contribution is for a major block of work and you've not done so
   already, add yourself to the AUTHORS file following the convention found
@@ -57,4 +61,4 @@ Checklist
     make check
 
 * If in doubt, ask a question. The only stupid question is the one that's never asked.
-* Most importantly, **Have fun!**
+* Most importantly, **Have fun!** :-)

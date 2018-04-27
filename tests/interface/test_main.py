@@ -1099,7 +1099,7 @@ def test_Window_show_admin():
     """
     mock_admin_display = mock.MagicMock()
     mock_admin_box = mock.MagicMock()
-    mock_admin_box.envars.return_value = 'this is the expected result'
+    mock_admin_box.settings.return_value = 'this is the expected result'
     mock_admin_display.return_value = mock_admin_box
     with mock.patch('mu.interface.main.AdminDialog', mock_admin_display):
         w = mu.interface.main.Window()

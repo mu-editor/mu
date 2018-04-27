@@ -17,18 +17,24 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import json
 import os
 import sys
 import os.path
 import logging
-from mu.logic import get_settings_path, HOME_DIRECTORY
+from tokenize import TokenError
+from mu.logic import HOME_DIRECTORY
 from mu.contrib import uflash, microfs
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from mu.modes.base import MicroPythonMode
 from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
 
+# We can run without nudatus
+can_minify = True
+try:
+    import nudatus
+except ImportError:  # pragma: no cover
+    can_minify = False
 
 logger = logging.getLogger(__name__)
 
@@ -232,11 +238,45 @@ class MicrobitMode(MicroPythonMode):
         python_script = tab.text().encode('utf-8')
         logger.debug('Python script:')
         logger.debug(python_script)
+        # Check minification status.
+        minify = False
+        if uflash.get_minifier():
+            minify = self.editor.minify
         if len(python_script) >= 8192:
             message = _('Unable to flash "{}"').format(tab.label)
-            information = _("Your script is too long!")
-            self.view.show_message(message, information, 'Warning')
-            return
+            if minify and can_minify:
+                orginal = len(python_script)
+                script = python_script.decode('utf-8')
+                try:
+                    mangled = nudatus.mangle(script).encode('utf-8')
+                except TokenError as e:
+                    msg, (line, col) = e.args
+                    logger.debug('Minify failed')
+                    logger.exception(e)
+                    message = _("Problem with script")
+                    information = _("{} [{}:{}]").format(msg, line, col)
+                    self.view.show_message(message, information, 'Warning')
+                    return
+                saved = orginal - len(mangled)
+                percent = saved / orginal * 100
+                logger.debug('Script minified, {} bytes ({:.2f}%) saved:'
+                             .format(saved, percent))
+                logger.debug(mangled)
+                python_script = mangled
+                if len(python_script) >= 8192:
+                    information = _("Our minifier tried but your "
+                                    "script is too long!")
+                    self.view.show_message(message, information, 'Warning')
+                    return
+            elif minify and not can_minify:
+                information = _("Your script is too long and the minifier"
+                                " isn't available")
+                self.view.show_message(message, information, 'Warning')
+                return
+            else:
+                information = _("Your script is too long!")
+                self.view.show_message(message, information, 'Warning')
+                return
         # Determine the location of the BBC micro:bit. If it can't be found
         # fall back to asking the user to locate it.
         path_to_microbit = uflash.find_microbit()
@@ -256,11 +296,14 @@ class MicrobitMode(MicroPythonMode):
         logger.debug('Path to micro:bit: {}'.format(path_to_microbit))
         if path_to_microbit and os.path.exists(path_to_microbit):
             logger.debug('Flashing to device.')
-            # Flash the microbit
-            rt_hex_path = self.get_hex_path()
+            # Check use of custom runtime.
+            rt_hex_path = self.editor.microbit_runtime.strip()
             message = _('Flashing "{}" onto the micro:bit.').format(tab.label)
-            if (rt_hex_path is not None and os.path.exists(rt_hex_path)):
+            if (rt_hex_path and os.path.exists(rt_hex_path)):
                 message = message + _(" Runtime: {}").format(rt_hex_path)
+            else:
+                rt_hex_path = None
+                self.editor.microbit_runtime = ''
             self.editor.show_status_message(message, 10)
             self.set_buttons(flash=False)
             self.flash_thread = DeviceFlasher([path_to_microbit],
@@ -310,7 +353,7 @@ class MicrobitMode(MicroPythonMode):
         problem.
         """
         logger.error(error)
-        message = _("There was a problem flashing the micro:bit")
+        message = _("There was a problem flashing the micro:bit.")
         information = _("Please do not disconnect the device until flashing"
                         " has completed.")
         self.view.show_message(message, information, 'Warning')
@@ -420,37 +463,6 @@ class MicrobitMode(MicroPythonMode):
         self.file_manager = None
         self.file_manager_thread = None
         self.fs = None
-
-    def get_hex_path(self):
-        """
-        Returns the path to the hex runtime file - if this has been
-        specified under element 'microbit_runtime_hex' in settings.json.
-        This can be a fully-qualified file path, or just a file name
-        in which case the file should be located in the workspace directory.
-        Returns None if no path is specified or if the file is not present.
-        """
-        runtime_hex_path = None
-        sp = get_settings_path()
-        settings = {}
-        try:
-            with open(sp) as f:
-                settings = json.load(f)
-        except FileNotFoundError:
-            logger.error('Settings file {} does not exist.'.format(sp))
-        except ValueError:
-            logger.error('Settings file {} could not be parsed.'.format(sp))
-        else:
-            if 'microbit_runtime_hex' in settings and \
-                    settings['microbit_runtime_hex'] is not None:
-                if os.path.exists(settings['microbit_runtime_hex']):
-                    runtime_hex_path = settings['microbit_runtime_hex']
-                else:
-                    expected_path = settings['microbit_runtime_hex']
-                    runtime_hex_path = os.path.join(self.workspace_dir(),
-                                                    expected_path)
-                    if not os.path.exists(runtime_hex_path):
-                        runtime_hex_path = None
-        return runtime_hex_path
 
     def on_data_flood(self):
         """

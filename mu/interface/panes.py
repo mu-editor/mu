@@ -63,8 +63,8 @@ class JupyterREPLPane(RichJupyterWidget):
         self.set_theme(theme)
         self.console_height = 10
 
-    def _append_plain_text(self, text, **kwargs):
-        super()._append_plain_text(text, **kwargs)
+    def _append_plain_text(self, text, *args, **kwargs):
+        super()._append_plain_text(text, *args, **kwargs)
         self.on_append_text.emit(text.encode('utf-8'))
 
     def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
@@ -581,6 +581,7 @@ class PythonProcessPane(QTextEdit):
         self.setUndoRedoEnabled(False)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.context_menu)
+        self.running = False  # Flag to show the child process is running.
         self.setObjectName('PythonRunner')
         self.process = None  # Will eventually reference the running process.
         self.input_history = []  # history of inputs entered in this session.
@@ -653,11 +654,13 @@ class PythonProcessPane(QTextEdit):
                 # Just run the command with no additional flags.
                 args = [self.script, ] + command_args
             self.process.start(python_exec, args)
+            self.running = True
 
     def finished(self, code, status):
         """
         Handle when the child process finishes.
         """
+        self.running = False
         cursor = self.textCursor()
         cursor.movePosition(cursor.End)
         cursor.insertText('\n\n---------- FINISHED ----------\n')
@@ -744,7 +747,7 @@ class PythonProcessPane(QTextEdit):
              (platform.system() != 'Darwin' and
                 modifiers == Qt.ControlModifier):
             # Handle CTRL-C and CTRL-D
-            if self.process:
+            if self.process and self.running:
                 pid = self.process.processId()
                 # NOTE: Windows related constraints don't allow us to send a
                 # CTRL-C, rather, the process will just terminate.
@@ -790,6 +793,8 @@ class PythonProcessPane(QTextEdit):
             # active buffer and display it.
             msg = bytes(text, 'utf8')
         if key == Qt.Key_Backspace:
+            self.backspace()
+        if key == Qt.Key_Delete:
             self.delete()
         if not self.isReadOnly() and msg:
             self.insert(msg)
@@ -800,6 +805,7 @@ class PythonProcessPane(QTextEdit):
             if line.strip():
                 self.input_history.append(line.replace(b'\n', b''))
             self.history_position = 0
+            self.start_of_current_line = self.textCursor().position()
 
     def history_back(self):
         """
@@ -869,14 +875,23 @@ class PythonProcessPane(QTextEdit):
         cursor.insertText(msg.decode('utf-8'))
         self.setTextCursor(cursor)
 
-    def delete(self):
+    def backspace(self):
         """
-        Removes a character from the current buffer.
+        Removes a character from the current buffer -- to the left of cursor.
         """
         cursor = self.textCursor()
         if cursor.position() > self.start_of_current_line:
             cursor = self.textCursor()
             cursor.deletePreviousChar()
+            self.setTextCursor(cursor)
+
+    def delete(self):
+        """
+        Removes a character from the current buffer -- to the right of cursor.
+        """
+        cursor = self.textCursor()
+        if cursor.position() >= self.start_of_current_line:
+            cursor.deleteChar()
             self.setTextCursor(cursor)
 
     def clear_input_line(self):

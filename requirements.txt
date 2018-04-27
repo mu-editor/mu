@@ -4,6 +4,7 @@ coverage
 gpiozero
 guizero
 matplotlib
+nudatus
 qscintilla
 qtconsole
 pgzero

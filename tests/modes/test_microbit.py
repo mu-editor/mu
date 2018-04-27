@@ -9,6 +9,7 @@ from mu.logic import HOME_DIRECTORY
 from mu.modes.microbit import MicrobitMode, FileManager, DeviceFlasher
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from unittest import mock
+from tokenize import TokenError
 
 
 TEST_ROOT = os.path.split(os.path.dirname(__file__))[0]
@@ -215,39 +216,6 @@ def test_microbit_mode_no_charts():
         assert actions[2]['handler'] == mm.toggle_repl
 
 
-def test_custom_hex_read():
-    """
-    Test that a custom hex file path can be read
-    """
-    editor = mock.MagicMock()
-    view = mock.MagicMock()
-    mm = MicrobitMode(editor, view)
-    with mock.patch('mu.modes.microbit.get_settings_path',
-                    return_value='tests/settingswithcustomhex.json'), \
-            mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
-            mock.patch('mu.modes.base.BaseMode.workspace_dir',
-                       return_value=TEST_ROOT):
-        assert "customhextest.hex" in mm.get_hex_path()
-    """
-    Test that a corrupt settings file returns None for the
-    runtime hex path
-    """
-    with mock.patch('mu.modes.microbit.get_settings_path',
-                    return_value='tests/settingscorrupt.json'), \
-            mock.patch('mu.modes.base.BaseMode.workspace_dir',
-                       return_value=TEST_ROOT):
-        assert mm.get_hex_path() is None
-    """
-    Test that a missing settings file returns None for the
-    runtime hex path
-    """
-    with mock.patch('mu.modes.microbit.get_settings_path',
-                    return_value='tests/settingswithmissingcustomhex.json'), \
-            mock.patch('mu.modes.base.BaseMode.workspace_dir',
-                       return_value=TEST_ROOT):
-        assert mm.get_hex_path() is None
-
-
 def test_flash_no_tab():
     """
     If there are no active tabs simply return.
@@ -276,13 +244,16 @@ def test_flash_with_attached_device_as_windows():
         view.current_tab.text = mock.MagicMock(return_value='foo')
         view.show_message = mock.MagicMock()
         editor = mock.MagicMock()
+        editor.minify = False
+        editor.microbit_runtime = '/foo/bar'
         mm = MicrobitMode(editor, view)
         mm.set_buttons = mock.MagicMock()
         mm.flash()
         assert mm.flash_thread == mock_flasher
         assert editor.show_status_message.call_count == 1
         mm.set_buttons.assert_called_once_with(flash=False)
-        mock_flasher_class.assert_called_once_with(['bar', ], b'foo', None)
+        mock_flasher_class.assert_called_once_with(['bar', ], b'foo',
+                                                   '/foo/bar')
         mock_flasher.finished.connect.\
             assert_called_once_with(mm.flash_finished)
         mock_flasher.on_flash_fail.connect.\
@@ -310,6 +281,8 @@ def test_flash_with_attached_device_as_not_windows():
         view.current_tab.text = mock.MagicMock(return_value='foo')
         view.show_message = mock.MagicMock()
         editor = mock.MagicMock()
+        editor.minify = False
+        editor.microbit_runtime = ''
         mm = MicrobitMode(editor, view)
         mm.set_buttons = mock.MagicMock()
         mm.flash()
@@ -332,10 +305,8 @@ def test_flash_with_attached_device_and_custom_runtime():
     """
     mock_flasher = mock.MagicMock()
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
-    with mock.patch('mu.modes.microbit.get_settings_path',
-                    return_value='tests/settingswithcustomhex.json'), \
-            mock.patch('mu.modes.base.BaseMode.workspace_dir',
-                       return_value=TEST_ROOT), \
+    with mock.patch('mu.modes.base.BaseMode.workspace_dir',
+                    return_value=TEST_ROOT), \
             mock.patch('mu.modes.microbit.DeviceFlasher',
                        mock_flasher_class), \
             mock.patch('mu.modes.microbit.sys.platform', 'win32'):
@@ -343,6 +314,8 @@ def test_flash_with_attached_device_and_custom_runtime():
         view.current_tab.text = mock.MagicMock(return_value='foo')
         view.show_message = mock.MagicMock()
         editor = mock.MagicMock()
+        editor.minify = True
+        editor.microbit_runtime = os.path.join('tests', 'customhextest.hex')
         mm = MicrobitMode(editor, view)
         mm.flash()
         assert editor.show_status_message.call_count == 1
@@ -369,6 +342,8 @@ def test_flash_user_specified_device_path():
         view.current_tab.text = mock.MagicMock(return_value='foo')
         view.show_message = mock.MagicMock()
         editor = mock.MagicMock()
+        editor.minify = False
+        editor.microbit_runtime = ''
         mm = MicrobitMode(editor, view)
         mm.flash()
         home = HOME_DIRECTORY
@@ -396,12 +371,15 @@ def test_flash_existing_user_specified_device_path():
         view.get_microbit_path = mock.MagicMock(return_value='bar')
         view.show_message = mock.MagicMock()
         editor = mock.MagicMock()
+        editor.minify = False
+        editor.microbit_runtime = '/foo/bar'
         mm = MicrobitMode(editor, view)
         mm.user_defined_microbit_path = 'baz'
         mm.flash()
         assert view.get_microbit_path.call_count == 0
         assert editor.show_status_message.call_count == 1
-        mock_flasher_class.assert_called_once_with(['baz', ], b'foo', None)
+        mock_flasher_class.assert_called_once_with(['baz', ], b'foo',
+                                                   '/foo/bar')
 
 
 def test_flash_path_specified_does_not_exist():
@@ -473,8 +451,29 @@ def test_flash_script_too_big():
     view.current_tab.label = 'foo'
     view.show_message = mock.MagicMock()
     editor = mock.MagicMock()
+    editor.minify = True
     mm = MicrobitMode(editor, view)
-    mm.flash()
+    with mock.patch('mu.modes.microbit.can_minify', True):
+        mm.flash()
+    view.show_message.assert_called_once_with('Unable to flash "foo"',
+                                              'Our minifier tried but your '
+                                              'script is too long!',
+                                              'Warning')
+
+
+def test_flash_script_too_big_no_minify():
+    """
+    If the script in the current tab is too big, abort in the expected way.
+    """
+    view = mock.MagicMock()
+    view.current_tab.text = mock.MagicMock(return_value='x' * 8193)
+    view.current_tab.label = 'foo'
+    view.show_message = mock.MagicMock()
+    editor = mock.MagicMock()
+    editor.minify = False
+    mm = MicrobitMode(editor, view)
+    with mock.patch('mu.modes.microbit.can_minify', False):
+        mm.flash()
     view.show_message.assert_called_once_with('Unable to flash "foo"',
                                               'Your script is too long!',
                                               'Warning')
@@ -514,6 +513,48 @@ def test_flash_failed():
     assert mm.flash_thread is None
     assert mm.flash_timer is None
     mock_timer.stop.assert_called_once_with()
+
+
+def test_flash_minify():
+    view = mock.MagicMock()
+    script = '#' + ('x' * 8193) + '\n'
+    view.current_tab.text = mock.MagicMock(return_value=script)
+    view.show_message = mock.MagicMock()
+    editor = mock.MagicMock()
+    editor.minify = True
+    mm = MicrobitMode(editor, view)
+    mm.set_buttons = mock.MagicMock()
+    with mock.patch('mu.modes.microbit.DeviceFlasher'):
+        with mock.patch('nudatus.mangle', return_value='') as m:
+            mm.flash()
+            m.assert_called_once_with(script)
+
+    ex = TokenError('Bad', (1, 0))
+    with mock.patch('nudatus.mangle', side_effect=ex) as m:
+        mm.flash()
+        view.show_message.assert_called_once_with('Problem with script',
+                                                  'Bad [1:0]', 'Warning')
+
+
+def test_flash_minify_no_minify():
+    view = mock.MagicMock()
+    view.current_tab.label = 'foo'
+    view.show_message = mock.MagicMock()
+    script = '#' + ('x' * 8193) + '\n'
+    view.current_tab.text = mock.MagicMock(return_value=script)
+    editor = mock.MagicMock()
+    editor.minify = True
+    mm = MicrobitMode(editor, view)
+    mm.set_buttons = mock.MagicMock()
+    with mock.patch('mu.modes.microbit.can_minify', False):
+        with mock.patch('nudatus.mangle', return_value='') as m:
+            mm.flash()
+            assert m.call_count == 0
+            view.show_message.assert_called_once_with('Unable to flash "foo"',
+                                                      'Your script is too long'
+                                                      ' and the minifier '
+                                                      'isn\'t available',
+                                                      'Warning')
 
 
 def test_add_fs():
