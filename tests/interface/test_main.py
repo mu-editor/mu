@@ -385,10 +385,10 @@ def test_Window_get_load_path():
     w = mu.interface.main.Window()
     w.widget = mock.MagicMock()
     with mock.patch('mu.interface.main.QFileDialog', mock_fd):
-        assert w.get_load_path('micropython') == path
-    mock_fd.getOpenFileName.assert_called_once_with(w.widget, 'Open file',
-                                                    'micropython',
-                                                    '*.py *.PY *.hex')
+        returned_path = w.get_load_path('micropython', '*.py *.hex *.PY *.HEX')
+    assert returned_path == path
+    mock_fd.getOpenFileName.assert_called_once_with(
+        w.widget, 'Open file', 'micropython', '*.py *.hex *.PY *.HEX')
 
 
 def test_Window_get_save_path():

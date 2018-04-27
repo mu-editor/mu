@@ -224,7 +224,7 @@ class Window(QMainWindow):
         for tab in self.widgets:
             tab.setReadOnly(is_readonly)
 
-    def get_load_path(self, folder, extensions):
+    def get_load_path(self, folder, extensions='*'):
         """
         Displays a dialog for selecting a file to load. Returns the selected
         path. Defaults to start in the referenced folder.
