@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import QApplication, QSplashScreen
 from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface import Window
-from mu.resources import load_pixmap
+from mu.resources import load_pixmap, load_icon
 from mu.modes import (PythonMode, AdafruitMode, MicrobitMode, DebugMode,
                       PyGameZeroMode)
 from mu.debugger.runner import run as run_debugger
@@ -114,10 +114,17 @@ def run():
 
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
+    # By default PyQt uses the script name (run.py)
+    app.setApplicationName('mu')
+    # Set hint as to the .desktop files name
+    app.setDesktopFileName('mu.codewith.editor')
+    app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
     # Create the "window" we'll be looking at.
     editor_window = Window()
+    # Make sure all windows have the Mu icon as a fallback
+    app.setWindowIcon(load_icon(editor_window.icon))
     # Create the "editor" that'll control the "window".
     editor = Editor(view=editor_window)
     editor.setup(setup_modes(editor, editor_window))
