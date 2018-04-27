@@ -1668,7 +1668,6 @@ def test_select_mode():
     ed.change_mode = mock.MagicMock()
     ed.select_mode(None)
     assert view.select_mode.call_count == 1
-    assert ed.mode == 'foo'
     ed.change_mode.assert_called_once_with('foo')
 
 
@@ -1714,6 +1713,7 @@ def test_change_mode():
         'python': mode,
     }
     ed.change_mode('python')
+    assert ed.mode == 'python'
     view.change_mode.assert_called_once_with(mode)
     assert mock_button_bar.connect.call_count == 11
     view.status_bar.set_mode.assert_called_once_with('python')
@@ -1743,6 +1743,7 @@ def test_change_mode_no_timer():
         'python': mode,
     }
     ed.change_mode('python')
+    assert ed.mode == 'python'
     view.change_mode.assert_called_once_with(mode)
     assert mock_button_bar.connect.call_count == 11
     view.status_bar.set_mode.assert_called_once_with('python')
@@ -1767,6 +1768,7 @@ def test_change_mode_reset_breakpoints():
         'microbit': mode,
     }
     ed.change_mode('microbit')
+    assert ed.mode == 'microbit'
     assert mock_tab.breakpoint_lines == set()
     mock_tab.reset_annotations.assert_called_once_with()
 
@@ -1793,17 +1795,95 @@ def test_check_usb():
     Ensure the check_usb callback actually checks for connected USB devices.
     """
     view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
     ed = mu.logic.Editor(view)
-    mode = mock.MagicMock()
-    mode.find_device.return_value = '/dev/ttyUSB0'
+    ed.change_mode = mock.MagicMock()
+    mode_mb = mock.MagicMock()
+    mode_mb.name = 'BBC micro:bit'
+    mode_mb.find_device.return_value = '/dev/ttyUSB0'
     ed.modes = {
-        'microbit': mode,
+        'microbit': mode_mb,
     }
     ed.show_status_message = mock.MagicMock()
     ed.check_usb()
-    expected = ("Connection from a new device detected. "
-                "Please switch to Microbit mode.")
-    ed.show_status_message.assert_called_once_with(expected)
+    expected = 'A new BBC micro:bit device detected'
+    ed.show_status_message.assert_called_with(expected)
+    assert view.show_confirmation.called
+    ed.change_mode.assert_called_once_with('microbit')
+
+
+def test_check_usb_change_mode_cancel():
+    """
+    Ensure the check_usb doesn't change mode if confirmation cancelled by user.
+    """
+    view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mode_cp = mock.MagicMock()
+    mode_cp.name = 'CircuitPlayground'
+    mode_cp.find_device.return_value = '/dev/ttyUSB1'
+    ed.modes = {
+        'circuitplayground': mode_cp,
+    }
+    ed.show_status_message = mock.MagicMock()
+    ed.check_usb()
+    expected = 'A new CircuitPlayground device detected'
+    ed.show_status_message.assert_called_with(expected)
+    assert view.show_confirmation.called
+    ed.change_mode.assert_not_called()
+
+
+def test_check_usb_already_in_mode():
+    """
+    Ensure the check_usb doesn't ask to change mode if already selected.
+    """
+    view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mode_mb = mock.MagicMock()
+    mode_mb.name = 'BBC micro:bit'
+    mode_mb.find_device.return_value = '/dev/ttyUSB0'
+    mode_cp = mock.MagicMock()
+    mode_cp.find_device.return_value = None
+    ed.modes = {
+        'microbit': mode_mb,
+        'circuitplayground': mode_cp
+    }
+    ed.mode = 'microbit'
+    ed.show_status_message = mock.MagicMock()
+    ed.check_usb()
+    view.show_confirmation.assert_not_called()
+    ed.change_mode.assert_not_called()
+
+
+def test_check_usb_multiple_devices():
+    """
+    Ensure the check_usb doesn't ask to change mode if multiple devices found.
+    """
+    view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mode_mb = mock.MagicMock()
+    mode_mb.name = 'BBC micro:bit'
+    mode_mb.find_device.return_value = '/dev/ttyUSB0'
+    mode_cp = mock.MagicMock()
+    mode_cp.name = 'CircuitPlayground'
+    mode_cp.find_device.return_value = '/dev/ttyUSB1'
+    ed.modes = {
+        'microbit': mode_mb,
+        'circuitplayground': mode_cp
+    }
+    ed.show_status_message = mock.MagicMock()
+    ed.check_usb()
+    expected_mb = mock.call('A new BBC micro:bit device detected')
+    expected_cp = mock.call('A new CircuitPlayground device detected')
+    ed.show_status_message.assert_has_calls((expected_mb, expected_cp),
+                                            any_order=True)
+    view.show_confirmation.assert_not_called()
+    ed.change_mode.assert_not_called()
 
 
 def test_show_status_message():
