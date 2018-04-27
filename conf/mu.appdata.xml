@@ -4,17 +4,23 @@
 	<metadata_license>CC0-1.0</metadata_license>
 	<project_license>GPL-3.0</project_license>
 	<name>Mu</name>
-	<summary>A Python editor for beginner programmers</summary>
+	<summary>A simple Python editor for beginner programmers.</summary>
 	<description>
-		<p>Less is More.</p>
-		<p>Mu has only the most essential features, so users are not intimidated by a baffling interface.</p>
-		<p>Tread the Path of Least Resistance.</p>
-		<p>Whatever the task, there is always only one obvious way to do it with Mu.</p>
-		<p>Keep it Simple.</p>
-		<p>It's quick and easy to learn Mu ~ complexity impedes a novice programmer's first steps.</p>
-		<p>Have fun!</p>
-		<p>Learning should inspire fun ~ Mu helps learners quickly create and test working code.</p>
-		<p>Alan Kay's quote about learning to program summarizes Mu's outlook. Mu aspires to be "the real thing" as a development environment for beginner programmers taking their first steps with Python.</p>
+        <p>Mu is a Python code editor for beginner programmers based on
+        extensive feedback given by teachers and learners.</p>
+        <p>Mu is a simple code editor for beginner programmers based on the
+        feedback given to and experiences of the Raspberry Pi Foundation's
+        education team. Having said that, Mu is for anyone who wants to use a
+        simple "no frills" editor.</p>
+        <p>Mu is a modal editor with modes for Adafruit's CircuitPython, the
+        micro:bit's version of MicroPython, PyGame Zero and standard Python 3
+        (including a graphical debugger). Some of the modes make available a
+        REPL (either running on the connected CircuitPython or MicroPython
+        device or as a Jupyter based iPython session in Python3 mode).</p>
+        <p>Mu is written in Python and works on Windows, OSX, Linux and
+        Raspberry Pi. The project's public facing website is
+        https://codewith.mu/. We celebrate the work done by users of mu at
+        https://madewith.mu/.</p>
 	</description>
 	<url type="homepage">http://codewith.mu/</url>
 	<url type="help">http://codewith.mu/tutorials/</url>
