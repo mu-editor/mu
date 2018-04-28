@@ -18,10 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import json
 import os
-import os.path
 import csv
 import time
 import logging
+import ast
 from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtCore import QObject
 from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path
@@ -41,6 +41,55 @@ BOARD_IDS = set([
     (0x239A, 0x8015),  # circuitplayground m0 PID prototype
     (0x239A, 0x801B),  # feather m0 express PID
 ])
+
+
+def get_code_mode_hints(code_str):
+    """
+    Parse the input code AST, navigate through the top level child nodes in
+    search for imports, and collect the top level module for each.
+    We are not going through the tree recursively as this simple approach is
+    good enough. If the code has hidden or nested imports then user knows what
+    they are doing and there is no need to hold their hand with auto-detects.
+    """
+    result = {
+        'modules': set(),
+        'functions': set(),
+    }
+    try:
+        # First we try with code as it is, hopefully there are no syntax errors
+        tree = ast.parse(code_str)
+    except SyntaxError as exc:
+        # Well, a learning editor should expect users to write imperfect code!
+        # Check where the error was found and start backing up until it parses
+        logger.info('Syntax error trying to parse user code AST', exc_info=exc)
+
+        def parse_reduced(code_lines, line):
+            reduced_code = '\n'.join(code_lines[:line])
+            try:
+                new_tree = ast.parse(reduced_code)
+            except SyntaxError as exc:
+                return parse_reduced(code_lines, exc.lineno - 1)
+            else:
+                return new_tree
+        tree = parse_reduced(code_str.splitlines(), exc.lineno - 1)
+    except Exception as exc:
+        # Something went terribly wrong, empty sets indicate nothing found
+        logger.warning('', exc_info=exc)
+        return result
+
+    for node in ast.iter_child_nodes(tree):
+        if isinstance(node, ast.Import):
+            for n in node.names:
+                top_module = n.name.split('.')[0]
+                if top_module:
+                    result['modules'].add(top_module)
+        elif isinstance(node, ast.ImportFrom):
+            top_module = node.module.split('.')[0]
+            if top_module:
+                result['modules'].add(top_module)
+        elif isinstance(node, ast.FunctionDef):
+            result['functions'].add(node.name)
+    return result
 
 
 def get_default_workspace():
@@ -86,6 +135,10 @@ class BaseMode(QObject):
     has_debugger = False
     save_timeout = 5  #: Number of seconds to wait before saving work.
     builtins = None  #: Symbols to assume as builtins when checking code style.
+    unique_code = {
+        'modules': [],
+        'functions': [],
+    }
 
     def __init__(self, editor, view):
         self.editor = editor

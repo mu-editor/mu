@@ -5,8 +5,96 @@ Tests for the BaseMode class.
 import os
 import mu
 import pytest
-from mu.modes.base import BaseMode, MicroPythonMode
+from mu.modes.base import BaseMode, MicroPythonMode, get_code_mode_hints
 from unittest import mock
+
+
+def test_get_code_mode_hints():
+    import_list = [
+        'import include',
+        'import include as exclude',
+        'import include.exclude',
+        'import include.exclude as exclude_too',
+        'from include import *',
+        'from include import exclude',
+        'from include import exclude, exclude_too',
+        'from include import (exclude,\nexclude_too)',
+        'from include import exclude,\\\nexclude_too',
+        'from include\\\nimport exclude',
+        'from include import exclude as exclude_too',
+        'from include.exclude import exclude_too',
+        'from include.exclude import exclude_too as exclude_again'
+    ]
+    function_code = [
+        'exclude = None',
+        'def detect():',
+        '    def exclude_too():',
+        '        pass',
+        'if True:',
+        '    def exclude_again():',
+        '        pass',
+        'class exclude_as_well():',
+        '    pass'
+    ]
+
+    for import_code in import_list:
+        found_imports = get_code_mode_hints(import_code)
+        assert len(found_imports['modules']) == 1
+        assert 'include' in found_imports['modules']
+
+    found_imports = get_code_mode_hints('\n'.join(import_list + function_code))
+    assert len(found_imports['modules']) == 1
+    assert len(found_imports['functions']) == 1
+    assert 'include' in found_imports['modules']
+    assert 'detect' in found_imports['functions']
+
+    import_list.append('import include, include_too, include_as_well.exclude')
+    function_code.append('def detect_too():\n    pass')
+    found_imports = get_code_mode_hints('\n'.join(import_list + function_code))
+    assert len(found_imports['modules']) == 3
+    assert len(found_imports['functions']) == 2
+    assert 'include' in found_imports['modules']
+    assert 'include_too' in found_imports['modules']
+    assert 'include_as_well' in found_imports['modules']
+    assert 'detect' in found_imports['functions']
+    assert 'detect_too' in found_imports['functions']
+    for module in found_imports['modules']:
+        assert 'exclude' not in module
+    for func in found_imports['functions']:
+        assert 'exclude' not in func
+
+
+def test_get_code_mode_hints_invalid_code():
+    broken_code = [
+        'import include',
+        'import include_too',
+        'def detect():',
+        '    pass',
+        'if True:    # If parsed until this line it will raise a syntax error',
+        '    the text right here is not valid'
+    ]
+    found_imports = get_code_mode_hints('\n'.join(broken_code))
+    assert len(found_imports['modules']) == 2
+    assert len(found_imports['functions']) == 1
+    assert 'include' in found_imports['modules']
+    assert 'include_too' in found_imports['modules']
+    assert 'detect' in found_imports['functions']
+
+    found_imports = get_code_mode_hints('\n'.join(broken_code[4:]))
+    assert len(found_imports['modules']) == 0
+    assert len(found_imports['functions']) == 0
+
+
+def test_get_code_mode_hints_with_exception():
+    mock_ast_parse = mock.MagicMock(side_effect=Exception(':('))
+    mock_log_warning = mock.MagicMock()
+    with mock.patch('ast.parse', mock_ast_parse), \
+            mock.patch('mu.modes.base.logger.warning', mock_log_warning):
+        found_imports = get_code_mode_hints('some code')
+    assert mock_ast_parse.call_count == 1
+    assert mock_log_warning.call_count == 1
+    assert len(found_imports['modules']) == 0
+    assert len(found_imports['functions']) == 0
 
 
 def test_base_mode():
