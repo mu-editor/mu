@@ -33,11 +33,7 @@ import shutil
 import appdirs
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
-# Currently there is no pycodestyle deb packages, so fallback to old name
-try:  # pragma: no cover
-    from pycodestyle import StyleGuide, Checker
-except ImportError:  # pragma: no cover
-    from pep8 import StyleGuide, Checker
+from pycodestyle import StyleGuide, Checker
 from mu.resources import path
 from mu import __version__
 
@@ -174,7 +170,7 @@ def save_and_encode(text, filepath, newline=os.linesep):
         try:
             codecs.lookup(encoding)
         except LookupError:
-            logger.warn("Invalid codec in encoding cookie: %s", encoding)
+            logger.warning("Invalid codec in encoding cookie: %s", encoding)
             encoding = ENCODING
     else:
         encoding = ENCODING
