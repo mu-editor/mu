@@ -33,9 +33,8 @@ SESSION = json.dumps({
         ['name', 'value'],
     ],
 })
-ENCODING_COOKIE = "# -*- coding: %s -*- " \
-    "# Encoding cookie added by Mu Editor" % mu.logic.ENCODING + \
-    mu.logic.NEWLINE
+ENCODING_COOKIE = '# -*- coding: {} -*- {}'.format(mu.logic.ENCODING,
+                                                   mu.logic.NEWLINE)
 
 
 #
@@ -219,7 +218,7 @@ def test_save_and_encode():
         mu.logic.save_and_encode(text, 'foo.py')
     mock_open.assert_called_once_with('foo.py', 'w', encoding='latin-1',
                                       newline='')
-    mock_wandf.call_count == 1
+    assert mock_wandf.call_count == 1
     mock_open.reset_mock()
     mock_wandf.reset_mock()
     # Invalid cookie
@@ -231,7 +230,7 @@ def test_save_and_encode():
     mock_open.assert_called_once_with('foo.py', 'w',
                                       encoding=mu.logic.ENCODING,
                                       newline='')
-    mock_wandf.call_count == 1
+    assert mock_wandf.call_count == 1
     mock_open.reset_mock()
     mock_wandf.reset_mock()
     # No cookie
@@ -242,7 +241,7 @@ def test_save_and_encode():
     mock_open.assert_called_once_with('foo.py', 'w',
                                       encoding=mu.logic.ENCODING,
                                       newline='')
-    mock_wandf.call_count == 1
+    assert mock_wandf.call_count == 1
 
 
 def test_sniff_encoding_from_BOM():
@@ -887,9 +886,6 @@ def test_load_python_file():
     """
     If the user specifies a Python file (*.py) then ensure it's loaded and
     added as a tab.
-
-    The Python code loaded will have a Mu encoding cookie prepended to it
-    or have its own one replaced by a Mu cookie
     """
     text, newline = "python", "\n"
     ed = mocked_editor()
@@ -911,9 +907,6 @@ def test_load_python_file_case_insensitive_file_type():
     """
     If the user specifies a Python file (*.PY) then ensure it's loaded and
     added as a tab.
-
-    The Python code loaded will have a Mu encoding cookie prepended to it
-    or have its own one replaced by a Mu cookie
     """
     text, newline = "python", "\n"
     ed = mocked_editor()
