@@ -16,7 +16,9 @@ all:
 	@echo "make publish-live - publish the project to PyPI production."
 	@echo "make docs - run sphinx to create project documentation."
 	@echo "make translate - create a messages.pot file for translations."
-	@echo "make translateall - as with translate but for all API strings.\n"
+	@echo "make translateall - as with translate but for all API strings."
+	@echo "make win32 - create a 32bit Windows installer for Mu."
+	@echo "make win64 - create a 64bit Windows installer for Mu.\n"
 
 clean:
 	rm -rf build
