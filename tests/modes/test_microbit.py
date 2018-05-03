@@ -69,8 +69,7 @@ def test_FileManager_ls():
     fm = FileManager()
     fm.on_list_files = mock.MagicMock()
     mock_ls = mock.MagicMock(return_value=['foo.py', 'bar.py', ])
-    with mock.patch('mu.modes.microbit.microfs.ls', mock_ls),\
-            mock.patch('mu.modes.microbit.microfs.get_serial'):
+    with mock.patch('mu.modes.microbit.microfs.ls', mock_ls):
         fm.ls()
     fm.on_list_files.emit.assert_called_once_with(('foo.py', 'bar.py'))
 
@@ -95,12 +94,9 @@ def test_fileManager_get():
     fm = FileManager()
     fm.on_get_file = mock.MagicMock()
     mock_get = mock.MagicMock()
-    mock_serial = mock.MagicMock()
-    with mock.patch('mu.modes.microbit.microfs.get', mock_get),\
-            mock.patch('mu.modes.microbit.microfs.get_serial', mock_serial):
+    with mock.patch('mu.modes.microbit.microfs.get', mock_get):
         fm.get('foo.py', 'bar.py')
-    mock_get.assert_called_once_with('foo.py', 'bar.py',
-                                     mock_serial().__enter__())
+    mock_get.assert_called_once_with('foo.py', 'bar.py')
     fm.on_get_file.emit.assert_called_once_with('foo.py')
 
 
@@ -110,7 +106,7 @@ def test_FileManager_get_fail():
     """
     fm = FileManager()
     fm.on_get_fail = mock.MagicMock()
-    with mock.patch('mu.modes.microbit.microfs.get_serial',
+    with mock.patch('mu.modes.microbit.microfs.get',
                     side_effect=Exception('boom')):
         fm.get('foo.py', 'bar.py')
     fm.on_get_fail.emit.assert_called_once_with('foo.py')
@@ -124,13 +120,10 @@ def test_FileManager_put():
     fm = FileManager()
     fm.on_put_file = mock.MagicMock()
     mock_put = mock.MagicMock()
-    mock_serial = mock.MagicMock()
     path = os.path.join('directory', 'foo.py')
-    with mock.patch('mu.modes.microbit.microfs.put', mock_put),\
-            mock.patch('mu.modes.microbit.microfs.get_serial', mock_serial):
+    with mock.patch('mu.modes.microbit.microfs.put', mock_put):
         fm.put(path)
-    mock_put.assert_called_once_with(path, target=None,
-                                     serial=mock_serial().__enter__())
+    mock_put.assert_called_once_with(path, target=None)
     fm.on_put_file.emit.assert_called_once_with('foo.py')
 
 
@@ -140,7 +133,7 @@ def test_FileManager_put_fail():
     """
     fm = FileManager()
     fm.on_put_fail = mock.MagicMock()
-    with mock.patch('mu.modes.microbit.microfs.get_serial',
+    with mock.patch('mu.modes.microbit.microfs.put',
                     side_effect=Exception('boom')):
         fm.put('foo.py')
     fm.on_put_fail.emit.assert_called_once_with('foo.py')
@@ -154,11 +147,9 @@ def test_FileManager_delete():
     fm = FileManager()
     fm.on_delete_file = mock.MagicMock()
     mock_rm = mock.MagicMock()
-    mock_serial = mock.MagicMock()
-    with mock.patch('mu.modes.microbit.microfs.rm', mock_rm),\
-            mock.patch('mu.modes.microbit.microfs.get_serial', mock_serial):
+    with mock.patch('mu.modes.microbit.microfs.rm', mock_rm):
         fm.delete('foo.py')
-    mock_rm.assert_called_once_with('foo.py', mock_serial().__enter__())
+    mock_rm.assert_called_once_with('foo.py')
     fm.on_delete_file.emit.assert_called_once_with('foo.py')
 
 
@@ -168,7 +159,7 @@ def test_FileManager_delete_fail():
     """
     fm = FileManager()
     fm.on_delete_fail = mock.MagicMock()
-    with mock.patch('mu.modes.microbit.microfs.get_serial',
+    with mock.patch('mu.modes.microbit.microfs.rm',
                     side_effect=Exception('boom')):
         fm.delete('foo.py')
     fm.on_delete_fail.emit.assert_called_once_with('foo.py')
@@ -567,7 +558,7 @@ def test_add_fs():
     mm = MicrobitMode(editor, view)
     with mock.patch('mu.modes.microbit.FileManager') as mock_fm,\
             mock.patch('mu.modes.microbit.QThread'),\
-            mock.patch('mu.modes.microbit.microfs.get_serial',
+            mock.patch('mu.modes.microbit.microfs.find_microbit',
                        return_value=True):
         mm.add_fs()
         workspace = mm.workspace_dir()
@@ -581,10 +572,10 @@ def test_add_fs_no_device():
     """
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
-    ex = IOError('BOOM')
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
-    with mock.patch('mu.modes.microbit.microfs.get_serial', side_effect=ex):
+    with mock.patch('mu.modes.microbit.microfs.find_microbit',
+                    return_value=False):
         mm.add_fs()
     assert view.show_message.call_count == 1
 
