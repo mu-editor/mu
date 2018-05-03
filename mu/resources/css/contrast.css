@@ -112,13 +112,11 @@ QStatusBar QLabel {
 
 QMenu {
     border: 3px solid yellow;
-    min-width: 100px;
 }
 
 QMenu::item {
     border: none;
     padding: 5px 15px;
-    width: 100%;
 }
 
 QMenu::item:selected {
