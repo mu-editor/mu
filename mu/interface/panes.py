@@ -501,29 +501,29 @@ class FileSystemPane(QFrame):
                             "restarting Mu."))
         self.disable()
 
-    def on_put_fail(self, microbit_filename):
+    def on_put_fail(self, filename):
         """
         Fired when the referenced file cannot be copied onto the micro:bit.
         """
         self.show_warning(_("There was a problem copying the file '{}' onto "
                             "the micro:bit. Please check Mu's logs for "
-                            "technical information."))
+                            "more information.").format(filename))
 
-    def on_delete_fail(self, microbit_filename):
+    def on_delete_fail(self, filename):
         """
         Fired when a deletion on the micro:bit for the given file failed.
         """
         self.show_warning(_("There was a problem deleting '{}' from the "
                             "micro:bit. Please check Mu's logs for "
-                            "technical information."))
+                            "more information.").format(filename))
 
-    def on_get_fail(self, microbit_filename):
+    def on_get_fail(self, filename):
         """
         Fired when getting the referenced file on the micro:bit failed.
         """
         self.show_warning(_("There was a problem getting '{}' from the "
                             "micro:bit. Please check Mu's logs for "
-                            "technical information."))
+                            "more information.").format(filename))
 
     def set_theme(self, theme):
         """

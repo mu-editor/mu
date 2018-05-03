@@ -129,7 +129,8 @@ def test_FileManager_put():
     with mock.patch('mu.modes.microbit.microfs.put', mock_put),\
             mock.patch('mu.modes.microbit.microfs.get_serial', mock_serial):
         fm.put(path)
-    mock_put.assert_called_once_with(path, mock_serial().__enter__())
+    mock_put.assert_called_once_with(path, target=None,
+                                     serial=mock_serial().__enter__())
     fm.on_put_file.emit.assert_called_once_with('foo.py')
 
 

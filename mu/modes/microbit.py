@@ -114,7 +114,8 @@ class FileManager(QObject):
         or emit a failure signal.
         """
         try:
-            result = tuple(microfs.ls(microfs.get_serial()))
+            with microfs.get_serial() as serial:
+                result = tuple(microfs.ls(serial))
             self.on_list_files.emit(result)
         except Exception as ex:
             logger.exception(ex)
@@ -142,7 +143,7 @@ class FileManager(QObject):
         """
         try:
             with microfs.get_serial() as serial:
-                microfs.put(local_filename, serial)
+                microfs.put(local_filename, target=None, serial=serial)
             self.on_put_file.emit(os.path.basename(local_filename))
         except Exception as ex:
             logger.error(ex)
