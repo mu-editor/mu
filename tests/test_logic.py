@@ -1709,6 +1709,7 @@ def test_change_mode():
     assert ed.mode == 'python'
     view.remove_repl.assert_called_once_with()
     view.remove_filesystem.assert_called_once_with()
+    view.remove_plotter.assert_called_once_with()
     view.change_mode.assert_called_once_with(mode)
     assert mock_button_bar.connect.call_count == 11
     view.status_bar.set_mode.assert_called_once_with('python')

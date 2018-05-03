@@ -1020,9 +1020,10 @@ class Editor:
         editor into the new mode.
         """
         self.mode = mode
-        # Remove the old mode's REPL / filesystem if required.
+        # Remove the old mode's REPL / filesystem / plotter if required.
         self._view.remove_repl()
         self._view.remove_filesystem()
+        self._view.remove_plotter()
         # Update buttons.
         self._view.change_mode(self.modes[mode])
         button_bar = self._view.button_bar
