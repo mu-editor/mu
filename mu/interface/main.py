@@ -590,7 +590,7 @@ class Window(QMainWindow):
             self.repl.deleteLater()
             self.repl = None
             if not self.plotter:
-                self.serial = None
+                self.close_serial_link()
 
     def remove_plotter(self):
         """
@@ -602,7 +602,7 @@ class Window(QMainWindow):
             self.plotter.deleteLater()
             self.plotter = None
             if not self.repl:
-                self.serial = None
+                self.close_serial_link()
 
     def remove_python_runner(self):
         """

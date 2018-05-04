@@ -114,8 +114,7 @@ class FileManager(QObject):
         or emit a failure signal.
         """
         try:
-            with microfs.get_serial() as serial:
-                result = tuple(microfs.ls(serial))
+            result = tuple(microfs.ls())
             self.on_list_files.emit(result)
         except Exception as ex:
             logger.exception(ex)
@@ -128,8 +127,7 @@ class FileManager(QObject):
         failure signal.
         """
         try:
-            with microfs.get_serial() as serial:
-                microfs.get(microbit_filename, local_filename, serial)
+            microfs.get(microbit_filename, local_filename)
             self.on_get_file.emit(microbit_filename)
         except Exception as ex:
             logger.error(ex)
@@ -142,8 +140,7 @@ class FileManager(QObject):
         a failure signal.
         """
         try:
-            with microfs.get_serial() as serial:
-                microfs.put(local_filename, target=None, serial=serial)
+            microfs.put(local_filename, target=None)
             self.on_put_file.emit(os.path.basename(local_filename))
         except Exception as ex:
             logger.error(ex)
@@ -155,8 +152,7 @@ class FileManager(QObject):
         of the file when complete, or emit a failure signal.
         """
         try:
-            with microfs.get_serial() as serial:
-                microfs.rm(microbit_filename, serial)
+            microfs.rm(microbit_filename)
             self.on_delete_file.emit(microbit_filename)
         except Exception as ex:
             logger.error(ex)
@@ -429,10 +425,7 @@ class MicrobitMode(MicroPythonMode):
         Add the file system navigator to the UI.
         """
         # Check for micro:bit
-        try:
-            microfs.get_serial()
-        except IOError:
-            # abort
+        if not microfs.find_microbit():
             message = _('Could not find an attached BBC micro:bit.')
             information = _("Please make sure the device is plugged "
                             "into this computer.\n\nThe device must "
