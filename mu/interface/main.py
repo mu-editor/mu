@@ -356,8 +356,9 @@ class Window(QMainWindow):
         """
         Close and clean up the currently open serial link.
         """
-        self.serial.close()
-        self.serial = None
+        if self.serial:
+            self.serial.close()
+            self.serial = None
 
     def add_filesystem(self, home, file_manager):
         """
