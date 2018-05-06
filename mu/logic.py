@@ -581,7 +581,9 @@ class Editor:
             os.makedirs(wd)
         # Ensure PyGameZero assets are copied over.
         images_path = os.path.join(wd, 'images')
+        fonts_path = os.path.join(wd, 'fonts')
         sounds_path = os.path.join(wd, 'sounds')
+        music_path = os.path.join(wd, 'music')
         if not os.path.exists(images_path):
             logger.debug('Creating directory: {}'.format(images_path))
             os.makedirs(images_path)
@@ -589,11 +591,17 @@ class Editor:
                         os.path.join(images_path, 'alien.png'))
             shutil.copy(path('alien_hurt.png', 'pygamezero/'),
                         os.path.join(images_path, 'alien_hurt.png'))
+        if not os.path.exists(fonts_path):
+            logger.debug('Creating directory: {}'.format(fonts_path))
+            os.makedirs(fonts_path)
         if not os.path.exists(sounds_path):
             logger.debug('Creating directory: {}'.format(sounds_path))
             os.makedirs(sounds_path)
             shutil.copy(path('eep.wav', 'pygamezero/'),
                         os.path.join(sounds_path, 'eep.wav'))
+        if not os.path.exists(music_path):
+            logger.debug('Creating directory: {}'.format(music_path))
+            os.makedirs(music_path)
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)

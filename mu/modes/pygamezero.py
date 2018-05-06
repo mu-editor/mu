@@ -61,11 +61,25 @@ class PyGameZeroMode(BaseMode):
                 'shortcut': 'Ctrl+Shift+I',
             },
             {
+                'name': 'fonts',
+                'display_name': _('Fonts'),
+                'description': _('Show the fonts used by Pygame Zero.'),
+                'handler': self.show_fonts,
+                'shortcut': 'Ctrl+Shift+F',
+            },
+            {
                 'name': 'sounds',
                 'display_name': _('Sounds'),
                 'description': _('Show the sounds used by Pygame Zero.'),
                 'handler': self.show_sounds,
                 'shortcut': 'Ctrl+Shift+S',
+            },
+            {
+                'name': 'music',
+                'display_name': _('Music'),
+                'description': _('Show the music used by Pygame Zero.'),
+                'handler': self.show_music,
+                'shortcut': 'Ctrl+Shift+M',
             },
         ]
 
@@ -145,6 +159,16 @@ class PyGameZeroMode(BaseMode):
         image_dir = os.path.join(self.workspace_dir(), 'images')
         self.view.open_directory_from_os(image_dir)
 
+    def show_fonts(self, event):
+        """
+        Open the directory containing the font assets used by PyGame Zero.
+
+        This should open the host OS's file system explorer so users can drag
+        new files into the opened folder.
+        """
+        image_dir = os.path.join(self.workspace_dir(), 'fonts')
+        self.view.open_directory_from_os(image_dir)
+
     def show_sounds(self, event):
         """
         Open the directory containing the sound assets used by PyGame Zero.
@@ -153,4 +177,14 @@ class PyGameZeroMode(BaseMode):
         new files into the opened folder.
         """
         sound_dir = os.path.join(self.workspace_dir(), 'sounds')
+        self.view.open_directory_from_os(sound_dir)
+
+    def show_music(self, event):
+        """
+        Open the directory containing the music assets used by PyGame Zero.
+
+        This should open the host OS's file system explorer so users can drag
+        new files into the opened folder.
+        """
+        sound_dir = os.path.join(self.workspace_dir(), 'music')
         self.view.open_directory_from_os(sound_dir)

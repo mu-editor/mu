@@ -622,7 +622,7 @@ def test_editor_setup():
             mock.patch('os.makedirs', return_value=None) as mkd, \
             mock.patch('shutil.copy') as mock_shutil:
         e.setup(mock_modes)
-        assert mkd.call_count == 3
+        assert mkd.call_count == 5
         assert mkd.call_args_list[0][0][0] == 'foo'
         assert mock_shutil.call_count == 3
     assert e.modes == mock_modes
