@@ -49,7 +49,7 @@ class AdafruitMode(MicroPythonMode):
         (0x239A, 0x8028),  # Adafruit pIRKey M0
         (0x239A, 0x802A),  # Adafruit Feather 52840
         (0x239A, 0x802C),  # Adafruit Itsy M4
-        (0x239A, 0x802E),  # Adafruit CRICKit M0        
+        (0x239A, 0x802E),  # Adafruit CRICKit M0
     ]
 
     def actions(self):
