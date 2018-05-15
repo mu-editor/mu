@@ -331,6 +331,25 @@ def test_micropython_mode_add_repl():
     assert view.add_micropython_repl.call_args[0][0] == 'COM0'
 
 
+def test_micropython_mode_add_repl_no_force_interrupt():
+    """
+    Nothing goes wrong so check the _view.add_micropython_repl gets the
+    expected arguments (including the flag so no keyboard interrupt is called).
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    view.add_micropython_repl = mock.MagicMock()
+    mm = MicroPythonMode(editor, view)
+    mm.force_interrupt = False
+    mm.find_device = mock.MagicMock(return_value='COM0')
+    with mock.patch('os.name', 'nt'):
+        mm.add_repl()
+    assert view.show_message.call_count == 0
+    assert view.add_micropython_repl.call_args[0][0] == 'COM0'
+    assert view.add_micropython_repl.call_args[0][2] is False
+
+
 def test_micropython_mode_remove_repl():
     """
     If there is a repl, make sure it's removed as expected and the state is

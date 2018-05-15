@@ -182,6 +182,7 @@ class MicroPythonMode(BaseMode):
     Includes functionality that works with a USB serial based REPL.
     """
     valid_boards = BOARD_IDS
+    force_interrupt = True
 
     def find_device(self, with_logging=True):
         """
@@ -244,7 +245,8 @@ class MicroPythonMode(BaseMode):
         device_port = self.find_device()
         if device_port:
             try:
-                self.view.add_micropython_repl(device_port, self.name)
+                self.view.add_micropython_repl(device_port, self.name,
+                                               self.force_interrupt)
                 logger.info('Started REPL on port: {}'.format(device_port))
                 self.repl = True
             except IOError as ex:

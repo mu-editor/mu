@@ -388,16 +388,17 @@ class Window(QMainWindow):
         self.connect_zoom(self.fs_pane)
         return self.fs_pane
 
-    def add_micropython_repl(self, port, name):
+    def add_micropython_repl(self, port, name, force_interrupt=True):
         """
         Adds a MicroPython based REPL pane to the application.
         """
         if not self.serial:
             self.open_serial_link(port)
-            # Send a Control-B / exit raw mode.
-            self.serial.write(b'\x02')
-            # Send a Control-C / keyboard interrupt.
-            self.serial.write(b'\x03')
+            if force_interrupt:
+                # Send a Control-B / exit raw mode.
+                self.serial.write(b'\x02')
+                # Send a Control-C / keyboard interrupt.
+                self.serial.write(b'\x03')
         repl_pane = MicroPythonREPLPane(serial=self.serial, theme=self.theme)
         self.data_received.connect(repl_pane.process_bytes)
         self.add_repl(repl_pane, name)

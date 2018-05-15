@@ -701,6 +701,31 @@ def test_Window_add_micropython_repl():
     w.add_repl.assert_called_once_with(mock_repl, 'Test REPL')
 
 
+def test_Window_add_micropython_repl_no_interrupt():
+    """
+    Ensure the expected object is instantiated and add_repl is called for a
+    MicroPython based REPL.
+    """
+    w = mu.interface.main.Window()
+    w.theme = mock.MagicMock()
+    w.add_repl = mock.MagicMock()
+
+    def side_effect(self, w=w):
+        w.serial = mock.MagicMock()
+
+    w.open_serial_link = mock.MagicMock(side_effect=side_effect)
+    w.data_received = mock.MagicMock()
+    mock_repl = mock.MagicMock()
+    mock_repl_class = mock.MagicMock(return_value=mock_repl)
+    with mock.patch('mu.interface.main.MicroPythonREPLPane', mock_repl_class):
+        w.add_micropython_repl('COM0', 'Test REPL', False)
+    mock_repl_class.assert_called_once_with(serial=w.serial, theme=w.theme)
+    w.open_serial_link.assert_called_once_with('COM0')
+    assert w.serial.write.call_count == 0
+    w.data_received.connect.assert_called_once_with(mock_repl.process_bytes)
+    w.add_repl.assert_called_once_with(mock_repl, 'Test REPL')
+
+
 def test_Window_add_micropython_plotter():
     """
     Ensure the expected object is instantiated and add_plotter is called for
