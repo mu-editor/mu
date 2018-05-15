@@ -712,6 +712,10 @@ class Editor:
                   "in another application, re-save the file via the "
                   "'Save as' option and set the encoding to {0}".
                   format(ENCODING, locale.getpreferredencoding()))
+        # Does the file even exist?
+        if not os.path.isfile(path):
+            logger.info('The file {} does not exist.'.format(path))
+            return
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
@@ -795,7 +799,6 @@ class Editor:
                 # abspath will fail for non-paths
                 self.direct_load(os.path.abspath(p))
             except Exception as e:
-                self._view.show_message(_('Can\'t open {}'.format(p)))
                 logging.warning('Can\'t open file from command line {}'.
                                 format(p), exc_info=e)
 
@@ -934,8 +937,11 @@ class Editor:
         Display browser based help about Mu.
         """
         logger.info('Showing help.')
-        current_locale, encoding = locale.getdefaultlocale()
-        language_code = current_locale[:2]
+        try:
+            current_locale, encoding = locale.getdefaultlocale()
+            language_code = current_locale[:2]
+        except (TypeError, ValueError):
+            language_code = 'en'
         major_version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/{}/help/{}'.format(language_code,
                                                       major_version)

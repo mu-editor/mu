@@ -882,6 +882,22 @@ def test_new():
     view.add_tab.assert_called_once_with(None, '', api, mu.logic.NEWLINE)
 
 
+def test_load_checks_file_exists():
+    """
+    If the passed in path does not exist, this is logged and no other side
+    effect happens.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    with mock.patch('os.path.isfile', return_value=False), \
+            mock.patch('mu.logic.logger.info') as mock_info:
+        ed._load('not_a_file')
+        msg1 = 'Loading script from: not_a_file'
+        msg2 = 'The file not_a_file does not exist.'
+        assert mock_info.call_args_list[0][0][0] == msg1
+        assert mock_info.call_args_list[1][0][0] == msg2
+
+
 def test_load_python_file():
     """
     If the user specifies a Python file (*.py) then ensure it's loaded and
@@ -912,7 +928,8 @@ def test_load_python_file_case_insensitive_file_type():
     ed = mocked_editor()
     with generate_python_file(text) as filepath:
         ed._view.get_load_path.return_value = filepath.upper()
-        with mock.patch("mu.logic.read_and_decode") as mock_read:
+        with mock.patch("mu.logic.read_and_decode") as mock_read, \
+                mock.patch('os.path.isfile', return_value=True):
             mock_read.return_value = text, newline
             ed.load()
 
@@ -998,6 +1015,7 @@ def test_load_hex_file():
     mock_open = mock.mock_open(read_data='PYTHON')
     hex_file = 'RECOVERED'
     with mock.patch('builtins.open', mock_open), \
+            mock.patch('os.path.isfile', return_value=True), \
             mock.patch('mu.logic.uflash.extract_script',
                        return_value=hex_file) as s:
         ed.load()
@@ -1024,6 +1042,7 @@ def test_load_hex_file_breaks():
     }
     mock_open = mock.mock_open(read_data='PYTHON')
     with mock.patch('builtins.open', mock_open), \
+            mock.patch('os.path.isfile', return_value=True), \
             mock.patch('mu.logic.uflash.extract_script',
                        side_effect=Exception('BOOM')) as s:
         ed.load()
@@ -1039,8 +1058,24 @@ def test_load_not_python_or_hex():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    ed._load('unknown_filetype.foo')
+    with mock.patch('os.path.isfile', return_value=True):
+        ed._load('unknown_filetype.foo')
     assert view.show_message.call_count == 1
+
+
+def test_load_recovers_from_oserror():
+    """
+    If loading the file results in an OSError (for example, the user doesn't
+    have permission to read the file), then a helpful message is displayed.
+    """
+    text = "python"
+    ed = mocked_editor()
+    with generate_python_file(text) as filepath, \
+            mock.patch('mu.logic.read_and_decode',
+                       side_effect=OSError('boom')):
+        ed._view.get_load_path.return_value = filepath
+        ed.load()
+    assert ed._view.show_message.call_count == 1
 
 
 #
@@ -1356,6 +1391,23 @@ def test_show_help():
     with mock.patch('mu.logic.webbrowser.open_new', return_value=None) as wb, \
             mock.patch('mu.logic.locale.getdefaultlocale',
                        return_value=('en_GB', 'UTF-8')):
+        ed.show_help()
+        version = '.'.join(__version__.split('.')[:2])
+        url = 'https://codewith.mu/en/help/{}'.format(version)
+        wb.assert_called_once_with(url)
+
+
+def test_show_help_exploding_getdefaultlocale():
+    """
+    Sometimes, on OSX the getdefaultlocale method causes a TypeError or
+    ValueError. Ensure when this happens, Mu defaults to 'en' as the language
+    code.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    with mock.patch('mu.logic.webbrowser.open_new', return_value=None) as wb, \
+            mock.patch('mu.logic.locale.getdefaultlocale',
+                       side_effect=TypeError('Boom!')):
         ed.show_help()
         version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/en/help/{}'.format(version)
@@ -2313,7 +2365,6 @@ def test_load_cli():
     ed.direct_load = m
     ed.load_cli([5])
     assert m.call_count == 0
-    assert mock_view.show_message.call_count == 1
 
 
 def test_abspath():

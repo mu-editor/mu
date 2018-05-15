@@ -247,7 +247,7 @@ def get(filename, target=None, serial=None):
         "f = open('{}', 'rb')".format(filename),
         "r = f.read",
         "result = True",
-        "while result:\n    result = r(32)\n    if result:\n        "
+        "while result:\n    result = r(32)\n    if result:\n        ",
         "uart.write(result)\n",
         "f.close()",
     ]
