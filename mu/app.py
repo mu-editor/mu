@@ -148,7 +148,6 @@ def run():
     splash_be_gone.setSingleShot(True)
     splash_be_gone.start(2000)
 
-
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
 
