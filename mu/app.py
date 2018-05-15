@@ -142,11 +142,12 @@ def run():
     splash = QSplashScreen(load_pixmap('splash-screen'))
     splash.show()
 
-    # Finished starting up the application, so hide the splash icon.
+    # Hide the splash icon.
     splash_be_gone = QTimer()
     splash_be_gone.timeout.connect(lambda: splash.finish(editor_window))
     splash_be_gone.setSingleShot(True)
-    splash_be_gone.start(5000)
+    splash_be_gone.start(2000)
+
 
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
