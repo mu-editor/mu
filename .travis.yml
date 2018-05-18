@@ -18,19 +18,37 @@ matrix:
       osx_image: xcode6.4
       sudo: required
       language: generic
-      python: "3.6"
+
+before_install:
+  # OS and default Python info
+  - uname -a
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sw_vers; fi
+  # Python 3 and pip 3 installation required in macOS
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
+  # Linux needs to install pip again to have pip3 for the right Python version
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_pip3.sh; fi
+  # Check everything was correctly installed
+  - echo $PATH
+  - python3 --version
+  - python3 -c "import struct; print(struct.calcsize('P') * 8)"
+  - python3 -c "import sys; print(sys.executable)"
+  - python3 -m pip --version
+  - pip3 --version
+  - pip3 install virtualenv
+  - virtualenv venv --python=python3
+  - source venv/bin/activate
 
 install:
   # Install Mu dependencies
-  - pip install -r requirements.txt
+  - pip3 install -r requirements.txt
   # Install packager for OSX
-  - pip install briefcase
+  - pip3 install briefcase
   # Install disk image maker for OSX
-  - pip install dmgbuild 
+  - pip3 install dmgbuild 
   # Install helpful pytest plug-in
-  - pip install pytest-faulthandler
+  - pip3 install pytest-faulthandler
   # Check everything was correctly installed
-  - pip freeze
+  - pip3 freeze
 
 script:
   # Run the tests
@@ -40,7 +58,8 @@ script:
   - make clean
 
   # Package it for OSX
-  #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then echo "[install]" >> setup.cfg; echo "prefix=" >> setup.cfg; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then echo "[install]" >> setup.cfg; echo "prefix=" >> setup.cfg; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo mkdir /lib/python3.6/site-packages/; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 setup.py macos; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir dist; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then dmgbuild -s package/dmg_settings.py "Mu Editor" dist/mu-editor.dmg; fi
