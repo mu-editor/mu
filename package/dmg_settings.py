@@ -14,22 +14,23 @@ import os.path
 #
 #   dmgbuild -s settings.py -D app=/path/to/My.app "My Application" MyApp.dmg
 
-# .. Useful stuff ..............................................................
+# .. Useful stuff ............................................................
 
-application = defines.get('app', 'macOS/mu-editor.app')
+application = 'macOS/mu-editor.app'
 appname = os.path.basename(application)
+
 
 def icon_from_app(app_path):
     plist_path = os.path.join(app_path, 'Contents', 'Info.plist')
     plist = biplist.readPlist(plist_path)
     icon_name = plist['CFBundleIconFile']
-    icon_root,icon_ext = os.path.splitext(icon_name)
+    icon_root, icon_ext = os.path.splitext(icon_name)
     if not icon_ext:
         icon_ext = '.icns'
     icon_name = icon_root + icon_ext
     return os.path.join(app_path, 'Contents', 'Resources', icon_name)
 
-# .. Basics ....................................................................
+# .. Basics ...................................................................
 
 # Uncomment to override the output filename
 # filename = 'mu-editor.dmg'
@@ -37,34 +38,36 @@ def icon_from_app(app_path):
 # Uncomment to override the output volume name
 # volume_name = 'Mu Editor'
 
+
 # Volume format (see hdiutil create -help)
-format = defines.get('format', 'UDBZ')
+format = 'UDBZ'
+
 
 # Volume size
-size = defines.get('size', None)
+size = None
 
 # Files to include
-files = [ application ]
+files = [application, ]
 
 # Symlinks to create
-symlinks = { 'Applications': '/Applications' }
+symlinks = {'Applications': '/Applications', }
 
 # Volume icon
 #
-# You can either define icon, in which case that icon file will be copied to the
-# image, *or* you can define badge_icon, in which case the icon file you specify
-# will be used to badge the system's Removable Disk icon
+# You can either define icon, in which case that icon file will be copied to
+# the image, *or* you can define badge_icon, in which case the icon file you
+# specify will be used to badge the system's Removable Disk icon
 #
-#icon = '/path/to/icon.icns'
-badge_icon = 'package/icons/mac_icon.icns' 
+# icon = '/path/to/icon.icns'
+badge_icon = 'package/icons/mac_icon.icns'
 
 # Where to put the icons
 icon_locations = {
-    appname:        (140, 120),
+    appname: (140, 120),
     'Applications': (500, 120)
-    }
+}
 
-# .. Window configuration ......................................................
+# .. Window configuration .....................................................
 
 # Background
 #
@@ -115,17 +118,17 @@ show_icon_preview = False
 include_icon_view_settings = 'auto'
 include_list_view_settings = 'auto'
 
-# .. Icon view configuration ...................................................
+# .. Icon view configuration ..................................................
 
 arrange_by = None
 grid_offset = (0, 0)
 grid_spacing = 100
 scroll_position = (0, 0)
-label_pos = 'bottom' # or 'right'
+label_pos = 'bottom'  # or 'right'
 text_size = 16
 icon_size = 128
 
-# .. List view configuration ...................................................
+# .. List view configuration ..................................................
 
 # Column names are as follows:
 #
@@ -158,7 +161,8 @@ list_column_widths = {
     'label': 100,
     'version': 75,
     'comments': 300,
-    }
+}
+
 list_column_sort_directions = {
     'name': 'ascending',
     'date-modified': 'descending',
@@ -170,16 +174,16 @@ list_column_sort_directions = {
     'label': 'ascending',
     'version': 'ascending',
     'comments': 'ascending',
-    }
+}
 
-# .. License configuration .....................................................
+# .. License configuration ....................................................
 
 # Text in the license configuration is stored in the resources, which means
 # it gets stored in a legacy Mac encoding according to the language.  dmgbuild
 # will *try* to convert Unicode strings to the appropriate encoding, *but*
-# you should be aware that Python doesn't support all of the necessary encodings;
-# in many cases you will need to encode the text yourself and use byte strings
-# instead here.
+# you should be aware that Python doesn't support all of the necessary
+# encodings; in many cases you will need to encode the text yourself and use
+# byte strings instead here.
 
 # Recognized language names are:
 #
@@ -192,10 +196,10 @@ list_column_sort_directions = {
 #  pt_PT, ro_RO, ru_RU, se, sk_SK, sl_SI, sr_RS, sv_SE, th_TH, to_TO, tr_TR,
 #  uk_UA, ur_IN, ur_PK, uz_UZ, vi_VN, zh_CN, zh_TW
 
-#with open('LICENSE', 'rb') as f:
+# with open('LICENSE', 'rb') as f:
 #    txt = f.read()
 
-#license = {
+# license = {
 #    'default-language': 'en_US',
 #    'licenses': {
 #        # For each language, the text of the license.  This can be plain text,
@@ -228,4 +232,4 @@ list_column_sort_directions = {
 #            b'install the software.  If you do not agree, press "Disagree".'
 #        ),
 #    },
-#}
+# }
