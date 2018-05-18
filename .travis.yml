@@ -59,7 +59,7 @@ script:
 
   # Package it for OSX
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then echo "[install]" >> setup.cfg; echo "prefix=" >> setup.cfg; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo mkdir /lib/python3.6/site-packages/; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo mkdir -p /lib/python3.6/site-packages/; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 setup.py macos; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir dist; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then dmgbuild -s package/dmg_settings.py "Mu Editor" dist/mu-editor.dmg; fi
