@@ -55,7 +55,6 @@ script:
   - make clean
 
   # Package it for OSX
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make check; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 setup.py macos; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir dist; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then dmgbuild -s package/dmg_settings.py "Mu Editor" dist/mu-editor.dmg; fi
