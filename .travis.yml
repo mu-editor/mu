@@ -17,8 +17,8 @@ matrix:
     - os: osx
       osx_image: xcode6.4
       sudo: required
-      language: python
-      python: 3.6
+      language: generic
+      python: "3.6"
 
 install:
   # Install Mu dependencies
