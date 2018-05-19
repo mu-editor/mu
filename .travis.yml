@@ -81,7 +81,7 @@ deploy:
   on:
     repo: mu-editor/mu
     branch: [master, package_macos]
-    python: 2.7
+    python: 3.6 
 
 notifications:
   email:
