@@ -26,7 +26,7 @@ try:
         exclude = ('pyqt5', 'qscintilla', 'qtconsole', 'PyQtChart')
         install_requires = [requirement for requirement in install_requires
                             if not requirement.startswith(exclude)]
-except Exception as e:
+except Exception:
     # Something unexpected happened, so simply keep all requires
     pass
 

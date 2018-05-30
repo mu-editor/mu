@@ -804,7 +804,7 @@ class Window(QMainWindow):
         mode_select.exec()
         try:
             return mode_select.get_mode()
-        except Exception as ex:
+        except Exception:
             return None
 
     def change_mode(self, mode):
