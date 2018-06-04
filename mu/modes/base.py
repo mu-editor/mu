@@ -86,6 +86,7 @@ class BaseMode(QObject):
     has_debugger = False
     save_timeout = 5  #: Number of seconds to wait before saving work.
     builtins = None  #: Symbols to assume as builtins when checking code style.
+    file_extensions = []
 
     def __init__(self, editor, view):
         self.editor = editor
@@ -175,6 +176,12 @@ class BaseMode(QObject):
                  "data between calls to 'sleep' for a very short period of "
                  "time.")
         self.view.show_message(msg, info)
+
+    def open_file(self, path):
+        """
+        Some files are not plain text and each mode can attempt to decode them.
+        """
+        return None
 
 
 class MicroPythonMode(BaseMode):

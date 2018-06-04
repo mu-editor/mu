@@ -324,7 +324,7 @@ def test_flash_user_specified_device_path():
     """
     mock_flasher = mock.MagicMock()
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
-    with mock.patch('mu.logic.uflash.find_microbit', return_value=None),\
+    with mock.patch('mu.contrib.uflash.find_microbit', return_value=None),\
             mock.patch('mu.logic.os.path.exists', return_value=True),\
             mock.patch('mu.modes.microbit.DeviceFlasher',
                        mock_flasher_class), \
@@ -353,7 +353,7 @@ def test_flash_existing_user_specified_device_path():
     """
     mock_flasher = mock.MagicMock()
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
-    with mock.patch('mu.logic.uflash.find_microbit', return_value=None),\
+    with mock.patch('mu.contrib.uflash.find_microbit', return_value=None),\
             mock.patch('mu.logic.os.path.exists', return_value=True),\
             mock.patch('mu.modes.microbit.DeviceFlasher',
                        mock_flasher_class), \
@@ -380,12 +380,12 @@ def test_flash_path_specified_does_not_exist():
     user has previously specified a path to the device, then the hex is saved
     in the specified location.
     """
-    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
-            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
-            mock.patch('mu.logic.uflash.find_microbit', return_value=None),\
+    with mock.patch('mu.contrib.uflash.hexlify', return_value=''), \
+            mock.patch('mu.contrib.uflash.embed_hex', return_value='foo'), \
+            mock.patch('mu.contrib.uflash.find_microbit', return_value=None),\
             mock.patch('mu.logic.os.path.exists', return_value=False),\
             mock.patch('mu.logic.os.makedirs', return_value=None), \
-            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
+            mock.patch('mu.contrib.uflash.save_hex', return_value=None) as s:
         view = mock.MagicMock()
         view.current_tab.text = mock.MagicMock(return_value='')
         view.show_message = mock.MagicMock()
@@ -410,10 +410,10 @@ def test_flash_without_device():
     If no device is found and the user doesn't provide a path then ensure a
     helpful status message is enacted.
     """
-    with mock.patch('mu.logic.uflash.hexlify', return_value=''), \
-            mock.patch('mu.logic.uflash.embed_hex', return_value='foo'), \
-            mock.patch('mu.logic.uflash.find_microbit', return_value=None), \
-            mock.patch('mu.logic.uflash.save_hex', return_value=None) as s:
+    with mock.patch('mu.contrib.uflash.hexlify', return_value=''), \
+            mock.patch('mu.contrib.uflash.embed_hex', return_value='foo'), \
+            mock.patch('mu.contrib.uflash.find_microbit', return_value=None), \
+            mock.patch('mu.contrib.uflash.save_hex', return_value=None) as s:
         view = mock.MagicMock()
         view.get_microbit_path = mock.MagicMock(return_value=None)
         view.current_tab.text = mock.MagicMock(return_value='')
@@ -814,3 +814,74 @@ def test_on_data_flood():
         mm.on_data_flood()
         mm.set_buttons.assert_called_once_with(files=True)
         mock_super().on_data_flood.assert_called_once_with()
+
+
+def test_open_hex():
+    """
+    Tries to open hex files with uFlash.
+    """
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    mock_open = mock.mock_open()
+    hex_extracted = 'RECOVERED'
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.contrib.uflash.extract_script',
+                       return_value=hex_extracted) as extract_script:
+        text = mm.open_file('path_to_file.hex')
+    assert text == hex_extracted
+    assert extract_script.call_count == 1
+    assert mock_open.call_count == 1
+
+    mock_open.reset_mock()
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.contrib.uflash.extract_script',
+                       return_value=hex_extracted) as extract_script:
+        text = mm.open_file('path_to_file.HEX')
+    assert text == hex_extracted
+    assert extract_script.call_count == 1
+    assert mock_open.call_count == 1
+
+
+def test_open_ignore_non_hex():
+    """
+    Ignores any other than hex file types.
+    """
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    mock_open = mock.mock_open()
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.contrib.uflash.extract_script',
+                       return_value='Should not be called') as extract_script:
+        text = mm.open_file('path_to_file.py')
+    assert text is None
+    assert extract_script.call_count == 0
+    assert mock_open.call_count == 0
+
+    mock_open.reset_mock()
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.contrib.uflash.extract_script',
+                       return_value='Should not be called') as extract_script:
+        text = mm.open_file('file_no_extension')
+    assert text is None
+    assert extract_script.call_count == 0
+    assert mock_open.call_count == 0
+
+
+def test_open_hex_with_exception():
+    """
+    If an exception is encountered when trying to open the hex file, make sure
+    it is swallowed and return None.
+    """
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    mock_open = mock.mock_open()
+    mock_extract = mock.MagicMock(side_effect=Exception(':('))
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.contrib.uflash.extract_script', mock_extract):
+        text = mm.open_file('path_to_file.hex')
+    assert text is None
+    assert mock_extract.call_count == 1
+    assert mock_open.call_count == 1

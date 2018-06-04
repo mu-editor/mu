@@ -301,6 +301,15 @@ def test_sniff_newline_convention():
     assert mu.logic.sniff_newline_convention(text) == '\n'
 
 
+def test_sniff_newline_convention_local():
+    """
+    Ensure sniff_newline_convention returns the local newline convention if it
+    cannot determine it from the text.
+    """
+    text = 'There are no new lines here'
+    assert mu.logic.sniff_newline_convention(text) == os.linesep
+
+
 def test_get_admin_file_path():
     """
     Finds an admin file in the application location, when Mu is run as if
@@ -996,59 +1005,105 @@ def test_no_duplicate_load_python_file():
     editor_window.add_tab.assert_not_called()
 
 
-def test_load_hex_file():
+def test_load_other_file():
     """
-    If the user specifies a hex file (*.hex) then ensure it's loaded and
-    added as a tab.
-    """
-    view = mock.MagicMock()
-    view.get_load_path = mock.MagicMock(return_value='foo.hex')
-    view.add_tab = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    mock_mode = mock.MagicMock()
-    api = ['API specification', ]
-    mock_mode.api.return_value = api
-    mock_mode.workspace_dir.return_value = '/fake/path'
-    ed.modes = {
-        'python': mock_mode,
-    }
-    mock_open = mock.mock_open(read_data='PYTHON')
-    hex_file = 'RECOVERED'
-    with mock.patch('builtins.open', mock_open), \
-            mock.patch('os.path.isfile', return_value=True), \
-            mock.patch('mu.logic.uflash.extract_script',
-                       return_value=hex_file) as s:
-        ed.load()
-    assert view.get_load_path.call_count == 1
-    assert s.call_count == 1
-    view.add_tab.assert_called_once_with(None, 'RECOVERED', api, os.linesep)
-
-
-def test_load_hex_file_breaks():
-    """
-    If the user specifies a hex file (*.hex) and an error is encountered ensure
-    Mu reports a helpful message.
+    If the user specifies a file supported by a Mu mode (like a .hex file) then
+    ensure it's loaded and added as a tab.
     """
     view = mock.MagicMock()
     view.get_load_path = mock.MagicMock(return_value='foo.hex')
     view.add_tab = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    mock_mode = mock.MagicMock()
+    ed.change_mode = mock.MagicMock()
     api = ['API specification', ]
-    mock_mode.api.return_value = api
-    mock_mode.workspace_dir.return_value = '/fake/path'
+    file_content = 'PYTHON CODE'
+    mock_py = mock.MagicMock()
+    mock_py.open_file.return_value = None
+    mock_mb = mock.MagicMock()
+    mock_mb.api.return_value = api
+    mock_mb.workspace_dir.return_value = '/fake/path'
+    mock_mb.open_file.return_value = file_content
+    mock_mb.file_extensions = ['hex']
     ed.modes = {
-        'python': mock_mode,
+        'python': mock_py,
+        'microbit': mock_mb,
     }
-    mock_open = mock.mock_open(read_data='PYTHON')
-    with mock.patch('builtins.open', mock_open), \
-            mock.patch('os.path.isfile', return_value=True), \
-            mock.patch('mu.logic.uflash.extract_script',
-                       side_effect=Exception('BOOM')) as s:
+    ed.mode = 'microbit'
+    with mock.patch('builtins.open', mock.mock_open()), \
+            mock.patch('os.path.isfile', return_value=True):
         ed.load()
     assert view.get_load_path.call_count == 1
-    assert s.call_count == 1
+    assert view.show_confirmation.call_count == 0
+    assert ed.change_mode.call_count == 0
+    view.add_tab.assert_called_once_with(None, file_content, api, os.linesep)
+
+
+def test_load_other_file_change_mode():
+    """
+    If the user specifies a file supported by a Mu mode (like a .hex file) that
+    is not currently active, then ensure it's loaded, added as a tab, and it
+    asks the user to change mode.
+    """
+    view = mock.MagicMock()
+    view.get_load_path = mock.MagicMock(return_value='foo.hex')
+    view.add_tab = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    api = ['API specification', ]
+    file_content = 'PYTHON CODE'
+    mock_py = mock.MagicMock()
+    mock_py.open_file.return_value = None
+    mock_py.api.return_value = api
+    mock_py.workspace_dir.return_value = '/fake/path'
+    mock_mb = mock.MagicMock()
+    mock_mb.api.return_value = api
+    mock_mb.workspace_dir.return_value = '/fake/path'
+    mock_mb.open_file.return_value = file_content
+    mock_mb.file_extensions = ['hex']
+    ed.modes = {
+        'python': mock_py,
+        'microbit': mock_mb,
+    }
+    ed.mode = 'python'
+    with mock.patch('builtins.open', mock.mock_open()), \
+            mock.patch('os.path.isfile', return_value=True):
+        ed.load()
+    assert view.get_load_path.call_count == 1
+    assert view.show_confirmation.call_count == 1
+    assert ed.change_mode.call_count == 1
+    view.add_tab.assert_called_once_with(None, file_content, api, os.linesep)
+
+
+def test_load_other_file_with_exception():
+    """
+    If the user specifies a file supported by a Mu mode (like a .hex file) try
+    to open it and check it ignores it if it throws an unexpected exception.
+    """
+    view = mock.MagicMock()
+    view.get_load_path = mock.MagicMock(return_value='foo.hex')
+    view.add_tab = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mock_mb = mock.MagicMock()
+    mock_mb.workspace_dir.return_value = '/fake/path'
+    mock_mb.open_file = mock.MagicMock(side_effect=Exception(':('))
+    mock_mb.file_extensions = ['hex']
+    ed.modes = {
+        'microbit': mock_mb,
+    }
+    ed.mode = 'microbit'
+    mock_open = mock.mock_open()
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('os.path.isfile', return_value=True):
+        ed.load()
+    assert view.get_load_path.call_count == 1
     assert view.show_message.call_count == 1
+    assert view.show_confirmation.call_count == 0
+    assert ed.change_mode.call_count == 0
+    assert view.add_tab.call_count == 0
 
 
 def test_load_not_python_or_hex():
