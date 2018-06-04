@@ -161,6 +161,20 @@ def test_MicroPythonREPLPane_keyPressEvent_backspace():
     mock_serial.write.assert_called_once_with(b'\b')
 
 
+def test_MicroPythonREPLPane_keyPressEvent_delete():
+    """
+    Ensure delete in the REPL is handled correctly.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Delete)
+    data.text = mock.MagicMock(return_value='\b')
+    data.modifiers = mock.MagicMock(return_value=None)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(b'\x1B[\x33\x7E')
+
+
 def test_MicroPythonREPLPane_keyPressEvent_up():
     """
     Ensure up arrows in the REPL are handled correctly.

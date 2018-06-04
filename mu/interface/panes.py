@@ -182,6 +182,8 @@ class MicroPythonREPLPane(QTextEdit):
         msg = bytes(data.text(), 'utf8')
         if key == Qt.Key_Backspace:
             msg = b'\b'
+        elif key == Qt.Key_Delete:
+            msg = b'\x1B[\x33\x7E'
         elif key == Qt.Key_Up:
             msg = b'\x1B[A'
         elif key == Qt.Key_Down:
