@@ -654,7 +654,7 @@ class Window(QMainWindow):
 
     def show_admin(self, log, settings, theme):
         """
-        Display the administrivite dialog with referenced content of the log
+        Display the administrative dialog with referenced content of the log
         and settings. Return a dictionary of the settings that may have been
         changed by the admin dialog.
         """
@@ -854,7 +854,7 @@ class Window(QMainWindow):
 
     def open_directory_from_os(self, path):
         """
-        Given the path to a directoy, open the OS's built in filesystem
+        Given the path to a directory, open the OS's built in filesystem
         explorer for that path. Works with Windows, OSX and Linux.
         """
         if sys.platform == 'win32':
