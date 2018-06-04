@@ -987,10 +987,12 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
         envars = [['name', 'value'], ]
         ppp.start_process('script.py', 'workspace', interactive=False,
                           envars=envars, runner='foo')
-    assert mock_environment.insert.call_count == 2
+    assert mock_environment.insert.call_count == 3
     assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
                                                             '1')
-    assert mock_environment.insert.call_args_list[1][0] == ('name', 'value')
+    assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
+                                                            'utf-8')
+    assert mock_environment.insert.call_args_list[2][0] == ('name', 'value')
 
 
 def test_PythonProcessPane_start_process_custom_runner():
