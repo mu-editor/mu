@@ -625,6 +625,7 @@ class PythonProcessPane(QTextEdit):
         # Force buffers to flush immediately.
         env = QProcessEnvironment.systemEnvironment()
         env.insert('PYTHONUNBUFFERED', '1')
+        env.insert('PYTHONIOENCODING', 'utf-8')
         if envars:
             logger.info('Running with environment variables: '
                         '{}'.format(envars))
