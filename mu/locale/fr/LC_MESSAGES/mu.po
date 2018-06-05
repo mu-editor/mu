@@ -1,6 +1,6 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR ORGANIZATION
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# FIRST AUTHOR <gerald.quintana@gmail.com>, 2018.
 #
 msgid ""
 msgstr ""
@@ -116,7 +116,7 @@ msgstr "Mode"
 
 #: mu/interface/main.py:70
 msgid "Change Mu's mode of behaviour."
-msgstr "Changer le mode de Mu."
+msgstr "Change le mode de Mu."
 
 #: mu/interface/main.py:72
 msgid "New"
@@ -124,7 +124,7 @@ msgstr "Nouveau"
 
 #: mu/interface/main.py:73
 msgid "Create a new Python script."
-msgstr "Créer un nouveau script Python."
+msgstr "Crée un nouveau script Python."
 
 #: mu/interface/main.py:74
 msgid "Load"
@@ -132,7 +132,7 @@ msgstr "Charger"
 
 #: mu/interface/main.py:75
 msgid "Load a Python script."
-msgstr "Charger un script Python."
+msgstr "Charge un script Python."
 
 #: mu/interface/main.py:76
 msgid "Save"
@@ -140,7 +140,7 @@ msgstr "Enregistrer"
 
 #: mu/interface/main.py:77
 msgid "Save the current Python script."
-msgstr "Enregistrer le script Python courant."
+msgstr "Enregistre le script Python courant."
 
 #: mu/interface/main.py:86
 msgid "Zoom-in"
@@ -172,7 +172,7 @@ msgstr "Vérifier"
 
 #: mu/interface/main.py:95
 msgid "Check your code for mistakes."
-msgstr "Vérifie que le code ne contienne pas d'erreur."
+msgstr "Vérifie que le programme ne contient pas d'erreur."
 
 #: mu/interface/main.py:96
 msgid "Help"
@@ -260,7 +260,7 @@ msgstr "Copie '{}' sur la micro:bit."
 
 #: mu/interface/panes.py:342
 msgid "'{}' successfully copied to micro:bit."
-msgstr "'{}' copier avec succès sur la micro:bit."
+msgstr "'{}' copié avec succès sur la micro:bit."
 
 #: mu/interface/panes.py:348
 msgid "Delete (cannot be undone)"
@@ -268,7 +268,7 @@ msgstr "Supprimer (retour en arrière impossible)"
 
 #: mu/interface/panes.py:354
 msgid "Deleting '{}' from micro:bit."
-msgstr "Supprime '{}' sur la micro:bit"
+msgstr "Supprime '{}' de la micro:bit"
 
 #: mu/interface/panes.py:363
 msgid "'{}' successfully deleted from micro:bit."
@@ -305,7 +305,7 @@ msgid ""
 "There was a problem copying the file '{}' onto the micro:bit. Please check "
 "Mu's logs for more information."
 msgstr ""
-"Un erreur est survenue pendant la copie du fichier '{}' sur la micro:bit. "
+"Un problème est survenu pendant la copie du fichier '{}' sur la micro:bit. "
 "Merci de vérifier les logs de Mu pour avoir plus d'informations."
 
 #: mu/interface/panes.py:518
@@ -313,7 +313,7 @@ msgid ""
 "There was a problem deleting '{}' from the micro:bit. Please check Mu's logs "
 "for more information."
 msgstr ""
-"Un erreur est survenue pendant la suppression du fichier '{}' de la micro:"
+"Un problème est survenu pendant la suppression du fichier '{}' de la micro:"
 "bit. Merci de vérifier les logs de Mu pour avoir plus d'informations."
 
 #: mu/interface/panes.py:526
@@ -321,7 +321,7 @@ msgid ""
 "There was a problem getting '{}' from the micro:bit. Please check Mu's logs "
 "for more information."
 msgstr ""
-"Un erreur est survenue pendant la lecture du fichier '{}' depuis la micro:"
+"Un problème est survenu pendant la lecture du fichier '{}' depuis la micro:"
 "bit. Merci de vérifier les logs de Mu pour avoir plus d'informations."
 
 #: mu/logic.py:67
@@ -333,8 +333,8 @@ msgid ""
 "This editor is free software written in Python. You can modify it, add "
 "features or fix bugs if you like."
 msgstr ""
-"Cet éditeur est un logiciel libre écrit en Python. Vous pouvez le modifier, "
-"ajouter des fonctionnalités ou corriger des boques si vous le souhaitez."
+"Cet éditeur est un logiciel libre écrit en Python. Tu peux le modifier, "
+"ajouter des fonctionnalités ou corriger des bogues si tu le souhaites."
 
 #: mu/logic.py:70
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
@@ -402,7 +402,7 @@ msgid ""
 "In theory, theory and practice are the same. In practice, they're not. ;-)"
 msgstr ""
 "En théorie, la théorie et la pratique c'est la même chose. En pratique, "
-"c'est pas pareil. ;-)"
+"c'est différent. ;-)"
 
 #: mu/logic.py:87
 msgid "Debugging is twice as hard as writing the code in the first place."
@@ -441,7 +441,7 @@ msgstr ""
 
 #: mu/logic.py:95
 msgid "If you don't know, ask. Nobody to ask? Just look it up."
-msgstr "Si tu ne sais pas, demande. Si personne ne répond, cherche!"
+msgstr "Si tu ne sais pas, demande. Si personne ne te répond, cherche!"
 
 #: mu/logic.py:96
 msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
@@ -487,7 +487,7 @@ msgstr ""
 
 #: mu/logic.py:106
 msgid "In the face of ambiguity, refuse the temptation to guess."
-msgstr "Face à l’ambiguïté, ne te laisser pas aller à deviner."
+msgstr "Face à l’ambiguïté, ne te laisse pas aller à deviner."
 
 #: mu/logic.py:107
 msgid "There should be one-- and preferably only one --obvious way to do it."
@@ -536,7 +536,7 @@ msgstr ""
 
 #: mu/logic.py:117
 msgid "Programmers count from zero."
-msgstr "La programmeurs compte à commençant par zéro."
+msgstr "Les programmeurs comptent en commençant par zéro."
 
 #: mu/logic.py:118
 msgid "Simplicity is the ultimate sophistication."
@@ -548,7 +548,7 @@ msgstr "Un bon programmeur est humble."
 
 #: mu/logic.py:120
 msgid "A good programmer is playful."
-msgstr ""
+msgstr "Un bon programmeur est joueur."
 
 #: mu/logic.py:121
 msgid "A good programmer learns to learn."
@@ -636,7 +636,7 @@ msgstr ""
 
 #: mu/logic.py:770
 msgid "Is this a {} file?"
-msgstr "C'est un fichier {}?"
+msgstr "{} est un fichier?"
 
 #: mu/logic.py:771
 msgid ""
@@ -1174,70 +1174,6 @@ msgstr "REPL démarré."
 msgid "REPL stopped."
 msgstr "REPL arrêté."
 
-#~ msgid "untitled"
-#~ msgstr "sans titre"
+msgid "untitled"
+msgstr "sans titre"
 
-#~ msgid "Change theme between day or night."
-#~ msgstr "Changer le thème entre jour et nuit."
-
-#~ msgid "Select edit mode."
-#~ msgstr "Sélectionner le mode édition."
-
-#~ msgid "View logs."
-#~ msgstr "Voir les logs."
-
-#~ msgid "Choose language."
-#~ msgstr "Choisir une langue."
-
-#~ msgid ""
-#~ "You can change mode at any time by clicking the name of the current mode "
-#~ "shown in the  bottom right-hand corner of Mu."
-#~ msgstr ""
-#~ "Vous pouvez changer le mode à n'importe quel moment en cliquant sur le "
-#~ "nom du mode courant qui apparaît dans le coin en bas à droite de Mu."
-
-#~ msgid "Mu Debug Log"
-#~ msgstr "Log de débogage Mu"
-
-#~ msgid ""
-#~ "\n"
-#~ "\n"
-#~ "---------- FINISHED ----------\n"
-#~ msgstr ""
-#~ "\n"
-#~ "\n"
-#~ "---------- TERMINE -----------\n"
-
-#~ msgid "exit code: {} status: {}"
-#~ msgstr "code de sortie: {} état: {}"
-
-#~ msgid "Could not save file."
-#~ msgstr "COULD NOT SAVE FILE."
-
-#~ msgid "Connection from a new device detected."
-#~ msgstr "CONNECTION TO A NEW DEVICE DETECTED."
-
-#~ msgid " Please switch to {} mode."
-#~ msgstr "PLEASE SWITCH TO {} MODE."
-
-#~ msgid "Use CircuitPython on Adafruit's line of development boards."
-#~ msgstr "USE CIRCUITPYTHON ON ADAFRUIT'S LINE OF DEVELOPMENT BOARDS."
-
-#~ msgid "Running script {}"
-#~ msgstr "Lancer le programme {}"
-
-#~ msgid "File system and REPL cannot work at the same time."
-#~ msgstr ""
-#~ "Le système de fichiers et le REPL ne peuvent pas fonctionner en même "
-#~ "temps."
-
-#~ msgid ""
-#~ "The file system and REPL both use the same USB serial connection. Only "
-#~ "one can be active at any time. Toggle the REPL off and try again."
-#~ msgstr ""
-#~ "Le système de fichier et le REPL utilisent tous les deux la même "
-#~ "connexion USB série. Un seul peut être active à la fois. Désactive le "
-#~ "REPL et ré-essaie."
-
-#~ msgid "Run and debug your Python script."
-#~ msgstr "Lancer et déboquer un script Python."
