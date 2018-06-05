@@ -179,6 +179,16 @@ def test_base_on_data_flood():
     assert view.show_message.call_count == 1
 
 
+def test_base_mode_open_file():
+    """
+    Ensure the the base class returns None to indicate it can't open the file.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    bm = BaseMode(editor, view)
+    assert bm.open_file('unused/path') is None
+
+
 def test_micropython_mode_find_device():
     """
     Ensure it's possible to detect a device and return the expected port.

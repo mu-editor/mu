@@ -96,7 +96,7 @@ class CommandBufferHandler(QObject):
                 self.debugger.socket.connect((self.debugger.host,
                                               self.debugger.port))
                 connected = True
-            except ConnectionRefusedError as e:
+            except ConnectionRefusedError:
                 # Allow up to connection_attempts attempts to connect.
                 # The Raspberry Pi is quite slow, so Mu needs to give the
                 # debug runner enough time to start up and start listening.
@@ -108,7 +108,7 @@ class CommandBufferHandler(QObject):
                                         "again."))
                     return
                 time.sleep(pause_between_attempts)
-            except OSError as e:
+            except OSError:
                 # This will catch address related errors. Especially on OSX
                 # this is usually solved by adding "127.0.0.1 localhost" to
                 # /etc/hosts.

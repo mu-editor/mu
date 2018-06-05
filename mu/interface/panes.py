@@ -182,6 +182,8 @@ class MicroPythonREPLPane(QTextEdit):
         msg = bytes(data.text(), 'utf8')
         if key == Qt.Key_Backspace:
             msg = b'\b'
+        elif key == Qt.Key_Delete:
+            msg = b'\x1B[\x33\x7E'
         elif key == Qt.Key_Up:
             msg = b'\x1B[A'
         elif key == Qt.Key_Down:
@@ -625,6 +627,7 @@ class PythonProcessPane(QTextEdit):
         # Force buffers to flush immediately.
         env = QProcessEnvironment.systemEnvironment()
         env.insert('PYTHONUNBUFFERED', '1')
+        env.insert('PYTHONIOENCODING', 'utf-8')
         if envars:
             logger.info('Running with environment variables: '
                         '{}'.format(envars))
@@ -710,7 +713,7 @@ class PythonProcessPane(QTextEdit):
         """
         character = text[0]  # the current character to process.
         remainder = text[1:]  # remaining characters to process in the future.
-        if character in string.printable:
+        if character.isprintable() or character in string.printable:
             if character == '\n' or character == '\r':
                 self.parse_input(Qt.Key_Enter, character, None)
             else:
@@ -788,7 +791,7 @@ class PythonProcessPane(QTextEdit):
                 self.copy()
             elif key == Qt.Key_V:
                 self.paste()
-        elif text in string.printable:
+        elif text.isprintable():
             # If the key is for a printable character then add it to the
             # active buffer and display it.
             msg = bytes(text, 'utf8')

@@ -161,6 +161,20 @@ def test_MicroPythonREPLPane_keyPressEvent_backspace():
     mock_serial.write.assert_called_once_with(b'\b')
 
 
+def test_MicroPythonREPLPane_keyPressEvent_delete():
+    """
+    Ensure delete in the REPL is handled correctly.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Delete)
+    data.text = mock.MagicMock(return_value='\b')
+    data.modifiers = mock.MagicMock(return_value=None)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(b'\x1B[\x33\x7E')
+
+
 def test_MicroPythonREPLPane_keyPressEvent_up():
     """
     Ensure up arrows in the REPL are handled correctly.
@@ -987,10 +1001,12 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
         envars = [['name', 'value'], ]
         ppp.start_process('script.py', 'workspace', interactive=False,
                           envars=envars, runner='foo')
-    assert mock_environment.insert.call_count == 2
+    assert mock_environment.insert.call_count == 3
     assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
                                                             '1')
-    assert mock_environment.insert.call_args_list[1][0] == ('name', 'value')
+    assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
+                                                            'utf-8')
+    assert mock_environment.insert.call_args_list[2][0] == ('name', 'value')
 
 
 def test_PythonProcessPane_start_process_custom_runner():
@@ -1130,6 +1146,21 @@ def test_PythonProcessPane_parse_paste():
     assert mock_timer.singleShot.call_count == 1
 
 
+def test_PythonProcessPane_parse_paste_non_ascii():
+    """
+    Given some non-ascii yet printable text, ensure that the first character is
+    correctly handled and the remaining text to be processed is scheduled to be
+    parsed in the future.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.parse_input = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.parse_paste('ÅÄÖ')
+    ppp.parse_input.assert_called_once_with(None, 'Å', None)
+    assert mock_timer.singleShot.call_count == 1
+
+
 def test_PythonProcessPane_parse_paste_newline():
     """
     As above, but ensure the correct handling of a newline character.
@@ -1182,6 +1213,19 @@ def test_PythonProcessPane_parse_input_a():
     modifiers = None
     ppp.parse_input(key, text, modifiers)
     ppp.insert.assert_called_once_with(b'a')
+
+
+def test_PythonProcessPane_parse_input_non_ascii():
+    """
+    Ensure a non-ascii printable character is inserted into the text area.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.insert = mock.MagicMock()
+    key = Qt.Key_A
+    text = 'Å'
+    modifiers = None
+    ppp.parse_input(key, text, modifiers)
+    ppp.insert.assert_called_once_with('Å'.encode('utf-8'))
 
 
 def test_PythonProcessPane_parse_input_ctrl_c():

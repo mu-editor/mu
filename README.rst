@@ -1,11 +1,11 @@
 Mu - A Simple Python Code Editor 
 ================================
 
-.. image:: docs/logo.png
+.. image:: https://raw.githubusercontent.com/mu-editor/mu/master/docs/logo.png
 
-Mu is a simple code editor for beginner programmers based on the feedback given
-to and experiences of the Raspberry Pi Foundation's education team. Having said
-that, Mu is for anyone who wants to use a simple "no frills" editor.
+Mu is a simple code editor for beginner programmers based on extensive feedback
+from teachers and learners. Having said that, Mu is for anyone who wants to use
+a simple "no frills" editor.
 
 Mu is a modal editor with modes for Adafruit's CircuitPython, the micro:bit's
 version of MicroPython, PyGame Zero and standard Python 3 (including a
