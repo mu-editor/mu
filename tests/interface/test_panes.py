@@ -1146,6 +1146,21 @@ def test_PythonProcessPane_parse_paste():
     assert mock_timer.singleShot.call_count == 1
 
 
+def test_PythonProcessPane_parse_paste_non_ascii():
+    """
+    Given some non-ascii yet printable text, ensure that the first character is
+    correctly handled and the remaining text to be processed is scheduled to be
+    parsed in the future.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.parse_input = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.parse_paste('ÅÄÖ')
+    ppp.parse_input.assert_called_once_with(None, 'Å', None)
+    assert mock_timer.singleShot.call_count == 1
+
+
 def test_PythonProcessPane_parse_paste_newline():
     """
     As above, but ensure the correct handling of a newline character.
@@ -1198,6 +1213,19 @@ def test_PythonProcessPane_parse_input_a():
     modifiers = None
     ppp.parse_input(key, text, modifiers)
     ppp.insert.assert_called_once_with(b'a')
+
+
+def test_PythonProcessPane_parse_input_non_ascii():
+    """
+    Ensure a non-ascii printable character is inserted into the text area.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.insert = mock.MagicMock()
+    key = Qt.Key_A
+    text = 'Å'
+    modifiers = None
+    ppp.parse_input(key, text, modifiers)
+    ppp.insert.assert_called_once_with('Å'.encode('utf-8'))
 
 
 def test_PythonProcessPane_parse_input_ctrl_c():

@@ -713,7 +713,7 @@ class PythonProcessPane(QTextEdit):
         """
         character = text[0]  # the current character to process.
         remainder = text[1:]  # remaining characters to process in the future.
-        if character in string.printable:
+        if character.isprintable() or character in string.printable:
             if character == '\n' or character == '\r':
                 self.parse_input(Qt.Key_Enter, character, None)
             else:
@@ -791,7 +791,7 @@ class PythonProcessPane(QTextEdit):
                 self.copy()
             elif key == Qt.Key_V:
                 self.paste()
-        elif text in string.printable:
+        elif text.isprintable():
             # If the key is for a printable character then add it to the
             # active buffer and display it.
             msg = bytes(text, 'utf8')
