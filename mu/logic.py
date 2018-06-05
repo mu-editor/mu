@@ -882,6 +882,7 @@ class Editor:
         """
         logger.info('Zoom in')
         self._view.zoom_in()
+        self._view.current_tab.zoom_in_margin()
 
     def zoom_out(self):
         """
@@ -889,6 +890,7 @@ class Editor:
         """
         logger.info('Zoom out')
         self._view.zoom_out()
+        self._view.current_tab.zoom_out_margin()
 
     def check_code(self):
         """

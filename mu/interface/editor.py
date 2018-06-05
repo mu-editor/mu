@@ -143,7 +143,8 @@ class EditorPane(QsciScintilla):
         self.setTabWidth(4)
         self.setEdgeColumn(79)
         self.setMarginLineNumbers(0, True)
-        self.setMarginWidth(0, 50)
+        self.margin_width = 35
+        self.setMarginWidth(0, self.margin_width)
         self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
         self.set_theme()
@@ -160,6 +161,14 @@ class EditorPane(QsciScintilla):
                 self.StraightBoxIndicator, self.search_indicators[type_]['id'])
         self.setAnnotationDisplay(self.AnnotationBoxed)
         self.selectionChanged.connect(self.selection_change_listener)
+
+    def zoom_in_margin(self):
+        self.margin_width += 5
+        self.setMarginWidth(0, self.margin_width)
+
+    def zoom_out_margin(self):
+        self.margin_width -= 5
+        self.setMarginWidth(0, self.margin_width)
 
     def connect_margin(self, func):
         """
@@ -193,6 +202,7 @@ class EditorPane(QsciScintilla):
         self.setMatchedBraceForegroundColor(theme.BraceForeground)
         self.setUnmatchedBraceBackgroundColor(theme.UnmatchedBraceBackground)
         self.setUnmatchedBraceForegroundColor(theme.UnmatchedBraceForeground)
+        self.setMarginsBackgroundColor(theme.Caret)
 
     def set_api(self, api_definitions):
         """
