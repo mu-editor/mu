@@ -25,6 +25,7 @@ import signal
 import string
 import bisect
 import os.path
+import mu
 from PyQt5.QtCore import Qt, QProcess, QProcessEnvironment, pyqtSignal, QTimer
 from collections import deque
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
@@ -641,8 +642,11 @@ class PythonProcessPane(QTextEdit):
         logger.info('Python path: {}'.format(sys.path))
         if debugger:
             # Start the mu-debug runner for the script.
-            args = [self.script, ] + command_args
-            self.process.start('mu-debug', args)
+            mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
+            runner = os.path.join(mu_dir, 'mu-debug.py')
+            python_exec = sys.executable
+            args = [runner, self.script, ] + command_args
+            self.process.start(python_exec, args)
         else:
             if runner:
                 # Use the passed in Python "runner" to run the script.

@@ -956,10 +956,12 @@ def test_PythonProcessPane_start_process_debugger():
         args = ['foo', 'bar', ]
         ppp.start_process('script.py', 'workspace', debugger=True,
                           command_args=args)
-    runner = 'mu-debug'
+    mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
+    runner = os.path.join(mu_dir, 'mu-debug.py')
+    python_exec = sys.executable
     expected_script = os.path.abspath(os.path.normcase('script.py'))
-    expected_args = [expected_script, 'foo', 'bar', ]
-    ppp.process.start.assert_called_once_with(runner, expected_args)
+    expected_args = [runner, expected_script, 'foo', 'bar', ]
+    ppp.process.start.assert_called_once_with(python_exec, expected_args)
 
 
 def test_PythonProcessPane_start_process_not_interactive():
