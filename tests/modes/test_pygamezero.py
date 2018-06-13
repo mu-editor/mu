@@ -121,10 +121,11 @@ def test_pgzero_run_game():
             mock.patch('mu.modes.pygamezero.write_and_flush'):
         pm.run_game()
         oa.assert_called_once_with('/foo', 'w', newline='')
+    py_args = ['-m', 'pgzero']
     view.add_python3_runner.assert_called_once_with('/foo', '/bar',
                                                     interactive=False,
                                                     envars=editor.envars,
-                                                    runner='pgzrun')
+                                                    python_args=py_args)
     mock_runner.process.waitForStarted.assert_called_once_with()
 
 

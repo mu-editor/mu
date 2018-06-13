@@ -1065,6 +1065,26 @@ def test_PythonProcessPane_start_process_custom_runner():
     ppp.process.start.assert_called_once_with('foo', expected_args)
 
 
+def test_PythonProcessPane_start_process_custom_python_args():
+    """
+    Ensure that if there are arguments to be passed into the Python runtime
+    starting the child process, these are passed on correctly.
+    """
+    mock_process = mock.MagicMock()
+    mock_process_class = mock.MagicMock(return_value=mock_process)
+    mock_merge_chans = mock.MagicMock()
+    mock_process_class.MergedChannels = mock_merge_chans
+    with mock.patch('mu.interface.panes.QProcess', mock_process_class):
+        ppp = mu.interface.panes.PythonProcessPane()
+        py_args = ['-m', 'pgzero', ]
+        ppp.start_process('script.py', 'workspace', interactive=False,
+                          python_args=py_args)
+    expected_script = os.path.abspath(os.path.normcase('script.py'))
+    expected_args = ['-m', 'pgzero', expected_script]
+    runner = sys.executable
+    ppp.process.start.assert_called_once_with(runner, expected_args)
+
+
 def test_PythonProcessPane_finished():
     """
     Check the functionality to handle the process finishing is correct.
