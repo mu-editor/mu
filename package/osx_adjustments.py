@@ -23,7 +23,7 @@ def replace_python_path(filename, path=DEFAULT_PATH):
 
 
 if __name__ == "__main__":
-    current_dir = os.path.dirname(__file__)
+    current_dir = os.path.abspath(os.path.dirname(__file__))
     parent_dir = os.path.dirname(current_dir)
     launcher = os.path.join(parent_dir, 'macOS', 'mu-editor.app', 'Contents',
                             'MacOS', 'mu-editor')
