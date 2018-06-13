@@ -31,6 +31,7 @@ clean:
 	rm -rf lib
 	rm -rf pynsist_pkgs
 	rm -rf pynsist_tkinter*
+	rm -rf macOS
 	find . \( -name '*.py[co]' -o -name dropin.cache \) -delete
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
