@@ -2,7 +2,7 @@
 A script to adjust the contents of the .app directory before being turned into
 a distributable disk image. These steps are:
 
-* Replace the path to Python. 
+* Replace the path to Python.
 * [TODO] Sign the app.
 """
 import os.path

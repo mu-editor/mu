@@ -69,7 +69,7 @@ class KernelRunner(QObject):
                 # Mu is running as a macOS app bundle. Ensure the expected
                 # paths are in PYTHONPATH of the subprocess so the kernel can
                 # be found.
-                os.environ['PYTHONPATH'] = ':'.join(sys.path))
+                os.environ['PYTHONPATH'] = ':'.join(sys.path)
         self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.start_kernel()
         self.repl_kernel_client = self.repl_kernel_manager.client()
