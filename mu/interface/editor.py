@@ -215,7 +215,7 @@ class EditorPane(QsciScintilla):
         if self.path:
             label = os.path.basename(self.path)
         else:
-            label = 'untitled'
+            label = _('untitled')
         # Add an asterisk to indicate that the file remains unsaved.
         if self.isModified():
             return label + ' *'
