@@ -593,7 +593,7 @@ class PythonProcessPane(QTextEdit):
 
     def start_process(self, script_name, working_directory, interactive=True,
                       debugger=False, command_args=None, envars=None,
-                      runner=None):
+                      runner=None, python_args=None):
         """
         Start the child Python process.
 
@@ -613,8 +613,11 @@ class PythonProcessPane(QTextEdit):
         If there is a list of environment variables, these will be part of the
         context of the new child process.
 
-        If runner is give, this is used as the command to start the Python
+        If runner is given, this is used as the command to start the Python
         process.
+
+        If python_args is given, these are passed as arguments to the Python
+        runtime used to launch the child process.
         """
         self.script = os.path.abspath(os.path.normcase(script_name))
         logger.info('Running script: {}'.format(self.script))
@@ -666,6 +669,8 @@ class PythonProcessPane(QTextEdit):
             else:
                 # Just run the command with no additional flags.
                 args = [self.script, ] + command_args
+            if python_args:
+                args = python_args + args
             self.process.start(python_exec, args)
             self.running = True
 

@@ -471,7 +471,8 @@ class Window(QMainWindow):
 
     def add_python3_runner(self, script_name, working_directory,
                            interactive=False, debugger=False,
-                           command_args=None, runner=None, envars=None):
+                           command_args=None, runner=None, envars=None,
+                           python_args=None):
         """
         Display console output for the referenced Python script.
 
@@ -489,8 +490,14 @@ class Window(QMainWindow):
         will be passed as further arguments into the command run in the
         new process.
 
-        If runner is give, this is used as the command to start the Python
+        If runner is given, this is used as the command to start the Python
         process.
+
+        If envars is given, these will become part of the environment context
+        of the new chlid process.
+
+        If python_args is given, these will be passed as arguments to the
+        Python runtime used to launch the child process.
         """
         self.process_runner = PythonProcessPane(self)
         self.runner = QDockWidget(_("Running: {}").format(
@@ -503,7 +510,7 @@ class Window(QMainWindow):
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
         self.process_runner.start_process(script_name, working_directory,
                                           interactive, debugger, command_args,
-                                          envars, runner)
+                                          envars, runner, python_args)
         self.process_runner.setFocus()
         self.process_runner.on_append_text.connect(self.on_stdout_write)
         self.connect_zoom(self.process_runner)

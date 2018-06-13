@@ -131,11 +131,12 @@ class PyGameZeroMode(BaseMode):
                     tab.setModified(False)
             logger.debug(tab.text())
             envars = self.editor.envars
+            args = ['-m', 'pgzero']
             self.runner = self.view.add_python3_runner(tab.path,
                                                        self.workspace_dir(),
                                                        interactive=False,
                                                        envars=envars,
-                                                       runner='pgzrun')
+                                                       python_args=args)
             self.runner.process.waitForStarted()
 
     def stop_game(self):

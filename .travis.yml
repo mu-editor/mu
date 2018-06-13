@@ -81,7 +81,7 @@ deploy:
   acl: public_read
   on:
     repo: mu-editor/mu
-    branch: [master, package_macos]
+    branch: [master]
     condition: $TRAVIS_OS_NAME = "osx"
 
 notifications:
