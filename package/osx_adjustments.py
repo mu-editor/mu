@@ -19,7 +19,7 @@ def replace_python_path(filename, path=DEFAULT_PATH):
         lines = f.readlines()
     lines[1] = path
     with open(filename, 'w') as f:
-        path.writelines(lines)
+        f.writelines(lines)
 
 
 if __name__ == "__main__":
