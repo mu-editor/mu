@@ -15,10 +15,10 @@ def replace_python_path(filename, path=DEFAULT_PATH):
     """
     Given a filename, replaces the second line with the path.
     """
-    with open(path) as f:
+    with open(filename) as f:
         lines = f.readlines()
     lines[1] = path
-    with open(path, 'w') as f:
+    with open(filename, 'w') as f:
         path.writelines(lines)
 
 
