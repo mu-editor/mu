@@ -68,11 +68,8 @@ setup(
         'Topic :: Text Editors :: Integrated Development Environments (IDE)',
     ],
     entry_points={
-        'gui_scripts': [
-            "mu-editor = mu.app:run",
-        ],
         'console_scripts': [
-            "mu-debug = mu.app:debug",
+            "mu-editor = mu.app:run",
         ],
     },
     options={  # Briefcase packaging options for OSX

@@ -12,7 +12,7 @@ try:
     # Get the language code.
     language_code = current_locale[:2]
 except (TypeError, ValueError):
-    traceback.print_exc()
+    # traceback.print_exc()
     language_code = 'en'
 # DEBUG/TRANSLATE: override the language code here (e.g. to Chinese).
 # language_code = 'zh'
