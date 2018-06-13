@@ -8,7 +8,7 @@ a distributable disk image. These steps are:
 import os.path
 
 
-DEFAULT_PATH = '"exec" "`dirname $0`/../Resources/bin/python3.6" "$0" "$@"'
+DEFAULT_PATH = '"exec" "`dirname $0`/../Resources/bin/python3.6" "$0" "$@"\n'
 
 
 def replace_python_path(filename, path=DEFAULT_PATH):
