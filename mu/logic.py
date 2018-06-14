@@ -354,10 +354,15 @@ def get_settings_path():
 def get_view(self):
     return self.view
 
+def get_tab(self):
+   #########view = get_view(self)
+   return get_view(self).current_tab
+    
 def get_pathname(self):
-    view = get_view(self)
-    tab = get_view(self).current_tab
-    return tab.path
+    #########view = get_view(self)
+    ####tab = get_view(self).current_tab
+    return get_view(self).current_tab.path
+    ###return tab.path
     
 def extract_envars(raw):
     """
@@ -776,6 +781,8 @@ class Editor:
         path = self._view.get_load_path(self.modes[self.mode].workspace_dir())
         if path:
             self._load(path)
+        print("DEBUG: DONE LOADING!!!!!!!!!!")
+        self.change_mode(self.mode)   ####DEBUG
 
     def direct_load(self, path):
         """ for loading files passed from command line or the OS launch"""
@@ -872,6 +879,7 @@ class Editor:
                 self._view.focus_tab(tab)
                 return tab
         self.direct_load(path)
+        print("DEBUG: get_tab called!!!!!!!!!!!!")
         return self._view.current_tab
 
     def zoom_in(self):
@@ -1023,6 +1031,8 @@ class Editor:
                                      self.mode.capitalize()))
 
     def change_mode(self, mode):
+        print("DEBUG: MODE IN CHANGE_MODE IS ")
+        print(mode)
         """
         Given the name of a mode, will make the necessary changes to put the
         editor into the new mode.

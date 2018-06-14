@@ -18,11 +18,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
 import ctypes
+from shutil import copyfile
 from subprocess import check_output
 from mu.modes.base import MicroPythonMode
 from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
-
+from mu.logic import get_pathname
 
 class AdafruitMode(MicroPythonMode):
     """
@@ -50,6 +51,7 @@ class AdafruitMode(MicroPythonMode):
     ]
 
     def actions(self):
+        print("DEBUG: INDEED LOOKING UP THE ACTIONS")
         """
         Return an ordered list of actions provided by this module. An action
         is a name (also used to identify the icon) , description, and handler.
@@ -62,6 +64,14 @@ class AdafruitMode(MicroPythonMode):
                 'handler': self.toggle_repl,
                 'shortcut': 'CTRL+Shift+I',
             }, ]
+        if not self.workspace_dir_on_circuitpy() and self.workspace_circuitpy_available():
+            buttons.append({
+                'name': 'run',
+                'display_name': _('Run'),
+                'description': _('Run your current file on CIRCUITPY'),
+                'handler': self.run,
+                'shortcut': 'CTRL+Shift+R',
+            })
         if CHARTS:
             buttons.append({
                 'name': 'plotter',
@@ -73,6 +83,9 @@ class AdafruitMode(MicroPythonMode):
         return buttons
 
     def workspace_dir(self):
+        ####DEBUG
+        #self.editor.change_mode("adafruit")
+
         """
         Return the default location on the filesystem for opening and closing
         files.
@@ -93,7 +106,6 @@ class AdafruitMode(MicroPythonMode):
                     next
         elif os.name == 'nt':
             # We're on Windows.
-
             def get_volume_name(disk_name):
                 """
                 Each disk or external device connected to windows has an
@@ -147,6 +159,25 @@ class AdafruitMode(MicroPythonMode):
                 self.view.show_message(m, info.format(wd))
                 self.connected = False
             return wd
+
+    def workspace_dir_on_circuitpy(self):
+        return "CIRCUITPY" in str(get_pathname(self))
+
+    def workspace_circuitpy_available(self):
+        return "CIRCUITPY" in str(self.workspace_dir())
+
+    def run(self, event):
+        if not self.workspace_dir_on_circuitpy() and self.workspace_circuitpy_available():
+            save_result = self.editor.save()
+            print("DEBUG: saved again")
+
+            pathname = get_pathname(self)
+            print("SEE IF PATHNAME AVAILABLE")
+            print(pathname)
+            if pathname:
+                print("DEBUG: copying the pathname")
+                destination = self.workspace_dir() + "/code.py"
+                copyfile(pathname, destination)
 
     def api(self):
         """
