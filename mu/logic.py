@@ -350,14 +350,10 @@ def get_view(self):
     return self.view
 
 def get_tab(self):
-   #########view = get_view(self)
-   return get_view(self).current_tab
+    return get_view(self).current_tab
     
 def get_pathname(self):
-    #########view = get_view(self)
-    ####tab = get_view(self).current_tab
     return get_view(self).current_tab.path
-    ###return tab.path
     
 def extract_envars(raw):
     """
@@ -806,8 +802,9 @@ class Editor:
                                         extensions)
         if path:
             self._load(path)
-        print("DEBUG: DONE LOADING!!!!!!!!!!")
-        self.change_mode(self.mode)   ####DEBUG
+
+        if self.modes[self.mode].actions_dynamic():
+            self.change_mode(self.mode)
 
     def direct_load(self, path):
         """ for loading files passed from command line or the OS launch"""
@@ -892,6 +889,8 @@ class Editor:
         else:
             # The user cancelled the filename selection.
             tab.path = None
+        if self.modes[self.mode].actions_dynamic():
+            self.change_mode(self.mode)
 
     def get_tab(self, path):
         """
@@ -903,7 +902,6 @@ class Editor:
                 self._view.focus_tab(tab)
                 return tab
         self.direct_load(path)
-        print("DEBUG: get_tab called!!!!!!!!!!!!")
         return self._view.current_tab
 
     def zoom_in(self):
@@ -1056,8 +1054,6 @@ class Editor:
             self.change_mode(new_mode)
 
     def change_mode(self, mode):
-        print("DEBUG: MODE IN CHANGE_MODE IS ")
-        print(mode)
         """
         Given the name of a mode, will make the necessary changes to put the
         editor into the new mode.
@@ -1099,8 +1095,9 @@ class Editor:
             for tab in self._view.widgets:
                 tab.breakpoint_lines = set()
                 tab.reset_annotations()
-        self.show_status_message(_('Changed to {} mode.').format(
-            mode.capitalize()))
+        if not self.modes[self.mode].actions_dynamic():
+            self.show_status_message(_('Changed to {} mode.').format(
+                mode.capitalize()))
 
     def autosave(self):
         """

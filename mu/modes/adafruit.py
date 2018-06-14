@@ -54,8 +54,10 @@ class AdafruitMode(MicroPythonMode):
         (0x239A, 0x802E),  # Adafruit CRICKit M0
     ]
 
+    def actions_dynamic(self):
+        return True
+
     def actions(self):
-        print("DEBUG: INDEED LOOKING UP THE ACTIONS")
         """
         Return an ordered list of actions provided by this module. An action
         is a name (also used to identify the icon) , description, and handler.
@@ -87,9 +89,6 @@ class AdafruitMode(MicroPythonMode):
         return buttons
 
     def workspace_dir(self):
-        ####DEBUG
-        #self.editor.change_mode("adafruit")
-
         """
         Return the default location on the filesystem for opening and closing
         files.
@@ -152,15 +151,17 @@ class AdafruitMode(MicroPythonMode):
             # after warning the user.
             wd = super().workspace_dir()
             if self.connected:
-                m = _('Could not find an attached Adafruit CircuitPython'
-                      ' device.')
-                info = _("Python files for Adafruit CircuitPython devices"
-                         " are stored on the device. Therefore, to edit"
-                         " these files you need to have the device plugged in."
-                         " Until you plug in a device, Mu will use the"
-                         " directory found here:\n\n"
-                         " {}\n\n...to store your code.")
-                self.view.show_message(m, info.format(wd))
+                if self.workspace_dir_on_circuitpy() and not self.workspace_circuitpy_available():
+                    m = _('Could not find an attached Adafruit CircuitPython'
+                          ' device.')
+                    info = _("Python files for Adafruit CircuitPython devices"
+                             " are stored on the device. Therefore, to edit"
+                             " these files you need to have the device plugged in."
+                             " Until you plug in a device, Mu will use the"
+                             " directory found here:\n\n"
+                             " {}\n\n...to store your code.")
+                    self.view.show_message(m, info.format(wd))
+
                 self.connected = False
             return wd
 
@@ -173,13 +174,9 @@ class AdafruitMode(MicroPythonMode):
     def run(self, event):
         if not self.workspace_dir_on_circuitpy() and self.workspace_circuitpy_available():
             save_result = self.editor.save()
-            print("DEBUG: saved again")
 
             pathname = get_pathname(self)
-            print("SEE IF PATHNAME AVAILABLE")
-            print(pathname)
             if pathname:
-                print("DEBUG: copying the pathname")
                 destination = self.workspace_dir() + "/code.py"
                 copyfile(pathname, destination)
 

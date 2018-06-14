@@ -65,8 +65,6 @@ class ButtonBar(QToolBar):
         self.clear()
 
     def change_mode(self, mode):
-        print("DEBUG: get the mode")
-        print(mode)
         self.reset()
         self.addAction(name="modes", display_name=_("Mode"),
                        tool_text=_("Change Mu's mode of behaviour."))
