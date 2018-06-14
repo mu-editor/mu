@@ -25,6 +25,7 @@ from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
 from mu.logic import get_pathname
 
+
 class AdafruitMode(MicroPythonMode):
     """
     Represents the functionality required by the Adafruit mode.
@@ -70,7 +71,7 @@ class AdafruitMode(MicroPythonMode):
                 'handler': self.toggle_repl,
                 'shortcut': 'CTRL+Shift+S',
             }, ]
-        if not self.workspace_dir_on_circuitpy() and self.workspace_circuitpy_available():
+        if not self.workspace_dir_cp() and self.workspace_cp_avail():
             buttons.append({
                 'name': 'run',
                 'display_name': _('Run'),
@@ -151,13 +152,13 @@ class AdafruitMode(MicroPythonMode):
             # after warning the user.
             wd = super().workspace_dir()
             if self.connected:
-                if self.workspace_dir_on_circuitpy() and not self.workspace_circuitpy_available():
+                if self.workspace_dir_cp() and not self.workspace_cp_avail():
                     m = _('Could not find an attached Adafruit CircuitPython'
                           ' device.')
                     info = _("Python files for Adafruit CircuitPython devices"
                              " are stored on the device. Therefore, to edit"
-                             " these files you need to have the device plugged in."
-                             " Until you plug in a device, Mu will use the"
+                             " these files you need to have the device plugged"
+                             " in. Until you plug in a device, Mu will use the"
                              " directory found here:\n\n"
                              " {}\n\n...to store your code.")
                     self.view.show_message(m, info.format(wd))
@@ -165,15 +166,15 @@ class AdafruitMode(MicroPythonMode):
                 self.connected = False
             return wd
 
-    def workspace_dir_on_circuitpy(self):
+    def workspace_dir_cp(self):
         return "CIRCUITPY" in str(get_pathname(self))
 
-    def workspace_circuitpy_available(self):
+    def workspace_cp_avail(self):
         return "CIRCUITPY" in str(self.workspace_dir())
 
     def run(self, event):
-        if not self.workspace_dir_on_circuitpy() and self.workspace_circuitpy_available():
-            save_result = self.editor.save()
+        if not self.workspace_dir_cp() and self.workspace_cp_avail():
+            self.editor.save()
 
             pathname = get_pathname(self)
             if pathname:
