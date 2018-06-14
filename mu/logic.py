@@ -931,7 +931,7 @@ class Editor:
         if tab.has_annotations:
             logger.info('Checking code.')
             self._view.reset_annotations()
-            filename = tab.path if tab.path else 'untitled'
+            filename = tab.path if tab.path else _('untitled')
             builtins = self.modes[self.mode].builtins
             flake = check_flake(filename, tab.text(), builtins)
             if flake:
