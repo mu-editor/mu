@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+	<id>mu.codewith.editor.desktop</id>
+	<metadata_license>CC0-1.0</metadata_license>
+	<project_license>GPL-3.0</project_license>
+	<name>Mu</name>
+	<summary>A simple Python editor for beginner programmers.</summary>
+	<description>
+        <p>Mu is a Python code editor for beginner programmers based on
+        extensive feedback given by teachers and learners.</p>
+        <p>Mu is a simple code editor for beginner programmers based on the
+        feedback given to and experiences of the Raspberry Pi Foundation's
+        education team. Having said that, Mu is for anyone who wants to use a
+        simple "no frills" editor.</p>
+        <p>Mu is a modal editor with modes for Adafruit's CircuitPython, the
+        micro:bit's version of MicroPython, PyGame Zero and standard Python 3
+        (including a graphical debugger). Some of the modes make available a
+        REPL (either running on the connected CircuitPython or MicroPython
+        device or as a Jupyter based iPython session in Python3 mode).</p>
+        <p>Mu is written in Python and works on Windows, OSX, Linux and
+        Raspberry Pi. The project's public facing website is
+        https://codewith.mu/. We celebrate the work done by users of mu at
+        https://madewith.mu/.</p>
+	</description>
+	<url type="homepage">http://codewith.mu/</url>
+	<url type="help">http://codewith.mu/tutorials/</url>
+	<url type="bugtracker">https://github.com/mu-editor/mu/issues</url>
+	<project_group>mu-editor</project_group>
+	<_developer_name>Nicholas H.Tollervey</_developer_name>
+	<translation type="gettext">mu</translation>
+</component>

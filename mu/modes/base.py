@@ -86,6 +86,7 @@ class BaseMode(QObject):
     has_debugger = False
     save_timeout = 5  #: Number of seconds to wait before saving work.
     builtins = None  #: Symbols to assume as builtins when checking code style.
+    file_extensions = []
 
     def __init__(self, editor, view):
         self.editor = editor
@@ -176,12 +177,19 @@ class BaseMode(QObject):
                  "time.")
         self.view.show_message(msg, info)
 
+    def open_file(self, path):
+        """
+        Some files are not plain text and each mode can attempt to decode them.
+        """
+        return None
+
 
 class MicroPythonMode(BaseMode):
     """
     Includes functionality that works with a USB serial based REPL.
     """
     valid_boards = BOARD_IDS
+    force_interrupt = True
 
     def find_device(self, with_logging=True):
         """
@@ -244,7 +252,8 @@ class MicroPythonMode(BaseMode):
         device_port = self.find_device()
         if device_port:
             try:
-                self.view.add_micropython_repl(device_port, self.name)
+                self.view.add_micropython_repl(device_port, self.name,
+                                               self.force_interrupt)
                 logger.info('Started REPL on port: {}'.format(device_port))
                 self.repl = True
             except IOError as ex:

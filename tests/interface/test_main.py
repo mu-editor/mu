@@ -385,10 +385,10 @@ def test_Window_get_load_path():
     w = mu.interface.main.Window()
     w.widget = mock.MagicMock()
     with mock.patch('mu.interface.main.QFileDialog', mock_fd):
-        assert w.get_load_path('micropython') == path
-    mock_fd.getOpenFileName.assert_called_once_with(w.widget, 'Open file',
-                                                    'micropython',
-                                                    '*.py *.PY *.hex')
+        returned_path = w.get_load_path('micropython', '*.py *.hex *.PY *.HEX')
+    assert returned_path == path
+    mock_fd.getOpenFileName.assert_called_once_with(
+        w.widget, 'Open file', 'micropython', '*.py *.hex *.PY *.HEX')
 
 
 def test_Window_get_save_path():
@@ -697,6 +697,31 @@ def test_Window_add_micropython_repl():
     assert w.serial.write.call_count == 2
     assert w.serial.write.call_args_list[0][0][0] == b'\x02'
     assert w.serial.write.call_args_list[1][0][0] == b'\x03'
+    w.data_received.connect.assert_called_once_with(mock_repl.process_bytes)
+    w.add_repl.assert_called_once_with(mock_repl, 'Test REPL')
+
+
+def test_Window_add_micropython_repl_no_interrupt():
+    """
+    Ensure the expected object is instantiated and add_repl is called for a
+    MicroPython based REPL.
+    """
+    w = mu.interface.main.Window()
+    w.theme = mock.MagicMock()
+    w.add_repl = mock.MagicMock()
+
+    def side_effect(self, w=w):
+        w.serial = mock.MagicMock()
+
+    w.open_serial_link = mock.MagicMock(side_effect=side_effect)
+    w.data_received = mock.MagicMock()
+    mock_repl = mock.MagicMock()
+    mock_repl_class = mock.MagicMock(return_value=mock_repl)
+    with mock.patch('mu.interface.main.MicroPythonREPLPane', mock_repl_class):
+        w.add_micropython_repl('COM0', 'Test REPL', False)
+    mock_repl_class.assert_called_once_with(serial=w.serial, theme=w.theme)
+    w.open_serial_link.assert_called_once_with('COM0')
+    assert w.serial.write.call_count == 0
     w.data_received.connect.assert_called_once_with(mock_repl.process_bytes)
     w.add_repl.assert_called_once_with(mock_repl, 'Test REPL')
 

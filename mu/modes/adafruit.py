@@ -35,6 +35,7 @@ class AdafruitMode(MicroPythonMode):
     icon = 'adafruit'
     save_timeout = 0  #: Don't autosave on Adafruit boards. Casues a restart.
     connected = True  #: is the Adafruit board connected.
+    force_interrupt = False  #: NO keyboard interrupt on serial connection.
     valid_boards = [
         (0x239A, 0x8015),  # Adafruit Feather M0 CircuitPython
         (0x239A, 0x8023),  # Adafruit Feather M0 Express CircuitPython
@@ -48,6 +49,9 @@ class AdafruitMode(MicroPythonMode):
         (0x239A, 0x8025),  # Adafruit Feather RadioFruit
         (0x239A, 0x8026),  # Adafruit Feather M4
         (0x239A, 0x8028),  # Adafruit pIRKey M0
+        (0x239A, 0x802A),  # Adafruit Feather 52840
+        (0x239A, 0x802C),  # Adafruit Itsy M4
+        (0x239A, 0x802E),  # Adafruit CRICKit M0
     ]
 
     def actions(self):
@@ -58,11 +62,11 @@ class AdafruitMode(MicroPythonMode):
         """
         buttons = [
             {
-                'name': 'repl',
-                'display_name': _('REPL'),
-                'description': _('Use the REPL for live coding.'),
+                'name': 'serial',
+                'display_name': _('Serial'),
+                'description': _('Open a serial connection to your device.'),
                 'handler': self.toggle_repl,
-                'shortcut': 'CTRL+Shift+I',
+                'shortcut': 'CTRL+Shift+S',
             }, ]
         if not self.workspace_dir_on_circuitpy() and self.workspace_circuitpy_available():
             buttons.append({

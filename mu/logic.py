@@ -33,12 +33,7 @@ import shutil
 import appdirs
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
-# Currently there is no pycodestyle deb packages, so fallback to old name
-try:  # pragma: no cover
-    from pycodestyle import StyleGuide, Checker
-except ImportError:  # pragma: no cover
-    from pep8 import StyleGuide, Checker
-from mu.contrib import uflash
+from pycodestyle import StyleGuide, Checker
 from mu.resources import path
 from mu import __version__
 
@@ -175,7 +170,7 @@ def save_and_encode(text, filepath, newline=os.linesep):
         try:
             codecs.lookup(encoding)
         except LookupError:
-            logger.warn("Invalid codec in encoding cookie: %s", encoding)
+            logger.warning("Invalid codec in encoding cookie: %s", encoding)
             encoding = ENCODING
     else:
         encoding = ENCODING
@@ -277,7 +272,7 @@ def read_and_decode(filepath):
             text = btext.decode(encoding)
             logger.info("Decoded with %s", encoding)
             break
-        except UnicodeDecodeError as exc:
+        except UnicodeDecodeError:
             continue
     else:
         raise UnicodeDecodeError(encoding, btext, 0, 0, "Unable to decode")
@@ -592,7 +587,9 @@ class Editor:
             os.makedirs(wd)
         # Ensure PyGameZero assets are copied over.
         images_path = os.path.join(wd, 'images')
+        fonts_path = os.path.join(wd, 'fonts')
         sounds_path = os.path.join(wd, 'sounds')
+        music_path = os.path.join(wd, 'music')
         if not os.path.exists(images_path):
             logger.debug('Creating directory: {}'.format(images_path))
             os.makedirs(images_path)
@@ -600,11 +597,17 @@ class Editor:
                         os.path.join(images_path, 'alien.png'))
             shutil.copy(path('alien_hurt.png', 'pygamezero/'),
                         os.path.join(images_path, 'alien_hurt.png'))
+        if not os.path.exists(fonts_path):
+            logger.debug('Creating directory: {}'.format(fonts_path))
+            os.makedirs(fonts_path)
         if not os.path.exists(sounds_path):
             logger.debug('Creating directory: {}'.format(sounds_path))
             os.makedirs(sounds_path)
             shutil.copy(path('eep.wav', 'pygamezero/'),
                         os.path.join(sounds_path, 'eep.wav'))
+        if not os.path.exists(music_path):
+            logger.debug('Creating directory: {}'.format(music_path))
+            os.makedirs(music_path)
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
@@ -715,6 +718,10 @@ class Editor:
                   "in another application, re-save the file via the "
                   "'Save as' option and set the encoding to {0}".
                   format(ENCODING, locale.getpreferredencoding()))
+        # Does the file even exist?
+        if not os.path.isfile(path):
+            logger.info('The file {} does not exist.'.format(path))
+            return
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
@@ -725,43 +732,43 @@ class Editor:
                 self._view.show_message(msg.format(os.path.basename(path)))
                 self._view.focus_tab(widget)
                 return
+        name, text, newline, file_mode = None, None, None, None
         try:
             if path.lower().endswith('.py'):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
                 try:
                     text, newline = read_and_decode(path)
-                except UnicodeDecodeError as exc:
+                except UnicodeDecodeError:
                     message = _("Mu cannot read the characters in {}")
                     filename = os.path.basename(path)
                     self._view.show_message(message.format(filename), error)
                     return
                 name = path
-            elif path.lower().endswith('.hex'):
-                # Open the hex, extract the Python script therein and set the
-                # name to None, thus forcing the user to work out what to name
-                # the recovered script.
-                try:
-                    with open(path, newline='') as f:
-                        text = uflash.extract_script(f.read())
-                        newline = sniff_newline_convention(text)
-                except Exception:
-                    filename = os.path.basename(path)
-                    message = _("Unable to load file {}").format(filename)
-                    info = _("Mu doesn't understand the hex file and cannot "
-                             "extract any Python code. Are you sure this is "
-                             "a hex file created with MicroPython?")
+            else:
+                # Delegate the open operation to the Mu modes. Leave the name
+                # as None, thus forcing the user to work out what to name the
+                # recovered script.
+                for mode_name, mode in self.modes.items():
+                    try:
+                        text = mode.open_file(path)
+                    except Exception as exc:
+                        # No worries, log it and try the next mode
+                        logger.warning('Error when mode {} try to open the '
+                                       '{} file.'.format(mode_name, path),
+                                       exc_info=exc)
+                    else:
+                        if text:
+                            newline = sniff_newline_convention(text)
+                            file_mode = mode_name
+                            break
+                else:
+                    message = _('Mu was not able to open this file')
+                    info = _('Currently Mu only works with Python source '
+                             'files or hex files created with embedded '
+                             'MicroPython code.')
                     self._view.show_message(message, info)
                     return
-                name = None
-            else:
-                # Mu won't open other file types, although this may change in
-                # the future.
-                message = _("Mu only opens .py and .hex files")
-                info = _("Currently Mu only works with Python source files or "
-                         "hex files created with embedded MicroPython code.")
-                self._view.show_message(message, info)
-                return
         except OSError:
             message = _("Could not load {}").format(path)
             logger.exception('Could not load {}'.format(path))
@@ -769,6 +776,15 @@ class Editor:
                      "permission to read it?\n\nPlease check and try again.")
             self._view.show_message(message, info)
         else:
+            if file_mode and self.mode != file_mode:
+                device_name = self.modes[file_mode].name
+                message = _('Is this a {} file?').format(device_name)
+                info = _('It looks like this could be a {} file.\n\n'
+                         'Would you like to change Mu to the {}'
+                         'mode?').format(device_name, device_name)
+                if self._view.show_confirmation(
+                        message, info, icon='Question') == QMessageBox.Ok:
+                    self.change_mode(file_mode)
             logger.debug(text)
             self._view.add_tab(
                 name, text, self.modes[self.mode].api(), newline)
@@ -778,7 +794,16 @@ class Editor:
         Loads a Python file from the file system or extracts a Python script
         from a hex file.
         """
-        path = self._view.get_load_path(self.modes[self.mode].workspace_dir())
+        # Get all supported extensions from the different modes
+        extensions = ['py']
+        for mode_name, mode in self.modes.items():
+            if mode.file_extensions:
+                extensions += mode.file_extensions
+        extensions = set([e.lower() for e in extensions])
+        extensions = '*.{} *.{}'.format(' *.'.join(extensions),
+                                        ' *.'.join(extensions).upper())
+        path = self._view.get_load_path(self.modes[self.mode].workspace_dir(),
+                                        extensions)
         if path:
             self._load(path)
         print("DEBUG: DONE LOADING!!!!!!!!!!")
@@ -800,7 +825,6 @@ class Editor:
                 # abspath will fail for non-paths
                 self.direct_load(os.path.abspath(p))
             except Exception as e:
-                self._view.show_message(_('Can\'t open {}'.format(p)))
                 logging.warning('Can\'t open file from command line {}'.
                                 format(p), exc_info=e)
 
@@ -940,8 +964,11 @@ class Editor:
         Display browser based help about Mu.
         """
         logger.info('Showing help.')
-        current_locale, encoding = locale.getdefaultlocale()
-        language_code = current_locale[:2]
+        try:
+            current_locale, encoding = locale.getdefaultlocale()
+            language_code = current_locale[:2]
+        except (TypeError, ValueError):
+            language_code = 'en'
         major_version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/{}/help/{}'.format(language_code,
                                                       major_version)
@@ -1024,11 +1051,9 @@ class Editor:
         logger.info('Showing available modes: {}'.format(
             list(self.modes.keys())))
         new_mode = self._view.select_mode(self.modes, self.mode, self.theme)
-        if new_mode and new_mode is not self.mode:
-            self.mode = new_mode
-            self.change_mode(self.mode)
-            self.show_status_message(_('Changed to {} mode.').format(
-                                     self.mode.capitalize()))
+        if new_mode and new_mode != self.mode:
+            logger.info('New mode selected: {}'.format(new_mode))
+            self.change_mode(new_mode)
 
     def change_mode(self, mode):
         print("DEBUG: MODE IN CHANGE_MODE IS ")
@@ -1037,8 +1062,11 @@ class Editor:
         Given the name of a mode, will make the necessary changes to put the
         editor into the new mode.
         """
-        # Remove the old mode's REPL.
+        self.mode = mode
+        # Remove the old mode's REPL / filesystem / plotter if required.
         self._view.remove_repl()
+        self._view.remove_filesystem()
+        self._view.remove_plotter()
         # Update buttons.
         self._view.change_mode(self.modes[mode])
         button_bar = self._view.button_bar
@@ -1071,6 +1099,8 @@ class Editor:
             for tab in self._view.widgets:
                 tab.breakpoint_lines = set()
                 tab.reset_annotations()
+        self.show_status_message(_('Changed to {} mode.').format(
+            mode.capitalize()))
 
     def autosave(self):
         """
@@ -1087,20 +1117,42 @@ class Editor:
         """
         Ensure connected USB devices are polled. If there's a change and a new
         recognised device is attached, inform the user via a status message.
+        If a single device is found and Mu is in a different mode ask the user
+        if they'd like to change mode.
         """
+        devices = []
+        device_types = set()
+        # Detect connected devices.
         for name, mode in self.modes.items():
-            if hasattr(mode, "find_device"):
+            if hasattr(mode, 'find_device'):
                 # The mode can detect an attached device.
-                device = mode.find_device(with_logging=False)
-                if device and (device, mode) not in self.connected_devices:
-                    self.connected_devices = set()
-                    self.connected_devices.add((device, mode))
-                    msg = _("Connection from a new device detected.")
-                    if self.mode != name:
-                        msg += _(" Please switch to {} mode.").format(
-                            name.capitalize())
-                    self.show_status_message(msg)
-                    break
+                port = mode.find_device(with_logging=False)
+                if port:
+                    devices.append((name, port))
+                    device_types.add(name)
+        # Remove no-longer connected devices.
+        to_remove = []
+        for connected in self.connected_devices:
+            if connected not in devices:
+                to_remove.append(connected)
+        for device in to_remove:
+            self.connected_devices.remove(device)
+        # Add newly connected devices.
+        for device in devices:
+            if device not in self.connected_devices:
+                self.connected_devices.add(device)
+                mode_name = device[0]
+                device_name = self.modes[mode_name].name
+                msg = _('Detected new {} device.').format(device_name)
+                self.show_status_message(msg)
+                # Only ask to switch mode if a single device type is connected
+                if len(device_types) == 1 and self.mode != mode_name:
+                    msg_body = _('Would you like to change Mu to the {} '
+                                 'mode?').format(device_name)
+                    change_confirmation = self._view.show_confirmation(
+                        msg, msg_body, icon='Question')
+                    if change_confirmation == QMessageBox.Ok:
+                        self.change_mode(mode_name)
 
     def show_status_message(self, message, duration=5):
         """

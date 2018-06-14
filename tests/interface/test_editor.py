@@ -266,7 +266,7 @@ def test_EditorPane_show_annotations():
     ep.annotate = mock.MagicMock()
     ep.show_annotations()
     ep.annotate.assert_called_once_with(1,
-                                        '\u2191Message 1\n\u2191Message 2',
+                                        '\u2191 message 1\n\u2191 message 2',
                                         ep.annotationDisplay())
 
 

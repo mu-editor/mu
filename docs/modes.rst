@@ -3,8 +3,8 @@ Modes in Mu
 
 Mu is a modal editor: it behaves differently depending on the currently
 selected mode. The name of the current mode is always displayed in the bottom
-right hand corner of Mu's window. Clicking on the name of the current mode
-opens up a dialog box to allow users to select a new mode.
+right hand corner of Mu's window. Clicking on the mode button opens up a dialog
+box to allow users to select a new mode.
 
 What Are Modes?
 ===============

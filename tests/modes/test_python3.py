@@ -2,6 +2,7 @@
 """
 Tests for the Python3 mode.
 """
+import sys
 from mu.modes.python3 import PythonMode, KernelRunner
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from unittest import mock
@@ -21,14 +22,18 @@ def test_kernel_runner_start_kernel():
     kr.kernel_started = mock.MagicMock()
     mock_os = mock.MagicMock()
     mock_os.environ = {}
+    mock_os.path.dirname.return_value = ('/Applications/mu-editor.app'
+                                         '/Contents/Resources/app/mu')
     mock_kernel_manager_class = mock.MagicMock()
     mock_kernel_manager_class.return_value = mock_kernel_manager
     with mock.patch('mu.modes.python3.os', mock_os), \
             mock.patch('mu.modes.python3.QtKernelManager',
-                       mock_kernel_manager_class):
+                       mock_kernel_manager_class), \
+            mock.patch('sys.platform', 'darwin'):
         kr.start_kernel()
     mock_os.chdir.assert_called_once_with('/a/path/to/mu_code')
     assert mock_os.environ['name'] == 'value'
+    assert mock_os.environ['PYTHONPATH'] == ':'.join(sys.path)
     assert kr.repl_kernel_manager == mock_kernel_manager
     mock_kernel_manager_class.assert_called_once_with()
     mock_kernel_manager.start_kernel.assert_called_once_with()

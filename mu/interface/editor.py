@@ -175,8 +175,6 @@ class EditorPane(QsciScintilla):
         theme.apply_to(self.lexer)
         self.lexer.setDefaultPaper(theme.Paper)
         self.setCaretForegroundColor(theme.Caret)
-        self.setMarginsBackgroundColor(theme.Margin)
-        self.setMarginsForegroundColor(theme.Caret)
         self.setIndicatorForegroundColor(theme.IndicatorError,
                                          self.check_indicators['error']['id'])
         self.setIndicatorForegroundColor(theme.IndicatorStyle,
@@ -189,6 +187,8 @@ class EditorPane(QsciScintilla):
         self.setAutoCompletionThreshold(2)
         self.setAutoCompletionSource(QsciScintilla.AcsAll)
         self.setLexer(self.lexer)
+        self.setMarginsBackgroundColor(theme.Margin)
+        self.setMarginsForegroundColor(theme.Caret)
         self.setMatchedBraceBackgroundColor(theme.BraceBackground)
         self.setMatchedBraceForegroundColor(theme.BraceForeground)
         self.setUnmatchedBraceBackgroundColor(theme.UnmatchedBraceBackground)
@@ -281,8 +281,8 @@ class EditorPane(QsciScintilla):
             markers = self.check_indicators[indicator]['markers']
             for k, marker_list in markers.items():
                 for m in marker_list:
-                    lines[m['line_no']].append('\u2191' +
-                                               m['message'].capitalize())
+                    lines[m['line_no']].append('\u2191 ' +
+                                               m['message'])
         for line, messages in lines.items():
             text = '\n'.join(messages).strip()
             if text:

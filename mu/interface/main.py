@@ -226,13 +226,13 @@ class Window(QMainWindow):
         for tab in self.widgets:
             tab.setReadOnly(is_readonly)
 
-    def get_load_path(self, folder):
+    def get_load_path(self, folder, extensions='*'):
         """
         Displays a dialog for selecting a file to load. Returns the selected
         path. Defaults to start in the referenced folder.
         """
         path, _ = QFileDialog.getOpenFileName(self.widget, 'Open file', folder,
-                                              '*.py *.PY *.hex')
+                                              extensions)
         logger.debug('Getting load path: {}'.format(path))
         return path
 
@@ -358,8 +358,9 @@ class Window(QMainWindow):
         """
         Close and clean up the currently open serial link.
         """
-        self.serial.close()
-        self.serial = None
+        if self.serial:
+            self.serial.close()
+            self.serial = None
 
     def add_filesystem(self, home, file_manager):
         """
@@ -389,16 +390,17 @@ class Window(QMainWindow):
         self.connect_zoom(self.fs_pane)
         return self.fs_pane
 
-    def add_micropython_repl(self, port, name):
+    def add_micropython_repl(self, port, name, force_interrupt=True):
         """
         Adds a MicroPython based REPL pane to the application.
         """
         if not self.serial:
             self.open_serial_link(port)
-            # Send a Control-B / exit raw mode.
-            self.serial.write(b'\x02')
-            # Send a Control-C / keyboard interrupt.
-            self.serial.write(b'\x03')
+            if force_interrupt:
+                # Send a Control-B / exit raw mode.
+                self.serial.write(b'\x02')
+                # Send a Control-C / keyboard interrupt.
+                self.serial.write(b'\x03')
         repl_pane = MicroPythonREPLPane(serial=self.serial, theme=self.theme)
         self.data_received.connect(repl_pane.process_bytes)
         self.add_repl(repl_pane, name)
@@ -471,7 +473,8 @@ class Window(QMainWindow):
 
     def add_python3_runner(self, script_name, working_directory,
                            interactive=False, debugger=False,
-                           command_args=None, runner=None, envars=None):
+                           command_args=None, runner=None, envars=None,
+                           python_args=None):
         """
         Display console output for the referenced Python script.
 
@@ -489,8 +492,14 @@ class Window(QMainWindow):
         will be passed as further arguments into the command run in the
         new process.
 
-        If runner is give, this is used as the command to start the Python
+        If runner is given, this is used as the command to start the Python
         process.
+
+        If envars is given, these will become part of the environment context
+        of the new chlid process.
+
+        If python_args is given, these will be passed as arguments to the
+        Python runtime used to launch the child process.
         """
         self.process_runner = PythonProcessPane(self)
         self.runner = QDockWidget(_("Running: {}").format(
@@ -503,7 +512,7 @@ class Window(QMainWindow):
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
         self.process_runner.start_process(script_name, working_directory,
                                           interactive, debugger, command_args,
-                                          envars, runner)
+                                          envars, runner, python_args)
         self.process_runner.setFocus()
         self.process_runner.on_append_text.connect(self.on_stdout_write)
         self.connect_zoom(self.process_runner)
@@ -592,7 +601,7 @@ class Window(QMainWindow):
             self.repl.deleteLater()
             self.repl = None
             if not self.plotter:
-                self.serial = None
+                self.close_serial_link()
 
     def remove_plotter(self):
         """
@@ -604,7 +613,7 @@ class Window(QMainWindow):
             self.plotter.deleteLater()
             self.plotter = None
             if not self.repl:
-                self.serial = None
+                self.close_serial_link()
 
     def remove_python_runner(self):
         """
@@ -654,7 +663,7 @@ class Window(QMainWindow):
 
     def show_admin(self, log, settings, theme):
         """
-        Display the administrivite dialog with referenced content of the log
+        Display the administrative dialog with referenced content of the log
         and settings. Return a dictionary of the settings that may have been
         changed by the admin dialog.
         """
@@ -804,7 +813,7 @@ class Window(QMainWindow):
         mode_select.exec()
         try:
             return mode_select.get_mode()
-        except Exception as ex:
+        except Exception:
             return None
 
     def change_mode(self, mode):
@@ -854,7 +863,7 @@ class Window(QMainWindow):
 
     def open_directory_from_os(self, path):
         """
-        Given the path to a directoy, open the OS's built in filesystem
+        Given the path to a directory, open the OS's built in filesystem
         explorer for that path. Works with Windows, OSX and Linux.
         """
         if sys.platform == 'win32':

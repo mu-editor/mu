@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import QApplication, QSplashScreen
 from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface import Window
-from mu.resources import load_pixmap
+from mu.resources import load_pixmap, load_icon
 from mu.modes import (PythonMode, AdafruitMode, MicrobitMode, DebugMode,
                       PyGameZeroMode)
 from mu.debugger.runner import run as run_debugger
@@ -114,10 +114,20 @@ def run():
 
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
+    # By default PyQt uses the script name (run.py)
+    app.setApplicationName('mu')
+    # Set hint as to the .desktop files name
+    app.setDesktopFileName('mu.codewith.editor')
+    app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
+    # Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
+    # unless this flag is set
+    app.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
     # Create the "window" we'll be looking at.
     editor_window = Window()
+    # Make sure all windows have the Mu icon as a fallback
+    app.setWindowIcon(load_icon(editor_window.icon))
     # Create the "editor" that'll control the "window".
     editor = Editor(view=editor_window)
     editor.setup(setup_modes(editor, editor_window))
@@ -135,11 +145,11 @@ def run():
     splash = QSplashScreen(load_pixmap('splash-screen'))
     splash.show()
 
-    # Finished starting up the application, so hide the splash icon.
+    # Hide the splash icon.
     splash_be_gone = QTimer()
     splash_be_gone.timeout.connect(lambda: splash.finish(editor_window))
     splash_be_gone.setSingleShot(True)
-    splash_be_gone.start(5000)
+    splash_be_gone.start(2000)
 
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
