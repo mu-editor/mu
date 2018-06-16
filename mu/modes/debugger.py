@@ -154,15 +154,8 @@ class DebugMode(BaseMode):
         self.set_buttons(**buttons)
         self.editor.show_status_message(_("Your script has finished running."))
         for tab in self.view.widgets:
-            tab.markerDeleteAll()
-            tab.breakpoint_lines = set()
             tab.setSelection(0, 0, 0, 0)
-            if hasattr(self.debugger, 'bp_index'):
-                for line, breakpoint in \
-                        self.debugger.breakpoints(tab.path).items():
-                    if breakpoint.enabled:
-                        tab.markerAdd(line - 1, tab.BREAKPOINT_MARKER)
-                        tab.breakpoint_lines.add(line - 1)
+            tab.reset_debugger_highlight()
 
     def button_stop(self, event):
         """
@@ -204,7 +197,8 @@ class DebugMode(BaseMode):
             tab.markerDelete(line, tab.BREAKPOINT_MARKER)
         else:
             breakpoint = bps.get(line + 1, None)
-            tab.markerAdd(line, tab.BREAKPOINT_MARKER)
+            handle = tab.markerAdd(line, tab.BREAKPOINT_MARKER)
+            tab.breakpoint_handles.add(handle)
             if breakpoint:
                 self.debugger.enable_breakpoint(breakpoint)
             else:
@@ -233,8 +227,12 @@ class DebugMode(BaseMode):
         are set.
         """
         for tab in self.view.widgets:
-            for line in tab.breakpoint_lines:
-                self.debugger.create_breakpoint(tab.path, line + 1)
+            for handle in list(tab.breakpoint_handles):
+                line = tab.markerLine(handle)
+                if line > -1:
+                    self.debugger.create_breakpoint(tab.path, line + 1)
+                else:
+                    tab.breakpoint_handles.remove(handle)
         # Start the script running.
         self.debugger.do_run()
 
@@ -243,7 +241,8 @@ class DebugMode(BaseMode):
         Handle when a breakpoint is enabled.
         """
         tab = self.view.current_tab
-        tab.markerAdd(breakpoint.line - 1, tab.BREAKPOINT_MARKER)
+        if not tab.markersAtLine(breakpoint.line - 1):
+            tab.markerAdd(breakpoint.line - 1, tab.BREAKPOINT_MARKER)
 
     def debug_on_breakpoint_disable(self, breakpoint):
         """
@@ -262,7 +261,7 @@ class DebugMode(BaseMode):
             return
         self.view.current_tab.setSelection(0, 0, 0, 0)
         tab = self.editor.get_tab(filename)
-        tab.setSelection(line - 1, 0, line, 0)
+        tab.debugger_at_line(line - 1)
 
     def debug_on_stack(self, stack):
         """

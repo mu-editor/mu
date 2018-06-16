@@ -76,10 +76,11 @@ class EditorPane(QsciScintilla):
             'error': {'id': 19, 'markers': {}},
             'style': {'id': 20, 'markers': {}}
         }
-        self.BREAKPOINT_MARKER = 23  # Arbitrary
         self.search_indicators = {
             'selection': {'id': 21, 'positions': []}
         }
+        self.DEBUG_INDICATOR = 22  # Arbitrary
+        self.BREAKPOINT_MARKER = 23  # Arbitrary
         self.previous_selection = {
             'line_start': 0, 'col_start': 0, 'line_end': 0, 'col_end': 0
         }
@@ -87,7 +88,7 @@ class EditorPane(QsciScintilla):
         self.api = None
         self.has_annotations = False
         self.setModified(False)
-        self.breakpoint_lines = set()
+        self.breakpoint_handles = set()
         self.configure()
 
     def dropEvent(self, event):
@@ -158,6 +159,7 @@ class EditorPane(QsciScintilla):
         for type_ in self.search_indicators:
             self.indicatorDefine(
                 self.StraightBoxIndicator, self.search_indicators[type_]['id'])
+        self.indicatorDefine(self.FullBoxIndicator, self.DEBUG_INDICATOR)
         self.setAnnotationDisplay(self.AnnotationBoxed)
         self.selectionChanged.connect(self.selection_change_listener)
 
@@ -179,6 +181,8 @@ class EditorPane(QsciScintilla):
                                          self.check_indicators['error']['id'])
         self.setIndicatorForegroundColor(theme.IndicatorStyle,
                                          self.check_indicators['style']['id'])
+        self.setIndicatorForegroundColor(theme.DebugStyle,
+                                         self.DEBUG_INDICATOR)
         for type_ in self.search_indicators:
             self.setIndicatorForegroundColor(
                 theme.IndicatorWordMatch, self.search_indicators[type_]['id'])
@@ -271,6 +275,29 @@ class EditorPane(QsciScintilla):
                     col_end = col + 1
                     self.fillIndicatorRange(line_no, col_start, line_no,
                                             col_end, indicator['id'])
+
+    def debugger_at_line(self, line):
+        """
+        Set the line to be highlighted with the DEBUG_INDICATOR.
+        """
+        self.reset_debugger_highlight()
+        line_length = len(self.text(line))
+        self.fillIndicatorRange(line, 0, line, line_length,
+                                self.DEBUG_INDICATOR)
+        self.ensureLineVisible(line)
+
+    def reset_debugger_highlight(self):
+        """
+        Reset all the lines so the DEBUG_INDICATOR is no longer displayed.
+
+        We need to check each line since there's no way to tell what the
+        currently highlighted line is. This approach also has the advantage of
+        resetting the *whole* editor pane.
+        """
+        for i in range(self.lines()):
+            line_length = len(self.text(i))
+            self.clearIndicatorRange(i, 0, i, line_length,
+                                     self.DEBUG_INDICATOR)
 
     def show_annotations(self):
         """

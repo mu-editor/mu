@@ -35,6 +35,7 @@ from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
 from mu.resources import path
+from mu.debugger.utils import is_breakpoint_line
 from mu import __version__
 
 
@@ -1081,7 +1082,7 @@ class Editor:
         # Update breakpoint states.
         if not (self.modes[mode].is_debugger or self.modes[mode].has_debugger):
             for tab in self._view.widgets:
-                tab.breakpoint_lines = set()
+                tab.breakpoint_handles = set()
                 tab.reset_annotations()
         self.show_status_message(_('Changed to {} mode.').format(
             mode.capitalize()))
@@ -1151,17 +1152,23 @@ class Editor:
         if (self.modes[self.mode].has_debugger or
                 self.modes[self.mode].is_debugger):
             tab = self._view.current_tab
-            if self.mode == 'debugger':
-                # The debugger is running.
-                self.modes['debugger'].toggle_breakpoint(line, tab)
-            else:
-                # The debugger isn't running.
-                if line in tab.breakpoint_lines:
-                    tab.markerDelete(line, tab.BREAKPOINT_MARKER)
-                    tab.breakpoint_lines.remove(line)
+            code = tab.text(line)
+            if is_breakpoint_line(code):
+                if self.mode == 'debugger':
+                    # The debugger is running.
+                    self.modes['debugger'].toggle_breakpoint(line, tab)
                 else:
-                    tab.markerAdd(line, tab.BREAKPOINT_MARKER)
-                    tab.breakpoint_lines.add(line)
+                    # The debugger isn't running.
+                    if tab.markersAtLine(line):
+                        tab.markerDelete(line, -1)
+                    else:
+                        handle = tab.markerAdd(line, tab.BREAKPOINT_MARKER)
+                        tab.breakpoint_handles.add(handle)
+            else:
+                msg = _('Cannot Set Breakpoint.')
+                info = _("Lines that are comments or some multi-line "
+                         "statements cannot have breakpoints.")
+                self._view.show_message(msg, info)
 
     def rename_tab(self, tab_id=None):
         """
