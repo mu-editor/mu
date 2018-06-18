@@ -248,7 +248,33 @@ def test_debug_toggle_breakpoint_off():
     dm.toggle_breakpoint(0, mock_tab)
     mock_debugger.breakpoints.assert_called_once_with(mock_tab.path)
     mock_tab.markersAtLine.assert_called_once_with(0)
-    mock_debugger.disable_breakpoint(mock_breakpoint)
+    mock_debugger.disable_breakpoint.assert_called_once_with(mock_breakpoint)
+    mock_tab.markerDelete.assert_called_once_with(0,
+                                                  mock_tab.BREAKPOINT_MARKER)
+
+
+def test_debug_toggle_breakpoint_off_no_breakpoint():
+    """
+    If a breakpoint appears on a line, but it's not actually been created in
+    the debug runner process (perhaps because the breakpoint was created after
+    the process finished but before the stop button was created) then it's
+    toggled off with no further side-effects.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    mock_debugger = mock.MagicMock()
+    dm.debugger = mock_debugger
+    mock_debugger.breakpoints.side_effect = [
+        {}
+    ]
+    mock_tab = mock.MagicMock()
+    mock_tab.path = 'foo'
+    mock_tab.markersAtLine.return_value = True
+    dm.toggle_breakpoint(0, mock_tab)
+    mock_debugger.breakpoints.assert_called_once_with(mock_tab.path)
+    mock_tab.markersAtLine.assert_called_once_with(0)
+    assert mock_debugger.disable_breakpoint.call_count == 0
     mock_tab.markerDelete.assert_called_once_with(0,
                                                   mock_tab.BREAKPOINT_MARKER)
 

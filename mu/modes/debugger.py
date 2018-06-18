@@ -192,11 +192,12 @@ class DebugMode(BaseMode):
         Toggle a breakpoint in the debugger.
         """
         bps = self.debugger.breakpoints(tab.path)
+        breakpoint = bps.get(line + 1, None)
         if tab.markersAtLine(line):
-            self.debugger.disable_breakpoint(bps[line + 1])
+            if breakpoint:
+                self.debugger.disable_breakpoint(breakpoint)
             tab.markerDelete(line, tab.BREAKPOINT_MARKER)
         else:
-            breakpoint = bps.get(line + 1, None)
             handle = tab.markerAdd(line, tab.BREAKPOINT_MARKER)
             tab.breakpoint_handles.add(handle)
             if breakpoint:
