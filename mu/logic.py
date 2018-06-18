@@ -886,8 +886,10 @@ class Editor:
         Given a path, returns either an existing tab for the path or creates /
         loads a new tab for the path.
         """
+        normalised_path = os.path.normcase(os.path.abspath(path))
         for tab in self._view.widgets:
-            if tab.path == path:
+            tab_path = os.path.normcase(os.path.abspath(tab.path))
+            if tab_path == normalised_path:
                 self._view.focus_tab(tab)
                 return tab
         self.direct_load(path)
