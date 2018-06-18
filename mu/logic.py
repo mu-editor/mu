@@ -888,10 +888,11 @@ class Editor:
         """
         normalised_path = os.path.normcase(os.path.abspath(path))
         for tab in self._view.widgets:
-            tab_path = os.path.normcase(os.path.abspath(tab.path))
-            if tab_path == normalised_path:
-                self._view.focus_tab(tab)
-                return tab
+            if tab.path:
+                tab_path = os.path.normcase(os.path.abspath(tab.path))
+                if tab_path == normalised_path:
+                    self._view.focus_tab(tab)
+                    return tab
         self.direct_load(path)
         return self._view.current_tab
 

@@ -1338,6 +1338,22 @@ def test_get_tab_new_tab():
     assert tab == view.current_tab
 
 
+def test_get_tab_no_path():
+    """
+    Any tabs with no associated path are ignored (i.e. tabs that have been
+    newly created but remain unsaved).
+    """
+    view = mock.MagicMock()
+    mock_tab = mock.MagicMock()
+    mock_tab.path = None
+    view.widgets = [mock_tab, ]
+    ed = mu.logic.Editor(view)
+    ed.direct_load = mock.MagicMock()
+    tab = ed.get_tab('bar')
+    ed.direct_load.assert_called_once_with('bar')
+    assert tab == view.current_tab
+
+
 def test_zoom_in():
     """
     Ensure the UI layer is zoomed in.
