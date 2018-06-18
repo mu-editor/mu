@@ -11,7 +11,7 @@ with open('README.rst') as f:
 with open('CHANGES.rst') as f:
     changes = f.read()
 
-install_requires = ['pycodestyle==2.3.1', 'pyflakes==1.6.0',
+install_requires = ['pycodestyle>=2.3.1,<3', 'pyflakes==1.6.0',
                     'pyserial==3.4', 'pyqt5==5.10.1', 'qscintilla>=2.10',
                     'qtconsole==4.3.1', 'matplotlib==2.1.2',
                     'pgzero==1.2', 'PyQtChart>=5.10', 'appdirs>=1.4.3',
