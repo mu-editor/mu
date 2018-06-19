@@ -2089,7 +2089,8 @@ def test_debug_toggle_breakpoint_off():
         'python': mock_debugger,
     }
     ed.mode = 'python'
-    ed.debug_toggle_breakpoint(1, 10, False)
+    with mock.patch('mu.logic.is_breakpoint_line', return_value=True):
+        ed.debug_toggle_breakpoint(1, 10, False)
     view.current_tab.markerDelete.\
         assert_called_once_with(10, -1)
 
