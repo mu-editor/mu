@@ -21,6 +21,7 @@ import os.path
 from mu.modes.base import BaseMode
 from mu.logic import DEBUGGER_PORT, write_and_flush
 from mu.debugger.client import Debugger
+from mu.debugger.utils import is_breakpoint_line
 
 
 logger = logging.getLogger(__name__)
@@ -225,15 +226,24 @@ class DebugMode(BaseMode):
     def debug_on_bootstrap(self):
         """
         Once the debugger is bootstrapped ensure all the current breakpoints
-        are set.
+        are set. Do not set breakpoints (and remove the marker) if:
+
+        * The marker is not visible (the line is -1)
+        * The marker is not a duplicate of an existing line.
+        * The line with the marker is not a valid breakpoint line.
         """
         for tab in self.view.widgets:
+            break_lines = set()
             for handle in list(tab.breakpoint_handles):
                 line = tab.markerLine(handle)
-                if line > -1:
+                code = tab.text(line)
+                if line > -1 and line not in break_lines and \
+                        is_breakpoint_line(code):
                     self.debugger.create_breakpoint(tab.path, line + 1)
+                    break_lines.add(line)
                 else:
                     tab.breakpoint_handles.remove(handle)
+                    tab.markerDelete(line, -1)
         # Start the script running.
         self.debugger.do_run()
 

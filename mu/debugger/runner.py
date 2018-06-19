@@ -410,7 +410,10 @@ class Debugger(bdb.Bdb):
         Stop only at breakpoints or when finished. If there are no breakpoints,
         set the system trace function to None.
         """
-        self.set_continue()
+        if self.get_all_breaks():
+            self.set_continue()
+        else:
+            self.set_trace()
         return True
 
     def do_quit(self):
