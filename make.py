@@ -166,10 +166,17 @@ def check():
     """Run all the checkers and tests
     """
     print("\nCheck")
-    clean()
-    pyflakes()
-    pycodestyle()
-    coverage()
+    funcs = [
+        clean,
+        pyflakes,
+        pycodestyle,
+        coverage
+    ]
+    for func in funcs:
+        return_code = func()
+        if return_code != 0:
+            return return_code
+    return 0
 
 
 @export
@@ -185,6 +192,7 @@ def clean():
     _rmtree("lib")
     _rmtree("pynsist_pkgs")
     _rmfiles(".", "*.pyc")
+    return 0
 
 
 @export
@@ -226,7 +234,7 @@ def run():
     if not os.environ.get("VIRTUAL_ENV"):
         raise RuntimeError("Cannot run Mu;"
                            "your Python virtualenv is not activated")
-    subprocess.run(["python", "-m", "mu"]).returncode
+    return subprocess.run(["python", "-m", "mu"]).returncode
 
 
 @export
@@ -235,7 +243,9 @@ def dist():
     """
     check()
     print("Checks pass; good to package")
-    subprocess.run(["python", "setup.py", "sdist", "bdist_wheel"]).returncode
+    return subprocess.run(
+        ["python", "setup.py", "sdist", "bdist_wheel"]
+    ).returncode
 
 
 @export
@@ -285,6 +295,8 @@ def docs():
     os.chdir("docs")
     try:
         return subprocess.run(["cmd", "/c", "make.bat", "html"]).returncode
+    except Exception:
+        return 1
     finally:
         os.chdir(cwd)
 
