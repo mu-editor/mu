@@ -60,8 +60,7 @@ script:
   # Package it for OSX
   #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then echo "[install]" >> setup.cfg; echo "prefix=" >> setup.cfg; fi
   #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo mkdir -p /lib/python3.6/site-packages/; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.2/python3-reduced.tar.gz; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 package/osx_adjustments.py; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.5/python3-reduced.tar.gz; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir dist; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then dmgbuild -s package/dmg_settings.py "Mu Editor" dist/mu-editor.dmg; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then du -sk dist/; fi
@@ -81,7 +80,7 @@ deploy:
   acl: public_read
   on:
     repo: mu-editor/mu
-    branch: [master]
+    branch: [master, debug_update]
     condition: $TRAVIS_OS_NAME = "osx"
 
 notifications:

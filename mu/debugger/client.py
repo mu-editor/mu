@@ -20,6 +20,7 @@ import json
 import socket
 import time
 import logging
+import os.path
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
 
 
@@ -231,6 +232,7 @@ class Debugger(QObject):
         try:
             if isinstance(breakpoint, tuple):
                 filename, line = breakpoint
+                filename = os.path.abspath(os.path.abspath(filename))
                 return self.bp_index[filename][line]
             else:
                 return self.bp_list[breakpoint]
@@ -241,7 +243,8 @@ class Debugger(QObject):
         """
         Return all the breakpoints associated with the referenced file.
         """
-        return self.bp_index.get(filename, {})
+        normalised = os.path.normcase(os.path.abspath(filename))
+        return self.bp_index.get(normalised, {})
 
     # Commands that can be passed to the debug runner.
 
@@ -322,7 +325,8 @@ class Debugger(QObject):
         The runner has created a breakpoint.
         """
         bp = Breakpoint(**bp_data)
-        self.bp_index.setdefault(bp.filename, {}).setdefault(bp.line, bp)
+        filename = os.path.normcase(os.path.abspath(bp.filename))
+        self.bp_index.setdefault(filename, {}).setdefault(bp.line, bp)
         self.bp_list.append(bp)
         if bp.enabled:
             self.view.debug_on_breakpoint_enable(bp)
