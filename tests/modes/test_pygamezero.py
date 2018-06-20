@@ -62,12 +62,14 @@ def test_pgzero_play_toggle_on():
         pm.runner = True
 
     pm.run_game = mock.MagicMock(side_effect=runner)
+    pm.set_buttons = mock.MagicMock()
     pm.play_toggle(None)
     pm.run_game.assert_called_once_with()
     slot = pm.view.button_bar.slots['play']
     assert slot.setIcon.call_count == 1
     slot.setText.assert_called_once_with('Stop')
     slot.setToolTip.assert_called_once_with('Stop your Pygame Zero game.')
+    pm.set_buttons.assert_called_once_with(modes=False)
 
 
 def test_pgzero_play_toggle_on_cancelled():
@@ -96,12 +98,14 @@ def test_pgzero_play_toggle_off():
     pm = PyGameZeroMode(editor, view)
     pm.runner = True
     pm.stop_game = mock.MagicMock()
+    pm.set_buttons = mock.MagicMock()
     pm.play_toggle(None)
     pm.stop_game.assert_called_once_with()
     slot = pm.view.button_bar.slots['play']
     assert slot.setIcon.call_count == 1
     slot.setText.assert_called_once_with('Play')
     slot.setToolTip.assert_called_once_with('Play your Pygame Zero game.')
+    pm.set_buttons.assert_called_once_with(modes=True)
 
 
 def test_pgzero_run_game():

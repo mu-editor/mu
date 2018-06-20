@@ -45,6 +45,40 @@ def test_MicroPythonREPLPane_paste():
     mock_serial.write.assert_called_once_with(bytes('paste me!', 'utf8'))
 
 
+def test_MicroPythonREPLPane_paste_handle_unix_newlines():
+    """
+    Pasting into the REPL should handle '\n' properly.
+
+    '\n' -> '\r'
+    """
+    mock_serial = mock.MagicMock()
+    mock_clipboard = mock.MagicMock()
+    mock_clipboard.text.return_value = 'paste\nme!'
+    mock_application = mock.MagicMock()
+    mock_application.clipboard.return_value = mock_clipboard
+    with mock.patch('mu.interface.panes.QApplication', mock_application):
+        rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+        rp.paste()
+    mock_serial.write.assert_called_once_with(bytes('paste\rme!', 'utf8'))
+
+
+def test_MicroPythonREPLPane_paste_handle_windows_newlines():
+    """
+    Pasting into the REPL should handle '\r\n' properly.
+
+    '\r\n' -> '\r'
+    """
+    mock_serial = mock.MagicMock()
+    mock_clipboard = mock.MagicMock()
+    mock_clipboard.text.return_value = 'paste\r\nme!'
+    mock_application = mock.MagicMock()
+    mock_application.clipboard.return_value = mock_clipboard
+    with mock.patch('mu.interface.panes.QApplication', mock_application):
+        rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+        rp.paste()
+    mock_serial.write.assert_called_once_with(bytes('paste\rme!', 'utf8'))
+
+
 def test_MicroPythonREPLPane_paste_only_works_if_there_is_something_to_paste():
     """
     Pasting into the REPL should send bytes via the serial connection.

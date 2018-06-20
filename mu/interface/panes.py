@@ -25,7 +25,6 @@ import signal
 import string
 import bisect
 import os.path
-import mu
 from PyQt5.QtCore import Qt, QProcess, QProcessEnvironment, pyqtSignal, QTimer
 from collections import deque
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
@@ -144,7 +143,9 @@ class MicroPythonREPLPane(QTextEdit):
         """
         clipboard = QApplication.clipboard()
         if clipboard and clipboard.text():
-            self.serial.write(bytes(clipboard.text(), 'utf8'))
+            to_paste = clipboard.text().replace('\n', '\r').\
+                replace('\r\r', '\r')
+            self.serial.write(bytes(to_paste, 'utf8'))
 
     def context_menu(self):
         """
@@ -651,7 +652,8 @@ class PythonProcessPane(QTextEdit):
         logger.info('Python path: {}'.format(sys.path))
         if debugger:
             # Start the mu-debug runner for the script.
-            mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
+            parent_dir = os.path.join(os.path.dirname(__file__), '..')
+            mu_dir = os.path.abspath(parent_dir)
             runner = os.path.join(mu_dir, 'mu-debug.py')
             python_exec = sys.executable
             args = [runner, self.script, ] + command_args

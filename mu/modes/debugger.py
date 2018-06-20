@@ -21,6 +21,7 @@ import os.path
 from mu.modes.base import BaseMode
 from mu.logic import DEBUGGER_PORT, write_and_flush
 from mu.debugger.client import Debugger
+from mu.debugger.utils import is_breakpoint_line
 
 
 logger = logging.getLogger(__name__)
@@ -154,15 +155,8 @@ class DebugMode(BaseMode):
         self.set_buttons(**buttons)
         self.editor.show_status_message(_("Your script has finished running."))
         for tab in self.view.widgets:
-            tab.markerDeleteAll()
-            tab.breakpoint_lines = set()
             tab.setSelection(0, 0, 0, 0)
-            if hasattr(self.debugger, 'bp_index'):
-                for line, breakpoint in \
-                        self.debugger.breakpoints(tab.path).items():
-                    if breakpoint.enabled:
-                        tab.markerAdd(line - 1, tab.BREAKPOINT_MARKER)
-                        tab.breakpoint_lines.add(line - 1)
+            tab.reset_debugger_highlight()
 
     def button_stop(self, event):
         """
@@ -199,12 +193,14 @@ class DebugMode(BaseMode):
         Toggle a breakpoint in the debugger.
         """
         bps = self.debugger.breakpoints(tab.path)
+        breakpoint = bps.get(line + 1, None)
         if tab.markersAtLine(line):
-            self.debugger.disable_breakpoint(bps[line + 1])
+            if breakpoint:
+                self.debugger.disable_breakpoint(breakpoint)
             tab.markerDelete(line, tab.BREAKPOINT_MARKER)
         else:
-            breakpoint = bps.get(line + 1, None)
-            tab.markerAdd(line, tab.BREAKPOINT_MARKER)
+            handle = tab.markerAdd(line, tab.BREAKPOINT_MARKER)
+            tab.breakpoint_handles.add(handle)
             if breakpoint:
                 self.debugger.enable_breakpoint(breakpoint)
             else:
@@ -230,11 +226,24 @@ class DebugMode(BaseMode):
     def debug_on_bootstrap(self):
         """
         Once the debugger is bootstrapped ensure all the current breakpoints
-        are set.
+        are set. Do not set breakpoints (and remove the marker) if:
+
+        * The marker is not visible (the line is -1)
+        * The marker is not a duplicate of an existing line.
+        * The line with the marker is not a valid breakpoint line.
         """
         for tab in self.view.widgets:
-            for line in tab.breakpoint_lines:
-                self.debugger.create_breakpoint(tab.path, line + 1)
+            break_lines = set()
+            for handle in list(tab.breakpoint_handles):
+                line = tab.markerLine(handle)
+                code = tab.text(line)
+                if line > -1 and line not in break_lines and \
+                        is_breakpoint_line(code):
+                    self.debugger.create_breakpoint(tab.path, line + 1)
+                    break_lines.add(line)
+                else:
+                    tab.breakpoint_handles.remove(handle)
+                    tab.markerDelete(line, -1)
         # Start the script running.
         self.debugger.do_run()
 
@@ -243,7 +252,8 @@ class DebugMode(BaseMode):
         Handle when a breakpoint is enabled.
         """
         tab = self.view.current_tab
-        tab.markerAdd(breakpoint.line - 1, tab.BREAKPOINT_MARKER)
+        if not tab.markersAtLine(breakpoint.line - 1):
+            tab.markerAdd(breakpoint.line - 1, tab.BREAKPOINT_MARKER)
 
     def debug_on_breakpoint_disable(self, breakpoint):
         """
@@ -262,7 +272,7 @@ class DebugMode(BaseMode):
             return
         self.view.current_tab.setSelection(0, 0, 0, 0)
         tab = self.editor.get_tab(filename)
-        tab.setSelection(line - 1, 0, line, 0)
+        tab.debugger_at_line(line - 1)
 
     def debug_on_stack(self, stack):
         """

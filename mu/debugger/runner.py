@@ -23,9 +23,11 @@ import json
 import bdb
 import linecache
 import logging
+import traceback
 from enum import Enum
 from queue import Queue
 from threading import Thread
+from mu.debugger.utils import is_breakpoint_line
 
 
 logger = logging.getLogger(__name__)
@@ -131,10 +133,11 @@ class Debugger(bdb.Bdb):
         further extra frames. All these frames can be ignored.
         """
         str_index = 0
-        if self.stack[1][0].f_code.co_filename == '<string>':
-            str_index = 2
-        elif self.stack[3][0].f_code.co_filename == '<string>':
-            str_index = 4
+        sl = len(self.stack)  # Bound check for stack length.
+        if sl > 1 and self.stack[1][0].f_code.co_filename == '<string>':
+                str_index = 2
+        elif sl > 3 and self.stack[3][0].f_code.co_filename == '<string>':
+                str_index = 4
         stack_data = []
         if str_index > 0:
             for frame, line_no in self.stack[str_index:]:
@@ -251,9 +254,6 @@ class Debugger(bdb.Bdb):
         For when we stop or break at this line.
         """
         if self._run_state == DebugState.STARTING:
-            if (self.mainpyfile != self.canonic(frame.f_code.co_filename) or
-                    frame.f_lineno <= 0):
-                return
             self._run_state = DebugState.STARTED
         self.output('line', filename=self.canonic(frame.f_code.co_filename),
                     line=frame.f_lineno)
@@ -297,7 +297,9 @@ class Debugger(bdb.Bdb):
         """
         Set a breakpoint.
         """
-        if self.is_executable_line(filename, line):
+        globs = self.curframe.f_globals if hasattr(self, 'curframe') else None
+        code = linecache.getline(filename, line, globs)
+        if is_breakpoint_line(code):
             err = self.set_break(filename, line, temporary, None, None)
             if err:
                 self.output('error', message=err)
@@ -314,22 +316,6 @@ class Debugger(bdb.Bdb):
         else:
             self.output('error', message='{}:{} is not executable'.format(
                 filename, line))
-
-    def is_executable_line(self, filename, line):
-        """
-        Return a boolean indication if the specified line is executable.
-        """
-        globs = self.curframe.f_globals if hasattr(self, 'curframe') else None
-        code = linecache.getline(filename, line, globs)
-        if not code:
-            return False
-        code = code.strip()
-        # Can't set breakpoints on blank lines or comments.
-        # TODO: Make this more robust.
-        if ((not code) or code[0] == '#' or code[:3] == '"""' or
-                code[:3] == "'''"):
-            return False
-        return True
 
     def do_enable(self, bpnum):
         """
@@ -424,7 +410,10 @@ class Debugger(bdb.Bdb):
         Stop only at breakpoints or when finished. If there are no breakpoints,
         set the system trace function to None.
         """
-        self.set_continue()
+        if self.get_all_breaks():
+            self.set_continue()
+        else:
+            self.set_trace()
         return True
 
     def do_quit(self):
@@ -505,11 +494,11 @@ def run(hostname, port, filename, *args):
         except (KeyboardInterrupt, SystemExit, OSError):
             debugger.client = None
             break
-        except Exception as ex:
-            msg = repr(ex)
+        except Exception:
+            msg = traceback.format_exc()
             debugger.output('postmortem', exception=msg)
-            t = sys.exc_info()[2]
-            debugger.interact(None, t)
+            debugger.client = None
+            break
     # Close connection in a tidy manner.
     if debugger.client:
         debugger.client.shutdown(socket.SHUT_WR)

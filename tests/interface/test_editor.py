@@ -247,6 +247,38 @@ def test_EditorPane_annotate_code():
     assert ep.fillIndicatorRange.call_count == 3  # once for each message.
 
 
+def test_EditorPane_debugger_at_line():
+    """
+    Ensure the right calls are made to highlight the referenced line with the
+    DEBUG_INDICATOR.
+    """
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    ep.text = mock.MagicMock(return_value='baz')
+    ep.reset_debugger_highlight = mock.MagicMock()
+    ep.fillIndicatorRange = mock.MagicMock()
+    ep.ensureLineVisible = mock.MagicMock()
+    ep.debugger_at_line(99)
+    ep.reset_debugger_highlight.assert_called_once_with()
+    ep.text.assert_called_once_with(99)
+    ep.fillIndicatorRange.assert_called_once_with(99, 0, 99, 3,
+                                                  ep.DEBUG_INDICATOR)
+    ep.ensureLineVisible.assert_called_once_with(99)
+
+
+def test_EditorPane_reset_debugger_highlight():
+    """
+    Ensure all DEBUG_INDICATORs are removed from the editor.
+    """
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    ep.lines = mock.MagicMock(return_value=3)
+    ep.text = mock.MagicMock(return_value='baz')
+    ep.clearIndicatorRange = mock.MagicMock()
+    ep.reset_debugger_highlight()
+    assert ep.clearIndicatorRange.call_count == 3
+    assert ep.clearIndicatorRange.call_args_list[0][0] == (0, 0, 0, 3,
+                                                           ep.DEBUG_INDICATOR)
+
+
 def test_EditorPane_show_annotations():
     """
     Ensure the annotations are shown in "sentence" case and with an arrow to
