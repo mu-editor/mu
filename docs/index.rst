@@ -63,6 +63,15 @@ Mu could be turned into a generic beginner's code editor and, thanks to the
 wonderful support of the `Raspberry Pi Foundation <http://raspberrypi.org/>`_
 the work needed to make such changes was done over the summer of 2017.
 
+The following video of a talk given at `PyCon 2018 <https://us.pycon.org/2018/>`_
+outlines the story of Mu:
+
+.. raw:: html
+
+    <div style="position: relative; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/T5IAf5vGGSk?rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+
 How?
 ----
 

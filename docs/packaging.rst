@@ -163,27 +163,35 @@ to download the appropriate tkinter-related resources from
 OSX App Installer
 +++++++++++++++++
 
-Currently we use Pyinstaller to create an executable asset that doesn't work
-properly due to the limitations of Pyinstaller.
+We use Travis to automate the building of the .app and .dmg installer (see the
+``.travis`` file in the root of Mu's GIT repository for the steps involved). 
+This process is controlled by
+`Briefcase (part of the BeeWare suite of tools <https://briefcase.readthedocs.io/en/latest/>`_
+which piggy-backs onto the ``setup.py`` script to build the necessary assets.
+To ensure Mu has Python 3 available for it to both run and use for evaluating
+users' scripts, we have created a portable/embeddable Python runtime whose
+automated build scripts can be found
+`in this repository <https://github.com/mu-editor/mu_portable_python_macos>`_.
+This (not the version of Python on the user's machine) the version of Python
+used by Mu.
 
-Work is in progress to move to `py2app <https://py2app.readthedocs.io/en/latest/>`_
-as an alternative solution (pending further experiments).
+The end result of submitting a commit to Mu's master branch is an
+automatically generated installable for OSX. These assets are un-signed, so OSX
+will complain about Mu coming from an unknown developer. However, for full
+releases we sign the .app with our Apple developer key (a manual process).
 
 Linux Packages
 ++++++++++++++
 
-Currently we use Pyinstaller to create an executable asset that doesn't work
-properly due to the limitations of Pyinstaller. We encourage people who use
-Linux to use ``pip`` (as described above) or their native package manager
-(see below).
+We don't automatically create packages for Linux distros. However, we liaise
+with upstream developers to ensure that Mu finds its way into both Debian and
+Fedora based distributions.
 
 Debian
 ======
 
-All the necessary files needed to create a .deb file for Mu have been created
-for Raspbian. However, this work hasn't yet made it into upstream Debian.
-
-Please get in touch if you can help out with this.
+Work on packaging for Debian is at an advanced stage and ongoing. You can
+track progress at `this ticket <https://github.com/mu-editor/mu/issues/58>`_.
 
 Fedora
 ======
