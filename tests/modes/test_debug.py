@@ -189,6 +189,7 @@ def test_debug_button_continue():
     dm.debugger = mock.MagicMock()
     dm.button_continue(None)
     dm.debugger.do_run.assert_called_once_with()
+    assert view.current_tab.reset_debugger_highlight.call_count == 1
 
 
 def test_debug_button_step_over():
@@ -201,6 +202,7 @@ def test_debug_button_step_over():
     dm.debugger = mock.MagicMock()
     dm.button_step_over(None)
     dm.debugger.do_next.assert_called_once_with()
+    assert view.current_tab.reset_debugger_highlight.call_count == 1
 
 
 def test_debug_button_step_in():
@@ -213,6 +215,7 @@ def test_debug_button_step_in():
     dm.debugger = mock.MagicMock()
     dm.button_step_in(None)
     dm.debugger.do_step.assert_called_once_with()
+    assert view.current_tab.reset_debugger_highlight.call_count == 1
 
 
 def test_debug_button_step_out():
@@ -225,6 +228,7 @@ def test_debug_button_step_out():
     dm.debugger = mock.MagicMock()
     dm.button_step_out(None)
     dm.debugger.do_return.assert_called_once_with()
+    assert view.current_tab.reset_debugger_highlight.call_count == 1
 
 
 def test_debug_toggle_breakpoint_off():

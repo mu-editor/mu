@@ -168,24 +168,28 @@ class DebugMode(BaseMode):
         """
         Button clicked to continue running the script.
         """
+        self.view.current_tab.reset_debugger_highlight()
         self.debugger.do_run()
 
     def button_step_over(self, event):
         """
         Button clicked to step over the current line of code.
         """
+        self.view.current_tab.reset_debugger_highlight()
         self.debugger.do_next()
 
     def button_step_in(self, event):
         """
         Button clicked to step into the current block of code.
         """
+        self.view.current_tab.reset_debugger_highlight()
         self.debugger.do_step()
 
     def button_step_out(self, event):
         """
         Button clicked to step out of the current block of code.
         """
+        self.view.current_tab.reset_debugger_highlight()
         self.debugger.do_return()
 
     def toggle_breakpoint(self, line, tab):
