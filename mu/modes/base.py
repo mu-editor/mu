@@ -93,9 +93,6 @@ class BaseMode(QObject):
         self.view = view
         super().__init__()
 
-    def actions_dynamic(self):
-        return False
-
     def actions(self):
         """
         Return an ordered list of actions provided by this module. An action

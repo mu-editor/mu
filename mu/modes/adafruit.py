@@ -55,9 +55,6 @@ class AdafruitMode(MicroPythonMode):
         (0x239A, 0x802E),  # Adafruit CRICKit M0
     ]
 
-    def actions_dynamic(self):
-        return True
-
     def actions(self):
         """
         Return an ordered list of actions provided by this module. An action
@@ -71,14 +68,13 @@ class AdafruitMode(MicroPythonMode):
                 'handler': self.toggle_repl,
                 'shortcut': 'CTRL+Shift+S',
             }, ]
-        if not self.workspace_dir_cp() and self.workspace_cp_avail():
-            buttons.append({
-                'name': 'run',
-                'display_name': _('Run'),
-                'description': _('Run your current file on CIRCUITPY'),
-                'handler': self.run,
-                'shortcut': 'CTRL+Shift+R',
-            })
+        buttons.append({
+            'name': 'run',
+            'display_name': _('Run'),
+            'description': _('Save and run your current file on CIRCUITPY'),
+            'handler': self.run,
+            'shortcut': 'CTRL+Shift+R',
+        })
         if CHARTS:
             buttons.append({
                 'name': 'plotter',
@@ -152,30 +148,37 @@ class AdafruitMode(MicroPythonMode):
             # after warning the user.
             wd = super().workspace_dir()
             if self.connected:
-                if self.workspace_dir_cp() and not self.workspace_cp_avail():
-                    m = _('Could not find an attached Adafruit CircuitPython'
-                          ' device.')
-                    info = _("Python files for Adafruit CircuitPython devices"
-                             " are stored on the device. Therefore, to edit"
-                             " these files you need to have the device plugged"
-                             " in. Until you plug in a device, Mu will use the"
-                             " directory found here:\n\n"
-                             " {}\n\n...to store your code.")
-                    self.view.show_message(m, info.format(wd))
-
+                m = _('Could not find an attached Adafruit CircuitPython'
+                      ' device.')
+                info = _("Python files for Adafruit CircuitPython devices"
+                         " are stored on the device. Therefore, to edit"
+                         " these files you need to have the device plugged"
+                         " in. Until you plug in a device, Mu will use the"
+                         " directory found here to store new files:\n\n"
+                         " {}\n\n...to store your code.")
+                self.view.show_message(m, info.format(wd))
                 self.connected = False
             return wd
 
     def workspace_dir_cp(self):
+        """
+        Is the file currently being edited located on CIRCUITPY.
+        """
         return "CIRCUITPY" in str(get_pathname(self))
 
     def workspace_cp_avail(self):
+        """
+        Is CIRCUITPY available.
+        """
         return "CIRCUITPY" in str(self.workspace_dir())
 
     def run(self, event):
-        if not self.workspace_dir_cp() and self.workspace_cp_avail():
-            self.editor.save()
+        """
+        Save the file and copy to CIRCUITPY if not already there and available.
+        """
+        self.editor.save()
 
+        if not self.workspace_dir_cp() and self.workspace_cp_avail():
             pathname = get_pathname(self)
             if pathname:
                 destination = self.workspace_dir() + "/code.py"

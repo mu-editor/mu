@@ -809,9 +809,6 @@ class Editor:
         if path:
             self._load(path)
 
-        if self.modes[self.mode].actions_dynamic():
-            self.change_mode(self.mode)
-
     def direct_load(self, path):
         """ for loading files passed from command line or the OS launch"""
         self._load(path)
@@ -895,8 +892,6 @@ class Editor:
         else:
             # The user cancelled the filename selection.
             tab.path = None
-        if self.modes[self.mode].actions_dynamic():
-            self.change_mode(self.mode)
 
     def get_tab(self, path):
         """
@@ -1104,9 +1099,8 @@ class Editor:
             for tab in self._view.widgets:
                 tab.breakpoint_handles = set()
                 tab.reset_annotations()
-        if not self.modes[self.mode].actions_dynamic():
-            self.show_status_message(_('Changed to {} mode.').format(
-                mode.capitalize()))
+        self.show_status_message(_('Changed to {} mode.').format(
+            mode.capitalize()))
 
     def autosave(self):
         """
