@@ -252,7 +252,8 @@ class DebugMode(BaseMode):
         Handle when a breakpoint is enabled.
         """
         tab = self.view.current_tab
-        if not tab.markersAtLine(breakpoint.line - 1):
+        if tab.path == breakpoint.filename and \
+                not tab.markersAtLine(breakpoint.line - 1):
             tab.markerAdd(breakpoint.line - 1, tab.BREAKPOINT_MARKER)
 
     def debug_on_breakpoint_disable(self, breakpoint):
