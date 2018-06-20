@@ -242,9 +242,11 @@ def test_EditorPane_annotate_code():
               'code': 'W292'}]}
     ep = mu.interface.editor.EditorPane(None, 'baz')
     ep.markerAdd = mock.MagicMock()
+    ep.ensureLineVisible = mock.MagicMock()
     ep.fillIndicatorRange = mock.MagicMock()
     ep.annotate_code(feedback, 'error')
     assert ep.fillIndicatorRange.call_count == 3  # once for each message.
+    ep.ensureLineVisible.assert_called_once_with(17)  # first problem visible
 
 
 def test_EditorPane_debugger_at_line():

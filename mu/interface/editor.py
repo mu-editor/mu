@@ -275,6 +275,10 @@ class EditorPane(QsciScintilla):
                     col_end = col + 1
                     self.fillIndicatorRange(line_no, col_start, line_no,
                                             col_end, indicator['id'])
+        if feedback:
+            # Ensure the first line with a problem is visible.
+            first_problem_line = sorted(feedback.keys())[0]
+            self.ensureLineVisible(first_problem_line)
 
     def debugger_at_line(self, line):
         """
