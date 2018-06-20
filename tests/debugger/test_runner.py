@@ -787,6 +787,20 @@ def test_Debugger_do_continue_no_breakpoints():
     db.set_trace = mock.MagicMock()
     assert db.do_continue()
     db.set_trace.assert_called_once_with()
+    assert db.continue_flag is True
+
+
+def test_Debugger_do_continue_no_breakpoints_continue_flag_set():
+    """
+    Calls set_continue and returns True
+    """
+    mock_socket = mock.MagicMock()
+    db = mu.debugger.runner.Debugger(mock_socket, 'localhost', 9999)
+    db.get_all_breaks = mock.MagicMock(return_value=False)
+    db.set_continue = mock.MagicMock()
+    db.continue_flag = True
+    assert db.do_continue()
+    db.set_continue.assert_called_once_with()
 
 
 def test_Debugger_do_quit():
