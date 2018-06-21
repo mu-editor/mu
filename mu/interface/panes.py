@@ -457,6 +457,7 @@ class FileSystemPane(QFrame):
         self.font = Font().load()
         microbit_fs = MicrobitFileList(home)
         local_fs = LocalFileList(home)
+
         @local_fs.open_file.connect
         def on_open_file(file):
             # Bubble the signal up

@@ -365,6 +365,7 @@ class Window(QMainWindow):
         Adds the file system pane to the application.
         """
         self.fs_pane = FileSystemPane(home)
+
         @self.fs_pane.open_file.connect
         def on_open_file(file):
             # Bubble the signal up

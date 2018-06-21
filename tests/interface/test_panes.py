@@ -607,6 +607,30 @@ def test_LocalFileList_on_get():
     lfs.list_files.emit.assert_called_once_with()
 
 
+def test_LocalFileList_contextMenuEvent():
+    """
+    Ensure that the menu displayed when a local file is
+    right-clicked works as expected when activated.
+    """
+    mock_menu = mock.MagicMock()
+    mock_action = mock.MagicMock()
+    mock_menu.addAction.return_value = mock_action
+    mock_menu.exec_.return_value = mock_action
+    mfs = mu.interface.panes.LocalFileList('homepath')
+    mock_open = mock.MagicMock()
+    mfs.open_file.connect(mock_open)
+    mock_current = mock.MagicMock()
+    mock_current.text.return_value = 'foo.py'
+    mfs.currentItem = mock.MagicMock(return_value=mock_current)
+    mfs.set_message = mock.MagicMock()
+    mfs.mapToGlobal = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QMenu', return_value=mock_menu):
+        mfs.contextMenuEvent(mock_event)
+    assert mfs.set_message.emit.call_count == 1
+    mock_open.assert_called_once_with('foo.py')
+
+
 def test_FileSystemPane_init():
     """
     Check things are set up as expected.
