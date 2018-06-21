@@ -861,6 +861,18 @@ def test_FileSystemPane_zoom_in():
     fsp.set_font_size.assert_called_once_with(expected)
 
 
+def test_FileSystemPane_open_file():
+    """
+    FileSystemPane should propogate the open_file signal
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.open_file = mock.MagicMock()
+    mock_open_emit = mock.MagicMock()
+    fsp.open_file.emit = mock_open_emit
+    fsp.local_fs.open_file.emit('test')
+    mock_open_emit.assert_called_once_with('test')
+
+
 def test_FileSystemPane_zoom_out():
     """
     Ensure the font is re-set smaller when zooming out.
