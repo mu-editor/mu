@@ -613,12 +613,15 @@ def test_LocalFileList_contextMenuEvent():
     right-clicked works as expected when activated.
     """
     mock_menu = mock.MagicMock()
-    mock_action = mock.MagicMock()
-    mock_menu.addAction.return_value = mock_action
-    mock_menu.exec_.return_value = mock_action
+    mock_action_first = mock.MagicMock()
+    mock_action_second = mock.MagicMock()
+    mock_menu.addAction.side_effect = [mock_action_first,
+                                       mock_action_second]
+    mock_menu.exec_.return_value = mock_action_first
     mfs = mu.interface.panes.LocalFileList('homepath')
     mock_open = mock.MagicMock()
-    mfs.open_file.connect(mock_open)
+    mfs.open_file = mock.MagicMock()
+    mfs.open_file.emit = mock_open
     mock_current = mock.MagicMock()
     mock_current.text.return_value = 'foo.py'
     mfs.currentItem = mock.MagicMock(return_value=mock_current)
@@ -627,8 +630,32 @@ def test_LocalFileList_contextMenuEvent():
     mock_event = mock.MagicMock()
     with mock.patch('mu.interface.panes.QMenu', return_value=mock_menu):
         mfs.contextMenuEvent(mock_event)
+    assert mfs.set_message.emit.call_count == 0
+    mock_open.assert_called_once_with('homepath/foo.py')
+
+def test_LocalFileList_contextMenuEvent_external():
+    """
+    Ensure that the menu displayed when a local file is
+    right-clicked works as expected when activated.
+    """
+    mock_menu = mock.MagicMock()
+    mock_action = mock.MagicMock()
+    mock_menu.addAction.side_effect = [mock_action, mock.MagicMock()]
+    mock_menu.exec_.return_value = mock_action
+    mfs = mu.interface.panes.LocalFileList('homepath')
+    mock_open = mock.MagicMock()
+    mfs.open_file = mock.MagicMock()
+    mfs.open_file.emit = mock_open
+    mock_current = mock.MagicMock()
+    mock_current.text.return_value = 'foo.qwerty'
+    mfs.currentItem = mock.MagicMock(return_value=mock_current)
+    mfs.set_message = mock.MagicMock()
+    mfs.mapToGlobal = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QMenu', return_value=mock_menu):
+        mfs.contextMenuEvent(mock_event)
     assert mfs.set_message.emit.call_count == 1
-    mock_open.assert_called_once_with('foo.py')
+    assert mock_open.call_count == 0
 
 
 def test_FileSystemPane_init():
