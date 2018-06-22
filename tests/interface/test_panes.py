@@ -633,6 +633,7 @@ def test_LocalFileList_contextMenuEvent():
     assert mfs.set_message.emit.call_count == 0
     mock_open.assert_called_once_with('homepath/foo.py')
 
+
 def test_LocalFileList_contextMenuEvent_external():
     """
     Ensure that the menu displayed when a local file is
