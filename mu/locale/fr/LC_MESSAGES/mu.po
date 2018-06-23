@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-06-05 21:45+0200\n"
-"PO-Revision-Date: 2018-06-05 23:26+0200\n"
+"POT-Creation-Date: 2018-06-23 14:06+0200\n"
+"PO-Revision-Date: 2018-06-23 17:06+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -17,15 +17,517 @@ msgstr ""
 "X-Generator: Poedit 1.8.7.1\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+#: .venv/lib/python3.5/site-packages/sphinx/builders/changes.py:85
+msgid "Builtins"
+msgstr "Intégrations"
+
+#: .venv/lib/python3.5/site-packages/sphinx/builders/changes.py:87
+msgid "Module level"
+msgstr "Niveau du module"
+
+#: .venv/lib/python3.5/site-packages/sphinx/builders/html.py:444
+#: .venv/lib/python3.5/site-packages/sphinx/transforms/__init__.py:127
+#: .venv/lib/python3.5/site-packages/sphinx/writers/latex.py:500
+#: .venv/lib/python3.5/site-packages/sphinx/writers/manpage.py:110
+#: .venv/lib/python3.5/site-packages/sphinx/writers/texinfo.py:240
+msgid "%b %d, %Y"
+msgstr "%d %b %Y"
+
+#: .venv/lib/python3.5/site-packages/sphinx/builders/html.py:462
+msgid "General Index"
+msgstr "Index Général"
+
+#: .venv/lib/python3.5/site-packages/sphinx/builders/html.py:462
+msgid "index"
+msgstr "index"
+
+#: .venv/lib/python3.5/site-packages/sphinx/builders/html.py:526
+msgid "next"
+msgstr "suivant"
+
+#: .venv/lib/python3.5/site-packages/sphinx/builders/html.py:535
+msgid "previous"
+msgstr "précédent"
+
+#: .venv/lib/python3.5/site-packages/sphinx/builders/latex/__init__.py:207
+#: .venv/lib/python3.5/site-packages/sphinx/builders/texinfo.py:224
+msgid " (in "
+msgstr " (dans  "
+
+#: .venv/lib/python3.5/site-packages/sphinx/directives/other.py:168
+msgid "Section author: "
+msgstr "Auteur de la section: "
+
+#: .venv/lib/python3.5/site-packages/sphinx/directives/other.py:170
+msgid "Module author: "
+msgstr "Auteur du module: "
+
+#: .venv/lib/python3.5/site-packages/sphinx/directives/other.py:172
+msgid "Code author: "
+msgstr "Auteur du code: "
+
+#: .venv/lib/python3.5/site-packages/sphinx/directives/other.py:174
+msgid "Author: "
+msgstr "Auteur: "
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/__init__.py:334
+msgid "%s %s"
+msgstr "%s %s"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/c.py:188
+msgid "%s (C function)"
+msgstr "%s (fonction C)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/c.py:190
+msgid "%s (C member)"
+msgstr "%s (membre C)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/c.py:192
+msgid "%s (C macro)"
+msgstr "%s (macro C)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/c.py:194
+msgid "%s (C type)"
+msgstr "%s (type C)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/c.py:196
+msgid "%s (C variable)"
+msgstr "%s (variable C)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/cpp.py:5784
+msgid "%s (C++ type)"
+msgstr "%s (type C++)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/cpp.py:5794
+msgid "%s (C++ concept)"
+msgstr "%s (concept C++)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/cpp.py:5804
+msgid "%s (C++ member)"
+msgstr "%s (membre C++)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/cpp.py:5814
+msgid "%s (C++ function)"
+msgstr "%s (fonction C++)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/cpp.py:5824
+msgid "%s (C++ class)"
+msgstr "%s (classe C++)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/cpp.py:5834
+msgid "%s (C++ enum)"
+msgstr "%s (énum C++)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/cpp.py:5854
+msgid "%s (C++ enumerator)"
+msgstr "%s (énumerateur C++)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/javascript.py:131
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:403
+msgid "%s() (built-in function)"
+msgstr "%s() (fonction intégrée)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/javascript.py:132
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:468
+msgid "%s() (%s method)"
+msgstr "%s() (méthode %s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/javascript.py:134
+msgid "%s() (class)"
+msgstr "%s() (classe)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/javascript.py:136
+msgid "%s (global variable or constant)"
+msgstr "%s (variable globale ou constante)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/javascript.py:138
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:506
+msgid "%s (%s attribute)"
+msgstr "%s ( attribut %s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/javascript.py:266
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:584
+msgid "%s (module)"
+msgstr "%s (module)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:404
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:462
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:474
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:487
+msgid "%s() (in module %s)"
+msgstr "%s() (dans le module %s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:407
+msgid "%s (built-in variable)"
+msgstr "%s (built-in variable)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:408
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:500
+msgid "%s (in module %s)"
+msgstr "%s (dans le module %s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:428
+msgid "%s (built-in class)"
+msgstr "%s (classe intégrée)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:429
+msgid "%s (class in %s)"
+msgstr "%s (classe dans %s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:466
+msgid "%s() (%s.%s method)"
+msgstr "%s() (méthode %s.%s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:478
+msgid "%s() (%s.%s static method)"
+msgstr "%s() (méthode statique %s.%s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:481
+msgid "%s() (%s static method)"
+msgstr "%s() (méthode statique %s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:491
+msgid "%s() (%s.%s class method)"
+msgstr "%s() (méthode de classe %s.%s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:494
+msgid "%s() (%s class method)"
+msgstr "%s() (méthode de classe %s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:504
+msgid "%s (%s.%s attribute)"
+msgstr "%s (attribut %s.%s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:692
+msgid "Deprecated"
+msgstr "Obsolète"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/python.py:892
+msgid " (deprecated)"
+msgstr "(obsolète)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/rst.py:65
+msgid "%s (directive)"
+msgstr "%s (directive)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/rst.py:67
+msgid "%s (role)"
+msgstr "%s (role)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/std.py:100
+msgid "environment variable; %s"
+msgstr " variable d'environnement; %s"
+
+#: .venv/lib/python3.5/site-packages/sphinx/domains/std.py:199
+msgid "%scommand line option; %s"
+msgstr "%s option de la ligne de commande; %s"
+
+#: .venv/lib/python3.5/site-packages/sphinx/environment/adapters/indexentries.py:85
+msgid "see %s"
+msgstr "voir %s"
+
+#: .venv/lib/python3.5/site-packages/sphinx/environment/adapters/indexentries.py:89
+msgid "see also %s"
+msgstr "voir aussi %s"
+
+#: .venv/lib/python3.5/site-packages/sphinx/environment/adapters/indexentries.py:159
+msgid "Symbols"
+msgstr "Symboles"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/autodoc/__init__.py:1129
+msgid "Bases: %s"
+msgstr "Bases: %s"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/autodoc/__init__.py:1190
+msgid "alias of :class:`%s`"
+msgstr "alias de la :classe:`%s`"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/doctest.py:132
+msgid "missing '+' or '-' in '%s' option."
+msgstr "'+' ou '-' manquants dans l'option '%s'."
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/doctest.py:137
+msgid "'%s' is not a valid option."
+msgstr "'%s' n'est pas une option valide."
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/doctest.py:151
+msgid "'%s' is not a valid pyversion option"
+msgstr "'%s' n'est pas une option pyversion valide"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/graphviz.py:377
+#: .venv/lib/python3.5/site-packages/sphinx/ext/graphviz.py:386
+msgid "[graph: %s]"
+msgstr "[graphe: %s]"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/graphviz.py:379
+#: .venv/lib/python3.5/site-packages/sphinx/ext/graphviz.py:388
+msgid "[graph]"
+msgstr "[graphe]"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/imgmath.py:338
+#: .venv/lib/python3.5/site-packages/sphinx/ext/jsmath.py:41
+#: .venv/lib/python3.5/site-packages/sphinx/ext/mathjax.py:42
+msgid "Permalink to this equation"
+msgstr "Permalien vers cette équation"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/intersphinx.py:341
+msgid "(in %s v%s)"
+msgstr "(dans %s v%s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/intersphinx.py:343
+msgid "(in %s)"
+msgstr "(dans %s)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/linkcode.py:75
+#: .venv/lib/python3.5/site-packages/sphinx/ext/viewcode.py:111
+msgid "[source]"
+msgstr "[source]"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/todo.py:67
+msgid "Todo"
+msgstr "AFaire"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/todo.py:154
+msgid "<<original entry>>"
+msgstr "<<original entry>>"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/todo.py:157
+msgid "(The <<original entry>> is located in %s, line %d.)"
+msgstr "(L' <<original entry>> est située dans %s, ligne %d.)"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/todo.py:166
+msgid "original entry"
+msgstr "entrée originale"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/viewcode.py:179
+msgid "[docs]"
+msgstr "[docs]"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/viewcode.py:193
+msgid "Module code"
+msgstr "Code du module"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/viewcode.py:199
+msgid "<h1>Source code for %s</h1>"
+msgstr "<h1>Code source de %s</h1>"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/viewcode.py:225
+msgid "Overview: module code"
+msgstr "Généralités: code du module"
+
+#: .venv/lib/python3.5/site-packages/sphinx/ext/viewcode.py:226
+msgid "<h1>All modules for which code is available</h1>"
+msgstr "<h1>Tous les modules pour lesquels le code est disponible</h1>"
+
+#: .venv/lib/python3.5/site-packages/sphinx/roles.py:202
+msgid "Python Enhancement Proposals; PEP %s"
+msgstr "Propositions d'Amélioration de Python; PEP %s"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html.py:126
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html.py:137
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html5.py:95
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html5.py:106
+msgid "Permalink to this definition"
+msgstr "Permalien vers cette définition"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html.py:405
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html.py:410
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html5.py:351
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html5.py:356
+msgid "Permalink to this headline"
+msgstr "Permalien vers cet entête"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html.py:414
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html5.py:360
+msgid "Permalink to this table"
+msgstr "Permalien vers ce tableau"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html.py:466
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html5.py:412
+msgid "Permalink to this code"
+msgstr "Permalien vers ce programme"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html.py:470
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html5.py:416
+msgid "Permalink to this image"
+msgstr "Permalien vers cet image"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html.py:472
+#: .venv/lib/python3.5/site-packages/sphinx/writers/html5.py:418
+msgid "Permalink to this toctree"
+msgstr "Permalien vers ce sommaire"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/latex.py:467
+#: .venv/lib/python3.5/site-packages/sphinx/writers/texinfo.py:516
+msgid "Index"
+msgstr "Index"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/latex.py:471
+msgid "Release"
+msgstr "Version"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/latex.py:639
+msgid "continued from previous page"
+msgstr "suite de la page précédente"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/latex.py:642
+msgid "continues on next page"
+msgstr "suite sur le page suivante"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/latex.py:646
+msgid "page"
+msgstr "page"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/latex.py:696
+msgid "Unknown configure key: latex_elements[%r] is ignored."
+msgstr "Clé de configuration inconnue: latex_elements[%r] ignorée."
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/latex.py:1252
+#: .venv/lib/python3.5/site-packages/sphinx/writers/manpage.py:275
+#: .venv/lib/python3.5/site-packages/sphinx/writers/texinfo.py:669
+msgid "Footnotes"
+msgstr "Notes de bas de page"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/manpage.py:331
+#: .venv/lib/python3.5/site-packages/sphinx/writers/text.py:713
+msgid "[image: %s]"
+msgstr "[image: %s]"
+
+#: .venv/lib/python3.5/site-packages/sphinx/writers/manpage.py:332
+#: .venv/lib/python3.5/site-packages/sphinx/writers/text.py:714
+msgid "[image]"
+msgstr "[image]"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:288
+msgid "April"
+msgstr "Avril"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:288
+msgid "February"
+msgstr "Février"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:288
+msgid "January"
+msgstr "Janvier"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:288
+msgid "March"
+msgstr "Mars"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:289
+msgid "August"
+msgstr "Août"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:289
+msgid "July"
+msgstr "Juillet"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:289
+msgid "June"
+msgstr "Juin"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:289
+msgid "May"
+msgstr "Mai"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:290
+msgid "December"
+msgstr "Décembre"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:290
+msgid "November"
+msgstr "Novembre"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:290
+msgid "October"
+msgstr "Octobre"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:290
+msgid "September"
+msgstr "Septembre"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:292
+msgid "Monday"
+msgstr "Lundi"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:292
+msgid "Thursday"
+msgstr "Jeudi"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:292
+msgid "Tuesday"
+msgstr "Mardi"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:292
+msgid "Wednesday"
+msgstr "Mercredi"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:293
+msgid "Friday"
+msgstr "Vendredi"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:293
+msgid "Saturday"
+msgstr "Samedi"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:293
+msgid "Sunday"
+msgstr "Dimanche"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:358
+msgid "%(time)s"
+msgstr "%(time)s"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:361
+msgid "yesterday"
+msgstr "hier"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:362
+msgid "yesterday at %(time)s"
+msgstr "hier à %(time)s"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:364
+msgid "%(weekday)s"
+msgstr "%(weekday)s"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:365
+msgid "%(weekday)s at %(time)s"
+msgstr "%(weekday)s à %(time)s"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:367
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:409
+msgid "%(month_name)s %(day)s"
+msgstr "%(day)s %(month_name)s"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:368
+msgid "%(month_name)s %(day)s at %(time)s"
+msgstr "%(day)s %(month_name)s à %(time)s"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:371
+msgid "%(month_name)s %(day)s, %(year)s"
+msgstr "%(day)s %(month_name)s %(year)s"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:372
+msgid "%(month_name)s %(day)s, %(year)s at %(time)s"
+msgstr "%(day)s %(month_name)s %(year)s à %(time)s"
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:403
+msgid "%(weekday)s, %(month_name)s %(day)s"
+msgstr "%(weekday)s %(day)s %(month_name)s "
+
+#: .venv/lib/python3.5/site-packages/tornado/locale.py:426
+msgid "%(commas)s and %(last)s"
+msgstr "%(commas)s et %(last)s"
+
 #: mu/app.py:65
 msgid "Logging to {}"
 msgstr "Logguer dans {}"
 
-#: mu/app.py:167
+#: mu/app.py:170
 msgid "Debugger requires a Python script filename to run."
 msgstr "Le débogueur a besoin que tu nommes le script Python pour se lancer."
 
-#: mu/debugger/client.py:105
+#: mu/debugger/client.py:106
 msgid ""
 "Connection timed out. Is your machine slow or busy? Free up some of the "
 "machine's resources and try again."
@@ -33,7 +535,7 @@ msgstr ""
 "Echec de la connexion. Es-ce que la machine est lente ou très occupée? "
 "Libère des ressources sur la machine, puis essaie à nouveau."
 
-#: mu/debugger/client.py:115
+#: mu/debugger/client.py:116
 msgid ""
 "Could not find localhost.\n"
 "Ensure you have '127.0.0.1 localhost' in your /etc/hosts file."
@@ -94,7 +596,7 @@ msgstr ""
 "Remplace l'exécutable MicroPython par le fichier hex suivant (vide signifie "
 "utilise celui par défaut):"
 
-#: mu/interface/dialogs.py:180 mu/interface/main.py:888
+#: mu/interface/dialogs.py:180 mu/interface/main.py:895
 msgid "Mu Administration"
 msgstr "Administration de Mu"
 
@@ -109,6 +611,10 @@ msgstr "Environnement Python 3"
 #: mu/interface/dialogs.py:199
 msgid "BBC micro:bit Settings"
 msgstr "Configuration BBC micro:bit"
+
+#: mu/interface/editor.py:222 mu/logic.py:926
+msgid "untitled"
+msgstr "sans titre"
 
 #: mu/interface/main.py:69
 msgid "Mode"
@@ -212,85 +718,85 @@ msgstr "{} REPL"
 
 #: mu/interface/main.py:462
 msgid "{} Plotter"
-msgstr "{} Grapher"
+msgstr "Grapher {}"
 
-#: mu/interface/main.py:496
+#: mu/interface/main.py:503
 msgid "Running: {}"
 msgstr "En cours d'exécution: {}"
 
-#: mu/interface/main.py:520
+#: mu/interface/main.py:527
 msgid "Debug Inspector"
 msgstr "Inspecteur pour le débogage"
 
-#: mu/interface/main.py:538
+#: mu/interface/main.py:545
 msgid "Name"
 msgstr "Nom"
 
-#: mu/interface/main.py:538
+#: mu/interface/main.py:545
 msgid "Value"
 msgstr "Valeur"
 
-#: mu/interface/main.py:555
+#: mu/interface/main.py:562
 msgid "(A list of {} items.)"
 msgstr "(Une liste de {} éléments.)"
 
-#: mu/interface/main.py:567
+#: mu/interface/main.py:574
 msgid "(A dict of {} items.)"
 msgstr "(Un dictionnaire de {} éléments.)"
 
-#: mu/interface/main.py:706
+#: mu/interface/main.py:713
 msgid "Mu"
 msgstr "Mu"
 
-#: mu/interface/main.py:881
+#: mu/interface/main.py:888
 msgid "Mu's current mode of behaviour."
 msgstr "Mode courant de Mu."
 
-#: mu/interface/panes.py:304
+#: mu/interface/panes.py:306
 msgid "File already exists; overwrite it?"
 msgstr "Le fichier existe déja: faut-il l'écraser?"
 
-#: mu/interface/panes.py:305
+#: mu/interface/panes.py:307
 msgid "File already exists"
 msgstr "Le fichier existe déjà"
 
-#: mu/interface/panes.py:333
+#: mu/interface/panes.py:335
 msgid "Copying '{}' to micro:bit."
 msgstr "Copie '{}' sur la micro:bit."
 
-#: mu/interface/panes.py:342
+#: mu/interface/panes.py:344
 msgid "'{}' successfully copied to micro:bit."
 msgstr "'{}' copié avec succès sur la micro:bit."
 
-#: mu/interface/panes.py:348
+#: mu/interface/panes.py:350
 msgid "Delete (cannot be undone)"
 msgstr "Supprimer (retour en arrière impossible)"
 
-#: mu/interface/panes.py:354
+#: mu/interface/panes.py:356
 msgid "Deleting '{}' from micro:bit."
 msgstr "Supprime '{}' de la micro:bit"
 
-#: mu/interface/panes.py:363
+#: mu/interface/panes.py:365
 msgid "'{}' successfully deleted from micro:bit."
 msgstr "'{}' supprimé avec succès de la micro:bit."
 
-#: mu/interface/panes.py:392
+#: mu/interface/panes.py:394
 msgid "Getting '{}' from micro:bit. Copying to '{}'."
 msgstr "Récupère '{}' depuis la micro:bit. Copie dans '{}'."
 
-#: mu/interface/panes.py:403
+#: mu/interface/panes.py:405
 msgid "Successfully copied '{}' from the micro:bit to your computer."
 msgstr "'{}' copié avec succès de la micro:bit sur l'ordinateur."
 
-#: mu/interface/panes.py:429
+#: mu/interface/panes.py:431
 msgid "Files on your micro:bit:"
 msgstr "Fichiers sur ta micro:bit:"
 
-#: mu/interface/panes.py:431
+#: mu/interface/panes.py:433
 msgid "Files on your computer:"
 msgstr "Fichiers sur ton ordinateur:"
 
-#: mu/interface/panes.py:499
+#: mu/interface/panes.py:501
 msgid ""
 "There was a problem getting the list of files on the micro:bit. Please check "
 "Mu's logs for technical information. Alternatively, try unplugging/plugging-"
@@ -300,7 +806,7 @@ msgstr ""
 "Merci de vérifier les logs de Mu pour avoir plus d'informations. Sinon, "
 "essaie de débrancher/rebrancher ta micro:bit, ou bien de redémarrer Mu."
 
-#: mu/interface/panes.py:510
+#: mu/interface/panes.py:512
 msgid ""
 "There was a problem copying the file '{}' onto the micro:bit. Please check "
 "Mu's logs for more information."
@@ -308,7 +814,7 @@ msgstr ""
 "Un problème est survenu pendant la copie du fichier '{}' sur la micro:bit. "
 "Merci de vérifier les logs de Mu pour avoir plus d'informations."
 
-#: mu/interface/panes.py:518
+#: mu/interface/panes.py:520
 msgid ""
 "There was a problem deleting '{}' from the micro:bit. Please check Mu's logs "
 "for more information."
@@ -316,7 +822,7 @@ msgstr ""
 "Un problème est survenu pendant la suppression du fichier '{}' de la micro:"
 "bit. Merci de vérifier les logs de Mu pour avoir plus d'informations."
 
-#: mu/interface/panes.py:526
+#: mu/interface/panes.py:528
 msgid ""
 "There was a problem getting '{}' from the micro:bit. Please check Mu's logs "
 "for more information."
@@ -324,11 +830,11 @@ msgstr ""
 "Un problème est survenu pendant la lecture du fichier '{}' depuis la micro:"
 "bit. Merci de vérifier les logs de Mu pour avoir plus d'informations."
 
-#: mu/logic.py:67
+#: mu/logic.py:68
 msgid "Hello, World!"
 msgstr "Bonjour le monde!"
 
-#: mu/logic.py:68
+#: mu/logic.py:69
 msgid ""
 "This editor is free software written in Python. You can modify it, add "
 "features or fix bugs if you like."
@@ -336,16 +842,16 @@ msgstr ""
 "Cet éditeur est un logiciel libre écrit en Python. Tu peux le modifier, "
 "ajouter des fonctionnalités ou corriger des bogues si tu le souhaites."
 
-#: mu/logic.py:70
+#: mu/logic.py:71
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
 msgstr "Cet éditeur s'appelle Mu (ca se prononce 'miou' ou 'moo')."
 
-#: mu/logic.py:71
+#: mu/logic.py:72
 msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
 msgstr ""
 "Google, Facebook, la NASA, Pixar, Disney et bien d'autres utilisent Python."
 
-#: mu/logic.py:72
+#: mu/logic.py:73
 msgid ""
 "Programming is a form of magic. Learn to cast the right spells with code and "
 "you'll be a wizard."
@@ -353,7 +859,7 @@ msgstr ""
 "La programmation est une forme de magie. Apprend à lancer des sorts avec un "
 "programme et tu deviendras un magicien."
 
-#: mu/logic.py:74
+#: mu/logic.py:75
 msgid ""
 "REPL stands for read, evaluate, print, loop. It's a fun way to talk to your "
 "computer! :-)"
@@ -361,117 +867,117 @@ msgstr ""
 "REPL signifie read (lire), evaluate (évaluer), print (afficher), loop "
 "(boucler). C'est une manière de dialoguer avec ton ordinateur! ;-)"
 
-#: mu/logic.py:76
+#: mu/logic.py:77
 msgid "Be brave, break things, learn and have fun!"
 msgstr "Soit courageux(se), ose casser des choses, apprend et amuse toi!"
 
-#: mu/logic.py:77
+#: mu/logic.py:78
 msgid "Make your software both useful AND fun. Empower your users."
 msgstr "Rend ton programme à la fois utile et amusant."
 
-#: mu/logic.py:78
+#: mu/logic.py:79
 msgid "For the Zen of Python: import this"
 msgstr "Pour rester zen avec Python: importe ça"
 
-#: mu/logic.py:79
+#: mu/logic.py:80
 msgid "Diversity promotes creativity."
 msgstr "La diversité favorise la créativité."
 
-#: mu/logic.py:80
+#: mu/logic.py:81
 msgid "An open mind, spirit of adventure and respect for diversity are key."
 msgstr ""
 "Un esprit ouvert, le goût de l'aventure et le respect des autres sont la clé."
 
-#: mu/logic.py:81
+#: mu/logic.py:82
 msgid ""
 "Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
 msgstr ""
 "Ne t'inquiète pas si ça ne fonctionne pas. Apprend la leçon, corrige ton "
 "programme et ré-essaie! :-)"
 
-#: mu/logic.py:83
+#: mu/logic.py:84
 msgid "Coding is collaboration."
 msgstr "Programmer, c'est collaborer."
 
-#: mu/logic.py:84
+#: mu/logic.py:85
 msgid "Compliment and amplify the good things with code."
 msgstr "Complimente et amplifie les bonnes choses avec du code."
 
-#: mu/logic.py:85
+#: mu/logic.py:86
 msgid ""
 "In theory, theory and practice are the same. In practice, they're not. ;-)"
 msgstr ""
 "En théorie, la théorie et la pratique c'est la même chose. En pratique, "
 "c'est différent. ;-)"
 
-#: mu/logic.py:87
+#: mu/logic.py:88
 msgid "Debugging is twice as hard as writing the code in the first place."
 msgstr ""
 "Déboguer un programme est deux fois plus difficile que d'écrire un premier "
 "programme."
 
-#: mu/logic.py:88
+#: mu/logic.py:89
 msgid "It's fun to program."
 msgstr "C'est amusant de programmer."
 
-#: mu/logic.py:89
+#: mu/logic.py:90
 msgid "Programming has more to do with problem solving than writing code."
 msgstr ""
 "La programmation se rapproche plus de la résolution d'un problème que de "
 "l'écriture d'un programme."
 
-#: mu/logic.py:90
+#: mu/logic.py:91
 msgid "Start with your users' needs."
 msgstr "Commence par répondre au besoins des tes utilisateurs."
 
-#: mu/logic.py:91
+#: mu/logic.py:92
 msgid "Try to see things from your users' point of view."
 msgstr "Essaye de voir les choses avec le point de vue de tes utilisateurs."
 
-#: mu/logic.py:92
+#: mu/logic.py:93
 msgid "Put yourself in your users' shoes."
 msgstr "Met toi dans la peau de tes utilisateurs."
 
-#: mu/logic.py:93
+#: mu/logic.py:94
 msgid ""
 "Explaining a programming problem to a friend often reveals the solution. :-)"
 msgstr ""
 "Quand on programme, expliquer à un ami le problème que l'on rencontre, "
 "permet souvent de trouver la solution. ;-)"
 
-#: mu/logic.py:95
+#: mu/logic.py:96
 msgid "If you don't know, ask. Nobody to ask? Just look it up."
 msgstr "Si tu ne sais pas, demande. Si personne ne te répond, cherche!"
 
-#: mu/logic.py:96
+#: mu/logic.py:97
 msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
 msgstr "La complexité est ton ennemie. Reste aussi simple que possible."
 
-#: mu/logic.py:97
+#: mu/logic.py:98
 msgid "Beautiful is better than ugly."
 msgstr "Beau est mieux que laid."
 
-#: mu/logic.py:98
+#: mu/logic.py:99
 msgid "Explicit is better than implicit."
 msgstr "Explicite est mieux que implicite."
 
-#: mu/logic.py:99
+#: mu/logic.py:100
 msgid "Simple is better than complex. Complex is better than complicated."
 msgstr "Simple est mieux que complexe. Complexe est mieux que compliqué."
 
-#: mu/logic.py:100
+#: mu/logic.py:101
 msgid "Flat is better than nested."
 msgstr "Plat est mieux qu'imbriqué."
 
-#: mu/logic.py:101
+#: mu/logic.py:102
 msgid "Sparse is better than dense."
 msgstr "Clairsemé est mieux que bondé."
 
-#: mu/logic.py:102
+#: mu/logic.py:103
 msgid "Readability counts."
 msgstr "La lisibilité est importante."
 
-#: mu/logic.py:103
+#: mu/logic.py:104
 msgid ""
 "Special cases aren't special enough to break the rules. Although "
 "practicality beats purity."
@@ -479,54 +985,54 @@ msgstr ""
 "Les cas spécifiques ne sont pas assez spéciaux pour qu'ils ne respectent pas "
 "les règles. Néanmoins, l'aspect pratique l'emporte sur la pureté."
 
-#: mu/logic.py:105
+#: mu/logic.py:106
 msgid "Errors should never pass silently. Unless explicitly silenced."
 msgstr ""
 "Les erreurs ne doivent pas être passées sous silence. Sauf si on le fait de "
 "manière explicite."
 
-#: mu/logic.py:106
+#: mu/logic.py:107
 msgid "In the face of ambiguity, refuse the temptation to guess."
 msgstr "Face à l’ambiguïté, ne te laisse pas aller à deviner."
 
-#: mu/logic.py:107
+#: mu/logic.py:108
 msgid "There should be one-- and preferably only one --obvious way to do it."
 msgstr "Il ne devrait y avoir qu'une (et une seule) façon évidente de faire."
 
-#: mu/logic.py:108
+#: mu/logic.py:109
 msgid ""
 "Now is better than never. Although never is often better than *right* now."
 msgstr ""
 "Maintenant vaut mieux que jamais. Mais jamais vaut souvent mieux que tout de "
 "suite."
 
-#: mu/logic.py:110
+#: mu/logic.py:111
 msgid "If the implementation is hard to explain, it's a bad idea."
 msgstr ""
 "Si l'implémentation est difficile à expliquer, c'est qu'elle est mauvaise."
 
-#: mu/logic.py:111
+#: mu/logic.py:112
 msgid "If the implementation is easy to explain, it may be a good idea."
 msgstr ""
 "Si l'implémentation est facile à expliquer,  c'est probablement une bonne "
 "implémentation."
 
-#: mu/logic.py:112
+#: mu/logic.py:113
 msgid "Namespaces are one honking great idea -- let's do more of those!"
 msgstr ""
 "Les espaces de nommages sont une super bonne idée. Utilisons les davantage!"
 
-#: mu/logic.py:113
+#: mu/logic.py:114
 msgid "Mu was created by Nicholas H.Tollervey."
 msgstr "Mu a été créé par Nicholas H. Tollervey"
 
-#: mu/logic.py:114
+#: mu/logic.py:115
 msgid "To understand what recursion is, you must first understand recursion."
 msgstr ""
 "Pour comprendre ce qu'est la récursivité. Tu dois d'abord comprend ce qu'est "
 "la récursivité."
 
-#: mu/logic.py:115
+#: mu/logic.py:116
 msgid ""
 "Algorithm: a word used by programmers when they don't want to explain what "
 "they did."
@@ -534,59 +1040,59 @@ msgstr ""
 "Algorithme: un mot utilisé par les programmeurs quand ils ne veulent pas "
 "expliquer ce qu'ils ont fait."
 
-#: mu/logic.py:117
+#: mu/logic.py:118
 msgid "Programmers count from zero."
 msgstr "Les programmeurs comptent en commençant par zéro."
 
-#: mu/logic.py:118
+#: mu/logic.py:119
 msgid "Simplicity is the ultimate sophistication."
 msgstr "La simplicité est la sophistication ultime."
 
-#: mu/logic.py:119
+#: mu/logic.py:120
 msgid "A good programmer is humble."
 msgstr "Un bon programmeur est humble."
 
-#: mu/logic.py:120
+#: mu/logic.py:121
 msgid "A good programmer is playful."
 msgstr "Un bon programmeur est joueur."
 
-#: mu/logic.py:121
+#: mu/logic.py:122
 msgid "A good programmer learns to learn."
 msgstr "Un bon programmeur apprend à apprendre."
 
-#: mu/logic.py:122
+#: mu/logic.py:123
 msgid "A good programmer thinks beyond the obvious."
 msgstr "Un bon programmeur réfléchit au delà de ce qui est évident."
 
-#: mu/logic.py:123
+#: mu/logic.py:124
 msgid "A good programmer promotes simplicity."
 msgstr "Un bon programmeur promeut la simplicité."
 
-#: mu/logic.py:124
+#: mu/logic.py:125
 msgid "A good programmer avoids complexity."
 msgstr "Un bon programmeur évite la complexité."
 
-#: mu/logic.py:125
+#: mu/logic.py:126
 msgid "A good programmer is patient."
 msgstr "Un bon programmeur est patient."
 
-#: mu/logic.py:126
+#: mu/logic.py:127
 msgid "A good programmer asks questions."
 msgstr "Un bon programmeur pose des questions."
 
-#: mu/logic.py:127
+#: mu/logic.py:128
 msgid "A good programmer is willing to say, 'I don't know'."
 msgstr "Un bon programmeur accepte de dire 'je ne sais pas'."
 
-#: mu/logic.py:128
+#: mu/logic.py:129
 msgid "Wisest are they that know they know nothing."
 msgstr "Les plus sages savent qu'ils ne savent rien."
 
-#: mu/logic.py:440
+#: mu/logic.py:441
 msgid " above this line"
 msgstr "au dessus de cette ligne"
 
-#: mu/logic.py:485
+#: mu/logic.py:486
 msgid ""
 "Syntax error. Python cannot understand this line. Check for missing "
 "characters!"
@@ -594,23 +1100,23 @@ msgstr ""
 "Erreur de syntaxe. Python ne comprend pas cette ligne. Vérifie qu'il ne "
 "manque pas de caractères!"
 
-#: mu/logic.py:666
+#: mu/logic.py:667
 msgid "# Write your code here :-)"
 msgstr "# Ecrit ton programme ici ;-)"
 
-#: mu/logic.py:720
+#: mu/logic.py:721
 msgid "The file \"{}\" is already open."
 msgstr "Le fichier \"{}\" est déjà ouvert."
 
-#: mu/logic.py:732
+#: mu/logic.py:733
 msgid "Mu cannot read the characters in {}"
 msgstr "Mu ne peut pas lire les caractères dans {}"
 
-#: mu/logic.py:755
+#: mu/logic.py:756
 msgid "Mu was not able to open this file"
 msgstr "Mu ne peut pas ouvrir ce fichier"
 
-#: mu/logic.py:756
+#: mu/logic.py:757
 msgid ""
 "Currently Mu only works with Python source files or hex files created with "
 "embedded MicroPython code."
@@ -618,11 +1124,11 @@ msgstr ""
 "Actuellement Mu fonctionne seulement avec des scripts Python ou des fichiers "
 "hex créés avec le MicroPython embarqué."
 
-#: mu/logic.py:762
+#: mu/logic.py:763
 msgid "Could not load {}"
 msgstr "Impossible de charger{}"
 
-#: mu/logic.py:764
+#: mu/logic.py:765
 msgid ""
 "Does this file exist?\n"
 "If it does, do you have permission to read it?\n"
@@ -634,11 +1140,11 @@ msgstr ""
 "\n"
 "Merci de vérifier et de ré-essayer."
 
-#: mu/logic.py:770
+#: mu/logic.py:771
 msgid "Is this a {} file?"
 msgstr "{} est un fichier?"
 
-#: mu/logic.py:771
+#: mu/logic.py:772
 msgid ""
 "It looks like this could be a {} file.\n"
 "\n"
@@ -648,11 +1154,11 @@ msgstr ""
 "\n"
 "Veux-tu changer le mode de Mu en {}?"
 
-#: mu/logic.py:843
+#: mu/logic.py:844
 msgid "Could not save file (disk problem)"
 msgstr "Impossible d'enregistrer le fichier (problème de disque)"
 
-#: mu/logic.py:844
+#: mu/logic.py:845
 msgid ""
 "Error saving file to disk. Ensure you have permission to write the file and "
 "sufficient disk space."
@@ -660,11 +1166,11 @@ msgstr ""
 "Impossible d'enregistrer le fichier. Vérifie que tu as les droits d'écrire "
 "sur le disque et qu'il y a assez d'espace disque."
 
-#: mu/logic.py:848
+#: mu/logic.py:849
 msgid "Could not save file (encoding problem)"
 msgstr "Impossible d'enregistrer le fichier (problème d'encodage)"
 
-#: mu/logic.py:850
+#: mu/logic.py:851
 msgid ""
 "Unable to convert all the characters. If you have an encoding line at the "
 "top of the file, remove it and try again."
@@ -672,58 +1178,70 @@ msgstr ""
 "Impossible de convertir tous les caractères. S'il y a entête de fichier pour "
 "définir l'encodage, essaye de l'enlever et recommence. "
 
-#: mu/logic.py:859
+#: mu/logic.py:860
 msgid "Saved file: {}"
 msgstr "Fichier enregistré: {}"
 
-#: mu/logic.py:938
+#: mu/logic.py:942
 msgid "Good job! No problems found."
 msgstr "Bon travail! Aucun problème trouvé."
 
-#: mu/logic.py:939
+#: mu/logic.py:943
 msgid "Hurrah! Checker turned up no problems."
 msgstr "Hourra! Le vérificateur n'a trouvé aucun problème."
 
-#: mu/logic.py:940
+#: mu/logic.py:944
 msgid "Nice one! Zero problems detected."
 msgstr "Bravo! Aucun problème détecté."
 
-#: mu/logic.py:941
+#: mu/logic.py:945
 msgid "Well done! No problems here."
 msgstr "Bien joué! Pas problème ici."
 
-#: mu/logic.py:942
+#: mu/logic.py:946
 msgid "Awesome! Zero problems found."
 msgstr "Fantastique! Aucun problème découvert."
 
-#: mu/logic.py:969
+#: mu/logic.py:973
 msgid ""
 "There is un-saved work, exiting the application will cause you to lose it."
 msgstr ""
 "Tout ton travail n'a pas été enregistré. Si tu fermes l'application, il sera "
 "perdu."
 
-#: mu/logic.py:1023
+#: mu/logic.py:1027
 msgid "Could not find MicroPython runtime."
 msgstr "Impossible de trouver l'exécutable MicroPython."
 
-#: mu/logic.py:1086
+#: mu/logic.py:1090
 msgid "Changed to {} mode."
 msgstr "Basculé vers le mode {}"
 
-#: mu/logic.py:1130
+#: mu/logic.py:1134
 msgid "Detected new {} device."
 msgstr "Nouveau périphérique {} détecté"
 
-#: mu/logic.py:1134
+#: mu/logic.py:1138
 msgid "Would you like to change Mu to the {} mode?"
 msgstr "Veux-tu changer le mode de Mu en {}?"
 
-#: mu/logic.py:1190
+#: mu/logic.py:1173
+msgid "Cannot Set Breakpoint."
+msgstr "Impossible de mettre un point d'arrêt."
+
+#: mu/logic.py:1174
+msgid ""
+"Lines that are comments or some multi-line statements cannot have "
+"breakpoints."
+msgstr ""
+"Les lignes qui sont des commentaires ou instruction multi-lignes ne peuvent "
+"pas avoir de point d'arrêt."
+
+#: mu/logic.py:1202
 msgid "Could not rename file."
 msgstr "Impossible de renommer le fichier."
 
-#: mu/logic.py:1191
+#: mu/logic.py:1203
 msgid "A file of that name is already open in Mu."
 msgstr "A fichier avec ce nom est déjà ouvert dans Mu."
 
@@ -743,7 +1261,7 @@ msgstr "Série"
 msgid "Open a serial connection to your device."
 msgstr "Ouvre une connexion série sur ton périphérique."
 
-#: mu/modes/adafruit.py:72 mu/modes/microbit.py:211 mu/modes/python3.py:129
+#: mu/modes/adafruit.py:72 mu/modes/microbit.py:211 mu/modes/python3.py:136
 msgid "Plotter"
 msgstr "Graphique"
 
@@ -824,7 +1342,7 @@ msgstr ""
 "Le périphérique doit avoir MicroPython (ou CircuitPython) flashé dessus pour "
 "que le REPL fonctionne.\n"
 "\n"
-"Enfin, appuie sur le bouton 'reset' du périphériques et attends quelques "
+"Enfin, appuie sur le bouton 'reset' du périphérique et attend quelques "
 "secondes avant de ré-essayer."
 
 #: mu/modes/base.py:308
@@ -839,61 +1357,61 @@ msgid ""
 msgstr ""
 "Merci de vérifier que le périphérique est connecté à l'ordinateur.\n"
 "\n"
-"Il doit avoir une version de MicroPython (ou CircuitPython) flashé dessus "
-"pour que le grapheur fonctionne.\n"
+"Le périphérique doit avoir MicroPython (ou CircuitPython) flashé dessus pour "
+"que le grapheur fonctionne.\n"
 "\n"
-"Enfin, appuie sur le bouton 'reset' du périphérique et attend quelque "
+"Enfin, appuie sur le bouton 'reset' du périphérique et attend quelques "
 "secondes avant de ré-essayer."
 
-#: mu/modes/debugger.py:34
+#: mu/modes/debugger.py:35
 msgid "Graphical Debugger"
 msgstr "Débogueur graphique"
 
-#: mu/modes/debugger.py:35
+#: mu/modes/debugger.py:36
 msgid "Debug your Python 3 code."
 msgstr "Débogue ton programme Python 3."
 
-#: mu/modes/debugger.py:49 mu/modes/pygamezero.py:108 mu/modes/python3.py:159
+#: mu/modes/debugger.py:50 mu/modes/pygamezero.py:109 mu/modes/python3.py:166
 msgid "Stop"
 msgstr "Arrêter"
 
-#: mu/modes/debugger.py:50
+#: mu/modes/debugger.py:51
 msgid "Stop the running code."
 msgstr "Arrête le programme en cours d'exécution."
 
-#: mu/modes/debugger.py:56
+#: mu/modes/debugger.py:57
 msgid "Continue"
 msgstr "Continuer"
 
-#: mu/modes/debugger.py:57
+#: mu/modes/debugger.py:58
 msgid "Continue to run your Python script."
 msgstr "Continue à exécuter le programme."
 
-#: mu/modes/debugger.py:63
+#: mu/modes/debugger.py:64
 msgid "Step Over"
 msgstr "Sauter"
 
-#: mu/modes/debugger.py:64
+#: mu/modes/debugger.py:65
 msgid "Step over a line of code."
 msgstr "Saute une ligne de code."
 
-#: mu/modes/debugger.py:70
+#: mu/modes/debugger.py:71
 msgid "Step In"
 msgstr "Entrer"
 
-#: mu/modes/debugger.py:71
+#: mu/modes/debugger.py:72
 msgid "Step into a function."
 msgstr "Entre dans une fonction."
 
-#: mu/modes/debugger.py:77
+#: mu/modes/debugger.py:78
 msgid "Step Out"
 msgstr "Sortir"
 
-#: mu/modes/debugger.py:78
+#: mu/modes/debugger.py:79
 msgid "Step out of a function."
 msgstr "Sort d'une fonction."
 
-#: mu/modes/debugger.py:155
+#: mu/modes/debugger.py:156
 msgid "Your script has finished running."
 msgstr "Ton programme a fini de s'exécuter."
 
@@ -903,15 +1421,15 @@ msgid ""
 "\n"
 msgstr "Impossible de se connecter au déboguer Python.\n"
 
-#: mu/modes/debugger.py:293
+#: mu/modes/debugger.py:308
 msgid "Debugger info: {}"
 msgstr "Info débogueur: {}"
 
-#: mu/modes/debugger.py:299
+#: mu/modes/debugger.py:314
 msgid "Debugger warning: {}"
 msgstr "Alerte débogueur: {}"
 
-#: mu/modes/debugger.py:306
+#: mu/modes/debugger.py:321
 msgid "Debugger error: {}"
 msgstr "Erreur débogueur: {}"
 
@@ -939,7 +1457,7 @@ msgstr "Fichiers"
 msgid "Access the file system on the micro:bit."
 msgstr "Accéder au système de fichiers de la micro:bit"
 
-#: mu/modes/microbit.py:202 mu/modes/python3.py:120
+#: mu/modes/microbit.py:202 mu/modes/python3.py:127
 msgid "REPL"
 msgstr "REPL"
 
@@ -1067,8 +1585,8 @@ msgstr ""
 "Le périphérique doit avoir MicroPython flashé dessus pour que le système de "
 "fichier fonctionne.\n"
 "\n"
-"Finalement, appuies sur le bouton 'reset' du périphérique et attends "
-"quelques secondes avant de ré-essayer."
+"Enfin, appuie sur le bouton 'reset' du périphérique et attend quelques "
+"secondes avant de ré-essayer."
 
 #: mu/modes/pygamezero.py:35
 msgid "Pygame Zero"
@@ -1118,62 +1636,58 @@ msgstr "Musiques"
 msgid "Show the music used by Pygame Zero."
 msgstr "Montre les musiques utilisées par Pygame Zero."
 
-#: mu/modes/pygamezero.py:109
+#: mu/modes/pygamezero.py:110
 msgid "Stop your Pygame Zero game."
 msgstr "Arrête ton jeu Pygame Zero."
 
-#: mu/modes/python3.py:90
+#: mu/modes/python3.py:97
 msgid "Python 3"
 msgstr "Python 3"
 
-#: mu/modes/python3.py:91
+#: mu/modes/python3.py:98
 msgid "Create code using standard Python 3."
 msgstr "Crée un programme en utilisant Python 3 standard."
 
-#: mu/modes/python3.py:106 mu/modes/python3.py:151
+#: mu/modes/python3.py:113 mu/modes/python3.py:158
 msgid "Run"
 msgstr "Lancer"
 
-#: mu/modes/python3.py:107 mu/modes/python3.py:152
+#: mu/modes/python3.py:114 mu/modes/python3.py:159
 msgid "Run your Python script."
 msgstr "Lance ton script Python."
 
-#: mu/modes/python3.py:113
+#: mu/modes/python3.py:120
 msgid "Debug"
 msgstr "Déboguer"
 
-#: mu/modes/python3.py:114
+#: mu/modes/python3.py:121
 msgid "Debug your Python script."
 msgstr "Débogue ton script Python."
 
-#: mu/modes/python3.py:121
+#: mu/modes/python3.py:128
 msgid "Use the REPL for live coding."
 msgstr "Utilise le REPL pour programmer en direct."
 
-#: mu/modes/python3.py:130
+#: mu/modes/python3.py:137
 msgid "Plot data from your script or the REPL."
 msgstr "Graphe les données depuis ton script ou le REPL."
 
-#: mu/modes/python3.py:160
+#: mu/modes/python3.py:167
 msgid "Stop your Python script."
 msgstr "Arrête ton script Python."
 
-#: mu/modes/python3.py:223
+#: mu/modes/python3.py:230
 msgid "Starting iPython REPL."
 msgstr "Démarrage du REPL iPython."
 
-#: mu/modes/python3.py:227
+#: mu/modes/python3.py:234
 msgid "Stopping iPython REPL (this may take a short amount of time)."
 msgstr "Arrêt du REPL iPython (ceci peut prendre un peu de temps)."
 
-#: mu/modes/python3.py:312
+#: mu/modes/python3.py:319
 msgid "REPL started."
 msgstr "REPL démarré."
 
-#: mu/modes/python3.py:321
+#: mu/modes/python3.py:328
 msgid "REPL stopped."
 msgstr "REPL arrêté."
-
-msgid "untitled"
-msgstr "sans titre"
-
