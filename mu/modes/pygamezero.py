@@ -100,6 +100,7 @@ class PyGameZeroMode(BaseMode):
             play_slot.setIcon(load_icon('play'))
             play_slot.setText(_('Play'))
             play_slot.setToolTip(_('Play your Pygame Zero game.'))
+            self.set_buttons(modes=True)
         else:
             self.run_game()
             if self.runner:
@@ -107,6 +108,7 @@ class PyGameZeroMode(BaseMode):
                 play_slot.setIcon(load_icon('stop'))
                 play_slot.setText(_('Stop'))
                 play_slot.setToolTip(_('Stop your Pygame Zero game.'))
+                self.set_buttons(modes=False)
 
     def run_game(self):
         """
@@ -131,11 +133,12 @@ class PyGameZeroMode(BaseMode):
                     tab.setModified(False)
             logger.debug(tab.text())
             envars = self.editor.envars
+            args = ['-m', 'pgzero']
             self.runner = self.view.add_python3_runner(tab.path,
                                                        self.workspace_dir(),
                                                        interactive=False,
                                                        envars=envars,
-                                                       runner='pgzrun')
+                                                       python_args=args)
             self.runner.process.waitForStarted()
 
     def stop_game(self):

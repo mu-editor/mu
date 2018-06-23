@@ -65,7 +65,7 @@ working development environment:
 
 1. Install required dependencies from Raspbian repository::
 
-    sudo apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg python3-dev python3-gpiozero python3-pgzero
+    sudo apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg python3-dev python3-gpiozero python3-pgzero libxmlsec1-dev libxml2 libxml2-dev
 
 2. Create a virtualenv that uses Python 3 and allows the virtualenv access
    to the packages installed on your system via the ``--system-site-packages``
@@ -99,6 +99,11 @@ working development environment:
    An alternative form is to type::
 
      python -m mu
+
+.. warning::
+
+    These instructions for Raspberry Pi only work with Raspbian version
+    "Stretch".
 
 Using ``make``
 ++++++++++++++

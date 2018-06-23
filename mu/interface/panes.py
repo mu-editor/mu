@@ -143,7 +143,9 @@ class MicroPythonREPLPane(QTextEdit):
         """
         clipboard = QApplication.clipboard()
         if clipboard and clipboard.text():
-            self.serial.write(bytes(clipboard.text(), 'utf8'))
+            to_paste = clipboard.text().replace('\n', '\r').\
+                replace('\r\r', '\r')
+            self.serial.write(bytes(to_paste, 'utf8'))
 
     def context_menu(self):
         """
@@ -592,7 +594,7 @@ class PythonProcessPane(QTextEdit):
 
     def start_process(self, script_name, working_directory, interactive=True,
                       debugger=False, command_args=None, envars=None,
-                      runner=None):
+                      runner=None, python_args=None):
         """
         Start the child Python process.
 
@@ -612,8 +614,11 @@ class PythonProcessPane(QTextEdit):
         If there is a list of environment variables, these will be part of the
         context of the new child process.
 
-        If runner is give, this is used as the command to start the Python
+        If runner is given, this is used as the command to start the Python
         process.
+
+        If python_args is given, these are passed as arguments to the Python
+        runtime used to launch the child process.
         """
         self.script = os.path.abspath(os.path.normcase(script_name))
         logger.info('Running script: {}'.format(self.script))
@@ -628,6 +633,12 @@ class PythonProcessPane(QTextEdit):
         env = QProcessEnvironment.systemEnvironment()
         env.insert('PYTHONUNBUFFERED', '1')
         env.insert('PYTHONIOENCODING', 'utf-8')
+        if sys.platform == 'darwin':
+            parent_dir = os.path.dirname(__file__)
+            if '/mu-editor.app/Contents/Resources/app/mu' in parent_dir:
+                # Mu is running as a macOS app bundle. Ensure the expected
+                # paths are in PYTHONPATH of the subprocess.
+                env.insert('PYTHONPATH', ':'.join(sys.path))
         if envars:
             logger.info('Running with environment variables: '
                         '{}'.format(envars))
@@ -641,8 +652,12 @@ class PythonProcessPane(QTextEdit):
         logger.info('Python path: {}'.format(sys.path))
         if debugger:
             # Start the mu-debug runner for the script.
-            args = [self.script, ] + command_args
-            self.process.start('mu-debug', args)
+            parent_dir = os.path.join(os.path.dirname(__file__), '..')
+            mu_dir = os.path.abspath(parent_dir)
+            runner = os.path.join(mu_dir, 'mu-debug.py')
+            python_exec = sys.executable
+            args = [runner, self.script, ] + command_args
+            self.process.start(python_exec, args)
         else:
             if runner:
                 # Use the passed in Python "runner" to run the script.
@@ -656,6 +671,8 @@ class PythonProcessPane(QTextEdit):
             else:
                 # Just run the command with no additional flags.
                 args = [self.script, ] + command_args
+            if python_args:
+                args = python_args + args
             self.process.start(python_exec, args)
             self.running = True
 

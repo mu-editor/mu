@@ -70,7 +70,15 @@ setup(
     entry_points={
         'console_scripts': [
             "mu-editor = mu.app:run",
-            "mu-debug = mu.app:debug",
         ],
+    },
+    options={  # Briefcase packaging options for OSX
+        'app': {
+            'formal_name': 'mu-editor',
+            'bundle': 'mu.codewith.editor',
+        },
+        'macos': {
+            'icon': 'package/icons/mac_icon',
+        }
     }
 )

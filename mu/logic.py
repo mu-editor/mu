@@ -35,6 +35,7 @@ from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
 from mu.resources import path
+from mu.debugger.utils import is_breakpoint_line
 from mu import __version__
 
 
@@ -885,10 +886,13 @@ class Editor:
         Given a path, returns either an existing tab for the path or creates /
         loads a new tab for the path.
         """
+        normalised_path = os.path.normcase(os.path.abspath(path))
         for tab in self._view.widgets:
-            if tab.path == path:
-                self._view.focus_tab(tab)
-                return tab
+            if tab.path:
+                tab_path = os.path.normcase(os.path.abspath(tab.path))
+                if tab_path == normalised_path:
+                    self._view.focus_tab(tab)
+                    return tab
         self.direct_load(path)
         return self._view.current_tab
 
@@ -919,7 +923,7 @@ class Editor:
         if tab.has_annotations:
             logger.info('Checking code.')
             self._view.reset_annotations()
-            filename = tab.path if tab.path else 'untitled'
+            filename = tab.path if tab.path else _('untitled')
             builtins = self.modes[self.mode].builtins
             flake = check_flake(filename, tab.text(), builtins)
             if flake:
@@ -1081,7 +1085,7 @@ class Editor:
         # Update breakpoint states.
         if not (self.modes[mode].is_debugger or self.modes[mode].has_debugger):
             for tab in self._view.widgets:
-                tab.breakpoint_lines = set()
+                tab.breakpoint_handles = set()
                 tab.reset_annotations()
         self.show_status_message(_('Changed to {} mode.').format(
             mode.capitalize()))
@@ -1151,17 +1155,25 @@ class Editor:
         if (self.modes[self.mode].has_debugger or
                 self.modes[self.mode].is_debugger):
             tab = self._view.current_tab
+            code = tab.text(line)
             if self.mode == 'debugger':
                 # The debugger is running.
-                self.modes['debugger'].toggle_breakpoint(line, tab)
+                if is_breakpoint_line(code):
+                    self.modes['debugger'].toggle_breakpoint(line, tab)
+                    return
             else:
                 # The debugger isn't running.
-                if line in tab.breakpoint_lines:
-                    tab.markerDelete(line, tab.BREAKPOINT_MARKER)
-                    tab.breakpoint_lines.remove(line)
-                else:
-                    tab.markerAdd(line, tab.BREAKPOINT_MARKER)
-                    tab.breakpoint_lines.add(line)
+                if tab.markersAtLine(line):
+                    tab.markerDelete(line, -1)
+                    return
+                elif is_breakpoint_line(code):
+                    handle = tab.markerAdd(line, tab.BREAKPOINT_MARKER)
+                    tab.breakpoint_handles.add(handle)
+                    return
+            msg = _('Cannot Set Breakpoint.')
+            info = _("Lines that are comments or some multi-line "
+                     "statements cannot have breakpoints.")
+            self._view.show_message(msg, info)
 
     def rename_tab(self, tab_id=None):
         """

@@ -120,6 +120,9 @@ def run():
     app.setDesktopFileName('mu.codewith.editor')
     app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
+    # Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
+    # unless this flag is set
+    app.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
     # Create the "window" we'll be looking at.
     editor_window = Window()

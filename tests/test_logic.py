@@ -1338,6 +1338,22 @@ def test_get_tab_new_tab():
     assert tab == view.current_tab
 
 
+def test_get_tab_no_path():
+    """
+    Any tabs with no associated path are ignored (i.e. tabs that have been
+    newly created but remain unsaved).
+    """
+    view = mock.MagicMock()
+    mock_tab = mock.MagicMock()
+    mock_tab.path = None
+    view.widgets = [mock_tab, ]
+    ed = mu.logic.Editor(view)
+    ed.direct_load = mock.MagicMock()
+    tab = ed.get_tab('bar')
+    ed.direct_load.assert_called_once_with('bar')
+    assert tab == view.current_tab
+
+
 def test_zoom_in():
     """
     Ensure the UI layer is zoomed in.
@@ -1860,7 +1876,7 @@ def test_change_mode_reset_breakpoints():
     """
     view = mock.MagicMock()
     mock_tab = mock.MagicMock()
-    mock_tab.breakpoint_lines = set([1, 2, 3, ])
+    mock_tab.breakpoint_handles = set([1, 2, 3, ])
     view.widgets = [mock_tab, ]
     ed = mu.logic.Editor(view)
     mode = mock.MagicMock()
@@ -1872,7 +1888,7 @@ def test_change_mode_reset_breakpoints():
     }
     ed.change_mode('microbit')
     assert ed.mode == 'microbit'
-    assert mock_tab.breakpoint_lines == set()
+    assert mock_tab.breakpoint_handles == set()
     mock_tab.reset_annotations.assert_called_once_with()
 
 
@@ -2020,6 +2036,7 @@ def test_debug_toggle_breakpoint_as_debugger():
     method in the debug client.
     """
     view = mock.MagicMock()
+    view.current_tab.text.return_value = 'print("Hello")'
     ed = mu.logic.Editor(view)
     mock_debugger = mock.MagicMock()
     mock_debugger.has_debugger = False
@@ -2036,10 +2053,12 @@ def test_debug_toggle_breakpoint_as_debugger():
 def test_debug_toggle_breakpoint_on():
     """
     Toggle the breakpoint on when not in debug mode by tracking it in the
-    tab.breakpoint_lines set.
+    tab.breakpoint_handles set.
     """
     view = mock.MagicMock()
-    view.current_tab.breakpoint_lines = set()
+    view.current_tab.breakpoint_handles = set()
+    view.current_tab.markersAtLine.return_value = False
+    view.current_tab.markerAdd.return_value = 999  # the tracked marker handle.
     ed = mu.logic.Editor(view)
     mock_debugger = mock.MagicMock()
     mock_debugger.has_debugger = True
@@ -2048,19 +2067,20 @@ def test_debug_toggle_breakpoint_on():
         'python': mock_debugger,
     }
     ed.mode = 'python'
-    ed.debug_toggle_breakpoint(1, 10, False)
+    with mock.patch('mu.logic.is_breakpoint_line', return_value=True):
+        ed.debug_toggle_breakpoint(1, 10, False)
     view.current_tab.markerAdd.\
         assert_called_once_with(10, view.current_tab.BREAKPOINT_MARKER)
-    assert 10 in view.current_tab.breakpoint_lines
+    assert 999 in view.current_tab.breakpoint_handles
 
 
 def test_debug_toggle_breakpoint_off():
     """
     Toggle the breakpoint off when not in debug mode by tracking it in the
-    tab.breakpoint_lines set.
+    tab.breakpoint_handles set.
     """
     view = mock.MagicMock()
-    view.current_tab.breakpoint_lines = set([10, ])
+    view.current_tab.breakpoint_handles = set([10, ])
     ed = mu.logic.Editor(view)
     mock_debugger = mock.MagicMock()
     mock_debugger.has_debugger = True
@@ -2069,10 +2089,50 @@ def test_debug_toggle_breakpoint_off():
         'python': mock_debugger,
     }
     ed.mode = 'python'
-    ed.debug_toggle_breakpoint(1, 10, False)
+    with mock.patch('mu.logic.is_breakpoint_line', return_value=True):
+        ed.debug_toggle_breakpoint(1, 10, False)
     view.current_tab.markerDelete.\
-        assert_called_once_with(10, view.current_tab.BREAKPOINT_MARKER)
-    assert len(view.current_tab.breakpoint_lines) == 0
+        assert_called_once_with(10, -1)
+
+
+def test_debug_toggle_breakpoint_on_invalid_breakpoint_line():
+    """
+    If a breakpoint is toggled on, it won't work if the line isn't a valid
+    breakpoint line.
+    """
+    view = mock.MagicMock()
+    view.current_tab.text.return_value = '#print("Hello")'
+    ed = mu.logic.Editor(view)
+    mock_debugger = mock.MagicMock()
+    mock_debugger.has_debugger = False
+    mock_debugger.is_debugger = True
+    ed.modes = {
+        'debugger': mock_debugger,
+    }
+    ed.mode = 'debugger'
+    ed.debug_toggle_breakpoint(1, 10, False)
+    assert view.show_message.call_count == 1
+
+
+def test_debug_toggle_breakpoint_off_invalid_breakpoint_line():
+    """
+    It should be possible to remove breakpoints from *invalid* breakpoint
+    lines.
+    """
+    view = mock.MagicMock()
+    view.current_tab.text.return_value = '#print("Hello")'
+    view.current_tab.markersAtLine.return_value = True
+    view.current_tab.breakpoint_handles = set([10, ])
+    ed = mu.logic.Editor(view)
+    mock_mode = mock.MagicMock()
+    mock_mode.has_debugger = True
+    mock_mode.is_debugger = False
+    ed.modes = {
+        'python': mock_mode,
+    }
+    ed.mode = 'python'
+    ed.debug_toggle_breakpoint(1, 10, False)
+    view.current_tab.markerDelete.assert_called_once_with(10, -1)
 
 
 def test_rename_tab_no_tab_id():
