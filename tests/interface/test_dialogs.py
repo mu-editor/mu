@@ -57,7 +57,7 @@ def test_ModeSelector_setup():
     current_mode = 'python'
     mock_item = mock.MagicMock()
     with mock.patch('mu.interface.dialogs.ModeItem', mock_item):
-        ms = mu.interface.dialogs.ModeSelector()
+        ms = mu.interface.dialogs.ModeSelector(None)
         ms.setup(modes, current_mode, 'day')
     assert mock_item.call_count == 3
 
@@ -77,7 +77,7 @@ def test_ModeSelector_setup_night_theme():
     mock_item = mock.MagicMock()
     mock_css = mock.MagicMock()
     with mock.patch('mu.interface.dialogs.ModeItem', mock_item):
-        ms = mu.interface.dialogs.ModeSelector()
+        ms = mu.interface.dialogs.ModeSelector(None)
         ms.setStyleSheet = mock_css
         ms.setup(modes, current_mode, 'night')
     assert mock_item.call_count == 3
@@ -99,7 +99,7 @@ def test_ModeSelector_setup_contrast_theme():
     mock_item = mock.MagicMock()
     mock_css = mock.MagicMock()
     with mock.patch('mu.interface.dialogs.ModeItem', mock_item):
-        ms = mu.interface.dialogs.ModeSelector()
+        ms = mu.interface.dialogs.ModeSelector(None)
         ms.setStyleSheet = mock_css
         ms.setup(modes, current_mode, 'contrast')
     assert mock_item.call_count == 3
@@ -110,7 +110,7 @@ def test_ModeSelector_select_and_accept():
     """
     Ensure the accept slot is fired when this event handler is called.
     """
-    ms = mu.interface.dialogs.ModeSelector()
+    ms = mu.interface.dialogs.ModeSelector(None)
     ms.accept = mock.MagicMock()
     ms.select_and_accept()
     ms.accept.assert_called_once_with()
@@ -121,7 +121,7 @@ def test_ModeSelector_get_mode():
     Ensure that the ModeSelector will correctly return a selected mode (or
     raise the expected exception if cancelled).
     """
-    ms = mu.interface.dialogs.ModeSelector()
+    ms = mu.interface.dialogs.ModeSelector(None)
     ms.result = mock.MagicMock(return_value=QDialog.Accepted)
     item = mock.MagicMock()
     item.icon = 'name'
@@ -182,7 +182,7 @@ def test_AdminDialog_setup():
         'minify': True,
         'microbit_runtime': '/foo/bar',
     }
-    ad = mu.interface.dialogs.AdminDialog()
+    ad = mu.interface.dialogs.AdminDialog(None)
     ad.setStyleSheet = mock.MagicMock()
     ad.setup(log, settings, 'day')
     assert ad.log_widget.log_text_area.toPlainText() == log
@@ -200,7 +200,7 @@ def test_AdminDialog_setup_night():
         'minify': True,
         'microbit_runtime': '/foo/bar',
     }
-    ad = mu.interface.dialogs.AdminDialog()
+    ad = mu.interface.dialogs.AdminDialog(None)
     ad.setStyleSheet = mock.MagicMock()
     ad.setup(log, settings, 'night')
     ad.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
@@ -216,7 +216,7 @@ def test_LogDisplay_setup_contrast():
         'minify': True,
         'microbit_runtime': '/foo/bar',
     }
-    ad = mu.interface.dialogs.AdminDialog()
+    ad = mu.interface.dialogs.AdminDialog(None)
     ad.setStyleSheet = mock.MagicMock()
     ad.setup(log, settings, 'contrast')
     ad.setStyleSheet.\

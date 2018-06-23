@@ -239,7 +239,7 @@ class Window(QMainWindow):
         Displays a dialog for selecting a file to save. Returns the selected
         path. Defaults to start in the referenced folder.
         """
-        path, _ = QFileDialog.getSaveFileName(self.widget, 'Save file', folder)
+        path, _ = QFileDialog.getSaveFileName(self, 'Save file', folder)
         logger.debug('Getting save path: {}'.format(path))
         return path
 
@@ -665,7 +665,7 @@ class Window(QMainWindow):
         and settings. Return a dictionary of the settings that may have been
         changed by the admin dialog.
         """
-        admin_box = AdminDialog()
+        admin_box = AdminDialog(self)
         admin_box.setup(log, settings, theme)
         admin_box.exec()
         return admin_box.settings()
@@ -806,7 +806,7 @@ class Window(QMainWindow):
         """
         Display the mode selector dialog and return the result.
         """
-        mode_select = ModeSelector()
+        mode_select = ModeSelector(self)
         mode_select.setup(modes, current_mode, theme)
         mode_select.exec()
         try:
