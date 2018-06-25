@@ -561,6 +561,7 @@ class Editor:
         self.envars = []  # See restore session and show_admin
         self.minify = False
         self.microbit_runtime = ''
+        self.adafruit_run = False
         self.connected_devices = set()
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
@@ -671,6 +672,10 @@ class Editor:
                             logger.warning('The specified micro:bit runtime '
                                            'does not exist. Using default '
                                            'runtime instead.')
+                if 'adafruit_run' in old_session:
+                    self.adafruit_run = old_session['adafruit_run']
+                    logger.info('Enable Adafruit "Run" button? '
+                                '{}'.format(self.adafruit_run))
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
@@ -1005,6 +1010,7 @@ class Editor:
             'envars': self.envars,
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
+            'adafruit_run': self.adafruit_run,
         }
         session_path = get_session_path()
         with open(session_path, 'w') as out:
@@ -1027,12 +1033,14 @@ class Editor:
             'envars': envars,
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
+            'adafruit_run': self.adafruit_run,
         }
         with open(LOG_FILE, 'r', encoding='utf8') as logfile:
             new_settings = self._view.show_admin(logfile.read(), settings,
                                                  self.theme)
             self.envars = extract_envars(new_settings['envars'])
             self.minify = new_settings['minify']
+            self.adafruit_run = new_settings['adafruit_run']
             runtime = new_settings['microbit_runtime'].strip()
             if runtime and not os.path.isfile(runtime):
                 self.microbit_runtime = ''

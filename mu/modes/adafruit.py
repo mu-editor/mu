@@ -60,20 +60,22 @@ class AdafruitMode(MicroPythonMode):
         Return an ordered list of actions provided by this module. An action
         is a name (also used to identify the icon) , description, and handler.
         """
-        buttons = [
-            {
-                'name': 'serial',
-                'display_name': _('Serial'),
-                'description': _('Open a serial connection to your device.'),
-                'handler': self.toggle_repl,
-                'shortcut': 'CTRL+Shift+S',
-            }, ]
+        buttons = []
+        if self.editor.adafruit_run:
+            buttons.append({
+                'name': 'run',
+                'display_name': _('Run'),
+                'description': _('Save and run your current file '
+                                 'on CIRCUITPY'),
+                'handler': self.run,
+                'shortcut': 'CTRL+Shift+R',
+            })
         buttons.append({
-            'name': 'run',
-            'display_name': _('Run'),
-            'description': _('Save and run your current file on CIRCUITPY'),
-            'handler': self.run,
-            'shortcut': 'CTRL+Shift+R',
+            'name': 'serial',
+            'display_name': _('Serial'),
+            'description': _('Open a serial connection to your device.'),
+            'handler': self.toggle_repl,
+            'shortcut': 'CTRL+Shift+S',
         })
         if CHARTS:
             buttons.append({

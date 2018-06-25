@@ -171,6 +171,17 @@ def test_MicrobitSettingsWidget_setup():
     assert mbsw.runtime_path.text() == '/foo/bar'
 
 
+def test_AdafruitSettingsWidget_setup():
+    """
+    Ensure the widget for editing settings related to adafruit mode
+    displays the referenced settings data in the expected way.
+    """
+    adafruit_run = True
+    mbsw = mu.interface.dialogs.AdafruitSettingsWidget()
+    mbsw.setup(adafruit_run)
+    assert mbsw.adafruit_run.isChecked()
+
+
 def test_AdminDialog_setup():
     """
     Ensure the admin dialog is setup properly given the content of a log
@@ -181,6 +192,7 @@ def test_AdminDialog_setup():
         'envars': 'name=value',
         'minify': True,
         'microbit_runtime': '/foo/bar',
+        'adafruit_run': True
     }
     ad = mu.interface.dialogs.AdminDialog()
     ad.setStyleSheet = mock.MagicMock()

@@ -89,7 +89,7 @@ def generate_python_file(text="", dirpath=None):
 @contextlib.contextmanager
 def generate_session(theme="day", mode="python", file_contents=None,
                      filepath=None, envars=[['name', 'value'], ], minify=False,
-                     microbit_runtime=None, **kwargs):
+                     microbit_runtime=None, adafruit_run=False, **kwargs):
     """Generate a temporary session file for one test
 
     By default, the session file will be created inside a temporary directory
@@ -131,6 +131,8 @@ def generate_session(theme="day", mode="python", file_contents=None,
         session_data['minify'] = minify
     if microbit_runtime:
         session_data['microbit_runtime'] = microbit_runtime
+    if adafruit_run is not None:
+        session_data['adafruit_run'] = adafruit_run
     session_data.update(**kwargs)
 
     if filepath is None:
@@ -655,6 +657,7 @@ def test_editor_restore_session_existing_runtime():
     assert ed.envars == [['name', 'value'], ]
     assert ed.minify is False
     assert ed.microbit_runtime == '/foo'
+    assert ed.adafruit_run is False
 
 
 def test_editor_restore_session_missing_runtime():
@@ -675,6 +678,7 @@ def test_editor_restore_session_missing_runtime():
     assert ed.envars == [['name', 'value'], ]
     assert ed.minify is False
     assert ed.microbit_runtime == ''  # File does not exist so set to ''
+    assert ed.adafruit_run is False
 
 
 def test_editor_restore_session_missing_files():
@@ -1720,10 +1724,12 @@ def test_show_admin():
     ed.envars = [['name', 'value'], ]
     ed.minify = True
     ed.microbit_runtime = '/foo/bar'
+    ed.adafruit_run = True
     settings = {
         'envars': 'name=value',
         'minify': True,
-        'microbit_runtime': '/foo/bar'
+        'microbit_runtime': '/foo/bar',
+        'adafruit_run': True
     }
     view.show_admin.return_value = settings
     mock_open = mock.mock_open()
@@ -1737,6 +1743,7 @@ def test_show_admin():
         assert ed.envars == [['name', 'value']]
         assert ed.minify is True
         assert ed.microbit_runtime == '/foo/bar'
+        assert ed.adafruit_run is True
 
 
 def test_show_admin_missing_microbit_runtime():

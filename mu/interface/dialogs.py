@@ -163,6 +163,24 @@ class MicrobitSettingsWidget(QWidget):
         widget_layout.addStretch()
 
 
+class AdafruitSettingsWidget(QWidget):
+    """
+    Used for configuring how to interact with adafruit mode:
+
+    * Enable the "Run" button.
+    """
+
+    def setup(self, adafruit_run):
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+        self.adafruit_run = QCheckBox(_('Enable the "Run" button to '
+                                        'save and copy the current '
+                                        'file to CIRCUITPY?'))
+        self.adafruit_run.setChecked(adafruit_run)
+        widget_layout.addWidget(self.adafruit_run)
+        widget_layout.addStretch()
+
+
 class AdminDialog(QDialog):
     """
     Displays administrative related information and settings (logs, environment
@@ -197,6 +215,9 @@ class AdminDialog(QDialog):
         self.microbit_widget.setup(settings.get('minify', False),
                                    settings.get('microbit_runtime', ''))
         self.tabs.addTab(self.microbit_widget, _('BBC micro:bit Settings'))
+        self.adafruit_widget = AdafruitSettingsWidget()
+        self.adafruit_widget.setup(settings.get('adafruit_run', False))
+        self.tabs.addTab(self.adafruit_widget, _('Adafruit Settings'))
 
     def settings(self):
         """
@@ -208,4 +229,5 @@ class AdminDialog(QDialog):
             'envars': self.envar_widget.text_area.toPlainText(),
             'minify': self.microbit_widget.minify.isChecked(),
             'microbit_runtime': self.microbit_widget.runtime_path.text(),
+            'adafruit_run': self.adafruit_widget.adafruit_run.isChecked()
         }
