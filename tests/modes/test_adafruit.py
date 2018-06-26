@@ -41,9 +41,11 @@ def test_adafruit_mode_no_charts():
     am = AdafruitMode(editor, view)
     with mock.patch('mu.modes.adafruit.CHARTS', False):
         actions = am.actions()
-        assert len(actions) == 1
-        assert actions[0]['name'] == 'serial'
-        assert actions[0]['handler'] == am.toggle_repl
+        assert len(actions) == 2
+        assert actions[0]['name'] == 'run'
+        assert actions[0]['handler'] == am.run
+        assert actions[1]['name'] == 'serial'
+        assert actions[1]['handler'] == am.toggle_repl
 
 
 def test_workspace_dir_posix_exists():
