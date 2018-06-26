@@ -1756,10 +1756,12 @@ def test_show_admin_missing_microbit_runtime():
     ed.envars = [['name', 'value'], ]
     ed.minify = True
     ed.microbit_runtime = '/foo/bar'
+    ed.adafruit_run = True
     settings = {
         'envars': 'name=value',
         'minify': True,
-        'microbit_runtime': '/foo/bar'
+        'microbit_runtime': '/foo/bar',
+        'adafruit_run': True
     }
     view.show_admin.return_value = settings
     mock_open = mock.mock_open()
