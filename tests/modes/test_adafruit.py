@@ -29,7 +29,7 @@ def test_adafruit_mode():
     assert actions[1]['name'] == 'serial'
     assert actions[1]['handler'] == am.toggle_repl
     assert actions[2]['name'] == 'plotter'
-    assert actions[3]['handler'] == am.toggle_plotter
+    assert actions[2]['handler'] == am.toggle_plotter
 
 
 def test_adafruit_mode_no_charts():
