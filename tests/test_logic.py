@@ -612,6 +612,15 @@ def test_editor_init():
         e = mu.logic.Editor(view)
         assert e._view == view
         assert e.theme == 'day'
+        assert e.mode == 'python'
+        assert e.modes == {}
+        assert e.envars == []
+        assert e.minify is False
+        assert e.microbit_runtime == ''
+        assert e.connected_devices == set()
+        assert e.find == ''
+        assert e.replace == ''
+        assert e.global_replace is False
         assert mkd.call_count == 1
         assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
 
@@ -2508,3 +2517,123 @@ def test_abspath_fail():
     assert len(result) == 2
     assert os.path.abspath('foo') in result
     assert os.path.abspath('bar') in result
+
+
+def test_find_replace_cancelled():
+    """
+    If the activated find/replace dialog is cancelled, no status message is
+    displayed.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = False
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find_replace()
+    ed.show_status_message.call_count == 0
+
+
+def test_find_replace_no_find():
+    """
+    If the user fails to supply something to find, display a modal warning
+    message to explain the problem.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = ('', '', False)
+    ed = mu.logic.Editor(mock_view)
+    ed.show_message = mock.MagicMock()
+    ed.find_replace()
+    msg = 'You must provide something to find.'
+    info = "Please try again, this time with something in the find box."
+    mock_view.show_message.assert_called_once_with(msg, info)
+
+
+def test_find_replace_find_matched():
+    """
+    If the user just supplies a find target and it is matched in the code then
+    the expected status message should be shown.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = ('foo', '', False)
+    mock_view.highlight_text.return_value = True
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find_replace()
+    mock_view.highlight_text.assert_called_once_with('foo')
+    assert ed.find == 'foo'
+    assert ed.replace == ''
+    assert ed.global_replace is False
+    ed.show_status_message.\
+        assert_called_once_with('Highlighting matches for "foo".')
+
+
+def test_find_replace_find_unmatched():
+    """
+    If the user just supplies a find target and it is UN-matched in the code
+    then the expected status message should be shown.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = ('foo', '', False)
+    mock_view.highlight_text.return_value = False
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find_replace()
+    ed.show_status_message.\
+        assert_called_once_with('Could not find "foo".')
+
+
+def test_find_replace_replace_no_match():
+    """
+    If the user supplies both a find and replace target and the find target is
+    UN-matched in the code, then the expected status message should be shown.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = ('foo', 'bar', False)
+    mock_view.replace_text.return_value = 0
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find_replace()
+    assert ed.find == 'foo'
+    assert ed.replace == 'bar'
+    assert ed.global_replace is False
+    mock_view.replace_text.assert_called_once_with('foo', 'bar', False)
+    ed.show_status_message.\
+        assert_called_once_with('Could not find "foo".')
+
+
+def test_find_replace_replace_single_match():
+    """
+    If the user supplies both a find and replace target and the find target is
+    matched once in the code, then the expected status message should be shown.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = ('foo', 'bar', False)
+    mock_view.replace_text.return_value = 1
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find_replace()
+    assert ed.find == 'foo'
+    assert ed.replace == 'bar'
+    assert ed.global_replace is False
+    mock_view.replace_text.assert_called_once_with('foo', 'bar', False)
+    ed.show_status_message.\
+        assert_called_once_with('Replaced "foo" with "bar".')
+
+
+def test_find_replace_replace_multi_match():
+    """
+    If the user supplies both a find and replace target and the find target is
+    matched many times in the code, then the expected status message should be
+    shown.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = ('foo', 'bar', True)
+    mock_view.replace_text.return_value = 4
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find_replace()
+    assert ed.find == 'foo'
+    assert ed.replace == 'bar'
+    assert ed.global_replace is True
+    mock_view.replace_text.assert_called_once_with('foo', 'bar', True)
+    ed.show_status_message.\
+        assert_called_once_with('Replaced 4 matches of "foo" with "bar".')

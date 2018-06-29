@@ -1474,6 +1474,10 @@ def test_Window_open_directory_from_os_freedesktop():
 
 
 def test_Window_open_file_event():
+    """
+    Ensure the open_file event is emitted when a tab's open_file is
+    triggered.
+    """
     editor = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
     window = mu.interface.main.Window()
     window.breakpoint_toggle = mock.MagicMock()
@@ -1496,6 +1500,134 @@ def test_Window_open_file_event():
     mock_editor.assert_called_once_with(path, text, '\n')
     editor.open_file.emit('/foo/bar.py')
     mock_emit.assert_called_once_with('/foo/bar.py')
+
+
+def test_Window_connect_find_replace():
+    """
+    Ensure a shortcut is created with teh expected shortcut and handler
+    function.
+    """
+    window = mu.interface.main.Window()
+    mock_handler = mock.MagicMock()
+    mock_shortcut = mock.MagicMock()
+    mock_sequence = mock.MagicMock()
+    with mock.patch('mu.interface.main.QShortcut', mock_shortcut), \
+            mock.patch('mu.interface.main.QKeySequence', mock_sequence):
+        window.connect_find_replace(mock_handler, 'Ctrl+F')
+    mock_sequence.assert_called_once_with('Ctrl+F')
+    ks = mock_sequence('Ctrl+F')
+    mock_shortcut.assert_called_once_with(ks, window)
+    shortcut = mock_shortcut(ks, window)
+    shortcut.activated.connect.assert_called_once_with(mock_handler)
+
+
+def test_Window_show_find_replace():
+    """
+    The find/replace dialog is setup with the right arguments and, if
+    successfully closed, returns the expected result.
+    """
+    window = mu.interface.main.Window()
+    mock_dialog = mock.MagicMock()
+    mock_dialog.find.return_value = 'foo'
+    mock_dialog.replace.return_value = 'bar'
+    mock_dialog.replace_flag.return_value = True
+    mock_FRDialog = mock.MagicMock(return_value=mock_dialog)
+    mock_FRDialog.exec.return_value = True
+    with mock.patch('mu.interface.main.FindReplaceDialog', mock_FRDialog):
+        result = window.show_find_replace('day', '', '', False)
+    mock_dialog.setup.assert_called_once_with('day', '', '', False)
+    assert result == ('foo', 'bar', True)
+
+
+def test_Window_replace_text_not_current_tab():
+    """
+    If there is currently no open tab in which to search, return 0 (to indicate
+    no changes have been made).
+    """
+    w = mu.interface.main.Window()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = None
+    assert w.replace_text('foo', 'bar', False) == 0
+
+
+def test_Window_replace_text_not_global_found():
+    """
+    If the text to be replaced is found in the source, and the global_replace
+    flag is false, return 1 (to indicate the number of changes made).
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.findFirst.return_value = True
+    assert w.replace_text('foo', 'bar', False) == 1
+    mock_tab.replace.assert_called_once_with('bar')
+
+
+def test_Window_replace_text_not_global_missing():
+    """
+    If the text to be replaced is missing in the source, and the global_replace
+    flag is false, return 0 (to indicate no change made).
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    mock_tab.findFirst.return_value = False
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    assert w.replace_text('foo', 'bar', False) == 0
+
+
+def test_Window_replace_text_global_found():
+    """
+    If the text to be replaced is found several times in the source, and the
+    global_replace flag is true, return X (to indicate X changes made) -- where
+    X is some integer.
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    mock_tab.findFirst.return_value = True
+    mock_tab.findNext.side_effect = [True, False, ]
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    assert w.replace_text('foo', 'bar', True) == 2
+    assert mock_tab.replace.call_count == 2
+
+
+def test_Window_replace_text_global_missing():
+    """
+    If the text to be replaced is missing in the source, and the global_replace
+    flag is true, return 0 (to indicate no change made).
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    mock_tab.findFirst.return_value = False
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    assert w.replace_text('foo', 'bar', True) == 0
+
+
+def test_Window_highlight_text():
+    """
+    Given target_text, highlights the first instance via Scintilla's findFirst
+    method.
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    mock_tab.findFirst.return_value = True
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    assert w.highlight_text('foo')
+    mock_tab.findFirst.assert_called_once_with('foo', True, True, False, True)
+
+
+def test_Window_highlight_text_no_tab():
+    """
+    If there's no current tab, just return False.
+    """
+    w = mu.interface.main.Window()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = None
+    assert w.highlight_text('foo') is False
 
 
 def test_StatusBar_init():

@@ -550,6 +550,9 @@ class Editor:
         self.minify = False
         self.microbit_runtime = ''
         self.connected_devices = set()
+        self.find = ''
+        self.replace = ''
+        self.global_replace = False
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
@@ -1208,3 +1211,48 @@ class Editor:
                 tab.path = new_path
                 logger.info('Renamed file to: {}'.format(tab.path))
                 self.save()
+
+    def find_replace(self):
+        """
+        Handle find / replace functionality.
+
+        If find/replace dialog is dismissed, do nothing.
+
+        Otherwise, check there's something to find, warn if there isn't.
+
+        If there is, find (and, optionally, replace) then confirm outcome with
+        a status message.
+        """
+        result = self._view.show_find_replace(self.theme, self.find,
+                                              self.replace,
+                                              self.global_replace)
+        if result:
+            self.find, self.replace, self.global_replace = result
+            if self.find:
+                if self.replace:
+                    replaced = self._view.replace_text(self.find, self.replace,
+                                                       self.global_replace)
+                    if replaced == 1:
+                        msg = _('Replaced "{}" with "{}".')
+                        self.show_status_message(msg.format(self.find,
+                                                            self.replace))
+                    elif replaced > 1:
+                        msg = _('Replaced {} matches of "{}" with "{}".')
+                        self.show_status_message(msg.format(replaced,
+                                                            self.find,
+                                                            self.replace))
+                    else:
+                        msg = _('Could not find "{}".')
+                        self.show_status_message(msg.format(self.find))
+                else:
+                    matched = self._view.highlight_text(self.find)
+                    if matched:
+                        msg = _('Highlighting matches for "{}".')
+                    else:
+                        msg = _('Could not find "{}".')
+                    self.show_status_message(msg.format(self.find))
+            else:
+                message = _('You must provide something to find.')
+                information = _("Please try again, this time with something "
+                                "in the find box.")
+                self._view.show_message(message, information)
