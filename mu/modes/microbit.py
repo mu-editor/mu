@@ -275,9 +275,14 @@ class MicrobitMode(MicroPythonMode):
                 information = _("Your script is too long!")
                 self.view.show_message(message, information, 'Warning')
                 return
+
+        # Indicates if the connected micro:bit has been flashed.
+        flashed = False
+
+        # Find the microbit port and serial number.
+        path_to_microbit, serial_number = microfs.find_microbit()
         # Determine the location of the BBC micro:bit. If it can't be found
         # fall back to asking the user to locate it.
-        path_to_microbit = uflash.find_microbit()
         if path_to_microbit is None:
             # Has the path to the device already been specified?
             if self.user_defined_microbit_path:
@@ -335,6 +340,16 @@ class MicrobitMode(MicroPythonMode):
                             " device or saving your work and restarting Mu if"
                             " the device remains unfound.")
             self.view.show_message(message, information)
+
+        # Get the version of MicroPython on the device.
+        try:
+            version_info = microfs.version()
+        except Exception:
+            # Could not get version of MicroPython. Solution, flash MicroPython
+            # onto the device.
+
+
+
 
     def flash_finished(self):
         """
