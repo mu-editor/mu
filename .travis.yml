@@ -18,6 +18,7 @@ matrix:
       osx_image: xcode6.4
       sudo: required
       language: generic
+      python: 3.6
 
 before_install:
   # OS and default Python info
