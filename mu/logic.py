@@ -33,13 +33,9 @@ import shutil
 import appdirs
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
-# Currently there is no pycodestyle deb packages, so fallback to old name
-try:  # pragma: no cover
-    from pycodestyle import StyleGuide, Checker
-except ImportError:  # pragma: no cover
-    from pep8 import StyleGuide, Checker
-from mu.contrib import uflash
+from pycodestyle import StyleGuide, Checker
 from mu.resources import path
+from mu.debugger.utils import is_breakpoint_line
 from mu import __version__
 
 
@@ -136,14 +132,12 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
 NEWLINE = "\n"
 
 #
-# We write all files as UTF-8 with a PEP 263 encoding cookie
-# We also detect an encoding cookie in an inbound file
+# We write all files as UTF-8 unless they arrived with a PEP 263 encoding
+# cookie, in which case we honour that encoding.
 #
 ENCODING = "utf-8"
 ENCODING_COOKIE_RE = re.compile(
     "^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
-ENCODING_COOKIE = "# -*- coding: %s-*-" \
-    "# Encoding cookie added by Mu Editor" % ENCODING + NEWLINE
 
 logger = logging.getLogger(__name__)
 
@@ -166,20 +160,24 @@ def write_and_flush(fileobj, content):
 
 
 def save_and_encode(text, filepath, newline=os.linesep):
-    #
-    # Strip any existing encoding cookie and replace by a Mu-generated
-    # UTF-8 cookie. We need to strip any existing line-endings off the
-    # encoding cookie so we don't double up.
-    #
-    encoding_cookie = ENCODING_COOKIE.strip()
-    lines = text.splitlines()
-    if lines and ENCODING_COOKIE_RE.match(lines[0]):
-        lines[0] = encoding_cookie
+    """
+    Detect the presence of an encoding cookie and use that encoding; if
+    none is present, do not add one and use the Mu default encoding.
+    If the codec is invalid, log a warning and fall back to the default.
+    """
+    match = ENCODING_COOKIE_RE.match(text)
+    if match:
+        encoding = match.group(1)
+        try:
+            codecs.lookup(encoding)
+        except LookupError:
+            logger.warning("Invalid codec in encoding cookie: %s", encoding)
+            encoding = ENCODING
     else:
-        lines.insert(0, encoding_cookie)
+        encoding = ENCODING
 
-    with open(filepath, "w", encoding=ENCODING, newline='') as f:
-        write_and_flush(f, newline.join(lines))
+    with open(filepath, "w", encoding=encoding, newline='') as f:
+        write_and_flush(f, newline.join(text.splitlines()))
 
 
 def sniff_encoding(filepath):
@@ -187,7 +185,7 @@ def sniff_encoding(filepath):
 
     * If there is a BOM, return the appropriate encoding
     * If there is a PEP 263 encoding cookie, return the appropriate encoding
-    * Otherwise return the locale default encoding
+    * Otherwise return None for read_and_decode to attempt several defaults
     """
     boms = [
         (codecs.BOM_UTF8, "utf-8-sig"),
@@ -207,15 +205,22 @@ def sniff_encoding(filepath):
     # Look for a PEP 263 encoding cookie
     #
     default_encoding = locale.getpreferredencoding()
-    uline = line.decode(default_encoding)
-    match = ENCODING_COOKIE_RE.match(uline)
-    if match:
-        return match.group(1)
+    try:
+        uline = line.decode(default_encoding)
+    except UnicodeDecodeError:
+        #
+        # Can't even decode the line in order to match the cookie
+        #
+        pass
+    else:
+        match = ENCODING_COOKIE_RE.match(uline)
+        if match:
+            return match.group(1)
 
     #
     # Fall back to the locale default
     #
-    return default_encoding
+    return None
 
 
 def sniff_newline_convention(text):
@@ -246,17 +251,42 @@ def sniff_newline_convention(text):
 
 
 def read_and_decode(filepath):
-    encoding = sniff_encoding(filepath)
-    with open(filepath, encoding=encoding, newline='') as f:
-        text = f.read()
-        #
-        # Sniff and convert newlines here so that, by the time
-        # the text reaches the editor it is ready to use. Then
-        # convert everything to the Mu internal newline character
-        #
-        newline = sniff_newline_convention(text)
-        text = re.sub("\r\n", NEWLINE, text)
-        return text, newline
+    """
+    Read the contents of a file,
+    """
+    sniffed_encoding = sniff_encoding(filepath)
+    #
+    # If sniff_encoding has found enough clues to indicate an encoding,
+    # use that. Otherwise try a series of defaults before giving up.
+    #
+    if sniffed_encoding:
+        logger.debug("Detected encoding %s", sniffed_encoding)
+        candidate_encodings = [sniffed_encoding]
+    else:
+        candidate_encodings = [ENCODING, locale.getpreferredencoding()]
+
+    with open(filepath, "rb") as f:
+        btext = f.read()
+    for encoding in candidate_encodings:
+        logger.debug("Trying to decode with %s", encoding)
+        try:
+            text = btext.decode(encoding)
+            logger.info("Decoded with %s", encoding)
+            break
+        except UnicodeDecodeError:
+            continue
+    else:
+        raise UnicodeDecodeError(encoding, btext, 0, 0, "Unable to decode")
+
+    #
+    # Sniff and convert newlines here so that, by the time
+    # the text reaches the editor it is ready to use. Then
+    # convert everything to the Mu internal newline character
+    #
+    newline = sniff_newline_convention(text)
+    logger.debug("Detected newline %r", newline)
+    text = re.sub("\r\n", NEWLINE, text)
+    return text, newline
 
 
 def get_admin_file_path(filename):
@@ -517,7 +547,12 @@ class Editor:
         self.mode = 'python'
         self.modes = {}  # See set_modes.
         self.envars = []  # See restore session and show_admin
+        self.minify = False
+        self.microbit_runtime = ''
         self.connected_devices = set()
+        self.find = ''
+        self.replace = ''
+        self.global_replace = False
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
@@ -545,7 +580,9 @@ class Editor:
             os.makedirs(wd)
         # Ensure PyGameZero assets are copied over.
         images_path = os.path.join(wd, 'images')
+        fonts_path = os.path.join(wd, 'fonts')
         sounds_path = os.path.join(wd, 'sounds')
+        music_path = os.path.join(wd, 'music')
         if not os.path.exists(images_path):
             logger.debug('Creating directory: {}'.format(images_path))
             os.makedirs(images_path)
@@ -553,11 +590,17 @@ class Editor:
                         os.path.join(images_path, 'alien.png'))
             shutil.copy(path('alien_hurt.png', 'pygamezero/'),
                         os.path.join(images_path, 'alien_hurt.png'))
+        if not os.path.exists(fonts_path):
+            logger.debug('Creating directory: {}'.format(fonts_path))
+            os.makedirs(fonts_path)
         if not os.path.exists(sounds_path):
             logger.debug('Creating directory: {}'.format(sounds_path))
             os.makedirs(sounds_path)
             shutil.copy(path('eep.wav', 'pygamezero/'),
                         os.path.join(sounds_path, 'eep.wav'))
+        if not os.path.exists(music_path):
+            logger.debug('Creating directory: {}'.format(music_path))
+            os.makedirs(music_path)
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
@@ -605,6 +648,20 @@ class Editor:
                     self.envars = old_session['envars']
                     logger.info('User defined environment variables: '
                                 '{}'.format(self.envars))
+                if 'minify' in old_session:
+                    self.minify = old_session['minify']
+                    logger.info('Minify scripts on micro:bit? '
+                                '{}'.format(self.minify))
+                if 'microbit_runtime' in old_session:
+                    self.microbit_runtime = old_session['microbit_runtime']
+                    if self.microbit_runtime:
+                        logger.info('Custom micro:bit runtime path: '
+                                    '{}'.format(self.microbit_runtime))
+                        if not os.path.isfile(self.microbit_runtime):
+                            self.microbit_runtime = ''
+                            logger.warning('The specified micro:bit runtime '
+                                           'does not exist. Using default '
+                                           'runtime instead.')
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
@@ -649,9 +706,15 @@ class Editor:
         """
         logger.info('Loading script from: {}'.format(path))
         error = _("The file contains characters Mu expects to be encoded as "
-                  "UTF-8, but which are encoded in some other way.\n\nIf this "
-                  "file was saved in another application, re-save the file "
-                  "via the 'Save as' option and set the encoding to UTF-8.")
+                  "{0} or as the computer's default encoding {1}, but which "
+                  "are encoded in some other way.\n\nIf this file was saved "
+                  "in another application, re-save the file via the "
+                  "'Save as' option and set the encoding to {0}".
+                  format(ENCODING, locale.getpreferredencoding()))
+        # Does the file even exist?
+        if not os.path.isfile(path):
+            logger.info('The file {} does not exist.'.format(path))
+            return
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
@@ -662,53 +725,59 @@ class Editor:
                 self._view.show_message(msg.format(os.path.basename(path)))
                 self._view.focus_tab(widget)
                 return
+        name, text, newline, file_mode = None, None, None, None
         try:
             if path.lower().endswith('.py'):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
                 try:
                     text, newline = read_and_decode(path)
-                except UnicodeDecodeError as exc:
+                except UnicodeDecodeError:
                     message = _("Mu cannot read the characters in {}")
                     filename = os.path.basename(path)
                     self._view.show_message(message.format(filename), error)
                     return
-
-                if not ENCODING_COOKIE_RE.match(text):
-                    text = ENCODING_COOKIE + NEWLINE + text
                 name = path
-            elif path.lower().endswith('.hex'):
-                # Open the hex, extract the Python script therein and set the
-                # name to None, thus forcing the user to work out what to name
-                # the recovered script.
-                try:
-                    with open(path, newline='') as f:
-                        text = uflash.extract_script(f.read())
-                        newline = sniff_newline_convention(text)
-                except Exception:
-                    filename = os.path.basename(path)
-                    message = _("Unable to load file {}").format(filename)
-                    info = _("Mu doesn't understand the hex file and cannot "
-                             "extract any Python code. Are you sure this is "
-                             "a hex file created with MicroPython?")
+            else:
+                # Delegate the open operation to the Mu modes. Leave the name
+                # as None, thus forcing the user to work out what to name the
+                # recovered script.
+                for mode_name, mode in self.modes.items():
+                    try:
+                        text = mode.open_file(path)
+                    except Exception as exc:
+                        # No worries, log it and try the next mode
+                        logger.warning('Error when mode {} try to open the '
+                                       '{} file.'.format(mode_name, path),
+                                       exc_info=exc)
+                    else:
+                        if text:
+                            newline = sniff_newline_convention(text)
+                            file_mode = mode_name
+                            break
+                else:
+                    message = _('Mu was not able to open this file')
+                    info = _('Currently Mu only works with Python source '
+                             'files or hex files created with embedded '
+                             'MicroPython code.')
                     self._view.show_message(message, info)
                     return
-                name = None
-            else:
-                # Mu won't open other file types, although this may change in
-                # the future.
-                message = _("Mu only opens .py and .hex files")
-                info = _("Currently Mu only works with Python source files or "
-                         "hex files created with embedded MicroPython code.")
-                self._view.show_message(message, info)
-                return
-        except (PermissionError, FileNotFoundError):
+        except OSError:
             message = _("Could not load {}").format(path)
-            logger.warning('Could not load {}'.format(path))
+            logger.exception('Could not load {}'.format(path))
             info = _("Does this file exist?\nIf it does, do you have "
                      "permission to read it?\n\nPlease check and try again.")
             self._view.show_message(message, info)
         else:
+            if file_mode and self.mode != file_mode:
+                device_name = self.modes[file_mode].name
+                message = _('Is this a {} file?').format(device_name)
+                info = _('It looks like this could be a {} file.\n\n'
+                         'Would you like to change Mu to the {}'
+                         'mode?').format(device_name, device_name)
+                if self._view.show_confirmation(
+                        message, info, icon='Question') == QMessageBox.Ok:
+                    self.change_mode(file_mode)
             logger.debug(text)
             self._view.add_tab(
                 name, text, self.modes[self.mode].api(), newline)
@@ -718,7 +787,16 @@ class Editor:
         Loads a Python file from the file system or extracts a Python script
         from a hex file.
         """
-        path = self._view.get_load_path(self.modes[self.mode].workspace_dir())
+        # Get all supported extensions from the different modes
+        extensions = ['py']
+        for mode_name, mode in self.modes.items():
+            if mode.file_extensions:
+                extensions += mode.file_extensions
+        extensions = set([e.lower() for e in extensions])
+        extensions = '*.{} *.{}'.format(' *.'.join(extensions),
+                                        ' *.'.join(extensions).upper())
+        path = self._view.get_load_path(self.modes[self.mode].workspace_dir(),
+                                        extensions)
         if path:
             self._load(path)
 
@@ -738,7 +816,6 @@ class Editor:
                 # abspath will fail for non-paths
                 self.direct_load(os.path.abspath(p))
             except Exception as e:
-                self._view.show_message(_('Can\'t open {}'.format(p)))
                 logging.warning('Can\'t open file from command line {}'.
                                 format(p), exc_info=e)
 
@@ -759,21 +836,31 @@ class Editor:
         """
         Given a tab, will attempt to save the script in the tab to the path
         associated with the tab. If there's a problem this will be logged and
-        reported.
+        reported and the tab status will continue to show as Modified.
         """
+        logger.info('Saving script to: {}'.format(tab.path))
+        logger.debug(tab.text())
         try:
-            logger.info('Saving script to: {}'.format(tab.path))
-            logger.debug(tab.text())
             save_and_encode(tab.text(), tab.path, tab.newline)
-            tab.setModified(False)
-            self.show_status_message(_("Saved file: {}").format(tab.path))
         except OSError as e:
             logger.error(e)
-            message = _('Could not save file.')
+            error_message = _('Could not save file (disk problem)')
             information = _("Error saving file to disk. Ensure you have "
                             "permission to write the file and "
                             "sufficient disk space.")
-            self._view.show_message(message, information)
+        except UnicodeEncodeError:
+            error_message = _("Could not save file (encoding problem)")
+            logger.exception(error_message)
+            information = _("Unable to convert all the characters. If you "
+                            "have an encoding line at the top of the file, "
+                            "remove it and try again.")
+        else:
+            error_message = information = None
+        if error_message:
+            self._view.show_message(error_message, information)
+        else:
+            tab.setModified(False)
+            self.show_status_message(_("Saved file: {}").format(tab.path))
 
     def save(self):
         """
@@ -802,10 +889,13 @@ class Editor:
         Given a path, returns either an existing tab for the path or creates /
         loads a new tab for the path.
         """
+        normalised_path = os.path.normcase(os.path.abspath(path))
         for tab in self._view.widgets:
-            if tab.path == path:
-                self._view.focus_tab(tab)
-                return tab
+            if tab.path:
+                tab_path = os.path.normcase(os.path.abspath(tab.path))
+                if tab_path == normalised_path:
+                    self._view.focus_tab(tab)
+                    return tab
         self.direct_load(path)
         return self._view.current_tab
 
@@ -836,7 +926,7 @@ class Editor:
         if tab.has_annotations:
             logger.info('Checking code.')
             self._view.reset_annotations()
-            filename = tab.path if tab.path else 'untitled'
+            filename = tab.path if tab.path else _('untitled')
             builtins = self.modes[self.mode].builtins
             flake = check_flake(filename, tab.text(), builtins)
             if flake:
@@ -867,8 +957,11 @@ class Editor:
         Display browser based help about Mu.
         """
         logger.info('Showing help.')
-        current_locale, encoding = locale.getdefaultlocale()
-        language_code = current_locale[:2]
+        try:
+            current_locale, encoding = locale.getdefaultlocale()
+            language_code = current_locale[:2]
+        except (TypeError, ValueError):
+            language_code = 'en'
         major_version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/{}/help/{}'.format(language_code,
                                                       major_version)
@@ -901,6 +994,8 @@ class Editor:
             'mode': self.mode,
             'paths': paths,
             'envars': self.envars,
+            'minify': self.minify,
+            'microbit_runtime': self.microbit_runtime,
         }
         session_path = get_session_path()
         with open(session_path, 'w') as out:
@@ -919,9 +1014,26 @@ class Editor:
         logger.info('Showing logs from {}'.format(LOG_FILE))
         envars = '\n'.join(['{}={}'.format(name, value) for name, value in
                             self.envars])
-        with open(LOG_FILE, 'r') as logfile:
-            envars = self._view.show_admin(logfile.read(), envars, self.theme)
-            self.envars = extract_envars(envars)
+        settings = {
+            'envars': envars,
+            'minify': self.minify,
+            'microbit_runtime': self.microbit_runtime,
+        }
+        with open(LOG_FILE, 'r', encoding='utf8') as logfile:
+            new_settings = self._view.show_admin(logfile.read(), settings,
+                                                 self.theme)
+            self.envars = extract_envars(new_settings['envars'])
+            self.minify = new_settings['minify']
+            runtime = new_settings['microbit_runtime'].strip()
+            if runtime and not os.path.isfile(runtime):
+                self.microbit_runtime = ''
+                message = _('Could not find MicroPython runtime.')
+                information = _("The micro:bit runtime you specified ('{}') "
+                                "does not exist. "
+                                "Please try again.".format(runtime))
+                self._view.show_message(message, information)
+            else:
+                self.microbit_runtime = runtime
 
     def select_mode(self, event=None):
         """
@@ -932,19 +1044,20 @@ class Editor:
         logger.info('Showing available modes: {}'.format(
             list(self.modes.keys())))
         new_mode = self._view.select_mode(self.modes, self.mode, self.theme)
-        if new_mode and new_mode is not self.mode:
-            self.mode = new_mode
-            self.change_mode(self.mode)
-            self.show_status_message(_('Changed to {} mode.').format(
-                                     self.mode.capitalize()))
+        if new_mode and new_mode != self.mode:
+            logger.info('New mode selected: {}'.format(new_mode))
+            self.change_mode(new_mode)
 
     def change_mode(self, mode):
         """
         Given the name of a mode, will make the necessary changes to put the
         editor into the new mode.
         """
-        # Remove the old mode's REPL.
+        self.mode = mode
+        # Remove the old mode's REPL / filesystem / plotter if required.
         self._view.remove_repl()
+        self._view.remove_filesystem()
+        self._view.remove_plotter()
         # Update buttons.
         self._view.change_mode(self.modes[mode])
         button_bar = self._view.button_bar
@@ -975,8 +1088,10 @@ class Editor:
         # Update breakpoint states.
         if not (self.modes[mode].is_debugger or self.modes[mode].has_debugger):
             for tab in self._view.widgets:
-                tab.breakpoint_lines = set()
+                tab.breakpoint_handles = set()
                 tab.reset_annotations()
+        self.show_status_message(_('Changed to {} mode.').format(
+            mode.capitalize()))
 
     def autosave(self):
         """
@@ -993,20 +1108,42 @@ class Editor:
         """
         Ensure connected USB devices are polled. If there's a change and a new
         recognised device is attached, inform the user via a status message.
+        If a single device is found and Mu is in a different mode ask the user
+        if they'd like to change mode.
         """
+        devices = []
+        device_types = set()
+        # Detect connected devices.
         for name, mode in self.modes.items():
-            if hasattr(mode, "find_device"):
+            if hasattr(mode, 'find_device'):
                 # The mode can detect an attached device.
-                device = mode.find_device(with_logging=False)
-                if device and (device, mode) not in self.connected_devices:
-                    self.connected_devices = set()
-                    self.connected_devices.add((device, mode))
-                    msg = _("Connection from a new device detected.")
-                    if self.mode != name:
-                        msg += _(" Please switch to {} mode.").format(
-                            name.capitalize())
-                    self.show_status_message(msg)
-                    break
+                port = mode.find_device(with_logging=False)
+                if port:
+                    devices.append((name, port))
+                    device_types.add(name)
+        # Remove no-longer connected devices.
+        to_remove = []
+        for connected in self.connected_devices:
+            if connected not in devices:
+                to_remove.append(connected)
+        for device in to_remove:
+            self.connected_devices.remove(device)
+        # Add newly connected devices.
+        for device in devices:
+            if device not in self.connected_devices:
+                self.connected_devices.add(device)
+                mode_name = device[0]
+                device_name = self.modes[mode_name].name
+                msg = _('Detected new {} device.').format(device_name)
+                self.show_status_message(msg)
+                # Only ask to switch mode if a single device type is connected
+                if len(device_types) == 1 and self.mode != mode_name:
+                    msg_body = _('Would you like to change Mu to the {} '
+                                 'mode?').format(device_name)
+                    change_confirmation = self._view.show_confirmation(
+                        msg, msg_body, icon='Question')
+                    if change_confirmation == QMessageBox.Ok:
+                        self.change_mode(mode_name)
 
     def show_status_message(self, message, duration=5):
         """
@@ -1021,17 +1158,25 @@ class Editor:
         if (self.modes[self.mode].has_debugger or
                 self.modes[self.mode].is_debugger):
             tab = self._view.current_tab
+            code = tab.text(line)
             if self.mode == 'debugger':
                 # The debugger is running.
-                self.modes['debugger'].toggle_breakpoint(line, tab)
+                if is_breakpoint_line(code):
+                    self.modes['debugger'].toggle_breakpoint(line, tab)
+                    return
             else:
                 # The debugger isn't running.
-                if line in tab.breakpoint_lines:
-                    tab.markerDelete(line, tab.BREAKPOINT_MARKER)
-                    tab.breakpoint_lines.remove(line)
-                else:
-                    tab.markerAdd(line, tab.BREAKPOINT_MARKER)
-                    tab.breakpoint_lines.add(line)
+                if tab.markersAtLine(line):
+                    tab.markerDelete(line, -1)
+                    return
+                elif is_breakpoint_line(code):
+                    handle = tab.markerAdd(line, tab.BREAKPOINT_MARKER)
+                    tab.breakpoint_handles.add(handle)
+                    return
+            msg = _('Cannot Set Breakpoint.')
+            info = _("Lines that are comments or some multi-line "
+                     "statements cannot have breakpoints.")
+            self._view.show_message(msg, info)
 
     def rename_tab(self, tab_id=None):
         """
@@ -1066,3 +1211,48 @@ class Editor:
                 tab.path = new_path
                 logger.info('Renamed file to: {}'.format(tab.path))
                 self.save()
+
+    def find_replace(self):
+        """
+        Handle find / replace functionality.
+
+        If find/replace dialog is dismissed, do nothing.
+
+        Otherwise, check there's something to find, warn if there isn't.
+
+        If there is, find (and, optionally, replace) then confirm outcome with
+        a status message.
+        """
+        result = self._view.show_find_replace(self.theme, self.find,
+                                              self.replace,
+                                              self.global_replace)
+        if result:
+            self.find, self.replace, self.global_replace = result
+            if self.find:
+                if self.replace:
+                    replaced = self._view.replace_text(self.find, self.replace,
+                                                       self.global_replace)
+                    if replaced == 1:
+                        msg = _('Replaced "{}" with "{}".')
+                        self.show_status_message(msg.format(self.find,
+                                                            self.replace))
+                    elif replaced > 1:
+                        msg = _('Replaced {} matches of "{}" with "{}".')
+                        self.show_status_message(msg.format(replaced,
+                                                            self.find,
+                                                            self.replace))
+                    else:
+                        msg = _('Could not find "{}".')
+                        self.show_status_message(msg.format(self.find))
+                else:
+                    matched = self._view.highlight_text(self.find)
+                    if matched:
+                        msg = _('Highlighting matches for "{}".')
+                    else:
+                        msg = _('Could not find "{}".')
+                    self.show_status_message(msg.format(self.find))
+            else:
+                message = _('You must provide something to find.')
+                information = _("Please try again, this time with something "
+                                "in the find box.")
+                self._view.show_message(message, information)

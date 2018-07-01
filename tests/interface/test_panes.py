@@ -45,6 +45,40 @@ def test_MicroPythonREPLPane_paste():
     mock_serial.write.assert_called_once_with(bytes('paste me!', 'utf8'))
 
 
+def test_MicroPythonREPLPane_paste_handle_unix_newlines():
+    """
+    Pasting into the REPL should handle '\n' properly.
+
+    '\n' -> '\r'
+    """
+    mock_serial = mock.MagicMock()
+    mock_clipboard = mock.MagicMock()
+    mock_clipboard.text.return_value = 'paste\nme!'
+    mock_application = mock.MagicMock()
+    mock_application.clipboard.return_value = mock_clipboard
+    with mock.patch('mu.interface.panes.QApplication', mock_application):
+        rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+        rp.paste()
+    mock_serial.write.assert_called_once_with(bytes('paste\rme!', 'utf8'))
+
+
+def test_MicroPythonREPLPane_paste_handle_windows_newlines():
+    """
+    Pasting into the REPL should handle '\r\n' properly.
+
+    '\r\n' -> '\r'
+    """
+    mock_serial = mock.MagicMock()
+    mock_clipboard = mock.MagicMock()
+    mock_clipboard.text.return_value = 'paste\r\nme!'
+    mock_application = mock.MagicMock()
+    mock_application.clipboard.return_value = mock_clipboard
+    with mock.patch('mu.interface.panes.QApplication', mock_application):
+        rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+        rp.paste()
+    mock_serial.write.assert_called_once_with(bytes('paste\rme!', 'utf8'))
+
+
 def test_MicroPythonREPLPane_paste_only_works_if_there_is_something_to_paste():
     """
     Pasting into the REPL should send bytes via the serial connection.
@@ -159,6 +193,20 @@ def test_MicroPythonREPLPane_keyPressEvent_backspace():
     data.modifiers = mock.MagicMock(return_value=None)
     rp.keyPressEvent(data)
     mock_serial.write.assert_called_once_with(b'\b')
+
+
+def test_MicroPythonREPLPane_keyPressEvent_delete():
+    """
+    Ensure delete in the REPL is handled correctly.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Delete)
+    data.text = mock.MagicMock(return_value='\b')
+    data.modifiers = mock.MagicMock(return_value=None)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(b'\x1B[\x33\x7E')
 
 
 def test_MicroPythonREPLPane_keyPressEvent_up():
@@ -781,6 +829,15 @@ def test_JupyterREPLPane_init():
     assert jw.console_height == 10
 
 
+def test_JupyterREPLPane_append_plain_text():
+    """
+    """
+    jw = mu.interface.panes.JupyterREPLPane()
+    jw.on_append_text = mock.MagicMock()
+    jw._append_plain_text('hello')
+    jw.on_append_text.emit.assert_called_once_with('hello'.encode('utf-8'))
+
+
 def test_JupyterREPLPane_set_font_size():
     """
     Check the correct stylesheet values are being set.
@@ -872,6 +929,7 @@ def test_PythonProcessPane_init():
     assert ppp.input_history == []
     assert ppp.start_of_current_line == 0
     assert ppp.history_position == 0
+    assert ppp.running is False
 
 
 def test_PythonProcessPane_start_process():
@@ -897,6 +955,7 @@ def test_PythonProcessPane_start_process():
     runner = sys.executable
     expected_args = ['-i', expected_script, ]  # called with interactive flag.
     ppp.process.start.assert_called_once_with(runner, expected_args)
+    assert ppp.running is True
 
 
 def test_PythonProcessPane_start_process_command_args():
@@ -931,10 +990,12 @@ def test_PythonProcessPane_start_process_debugger():
         args = ['foo', 'bar', ]
         ppp.start_process('script.py', 'workspace', debugger=True,
                           command_args=args)
-    runner = 'mu-debug'
+    mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
+    runner = os.path.join(mu_dir, 'mu-debug.py')
+    python_exec = sys.executable
     expected_script = os.path.abspath(os.path.normcase('script.py'))
-    expected_args = [expected_script, 'foo', 'bar', ]
-    ppp.process.start.assert_called_once_with(runner, expected_args)
+    expected_args = [runner, expected_script, 'foo', 'bar', ]
+    ppp.process.start.assert_called_once_with(python_exec, expected_args)
 
 
 def test_PythonProcessPane_start_process_not_interactive():
@@ -976,10 +1037,47 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
         envars = [['name', 'value'], ]
         ppp.start_process('script.py', 'workspace', interactive=False,
                           envars=envars, runner='foo')
-    assert mock_environment.insert.call_count == 2
+    assert mock_environment.insert.call_count == 3
     assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
                                                             '1')
-    assert mock_environment.insert.call_args_list[1][0] == ('name', 'value')
+    assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
+                                                            'utf-8')
+    assert mock_environment.insert.call_args_list[2][0] == ('name', 'value')
+
+
+def test_PythonProcessPane_start_process_darwin_app_pythonpath():
+    """
+    When running on OSX as a packaged mu-editor.app, the PYTHONPATH needs to
+    be set so the child processes have access to the packaged libraries and
+    modules.
+    """
+    mock_process = mock.MagicMock()
+    mock_process_class = mock.MagicMock(return_value=mock_process)
+    mock_merge_chans = mock.MagicMock()
+    mock_process_class.MergedChannels = mock_merge_chans
+    mock_environment = mock.MagicMock()
+    mock_environment_class = mock.MagicMock()
+    mock_environment_class.systemEnvironment.return_value = mock_environment
+    mock_path = mock.MagicMock()
+    mock_path.return_value = ('/Applications/mu-editor.app/'
+                              'Contents/Resources/app/mu')
+    with mock.patch('mu.interface.panes.QProcess', mock_process_class), \
+            mock.patch('mu.interface.panes.QProcessEnvironment',
+                       mock_environment_class), \
+            mock.patch('os.path.dirname', mock_path), \
+            mock.patch('sys.platform', 'darwin'):
+        ppp = mu.interface.panes.PythonProcessPane()
+        envars = [['name', 'value'], ]
+        ppp.start_process('script.py', 'workspace', interactive=False,
+                          envars=envars, runner='foo')
+    assert mock_environment.insert.call_count == 4
+    assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
+                                                            '1')
+    assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
+                                                            'utf-8')
+    assert mock_environment.insert.call_args_list[2][0] == ('PYTHONPATH',
+                                                            ':'.join(sys.path))
+    assert mock_environment.insert.call_args_list[3][0] == ('name', 'value')
 
 
 def test_PythonProcessPane_start_process_custom_runner():
@@ -999,6 +1097,26 @@ def test_PythonProcessPane_start_process_custom_runner():
     expected_script = os.path.abspath(os.path.normcase('script.py'))
     expected_args = [expected_script, 'foo', 'bar', ]
     ppp.process.start.assert_called_once_with('foo', expected_args)
+
+
+def test_PythonProcessPane_start_process_custom_python_args():
+    """
+    Ensure that if there are arguments to be passed into the Python runtime
+    starting the child process, these are passed on correctly.
+    """
+    mock_process = mock.MagicMock()
+    mock_process_class = mock.MagicMock(return_value=mock_process)
+    mock_merge_chans = mock.MagicMock()
+    mock_process_class.MergedChannels = mock_merge_chans
+    with mock.patch('mu.interface.panes.QProcess', mock_process_class):
+        ppp = mu.interface.panes.PythonProcessPane()
+        py_args = ['-m', 'pgzero', ]
+        ppp.start_process('script.py', 'workspace', interactive=False,
+                          python_args=py_args)
+    expected_script = os.path.abspath(os.path.normcase('script.py'))
+    expected_args = ['-m', 'pgzero', expected_script]
+    runner = sys.executable
+    ppp.process.start.assert_called_once_with(runner, expected_args)
 
 
 def test_PythonProcessPane_finished():
@@ -1119,6 +1237,21 @@ def test_PythonProcessPane_parse_paste():
     assert mock_timer.singleShot.call_count == 1
 
 
+def test_PythonProcessPane_parse_paste_non_ascii():
+    """
+    Given some non-ascii yet printable text, ensure that the first character is
+    correctly handled and the remaining text to be processed is scheduled to be
+    parsed in the future.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.parse_input = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.parse_paste('ÅÄÖ')
+    ppp.parse_input.assert_called_once_with(None, 'Å', None)
+    assert mock_timer.singleShot.call_count == 1
+
+
 def test_PythonProcessPane_parse_paste_newline():
     """
     As above, but ensure the correct handling of a newline character.
@@ -1173,6 +1306,19 @@ def test_PythonProcessPane_parse_input_a():
     ppp.insert.assert_called_once_with(b'a')
 
 
+def test_PythonProcessPane_parse_input_non_ascii():
+    """
+    Ensure a non-ascii printable character is inserted into the text area.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.insert = mock.MagicMock()
+    key = Qt.Key_A
+    text = 'Å'
+    modifiers = None
+    ppp.parse_input(key, text, modifiers)
+    ppp.insert.assert_called_once_with('Å'.encode('utf-8'))
+
+
 def test_PythonProcessPane_parse_input_ctrl_c():
     """
     Control-C (SIGINT / KeyboardInterrupt) character is typed.
@@ -1180,6 +1326,7 @@ def test_PythonProcessPane_parse_input_ctrl_c():
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.process = mock.MagicMock()
     ppp.process.processId.return_value = 123
+    ppp.running = True
     key = Qt.Key_C
     text = ''
     modifiers = Qt.ControlModifier
@@ -1197,6 +1344,7 @@ def test_PythonProcessPane_parse_input_ctrl_d():
     """
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.process = mock.MagicMock()
+    ppp.running = True
     key = Qt.Key_D
     text = ''
     modifiers = Qt.ControlModifier
@@ -1204,6 +1352,41 @@ def test_PythonProcessPane_parse_input_ctrl_d():
                     return_value='win32'):
         ppp.parse_input(key, text, modifiers)
         ppp.process.kill.assert_called_once_with()
+
+
+def test_PythonProcessPane_parse_input_ctrl_c_after_process_finished():
+    """
+    Control-C (SIGINT / KeyboardInterrupt) character is typed.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.processId.return_value = 123
+    ppp.running = False
+    key = Qt.Key_C
+    text = ''
+    modifiers = Qt.ControlModifier
+    mock_kill = mock.MagicMock()
+    with mock.patch('mu.interface.panes.os.kill', mock_kill), \
+            mock.patch('mu.interface.panes.platform.system',
+                       return_value='win32'):
+        ppp.parse_input(key, text, modifiers)
+    assert mock_kill.call_count == 0
+
+
+def test_PythonProcessPane_parse_input_ctrl_d_after_process_finished():
+    """
+    Control-D (Kill process) character is typed.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.running = False
+    key = Qt.Key_D
+    text = ''
+    modifiers = Qt.ControlModifier
+    with mock.patch('mu.interface.panes.platform.system',
+                    return_value='win32'):
+        ppp.parse_input(key, text, modifiers)
+        assert ppp.process.kill.call_count == 0
 
 
 def test_PythonProcessPane_parse_input_up_arrow():
@@ -1351,11 +1534,25 @@ def test_PythonProcessPane_parse_input_copy():
 
 def test_PythonProcessPane_parse_input_backspace():
     """
-    Backspace deletes the character at the cursor position.
+    Backspace call causes a backspace from the character at the cursor
+    position.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.backspace = mock.MagicMock()
+    key = Qt.Key_Backspace
+    text = '\b'
+    modifiers = None
+    ppp.parse_input(key, text, modifiers)
+    ppp.backspace.assert_called_once_with()
+
+
+def test_PythonProcessPane_parse_input_delete():
+    """
+    Delete deletes the character to the right of the cursor position.
     """
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.delete = mock.MagicMock()
-    key = Qt.Key_Backspace
+    key = Qt.Key_Delete
     text = '\b'
     modifiers = None
     ppp.parse_input(key, text, modifiers)
@@ -1369,6 +1566,9 @@ def test_PythonProcessPane_parse_input_newline():
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.toPlainText = mock.MagicMock(return_value='abc\n')
     ppp.start_of_current_line = 0
+    ppp.textCursor = mock.MagicMock()
+    ppp.textCursor().position.return_value = 666
+    ppp.insert = mock.MagicMock()
     ppp.write_to_stdin = mock.MagicMock()
     key = Qt.Key_Enter
     text = '\r'
@@ -1377,6 +1577,8 @@ def test_PythonProcessPane_parse_input_newline():
     ppp.write_to_stdin.assert_called_once_with(b'abc\n')
     assert b'abc' in ppp.input_history
     assert ppp.history_position == 0
+    # On newline, the start of the current line should be set correctly.
+    assert ppp.start_of_current_line == 666
 
 
 def test_PythonProcessPane_parse_input_newline_ignore_empty_input_in_history():
@@ -1470,10 +1672,13 @@ def test_PythonProcessPane_read_from_stdout():
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.append = mock.MagicMock()
     ppp.process = mock.MagicMock()
+    ppp.process.readAll().data.return_value = b'hello world'
+    ppp.on_append_text = mock.MagicMock()
     ppp.read_from_stdout()
     assert ppp.append.call_count == 1
     assert ppp.process.readAll().data.call_count == 1
     assert ppp.start_of_current_line == 123
+    ppp.on_append_text.emit.assert_called_once_with(b'hello world')
 
 
 def test_PythonProcessPane_write_to_stdin():
@@ -1531,10 +1736,42 @@ def test_PythonProcessPane_insert():
     mock_cursor.insertText.assert_called_once_with('hello')
 
 
+def test_PythonProcessPane_backspace():
+    """
+    Make sure that removing a character to the left of the current cursor
+    position works as expected.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.start_of_current_line = 123
+    mock_cursor = mock.MagicMock()
+    mock_cursor.position.return_value = 124
+    mock_cursor.deletePreviousChar = mock.MagicMock()
+    ppp.setTextCursor = mock.MagicMock()
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.backspace()
+    mock_cursor.deletePreviousChar.assert_called_once_with()
+    ppp.setTextCursor.assert_called_once_with(mock_cursor)
+
+
+def test_PythonProcessPane_backspace_at_start_of_input_line():
+    """
+    Make sure that removing a character will not work if the cursor is at the
+    left-hand boundary of the input line.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.start_of_current_line = 123
+    mock_cursor = mock.MagicMock()
+    mock_cursor.position.return_value = 123
+    mock_cursor.deletePreviousChar = mock.MagicMock()
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.backspace()
+    assert mock_cursor.deletePreviousChar.call_count == 0
+
+
 def test_PythonProcessPane_delete():
     """
-    Make sure that removing a character at the current cursor position works as
-    expected.
+    Make sure that removing a character to the right of the current cursor
+    position works as expected.
     """
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.start_of_current_line = 123
@@ -1544,7 +1781,7 @@ def test_PythonProcessPane_delete():
     ppp.setTextCursor = mock.MagicMock()
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.delete()
-    mock_cursor.deletePreviousChar.assert_called_once_with()
+    mock_cursor.deleteChar.assert_called_once_with()
     ppp.setTextCursor.assert_called_once_with(mock_cursor)
 
 
@@ -1556,11 +1793,11 @@ def test_PythonProcessPane_delete_at_start_of_input_line():
     ppp = mu.interface.panes.PythonProcessPane()
     ppp.start_of_current_line = 123
     mock_cursor = mock.MagicMock()
-    mock_cursor.position.return_value = 123
+    mock_cursor.position.return_value = 122
     mock_cursor.deletePreviousChar = mock.MagicMock()
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.delete()
-    assert mock_cursor.deletePreviousChar.call_count == 0
+    assert mock_cursor.deleteChar.call_count == 0
 
 
 def test_PythonProcessPane_clear_input_line():
@@ -1768,6 +2005,27 @@ def test_PlotterPane_process_bytes():
     pp.add_data = mock.MagicMock()
     pp.process_bytes(b'(1, 2.3, 4)\r\n')
     pp.add_data.assert_called_once_with((1, 2.3, 4))
+
+
+def test_PlotterPane_process_bytes_guards_against_data_flood():
+    """
+    If the process_bytes method gets data of more than 1024 bytes then trigger
+    a data_flood signal and ensure the plotter no longer processes incoming
+    bytes.
+
+    (The assumption is that Mu will clean up once the data_flood signal is
+    emitted.)
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.data_flood = mock.MagicMock()
+    pp.add_data = mock.MagicMock()
+    data_flood = b'X' * 1025
+    pp.process_bytes(data_flood)
+    assert pp.flooded is True
+    pp.data_flood.emit.assert_called_once_with()
+    assert pp.add_data.call_count == 0
+    pp.process_bytes(data_flood)
+    assert pp.add_data.call_count == 0
 
 
 def test_PlotterPane_process_bytes_tuple_not_numeric():

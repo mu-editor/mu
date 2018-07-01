@@ -158,18 +158,35 @@ def test_EnvironmentVariablesWidget_setup():
     assert not evw.text_area.isReadOnly()
 
 
+def test_MicrobitSettingsWidget_setup():
+    """
+    Ensure the widget for editing settings related to the BBC microbit
+    displays the referenced settings data in the expected way.
+    """
+    minify = True
+    custom_runtime_path = '/foo/bar'
+    mbsw = mu.interface.dialogs.MicrobitSettingsWidget()
+    mbsw.setup(minify, custom_runtime_path)
+    assert mbsw.minify.isChecked()
+    assert mbsw.runtime_path.text() == '/foo/bar'
+
+
 def test_AdminDialog_setup():
     """
     Ensure the admin dialog is setup properly given the content of a log
     file and envars.
     """
     log = 'this is the contents of a log file'
-    envars = 'name=value'
+    settings = {
+        'envars': 'name=value',
+        'minify': True,
+        'microbit_runtime': '/foo/bar',
+    }
     ad = mu.interface.dialogs.AdminDialog()
     ad.setStyleSheet = mock.MagicMock()
-    ad.setup(log, envars, 'day')
+    ad.setup(log, settings, 'day')
     assert ad.log_widget.log_text_area.toPlainText() == log
-    assert ad.envars() == envars
+    assert ad.settings() == settings
     ad.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
 
 
@@ -178,21 +195,81 @@ def test_AdminDialog_setup_night():
     Ensure the admin dialog can start with the night theme.
     """
     log = 'this is the contents of a log file'
-    envars = 'name=value'
+    settings = {
+        'envars': 'name=value',
+        'minify': True,
+        'microbit_runtime': '/foo/bar',
+    }
     ad = mu.interface.dialogs.AdminDialog()
     ad.setStyleSheet = mock.MagicMock()
-    ad.setup(log, envars, 'night')
+    ad.setup(log, settings, 'night')
     ad.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
 
 
-def test_LogDisplay_setup_contrast():
+def test_AdminDialog_setup_contrast():
     """
-    Ensure the log display dialog can start with the high contrast theme.
+    Ensure the admin dialog can start with the high contrast theme.
     """
     log = 'this is the contents of a log file'
-    envars = 'name=value'
+    settings = {
+        'envars': 'name=value',
+        'minify': True,
+        'microbit_runtime': '/foo/bar',
+    }
     ad = mu.interface.dialogs.AdminDialog()
     ad.setStyleSheet = mock.MagicMock()
-    ad.setup(log, envars, 'contrast')
+    ad.setup(log, settings, 'contrast')
     ad.setStyleSheet.\
+        assert_called_once_with(mu.interface.themes.CONTRAST_STYLE)
+
+
+def test_FindReplaceDialog_setup():
+    """
+    Ensure the find/replace dialog is setup properly given only the theme
+    as an argument.
+    """
+    frd = mu.interface.dialogs.FindReplaceDialog()
+    frd.setStyleSheet = mock.MagicMock()
+    frd.setup('day')
+    assert frd.find() == ''
+    assert frd.replace() == ''
+    assert frd.replace_flag() is False
+    frd.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
+
+
+def test_FindReplaceDialog_setup_with_args():
+    """
+    Ensure the find/replace dialog is setup properly given only the theme
+    as an argument.
+    """
+    find = 'foo'
+    replace = 'bar'
+    flag = True
+    frd = mu.interface.dialogs.FindReplaceDialog()
+    frd.setStyleSheet = mock.MagicMock()
+    frd.setup('day', find, replace, flag)
+    assert frd.find() == find
+    assert frd.replace() == replace
+    assert frd.replace_flag()
+    frd.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
+
+
+def test_FindReplaceDialog_setup_night():
+    """
+    Ensure the find/replace dialog can start with the night theme.
+    """
+    frd = mu.interface.dialogs.FindReplaceDialog()
+    frd.setStyleSheet = mock.MagicMock()
+    frd.setup('night')
+    frd.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
+
+
+def test_FindReplaceDialog_setup_contrast():
+    """
+    Ensure the find/replace dialog can start with the high contrast theme.
+    """
+    frd = mu.interface.dialogs.FindReplaceDialog()
+    frd.setStyleSheet = mock.MagicMock()
+    frd.setup('contrast')
+    frd.setStyleSheet.\
         assert_called_once_with(mu.interface.themes.CONTRAST_STYLE)

@@ -99,13 +99,11 @@ QStatusBar QLabel {
 
 QMenu {
     border: 1px solid #6b6b6b;
-    min-width: 100px;
 }
 
 QMenu::item {
     border: none;
     padding: 5px 15px;
-    width: 100%;
 }
 
 QMenu::item:selected {
@@ -121,4 +119,19 @@ QMenu::separator {
     border-bottom: 1px solid #333;
     padding: 0px;
     margin: 0px;
+}
+
+QLineEdit {
+    background-color: #373737;
+    color: white;
+}
+
+QCheckBox::indicator {
+    border: 1px solid #6b6b6b;
+    width: 16px;
+    height: 16px;
+}
+
+QCheckBox::indicator:checked {
+    image: url(images:checked.png);
 }

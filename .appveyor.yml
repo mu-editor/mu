@@ -13,9 +13,6 @@ init:
   - cmd: ECHO Processor architecture - %PROCESSOR_ARCHITECTURE%
   - cmd: wmic OS get OSArchitecture
 
-  # Utilise pre-installed MinGw for make
-  - ps: $env:PATH = 'C:\MinGW\msys\1.0\bin;C:\MinGW\mingw32\bin;C:\MinGW\bin;' + $env:PATH
-
   # As AppVeyor has multiple python install, check which one uses by default
   - cmd: ECHO %PYTHON% %PYTHON_VERSION% %PYTHON_ARCH%
   - cmd: python --version
@@ -36,12 +33,13 @@ init:
   - cmd: pip freeze
 
 install:
-  # Install / check python dependencies (v3.2 has VC++ redistributable dependencies)
+  # Install Mu Python dependencies
   - cmd: pip install simplegeneric 
-  - cmd: pip install pgzero 
-  - cmd: pip install pynsist
   - cmd: pip install -r requirements.txt
-
+  
+  # Install helpful pytest plug-in
+  - cmd: pip install pytest-faulthandler
+  
   # Check installed packages
   - cmd: pip freeze
   - cmd: python -c "import PyQt5"
@@ -53,19 +51,18 @@ install:
   - cmd: make win64
   - ps: Rename-Item -path .\build upload64
   - cmd: dir upload64\nsis
-  - ps: Rename-Item .\upload64\nsis\mu_1.0.0b15.exe mu_$(get-date -f yyyy-MM-dd_HH_mm)_$($env:APPVEYOR_REPO_BRANCH)_$($env:APPVEYOR_REPO_COMMIT.subString(0,7))_64bit.exe
+  - ps: Rename-Item .\upload64\nsis\mu_1.0.0b16.exe mu_$(get-date -f yyyy-MM-dd_HH_mm)_$($env:APPVEYOR_REPO_BRANCH)_$($env:APPVEYOR_REPO_COMMIT.subString(0,7))_64bit.exe
   # 32bit
   - cmd: make win32
   - ps: Rename-Item -path .\build upload32
   - cmd: dir upload32\nsis
-  - ps: Rename-Item .\upload32\nsis\mu_1.0.0b15.exe mu_$(get-date -f yyyy-MM-dd_HH_mm)_$($env:APPVEYOR_REPO_BRANCH)_$($env:APPVEYOR_REPO_COMMIT.subString(0,7))_32bit.exe
+  - ps: Rename-Item .\upload32\nsis\mu_1.0.0b16.exe mu_$(get-date -f yyyy-MM-dd_HH_mm)_$($env:APPVEYOR_REPO_BRANCH)_$($env:APPVEYOR_REPO_COMMIT.subString(0,7))_32bit.exe
 
 # Not a project with an msbuild file, build done at install.
 build: None
 
-# Makefiles support provided by MinGW, which does POSIX translations, so run tests natively as well
 test_script:
-  - cmd: make check 
+  - cmd: make check
 
 # Push artifacts to s3 bucket and list all
 before_deploy:

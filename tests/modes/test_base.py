@@ -110,6 +110,85 @@ def test_base_mode_workspace_no_settings_file():
         assert logger.error.call_count == 1
 
 
+def test_base_mode_set_buttons():
+    """
+    Ensure only buttons for existing actions have their "Enabled" states
+    updates.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.button_bar.slots = {
+        'foo': mock.MagicMock(),
+        'bar': mock.MagicMock()
+    }
+    bm = BaseMode(editor, view)
+    bm.set_buttons(foo=True, bar=False, baz=True)
+    view.button_bar.slots['foo'].setEnabled.assert_called_once_with(True)
+    view.button_bar.slots['bar'].setEnabled.assert_called_once_with(False)
+    assert 'baz' not in view.button_bar.slots
+
+
+def test_base_mode_add_plotter():
+    """
+    Ensure the child classes need to implement this.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    bm = BaseMode(editor, view)
+    assert bm.add_plotter() == NotImplemented
+
+
+def test_base_mode_remove_plotter():
+    """
+    Ensure the plotter is removed and data is saved as a CSV file in the
+    expected directory.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.plotter_pane.raw_data = [1, 2, 3]
+    bm = BaseMode(editor, view)
+    bm.plotter = mock.MagicMock()
+    mock_mkdir = mock.MagicMock()
+    mock_open = mock.mock_open()
+    mock_csv_writer = mock.MagicMock()
+    mock_csv = mock.MagicMock()
+    mock_csv.writer.return_value = mock_csv_writer
+    with mock.patch('mu.modes.base.os.path.exists', return_value=False), \
+            mock.patch('mu.modes.base.os.makedirs', mock_mkdir), \
+            mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.modes.base.csv', mock_csv):
+        bm.remove_plotter()
+    assert bm.plotter is None
+    view.remove_plotter.assert_called_once_with()
+    dd = os.path.join(bm.workspace_dir(), 'data_capture')
+    mock_mkdir.assert_called_once_with(dd)
+    mock_csv_writer.writerows.\
+        assert_called_once_with(view.plotter_pane.raw_data)
+
+
+def test_base_on_data_flood():
+    """
+    Ensure the plotter is removed and a helpful message is displayed to the
+    user.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    bm = BaseMode(editor, view)
+    bm.on_data_flood()
+    view.remove_plotter.assert_called_once_with()
+    assert view.show_message.call_count == 1
+
+
+def test_base_mode_open_file():
+    """
+    Ensure the the base class returns None to indicate it can't open the file.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    bm = BaseMode(editor, view)
+    assert bm.open_file('unused/path') is None
+
+
 def test_micropython_mode_find_device():
     """
     Ensure it's possible to detect a device and return the expected port.
@@ -262,6 +341,25 @@ def test_micropython_mode_add_repl():
     assert view.add_micropython_repl.call_args[0][0] == 'COM0'
 
 
+def test_micropython_mode_add_repl_no_force_interrupt():
+    """
+    Nothing goes wrong so check the _view.add_micropython_repl gets the
+    expected arguments (including the flag so no keyboard interrupt is called).
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    view.add_micropython_repl = mock.MagicMock()
+    mm = MicroPythonMode(editor, view)
+    mm.force_interrupt = False
+    mm.find_device = mock.MagicMock(return_value='COM0')
+    with mock.patch('os.name', 'nt'):
+        mm.add_repl()
+    assert view.show_message.call_count == 0
+    assert view.add_micropython_repl.call_args[0][0] == 'COM0'
+    assert view.add_micropython_repl.call_args[0][2] is False
+
+
 def test_micropython_mode_remove_repl():
     """
     If there is a repl, make sure it's removed as expected and the state is
@@ -329,34 +427,6 @@ def test_micropython_mode_toggle_plotter_off():
     assert mm.remove_plotter.call_count == 1
 
 
-def test_micropython_mode_remove_plotter():
-    """
-    Ensure the plotter is removed and data is saved as a CSV file in the
-    expected directory.
-    """
-    editor = mock.MagicMock()
-    view = mock.MagicMock()
-    view.plotter_pane.raw_data = [1, 2, 3]
-    mm = MicroPythonMode(editor, view)
-    mm.plotter = mock.MagicMock()
-    mock_mkdir = mock.MagicMock()
-    mock_open = mock.mock_open()
-    mock_csv_writer = mock.MagicMock()
-    mock_csv = mock.MagicMock()
-    mock_csv.writer.return_value = mock_csv_writer
-    with mock.patch('mu.modes.base.os.path.exists', return_value=False), \
-            mock.patch('mu.modes.base.os.makedirs', mock_mkdir), \
-            mock.patch('builtins.open', mock_open), \
-            mock.patch('mu.modes.base.csv', mock_csv):
-        mm.remove_plotter()
-    assert mm.plotter is None
-    view.remove_plotter.assert_called_once_with()
-    dd = os.path.join(mm.workspace_dir(), 'data_capture')
-    mock_mkdir.assert_called_once_with(dd)
-    mock_csv_writer.writerows.\
-        assert_called_once_with(view.plotter_pane.raw_data)
-
-
 def test_micropython_mode_add_plotter_no_port():
     """
     If it's not possible to find a connected micro:bit then ensure a helpful
@@ -421,3 +491,18 @@ def test_micropython_mode_add_plotter():
         mm.add_plotter()
     assert view.show_message.call_count == 0
     assert view.add_micropython_plotter.call_args[0][0] == 'COM0'
+
+
+def test_micropython_on_data_flood():
+    """
+    Ensure that the REPL is removed before calling the base on_data_flood
+    method.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    mm = MicroPythonMode(editor, view)
+    mm.remove_repl = mock.MagicMock()
+    with mock.patch('builtins.super') as mock_super:
+        mm.on_data_flood()
+        mm.remove_repl.assert_called_once_with()
+        mock_super().on_data_flood.assert_called_once_with()

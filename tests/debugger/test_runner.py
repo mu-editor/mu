@@ -377,11 +377,13 @@ def test_Debugger_user_line_starting_no_line():
     mock_socket = mock.MagicMock()
     db = mu.debugger.runner.Debugger(mock_socket, 'localhost', 9999)
     db._run_state = mu.debugger.runner.DebugState.STARTING
+    db.interact = mock.MagicMock()
     mock_frame = mock.MagicMock()
     mock_frame.f_code.co_filename = db.canonic('foo')
     db.mainpyfile = mock_frame.f_code.co_filename
     mock_frame.f_lineno = 0
     assert db.user_line(mock_frame) is None
+    assert db._run_state == mu.debugger.runner.DebugState.STARTED
 
 
 def test_Debugger_user_line_starting_valid_line():
@@ -493,7 +495,9 @@ def test_Debugger_do_break_non_executable_line():
     db = mu.debugger.runner.Debugger(mock_socket, 'localhost', 9999)
     db.output = mock.MagicMock()
     db.is_executable_line = mock.MagicMock(return_value=False)
-    db.do_break('foo.py', 10)
+    with mock.patch('mu.debugger.runner.is_breakpoint_line',
+                    return_value=False):
+        db.do_break('foo.py', 10)
     db.output.assert_called_once_with('error',
                                       message='foo.py:10 is not executable')
 
@@ -508,7 +512,9 @@ def test_Debugger_do_break_causes_error():
     db.output = mock.MagicMock()
     db.is_executable_line = mock.MagicMock(return_value=True)
     db.set_break = mock.MagicMock(return_value='bang!')
-    db.do_break('foo.py', 10)
+    with mock.patch('mu.debugger.runner.is_breakpoint_line',
+                    return_value=True):
+        db.do_break('foo.py', 10)
     db.output.assert_called_once_with('error',
                                       message='bang!')
 
@@ -530,55 +536,15 @@ def test_Debugger_do_break():
     mock_bp.temporary = False
     mock_bp.funcname = 'bar'
     db.get_breaks = mock.MagicMock(return_value=[mock_bp, ])
-    db.do_break('foo.py', 10)
+    with mock.patch('mu.debugger.runner.is_breakpoint_line',
+                    return_value=True):
+        db.do_break('foo.py', 10)
     db.output.assert_called_once_with('breakpoint_create',
                                       bpnum=mock_bp.number,
                                       filename=mock_bp.file,
                                       line=mock_bp.line,
                                       temporary=mock_bp.temporary,
                                       funcname=mock_bp.funcname)
-
-
-def test_Debugger_is_executable_line_true():
-    """
-    If the line is executable, return True.
-    """
-    mock_socket = mock.MagicMock()
-    db = mu.debugger.runner.Debugger(mock_socket, 'localhost', 9999)
-    db.curframe = mock.MagicMock()
-    db.curframe.f_globals = mock.MagicMock()
-    mock_linecache = mock.MagicMock()
-    mock_linecache.getline.return_value = "print('Hello, world')"
-    with mock.patch('mu.debugger.runner.linecache', mock_linecache):
-        assert db.is_executable_line('foo.py', 10)
-
-
-def test_Debugger_is_executable_line_false():
-    """
-    If the line is NOT executable, return False.
-    """
-    mock_socket = mock.MagicMock()
-    db = mu.debugger.runner.Debugger(mock_socket, 'localhost', 9999)
-    db.curframe = mock.MagicMock()
-    db.curframe.f_globals = mock.MagicMock()
-    mock_linecache = mock.MagicMock()
-    mock_linecache.getline.return_value = "    # This is a comment"
-    with mock.patch('mu.debugger.runner.linecache', mock_linecache):
-        assert not db.is_executable_line('foo.py', 10)
-
-
-def test_Debugger_is_executable_line_no_valid_line():
-    """
-    If the referenced line does not exist, return False.
-    """
-    mock_socket = mock.MagicMock()
-    db = mu.debugger.runner.Debugger(mock_socket, 'localhost', 9999)
-    db.curframe = mock.MagicMock()
-    db.curframe.f_globals = mock.MagicMock()
-    mock_linecache = mock.MagicMock()
-    mock_linecache.getline.return_value = False
-    with mock.patch('mu.debugger.runner.linecache', mock_linecache):
-        assert not db.is_executable_line('foo.py', 10)
 
 
 def test_Debugger_do_enable_no_such_breakpoint():
@@ -799,13 +765,40 @@ def test_Debugger_do_return():
     db.set_return.assert_called_once_with(db.curframe)
 
 
-def test_Debugger_do_continue():
+def test_Debugger_do_continue_with_breakpoints():
     """
     Calls set_continue and returns True
     """
     mock_socket = mock.MagicMock()
     db = mu.debugger.runner.Debugger(mock_socket, 'localhost', 9999)
+    db.get_all_breaks = mock.MagicMock(return_value=True)
     db.set_continue = mock.MagicMock()
+    assert db.do_continue()
+    db.set_continue.assert_called_once_with()
+
+
+def test_Debugger_do_continue_no_breakpoints():
+    """
+    Calls set_trace and returns True
+    """
+    mock_socket = mock.MagicMock()
+    db = mu.debugger.runner.Debugger(mock_socket, 'localhost', 9999)
+    db.get_all_breaks = mock.MagicMock(return_value=False)
+    db.set_trace = mock.MagicMock()
+    assert db.do_continue()
+    db.set_trace.assert_called_once_with()
+    assert db.continue_flag is True
+
+
+def test_Debugger_do_continue_no_breakpoints_continue_flag_set():
+    """
+    Calls set_continue and returns True
+    """
+    mock_socket = mock.MagicMock()
+    db = mu.debugger.runner.Debugger(mock_socket, 'localhost', 9999)
+    db.get_all_breaks = mock.MagicMock(return_value=False)
+    db.set_continue = mock.MagicMock()
+    db.continue_flag = True
     assert db.do_continue()
     db.set_continue.assert_called_once_with()
 
@@ -936,6 +929,5 @@ def test_run_with_unexpected_exception():
             mock.patch('mu.debugger.runner.sys', mock_sys), \
             mock.patch('mu.debugger.runner.socket', mock_socket):
         mu.debugger.runner.run('localhost', 1908, 'foo.py', 'bar', 'baz')
-    assert mock_debugger.output.call_count == 2
+    assert mock_debugger.output.call_count == 1
     assert mock_debugger.output.call_args_list[0][0][0] == 'postmortem'
-    assert mock_debugger.output.call_args_list[1][0][0] == 'finished'
