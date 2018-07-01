@@ -177,6 +177,8 @@ class MicrobitMode(MicroPythonMode):
 
     user_defined_microbit_path = None
 
+    micropython_version = "1.0"
+
     def actions(self):
         """
         Return an ordered list of actions provided by this module. An action
@@ -226,13 +228,19 @@ class MicrobitMode(MicroPythonMode):
         """
         Takes the currently active tab, compiles the Python script therein into
         a hex file and flashes it all onto the connected device.
+
+        WARNING: This method is getting more complex due to several edge
+        cases. Ergo, it's a target for refactoring.
         """
-        logger.info('Flashing script.')
+        logger.info('Preparing to flash script.')
+        # The first thing to do is check the script is valid and of the
+        # expected length.
         # Grab the Python script.
         tab = self.view.current_tab
         if tab is None:
-            # There is no active text editor.
+            # There is no active text editor. Exit.
             return
+        # Check the script's contents.
         python_script = tab.text().encode('utf-8')
         logger.debug('Python script:')
         logger.debug(python_script)
@@ -240,6 +248,7 @@ class MicrobitMode(MicroPythonMode):
         minify = False
         if uflash.get_minifier():
             minify = self.editor.minify
+        # Attempt and handle minification.
         if len(python_script) >= 8192:
             message = _('Unable to flash "{}"').format(tab.label)
             if minify and can_minify:
@@ -275,11 +284,8 @@ class MicrobitMode(MicroPythonMode):
                 information = _("Your script is too long!")
                 self.view.show_message(message, information, 'Warning')
                 return
-
-        # Indicates if the connected micro:bit has been flashed.
-        flashed = False
-
-        # Find the microbit port and serial number.
+        # By this point, there's a valid Python script in "python_script"
+        # Next step: find the microbit port and serial number.
         path_to_microbit, serial_number = microfs.find_microbit()
         # Determine the location of the BBC micro:bit. If it can't be found
         # fall back to asking the user to locate it.
@@ -298,6 +304,21 @@ class MicrobitMode(MicroPythonMode):
         # on stale data.
         logger.debug('Path to micro:bit: {}'.format(path_to_microbit))
         if path_to_microbit and os.path.exists(path_to_microbit):
+            force_flash = False
+            logger.info("Checking target device.")
+            # Get the version of MicroPython on the device.
+            try:
+                version_info = microfs.version()
+                logger.info(version_info)
+                board_version = version_info['version'].split('-', 1)[0]
+                board_version = board_version.replace('micro:bit v', '')
+                logger.info('Board MicroPython: {}'.format(board_version)
+                if board_version < self.micropython_version:
+                    force_flash = True
+            except Exception:
+                # Could not get version of MicroPython. Solution, flash
+                # MicroPython onto the device.
+                force_flash = True
             logger.debug('Flashing to device.')
             # Check use of custom runtime.
             rt_hex_path = self.editor.microbit_runtime.strip()
@@ -340,13 +361,6 @@ class MicrobitMode(MicroPythonMode):
                             " device or saving your work and restarting Mu if"
                             " the device remains unfound.")
             self.view.show_message(message, information)
-
-        # Get the version of MicroPython on the device.
-        try:
-            version_info = microfs.version()
-        except Exception:
-            # Could not get version of MicroPython. Solution, flash MicroPython
-            # onto the device.
 
 
 
