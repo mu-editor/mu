@@ -25,7 +25,7 @@ before_install:
   - uname -a
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sw_vers; fi
   # Python 3 and pip 3 installation required in macOS
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
+  # - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
   # Linux needs to install pip again to have pip3 for the right Python version
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_pip3.sh; fi
   # Check everything was correctly installed
