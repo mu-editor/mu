@@ -30,6 +30,7 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_pip3.sh; fi
   # Check everything was correctly installed
   - echo $PATH
+  - python --version
   - python3 --version
   - python3 -c "import struct; print(struct.calcsize('P') * 8)"
   - python3 -c "import sys; print(sys.executable)"
