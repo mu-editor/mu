@@ -160,6 +160,16 @@ Because Mu depends on the availability of tkinter, part of the build process is
 to download the appropriate tkinter-related resources from
 `Mu's tkinter assets repository <https://github.com/mu-editor/mu_tkinter>`_.
 
+If asked, the command for automatically installing Mu, system wide, should use
+the following flags::
+
+    mu-editor_win64.exe /S /AllUsers
+
+The ``/S`` flag tells the installer to work in "silent" mode (i.e. you won't
+see the windows shown in the screenshots above) and the ``/AllUsers`` flag
+makes Mu available to all users of the system (i.e. it's installed "system
+wide").
+
 OSX App Installer
 +++++++++++++++++
 
