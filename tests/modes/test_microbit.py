@@ -691,7 +691,7 @@ def test_toggle_repl():
         mm.repl = None
         mm.toggle_repl(None)
         tr.assert_called_once_with(None)
-        mm.set_buttons.assert_called_once_with(files=False)
+        mm.set_buttons.assert_called_once_with(flash=False, files=False)
 
 
 def test_toggle_repl_no_repl_or_plotter():
@@ -714,7 +714,7 @@ def test_toggle_repl_no_repl_or_plotter():
         mm.repl = None
         mm.toggle_repl(None)
         tr.assert_called_once_with(None)
-        mm.set_buttons.assert_called_once_with(files=True)
+        mm.set_buttons.assert_called_once_with(flash=True, files=True)
 
 
 def test_toggle_repl_with_fs():
@@ -750,7 +750,7 @@ def test_toggle_plotter():
         mm.plotter = None
         mm.toggle_plotter(None)
         tp.assert_called_once_with(None)
-        mm.set_buttons.assert_called_once_with(files=False)
+        mm.set_buttons.assert_called_once_with(flash=False, files=False)
 
 
 def test_toggle_plotter_no_repl_or_plotter():
@@ -773,7 +773,7 @@ def test_toggle_plotter_no_repl_or_plotter():
         mm.plotter = None
         mm.toggle_plotter(None)
         tp.assert_called_once_with(None)
-        mm.set_buttons.assert_called_once_with(files=True)
+        mm.set_buttons.assert_called_once_with(flash=True, files=True)
 
 
 def test_toggle_plotter_with_fs():

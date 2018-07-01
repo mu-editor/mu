@@ -368,9 +368,9 @@ class MicrobitMode(MicroPythonMode):
         if self.fs is None:
             super().toggle_repl(event)
             if self.repl:
-                self.set_buttons(files=False)
+                self.set_buttons(flash=False, files=False)
             elif not (self.repl or self.plotter):
-                self.set_buttons(files=True)
+                self.set_buttons(flash=True, files=True)
         else:
             message = _("REPL and file system cannot work at the same time.")
             information = _("The REPL and file system both use the same USB "
@@ -386,9 +386,9 @@ class MicrobitMode(MicroPythonMode):
         if self.fs is None:
             super().toggle_plotter(event)
             if self.plotter:
-                self.set_buttons(files=False)
+                self.set_buttons(flash=False, files=False)
             elif not (self.repl or self.plotter):
-                self.set_buttons(files=True)
+                self.set_buttons(flash=True, files=True)
         else:
             message = _("The plotter and file system cannot work at the same "
                         "time.")
@@ -415,11 +415,11 @@ class MicrobitMode(MicroPythonMode):
                 self.add_fs()
                 if self.fs:
                     logger.info('Toggle filesystem on.')
-                    self.set_buttons(repl=False, plotter=False)
+                    self.set_buttons(flash=False, repl=False, plotter=False)
             else:
                 self.remove_fs()
                 logger.info('Toggle filesystem off.')
-                self.set_buttons(repl=True, plotter=True)
+                self.set_buttons(flash=True, repl=True, plotter=True)
 
     def add_fs(self):
         """
