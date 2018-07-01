@@ -18,19 +18,18 @@ matrix:
       osx_image: xcode6.4
       sudo: required
       language: generic
-      python: 3.6
 
 before_install:
   # OS and default Python info
   - uname -a
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sw_vers; fi
   # Python 3 and pip 3 installation required in macOS
-  # - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then alias python3='python'; fi
   # Linux needs to install pip again to have pip3 for the right Python version
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_pip3.sh; fi
   # Check everything was correctly installed
   - echo $PATH
-  - python --version
   - python3 --version
   - python3 -c "import struct; print(struct.calcsize('P') * 8)"
   - python3 -c "import sys; print(sys.executable)"
