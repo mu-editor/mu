@@ -294,7 +294,7 @@ def version(serial=None):
         # It doesn't matter what the error is, we just need to indicate a
         # failure with the expected ValueError exception.
         raise ValueError()
-    raw = out.decode('utf-8')
+    raw = out.decode('utf-8').strip()
     raw = raw[1:-1]
     items = raw.split(', ')
     result = {}

@@ -71,6 +71,7 @@ class DeviceFlasher(QThread):
         except Exception as ex:
             # Catch everything so Mu can recover from all of the wide variety
             # of possible exceptions that could happen at this point.
+            logger.error(ex)
             self.on_flash_fail.emit(str(ex))
 
 
@@ -177,7 +178,8 @@ class MicrobitMode(MicroPythonMode):
 
     user_defined_microbit_path = None
 
-    micropython_version = "1.0"
+    micropython_version = "0.1.0"
+    python_script = ''
 
     def actions(self):
         """
@@ -232,6 +234,7 @@ class MicrobitMode(MicroPythonMode):
         WARNING: This method is getting more complex due to several edge
         cases. Ergo, it's a target for refactoring.
         """
+        self.python_script = ''
         logger.info('Preparing to flash script.')
         # The first thing to do is check the script is valid and of the
         # expected length.
@@ -284,9 +287,16 @@ class MicrobitMode(MicroPythonMode):
                 information = _("Your script is too long!")
                 self.view.show_message(message, information, 'Warning')
                 return
-        # By this point, there's a valid Python script in "python_script"
+        # By this point, there's a valid Python script in "python_script".
+        # Assign this to an attribute for later processing in a different
+        # method.
+        self.python_script = python_script
         # Next step: find the microbit port and serial number.
-        path_to_microbit, serial_number = microfs.find_microbit()
+        path_to_microbit = uflash.find_microbit()
+        port, serial_number = microfs.find_microbit()
+        logger.info('Path to micro:bit: {}'.format(path_to_microbit))
+        logger.info('Serial port: {}'.format(port))
+        logger.info('Device serial number: {}'.format(serial_number))
         # Determine the location of the BBC micro:bit. If it can't be found
         # fall back to asking the user to locate it.
         if path_to_microbit is None:
@@ -302,9 +312,8 @@ class MicrobitMode(MicroPythonMode):
                              self.user_defined_microbit_path))
         # Check the path and that it exists simply because the path maybe based
         # on stale data.
-        logger.debug('Path to micro:bit: {}'.format(path_to_microbit))
         if path_to_microbit and os.path.exists(path_to_microbit):
-            force_flash = False
+            force_flash = False  # If set to true, fully flash the device.
             logger.info("Checking target device.")
             # Get the version of MicroPython on the device.
             try:
@@ -312,39 +321,52 @@ class MicrobitMode(MicroPythonMode):
                 logger.info(version_info)
                 board_version = version_info['version'].split('-', 1)[0]
                 board_version = board_version.replace('micro:bit v', '')
-                logger.info('Board MicroPython: {}'.format(board_version)
+                logger.info('Board MicroPython: {}'.format(board_version))
+                # If there's an older version of MicroPython on the device,
+                # update it with the one packaged with Mu.
                 if board_version < self.micropython_version:
                     force_flash = True
             except Exception:
-                # Could not get version of MicroPython. Solution, flash
-                # MicroPython onto the device.
+                # Could not get version of MicroPython. This means either the
+                # device has a really old version of MicroPython or is running
+                # something else. In any case, flash MicroPython onto the
+                # device.
+                logger.warn('Could not detect version of MicroPython.')
                 force_flash = True
-            logger.debug('Flashing to device.')
             # Check use of custom runtime.
             rt_hex_path = self.editor.microbit_runtime.strip()
             message = _('Flashing "{}" onto the micro:bit.').format(tab.label)
             if (rt_hex_path and os.path.exists(rt_hex_path)):
                 message = message + _(" Runtime: {}").format(rt_hex_path)
+                force_flash = True  # Using a custom runtime, so flash it.
             else:
                 rt_hex_path = None
                 self.editor.microbit_runtime = ''
-            self.editor.show_status_message(message, 10)
-            self.set_buttons(flash=False)
-            self.flash_thread = DeviceFlasher([path_to_microbit],
-                                              python_script, rt_hex_path)
-            if sys.platform == 'win32':
-                # Windows blocks on write.
-                self.flash_thread.finished.connect(self.flash_finished)
+            # If we need to flash the device with a clean hex, do so now.
+            if force_flash:
+                logger.info('Flashing new MicroPython runtime onto device')
+                self.editor.show_status_message(message, 10)
+                self.set_buttons(flash=False)
+                self.flash_thread = DeviceFlasher([path_to_microbit],
+                                                  b'', rt_hex_path)
+                if sys.platform == 'win32':
+                    # Windows blocks on write.
+                    self.flash_thread.finished.connect(self.flash_finished)
+                else:
+                    # Other platforms don't block, so schedule the finish call
+                    # for 10 seconds (approximately how long flashing the
+                    # device takes).
+                    self.flash_timer = QTimer()
+                    self.flash_timer.timeout.connect(self.flash_finished)
+                    self.flash_timer.setSingleShot(True)
+                    self.flash_timer.start(10000)
+                self.flash_thread.on_flash_fail.connect(self.flash_failed)
+                self.flash_thread.start()
             else:
-                # Other platforms don't block, so schedule the finish call
-                # for 10 seconds (approximately how long flashing the device
-                # takes).
-                self.flash_timer = QTimer()
-                self.flash_timer.timeout.connect(self.flash_finished)
-                self.flash_timer.setSingleShot(True)
-                self.flash_timer.start(10000)
-            self.flash_thread.on_flash_fail.connect(self.flash_failed)
-            self.flash_thread.start()
+                try:
+                    self.copy_main()
+                except Exception as ex:
+                    self.flash_failed(ex)
         else:
             # Reset user defined path since it's incorrect.
             self.user_defined_microbit_path = None
@@ -362,9 +384,6 @@ class MicrobitMode(MicroPythonMode):
                             " the device remains unfound.")
             self.view.show_message(message, information)
 
-
-
-
     def flash_finished(self):
         """
         Called when the thread used to flash the micro:bit has finished.
@@ -373,6 +392,38 @@ class MicrobitMode(MicroPythonMode):
         self.editor.show_status_message(_("Finished flashing."))
         self.flash_thread = None
         self.flash_timer = None
+        if self.python_script:
+            try:
+                self.copy_main()
+            except Exception as ex:
+                self.flash_failed(ex)
+
+    def copy_main(self):
+        """
+        If the attribute self.python_script contains any code, copy it onto the
+        connected micro:bit as main.py, then restart the board (CTRL-D).
+        """
+        if self.python_script:
+            script = self.python_script
+            logger.info('Copying main.py onto device')
+            commands = [
+                "fd = open('main.py', 'wb')",
+                "f = fd.write",
+            ]
+            while script:
+                line = script[:64]
+                commands.append('f(' + repr(line) + ')')
+                script = script[64:]
+            commands.append('fd.close()')
+            logger.info(commands)
+            serial = microfs.get_serial()
+            out, err = microfs.execute(commands, serial)
+            logger.info((out, err))
+            if err:
+                raise IOError(microfs.clean_error(err))
+            # Send CTRL-D for soft restart.
+            serial.write(b'\x04')
+        self.python_script = ''
 
     def flash_failed(self, error):
         """
@@ -382,7 +433,8 @@ class MicrobitMode(MicroPythonMode):
         logger.error(error)
         message = _("There was a problem flashing the micro:bit.")
         information = _("Please do not disconnect the device until flashing"
-                        " has completed.")
+                        " has completed. Please check the logs for more"
+                        " information.")
         self.view.show_message(message, information, 'Warning')
         if self.flash_timer:
             self.flash_timer.stop()
