@@ -342,6 +342,10 @@ class MicrobitMode(MicroPythonMode):
             else:
                 rt_hex_path = None
                 self.editor.microbit_runtime = ''
+            # Check for use of user defined path (to save hex onto local
+            # file system.
+            if self.user_defined_microbit_path:
+                force_flash = True
             # If we need to flash the device with a clean hex, do so now.
             if force_flash:
                 logger.info('Flashing new MicroPython runtime onto device')

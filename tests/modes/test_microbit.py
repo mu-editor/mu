@@ -299,6 +299,44 @@ def test_flash_with_attached_device_has_latest_firmware_encounters_problem():
         mm.flash_failed.assert_called_once_with(error)
 
 
+def test_flash_force_with_no_micropython():
+    """
+    Ensure the expected calls are made to DeviceFlasher and a helpful status
+    message is enacted if there is no MicroPython firmware on the device.
+    """
+    mock_flasher = mock.MagicMock()
+    mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
+    with mock.patch('mu.modes.microbit.uflash.find_microbit',
+                    return_value='bar'),\
+            mock.patch('mu.modes.microbit.microfs.find_microbit',
+                       return_value=('bar', '12345')),\
+            mock.patch('mu.modes.microbit.microfs.version',
+                       side_effect=ValueError('bang')),\
+            mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
+            mock.patch('mu.modes.microbit.DeviceFlasher',
+                       mock_flasher_class), \
+            mock.patch('mu.modes.microbit.sys.platform', 'win32'):
+        view = mock.MagicMock()
+        view.current_tab.text = mock.MagicMock(return_value='foo')
+        view.show_message = mock.MagicMock()
+        editor = mock.MagicMock()
+        editor.minify = False
+        editor.microbit_runtime = '/foo/bar'
+        mm = MicrobitMode(editor, view)
+        mm.set_buttons = mock.MagicMock()
+        mm.flash()
+        assert mm.flash_thread == mock_flasher
+        assert editor.show_status_message.call_count == 1
+        mm.set_buttons.assert_called_once_with(flash=False)
+        mock_flasher_class.assert_called_once_with(['bar', ], b'',
+                                                   '/foo/bar')
+        mock_flasher.finished.connect.\
+            assert_called_once_with(mm.flash_finished)
+        mock_flasher.on_flash_fail.connect.\
+            assert_called_once_with(mm.flash_failed)
+        mock_flasher.start.assert_called_once_with()
+
+
 def test_flash_force_with_attached_device_as_windows():
     """
     Ensure the expected calls are made to DeviceFlasher and a helpful status
@@ -432,7 +470,7 @@ def test_force_flash_user_specified_device_path():
         'sysname': 'microbit',
         'nodename': 'microbit',
         'release': '1.0',
-        'version': ("micro:bit v0.0.9-b'e10a5ff' on 2018-6-8; MicroPython "
+        'version': ("micro:bit v0.1.0-b'e10a5ff' on 2018-6-8; MicroPython "
                     "v1.9.2-34-gd64154c73 on 2017-09-01"),
         'machine': 'micro:bit with nRF51822',
     }
@@ -460,9 +498,10 @@ def test_force_flash_user_specified_device_path():
         mm.flash()
         home = HOME_DIRECTORY
         view.get_microbit_path.assert_called_once_with(home)
-        assert editor.show_status_message.call_count == 1
         assert mm.user_defined_microbit_path == 'bar'
         mock_flasher_class.assert_called_once_with(['bar', ], b'foo', None)
+        mock_flasher.finished.connect.\
+            assert_called_once_with(mm.flash_finished)
 
 
 def test_flash_existing_user_specified_device_path():
