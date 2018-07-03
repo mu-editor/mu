@@ -347,19 +347,40 @@ class MicrobitMode(MicroPythonMode):
                 logger.info('Flashing new MicroPython runtime onto device')
                 self.editor.show_status_message(message, 10)
                 self.set_buttons(flash=False)
-                self.flash_thread = DeviceFlasher([path_to_microbit],
-                                                  b'', rt_hex_path)
+                if self.user_defined_microbit_path:
+                    # The user has provided a path to a location on the
+                    # filesystem. In this case save the combined hex/script
+                    # in the specified path_to_microbit.
+                    self.flash_thread = DeviceFlasher([path_to_microbit],
+                                                      self.python_script,
+                                                      rt_hex_path)
+                    # Reset python_script so Mu does try to copy it as the
+                    # main.py file.
+                    self.python_script = ''
+                else:
+                    # We appear to need to flash a connected micro:bit device,
+                    # so just flash the Python hex with no embedded Python
+                    # script, since this will be copied over when the
+                    # flashing operation has finished.
+                    self.flash_thread = DeviceFlasher([path_to_microbit],
+                                                      b'', rt_hex_path)
                 if sys.platform == 'win32':
                     # Windows blocks on write.
                     self.flash_thread.finished.connect(self.flash_finished)
                 else:
-                    # Other platforms don't block, so schedule the finish call
-                    # for 10 seconds (approximately how long flashing the
-                    # device takes).
-                    self.flash_timer = QTimer()
-                    self.flash_timer.timeout.connect(self.flash_finished)
-                    self.flash_timer.setSingleShot(True)
-                    self.flash_timer.start(10000)
+                    if self.user_defined_microbit_path:
+                        # Call the flash_finished immediately the thread
+                        # finishes if Mu is writing the hex file to a user
+                        # defined location on the local filesystem.
+                        self.flash_thread.finished.connect(self.flash_finished)
+                    else:
+                        # Other platforms don't block, so schedule the finish
+                        # call for 10 seconds (approximately how long flashing
+                        # the connected device takes).
+                        self.flash_timer = QTimer()
+                        self.flash_timer.timeout.connect(self.flash_finished)
+                        self.flash_timer.setSingleShot(True)
+                        self.flash_timer.start(10000)
                 self.flash_thread.on_flash_fail.connect(self.flash_failed)
                 self.flash_thread.start()
             else:

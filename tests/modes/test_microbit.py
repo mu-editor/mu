@@ -462,7 +462,7 @@ def test_force_flash_user_specified_device_path():
         view.get_microbit_path.assert_called_once_with(home)
         assert editor.show_status_message.call_count == 1
         assert mm.user_defined_microbit_path == 'bar'
-        mock_flasher_class.assert_called_once_with(['bar', ], b'', None)
+        mock_flasher_class.assert_called_once_with(['bar', ], b'foo', None)
 
 
 def test_flash_existing_user_specified_device_path():
@@ -492,7 +492,9 @@ def test_flash_existing_user_specified_device_path():
         mm.flash()
         assert view.get_microbit_path.call_count == 0
         assert editor.show_status_message.call_count == 1
-        mock_flasher_class.assert_called_once_with(['baz', ], b'',
+        # The content of the Python script is to be embedded into the resulting
+        # hex file.
+        mock_flasher_class.assert_called_once_with(['baz', ], b'foo',
                                                    '/foo/bar')
 
 
