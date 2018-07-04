@@ -932,6 +932,22 @@ class Window(QMainWindow):
         else:
             return False
 
+    def connect_toggle_comments(self, handler, shortcut):
+        """
+        Create a keyboard shortcut and associate it with a handler for toggling
+        comments on highlighted lines.
+        """
+        self.toggle_comments_shortcut = QShortcut(QKeySequence(shortcut), self)
+        self.toggle_comments_shortcut.activated.connect(handler)
+
+    def toggle_comments(self):
+        """
+        Toggle comments on/off for all selected line in the currently active
+        tab.
+        """
+        if self.current_tab:
+            self.current_tab.toggle_comments()
+
 
 class StatusBar(QStatusBar):
     """

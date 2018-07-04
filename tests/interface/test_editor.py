@@ -519,3 +519,59 @@ def test_EditorPane_drop_event_not_file():
     with mock.patch('mu.interface.editor.QsciScintilla.dropEvent') as mock_de:
         ep.dropEvent(event)
         mock_de.assert_called_once_with(event)
+
+
+def test_EditorPane_toggle_comments_no_selection():
+    """
+    If there's no selected text, nothing should happen!
+    """
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    ep.hasSelectedText = mock.MagicMock(return_value=False)
+    ep.getSelection = mock.MagicMock()
+    ep.toggle_comments()
+    assert ep.getSelection.call_count == 0
+
+
+def test_EditorPane_toggle_comments_selected_normal_lines():
+    """
+    Check the normal code lines are now commented.
+    """
+    ep = mu.interface.editor.EditorPane(None, 'foo\nbar\nbaz')
+    ep.hasSelectedText = mock.MagicMock(return_value=True)
+    ep.getSelection = mock.MagicMock(return_value=(0, 0, 2, 2))
+    ep.selectedText = mock.MagicMock(return_value='foo\nbar\nbaz')
+    ep.replaceSelectedText = mock.MagicMock()
+    ep.setSelection = mock.MagicMock()
+    ep.toggle_comments()
+    ep.replaceSelectedText.assert_called_once_with('#foo\n#bar\n#baz')
+    ep.setSelection.assert_called_once_with(0, 0, 2, 3)
+
+
+def test_EditorPane_toggle_comments_selected_comment_lines():
+    """
+    Check commented lines and now uncommented.
+    """
+    ep = mu.interface.editor.EditorPane(None, '#foo\n#bar\n#baz')
+    ep.hasSelectedText = mock.MagicMock(return_value=True)
+    ep.getSelection = mock.MagicMock(return_value=(0, 0, 2, 3))
+    ep.selectedText = mock.MagicMock(return_value='#foo\n#bar\n#baz')
+    ep.replaceSelectedText = mock.MagicMock()
+    ep.setSelection = mock.MagicMock()
+    ep.toggle_comments()
+    ep.replaceSelectedText.assert_called_once_with('foo\nbar\nbaz')
+    ep.setSelection.assert_called_once_with(0, 0, 2, 2)
+
+
+def test_EditorPane_toggle_comments_selected_whitespace_only_lines():
+    """
+    Lines that are whitespace only are not changed.
+    """
+    ep = mu.interface.editor.EditorPane(None, '#foo\n\n#baz')
+    ep.hasSelectedText = mock.MagicMock(return_value=True)
+    ep.getSelection = mock.MagicMock(return_value=(0, 0, 2, 3))
+    ep.selectedText = mock.MagicMock(return_value='#foo\n\n#baz')
+    ep.replaceSelectedText = mock.MagicMock()
+    ep.setSelection = mock.MagicMock()
+    ep.toggle_comments()
+    ep.replaceSelectedText.assert_called_once_with('foo\n\nbaz')
+    ep.setSelection.assert_called_once_with(0, 0, 2, 2)

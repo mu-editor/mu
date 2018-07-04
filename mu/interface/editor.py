@@ -449,3 +449,34 @@ class EditorPane(QsciScintilla):
             # Highlight matches
             self.reset_search_indicators()
             self.highlight_selected_matches()
+
+    def toggle_comments(self):
+        """
+        Iterate through the selected lines and toggle their comment/uncomment
+        state. So, lines that are not comments become comments and vice versa.
+        """
+        if self.hasSelectedText():
+            logger.info("Toggling comments")
+            line_from, index_from, line_to, index_to = self.getSelection()
+            selected_text = self.selectedText()
+            lines = selected_text.split('\n')
+            toggled_lines = []
+            for line in lines:
+                clean_line = line.strip()
+                if clean_line.startswith('#'):
+                    # It's a comment line:
+                    toggled_lines.append(line.replace('#', ''))
+                elif clean_line:
+                    # It's a normal line of code.
+                    toggled_lines.append('#' + line)
+                else:
+                    # It's a whitespace line, so just append it.
+                    toggled_lines.append(line)
+            new_text = '\n'.join(toggled_lines)
+            self.replaceSelectedText(new_text)
+            # Ensure the new text is also selected.
+            if toggled_lines[-1].startswith('#'):
+                index_to += 1
+            else:
+                index_to -= 1
+            self.setSelection(line_from, index_from, line_to, index_to)

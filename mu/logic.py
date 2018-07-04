@@ -1256,3 +1256,9 @@ class Editor:
                 information = _("Please try again, this time with something "
                                 "in the find box.")
                 self._view.show_message(message, information)
+
+    def toggle_comments(self):
+        """
+        Ensure all highlighted lines are toggled between comments/uncommented.
+        """
+        self._view.toggle_comments()

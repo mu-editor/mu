@@ -2637,3 +2637,13 @@ def test_find_replace_replace_multi_match():
     mock_view.replace_text.assert_called_once_with('foo', 'bar', True)
     ed.show_status_message.\
         assert_called_once_with('Replaced 4 matches of "foo" with "bar".')
+
+
+def test_toggle_comments():
+    """
+    Ensure the method in the view for toggling comments on and off is called.
+    """
+    mock_view = mock.MagicMock()
+    ed = mu.logic.Editor(mock_view)
+    ed.toggle_comments()
+    mock_view.toggle_comments.assert_called_once_with()
