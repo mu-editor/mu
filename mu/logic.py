@@ -31,6 +31,7 @@ import random
 import locale
 import shutil
 import appdirs
+import pkgutil
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
@@ -601,6 +602,11 @@ class Editor:
         if not os.path.exists(music_path):
             logger.debug('Creating directory: {}'.format(music_path))
             os.makedirs(music_path)
+        # Cache module names for filename shadow checking later.
+        self.module_names = set([name for _, name, _ in
+                                pkgutil.iter_modules()])
+        self.module_names.add('sys')
+        self.module_names.add('builtins')
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
@@ -862,6 +868,20 @@ class Editor:
             tab.setModified(False)
             self.show_status_message(_("Saved file: {}").format(tab.path))
 
+    def check_for_shadow_module(self, path):
+        """
+        Check if the filename in the path is a shadow of a module already in
+        the Python path. For example, many learners will save their first
+        turtle based script as turtle.py, thus causing Python to never find
+        the built in turtle module because of the name conflict.
+
+        If the filename shadows an existing module, return True, otherwise,
+        return False.
+        """
+        logger.info('Checking path "{}" for shadow module.'.format(path))
+        filename = os.path.basename(path).replace('.py', '')
+        return filename in self.module_names
+
     def save(self):
         """
         Save the content of the currently active editor tab.
@@ -873,7 +893,17 @@ class Editor:
         if not tab.path:
             # Unsaved file.
             workspace = self.modes[self.mode].workspace_dir()
-            tab.path = self._view.get_save_path(workspace)
+            path = self._view.get_save_path(workspace)
+            if path and self.check_for_shadow_module(path):
+                message = _('You cannot use the filename '
+                            '"{}"'.format(os.path.basename(path)))
+                info = _('This name is already used by another part of '
+                         'Python. If you use this name, things are '
+                         'likely to break. Please try again with a '
+                         'different filename.')
+                self._view.show_message(message, info)
+                return
+            tab.path = path
         if tab.path:
             # The user specified a path to a file.
             if os.path.splitext(tab.path)[1] == '':
@@ -1190,7 +1220,16 @@ class Editor:
             tab = self._view.current_tab
         if tab:
             new_path = self._view.get_save_path(tab.path)
-            if new_path:
+            if new_path and new_path != tab.path:
+                if self.check_for_shadow_module(new_path):
+                    message = _('You cannot use the filename '
+                                '"{}"'.format(os.path.basename(new_path)))
+                    info = _('This name is already used by another part of '
+                             'Python. If you use that name, things are '
+                             'likely to break. Please try again with a '
+                             'different filename.')
+                    self._view.show_message(message, info)
+                    return
                 logger.info('Attempting to rename {} to {}'.format(tab.path,
                                                                    new_path))
                 # The user specified a path to a file.
