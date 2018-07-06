@@ -25,10 +25,14 @@ QDialog {
     border: 1px solid white;
 }
 
-QPlainTextEdit {
+QPlainTextEdit, QLineEdit {
     background-color: white;
     color: black;
-    border: 1px solid white;
+    border: 2px solid white;
+}
+
+QPlainTextEdit:focus, QLineEdit:focus {
+    border: 2px solid yellow;
 }
 
 QTabBar {
@@ -136,11 +140,6 @@ QMenu::separator {
     margin: 0px;
 }
 
-QLineEdit {
-    background: #FFF;
-    color: #000;
-}
-
 QCheckBox::indicator {
     border: 1px solid #FFF;
     width: 16px;
@@ -149,4 +148,27 @@ QCheckBox::indicator {
 
 QCheckBox::indicator:checked {
     image: url(images:checked.png);
+}
+
+QPushButton {
+    background: #2e2e2e;
+    border: 3px solid #aaa;
+    padding: 6px 12px;                /* 1.5 * Tab Padding */
+}
+
+QPushButton:focus, QPushButton:hover {
+    background: #222;
+    color: yellow;
+}
+
+QPushButton:focus {
+    border: 3px solid yellow;
+}
+
+QPushButton:hover {
+    border: 3px solid white;
+}
+
+QPushButton:pressed {
+    background: #111;
 }

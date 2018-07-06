@@ -19,10 +19,14 @@ QLabel, QStatusBar, QTabBar, QMenu {
     color: white;
 }
 
-QTextEdit, QPlainTextEdit {
+QTextEdit, QPlainTextEdit, QLineEdit {
     background-color: #373737;
     color: white;
     border: none;
+}
+
+QDialog QTextEdit, QDialog QPlainTextEdit, QDialog QLineEdit {
+    border: 1px solid #6b6b6b;
 }
 
 QTabBar {
@@ -30,21 +34,21 @@ QTabBar {
 }
 
 QTabBar::tab {
-    border-top: 1px solid #6b6b6b;
-    border-left: 1px solid #6b6b6b;
-    border-right: 1px solid #6b6b6b;
+    border-top: 1px solid #6b6b6b;   /* Border */
+    border-left: 1px solid #6b6b6b;  /* Border */
+    border-right: 1px solid #6b6b6b; /* Border */
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
 }
 
 QTabBar::tab, QListWidget::item:hover, QListWidget::item:focus {
-    background: #474747;
+    background: #474747;  /* Background Tab */
     padding: 4px 8px;
     margin: 0;
 }
 
 QTabBar::tab::hover, QListWidget::item::selected  {
-    background: #5c5c5c;
+    background: #5c5c5c; /* Hover */
     padding: 4px 8px;
     margin: 0;
 }
@@ -136,4 +140,24 @@ QCheckBox::indicator {
 
 QCheckBox::indicator:checked {
     image: url(images:checked.png);
+}
+
+QPushButton {
+    background: #474747;            /* Background Tab */
+    border: 1px solid #6b6b6b;      /* Border */
+    padding: 6px 12px;                /* 1.5 * Tab Padding */
+    margin: 2px;
+}
+
+QPushButton:focus {
+    margin: 1px;
+    border: 2px solid #929292;
+}
+
+QPushButton:hover {
+    background: #5c5c5c;            /* Hover */
+}
+
+QPushButton:pressed {
+    background: #6b6b6b;            /* Border */
 }

@@ -140,11 +140,6 @@ QCheckBox::indicator:checked {
     image: url(images:checked.png);
 }
 
-QDialogButtonBox {
-    dialogbuttonbox-buttons-have-icons: 0;
-    icon-size: 0px 0px;
-}
-
 QPushButton {
     background: #c4c4c4;            /* Background Tab */
     border: 1px solid #b4b4b4;      /* Border */
@@ -154,7 +149,7 @@ QPushButton {
 
 QPushButton:focus {
     margin: 1px;
-    border: 2px solid #b4b4b4;      /* Border */
+    border: 2px solid #0f53e7;
 }
 
 QPushButton:hover {
