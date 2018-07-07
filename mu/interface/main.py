@@ -229,7 +229,7 @@ class Window(QMainWindow):
         Displays a dialog for selecting a file to load. Returns the selected
         path. Defaults to start in the referenced folder.
         """
-        path, _ = QFileDialog.getOpenFileName(self, 'Open file', folder,
+        path, _ = QFileDialog.getOpenFileName(self.widget, 'Open file', folder,
                                               extensions)
         logger.debug('Getting load path: {}'.format(path))
         return path
@@ -239,7 +239,7 @@ class Window(QMainWindow):
         Displays a dialog for selecting a file to save. Returns the selected
         path. Defaults to start in the referenced folder.
         """
-        path, _ = QFileDialog.getSaveFileName(self, 'Save file', folder)
+        path, _ = QFileDialog.getSaveFileName(self.widget, 'Save file', folder)
         logger.debug('Getting save path: {}'.format(path))
         return path
 
@@ -249,7 +249,7 @@ class Window(QMainWindow):
         host computer's filesystem. Returns the selected path. Defaults to
         start in the referenced folder.
         """
-        path = QFileDialog.getExistingDirectory(self,
+        path = QFileDialog.getExistingDirectory(self.widget,
                                                 'Locate BBC micro:bit', folder,
                                                 QFileDialog.ShowDirsOnly)
         logger.debug('Getting micro:bit path: {}'.format(path))

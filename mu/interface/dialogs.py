@@ -48,7 +48,7 @@ class ModeSelector(QDialog):
     Defines a UI for selecting the mode for Mu.
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
     def setup(self, modes, current_mode, theme):
@@ -172,7 +172,7 @@ class AdminDialog(QDialog):
     variables etc...).
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
     def setup(self, log, settings, theme):
