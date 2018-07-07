@@ -1855,6 +1855,15 @@ def test_change_mode():
     view.button_bar = mock_button_bar
     view.change_mode = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    old_mode = mock.MagicMock()
+    old_mode.save_timeout = 5
+    old_mode.actions.return_value = [
+        {
+            'name': 'name',
+            'handler': 'handler',
+            'shortcut': 'Ctrl+X',
+        },
+    ]
     mode = mock.MagicMock()
     mode.save_timeout = 5
     mode.actions.return_value = [
@@ -1865,13 +1874,17 @@ def test_change_mode():
         },
     ]
     ed.modes = {
+        'microbit': old_mode,
         'python': mode,
     }
+    ed.mode = 'microbit'
     ed.change_mode('python')
+    # Check the old mode is closed properly.
+    old_mode.remove_repl.assert_called_once_with()
+    old_mode.remove_fs.assert_called_once_with()
+    old_mode.remove_plotter.assert_called_once_with()
+    # Check the new mode is set up correctly.
     assert ed.mode == 'python'
-    view.remove_repl.assert_called_once_with()
-    view.remove_filesystem.assert_called_once_with()
-    view.remove_plotter.assert_called_once_with()
     view.change_mode.assert_called_once_with(mode)
     assert mock_button_bar.connect.call_count == 11
     view.status_bar.set_mode.assert_called_once_with('python')
@@ -1924,7 +1937,9 @@ def test_change_mode_reset_breakpoints():
     mode.save_timeout = 5
     ed.modes = {
         'microbit': mode,
+        'debug': mock.MagicMock(),
     }
+    ed.mode = 'debug'
     ed.change_mode('microbit')
     assert ed.mode == 'microbit'
     assert mock_tab.breakpoint_handles == set()

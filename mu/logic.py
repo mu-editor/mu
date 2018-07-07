@@ -1083,11 +1083,17 @@ class Editor:
         Given the name of a mode, will make the necessary changes to put the
         editor into the new mode.
         """
-        self.mode = mode
         # Remove the old mode's REPL / filesystem / plotter if required.
-        self._view.remove_repl()
-        self._view.remove_filesystem()
-        self._view.remove_plotter()
+        old_mode = self.modes[self.mode]
+        if hasattr(old_mode, 'remove_repl'):
+            old_mode.remove_repl()
+        if hasattr(old_mode, 'remove_fs'):
+            old_mode.remove_fs()
+        if hasattr(old_mode, 'remove_plotter'):
+            if old_mode.plotter:
+                old_mode.remove_plotter()
+        # Re-assign to new mode.
+        self.mode = mode
         # Update buttons.
         self._view.change_mode(self.modes[mode])
         button_bar = self._view.button_bar

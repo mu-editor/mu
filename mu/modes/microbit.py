@@ -452,8 +452,6 @@ class MicrobitMode(MicroPythonMode):
         """
         Remove the file system navigator from the UI.
         """
-        if self.fs is None:
-            raise RuntimeError("File system not running")
         self.view.remove_filesystem()
         self.file_manager = None
         self.file_manager_thread = None
