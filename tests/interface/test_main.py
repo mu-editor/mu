@@ -674,6 +674,16 @@ def test_Window_add_filesystem():
     w.connect_zoom.assert_called_once_with(mock_fs)
 
 
+def test_Window_add_filesystem_open_signal():
+    w = mu.interface.main.Window()
+    w.open_file = mock.MagicMock()
+    mock_open_emit = mock.MagicMock()
+    w.open_file.emit = mock_open_emit
+    pane = w.add_filesystem('homepath', mock.MagicMock())
+    pane.open_file.emit('test')
+    mock_open_emit.assert_called_once_with('test')
+
+
 def test_Window_add_micropython_repl():
     """
     Ensure the expected object is instantiated and add_repl is called for a
