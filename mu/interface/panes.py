@@ -1021,7 +1021,7 @@ class PlotterPane(QChartView):
 
     data_flood = pyqtSignal()
 
-    def __init__(self, theme='day', parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         # Holds the raw input to be checked for actionable data to display.
         self.input_buffer = []

@@ -1267,8 +1267,7 @@ class Editor:
         If there is, find (and, optionally, replace) then confirm outcome with
         a status message.
         """
-        result = self._view.show_find_replace(self.theme, self.find,
-                                              self.replace,
+        result = self._view.show_find_replace(self.find, self.replace,
                                               self.global_replace)
         if result:
             self.find, self.replace, self.global_replace = result

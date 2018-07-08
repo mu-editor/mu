@@ -215,13 +215,10 @@ class FindReplaceDialog(QDialog):
     * A flag to indicate if the user wishes to replace all.
     """
 
-    def setup(self, theme, find=None, replace=None, replace_flag=False):
-        if theme == 'day':
-            self.setStyleSheet(DAY_STYLE)
-        elif theme == 'night':
-            self.setStyleSheet(NIGHT_STYLE)
-        else:
-            self.setStyleSheet(CONTRAST_STYLE)
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def setup(self, find=None, replace=None, replace_flag=False):
         self.setMinimumSize(600, 200)
         self.setWindowTitle(_('Find / Replace'))
         widget_layout = QVBoxLayout()

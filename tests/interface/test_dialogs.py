@@ -56,63 +56,14 @@ def test_ModeSelector_setup():
     }
     current_mode = 'python'
     mock_item = mock.MagicMock()
-    mock_list = mock.MagicMock()
-    mock_window = QWidget()
     with mock.patch('mu.interface.dialogs.ModeItem', mock_item):
-        with mock.patch('PyQt5.QtWidgets.QListWidget', mock_list):
-            ms = mu.interface.dialogs.ModeSelector(mock_window)
-            ms.setup(modes, current_mode, 'day')
+        with mock.patch('mu.interface.dialogs.QVBoxLayout'):
+            with mock.patch('mu.interface.dialogs.QListWidget'):
+                ms = mu.interface.dialogs.ModeSelector()
+                ms.setLayout = mock.MagicMock()
+                ms.setup(modes, current_mode)
+                assert ms.setLayout.call_count == 1
     assert mock_item.call_count == 3
-    assert mock_list.call_count == 1
-
-
-def test_ModeSelector_setup_night_theme():
-    """
-    Ensure the ModeSelector handles the night theme correctly.
-    """
-    editor = mock.MagicMock()
-    view = mock.MagicMock()
-    modes = {
-        'python': PythonMode(editor, view),
-        'adafruit': AdafruitMode(editor, view),
-        'microbit': MicrobitMode(editor, view),
-    }
-    current_mode = 'python'
-    mock_item = mock.MagicMock()
-    mock_css = mock.MagicMock()
-    mock_window = QWidget()
-    with mock.patch('mu.interface.dialogs.ModeItem', mock_item):
-        ms = mu.interface.dialogs.ModeSelector(mock_window)
-        ms.setStyleSheet = mock_css
-        ms.setup(modes, current_mode, 'night')
-    assert mock_item.call_count == 3
-    mock_css.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
-
-
-def test_ModeSelector_setup_contrast_theme():
-    """
-    Ensure the ModeSelector handles the high contrast theme correctly.
-    """
-    editor = mock.MagicMock()
-    view = mock.MagicMock()
-    modes = {
-        'python': PythonMode(editor, view),
-        'adafruit': AdafruitMode(editor, view),
-        'microbit': MicrobitMode(editor, view),
-    }
-    current_mode = 'python'
-    mock_item = mock.MagicMock()
-    mock_list = mock.MagicMock()
-    mock_css = mock.MagicMock()
-    mock_window = QWidget()
-    with mock.patch('mu.interface.dialogs.ModeItem', mock_item):
-        with mock.patch('PyQt5.QtWidgets.QListWidget', mock_list):
-            ms = mu.interface.dialogs.ModeSelector(mock_window)
-            ms.setStyleSheet = mock_css
-            ms.setup(modes, current_mode, 'contrast')
-    assert mock_item.call_count == 3
-    assert mock_list.call_count == 3
-    mock_css.assert_called_once_with(mu.interface.themes.CONTRAST_STYLE)
 
 
 def test_ModeSelector_select_and_accept():
@@ -195,46 +146,9 @@ def test_AdminDialog_setup():
     }
     mock_window = QWidget()
     ad = mu.interface.dialogs.AdminDialog(mock_window)
-    ad.setStyleSheet = mock.MagicMock()
-    ad.setup(log, settings, 'day')
+    ad.setup(log, settings)
     assert ad.log_widget.log_text_area.toPlainText() == log
     assert ad.settings() == settings
-    ad.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-
-
-def test_AdminDialog_setup_night():
-    """
-    Ensure the admin dialog can start with the night theme.
-    """
-    log = 'this is the contents of a log file'
-    settings = {
-        'envars': 'name=value',
-        'minify': True,
-        'microbit_runtime': '/foo/bar',
-    }
-    mock_window = QWidget()
-    ad = mu.interface.dialogs.AdminDialog(mock_window)
-    ad.setStyleSheet = mock.MagicMock()
-    ad.setup(log, settings, 'night')
-    ad.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
-
-
-def test_AdminDialog_setup_contrast():
-    """
-    Ensure the admin dialog can start with the high contrast theme.
-    """
-    log = 'this is the contents of a log file'
-    settings = {
-        'envars': 'name=value',
-        'minify': True,
-        'microbit_runtime': '/foo/bar',
-    }
-    mock_window = QWidget()
-    ad = mu.interface.dialogs.AdminDialog(mock_window)
-    ad.setStyleSheet = mock.MagicMock()
-    ad.setup(log, settings, 'contrast')
-    ad.setStyleSheet.\
-        assert_called_once_with(mu.interface.themes.CONTRAST_STYLE)
 
 
 def test_FindReplaceDialog_setup():
@@ -243,12 +157,10 @@ def test_FindReplaceDialog_setup():
     as an argument.
     """
     frd = mu.interface.dialogs.FindReplaceDialog()
-    frd.setStyleSheet = mock.MagicMock()
-    frd.setup('day')
+    frd.setup()
     assert frd.find() == ''
     assert frd.replace() == ''
     assert frd.replace_flag() is False
-    frd.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
 
 
 def test_FindReplaceDialog_setup_with_args():
@@ -260,30 +172,8 @@ def test_FindReplaceDialog_setup_with_args():
     replace = 'bar'
     flag = True
     frd = mu.interface.dialogs.FindReplaceDialog()
-    frd.setStyleSheet = mock.MagicMock()
-    frd.setup('day', find, replace, flag)
+    frd.setup(find, replace, flag)
     assert frd.find() == find
     assert frd.replace() == replace
     assert frd.replace_flag()
-    frd.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
 
-
-def test_FindReplaceDialog_setup_night():
-    """
-    Ensure the find/replace dialog can start with the night theme.
-    """
-    frd = mu.interface.dialogs.FindReplaceDialog()
-    frd.setStyleSheet = mock.MagicMock()
-    frd.setup('night')
-    frd.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
-
-
-def test_FindReplaceDialog_setup_contrast():
-    """
-    Ensure the find/replace dialog can start with the high contrast theme.
-    """
-    frd = mu.interface.dialogs.FindReplaceDialog()
-    frd.setStyleSheet = mock.MagicMock()
-    frd.setup('contrast')
-    frd.setStyleSheet.\
-        assert_called_once_with(mu.interface.themes.CONTRAST_STYLE)

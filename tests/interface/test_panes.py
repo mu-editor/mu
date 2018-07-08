@@ -148,25 +148,6 @@ def test_MicroPythonREPLPane_context_menu_darwin():
     assert mock_qmenu.exec_.call_count == 1
 
 
-def test_MicroPythonREPLPane_set_theme():
-    """
-    Ensure the set_theme toggles as expected.
-    """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
-    rp.setStyleSheet = mock.MagicMock(return_value=None)
-    rp.set_theme('day')
-    rp.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-    rp.setStyleSheet.reset_mock()
-    rp.set_theme('night')
-    rp.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.NIGHT_STYLE)
-    rp.setStyleSheet.reset_mock()
-    rp.set_theme('contrast')
-    rp.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
-
-
 def test_MicroPythonREPLPane_keyPressEvent():
     """
     Ensure key presses in the REPL are handled correctly.
@@ -801,37 +782,6 @@ def test_FileSystem_Pane_on_get_fail():
     assert fsp.show_warning.call_count == 1
 
 
-def test_FileSystemPane_set_theme_day():
-    """
-    Ensures the day theme is set.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.setStyleSheet = mock.MagicMock()
-    fsp.set_theme('day')
-    fsp.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-
-
-def test_FileSystemPane_set_theme_night():
-    """
-    Ensures the night theme is set.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.setStyleSheet = mock.MagicMock()
-    fsp.set_theme('night')
-    fsp.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
-
-
-def test_FileSystemPane_set_theme_contrast():
-    """
-    Ensures the contrast theme is set.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.setStyleSheet = mock.MagicMock()
-    fsp.set_theme('contrast')
-    fsp.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
-
-
 def test_FileSystemPane_set_font_size():
     """
     Ensure the right size is set as the point size and the text based UI child
@@ -942,10 +892,8 @@ def test_JupyterREPLPane_set_theme_day():
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_default_style = mock.MagicMock()
-    jw.setStyleSheet = mock.MagicMock()
     jw.set_theme('day')
     jw.set_default_style.assert_called_once_with()
-    jw.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
 
 
 def test_JupyterREPLPane_set_theme_night():
@@ -954,10 +902,8 @@ def test_JupyterREPLPane_set_theme_night():
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_default_style = mock.MagicMock()
-    jw.setStyleSheet = mock.MagicMock()
     jw.set_theme('night')
     jw.set_default_style.assert_called_once_with(colors='nocolor')
-    jw.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
 
 
 def test_JupyterREPLPane_set_theme_contrast():
@@ -966,11 +912,8 @@ def test_JupyterREPLPane_set_theme_contrast():
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_default_style = mock.MagicMock()
-    jw.setStyleSheet = mock.MagicMock()
     jw.set_theme('contrast')
     jw.set_default_style.assert_called_once_with(colors='nocolor')
-    jw.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
 
 
 def test_JupyterREPLPane_setFocus():
@@ -1941,37 +1884,6 @@ def test_PythonProcessPane_zoomOut_min():
         assert mock_zoom.call_count == 0
 
 
-def test_PythonProcessPane_set_theme_day():
-    """
-    Set the theme to day.
-    """
-    ppp = mu.interface.panes.PythonProcessPane()
-    ppp.setStyleSheet = mock.MagicMock()
-    ppp.set_theme('day')
-    ppp.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-
-
-def test_PythonProcessPane_set_theme_night():
-    """
-    Set the theme to night.
-    """
-    ppp = mu.interface.panes.PythonProcessPane()
-    ppp.setStyleSheet = mock.MagicMock()
-    ppp.set_theme('night')
-    ppp.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
-
-
-def test_PythonProcessPane_set_theme_contrast():
-    """
-    Set the theme to high contrast.
-    """
-    ppp = mu.interface.panes.PythonProcessPane()
-    ppp.setStyleSheet = mock.MagicMock()
-    ppp.set_theme('contrast')
-    ppp.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
-
-
 def test_DebugInspector_set_font_size():
     """
     Check the correct stylesheet values are being set.
@@ -2004,40 +1916,6 @@ def test_DebugInspector_zoomOut():
     old_size = di.font().pointSize()
     di.zoomOut(delta=4)
     di.set_font_size.assert_called_once_with(old_size - 4)
-
-
-def test_DebugInspector_set_theme_day():
-    """
-    Make sure the theme is correctly set for day.
-    """
-    di = mu.interface.panes.DebugInspector()
-    di.set_default_style = mock.MagicMock()
-    di.setStyleSheet = mock.MagicMock()
-    di.set_theme('day')
-    di.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-
-
-def test_DebugInspector_set_theme_night():
-    """
-    Make sure the theme is correctly set for night.
-    """
-    di = mu.interface.panes.DebugInspector()
-    di.set_default_style = mock.MagicMock()
-    di.setStyleSheet = mock.MagicMock()
-    di.set_theme('night')
-    di.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
-
-
-def test_DebugInspector_set_theme_contrast():
-    """
-    Make sure the theme is correctly set for high contrast.
-    """
-    di = mu.interface.panes.DebugInspector()
-    di.set_default_style = mock.MagicMock()
-    di.setStyleSheet = mock.MagicMock()
-    di.set_theme('contrast')
-    di.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
 
 
 def test_PlotterPane_init():

@@ -472,6 +472,7 @@ class Window(QMainWindow):
                                      Qt.LeftDockWidgetArea |
                                      Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.plotter)
+        self.plotter_pane.set_theme(self.theme)
         self.plotter_pane.setFocus()
 
     def add_python3_runner(self, script_name, working_directory,
@@ -657,6 +658,10 @@ class Window(QMainWindow):
         for widget in self.widgets:
             widget.set_theme(new_theme)
         self.button_bar.slots['theme'].setIcon(load_icon(new_icon))
+        if hasattr(self, 'repl') and self.repl:
+            self.repl_pane.set_theme(theme)
+        if hasattr(self, 'plotter') and self.plotter:
+            self.plotter_pane.set_theme(theme)
 
     def show_admin(self, log, settings):
         """
@@ -881,14 +886,14 @@ class Window(QMainWindow):
         self.find_replace_shortcut = QShortcut(QKeySequence(shortcut), self)
         self.find_replace_shortcut.activated.connect(handler)
 
-    def show_find_replace(self, theme, find, replace, global_replace):
+    def show_find_replace(self, find, replace, global_replace):
         """
         Display the find/replace dialog. If the dialog's OK button was clicked
         return a tuple containing the find term, replace term and global
         replace flag.
         """
-        finder = FindReplaceDialog()
-        finder.setup(theme, find, replace, global_replace)
+        finder = FindReplaceDialog(self)
+        finder.setup(find, replace, global_replace)
         if finder.exec():
             return (finder.find(), finder.replace(), finder.replace_flag())
 
