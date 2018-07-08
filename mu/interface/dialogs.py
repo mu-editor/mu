@@ -22,7 +22,6 @@ from PyQt5.QtWidgets import (QVBoxLayout, QListWidget, QLabel, QListWidgetItem,
                              QDialog, QDialogButtonBox, QPlainTextEdit,
                              QTabWidget, QWidget, QCheckBox, QLineEdit)
 from mu.resources import load_icon
-from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
 
 logger = logging.getLogger(__name__)
@@ -51,13 +50,7 @@ class ModeSelector(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
 
-    def setup(self, modes, current_mode, theme):
-        if theme == 'day':
-            self.setStyleSheet(DAY_STYLE)
-        elif theme == 'night':
-            self.setStyleSheet(NIGHT_STYLE)
-        else:
-            self.setStyleSheet(CONTRAST_STYLE)
+    def setup(self, modes, current_mode):
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_('Select Mode'))
         widget_layout = QVBoxLayout()
@@ -177,13 +170,7 @@ class AdminDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
 
-    def setup(self, log, settings, theme):
-        if theme == 'day':
-            self.setStyleSheet(DAY_STYLE)
-        elif theme == 'night':
-            self.setStyleSheet(NIGHT_STYLE)
-        else:
-            self.setStyleSheet(CONTRAST_STYLE)
+    def setup(self, log, settings):
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_('Mu Administration'))
         widget_layout = QVBoxLayout()

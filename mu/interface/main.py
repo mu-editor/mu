@@ -398,7 +398,7 @@ class Window(QMainWindow):
             self.serial.write(b'\x02')
             # Send a Control-C / keyboard interrupt.
             self.serial.write(b'\x03')
-        repl_pane = MicroPythonREPLPane(serial=self.serial, theme=self.theme)
+        repl_pane = MicroPythonREPLPane(serial=self.serial)
         self.data_received.connect(repl_pane.process_bytes)
         self.add_repl(repl_pane, name)
 
@@ -408,7 +408,7 @@ class Window(QMainWindow):
         """
         if not self.serial:
             self.open_serial_link(port)
-        plotter_pane = PlotterPane(theme=self.theme)
+        plotter_pane = PlotterPane()
         self.data_received.connect(plotter_pane.process_bytes)
         plotter_pane.data_flood.connect(mode.on_data_flood)
         self.add_plotter(plotter_pane, name)
@@ -420,7 +420,7 @@ class Window(QMainWindow):
         running script are running (but not at the same time), it'll just grab
         data emitted by the REPL or script via data_received.
         """
-        plotter_pane = PlotterPane(theme=self.theme)
+        plotter_pane = PlotterPane()
         self.data_received.connect(plotter_pane.process_bytes)
         plotter_pane.data_flood.connect(mode.on_data_flood)
         self.add_plotter(plotter_pane, _('Python3 data tuple'))
@@ -431,7 +431,7 @@ class Window(QMainWindow):
         """
         kernel_manager.kernel.gui = 'qt4'
         kernel_client.start_channels()
-        ipython_widget = JupyterREPLPane(theme=self.theme)
+        ipython_widget = JupyterREPLPane()
         ipython_widget.kernel_manager = kernel_manager
         ipython_widget.kernel_client = kernel_client
         ipython_widget.on_append_text.connect(self.on_stdout_write)
@@ -450,7 +450,6 @@ class Window(QMainWindow):
                                   Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.repl)
         self.connect_zoom(self.repl_pane)
-        self.repl_pane.set_theme(self.theme)
         self.repl_pane.setFocus()
 
     def add_plotter(self, plotter_pane, name):
@@ -465,7 +464,6 @@ class Window(QMainWindow):
                                      Qt.LeftDockWidgetArea |
                                      Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.plotter)
-        self.plotter_pane.set_theme(self.theme)
         self.plotter_pane.setFocus()
 
     def add_python3_runner(self, script_name, working_directory,
@@ -631,30 +629,28 @@ class Window(QMainWindow):
         Sets the theme for the REPL and editor tabs.
         """
         self.theme = theme
+        self.load_theme.emit(theme)
         if theme == 'contrast':
-            self.load_theme.emit(CONTRAST_STYLE)
             new_theme = ContrastTheme
             new_icon = 'theme_day'
         elif theme == 'night':
-            self.load_theme.emit(NIGHT_STYLE)
             new_theme = NightTheme
             new_icon = 'theme_contrast'
         else:
-            self.load_theme.emit(DAY_STYLE)
             new_theme = DayTheme
             new_icon = 'theme'
         for widget in self.widgets:
             widget.set_theme(new_theme)
         self.button_bar.slots['theme'].setIcon(load_icon(new_icon))
 
-    def show_admin(self, log, settings, theme):
+    def show_admin(self, log, settings):
         """
         Display the administrivite dialog with referenced content of the log
         and settings. Return a dictionary of the settings that may have been
         changed by the admin dialog.
         """
         admin_box = AdminDialog(self)
-        admin_box.setup(log, settings, theme)
+        admin_box.setup(log, settings)
         admin_box.exec()
         return admin_box.settings()
 
@@ -790,12 +786,12 @@ class Window(QMainWindow):
         size = resizeEvent.size()
         self.button_bar.set_responsive_mode(size.width(), size.height())
 
-    def select_mode(self, modes, current_mode, theme):
+    def select_mode(self, modes, current_mode):
         """
         Display the mode selector dialog and return the result.
         """
         mode_select = ModeSelector(self)
-        mode_select.setup(modes, current_mode, theme)
+        mode_select.setup(modes, current_mode)
         mode_select.exec()
         try:
             return mode_select.get_mode()

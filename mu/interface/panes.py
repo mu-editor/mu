@@ -33,8 +33,7 @@ from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
 from PyQt5.QtGui import QKeySequence, QTextCursor, QCursor, QPainter
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from mu.interface.themes import Font
-from mu.interface.themes import (DEFAULT_FONT_SIZE, NIGHT_STYLE, DAY_STYLE,
-                                 CONTRAST_STYLE)
+from mu.interface.themes import DEFAULT_FONT_SIZE
 
 
 logger = logging.getLogger(__name__)
@@ -99,13 +98,10 @@ class JupyterREPLPane(RichJupyterWidget):
         """
         if theme == 'contrast':
             self.set_default_style(colors='nocolor')
-            self.setStyleSheet(CONTRAST_STYLE)
         elif theme == 'night':
             self.set_default_style(colors='nocolor')
-            self.setStyleSheet(NIGHT_STYLE)
         else:
             self.set_default_style()
-            self.setStyleSheet(DAY_STYLE)
 
     def setFocus(self):
         """
@@ -162,15 +158,7 @@ class MicroPythonREPLPane(QTextEdit):
         menu.exec_(QCursor.pos())
 
     def set_theme(self, theme):
-        """
-        Sets the theme / look for the REPL pane.
-        """
-        if theme == 'day':
-            self.setStyleSheet(DAY_STYLE)
-        elif theme == 'night':
-            self.setStyleSheet(NIGHT_STYLE)
-        else:
-            self.setStyleSheet(CONTRAST_STYLE)
+        pass
 
     def keyPressEvent(self, data):
         """
@@ -526,15 +514,7 @@ class FileSystemPane(QFrame):
                             "technical information."))
 
     def set_theme(self, theme):
-        """
-        Sets the theme / look for the FileSystemPane.
-        """
-        if theme == 'day':
-            self.setStyleSheet(DAY_STYLE)
-        elif theme == 'night':
-            self.setStyleSheet(NIGHT_STYLE)
-        else:
-            self.setStyleSheet(CONTRAST_STYLE)
+        pass
 
     def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
         """
@@ -918,15 +898,7 @@ class PythonProcessPane(QTextEdit):
             super().zoomOut(delta)
 
     def set_theme(self, theme):
-        """
-        Sets the theme / look for the REPL pane.
-        """
-        if theme == 'day':
-            self.setStyleSheet(DAY_STYLE)
-        elif theme == 'night':
-            self.setStyleSheet(NIGHT_STYLE)
-        else:
-            self.setStyleSheet(CONTRAST_STYLE)
+        pass
 
 
 class DebugInspector(QTreeView):
@@ -962,15 +934,7 @@ class DebugInspector(QTreeView):
         self.set_font_size(new_size)
 
     def set_theme(self, theme):
-        """
-        Sets the theme / look for the debug inspector pane.
-        """
-        if theme == 'day':
-            self.setStyleSheet(DAY_STYLE)
-        elif theme == 'night':
-            self.setStyleSheet(NIGHT_STYLE)
-        else:
-            self.setStyleSheet(CONTRAST_STYLE)
+        pass
 
 
 class PlotterPane(QChartView):

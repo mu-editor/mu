@@ -986,8 +986,7 @@ class Editor:
             'microbit_runtime': self.microbit_runtime,
         }
         with open(LOG_FILE, 'r') as logfile:
-            new_settings = self._view.show_admin(logfile.read(), settings,
-                                                 self.theme)
+            new_settings = self._view.show_admin(logfile.read(), settings)
             self.envars = extract_envars(new_settings['envars'])
             self.minify = new_settings['minify']
             runtime = new_settings['microbit_runtime'].strip()
@@ -1009,7 +1008,7 @@ class Editor:
             return
         logger.info('Showing available modes: {}'.format(
             list(self.modes.keys())))
-        new_mode = self._view.select_mode(self.modes, self.mode, self.theme)
+        new_mode = self._view.select_mode(self.modes, self.mode)
         if new_mode and new_mode is not self.mode:
             self.mode = new_mode
             self.change_mode(self.mode)
