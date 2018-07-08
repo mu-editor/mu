@@ -26,29 +26,28 @@ before_install:
   # Python 3 and pip 3 installation required in macOS
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
   # Linux needs to install pip again to have pip3 for the right Python version
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_pip3.sh; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then bash package/install_linux.sh; fi
   # Check everything was correctly installed
+  - pyenv install 3.6.5
+  - pyenv global 3.6.5
   - echo $PATH
-  - python3 --version
-  - python3 -c "import struct; print(struct.calcsize('P') * 8)"
-  - python3 -c "import sys; print(sys.executable)"
-  - python3 -m pip --version
-  - pip3 --version
-  - pip3 install virtualenv
-  - virtualenv venv --python=python3
-  - source venv/bin/activate
+  - python --version
+  - python -c "import struct; print(struct.calcsize('P') * 8)"
+  - python -c "import sys; print(sys.executable)"
+  - python -m pip --version
+  - pip --version
 
 install:
   # Install Mu dependencies
-  - pip3 install -r requirements.txt
+  - pip install -r requirements.txt
   # Install packager for OSX
-  - pip3 install briefcase
+  - pip install briefcase
   # Install disk image maker for OSX
-  - pip3 install dmgbuild 
+  - pip install dmgbuild 
   # Install helpful pytest plug-in
-  - pip3 install pytest-faulthandler
+  - pip install pytest-faulthandler
   # Check everything was correctly installed
-  - pip3 freeze
+  - pip freeze
 
 script:
   # Run the tests
@@ -60,7 +59,7 @@ script:
   # Package it for OSX
   #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then echo "[install]" >> setup.cfg; echo "prefix=" >> setup.cfg; fi
   #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo mkdir -p /lib/python3.6/site-packages/; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python3 setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.5/python3-reduced.tar.gz; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.5/python3-reduced.tar.gz; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir dist; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then dmgbuild -s package/dmg_settings.py "Mu Editor" dist/mu-editor.dmg; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then du -sk dist/; fi
