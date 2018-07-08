@@ -189,6 +189,7 @@ class Window(QMainWindow):
     write_to_serial = pyqtSignal(bytes)
     data_received = pyqtSignal(bytes)
     open_file = pyqtSignal(str)
+    load_theme = pyqtSignal(str)
 
     def zoom_in(self):
         """
@@ -631,24 +632,20 @@ class Window(QMainWindow):
         """
         self.theme = theme
         if theme == 'contrast':
-            self.setStyleSheet(CONTRAST_STYLE)
+            self.load_theme.emit(CONTRAST_STYLE)
             new_theme = ContrastTheme
             new_icon = 'theme_day'
         elif theme == 'night':
+            self.load_theme.emit(NIGHT_STYLE)
             new_theme = NightTheme
             new_icon = 'theme_contrast'
-            self.setStyleSheet(NIGHT_STYLE)
         else:
-            self.setStyleSheet(DAY_STYLE)
+            self.load_theme.emit(DAY_STYLE)
             new_theme = DayTheme
             new_icon = 'theme'
         for widget in self.widgets:
             widget.set_theme(new_theme)
         self.button_bar.slots['theme'].setIcon(load_icon(new_icon))
-        if hasattr(self, 'repl') and self.repl:
-            self.repl_pane.set_theme(theme)
-        if hasattr(self, 'plotter') and self.plotter:
-            self.plotter_pane.set_theme(theme)
 
     def show_admin(self, log, settings, theme):
         """

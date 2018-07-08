@@ -118,6 +118,10 @@ def run():
 
     # Create the "window" we'll be looking at.
     editor_window = Window()
+    @editor_window.load_theme.connect
+    def load_theme(theme):
+        app.setStyleSheet(theme)
+
     # Create the "editor" that'll control the "window".
     editor = Editor(view=editor_window)
     editor.setup(setup_modes(editor, editor_window))
