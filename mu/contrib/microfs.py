@@ -56,10 +56,34 @@ def raw_on(serial):
     """
     Puts the device into raw mode.
     """
-    serial.write(b'\x03')  # Send CTRL-C to break out of loop.
-    serial.read_until(b'\n>')  # Flush buffer until prompt.
-    serial.write(b'\x01')  # Go into raw mode.
-    serial.read_until(b'\r\n>OK')  # Flush buffer until raw mode prompt.
+    # Send CTRL-B to end raw mode if required.
+    serial.write(b'\x02')
+    # Send CTRL-C three times between pauses to break out of loop.
+    for i in range(3):
+        serial.write(b'\r\x03')
+        time.sleep(0.01)
+    # Flush input (without relying on serial.flushInput())
+    n = serial.inWaiting()
+    while n > 0:
+        serial.read(n)
+        n = serial.inWaiting()
+    # Go into raw mode with CTRL-A.
+    serial.write(b'\r\x01')
+    # Flush
+    data = serial.read_until(b'raw REPL; CTRL-B to exit\r\n>')
+    if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
+        print(data)
+        raise IOError('Could not enter raw REPL.')
+    # Soft Reset with CTRL-D
+    serial.write(b'\x04')
+    data = serial.read_until(b'soft reboot\r\n')
+    if not data.endswith(b'soft reboot\r\n'):
+        print(data)
+        raise IOError('Could not enter raw REPL.')
+    data = serial.read_until(b'raw REPL; CTRL-B to exit\r\n>')
+    if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
+        print(data)
+        raise IOError('Could not enter raw REPL.')
 
 
 def raw_off(serial):
@@ -91,10 +115,14 @@ def execute(commands, serial=None):
 
     Returns the stdout and stderr output from the micro:bit.
     """
+    close_serial = False
     if serial is None:
         serial = get_serial()
+        close_serial = True
+        time.sleep(0.1)
     result = b''
     raw_on(serial)
+    time.sleep(0.1)
     # Write the actual command and send CTRL-D to evaluate.
     for command in commands:
         command_bytes = command.encode('utf-8')
@@ -102,14 +130,16 @@ def execute(commands, serial=None):
             serial.write(command_bytes[i:min(i + 32, len(command_bytes))])
             time.sleep(0.01)
         serial.write(b'\x04')
-        response = bytearray()
-        while not response.endswith(b'\x04>'):  # Read until prompt.
-            response.extend(serial.read_all())
+        response = serial.read_until(b'\x04>')       # Read until prompt.
         out, err = response[2:-2].split(b'\x04', 1)  # Split stdout, stderr
         result += out
         if err:
             return b'', err
+    time.sleep(0.1)
     raw_off(serial)
+    if close_serial:
+        serial.close()
+        time.sleep(0.1)
     return result, err
 
 
@@ -122,7 +152,7 @@ def clean_error(err):
         decoded = err.decode('utf-8')
         try:
             return decoded.split('\r\n')[-2]
-        except:
+        except Exception:
             return decoded
     return 'There was an error.'
 
@@ -165,7 +195,7 @@ def rm(filename, serial=None):
     return True
 
 
-def put(filename, serial=None):
+def put(filename, target=None, serial=None):
     """
     Puts a referenced file on the LOCAL file system onto the
     file system on the BBC micro:bit.
@@ -180,8 +210,10 @@ def put(filename, serial=None):
     with open(filename, 'rb') as local:
         content = local.read()
     filename = os.path.basename(filename)
+    if target is None:
+        target = filename
     commands = [
-        "fd = open('{}', 'wb')".format(filename),
+        "fd = open('{}', 'wb')".format(target),
         "f = fd.write",
     ]
     while content:
@@ -215,8 +247,7 @@ def get(filename, target=None, serial=None):
         "f = open('{}', 'rb')".format(filename),
         "r = f.read",
         "result = True",
-        "while result:\n    result = r(32)\n    if result:\n        " +
-        "uart.write(result)\n",
+        "while result:\n result = r(32)\n if result:\n  uart.write(result)\n",
         "f.close()",
     ]
     out, err = execute(commands, serial)
@@ -244,6 +275,8 @@ def main(argv=None):
                             help="One of 'ls', 'rm', 'put' or 'get'.")
         parser.add_argument('path', nargs='?', default=None,
                             help="Use when a file needs referencing.")
+        parser.add_argument('target', nargs='?', default=None,
+                            help="Use to specify a target filename.")
         args = parser.parse_args(argv)
         if args.command == 'ls':
             list_of_files = ls()
@@ -256,12 +289,12 @@ def main(argv=None):
                 print('rm: missing filename. (e.g. "ufs rm foo.txt")')
         elif args.command == 'put':
             if args.path:
-                put(args.path)
+                put(args.path, args.target)
             else:
                 print('put: missing filename. (e.g. "ufs put foo.txt")')
         elif args.command == 'get':
             if args.path:
-                get(args.path)
+                get(args.path, args.target)
             else:
                 print('get: missing filename. (e.g. "ufs get foo.txt")')
         else:

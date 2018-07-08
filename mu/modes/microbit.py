@@ -21,6 +21,7 @@ import os
 import sys
 import os.path
 import logging
+from tokenize import TokenError
 from mu.logic import HOME_DIRECTORY
 from mu.contrib import uflash, microfs
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
@@ -28,6 +29,12 @@ from mu.modes.base import MicroPythonMode
 from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
 
+# We can run without nudatus
+can_minify = True
+try:
+    import nudatus
+except ImportError:  # pragma: no cover
+    can_minify = False
 
 logger = logging.getLogger(__name__)
 
@@ -39,21 +46,18 @@ class DeviceFlasher(QThread):
     # Emitted when flashing the micro:bit fails for any reason.
     on_flash_fail = pyqtSignal(str)
 
-    def __init__(self, paths_to_microbits, python_script, minify,
-                 path_to_runtime):
+    def __init__(self, paths_to_microbits, python_script, path_to_runtime):
         """
         The paths_to_microbits should be a list containing filesystem paths to
         attached micro:bits to flash. The python_script should be the text of
-        the script to flash onto the device. Minify should be a boolean to
-        indicate if the Python code is to be minified before flashing. The
-        path_to_runtime should be the path of the hex file for the MicroPython
-        runtime to use. If the path_to_runtime is None, the default MicroPython
-        runtime is used by default.
+        the script to flash onto the device. The path_to_runtime should be the
+        path of the hex file for the MicroPython runtime to use. If the
+        path_to_runtime is None, the default MicroPython runtime is used by
+        default.
         """
         QThread.__init__(self)
         self.paths_to_microbits = paths_to_microbits
         self.python_script = python_script
-        self.minify = minify
         self.path_to_runtime = path_to_runtime
 
     def run(self):
@@ -63,7 +67,6 @@ class DeviceFlasher(QThread):
         try:
             uflash.flash(paths_to_microbits=self.paths_to_microbits,
                          python_script=self.python_script,
-                         minify=self.minify,
                          path_to_runtime=self.path_to_runtime)
         except Exception as ex:
             # Catch everything so Mu can recover from all of the wide variety
@@ -111,7 +114,7 @@ class FileManager(QObject):
         or emit a failure signal.
         """
         try:
-            result = tuple(microfs.ls(microfs.get_serial()))
+            result = tuple(microfs.ls())
             self.on_list_files.emit(result)
         except Exception as ex:
             logger.exception(ex)
@@ -124,8 +127,7 @@ class FileManager(QObject):
         failure signal.
         """
         try:
-            with microfs.get_serial() as serial:
-                microfs.get(microbit_filename, local_filename, serial)
+            microfs.get(microbit_filename, local_filename)
             self.on_get_file.emit(microbit_filename)
         except Exception as ex:
             logger.error(ex)
@@ -138,8 +140,7 @@ class FileManager(QObject):
         a failure signal.
         """
         try:
-            with microfs.get_serial() as serial:
-                microfs.put(local_filename, serial)
+            microfs.put(local_filename, target=None)
             self.on_put_file.emit(os.path.basename(local_filename))
         except Exception as ex:
             logger.error(ex)
@@ -151,8 +152,7 @@ class FileManager(QObject):
         of the file when complete, or emit a failure signal.
         """
         try:
-            with microfs.get_serial() as serial:
-                microfs.rm(microbit_filename, serial)
+            microfs.rm(microbit_filename)
             self.on_delete_file.emit(microbit_filename)
         except Exception as ex:
             logger.error(ex)
@@ -169,6 +169,7 @@ class MicrobitMode(MicroPythonMode):
     fs = None  #: Reference to filesystem navigator.
     flash_thread = None
     flash_timer = None
+    file_extensions = ['hex']
 
     valid_boards = [
         (0x0D28, 0x0204),  # micro:bit USB VID, PID
@@ -235,11 +236,45 @@ class MicrobitMode(MicroPythonMode):
         python_script = tab.text().encode('utf-8')
         logger.debug('Python script:')
         logger.debug(python_script)
+        # Check minification status.
+        minify = False
+        if uflash.get_minifier():
+            minify = self.editor.minify
         if len(python_script) >= 8192:
             message = _('Unable to flash "{}"').format(tab.label)
-            information = _("Your script is too long!")
-            self.view.show_message(message, information, 'Warning')
-            return
+            if minify and can_minify:
+                orginal = len(python_script)
+                script = python_script.decode('utf-8')
+                try:
+                    mangled = nudatus.mangle(script).encode('utf-8')
+                except TokenError as e:
+                    msg, (line, col) = e.args
+                    logger.debug('Minify failed')
+                    logger.exception(e)
+                    message = _("Problem with script")
+                    information = _("{} [{}:{}]").format(msg, line, col)
+                    self.view.show_message(message, information, 'Warning')
+                    return
+                saved = orginal - len(mangled)
+                percent = saved / orginal * 100
+                logger.debug('Script minified, {} bytes ({:.2f}%) saved:'
+                             .format(saved, percent))
+                logger.debug(mangled)
+                python_script = mangled
+                if len(python_script) >= 8192:
+                    information = _("Our minifier tried but your "
+                                    "script is too long!")
+                    self.view.show_message(message, information, 'Warning')
+                    return
+            elif minify and not can_minify:
+                information = _("Your script is too long and the minifier"
+                                " isn't available")
+                self.view.show_message(message, information, 'Warning')
+                return
+            else:
+                information = _("Your script is too long!")
+                self.view.show_message(message, information, 'Warning')
+                return
         # Determine the location of the BBC micro:bit. If it can't be found
         # fall back to asking the user to locate it.
         path_to_microbit = uflash.find_microbit()
@@ -259,11 +294,6 @@ class MicrobitMode(MicroPythonMode):
         logger.debug('Path to micro:bit: {}'.format(path_to_microbit))
         if path_to_microbit and os.path.exists(path_to_microbit):
             logger.debug('Flashing to device.')
-            # Flash the microbit
-            # Check minification status.
-            minify = False
-            if uflash.get_minifier():
-                minify = self.editor.minify
             # Check use of custom runtime.
             rt_hex_path = self.editor.microbit_runtime.strip()
             message = _('Flashing "{}" onto the micro:bit.').format(tab.label)
@@ -275,8 +305,7 @@ class MicrobitMode(MicroPythonMode):
             self.editor.show_status_message(message, 10)
             self.set_buttons(flash=False)
             self.flash_thread = DeviceFlasher([path_to_microbit],
-                                              python_script, minify,
-                                              rt_hex_path)
+                                              python_script, rt_hex_path)
             if sys.platform == 'win32':
                 # Windows blocks on write.
                 self.flash_thread.finished.connect(self.flash_finished)
@@ -397,10 +426,7 @@ class MicrobitMode(MicroPythonMode):
         Add the file system navigator to the UI.
         """
         # Check for micro:bit
-        try:
-            microfs.get_serial()
-        except IOError:
-            # abort
+        if not microfs.find_microbit():
             message = _('Could not find an attached BBC micro:bit.')
             information = _("Please make sure the device is plugged "
                             "into this computer.\n\nThe device must "
@@ -426,8 +452,6 @@ class MicrobitMode(MicroPythonMode):
         """
         Remove the file system navigator from the UI.
         """
-        if self.fs is None:
-            raise RuntimeError("File system not running")
         self.view.remove_filesystem()
         self.file_manager = None
         self.file_manager_thread = None
@@ -440,3 +464,17 @@ class MicrobitMode(MicroPythonMode):
         """
         self.set_buttons(files=True)
         super().on_data_flood()
+
+    def open_file(self, path):
+        """
+        Tries to open a MicroPython hex file with an embedded Python script.
+        """
+        text = None
+        if path.lower().endswith('.hex'):
+            # Try to open the hex and extract the Python script
+            try:
+                with open(path, newline='') as f:
+                    text = uflash.extract_script(f.read())
+            except Exception:
+                return None
+        return text

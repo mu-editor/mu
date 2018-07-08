@@ -28,7 +28,7 @@ from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
 from PyQt5.QtGui import QKeySequence, QStandardItemModel, QStandardItem
 from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
-from mu.interface.dialogs import ModeSelector, AdminDialog
+from mu.interface.dialogs import ModeSelector, AdminDialog, FindReplaceDialog
 from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
                                  DEFAULT_FONT_SIZE, DAY_STYLE, NIGHT_STYLE,
                                  CONTRAST_STYLE)
@@ -225,13 +225,13 @@ class Window(QMainWindow):
         for tab in self.widgets:
             tab.setReadOnly(is_readonly)
 
-    def get_load_path(self, folder):
+    def get_load_path(self, folder, extensions='*'):
         """
         Displays a dialog for selecting a file to load. Returns the selected
         path. Defaults to start in the referenced folder.
         """
         path, _ = QFileDialog.getOpenFileName(self.widget, 'Open file', folder,
-                                              '*.py *.PY *.hex')
+                                              extensions)
         logger.debug('Getting load path: {}'.format(path))
         return path
 
@@ -357,14 +357,21 @@ class Window(QMainWindow):
         """
         Close and clean up the currently open serial link.
         """
-        self.serial.close()
-        self.serial = None
+        if self.serial:
+            self.serial.close()
+            self.serial = None
 
     def add_filesystem(self, home, file_manager):
         """
         Adds the file system pane to the application.
         """
         self.fs_pane = FileSystemPane(home)
+
+        @self.fs_pane.open_file.connect
+        def on_open_file(file):
+            # Bubble the signal up
+            self.open_file.emit(file)
+
         self.fs = QDockWidget(_('Filesystem on micro:bit'))
         self.fs.setWidget(self.fs_pane)
         self.fs.setFeatures(QDockWidget.DockWidgetMovable)
@@ -388,16 +395,17 @@ class Window(QMainWindow):
         self.connect_zoom(self.fs_pane)
         return self.fs_pane
 
-    def add_micropython_repl(self, port, name):
+    def add_micropython_repl(self, port, name, force_interrupt=True):
         """
         Adds a MicroPython based REPL pane to the application.
         """
         if not self.serial:
             self.open_serial_link(port)
-            # Send a Control-B / exit raw mode.
-            self.serial.write(b'\x02')
-            # Send a Control-C / keyboard interrupt.
-            self.serial.write(b'\x03')
+            if force_interrupt:
+                # Send a Control-B / exit raw mode.
+                self.serial.write(b'\x02')
+                # Send a Control-C / keyboard interrupt.
+                self.serial.write(b'\x03')
         repl_pane = MicroPythonREPLPane(serial=self.serial)
         self.data_received.connect(repl_pane.process_bytes)
         self.add_repl(repl_pane, name)
@@ -468,7 +476,8 @@ class Window(QMainWindow):
 
     def add_python3_runner(self, script_name, working_directory,
                            interactive=False, debugger=False,
-                           command_args=None, runner=None, envars=None):
+                           command_args=None, runner=None, envars=None,
+                           python_args=None):
         """
         Display console output for the referenced Python script.
 
@@ -486,8 +495,14 @@ class Window(QMainWindow):
         will be passed as further arguments into the command run in the
         new process.
 
-        If runner is give, this is used as the command to start the Python
+        If runner is given, this is used as the command to start the Python
         process.
+
+        If envars is given, these will become part of the environment context
+        of the new chlid process.
+
+        If python_args is given, these will be passed as arguments to the
+        Python runtime used to launch the child process.
         """
         self.process_runner = PythonProcessPane(self)
         self.runner = QDockWidget(_("Running: {}").format(
@@ -500,7 +515,7 @@ class Window(QMainWindow):
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
         self.process_runner.start_process(script_name, working_directory,
                                           interactive, debugger, command_args,
-                                          envars, runner)
+                                          envars, runner, python_args)
         self.process_runner.setFocus()
         self.process_runner.on_append_text.connect(self.on_stdout_write)
         self.connect_zoom(self.process_runner)
@@ -589,7 +604,7 @@ class Window(QMainWindow):
             self.repl.deleteLater()
             self.repl = None
             if not self.plotter:
-                self.serial = None
+                self.close_serial_link()
 
     def remove_plotter(self):
         """
@@ -601,7 +616,7 @@ class Window(QMainWindow):
             self.plotter.deleteLater()
             self.plotter = None
             if not self.repl:
-                self.serial = None
+                self.close_serial_link()
 
     def remove_python_runner(self):
         """
@@ -645,7 +660,7 @@ class Window(QMainWindow):
 
     def show_admin(self, log, settings):
         """
-        Display the administrivite dialog with referenced content of the log
+        Display the administrative dialog with referenced content of the log
         and settings. Return a dictionary of the settings that may have been
         changed by the admin dialog.
         """
@@ -795,7 +810,7 @@ class Window(QMainWindow):
         mode_select.exec()
         try:
             return mode_select.get_mode()
-        except Exception as ex:
+        except Exception:
             return None
 
     def change_mode(self, mode):
@@ -845,7 +860,7 @@ class Window(QMainWindow):
 
     def open_directory_from_os(self, path):
         """
-        Given the path to a directoy, open the OS's built in filesystem
+        Given the path to a directory, open the OS's built in filesystem
         explorer for that path. Works with Windows, OSX and Linux.
         """
         if sys.platform == 'win32':
@@ -857,6 +872,80 @@ class Window(QMainWindow):
         else:
             # Assume freedesktop.org on unix-y.
             os.system('xdg-open "{}"'.format(path))
+
+    def connect_find_replace(self, handler, shortcut):
+        """
+        Create a keyboard shortcut and associate it with a handler for doing
+        a find and replace.
+        """
+        self.find_replace_shortcut = QShortcut(QKeySequence(shortcut), self)
+        self.find_replace_shortcut.activated.connect(handler)
+
+    def show_find_replace(self, theme, find, replace, global_replace):
+        """
+        Display the find/replace dialog. If the dialog's OK button was clicked
+        return a tuple containing the find term, replace term and global
+        replace flag.
+        """
+        finder = FindReplaceDialog()
+        finder.setup(theme, find, replace, global_replace)
+        if finder.exec():
+            return (finder.find(), finder.replace(), finder.replace_flag())
+
+    def replace_text(self, target_text, replace, global_replace):
+        """
+        Given target_text, replace the first instance after the cursor with
+        "replace". If global_replace is true, replace all instances of
+        "target". Returns the number of times replacement has occurred.
+        """
+        if not self.current_tab:
+            return 0
+        if global_replace:
+            counter = 0
+            found = self.current_tab.findFirst(target_text, True, True,
+                                               False, False, line=0, index=0)
+            if found:
+                counter += 1
+                self.current_tab.replace(replace)
+                while self.current_tab.findNext():
+                    self.current_tab.replace(replace)
+                    counter += 1
+            return counter
+        else:
+            found = self.current_tab.findFirst(target_text, True, True, False,
+                                               True)
+            if found:
+                self.current_tab.replace(replace)
+                return 1
+            else:
+                return 0
+
+    def highlight_text(self, target_text):
+        """
+        Highlight the first match from the current position of the cursor in
+        the current tab for the target_text. Returns True if there's a match.
+        """
+        if self.current_tab:
+            return self.current_tab.findFirst(target_text, True, True, False,
+                                              True)
+        else:
+            return False
+
+    def connect_toggle_comments(self, handler, shortcut):
+        """
+        Create a keyboard shortcut and associate it with a handler for toggling
+        comments on highlighted lines.
+        """
+        self.toggle_comments_shortcut = QShortcut(QKeySequence(shortcut), self)
+        self.toggle_comments_shortcut.activated.connect(handler)
+
+    def toggle_comments(self):
+        """
+        Toggle comments on/off for all selected line in the currently active
+        tab.
+        """
+        if self.current_tab:
+            self.current_tab.toggle_comments()
 
 
 class StatusBar(QStatusBar):

@@ -1,0 +1,33 @@
+Meaningful Title
+================
+
+Decision
+--------
+
+A brief summary of what Mu does given the context of the title.
+
+
+Background
+----------
+
+As many paragraphs as needed to describe the situation that caused this
+decision to be made.
+
+
+Discussion and Implementation
+-----------------------------
+
+As many paragraphs as needed to explain the approach taken and implementation
+thereof.
+
+Implemented via:
+~~~~~~~~~~~~~~~~
+
+* (A list of URLs to GitHub pull requests or Git commits.)
+* https://github.com/mu-editor/mu/pull/390
+
+Discussion in:
+~~~~~~~~~~~~~~
+
+* (A list of URLs to GitHub issues, mailing list discussions etc...)
+* https://github.com/mu-editor/mu/issues/380

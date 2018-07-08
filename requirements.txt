@@ -4,6 +4,7 @@ coverage
 gpiozero
 guizero
 matplotlib
+nudatus
 qscintilla
 qtconsole
 pgzero
@@ -24,4 +25,3 @@ setuptools
 sphinx
 twine
 wheel
-nudatus

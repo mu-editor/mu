@@ -5,6 +5,7 @@ Tests for the debug client.
 import socket
 import pytest
 import json
+import os.path
 import mu.debugger.client
 from unittest import mock
 from PyQt5.QtCore import pyqtBoundSignal
@@ -285,8 +286,9 @@ def test_Debugger_breakpoint_as_tuple():
     """
     db = mu.debugger.client.Debugger('localhost', 1908)
     mock_breakpoint = mock.MagicMock()
+    key = os.path.normcase(os.path.abspath('file.py'))
     db.bp_index = {
-        'file.py': {
+        key: {
             666: mock_breakpoint,
         }
     }
@@ -326,8 +328,9 @@ def test_Debugger_breakpoints():
     """
     db = mu.debugger.client.Debugger('localhost', 1908)
     mock_breakpoint = mock.MagicMock()
+    key = os.path.normcase(os.path.abspath('file.py'))
     db.bp_index = {
-        'file.py': {
+        key: {
             666: mock_breakpoint,
         }
     }
@@ -482,7 +485,7 @@ def test_Debugger_on_breakpoint_create():
         'line': 10,
     }
     db.on_breakpoint_create(**data)
-    bp = db.bp_index['file.py'][10]
+    bp = db.bp_index[os.path.normcase(os.path.abspath('file.py'))][10]
     assert bp.bpnum == 1
     assert bp.filename == 'file.py'
     assert bp.line == 10
@@ -508,7 +511,7 @@ def test_Debugger_on_breakpoint_create_disabled():
         'enabled': False,
     }
     db.on_breakpoint_create(**data)
-    bp = db.bp_index['file.py'][10]
+    bp = db.bp_index[os.path.normcase(os.path.abspath('file.py'))][10]
     assert bp.enabled is False
     db.view.debug_on_breakpoint_disable.assert_called_once_with(bp)
 
@@ -530,7 +533,7 @@ def test_Debugger_on_breakpoint_enable():
     db.on_breakpoint_create(**data)
     db.view.reset_mock()
     db.on_breakpoint_enable(1)
-    bp = db.bp_index['file.py'][10]
+    bp = db.bp_index[os.path.normcase(os.path.abspath('file.py'))][10]
     assert bp.enabled is True
     db.view.debug_on_breakpoint_enable.assert_called_once_with(bp)
 
@@ -545,13 +548,13 @@ def test_Debugger_on_breakpoint_disable():
     db.on_bootstrap([])
     data = {
         'bpnum': 1,
-        'filename': 'file.py',
+        'filename': os.path.normcase(os.path.abspath('file.py')),
         'line': 10,
     }
     db.on_breakpoint_create(**data)
     db.view.reset_mock()
     db.on_breakpoint_disable(1)
-    bp = db.bp_index['file.py'][10]
+    bp = db.bp_index[os.path.normcase(os.path.abspath('file.py'))][10]
     assert bp.enabled is False
     db.view.debug_on_breakpoint_disable.assert_called_once_with(bp)
 
@@ -572,7 +575,7 @@ def test_Debugger_on_breakpoint_ignore():
     db.on_breakpoint_create(**data)
     db.view.reset_mock()
     db.on_breakpoint_ignore(1, 5)
-    bp = db.bp_index['file.py'][10]
+    bp = db.bp_index[os.path.normcase(os.path.abspath('file.py'))][10]
     assert bp.ignore is 5
     db.view.debug_on_breakpoint_ignore.assert_called_once_with(bp, 5)
 
@@ -592,7 +595,7 @@ def test_Debugger_on_breakpoint_clear():
     db.on_breakpoint_create(**data)
     db.view.reset_mock()
     db.on_breakpoint_clear(1)
-    bp = db.bp_index['file.py'][10]
+    bp = db.bp_index[os.path.normcase(os.path.abspath('file.py'))][10]
     db.view.debug_on_breakpoint_clear.assert_called_once_with(bp)
 
 

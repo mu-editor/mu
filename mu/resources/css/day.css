@@ -106,13 +106,11 @@ QStatusBar QLabel {
 
 QMenu {
     border: none;
-    min-width: 100px;
 }
 
 QMenu::item {
     border: none;
     padding: 5px 15px;
-    width: 100%;
 }
 
 QMenu::item:selected {

@@ -219,9 +219,9 @@ def test_AdminDialog_setup_night():
     ad.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
 
 
-def test_LogDisplay_setup_contrast():
+def test_AdminDialog_setup_contrast():
     """
-    Ensure the log display dialog can start with the high contrast theme.
+    Ensure the admin dialog can start with the high contrast theme.
     """
     log = 'this is the contents of a log file'
     settings = {
@@ -234,4 +234,56 @@ def test_LogDisplay_setup_contrast():
     ad.setStyleSheet = mock.MagicMock()
     ad.setup(log, settings, 'contrast')
     ad.setStyleSheet.\
+        assert_called_once_with(mu.interface.themes.CONTRAST_STYLE)
+
+
+def test_FindReplaceDialog_setup():
+    """
+    Ensure the find/replace dialog is setup properly given only the theme
+    as an argument.
+    """
+    frd = mu.interface.dialogs.FindReplaceDialog()
+    frd.setStyleSheet = mock.MagicMock()
+    frd.setup('day')
+    assert frd.find() == ''
+    assert frd.replace() == ''
+    assert frd.replace_flag() is False
+    frd.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
+
+
+def test_FindReplaceDialog_setup_with_args():
+    """
+    Ensure the find/replace dialog is setup properly given only the theme
+    as an argument.
+    """
+    find = 'foo'
+    replace = 'bar'
+    flag = True
+    frd = mu.interface.dialogs.FindReplaceDialog()
+    frd.setStyleSheet = mock.MagicMock()
+    frd.setup('day', find, replace, flag)
+    assert frd.find() == find
+    assert frd.replace() == replace
+    assert frd.replace_flag()
+    frd.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
+
+
+def test_FindReplaceDialog_setup_night():
+    """
+    Ensure the find/replace dialog can start with the night theme.
+    """
+    frd = mu.interface.dialogs.FindReplaceDialog()
+    frd.setStyleSheet = mock.MagicMock()
+    frd.setup('night')
+    frd.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
+
+
+def test_FindReplaceDialog_setup_contrast():
+    """
+    Ensure the find/replace dialog can start with the high contrast theme.
+    """
+    frd = mu.interface.dialogs.FindReplaceDialog()
+    frd.setStyleSheet = mock.MagicMock()
+    frd.setup('contrast')
+    frd.setStyleSheet.\
         assert_called_once_with(mu.interface.themes.CONTRAST_STYLE)
