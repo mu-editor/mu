@@ -38,9 +38,8 @@ before_install:
   - python -c "import sys; print(sys.executable)"
   - python -m pip --version
   - pip --version
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then virtualenv venv; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then virtualenv venv --python=python3; fi
-  - source venv/bin/activate
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then source venv/bin/activate; fi
 
 install:
   # Install Mu dependencies
