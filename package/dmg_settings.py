@@ -40,7 +40,8 @@ def icon_from_app(app_path):
 
 
 # Volume format (see hdiutil create -help)
-format = 'UDBZ'
+#format = 'UDBZ'
+format = 'UDZO'
 
 
 # Volume size
