@@ -369,4 +369,5 @@ class DebugMode(BaseMode):
         Handle when the debugger encounters a named exception with an
         associated value. Currently an unimplemented extra feature.
         """
-        pass
+        self.view.current_tab.reset_debugger_highlight()
+        self.debugger.do_run()

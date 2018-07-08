@@ -691,9 +691,13 @@ def test_debug_on_restart():
 
 def test_debug_on_exception():
     """
-    Should do nothing.
+    Since an exception has been signalled, allow the script to run to the
+    end of life so the error is correctly reported via stdout.
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
     dm = DebugMode(editor, view)
-    assert dm.debug_on_exception(None, None) is None
+    dm.debugger = mock.MagicMock()
+    dm.debug_on_exception("Exception", "Exception information")
+    dm.debugger.do_run.assert_called_once_with()
+    assert view.current_tab.reset_debugger_highlight.call_count == 1
