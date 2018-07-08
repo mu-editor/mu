@@ -157,5 +157,78 @@ QPushButton:hover {
 }
 
 QPushButton:pressed {
-    background: #eeeeee;            /* Border */
+    background: #c4c4c4;            /* Border */
+}
+
+QAbstractScrollArea::corner {
+    border-top: 1px solid #c4c4c4;    /* Border */
+    border-left: 1px solid #c4c4c4;   /* Border */
+}
+
+QScrollBar, QAbstractScrollArea::corner {
+    background: #EEE;                 /* Background */
+}
+
+QScrollBar:horizontal {
+    height: 21px;
+    border-top: 1px solid #c4c4c4; /* Border */
+    margin: 0px 21px;
+}
+
+QScrollBar:vertical {
+    width: 21px;
+    border-left: 1px solid #c4c4c4; /* Border */
+    margin: 21px 0;
+}
+
+QScrollBar::handle {
+    background: #c4c4c4;             /* Background Tab */
+    border: none;
+    min-width: 21px;
+    min-height: 21px;
+}
+
+QScrollBar::handle:hover {
+    background: #d4d4d4;              /* Hover */
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    width: 20px;
+    height: 20px;
+    background: #eee;                 /* Background */
+    border: none;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::add-line:hover, QScrollBar::sub-line:hover {
+    background: #d4d4d4;               /* Hover */
+}
+
+QScrollBar::sub-line:horizontal {
+    border-top: 1px solid #c4c4c4;    /* Border */
+    border-right: 1px solid #c4c4c4;  /* Border */
+    subcontrol-position: left;
+    image: url(images:scroll-left.png);
+}
+
+QScrollBar::add-line:horizontal, QAbstractScrollArea::corner {
+    border-top: 1px solid #c4c4c4;    /* Border */
+    border-left: 1px solid #c4c4c4;   /* Border */
+    subcontrol-position: right;
+}
+
+QScrollBar::add-line:horizontal {
+    image: url(images:scroll-right.png);
+}
+
+QScrollBar::sub-line:vertical {
+    border-left: 1px solid #c4c4c4;   /* Border */
+    border-bottom: 1px solid #c4c4c4; /* Border */
+    image: url(images:scroll-up.png);
+}
+
+QScrollBar::add-line:vertical {
+    border-left: 1px solid #c4c4c4;   /* Border */
+    border-top: 1px solid #c4c4c4;    /* Border */
+    image: url(images:scroll-down.png);
 }
