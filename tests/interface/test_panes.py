@@ -696,6 +696,14 @@ def test_FileSystemPane_enable():
     fsp.local_fs.setAcceptDrops.assert_called_once_with(True)
 
 
+def test_FileSystemPane_set_theme():
+    """
+    Setting theme doesn't error
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.set_theme('test')
+
+
 def test_FileSystemPane_show_message():
     """
     Ensure the expected message signal is emitted.
@@ -1884,6 +1892,14 @@ def test_PythonProcessPane_zoomOut_min():
         assert mock_zoom.call_count == 0
 
 
+def test_PythonProcessPane_set_theme():
+    """
+    Setting the theme shouldn't do anything
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.set_theme('test')
+
+
 def test_DebugInspector_set_font_size():
     """
     Check the correct stylesheet values are being set.
@@ -1916,6 +1932,14 @@ def test_DebugInspector_zoomOut():
     old_size = di.font().pointSize()
     di.zoomOut(delta=4)
     di.set_font_size.assert_called_once_with(old_size - 4)
+
+
+def test_DebugInspector_set_theme():
+    """
+    Setting the theme shouldn't do anything
+    """
+    di = mu.interface.panes.DebugInspector()
+    di.set_theme('test')
 
 
 def test_PlotterPane_init():

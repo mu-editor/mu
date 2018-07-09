@@ -458,6 +458,7 @@ class Window(QMainWindow):
                                   Qt.RightDockWidgetArea)
         self.addDockWidget(Qt.BottomDockWidgetArea, self.repl)
         self.connect_zoom(self.repl_pane)
+        self.repl_pane.set_theme(self.theme)
         self.repl_pane.setFocus()
 
     def add_plotter(self, plotter_pane, name):
