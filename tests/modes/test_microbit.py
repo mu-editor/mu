@@ -4,6 +4,7 @@ Tests for the micro:bit mode.
 """
 import os
 import os.path
+import pytest
 from mu.logic import HOME_DIRECTORY
 from mu.modes.microbit import MicrobitMode, FileManager, DeviceFlasher
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
