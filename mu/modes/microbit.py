@@ -21,6 +21,7 @@ import os
 import sys
 import os.path
 import logging
+import semver
 from tokenize import TokenError
 from mu.logic import HOME_DIRECTORY
 from mu.contrib import uflash, microfs
@@ -176,9 +177,6 @@ class MicrobitMode(MicroPythonMode):
         (0x0D28, 0x0204),  # micro:bit USB VID, PID
     ]
 
-    user_defined_microbit_path = None
-
-    micropython_version = "0.1.0"
     python_script = ''
 
     def actions(self):
@@ -234,6 +232,7 @@ class MicrobitMode(MicroPythonMode):
         WARNING: This method is getting more complex due to several edge
         cases. Ergo, it's a target for refactoring.
         """
+        user_defined_microbit_path = None
         self.python_script = ''
         logger.info('Preparing to flash script.')
         # The first thing to do is check the script is valid and of the
@@ -300,16 +299,12 @@ class MicrobitMode(MicroPythonMode):
         # Determine the location of the BBC micro:bit. If it can't be found
         # fall back to asking the user to locate it.
         if path_to_microbit is None:
-            # Has the path to the device already been specified?
-            if self.user_defined_microbit_path:
-                path_to_microbit = self.user_defined_microbit_path
-            else:
-                # Ask the user to locate the device.
-                path_to_microbit = self.view.get_microbit_path(HOME_DIRECTORY)
-                # Store the user's specification of the path for future use.
-                self.user_defined_microbit_path = path_to_microbit
-                logger.debug('User defined path to micro:bit: {}'.format(
-                             self.user_defined_microbit_path))
+            # Ask the user to locate the device.
+            path_to_microbit = self.view.get_microbit_path(HOME_DIRECTORY)
+            # Store the user's specification of the path for future use.
+            user_defined_microbit_path = path_to_microbit
+            logger.debug('User defined path to micro:bit: {}'.format(
+                         user_defined_microbit_path))
         # Check the path and that it exists simply because the path maybe based
         # on stale data.
         if path_to_microbit and os.path.exists(path_to_microbit):
@@ -319,12 +314,24 @@ class MicrobitMode(MicroPythonMode):
             try:
                 version_info = microfs.version()
                 logger.info(version_info)
-                board_version = version_info['version'].split('-', 1)[0]
-                board_version = board_version.replace('micro:bit v', '')
+                board_info = version_info['version'].split()
+                if (board_info[0] == 'micro:bit' and
+                        board_info[1].startswith('v')):
+                    # New style versions, so the correct information will be
+                    # in the "release" field.
+                    board_version = version_info['release']
+                else:
+                    # 0.0.1 indicates an old unknown version. This is just a
+                    # valid arbitrary flag for semver comparison a couple of
+                    # lines below.
+                    board_version = '0.0.1'
                 logger.info('Board MicroPython: {}'.format(board_version))
+                logger.info(
+                    'Mu MicroPython: {}'.format(uflash.MICROPYTHON_VERSION))
                 # If there's an older version of MicroPython on the device,
                 # update it with the one packaged with Mu.
-                if board_version < self.micropython_version:
+                if semver.compare(board_version,
+                                  uflash.MICROPYTHON_VERSION) < 0:
                     force_flash = True
             except Exception:
                 # Could not get version of MicroPython. This means either the
@@ -344,14 +351,14 @@ class MicrobitMode(MicroPythonMode):
                 self.editor.microbit_runtime = ''
             # Check for use of user defined path (to save hex onto local
             # file system.
-            if self.user_defined_microbit_path:
+            if user_defined_microbit_path:
                 force_flash = True
             # If we need to flash the device with a clean hex, do so now.
             if force_flash:
                 logger.info('Flashing new MicroPython runtime onto device')
                 self.editor.show_status_message(message, 10)
                 self.set_buttons(flash=False)
-                if self.user_defined_microbit_path:
+                if user_defined_microbit_path:
                     # The user has provided a path to a location on the
                     # filesystem. In this case save the combined hex/script
                     # in the specified path_to_microbit.
@@ -372,7 +379,7 @@ class MicrobitMode(MicroPythonMode):
                     # Windows blocks on write.
                     self.flash_thread.finished.connect(self.flash_finished)
                 else:
-                    if self.user_defined_microbit_path:
+                    if user_defined_microbit_path:
                         # Call the flash_finished immediately the thread
                         # finishes if Mu is writing the hex file to a user
                         # defined location on the local filesystem.
@@ -393,8 +400,6 @@ class MicrobitMode(MicroPythonMode):
                 except Exception as ex:
                     self.flash_failed(ex)
         else:
-            # Reset user defined path since it's incorrect.
-            self.user_defined_microbit_path = None
             # Try to be helpful... essentially there is nothing Mu can do but
             # prompt for patience while the device is mounted and/or do the
             # classic "have you tried switching it off and on again?" trick.

@@ -8,6 +8,7 @@ import pytest
 from mu.logic import HOME_DIRECTORY
 from mu.modes.microbit import MicrobitMode, FileManager, DeviceFlasher
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
+from mu.contrib import uflash
 from unittest import mock
 from tokenize import TokenError
 
@@ -227,7 +228,7 @@ def test_flash_with_attached_device_has_latest_firmware():
     version_info = {
         'sysname': 'microbit',
         'nodename': 'microbit',
-        'release': '1.0',
+        'release': uflash.MICROPYTHON_VERSION,
         'version': ("micro:bit v0.1.0-b'e10a5ff' on 2018-6-8; MicroPython "
                     "v1.9.2-34-gd64154c73 on 2017-09-01"),
         'machine': 'micro:bit with nRF51822',
@@ -265,7 +266,7 @@ def test_flash_with_attached_device_has_latest_firmware_encounters_problem():
     version_info = {
         'sysname': 'microbit',
         'nodename': 'microbit',
-        'release': '1.0',
+        'release': uflash.MICROPYTHON_VERSION,
         'version': ("micro:bit v0.1.0-b'e10a5ff' on 2018-6-8; MicroPython "
                     "v1.9.2-34-gd64154c73 on 2017-09-01"),
         'machine': 'micro:bit with nRF51822',
@@ -297,6 +298,49 @@ def test_flash_with_attached_device_has_latest_firmware_encounters_problem():
         assert mock_flasher_class.call_count == 0
         mm.copy_main.assert_called_once_with()
         mm.flash_failed.assert_called_once_with(error)
+
+
+def test_flash_with_attached_device_has_old_firmware():
+    """
+    """
+    version_info = {
+        'sysname': 'microbit',
+        'nodename': 'microbit',
+        'release': '1.0',
+        'version': ("v1.9.2-34-gd64154c73 on 2017-09-01"),
+        'machine': 'micro:bit with nRF51822',
+    }
+    mock_flasher = mock.MagicMock()
+    mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
+    with mock.patch('mu.modes.microbit.uflash.find_microbit',
+                    return_value='bar'),\
+            mock.patch('mu.modes.microbit.microfs.find_microbit',
+                       return_value=('bar', '12345')),\
+            mock.patch('mu.modes.microbit.microfs.version',
+                       return_value=version_info),\
+            mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
+            mock.patch('mu.modes.microbit.DeviceFlasher',
+                       mock_flasher_class), \
+            mock.patch('mu.modes.microbit.sys.platform', 'win32'):
+        view = mock.MagicMock()
+        view.current_tab.text = mock.MagicMock(return_value='foo')
+        view.show_message = mock.MagicMock()
+        editor = mock.MagicMock()
+        editor.minify = False
+        editor.microbit_runtime = ''
+        mm = MicrobitMode(editor, view)
+        mm.copy_main = mock.MagicMock()
+        mm.set_buttons = mock.MagicMock()
+        mm.flash()
+        assert mm.flash_thread == mock_flasher
+        assert editor.show_status_message.call_count == 1
+        mm.set_buttons.assert_called_once_with(flash=False)
+        mock_flasher_class.assert_called_once_with(['bar', ], b'', None)
+        mock_flasher.finished.connect.\
+            assert_called_once_with(mm.flash_finished)
+        mock_flasher.on_flash_fail.connect.\
+            assert_called_once_with(mm.flash_failed)
+        mock_flasher.start.assert_called_once_with()
 
 
 def test_flash_force_with_no_micropython():
@@ -469,7 +513,7 @@ def test_force_flash_user_specified_device_path():
     version_info = {
         'sysname': 'microbit',
         'nodename': 'microbit',
-        'release': '1.0',
+        'release': uflash.MICROPYTHON_VERSION,
         'version': ("micro:bit v0.1.0-b'e10a5ff' on 2018-6-8; MicroPython "
                     "v1.9.2-34-gd64154c73 on 2017-09-01"),
         'machine': 'micro:bit with nRF51822',
@@ -498,43 +542,9 @@ def test_force_flash_user_specified_device_path():
         mm.flash()
         home = HOME_DIRECTORY
         view.get_microbit_path.assert_called_once_with(home)
-        assert mm.user_defined_microbit_path == 'bar'
         mock_flasher_class.assert_called_once_with(['bar', ], b'foo', None)
         mock_flasher.finished.connect.\
             assert_called_once_with(mm.flash_finished)
-
-
-def test_flash_existing_user_specified_device_path():
-    """
-    Ensure that if a micro:bit is not automatically found by uflash and the
-    user has previously specified a path to the device, then the hex is saved
-    in the specified location.
-    """
-    mock_flasher = mock.MagicMock()
-    mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
-    with mock.patch('mu.contrib.uflash.find_microbit', return_value=None),\
-            mock.patch('mu.contrib.microfs.find_microbit',
-                       return_value=(None, None)),\
-            mock.patch('mu.logic.os.path.exists', return_value=True),\
-            mock.patch('mu.modes.microbit.DeviceFlasher',
-                       mock_flasher_class), \
-            mock.patch('mu.modes.microbit.sys.platform', 'win32'):
-        view = mock.MagicMock()
-        view.current_tab.text = mock.MagicMock(return_value='foo')
-        view.get_microbit_path = mock.MagicMock(return_value='bar')
-        view.show_message = mock.MagicMock()
-        editor = mock.MagicMock()
-        editor.minify = False
-        editor.microbit_runtime = '/foo/bar'
-        mm = MicrobitMode(editor, view)
-        mm.user_defined_microbit_path = 'baz'
-        mm.flash()
-        assert view.get_microbit_path.call_count == 0
-        assert editor.show_status_message.call_count == 1
-        # The content of the Python script is to be embedded into the resulting
-        # hex file.
-        mock_flasher_class.assert_called_once_with(['baz', ], b'foo',
-                                                   '/foo/bar')
 
 
 def test_flash_path_specified_does_not_exist():
@@ -565,7 +575,6 @@ def test_flash_path_specified_does_not_exist():
                        " the device remains unfound.")
         view.show_message.assert_called_once_with(message, information)
         assert s.call_count == 0
-        assert mm.user_defined_microbit_path is None
 
 
 def test_flash_without_device():
