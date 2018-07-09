@@ -302,6 +302,7 @@ def test_flash_with_attached_device_has_latest_firmware_encounters_problem():
 
 def test_flash_with_attached_device_has_old_firmware():
     """
+    If the device has some unknown old firmware, force flash it.
     """
     version_info = {
         'sysname': 'microbit',
