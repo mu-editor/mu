@@ -176,4 +176,3 @@ def test_FindReplaceDialog_setup_with_args():
     assert frd.find() == find
     assert frd.replace() == replace
     assert frd.replace_flag()
-

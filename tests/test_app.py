@@ -9,6 +9,7 @@ from mu.app import excepthook, run, setup_logging, debug, setup_modes
 from mu.logic import LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
+
 def test_setup_logging():
     """
     Ensure that logging is set up in some way.
@@ -70,13 +71,13 @@ def test_run():
         def connect(self, func):
             self.func = func
             return func
-        
+
         def emit(self, *args):
             self.func(*args)
-    
+
     class Win(mock.MagicMock):
         load_theme = DumSig()
-    
+
     window = Win()
 
     with mock.patch('mu.app.setup_logging') as set_log, \

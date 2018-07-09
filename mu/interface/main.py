@@ -30,8 +30,7 @@ from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
 from mu.interface.dialogs import ModeSelector, AdminDialog, FindReplaceDialog
 from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
-                                 DEFAULT_FONT_SIZE, DAY_STYLE, NIGHT_STYLE,
-                                 CONTRAST_STYLE)
+                                 DEFAULT_FONT_SIZE)
 from mu.interface.panes import (DebugInspector, PythonProcessPane,
                                 JupyterREPLPane, MicroPythonREPLPane,
                                 FileSystemPane, PlotterPane)

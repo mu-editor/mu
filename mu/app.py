@@ -127,6 +127,7 @@ def run():
 
     # Create the "window" we'll be looking at.
     editor_window = Window()
+
     @editor_window.load_theme.connect
     def load_theme(theme):
         if theme == 'contrast':
