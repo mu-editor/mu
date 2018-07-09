@@ -3,7 +3,6 @@
 Tests for the micro:bit mode.
 """
 import os
-import pytest
 import os.path
 from mu.logic import HOME_DIRECTORY
 from mu.modes.microbit import MicrobitMode, FileManager, DeviceFlasher
@@ -844,18 +843,6 @@ def test_add_fs_no_device():
                     return_value=False):
         mm.add_fs()
     assert view.show_message.call_count == 1
-
-
-def test_remove_fs_no_fs():
-    """
-    Removing a non-existent file system raises a RuntimeError.
-    """
-    view = mock.MagicMock()
-    editor = mock.MagicMock()
-    mm = MicrobitMode(editor, view)
-    mm.fs = None
-    with pytest.raises(RuntimeError):
-        mm.remove_fs()
 
 
 def test_remove_fs():

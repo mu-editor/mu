@@ -449,3 +449,59 @@ class EditorPane(QsciScintilla):
             # Highlight matches
             self.reset_search_indicators()
             self.highlight_selected_matches()
+
+    def toggle_line(self, raw_line):
+        """
+        Given a raw_line, will return the toggled version of it.
+        """
+        clean_line = raw_line.strip()
+        if clean_line.startswith('#'):
+            # It's a comment line, so handle "# " & "#..." as fallback:
+            if clean_line.startswith('# '):
+                return raw_line.replace('# ', '')
+            else:
+                return raw_line.replace('#', '')
+        elif clean_line:
+            # It's a normal line of code.
+            return '# ' + raw_line
+        else:
+            # It's a whitespace line, so just return it.
+            return raw_line
+
+    def toggle_comments(self):
+        """
+        Iterate through the selected lines and toggle their comment/uncomment
+        state. So, lines that are not comments become comments and vice versa.
+        """
+        if self.hasSelectedText():
+            # Toggle currently selected text.
+            logger.info("Toggling comments")
+            line_from, index_from, line_to, index_to = self.getSelection()
+            selected_text = self.selectedText()
+            lines = selected_text.split('\n')
+            toggled_lines = []
+            for line in lines:
+                toggled_lines.append(self.toggle_line(line))
+            new_text = '\n'.join(toggled_lines)
+            self.replaceSelectedText(new_text)
+            # Ensure the new text is also selected.
+            last_newline = toggled_lines[-1]
+            last_oldline = lines[-1].strip()
+            if last_newline.startswith('#'):
+                index_to += 2  # A newly commented line starts... "# "
+            elif last_oldline.startswith('#'):
+                # Check the original line to see what has been uncommented.
+                if last_oldline.startswith('# '):
+                    index_to -= 2  # It was "# ".
+                else:
+                    index_to -= 1  # It was "#".
+            self.setSelection(line_from, index_from, line_to, index_to)
+        else:
+            # Toggle the line currently containing the cursor.
+            line_number, column = self.getCursorPosition()
+            logger.info('Toggling line {}'.format(line_number))
+            line_content = self.text(line_number)
+            new_line = self.toggle_line(line_content)
+            self.setSelection(line_number, 0, line_number, len(line_content))
+            self.replaceSelectedText(new_line)
+            self.setSelection(line_number, 0, line_number, len(new_line) - 1)

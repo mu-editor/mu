@@ -48,6 +48,9 @@ class ModeSelector(QDialog):
     Defines a UI for selecting the mode for Mu.
     """
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
     def setup(self, modes, current_mode, theme):
         if theme == 'day':
             self.setStyleSheet(DAY_STYLE)
@@ -168,6 +171,9 @@ class AdminDialog(QDialog):
     Displays administrative related information and settings (logs, environment
     variables etc...).
     """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
     def setup(self, log, settings, theme):
         if theme == 'day':

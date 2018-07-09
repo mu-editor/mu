@@ -406,6 +406,8 @@ class Debugger(QObject):
         """
         The runner has encountered a named exception with an associated value.
         """
+        msg = "Exception encountered in user's code: {} - {}"
+        logger.info(msg.format(name, value))
         self.view.debug_on_exception(name, value)
 
     def on_postmortem(self, *args, **kwargs):

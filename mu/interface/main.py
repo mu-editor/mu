@@ -365,6 +365,12 @@ class Window(QMainWindow):
         Adds the file system pane to the application.
         """
         self.fs_pane = FileSystemPane(home)
+
+        @self.fs_pane.open_file.connect
+        def on_open_file(file):
+            # Bubble the signal up
+            self.open_file.emit(file)
+
         self.fs = QDockWidget(_('Filesystem on micro:bit'))
         self.fs.setWidget(self.fs_pane)
         self.fs.setFeatures(QDockWidget.DockWidgetMovable)
@@ -665,7 +671,7 @@ class Window(QMainWindow):
         and settings. Return a dictionary of the settings that may have been
         changed by the admin dialog.
         """
-        admin_box = AdminDialog()
+        admin_box = AdminDialog(self)
         admin_box.setup(log, settings, theme)
         admin_box.exec()
         return admin_box.settings()
@@ -806,7 +812,7 @@ class Window(QMainWindow):
         """
         Display the mode selector dialog and return the result.
         """
-        mode_select = ModeSelector()
+        mode_select = ModeSelector(self)
         mode_select.setup(modes, current_mode, theme)
         mode_select.exec()
         try:
@@ -931,6 +937,22 @@ class Window(QMainWindow):
                                               True)
         else:
             return False
+
+    def connect_toggle_comments(self, handler, shortcut):
+        """
+        Create a keyboard shortcut and associate it with a handler for toggling
+        comments on highlighted lines.
+        """
+        self.toggle_comments_shortcut = QShortcut(QKeySequence(shortcut), self)
+        self.toggle_comments_shortcut.activated.connect(handler)
+
+    def toggle_comments(self):
+        """
+        Toggle comments on/off for all selected line in the currently active
+        tab.
+        """
+        if self.current_tab:
+            self.current_tab.toggle_comments()
 
 
 class StatusBar(QStatusBar):

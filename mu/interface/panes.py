@@ -25,12 +25,14 @@ import signal
 import string
 import bisect
 import os.path
-from PyQt5.QtCore import Qt, QProcess, QProcessEnvironment, pyqtSignal, QTimer
+from PyQt5.QtCore import (Qt, QProcess, QProcessEnvironment, pyqtSignal,
+                          QTimer, QUrl)
 from collections import deque
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
                              QTreeView)
-from PyQt5.QtGui import QKeySequence, QTextCursor, QCursor, QPainter
+from PyQt5.QtGui import (QKeySequence, QTextCursor, QCursor, QPainter,
+                         QDesktopServices)
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from mu.interface.themes import Font
 from mu.interface.themes import (DEFAULT_FONT_SIZE, NIGHT_STYLE, DAY_STYLE,
@@ -374,6 +376,7 @@ class LocalFileList(MuFileList):
     """
 
     get = pyqtSignal(str, str)
+    open_file = pyqtSignal(str)
 
     def __init__(self, home):
         super().__init__()
@@ -407,6 +410,34 @@ class LocalFileList(MuFileList):
         self.set_message.emit(msg)
         self.list_files.emit()
 
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        local_filename = self.currentItem().text()
+        # Get the file extension
+        ext = os.path.splitext(local_filename)[1].lower()
+        open_internal_action = None
+        # Mu micro:bit mode only handles .py & .hex
+        if ext == '.py' or ext == '.hex':
+            open_internal_action = menu.addAction(_("Open in Mu"))
+        # Open outside Mu (things get meta if Mu is the default application)
+        open_action = menu.addAction(_("Open"))
+        action = menu.exec_(self.mapToGlobal(event.pos()))
+        if action == open_action:
+            # Get the file's path
+            path = os.path.join(self.home, local_filename)
+            logger.info("Opening {}".format(path))
+            msg = _("Opening '{}'").format(local_filename)
+            logger.info(msg)
+            self.set_message.emit(msg)
+            # Let Qt work out how to open it
+            QDesktopServices.openUrl(QUrl.fromLocalFile(path))
+        elif action == open_internal_action:
+            logger.info("Open {} internally".format(local_filename))
+            # Get the file's path
+            path = os.path.join(self.home, local_filename)
+            # Send the signal bubbling up the tree
+            self.open_file.emit(path)
+
 
 class FileSystemPane(QFrame):
     """
@@ -418,6 +449,7 @@ class FileSystemPane(QFrame):
     set_message = pyqtSignal(str)
     set_warning = pyqtSignal(str)
     list_files = pyqtSignal()
+    open_file = pyqtSignal(str)
 
     def __init__(self, home):
         super().__init__()
@@ -425,6 +457,12 @@ class FileSystemPane(QFrame):
         self.font = Font().load()
         microbit_fs = MicrobitFileList(home)
         local_fs = LocalFileList(home)
+
+        @local_fs.open_file.connect
+        def on_open_file(file):
+            # Bubble the signal up
+            self.open_file.emit(file)
+
         layout = QGridLayout()
         self.setLayout(layout)
         microbit_label = QLabel()

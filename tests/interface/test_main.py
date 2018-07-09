@@ -674,6 +674,16 @@ def test_Window_add_filesystem():
     w.connect_zoom.assert_called_once_with(mock_fs)
 
 
+def test_Window_add_filesystem_open_signal():
+    w = mu.interface.main.Window()
+    w.open_file = mock.MagicMock()
+    mock_open_emit = mock.MagicMock()
+    w.open_file.emit = mock_open_emit
+    pane = w.add_filesystem('homepath', mock.MagicMock())
+    pane.open_file.emit('test')
+    mock_open_emit.assert_called_once_with('test')
+
+
 def test_Window_add_micropython_repl():
     """
     Ensure the expected object is instantiated and add_repl is called for a
@@ -1129,7 +1139,7 @@ def test_Window_show_admin():
     with mock.patch('mu.interface.main.AdminDialog', mock_admin_display):
         w = mu.interface.main.Window()
         result = w.show_admin('log', 'envars', 'day')
-        mock_admin_display.assert_called_once_with()
+        mock_admin_display.assert_called_once_with(w)
         mock_admin_box.setup.assert_called_once_with('log', 'envars', 'day')
         mock_admin_box.exec.assert_called_once_with()
         assert result == 'this is the expected result'
@@ -1628,6 +1638,37 @@ def test_Window_highlight_text_no_tab():
     w.tabs = mock.MagicMock()
     w.tabs.currentWidget.return_value = None
     assert w.highlight_text('foo') is False
+
+
+def test_Window_connect_toggle_comments():
+    """
+    Ensure the passed in handler is connected to a shortcut triggered by the
+    shortcut.
+    """
+    window = mu.interface.main.Window()
+    mock_handler = mock.MagicMock()
+    mock_shortcut = mock.MagicMock()
+    mock_sequence = mock.MagicMock()
+    with mock.patch('mu.interface.main.QShortcut', mock_shortcut), \
+            mock.patch('mu.interface.main.QKeySequence', mock_sequence):
+        window.connect_toggle_comments(mock_handler, 'Ctrl+K')
+    mock_sequence.assert_called_once_with('Ctrl+K')
+    ks = mock_sequence('Ctrl+K')
+    mock_shortcut.assert_called_once_with(ks, window)
+    shortcut = mock_shortcut(ks, window)
+    shortcut.activated.connect.assert_called_once_with(mock_handler)
+
+
+def test_Window_toggle_comments():
+    """
+    If there's a current tab, call its toggle_comments method.
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    w.toggle_comments()
+    mock_tab.toggle_comments.assert_called_once_with()
 
 
 def test_StatusBar_init():

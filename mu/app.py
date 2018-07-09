@@ -139,6 +139,7 @@ def run():
     # Connect the various UI elements in the window to the editor.
     editor_window.connect_tab_rename(editor.rename_tab, 'Ctrl+Shift+S')
     editor_window.connect_find_replace(editor.find_replace, 'Ctrl+F')
+    editor_window.connect_find_replace(editor.toggle_comments, 'Ctrl+K')
     status_bar = editor_window.status_bar
     status_bar.connect_logs(editor.show_admin, 'Ctrl+Shift+D')
 
