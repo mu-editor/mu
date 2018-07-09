@@ -177,59 +177,13 @@ list_column_sort_directions = {
 }
 
 # .. License configuration ....................................................
-
-# Text in the license configuration is stored in the resources, which means
-# it gets stored in a legacy Mac encoding according to the language.  dmgbuild
-# will *try* to convert Unicode strings to the appropriate encoding, *but*
-# you should be aware that Python doesn't support all of the necessary
-# encodings; in many cases you will need to encode the text yourself and use
-# byte strings instead here.
-
-# Recognized language names are:
-#
-#  af_ZA, ar, be_BY, bg_BG, bn, bo, br, ca_ES, cs_CZ, cy, da_DK, de_AT, de_CH,
-#  de_DE, dz_BT, el_CY, el_GR, en_AU, en_CA, en_GB, en_IE, en_SG, en_US, eo,
-#  es_419, es_ES, et_EE, fa_IR, fi_FI, fo_FO, fr_001, fr_BE, fr_CA, fr_CH,
-#  fr_FR, ga-Latg_IE, ga_IE, gd, grc, gu_IN, gv, he_IL, hi_IN, hr_HR, hu_HU,
-#  hy_AM, is_IS, it_CH, it_IT, iu_CA, ja_JP, ka_GE, kl, ko_KR, lt_LT, lv_LV,
-#  mk_MK, mr_IN, mt_MT, nb_NO, ne_NP, nl_BE, nl_NL, nn_NO, pa, pl_PL, pt_BR,
-#  pt_PT, ro_RO, ru_RU, se, sk_SK, sl_SI, sr_RS, sv_SE, th_TH, to_TO, tr_TR,
-#  uk_UA, ur_IN, ur_PK, uz_UZ, vi_VN, zh_CN, zh_TW
-
 with open('LICENSE', 'rb') as f:
-   txt = f.read()
+    txt = f.read()
 
 license = {
-   'default-language': 'en_US',
-   'licenses': {
-#        # For each language, the text of the license.  This can be plain text,
-#        # RTF (in which case it must start "{\rtf1"), or a path to a file
-#        # containing the license text.  If you're using RTF,
-#        # watch out for Python escaping (or read it from a file).
-       'en_US': txt,
-   },
-   'buttons': {
-#        # For each language, text for the buttons on the licensing window.
-#        #
-#        # Default buttons and text are built-in for the following languages:
-#        #
-#        #   English (en_US), German (de_DE), Spanish (es_ES), French (fr_FR),
-#        #   Italian (it_IT), Japanese (ja_JP), Dutch (nl_NL), Swedish (sv_SE),
-#        #   Brazilian Portuguese (pt_BR), Simplified Chinese (zh_CN),
-#        #   Traditional Chinese (zh_TW), Danish (da_DK), Finnish (fi_FI),
-#        #   Korean (ko_KR), Norwegian (nb_NO)
-#        #
-#        # You don't need to specify them for those languages; if you fail to
-#        # specify them for some other language, English will be used instead.
-#
-#        'en_US': (
-#            b'English',
-#            b'Agree',
-#            b'Disagree',
-#            b'Print',
-#            b'Save',
-#            b'If you agree with the terms of this license, press "Agree" to '
-#            b'install the software.  If you do not agree, press "Disagree".'
-#        ),
-   },
+    'default-language': 'en_US',
+    'licenses': {
+        'en_US': txt,
+    },
+    'buttons': {},
 }
