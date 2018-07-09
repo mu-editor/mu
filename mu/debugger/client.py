@@ -232,7 +232,7 @@ class Debugger(QObject):
         try:
             if isinstance(breakpoint, tuple):
                 filename, line = breakpoint
-                filename = os.path.abspath(os.path.abspath(filename))
+                filename = os.path.normcase(os.path.abspath(filename))
                 return self.bp_index[filename][line]
             else:
                 return self.bp_list[breakpoint]
