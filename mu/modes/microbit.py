@@ -252,7 +252,7 @@ class MicrobitMode(MicroPythonMode):
         if uflash.get_minifier():
             minify = self.editor.minify
         # Attempt and handle minification.
-        if len(python_script) >= 8192:
+        if len(python_script) >= uflash._MAX_SIZE:
             message = _('Unable to flash "{}"').format(tab.label)
             if minify and can_minify:
                 orginal = len(python_script)
