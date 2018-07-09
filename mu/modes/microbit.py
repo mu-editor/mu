@@ -324,7 +324,14 @@ class MicrobitMode(MicroPythonMode):
                         board_info[1].startswith('v')):
                     # New style versions, so the correct information will be
                     # in the "release" field.
-                    board_version = version_info['release']
+                    try:
+                        # Check the release is a correct semantic version.
+                        semver.parse(version_info['release'])
+                        board_version = version_info['release']
+                    except ValueError:
+                        # If it's an invalid semver, set to unknown version to
+                        # force flash.
+                        board_version = '0.0.1'
                 else:
                     # 0.0.1 indicates an old unknown version. This is just a
                     # valid arbitrary flag for semver comparison a couple of
