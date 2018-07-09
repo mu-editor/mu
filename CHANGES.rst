@@ -1,6 +1,32 @@
 Release History
 ---------------
 
+1.0.0.beta.17
+=============
+
+* Update to the latest version of uflash with the latest version of MicroPython
+  for the BBC micro:bit.
+* Change flashing the BBC micro:bit to become more efficient (based on the
+  copying of files to the boards small "fake" filesystem, rather than
+  re-flashing the whole device in one go).
+* Ensure user agrees to GPL3 license when installing on OSX.
+* Fix Windows "make" file to correctly report errors thanks to Tim Golden.
+* The debugger in Python mode now correctly handles user-generated exceptions.
+* The debugger in Python mode updates the stack when no breakpoints are set.
+* Major update of the OSX based automated build system.
+* Modal dialog boxes should behave better on GTK based desktops thanks to
+  Zander Brown.
+* Right click to access context menu in file panes in micro:bit mode so local
+  files can be opened in Mu.
+* Fix bug where REPL, Files and Plotter buttons got into a bad state on
+  mode change.
+* Update to use PyQt 5.11.
+* On save, check for shadow modules (i.e. user's are not allowed to save
+  code whose filename would override an existing module name).
+* Automatic comment toggling via Ctrl-K shortcut.
+* A simple find and replace diaolog is now available via the Ctrl-F shortcut.
+* Various minor bugs and niggles have been squashed.
+
 1.0.0.beta.16
 =============
 
