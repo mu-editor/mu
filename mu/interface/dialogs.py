@@ -48,6 +48,9 @@ class ModeSelector(QDialog):
     Defines a UI for selecting the mode for Mu.
     """
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
     def setup(self, modes, current_mode, theme):
         if theme == 'day':
             self.setStyleSheet(DAY_STYLE)
@@ -169,6 +172,9 @@ class AdminDialog(QDialog):
     variables etc...).
     """
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
     def setup(self, log, settings, theme):
         if theme == 'day':
             self.setStyleSheet(DAY_STYLE)
@@ -209,3 +215,64 @@ class AdminDialog(QDialog):
             'minify': self.microbit_widget.minify.isChecked(),
             'microbit_runtime': self.microbit_widget.runtime_path.text(),
         }
+
+
+class FindReplaceDialog(QDialog):
+    """
+    Display a dialog for getting:
+
+    * A term to find,
+    * An optional value to replace the search term,
+    * A flag to indicate if the user wishes to replace all.
+    """
+
+    def setup(self, theme, find=None, replace=None, replace_flag=False):
+        if theme == 'day':
+            self.setStyleSheet(DAY_STYLE)
+        elif theme == 'night':
+            self.setStyleSheet(NIGHT_STYLE)
+        else:
+            self.setStyleSheet(CONTRAST_STYLE)
+        self.setMinimumSize(600, 200)
+        self.setWindowTitle(_('Find / Replace'))
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+        # Find.
+        find_label = QLabel(_('Find:'))
+        self.find_term = QLineEdit()
+        self.find_term.setText(find)
+        widget_layout.addWidget(find_label)
+        widget_layout.addWidget(self.find_term)
+        # Replace
+        replace_label = QLabel(_('Replace (optional):'))
+        self.replace_term = QLineEdit()
+        self.replace_term.setText(replace)
+        widget_layout.addWidget(replace_label)
+        widget_layout.addWidget(self.replace_term)
+        # Global replace.
+        self.replace_all_flag = QCheckBox(_('Replace all?'))
+        self.replace_all_flag.setChecked(replace_flag)
+        widget_layout.addWidget(self.replace_all_flag)
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok |
+                                      QDialogButtonBox.Cancel)
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+        widget_layout.addWidget(button_box)
+
+    def find(self):
+        """
+        Return the value the user entered to find.
+        """
+        return self.find_term.text()
+
+    def replace(self):
+        """
+        Return the value the user entered for replace.
+        """
+        return self.replace_term.text()
+
+    def replace_flag(self):
+        """
+        Return the value of the global replace flag.
+        """
+        return self.replace_all_flag.isChecked()

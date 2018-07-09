@@ -168,24 +168,28 @@ class DebugMode(BaseMode):
         """
         Button clicked to continue running the script.
         """
+        self.view.current_tab.reset_debugger_highlight()
         self.debugger.do_run()
 
     def button_step_over(self, event):
         """
         Button clicked to step over the current line of code.
         """
+        self.view.current_tab.reset_debugger_highlight()
         self.debugger.do_next()
 
     def button_step_in(self, event):
         """
         Button clicked to step into the current block of code.
         """
+        self.view.current_tab.reset_debugger_highlight()
         self.debugger.do_step()
 
     def button_step_out(self, event):
         """
         Button clicked to step out of the current block of code.
         """
+        self.view.current_tab.reset_debugger_highlight()
         self.debugger.do_return()
 
     def toggle_breakpoint(self, line, tab):
@@ -252,7 +256,8 @@ class DebugMode(BaseMode):
         Handle when a breakpoint is enabled.
         """
         tab = self.view.current_tab
-        if not tab.markersAtLine(breakpoint.line - 1):
+        if tab.path == breakpoint.filename and \
+                not tab.markersAtLine(breakpoint.line - 1):
             tab.markerAdd(breakpoint.line - 1, tab.BREAKPOINT_MARKER)
 
     def debug_on_breakpoint_disable(self, breakpoint):
@@ -362,6 +367,8 @@ class DebugMode(BaseMode):
     def debug_on_exception(self, name, value):
         """
         Handle when the debugger encounters a named exception with an
-        associated value. Currently an unimplemented extra feature.
+        associated value. Clear the highlighted line and allow the script to
+        run until the end so the error message is printed to stdout.
         """
-        pass
+        self.view.current_tab.reset_debugger_highlight()
+        self.debugger.do_run()

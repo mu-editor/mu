@@ -43,6 +43,14 @@ Release History
 * Fix problem in OSX with the ``mount`` command when detecting Circuit Python
   boards. Thanks to Frank Morton for finding and fixing this.
 * Add data flood avoidance to the plotter.
+* OSX automated packaging. Thanks to Russell Keith-Magee and the team at
+  BeeWare for their invaluable help with this problematic task.
+* Refactoring and bug fixing of the visual debugger's user interface. Thank you
+  to Martin O'Hanlon and Carlos Pereira Atencio for their invaluable bug
+  reports and testing.
+* Various fixes to the way the UI and themes are displayed (crisper icons on
+  HiDPI displays and various other fixes). Thanks to Steve Stagg for putting
+  lipstick on the pig. ;-)
 * A huge number of minor bug fixes, UI clean-ups and simplifications.
 
 1.0.0.beta.15

@@ -28,7 +28,7 @@ from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
 from PyQt5.QtGui import QKeySequence, QStandardItemModel, QStandardItem
 from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
-from mu.interface.dialogs import ModeSelector, AdminDialog
+from mu.interface.dialogs import ModeSelector, AdminDialog, FindReplaceDialog
 from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
                                  DEFAULT_FONT_SIZE, DAY_STYLE, NIGHT_STYLE,
                                  CONTRAST_STYLE)
@@ -365,6 +365,12 @@ class Window(QMainWindow):
         Adds the file system pane to the application.
         """
         self.fs_pane = FileSystemPane(home)
+
+        @self.fs_pane.open_file.connect
+        def on_open_file(file):
+            # Bubble the signal up
+            self.open_file.emit(file)
+
         self.fs = QDockWidget(_('Filesystem on micro:bit'))
         self.fs.setWidget(self.fs_pane)
         self.fs.setFeatures(QDockWidget.DockWidgetMovable)
@@ -665,7 +671,7 @@ class Window(QMainWindow):
         and settings. Return a dictionary of the settings that may have been
         changed by the admin dialog.
         """
-        admin_box = AdminDialog()
+        admin_box = AdminDialog(self)
         admin_box.setup(log, settings, theme)
         admin_box.exec()
         return admin_box.settings()
@@ -806,7 +812,7 @@ class Window(QMainWindow):
         """
         Display the mode selector dialog and return the result.
         """
-        mode_select = ModeSelector()
+        mode_select = ModeSelector(self)
         mode_select.setup(modes, current_mode, theme)
         mode_select.exec()
         try:
@@ -873,6 +879,80 @@ class Window(QMainWindow):
         else:
             # Assume freedesktop.org on unix-y.
             os.system('xdg-open "{}"'.format(path))
+
+    def connect_find_replace(self, handler, shortcut):
+        """
+        Create a keyboard shortcut and associate it with a handler for doing
+        a find and replace.
+        """
+        self.find_replace_shortcut = QShortcut(QKeySequence(shortcut), self)
+        self.find_replace_shortcut.activated.connect(handler)
+
+    def show_find_replace(self, theme, find, replace, global_replace):
+        """
+        Display the find/replace dialog. If the dialog's OK button was clicked
+        return a tuple containing the find term, replace term and global
+        replace flag.
+        """
+        finder = FindReplaceDialog()
+        finder.setup(theme, find, replace, global_replace)
+        if finder.exec():
+            return (finder.find(), finder.replace(), finder.replace_flag())
+
+    def replace_text(self, target_text, replace, global_replace):
+        """
+        Given target_text, replace the first instance after the cursor with
+        "replace". If global_replace is true, replace all instances of
+        "target". Returns the number of times replacement has occurred.
+        """
+        if not self.current_tab:
+            return 0
+        if global_replace:
+            counter = 0
+            found = self.current_tab.findFirst(target_text, True, True,
+                                               False, False, line=0, index=0)
+            if found:
+                counter += 1
+                self.current_tab.replace(replace)
+                while self.current_tab.findNext():
+                    self.current_tab.replace(replace)
+                    counter += 1
+            return counter
+        else:
+            found = self.current_tab.findFirst(target_text, True, True, False,
+                                               True)
+            if found:
+                self.current_tab.replace(replace)
+                return 1
+            else:
+                return 0
+
+    def highlight_text(self, target_text):
+        """
+        Highlight the first match from the current position of the cursor in
+        the current tab for the target_text. Returns True if there's a match.
+        """
+        if self.current_tab:
+            return self.current_tab.findFirst(target_text, True, True, False,
+                                              True)
+        else:
+            return False
+
+    def connect_toggle_comments(self, handler, shortcut):
+        """
+        Create a keyboard shortcut and associate it with a handler for toggling
+        comments on highlighted lines.
+        """
+        self.toggle_comments_shortcut = QShortcut(QKeySequence(shortcut), self)
+        self.toggle_comments_shortcut.activated.connect(handler)
+
+    def toggle_comments(self):
+        """
+        Toggle comments on/off for all selected line in the currently active
+        tab.
+        """
+        if self.current_tab:
+            self.current_tab.toggle_comments()
 
 
 class StatusBar(QStatusBar):

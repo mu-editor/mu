@@ -108,6 +108,10 @@ class Debugger(bdb.Bdb):
         self.quitting = None
         self.botframe = None
         self.stopframe = None
+        # A flag to indicate that set_trace was called once, instead of
+        # set_continue, in the absence of breakpoints at script start. The
+        # flag indicates that continue means set_continue from now on.
+        self.continue_flag = False
 
     def output(self, event, **data):
         """
@@ -407,13 +411,16 @@ class Debugger(bdb.Bdb):
 
     def do_continue(self):
         """
-        Stop only at breakpoints or when finished. If there are no breakpoints,
-        set the system trace function to None.
+        Stop only at breakpoints or when finished. If there are no breakpoints
+        on script start, do a set_trace to stop at the first available line.
+        However, use the continue_flag to ensure set_continue is always called
+        thereafter.
         """
-        if self.get_all_breaks():
+        if self.continue_flag or self.get_all_breaks():
             self.set_continue()
         else:
-            self.set_trace()
+            self.set_step()
+            self.continue_flag = True
         return True
 
     def do_quit(self):
