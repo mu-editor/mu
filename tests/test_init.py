@@ -3,6 +3,7 @@
 Tests for the module __init__ file.
 """
 import os
+import sys
 import importlib
 from unittest import mock
 
@@ -14,6 +15,9 @@ def test_gettext_translation():
     Test the right translation is set based on the LC_ALL environmental
     variable.
     """
+    if sys.platform == 'win32':
+        # Unix only test.
+        return
     old_lc_all = os.environ.get('LC_ALL', None)
     os.environ['LC_ALL'] = 'es_ES.UTF-8'
 

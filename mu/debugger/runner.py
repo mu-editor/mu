@@ -419,7 +419,7 @@ class Debugger(bdb.Bdb):
         if self.continue_flag or self.get_all_breaks():
             self.set_continue()
         else:
-            self.set_trace()
+            self.set_step()
             self.continue_flag = True
         return True
 
