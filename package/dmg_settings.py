@@ -196,19 +196,19 @@ list_column_sort_directions = {
 #  pt_PT, ro_RO, ru_RU, se, sk_SK, sl_SI, sr_RS, sv_SE, th_TH, to_TO, tr_TR,
 #  uk_UA, ur_IN, ur_PK, uz_UZ, vi_VN, zh_CN, zh_TW
 
-# with open('LICENSE', 'rb') as f:
-#    txt = f.read()
+with open('LICENSE', 'rb') as f:
+   txt = f.read()
 
-# license = {
-#    'default-language': 'en_US',
-#    'licenses': {
+license = {
+   'default-language': 'en_US',
+   'licenses': {
 #        # For each language, the text of the license.  This can be plain text,
 #        # RTF (in which case it must start "{\rtf1"), or a path to a file
 #        # containing the license text.  If you're using RTF,
 #        # watch out for Python escaping (or read it from a file).
-#        'English': txt,
-#    },
-#    'buttons': {
+       'en_US': txt,
+   },
+   'buttons': {
 #        # For each language, text for the buttons on the licensing window.
 #        #
 #        # Default buttons and text are built-in for the following languages:
@@ -231,5 +231,5 @@ list_column_sort_directions = {
 #            b'If you agree with the terms of this license, press "Agree" to '
 #            b'install the software.  If you do not agree, press "Disagree".'
 #        ),
-#    },
-# }
+   },
+}
