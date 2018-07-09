@@ -36,6 +36,7 @@ from mu.resources import load_pixmap, load_icon
 from mu.modes import (PythonMode, AdafruitMode, MicrobitMode, DebugMode,
                       PyGameZeroMode)
 from mu.debugger.runner import run as run_debugger
+from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
 
 def setup_logging():
@@ -126,6 +127,16 @@ def run():
 
     # Create the "window" we'll be looking at.
     editor_window = Window()
+
+    @editor_window.load_theme.connect
+    def load_theme(theme):
+        if theme == 'contrast':
+            app.setStyleSheet(CONTRAST_STYLE)
+        elif theme == 'night':
+            app.setStyleSheet(NIGHT_STYLE)
+        else:
+            app.setStyleSheet(DAY_STYLE)
+
     # Make sure all windows have the Mu icon as a fallback
     app.setWindowIcon(load_icon(editor_window.icon))
     # Create the "editor" that'll control the "window".

@@ -22,7 +22,6 @@ from PyQt5.QtWidgets import (QVBoxLayout, QListWidget, QLabel, QListWidgetItem,
                              QDialog, QDialogButtonBox, QPlainTextEdit,
                              QTabWidget, QWidget, QCheckBox, QLineEdit)
 from mu.resources import load_icon
-from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
 
 logger = logging.getLogger(__name__)
@@ -51,13 +50,7 @@ class ModeSelector(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def setup(self, modes, current_mode, theme):
-        if theme == 'day':
-            self.setStyleSheet(DAY_STYLE)
-        elif theme == 'night':
-            self.setStyleSheet(NIGHT_STYLE)
-        else:
-            self.setStyleSheet(CONTRAST_STYLE)
+    def setup(self, modes, current_mode):
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_('Select Mode'))
         widget_layout = QVBoxLayout()
@@ -72,8 +65,10 @@ class ModeSelector(QDialog):
         self.mode_list.setIconSize(QSize(48, 48))
         for name, item in modes.items():
             if not item.is_debugger:
-                ModeItem(item.name, item.description, item.icon,
-                         self.mode_list)
+                litem = ModeItem(item.name, item.description, item.icon,
+                                 self.mode_list)
+                if item.icon == current_mode:
+                    self.mode_list.setCurrentItem(litem)
         self.mode_list.sortItems()
         instructions = QLabel(_('Change mode at any time by clicking '
                                 'the "Mode" button containing Mu\'s logo.'))
@@ -175,13 +170,7 @@ class AdminDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def setup(self, log, settings, theme):
-        if theme == 'day':
-            self.setStyleSheet(DAY_STYLE)
-        elif theme == 'night':
-            self.setStyleSheet(NIGHT_STYLE)
-        else:
-            self.setStyleSheet(CONTRAST_STYLE)
+    def setup(self, log, settings):
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_('Mu Administration'))
         widget_layout = QVBoxLayout()
@@ -226,13 +215,10 @@ class FindReplaceDialog(QDialog):
     * A flag to indicate if the user wishes to replace all.
     """
 
-    def setup(self, theme, find=None, replace=None, replace_flag=False):
-        if theme == 'day':
-            self.setStyleSheet(DAY_STYLE)
-        elif theme == 'night':
-            self.setStyleSheet(NIGHT_STYLE)
-        else:
-            self.setStyleSheet(CONTRAST_STYLE)
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def setup(self, find=None, replace=None, replace_flag=False):
         self.setMinimumSize(600, 200)
         self.setWindowTitle(_('Find / Replace'))
         widget_layout = QVBoxLayout()

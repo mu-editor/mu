@@ -7,6 +7,7 @@ import os.path
 from unittest import mock
 from mu.app import excepthook, run, setup_logging, debug, setup_modes
 from mu.logic import LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
+from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
 
 def test_setup_logging():
@@ -61,12 +62,30 @@ def test_run():
     Testing the call_count and mock_calls allows us to measure the expected
     number of instantiations and method calls.
     """
+    class DumSig:
+        def __init__(self):
+            @self.connect
+            def default(*args):
+                raise Exception('No signal handler connected')
+
+        def connect(self, func):
+            self.func = func
+            return func
+
+        def emit(self, *args):
+            self.func(*args)
+
+    class Win(mock.MagicMock):
+        load_theme = DumSig()
+
+    window = Win()
+
     with mock.patch('mu.app.setup_logging') as set_log, \
             mock.patch('mu.app.QApplication') as qa, \
             mock.patch('mu.app.QSplashScreen') as qsp, \
             mock.patch('mu.app.Editor') as ed, \
             mock.patch('mu.app.load_pixmap'), \
-            mock.patch('mu.app.Window') as win, \
+            mock.patch('mu.app.Window', window) as win, \
             mock.patch('mu.app.QTimer') as timer, \
             mock.patch('sys.argv', ['mu']), \
             mock.patch('sys.exit') as ex:
@@ -85,6 +104,12 @@ def test_run():
         assert win.call_count == 1
         assert len(win.mock_calls) == 11
         assert ex.call_count == 1
+        window.load_theme.emit('day')
+        qa.assert_has_calls([mock.call().setStyleSheet(DAY_STYLE)])
+        window.load_theme.emit('night')
+        qa.assert_has_calls([mock.call().setStyleSheet(NIGHT_STYLE)])
+        window.load_theme.emit('contrast')
+        qa.assert_has_calls([mock.call().setStyleSheet(CONTRAST_STYLE)])
 
 
 def test_excepthook():

@@ -264,10 +264,9 @@ def test_Window_select_mode_selected():
     current_mode = 'python'
     with mock.patch('mu.interface.main.ModeSelector', mock_mode_selector):
         w = mu.interface.main.Window()
-        result = w.select_mode(mock_modes, current_mode, 'day')
+        result = w.select_mode(mock_modes, current_mode)
         assert result == 'foo'
-        mock_selector.setup.assert_called_once_with(mock_modes, current_mode,
-                                                    'day')
+        mock_selector.setup.assert_called_once_with(mock_modes, current_mode)
         mock_selector.exec.assert_called_once_with()
 
 
@@ -283,7 +282,7 @@ def test_Window_select_mode_cancelled():
     current_mode = 'python'
     with mock.patch('mu.interface.main.ModeSelector', mock_mode_selector):
         w = mu.interface.main.Window()
-        result = w.select_mode(mock_modes, current_mode, 'day')
+        result = w.select_mode(mock_modes, current_mode)
         assert result is None
 
 
@@ -702,7 +701,7 @@ def test_Window_add_micropython_repl():
     mock_repl_class = mock.MagicMock(return_value=mock_repl)
     with mock.patch('mu.interface.main.MicroPythonREPLPane', mock_repl_class):
         w.add_micropython_repl('COM0', 'Test REPL')
-    mock_repl_class.assert_called_once_with(serial=w.serial, theme=w.theme)
+    mock_repl_class.assert_called_once_with(serial=w.serial)
     w.open_serial_link.assert_called_once_with('COM0')
     assert w.serial.write.call_count == 2
     assert w.serial.write.call_args_list[0][0][0] == b'\x02'
@@ -729,7 +728,7 @@ def test_Window_add_micropython_repl_no_interrupt():
     mock_repl_class = mock.MagicMock(return_value=mock_repl)
     with mock.patch('mu.interface.main.MicroPythonREPLPane', mock_repl_class):
         w.add_micropython_repl('COM0', 'Test REPL', False)
-    mock_repl_class.assert_called_once_with(serial=w.serial, theme=w.theme)
+    mock_repl_class.assert_called_once_with(serial=w.serial)
     w.open_serial_link.assert_called_once_with('COM0')
     assert w.serial.write.call_count == 0
     w.data_received.connect.assert_called_once_with(mock_repl.process_bytes)
@@ -755,7 +754,7 @@ def test_Window_add_micropython_plotter():
     mock_mode = mock.MagicMock()
     with mock.patch('mu.interface.main.PlotterPane', mock_plotter_class):
         w.add_micropython_plotter('COM0', 'MicroPython Plotter', mock_mode)
-    mock_plotter_class.assert_called_once_with(theme=w.theme)
+    mock_plotter_class.assert_called_once_with()
     w.open_serial_link.assert_called_once_with('COM0')
     w.data_received.connect.assert_called_once_with(mock_plotter.process_bytes)
     mock_plotter.data_flood.connect.\
@@ -797,7 +796,7 @@ def test_Window_add_jupyter_repl():
     mock_pane_class = mock.MagicMock(return_value=mock_pane)
     with mock.patch('mu.interface.main.JupyterREPLPane', mock_pane_class):
         w.add_jupyter_repl(mock_kernel_manager, mock_kernel_client)
-    mock_pane_class.assert_called_once_with(theme=w.theme)
+    mock_pane_class.assert_called_once_with()
     assert mock_pane.kernel_manager == mock_kernel_manager
     assert mock_pane.kernel_client == mock_kernel_client
     assert mock_kernel_manager.kernel.gui == 'qt4'
@@ -832,7 +831,6 @@ def test_Window_add_plotter():
     w.theme = mock.MagicMock()
     w.addDockWidget = mock.MagicMock()
     mock_plotter_pane = mock.MagicMock()
-    mock_plotter_pane.setTheme = mock.MagicMock()
     mock_dock = mock.MagicMock()
     mock_dock_class = mock.MagicMock(return_value=mock_dock)
     with mock.patch('mu.interface.main.QDockWidget', mock_dock_class):
@@ -1063,7 +1061,6 @@ def test_Window_set_theme():
     Check the theme is correctly applied to the window.
     """
     w = mu.interface.main.Window()
-    w.setStyleSheet = mock.MagicMock(return_value=None)
     w.tabs = mock.MagicMock()
     w.tabs.count = mock.MagicMock(return_value=2)
     tab1 = mock.MagicMock()
@@ -1083,8 +1080,10 @@ def test_Window_set_theme():
     w.plotter = mock.MagicMock()
     w.plotter_pane = mock.MagicMock()
     w.plotter_pane.set_theme = mock.MagicMock()
+    w.load_theme = mock.MagicMock()
+    w.load_theme.emit = mock.MagicMock()
     w.set_theme('night')
-    assert w.setStyleSheet.call_count == 1
+    w.load_theme.emit.assert_called_once_with('night')
     assert w.theme == 'night'
     tab1.set_theme.assert_called_once_with(mu.interface.themes.NightTheme)
     tab2.set_theme.assert_called_once_with(mu.interface.themes.NightTheme)
@@ -1093,14 +1092,14 @@ def test_Window_set_theme():
                       QIcon)
     w.repl_pane.set_theme.assert_called_once_with('night')
     w.plotter_pane.set_theme.assert_called_once_with('night')
-    w.setStyleSheet.reset_mock()
+    w.load_theme.emit.reset_mock()
     tab1.set_theme.reset_mock()
     tab2.set_theme.reset_mock()
     w.button_bar.slots['theme'].setIcon.reset_mock()
     w.repl_pane.set_theme.reset_mock()
     w.plotter_pane.set_theme.reset_mock()
     w.set_theme('contrast')
-    assert w.setStyleSheet.call_count == 1
+    w.load_theme.emit.assert_called_once_with('contrast')
     assert w.theme == 'contrast'
     tab1.set_theme.assert_called_once_with(mu.interface.themes.ContrastTheme)
     tab2.set_theme.assert_called_once_with(mu.interface.themes.ContrastTheme)
@@ -1109,14 +1108,14 @@ def test_Window_set_theme():
                       QIcon)
     w.repl_pane.set_theme.assert_called_once_with('contrast')
     w.plotter_pane.set_theme.assert_called_once_with('contrast')
-    w.setStyleSheet.reset_mock()
+    w.load_theme.emit.reset_mock()
     tab1.set_theme.reset_mock()
     tab2.set_theme.reset_mock()
     w.button_bar.slots['theme'].setIcon.reset_mock()
     w.repl_pane.set_theme.reset_mock()
     w.plotter_pane.set_theme.reset_mock()
     w.set_theme('day')
-    assert w.setStyleSheet.call_count == 1
+    w.load_theme.emit.assert_called_once_with('day')
     assert w.theme == 'day'
     tab1.set_theme.assert_called_once_with(mu.interface.themes.DayTheme)
     tab2.set_theme.assert_called_once_with(mu.interface.themes.DayTheme)
@@ -1138,9 +1137,9 @@ def test_Window_show_admin():
     mock_admin_display.return_value = mock_admin_box
     with mock.patch('mu.interface.main.AdminDialog', mock_admin_display):
         w = mu.interface.main.Window()
-        result = w.show_admin('log', 'envars', 'day')
+        result = w.show_admin('log', 'envars')
         mock_admin_display.assert_called_once_with(w)
-        mock_admin_box.setup.assert_called_once_with('log', 'envars', 'day')
+        mock_admin_box.setup.assert_called_once_with('log', 'envars')
         mock_admin_box.exec.assert_called_once_with()
         assert result == 'this is the expected result'
 
@@ -1544,8 +1543,8 @@ def test_Window_show_find_replace():
     mock_FRDialog = mock.MagicMock(return_value=mock_dialog)
     mock_FRDialog.exec.return_value = True
     with mock.patch('mu.interface.main.FindReplaceDialog', mock_FRDialog):
-        result = window.show_find_replace('day', '', '', False)
-    mock_dialog.setup.assert_called_once_with('day', '', '', False)
+        result = window.show_find_replace('', '', False)
+    mock_dialog.setup.assert_called_once_with('', '', False)
     assert result == ('foo', 'bar', True)
 
 

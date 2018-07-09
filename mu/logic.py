@@ -1051,8 +1051,7 @@ class Editor:
             'microbit_runtime': self.microbit_runtime,
         }
         with open(LOG_FILE, 'r', encoding='utf8') as logfile:
-            new_settings = self._view.show_admin(logfile.read(), settings,
-                                                 self.theme)
+            new_settings = self._view.show_admin(logfile.read(), settings)
             self.envars = extract_envars(new_settings['envars'])
             self.minify = new_settings['minify']
             runtime = new_settings['microbit_runtime'].strip()
@@ -1075,7 +1074,7 @@ class Editor:
         logger.info('Showing available modes: {}'.format(
             list(self.modes.keys())))
         self.selecting_mode = True  # Flag to stop auto-detection of modes.
-        new_mode = self._view.select_mode(self.modes, self.mode, self.theme)
+        new_mode = self._view.select_mode(self.modes, self.mode)
         self.selecting_mode = False
         if new_mode and new_mode != self.mode:
             logger.info('New mode selected: {}'.format(new_mode))
@@ -1275,8 +1274,7 @@ class Editor:
         If there is, find (and, optionally, replace) then confirm outcome with
         a status message.
         """
-        result = self._view.show_find_replace(self.theme, self.find,
-                                              self.replace,
+        result = self._view.show_find_replace(self.find, self.replace,
                                               self.global_replace)
         if result:
             self.find, self.replace, self.global_replace = result
