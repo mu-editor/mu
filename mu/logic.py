@@ -1138,10 +1138,11 @@ class Editor:
         """
         if self._view.modified:
             # Something has changed, so save it!
-            logger.info('Autosave has detected changes.')
             for tab in self._view.widgets:
                 if tab.path and tab.isModified():
                     self.save_tab_to_file(tab)
+                    logger.info('Autosave detected and saved '
+                                'changes in {}.'.format(tab.path))
 
     def check_usb(self):
         """
