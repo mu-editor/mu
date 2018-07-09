@@ -554,6 +554,7 @@ class Editor:
         self.find = ''
         self.replace = ''
         self.global_replace = False
+        self.selecting_mode = False  # Flag to stop auto-detection of modes.
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
@@ -1073,7 +1074,9 @@ class Editor:
             return
         logger.info('Showing available modes: {}'.format(
             list(self.modes.keys())))
+        self.selecting_mode = True  # Flag to stop auto-detection of modes.
         new_mode = self._view.select_mode(self.modes, self.mode, self.theme)
+        self.selecting_mode = False
         if new_mode and new_mode != self.mode:
             logger.info('New mode selected: {}'.format(new_mode))
             self.change_mode(new_mode)
@@ -1173,7 +1176,10 @@ class Editor:
                 msg = _('Detected new {} device.').format(device_name)
                 self.show_status_message(msg)
                 # Only ask to switch mode if a single device type is connected
-                if len(device_types) == 1 and self.mode != mode_name:
+                # and we're not already trying to select a new mode via the
+                # dialog.
+                if (len(device_types) == 1 and self.mode != mode_name and not
+                        self.selecting_mode):
                     msg_body = _('Would you like to change Mu to the {} '
                                  'mode?').format(device_name)
                     change_confirmation = self._view.show_confirmation(

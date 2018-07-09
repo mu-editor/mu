@@ -621,6 +621,7 @@ def test_editor_init():
         assert e.find == ''
         assert e.replace == ''
         assert e.global_replace is False
+        assert e.selecting_mode is False
         assert mkd.call_count == 1
         assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
 
@@ -2056,6 +2057,30 @@ def test_check_usb_multiple_devices():
     ed.show_status_message.assert_has_calls((expected_mb, expected_cp),
                                             any_order=True)
     view.show_confirmation.assert_not_called()
+    ed.change_mode.assert_not_called()
+
+
+def test_check_usb_when_selecting_mode_is_silent():
+    """
+    Ensure the check_usb doesn't ask to change mode if the user has the mode
+    selection dialog active (indicated by the selecting_mode flag.
+    """
+    view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mode_cp = mock.MagicMock()
+    mode_cp.name = 'CircuitPlayground'
+    mode_cp.find_device.return_value = '/dev/ttyUSB1'
+    ed.modes = {
+        'circuitplayground': mode_cp,
+    }
+    ed.show_status_message = mock.MagicMock()
+    ed.selecting_mode = True
+    ed.check_usb()
+    expected = 'Detected new CircuitPlayground device.'
+    ed.show_status_message.assert_called_with(expected)
+    assert view.show_confirmation.call_count == 0
     ed.change_mode.assert_not_called()
 
 
