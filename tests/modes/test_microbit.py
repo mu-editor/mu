@@ -505,6 +505,46 @@ def test_flash_with_attached_device_and_custom_runtime():
         assert mock_flasher_class.call_count == 1
 
 
+def test_force_flash_empty_script():
+    """
+    If the script to be flashed onto the device is empty, this is a signal to
+    force a full flash of the "vanilla" / empty MicroPython runtime onto the
+    device.
+    """
+    version_info = {
+        'sysname': 'microbit',
+        'nodename': 'microbit',
+        'release': uflash.MICROPYTHON_VERSION,
+        'version': ("micro:bit v0.1.0-b'e10a5ff' on 2018-6-8; MicroPython "
+                    "v1.9.2-34-gd64154c73 on 2017-09-01"),
+        'machine': 'micro:bit with nRF51822',
+    }
+    mock_flasher = mock.MagicMock()
+    mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
+    with mock.patch('mu.contrib.uflash.find_microbit',
+                    return_value='bar'),\
+            mock.patch('mu.contrib.microfs.find_microbit',
+                       return_value=('COM0', '12345')),\
+            mock.patch('mu.contrib.microfs.get_serial'),\
+            mock.patch('mu.contrib.microfs.version',
+                       return_value=version_info),\
+            mock.patch('mu.logic.os.path.exists', return_value=True),\
+            mock.patch('mu.modes.microbit.DeviceFlasher',
+                       mock_flasher_class), \
+            mock.patch('mu.modes.microbit.sys.platform', 'win32'):
+        view = mock.MagicMock()
+        view.current_tab.text = mock.MagicMock(return_value='   ')
+        view.show_message = mock.MagicMock()
+        editor = mock.MagicMock()
+        editor.minify = False
+        editor.microbit_runtime = ''
+        mm = MicrobitMode(editor, view)
+        mm.flash()
+        mock_flasher_class.assert_called_once_with(['bar', ], b'', None)
+        mock_flasher.finished.connect.\
+            assert_called_once_with(mm.flash_finished)
+
+
 def test_force_flash_user_specified_device_path():
     """
     Ensure that if a micro:bit is not automatically found by uflash then it

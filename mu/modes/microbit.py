@@ -309,6 +309,11 @@ class MicrobitMode(MicroPythonMode):
         # on stale data.
         if path_to_microbit and os.path.exists(path_to_microbit):
             force_flash = False  # If set to true, fully flash the device.
+            if not self.python_script.strip():
+                # If the script is empty, this is a signal to simply force a
+                # flash.
+                logger.info("Python script empty. Forcing flash.")
+                force_flash = True
             logger.info("Checking target device.")
             # Get the version of MicroPython on the device.
             try:
@@ -433,7 +438,7 @@ class MicrobitMode(MicroPythonMode):
         If the attribute self.python_script contains any code, copy it onto the
         connected micro:bit as main.py, then restart the board (CTRL-D).
         """
-        if self.python_script:
+        if self.python_script.strip():
             script = self.python_script
             logger.info('Copying main.py onto device')
             commands = [
