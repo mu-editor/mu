@@ -133,6 +133,7 @@ Contents:
    website.rst
    api.rst
    design.rst
+   release.rst
    authors.rst
    changes.rst
    license.rst
