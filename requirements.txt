@@ -20,6 +20,7 @@ pytest
 pytest-cov
 pytest-random-order
 requests
+semver
 scrapy
 setuptools
 sphinx

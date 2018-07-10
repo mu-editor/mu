@@ -30,8 +30,7 @@ from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
 from mu.interface.dialogs import ModeSelector, AdminDialog, FindReplaceDialog
 from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
-                                 DEFAULT_FONT_SIZE, DAY_STYLE, NIGHT_STYLE,
-                                 CONTRAST_STYLE)
+                                 DEFAULT_FONT_SIZE)
 from mu.interface.panes import (DebugInspector, PythonProcessPane,
                                 JupyterREPLPane, MicroPythonREPLPane,
                                 FileSystemPane, PlotterPane)
@@ -189,6 +188,7 @@ class Window(QMainWindow):
     write_to_serial = pyqtSignal(bytes)
     data_received = pyqtSignal(bytes)
     open_file = pyqtSignal(str)
+    load_theme = pyqtSignal(str)
 
     def zoom_in(self):
         """
@@ -365,6 +365,12 @@ class Window(QMainWindow):
         Adds the file system pane to the application.
         """
         self.fs_pane = FileSystemPane(home)
+
+        @self.fs_pane.open_file.connect
+        def on_open_file(file):
+            # Bubble the signal up
+            self.open_file.emit(file)
+
         self.fs = QDockWidget(_('Filesystem on micro:bit'))
         self.fs.setWidget(self.fs_pane)
         self.fs.setFeatures(QDockWidget.DockWidgetMovable)
@@ -399,7 +405,7 @@ class Window(QMainWindow):
                 self.serial.write(b'\x02')
                 # Send a Control-C / keyboard interrupt.
                 self.serial.write(b'\x03')
-        repl_pane = MicroPythonREPLPane(serial=self.serial, theme=self.theme)
+        repl_pane = MicroPythonREPLPane(serial=self.serial)
         self.data_received.connect(repl_pane.process_bytes)
         self.add_repl(repl_pane, name)
 
@@ -409,7 +415,7 @@ class Window(QMainWindow):
         """
         if not self.serial:
             self.open_serial_link(port)
-        plotter_pane = PlotterPane(theme=self.theme)
+        plotter_pane = PlotterPane()
         self.data_received.connect(plotter_pane.process_bytes)
         plotter_pane.data_flood.connect(mode.on_data_flood)
         self.add_plotter(plotter_pane, name)
@@ -421,7 +427,7 @@ class Window(QMainWindow):
         running script are running (but not at the same time), it'll just grab
         data emitted by the REPL or script via data_received.
         """
-        plotter_pane = PlotterPane(theme=self.theme)
+        plotter_pane = PlotterPane()
         self.data_received.connect(plotter_pane.process_bytes)
         plotter_pane.data_flood.connect(mode.on_data_flood)
         self.add_plotter(plotter_pane, _('Python3 data tuple'))
@@ -432,7 +438,7 @@ class Window(QMainWindow):
         """
         kernel_manager.kernel.gui = 'qt4'
         kernel_client.start_channels()
-        ipython_widget = JupyterREPLPane(theme=self.theme)
+        ipython_widget = JupyterREPLPane()
         ipython_widget.kernel_manager = kernel_manager
         ipython_widget.kernel_client = kernel_client
         ipython_widget.on_append_text.connect(self.on_stdout_write)
@@ -639,16 +645,14 @@ class Window(QMainWindow):
         Sets the theme for the REPL and editor tabs.
         """
         self.theme = theme
+        self.load_theme.emit(theme)
         if theme == 'contrast':
-            self.setStyleSheet(CONTRAST_STYLE)
             new_theme = ContrastTheme
             new_icon = 'theme_day'
         elif theme == 'night':
             new_theme = NightTheme
             new_icon = 'theme_contrast'
-            self.setStyleSheet(NIGHT_STYLE)
         else:
-            self.setStyleSheet(DAY_STYLE)
             new_theme = DayTheme
             new_icon = 'theme'
         for widget in self.widgets:
@@ -659,14 +663,14 @@ class Window(QMainWindow):
         if hasattr(self, 'plotter') and self.plotter:
             self.plotter_pane.set_theme(theme)
 
-    def show_admin(self, log, settings, theme):
+    def show_admin(self, log, settings):
         """
         Display the administrative dialog with referenced content of the log
         and settings. Return a dictionary of the settings that may have been
         changed by the admin dialog.
         """
-        admin_box = AdminDialog()
-        admin_box.setup(log, settings, theme)
+        admin_box = AdminDialog(self)
+        admin_box.setup(log, settings)
         admin_box.exec()
         return admin_box.settings()
 
@@ -802,12 +806,12 @@ class Window(QMainWindow):
         size = resizeEvent.size()
         self.button_bar.set_responsive_mode(size.width(), size.height())
 
-    def select_mode(self, modes, current_mode, theme):
+    def select_mode(self, modes, current_mode):
         """
         Display the mode selector dialog and return the result.
         """
-        mode_select = ModeSelector()
-        mode_select.setup(modes, current_mode, theme)
+        mode_select = ModeSelector(self)
+        mode_select.setup(modes, current_mode)
         mode_select.exec()
         try:
             return mode_select.get_mode()
@@ -882,14 +886,14 @@ class Window(QMainWindow):
         self.find_replace_shortcut = QShortcut(QKeySequence(shortcut), self)
         self.find_replace_shortcut.activated.connect(handler)
 
-    def show_find_replace(self, theme, find, replace, global_replace):
+    def show_find_replace(self, find, replace, global_replace):
         """
         Display the find/replace dialog. If the dialog's OK button was clicked
         return a tuple containing the find term, replace term and global
         replace flag.
         """
-        finder = FindReplaceDialog()
-        finder.setup(theme, find, replace, global_replace)
+        finder = FindReplaceDialog(self)
+        finder.setup(find, replace, global_replace)
         if finder.exec():
             return (finder.find(), finder.replace(), finder.replace_flag())
 
@@ -931,6 +935,22 @@ class Window(QMainWindow):
                                               True)
         else:
             return False
+
+    def connect_toggle_comments(self, handler, shortcut):
+        """
+        Create a keyboard shortcut and associate it with a handler for toggling
+        comments on highlighted lines.
+        """
+        self.toggle_comments_shortcut = QShortcut(QKeySequence(shortcut), self)
+        self.toggle_comments_shortcut.activated.connect(handler)
+
+    def toggle_comments(self):
+        """
+        Toggle comments on/off for all selected line in the currently active
+        tab.
+        """
+        if self.current_tab:
+            self.current_tab.toggle_comments()
 
 
 class StatusBar(QStatusBar):

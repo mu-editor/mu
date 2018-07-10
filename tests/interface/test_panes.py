@@ -148,25 +148,6 @@ def test_MicroPythonREPLPane_context_menu_darwin():
     assert mock_qmenu.exec_.call_count == 1
 
 
-def test_MicroPythonREPLPane_set_theme():
-    """
-    Ensure the set_theme toggles as expected.
-    """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
-    rp.setStyleSheet = mock.MagicMock(return_value=None)
-    rp.set_theme('day')
-    rp.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-    rp.setStyleSheet.reset_mock()
-    rp.set_theme('night')
-    rp.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.NIGHT_STYLE)
-    rp.setStyleSheet.reset_mock()
-    rp.set_theme('contrast')
-    rp.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
-
-
 def test_MicroPythonREPLPane_keyPressEvent():
     """
     Ensure key presses in the REPL are handled correctly.
@@ -607,6 +588,58 @@ def test_LocalFileList_on_get():
     lfs.list_files.emit.assert_called_once_with()
 
 
+def test_LocalFileList_contextMenuEvent():
+    """
+    Ensure that the menu displayed when a local file is
+    right-clicked works as expected when activated.
+    """
+    mock_menu = mock.MagicMock()
+    mock_action_first = mock.MagicMock()
+    mock_action_second = mock.MagicMock()
+    mock_menu.addAction.side_effect = [mock_action_first,
+                                       mock_action_second]
+    mock_menu.exec_.return_value = mock_action_first
+    mfs = mu.interface.panes.LocalFileList('homepath')
+    mock_open = mock.MagicMock()
+    mfs.open_file = mock.MagicMock()
+    mfs.open_file.emit = mock_open
+    mock_current = mock.MagicMock()
+    mock_current.text.return_value = 'foo.py'
+    mfs.currentItem = mock.MagicMock(return_value=mock_current)
+    mfs.set_message = mock.MagicMock()
+    mfs.mapToGlobal = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QMenu', return_value=mock_menu):
+        mfs.contextMenuEvent(mock_event)
+    assert mfs.set_message.emit.call_count == 0
+    mock_open.assert_called_once_with(os.path.join('homepath', 'foo.py'))
+
+
+def test_LocalFileList_contextMenuEvent_external():
+    """
+    Ensure that the menu displayed when a local file is
+    right-clicked works as expected when activated.
+    """
+    mock_menu = mock.MagicMock()
+    mock_action = mock.MagicMock()
+    mock_menu.addAction.side_effect = [mock_action, mock.MagicMock()]
+    mock_menu.exec_.return_value = mock_action
+    mfs = mu.interface.panes.LocalFileList('homepath')
+    mock_open = mock.MagicMock()
+    mfs.open_file = mock.MagicMock()
+    mfs.open_file.emit = mock_open
+    mock_current = mock.MagicMock()
+    mock_current.text.return_value = 'foo.qwerty'
+    mfs.currentItem = mock.MagicMock(return_value=mock_current)
+    mfs.set_message = mock.MagicMock()
+    mfs.mapToGlobal = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QMenu', return_value=mock_menu):
+        mfs.contextMenuEvent(mock_event)
+    assert mfs.set_message.emit.call_count == 1
+    assert mock_open.call_count == 0
+
+
 def test_FileSystemPane_init():
     """
     Check things are set up as expected.
@@ -661,6 +694,14 @@ def test_FileSystemPane_enable():
     fsp.local_fs.setDisabled.assert_called_once_with(False)
     fsp.microbit_fs.setAcceptDrops.assert_called_once_with(True)
     fsp.local_fs.setAcceptDrops.assert_called_once_with(True)
+
+
+def test_FileSystemPane_set_theme():
+    """
+    Setting theme doesn't error
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.set_theme('test')
 
 
 def test_FileSystemPane_show_message():
@@ -749,37 +790,6 @@ def test_FileSystem_Pane_on_get_fail():
     assert fsp.show_warning.call_count == 1
 
 
-def test_FileSystemPane_set_theme_day():
-    """
-    Ensures the day theme is set.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.setStyleSheet = mock.MagicMock()
-    fsp.set_theme('day')
-    fsp.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-
-
-def test_FileSystemPane_set_theme_night():
-    """
-    Ensures the night theme is set.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.setStyleSheet = mock.MagicMock()
-    fsp.set_theme('night')
-    fsp.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
-
-
-def test_FileSystemPane_set_theme_contrast():
-    """
-    Ensures the contrast theme is set.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.setStyleSheet = mock.MagicMock()
-    fsp.set_theme('contrast')
-    fsp.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
-
-
 def test_FileSystemPane_set_font_size():
     """
     Ensure the right size is set as the point size and the text based UI child
@@ -808,6 +818,18 @@ def test_FileSystemPane_zoom_in():
     fsp.zoomIn()
     expected = mu.interface.themes.DEFAULT_FONT_SIZE + 2
     fsp.set_font_size.assert_called_once_with(expected)
+
+
+def test_FileSystemPane_open_file():
+    """
+    FileSystemPane should propogate the open_file signal
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.open_file = mock.MagicMock()
+    mock_open_emit = mock.MagicMock()
+    fsp.open_file.emit = mock_open_emit
+    fsp.local_fs.open_file.emit('test')
+    mock_open_emit.assert_called_once_with('test')
 
 
 def test_FileSystemPane_zoom_out():
@@ -878,10 +900,8 @@ def test_JupyterREPLPane_set_theme_day():
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_default_style = mock.MagicMock()
-    jw.setStyleSheet = mock.MagicMock()
     jw.set_theme('day')
     jw.set_default_style.assert_called_once_with()
-    jw.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
 
 
 def test_JupyterREPLPane_set_theme_night():
@@ -890,10 +910,8 @@ def test_JupyterREPLPane_set_theme_night():
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_default_style = mock.MagicMock()
-    jw.setStyleSheet = mock.MagicMock()
     jw.set_theme('night')
     jw.set_default_style.assert_called_once_with(colors='nocolor')
-    jw.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
 
 
 def test_JupyterREPLPane_set_theme_contrast():
@@ -902,11 +920,8 @@ def test_JupyterREPLPane_set_theme_contrast():
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_default_style = mock.MagicMock()
-    jw.setStyleSheet = mock.MagicMock()
     jw.set_theme('contrast')
     jw.set_default_style.assert_called_once_with(colors='nocolor')
-    jw.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
 
 
 def test_JupyterREPLPane_setFocus():
@@ -1877,35 +1892,12 @@ def test_PythonProcessPane_zoomOut_min():
         assert mock_zoom.call_count == 0
 
 
-def test_PythonProcessPane_set_theme_day():
+def test_PythonProcessPane_set_theme():
     """
-    Set the theme to day.
-    """
-    ppp = mu.interface.panes.PythonProcessPane()
-    ppp.setStyleSheet = mock.MagicMock()
-    ppp.set_theme('day')
-    ppp.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-
-
-def test_PythonProcessPane_set_theme_night():
-    """
-    Set the theme to night.
+    Setting the theme shouldn't do anything
     """
     ppp = mu.interface.panes.PythonProcessPane()
-    ppp.setStyleSheet = mock.MagicMock()
-    ppp.set_theme('night')
-    ppp.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
-
-
-def test_PythonProcessPane_set_theme_contrast():
-    """
-    Set the theme to high contrast.
-    """
-    ppp = mu.interface.panes.PythonProcessPane()
-    ppp.setStyleSheet = mock.MagicMock()
-    ppp.set_theme('contrast')
-    ppp.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
+    ppp.set_theme('test')
 
 
 def test_DebugInspector_set_font_size():
@@ -1942,38 +1934,12 @@ def test_DebugInspector_zoomOut():
     di.set_font_size.assert_called_once_with(old_size - 4)
 
 
-def test_DebugInspector_set_theme_day():
+def test_DebugInspector_set_theme():
     """
-    Make sure the theme is correctly set for day.
-    """
-    di = mu.interface.panes.DebugInspector()
-    di.set_default_style = mock.MagicMock()
-    di.setStyleSheet = mock.MagicMock()
-    di.set_theme('day')
-    di.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-
-
-def test_DebugInspector_set_theme_night():
-    """
-    Make sure the theme is correctly set for night.
+    Setting the theme shouldn't do anything
     """
     di = mu.interface.panes.DebugInspector()
-    di.set_default_style = mock.MagicMock()
-    di.setStyleSheet = mock.MagicMock()
-    di.set_theme('night')
-    di.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
-
-
-def test_DebugInspector_set_theme_contrast():
-    """
-    Make sure the theme is correctly set for high contrast.
-    """
-    di = mu.interface.panes.DebugInspector()
-    di.set_default_style = mock.MagicMock()
-    di.setStyleSheet = mock.MagicMock()
-    di.set_theme('contrast')
-    di.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
+    di.set_theme('test')
 
 
 def test_PlotterPane_init():

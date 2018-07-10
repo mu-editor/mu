@@ -41,15 +41,20 @@ For example, 'ufs ls' will list the files on a connected BBC micro:bit.
 """
 
 
+COMMAND_LINE_FLAG = False  # Indicates running from the command line.
+
+
 def find_microbit():
     """
-    Finds the port to which the device is connected.
+    Returns a tuple representation of the port and serial number for a
+    connected micro:bit device. If no device is connected the tuple will be
+    (None, None).
     """
     ports = list_serial_ports()
     for port in ports:
         if "VID:PID=0D28:0204" in port[2].upper():
-            return port[0]
-    return None
+            return (port[0], port.serial_number)
+    return (None, None)
 
 
 def raw_on(serial):
@@ -72,17 +77,20 @@ def raw_on(serial):
     # Flush
     data = serial.read_until(b'raw REPL; CTRL-B to exit\r\n>')
     if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
-        print(data)
+        if COMMAND_LINE_FLAG:
+            print(data)
         raise IOError('Could not enter raw REPL.')
     # Soft Reset with CTRL-D
     serial.write(b'\x04')
     data = serial.read_until(b'soft reboot\r\n')
     if not data.endswith(b'soft reboot\r\n'):
-        print(data)
+        if COMMAND_LINE_FLAG:
+            print(data)
         raise IOError('Could not enter raw REPL.')
     data = serial.read_until(b'raw REPL; CTRL-B to exit\r\n>')
     if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
-        print(data)
+        if COMMAND_LINE_FLAG:
+            print(data)
         raise IOError('Could not enter raw REPL.')
 
 
@@ -98,7 +106,7 @@ def get_serial():
     Detect if a micro:bit is connected and return a serial object to talk to
     it.
     """
-    port = find_microbit()
+    port, serial_number = find_microbit()
     if port is None:
         raise IOError('Could not find micro:bit.')
     return Serial(port, 115200, timeout=1, parity='N')
@@ -259,6 +267,43 @@ def get(filename, target=None, serial=None):
     return True
 
 
+def version(serial=None):
+    """
+    Returns version information for MicroPython running on the connected
+    device.
+
+    If such information is not available or the device is not running
+    MicroPython, raise a ValueError.
+
+    If any other exception is thrown, the device was running MicroPython but
+    there was a problem parsing the output.
+    """
+    try:
+        out, err = execute([
+            'import os',
+            'print(os.uname())',
+        ], serial)
+        if err:
+            raise ValueError(clean_error(err))
+    except ValueError:
+        # Re-raise any errors from stderr raised in the try block.
+        raise
+    except Exception:
+        # Raise a value error to indicate unable to find something on the
+        # microbit that will return parseable information about the version.
+        # It doesn't matter what the error is, we just need to indicate a
+        # failure with the expected ValueError exception.
+        raise ValueError()
+    raw = out.decode('utf-8').strip()
+    raw = raw[1:-1]
+    items = raw.split(', ')
+    result = {}
+    for item in items:
+        key, value = item.split('=')
+        result[key] = value[1:-1]
+    return result
+
+
 def main(argv=None):
     """
     Entry point for the command line tool 'ufs'.
@@ -270,6 +315,8 @@ def main(argv=None):
     if not argv:
         argv = sys.argv[1:]
     try:
+        global COMMAND_LINE_FLAG
+        COMMAND_LINE_FLAG = True
         parser = argparse.ArgumentParser(description=_HELP_TEXT)
         parser.add_argument('command', nargs='?', default=None,
                             help="One of 'ls', 'rm', 'put' or 'get'.")
