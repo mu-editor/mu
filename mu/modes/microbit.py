@@ -177,6 +177,8 @@ class MicrobitMode(MicroPythonMode):
         (0x0D28, 0x0204),  # micro:bit USB VID, PID
     ]
 
+    valid_serial_numbers = [9900, 9901]  # Serial numbers of supported boards.
+
     python_script = ''
 
     def actions(self):
@@ -301,7 +303,6 @@ class MicrobitMode(MicroPythonMode):
         if path_to_microbit is None:
             # Ask the user to locate the device.
             path_to_microbit = self.view.get_microbit_path(HOME_DIRECTORY)
-            # Store the user's specification of the path for future use.
             user_defined_microbit_path = path_to_microbit
             logger.debug('User defined path to micro:bit: {}'.format(
                          user_defined_microbit_path))
@@ -385,8 +386,28 @@ class MicrobitMode(MicroPythonMode):
                     # so just flash the Python hex with no embedded Python
                     # script, since this will be copied over when the
                     # flashing operation has finished.
-                    self.flash_thread = DeviceFlasher([path_to_microbit],
-                                                      b'', rt_hex_path)
+                    model_serial_number = int(serial_number[:4])
+                    if rt_hex_path:
+                        # If the user has specified a bespoke runtime hex file
+                        # assume they know what they're doing and hope for the
+                        # best.
+                        self.flash_thread = DeviceFlasher([path_to_microbit],
+                                                          b'', rt_hex_path)
+                    elif model_serial_number in self.valid_serial_numbers:
+                        # The connected board has a serial number that
+                        # indicates the MicroPython hex bundled with Mu
+                        # supports it. In which case, flash it.
+                        self.flash_thread = DeviceFlasher([path_to_microbit],
+                                                          b'', None)
+                    else:
+                        message = _('Unsupported BBC micro:bit.')
+                        information = _("Your device is newer than this "
+                                        "version of Mu. Please update Mu "
+                                        "to the latest version to support "
+                                        "this device.\n\n"
+                                        "https://codewith.mu/")
+                        self.view.show_message(message, information)
+                        return
                 if sys.platform == 'win32':
                     # Windows blocks on write.
                     self.flash_thread.finished.connect(self.flash_finished)
@@ -463,8 +484,10 @@ class MicrobitMode(MicroPythonMode):
             logger.info((out, err))
             if err:
                 raise IOError(microfs.clean_error(err))
-            # Send CTRL-D for soft restart.
-            serial.write(b'\x04')
+            # Reset the device.
+            serial.write(b'import microbit\r\n')
+            serial.write(b'microbit.reset()\r\n')
+            self.editor.show_status_message(_('Copied code onto micro:bit.'))
         self.python_script = ''
 
     def flash_failed(self, error):

@@ -316,7 +316,7 @@ def test_flash_with_attached_device_has_old_firmware():
     with mock.patch('mu.modes.microbit.uflash.find_microbit',
                     return_value='bar'),\
             mock.patch('mu.modes.microbit.microfs.find_microbit',
-                       return_value=('bar', '12345')),\
+                       return_value=('bar', '990112345')),\
             mock.patch('mu.modes.microbit.microfs.version',
                        return_value=version_info),\
             mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
@@ -380,6 +380,37 @@ def test_flash_force_with_no_micropython():
         mock_flasher.on_flash_fail.connect.\
             assert_called_once_with(mm.flash_failed)
         mock_flasher.start.assert_called_once_with()
+
+
+def test_flash_force_with_unsupported_microbit():
+    """
+    If Mu is supposed to flash the device, but the device is, in fact, not
+    one that's supported by the version of MicroPython built into Mu, then
+    display a warning message to the user.
+    """
+    mock_flasher = mock.MagicMock()
+    mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
+    with mock.patch('mu.modes.microbit.uflash.find_microbit',
+                    return_value='bar'),\
+            mock.patch('mu.modes.microbit.microfs.find_microbit',
+                       return_value=('bar', '1234567890')),\
+            mock.patch('mu.modes.microbit.microfs.version',
+                       side_effect=ValueError('bang')),\
+            mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
+            mock.patch('mu.modes.microbit.DeviceFlasher',
+                       mock_flasher_class), \
+            mock.patch('mu.modes.microbit.sys.platform', 'win32'):
+        view = mock.MagicMock()
+        # Empty file to force flashing.
+        view.current_tab.text = mock.MagicMock(return_value='')
+        view.show_message = mock.MagicMock()
+        editor = mock.MagicMock()
+        editor.microbit_runtime = ''
+        editor.minify = False
+        mm = MicrobitMode(editor, view)
+        mm.set_buttons = mock.MagicMock()
+        mm.flash()
+        assert view.show_message.call_count == 1
 
 
 def test_flash_force_with_attached_device_as_windows():
@@ -448,7 +479,7 @@ def test_flash_forced_with_attached_device_as_not_windows():
     with mock.patch('mu.modes.microbit.uflash.find_microbit',
                     return_value='bar'),\
             mock.patch('mu.modes.microbit.microfs.find_microbit',
-                       return_value=('COM0', '12345')),\
+                       return_value=('COM0', '990112345')),\
             mock.patch('mu.modes.microbit.microfs.version',
                        return_value=version_info),\
             mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
@@ -505,6 +536,46 @@ def test_flash_with_attached_device_and_custom_runtime():
         assert mock_flasher_class.call_count == 1
 
 
+def test_flash_with_attached_known_device_and_forced():
+    """
+    If the runtime must be flashed, and the serial number for the device is
+    supported, then flash the built-in MicroPython runtime.
+    """
+    version_info = {
+        'sysname': 'microbit',
+        'nodename': 'microbit',
+        'release': '1.0.0',
+        'version': ("micro:bit v0.0.9-b'e10a5ff' on 2018-6-8; MicroPython "
+                    "v1.9.2-34-gd64154c73 on 2017-09-01"),
+        'machine': 'micro:bit with nRF51822',
+    }
+    mock_timer = mock.MagicMock()
+    mock_timer_class = mock.MagicMock(return_value=mock_timer)
+    mock_flasher = mock.MagicMock()
+    mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
+    with mock.patch('mu.modes.microbit.uflash.find_microbit',
+                    return_value='bar'),\
+            mock.patch('mu.modes.microbit.microfs.find_microbit',
+                       return_value=('COM0', '990112345')),\
+            mock.patch('mu.modes.microbit.microfs.version',
+                       return_value=version_info),\
+            mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
+            mock.patch('mu.modes.microbit.DeviceFlasher',
+                       mock_flasher_class), \
+            mock.patch('mu.modes.microbit.sys.platform', 'linux'), \
+            mock.patch('mu.modes.microbit.QTimer', mock_timer_class):
+        view = mock.MagicMock()
+        # Trigger force flash with an empty file.
+        view.current_tab.text = mock.MagicMock(return_value='')
+        editor = mock.MagicMock()
+        editor.minify = False
+        editor.microbit_runtime = ''
+        mm = MicrobitMode(editor, view)
+        mm.flash()
+        assert mock_flasher_class.call_count == 1
+        mock_flasher_class.assert_called_once_with(['bar', ], b'', None)
+
+
 def test_force_flash_empty_script():
     """
     If the script to be flashed onto the device is empty, this is a signal to
@@ -524,7 +595,7 @@ def test_force_flash_empty_script():
     with mock.patch('mu.contrib.uflash.find_microbit',
                     return_value='bar'),\
             mock.patch('mu.contrib.microfs.find_microbit',
-                       return_value=('COM0', '12345')),\
+                       return_value=('COM0', '990112345')),\
             mock.patch('mu.contrib.microfs.get_serial'),\
             mock.patch('mu.contrib.microfs.version',
                        return_value=version_info),\
@@ -785,7 +856,9 @@ def test_copy_main_with_python_script():
             "fd.close()",
         ]
         mock_microfs.execute.assert_called_once_with(expected, serial)
-        serial.write.assert_called_once_with(b'\x04')
+        serial.write.call_count == 2
+        assert serial.write.call_args_list[0][0][0] == b'import microbit\r\n'
+        assert serial.write.call_args_list[1][0][0] == b'microbit.reset()\r\n'
         # The script is re-set to empty.
         assert mm.python_script == ''
 
