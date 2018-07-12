@@ -63,6 +63,7 @@ QTabBar::close-button {
     image: url(images:close-tab.png);
     border: none;
     padding: 3px;
+    subcontrol-position: right;
 }
 
 QTabBar::close-button:hover {
@@ -76,6 +77,10 @@ QTabBar::close-button:hover {
 QTabWidget::pane {
     border-top: 1px solid #6b6b6b;
     border-bottom: 1px solid #6b6b6b;
+}
+
+QTabWidget::tab-bar {
+    subcontrol-position: top left;
 }
 
 QsciScintilla {
