@@ -55,7 +55,7 @@ QTabBar::tab::hover, QListWidget::item::hover {
 }
 
 QTabBar::tab::selected {
-    background: #eeeeee; /* Border */
+    background: #e0e0e0;
     padding: 4px 8px;      /* Tab Padding */
     margin: 0;
 }

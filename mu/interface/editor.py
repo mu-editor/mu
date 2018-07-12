@@ -285,7 +285,8 @@ class EditorPane(QsciScintilla):
         Set the line to be highlighted with the DEBUG_INDICATOR.
         """
         self.reset_debugger_highlight()
-        line_length = len(self.text(line))
+        # Calculate the line length & account for \r\n giving ObOE.
+        line_length = len(self.text(line).rstrip())
         self.fillIndicatorRange(line, 0, line, line_length,
                                 self.DEBUG_INDICATOR)
         self.ensureLineVisible(line)
