@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-07-10 22:18+JST\n"
-"PO-Revision-Date: 2018-07-12 05:50+JST\n"
+"POT-Creation-Date: 2018-07-13 04:45+JST\n"
+"PO-Revision-Date: 2018-07-13 05:42+JST\n"
 "Last-Translator: Minoru Inachi\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -72,7 +72,7 @@ msgstr "転送の前に Python コードを縮小しますか？"
 msgid "Override the built-in MicroPython runtime with the following hex file (empty means use the default):"
 msgstr "組込みの MicroPython ランタイムを以下の hex ファイルで上書きする(空であればデフォルトのものを利用):"
 
-#: ./mu/interface/dialogs.py:175 ./mu/interface/main.py:973
+#: ./mu/interface/dialogs.py:175 ./mu/interface/main.py:974
 msgid "Mu Administration"
 msgstr "Mu 管理"
 
@@ -192,55 +192,59 @@ msgstr "Mu を終了します。"
 msgid "Mu {}"
 msgstr ""
 
-#: ./mu/interface/main.py:374
+#: ./mu/interface/main.py:353
+msgid "Cannot connect to device on port {}"
+msgstr "ポート {} でデバイスに接続できません"
+
+#: ./mu/interface/main.py:375
 msgid "Filesystem on micro:bit"
 msgstr "micro:bit のファイルシステム"
 
-#: ./mu/interface/main.py:433
+#: ./mu/interface/main.py:434
 msgid "Python3 data tuple"
 msgstr "Python3 データタプル"
 
-#: ./mu/interface/main.py:445
+#: ./mu/interface/main.py:446
 msgid "Python3 (Jupyter)"
 msgstr ""
 
-#: ./mu/interface/main.py:452
+#: ./mu/interface/main.py:453
 msgid "{} REPL"
 msgstr ""
 
-#: ./mu/interface/main.py:468
+#: ./mu/interface/main.py:469
 msgid "{} Plotter"
 msgstr "{} プロッター"
 
-#: ./mu/interface/main.py:509
+#: ./mu/interface/main.py:510
 msgid "Running: {}"
 msgstr "実行中: {}"
 
-#: ./mu/interface/main.py:533
+#: ./mu/interface/main.py:534
 msgid "Debug Inspector"
 msgstr "デバッグインスペクタ"
 
-#: ./mu/interface/main.py:551
+#: ./mu/interface/main.py:552
 msgid "Name"
 msgstr "名前"
 
-#: ./mu/interface/main.py:551
+#: ./mu/interface/main.py:552
 msgid "Value"
 msgstr "値"
 
-#: ./mu/interface/main.py:568
+#: ./mu/interface/main.py:569
 msgid "(A list of {} items.)"
 msgstr "(項目 {} のリスト。)"
 
-#: ./mu/interface/main.py:580
+#: ./mu/interface/main.py:581
 msgid "(A dict of {} items.)"
 msgstr "(項目 {} の辞書。)"
 
-#: ./mu/interface/main.py:717
+#: ./mu/interface/main.py:718
 msgid "Mu"
 msgstr ""
 
-#: ./mu/interface/main.py:966
+#: ./mu/interface/main.py:967
 msgid "Mu's current mode of behaviour."
 msgstr "Mu の現在の動作モード。"
 
@@ -549,6 +553,16 @@ msgstr "文法エラー。Python はこの行を理解できません。間違�
 msgid "# Write your code here :-)"
 msgstr "# ここにコードを書いてね :-)"
 
+#: ./mu/logic.py:715
+msgid ""
+"The file contains characters Mu expects to be encoded as {0} or as the computer's default encoding {1}, but which are encoded in some other way.\n"
+"\n"
+"If this file was saved in another application, re-save the file via the 'Save as' option and set the encoding to {0}"
+msgstr ""
+"Mu が前提としているファイルエンコーディングは {0} かコンピュータのデフォルトの {1} ですが、他の方法でエンコードされています。"
+"\n"
+"このファイルが別のアプリケーションで保存されたのであれば、「別名で保存」オプションでエンコーディングを {0} を設定して再保存してください。"
+
 #: ./mu/logic.py:731
 msgid "The file \"{}\" is already open."
 msgstr "ファイル \"{}\" は既に開いています。"
@@ -615,6 +629,10 @@ msgstr "すべての文字を変換できませんでした。ファイルの先
 msgid "Saved file: {}"
 msgstr "保存したファイル: {}"
 
+#: ./mu/logic.py:899 ./mu/logic.py:1237
+msgid "You cannot use the filename \"{}\""
+msgstr "ファイル名 \"{}\" は使えません"
+
 #: ./mu/logic.py:901
 msgid "This name is already used by another part of Python. If you use this name, things are likely to break. Please try again with a different filename."
 msgstr "この名前はすでに Python の別のところで使われています。この名前を使うと Python のシステムを壊してしまう可能性があります。別のファイル名でもう一度やり直してください。"
@@ -646,6 +664,10 @@ msgstr "保存していないスクリプトがありますが、アプリケー
 #: ./mu/logic.py:1060
 msgid "Could not find MicroPython runtime."
 msgstr "MicroPython ランタイムが見つかりません。"
+
+#: ./mu/logic.py:1061
+msgid "The micro:bit runtime you specified ('{}') does not exist. Please try again."
+msgstr "指定した micro:bit ランタイムは存在しません。もう一度やり直してください。"
 
 #: ./mu/logic.py:1131
 msgid "Changed to {} mode."
@@ -719,12 +741,12 @@ msgstr "シリアル"
 msgid "Open a serial connection to your device."
 msgstr "デバイスへのシリアル接続を開きます。"
 
-#: ./mu/modes/adafruit.py:72 ./mu/modes/microbit.py:213
+#: ./mu/modes/adafruit.py:72 ./mu/modes/microbit.py:215
 #: ./mu/modes/python3.py:136
 msgid "Plotter"
 msgstr "プロッター"
 
-#: ./mu/modes/adafruit.py:73 ./mu/modes/microbit.py:214
+#: ./mu/modes/adafruit.py:73 ./mu/modes/microbit.py:216
 msgid "Plot incoming REPL data."
 msgstr "REPL 入力のデータをプロットします。"
 
@@ -885,63 +907,81 @@ msgstr ""
 msgid "Write MicroPython for the BBC micro:bit."
 msgstr "BBC micro:bit の MicroPython を編集。"
 
-#: ./mu/modes/microbit.py:190
+#: ./mu/modes/microbit.py:192
 msgid "Flash"
 msgstr "転送"
 
-#: ./mu/modes/microbit.py:191
+#: ./mu/modes/microbit.py:193
 msgid "Flash your code onto the micro:bit."
 msgstr "コードを micro:bit に転送します。"
 
-#: ./mu/modes/microbit.py:197
+#: ./mu/modes/microbit.py:199
 msgid "Files"
 msgstr "ファイル"
 
-#: ./mu/modes/microbit.py:198
+#: ./mu/modes/microbit.py:200
 msgid "Access the file system on the micro:bit."
 msgstr "micro:bit にあるファイルにアクセスします。"
 
-#: ./mu/modes/microbit.py:205
+#: ./mu/modes/microbit.py:206 ./mu/modes/python3.py:127
+msgid "REPL"
+msgstr ""
+
+#: ./mu/modes/microbit.py:207
 msgid "Use the REPL to live-code on the micro:bit."
 msgstr "micro:bit を対話モードで利用します。"
 
-#: ./mu/modes/microbit.py:255
+#: ./mu/modes/microbit.py:257
 msgid "Unable to flash \"{}\""
 msgstr "\"{}\" を転送できません"
 
-#: ./mu/modes/microbit.py:265
+#: ./mu/modes/microbit.py:267
 msgid "Problem with script"
 msgstr "スクリプトに問題があります"
 
-#: ./mu/modes/microbit.py:266
+#: ./mu/modes/microbit.py:268
 msgid "{} [{}:{}]"
 msgstr ""
 
-#: ./mu/modes/microbit.py:276
+#: ./mu/modes/microbit.py:278
 msgid "Our minifier tried but your script is too long!"
 msgstr "縮小しようとしましたが、スクリプトが長すぎます！"
 
-#: ./mu/modes/microbit.py:281
+#: ./mu/modes/microbit.py:283
 msgid "Your script is too long and the minifier isn't available"
 msgstr "スクリプトが長すぎて縮小できません"
 
-#: ./mu/modes/microbit.py:286
+#: ./mu/modes/microbit.py:288
 msgid "Your script is too long!"
 msgstr "スクリプトが長すぎます！"
 
-#: ./mu/modes/microbit.py:357
+#: ./mu/modes/microbit.py:358
 msgid "Flashing \"{}\" onto the micro:bit."
 msgstr "micro:bit に \"{}\" を転送中。"
 
-#: ./mu/modes/microbit.py:359
+#: ./mu/modes/microbit.py:360
 msgid " Runtime: {}"
 msgstr "ランタイム: {}"
 
-#: ./mu/modes/microbit.py:419 ./mu/modes/microbit.py:553
+#: ./mu/modes/microbit.py:403
+msgid "Unsupported BBC micro:bit."
+msgstr "未サポートの BBC micro:bit。"
+
+#: ./mu/modes/microbit.py:404
+msgid ""
+"Your device is newer than this version of Mu. Please update Mu to the latest version to support this device.\n"
+"\n"
+"https://codewith.mu/"
+msgstr ""
+"デバイスがこの Mu のバージョンで扱うには新しすぎます。このデバイスをサポートするために Mu を最新バージョンにアップデートしてください。\n"
+"\n"
+"https://codewith.mu/"
+
+#: ./mu/modes/microbit.py:440 ./mu/modes/microbit.py:576
 msgid "Could not find an attached BBC micro:bit."
 msgstr "BBC micro:bit が繋げられていないようです"
 
-#: ./mu/modes/microbit.py:420
+#: ./mu/modes/microbit.py:441
 msgid "Please ensure you leave enough time for the BBC micro:bit to be attached and configured correctly by your computer. This may take several seconds. Alternatively, try removing and re-attaching the device or saving your work and restarting Mu if the device remains unfound."
 msgstr ""
 "BBC micro:bit を正しく繋げている場合でも、コンピュータがそれを認識するのに十分な時間を"
@@ -949,51 +989,56 @@ msgstr ""
 "されない場合は、デバイス一度取り外して再度繋げるか、スクリプトを保存して "
 "Mu を再起動してみてください。"
 
-#: ./mu/modes/microbit.py:434
+#: ./mu/modes/microbit.py:455
 msgid "Finished flashing."
 msgstr "転送を完了しました。"
 
 #: ./mu/modes/microbit.py:476
+#: ./mu/modes/microbit.py:490
+msgid "Copied code onto micro:bit."
+msgstr "micro:bit にコードをコピーしました。"
+
+#: ./mu/modes/microbit.py:499
 msgid "There was a problem flashing the micro:bit."
 msgstr "micro:bit への転送で問題が発生しました。"
 
-#: ./mu/modes/microbit.py:477
+#: ./mu/modes/microbit.py:500
 msgid "Please do not disconnect the device until flashing has completed. Please check the logs for more information."
 msgstr ""
 "転送が完了するまでデバイスを取り外さないでください。"
 "詳しくは Mu のログを確認してください。"
 
-#: ./mu/modes/microbit.py:498
+#: ./mu/modes/microbit.py:521
 msgid "REPL and file system cannot work at the same time."
 msgstr "REPL とファイルシステムは同時に利用できません。"
 
-#: ./mu/modes/microbit.py:499
+#: ./mu/modes/microbit.py:522
 msgid "The REPL and file system both use the same USB serial connection. Only one can be active at any time. Toggle the file system off and try again."
 msgstr ""
 "REPL とファイルシステムはどちらも USB シリアル接続を利用しますが、有効にできるのは常に"
 "どちらか一方です。ファイルシステムの利用を止めて、もう一度試してください。"
 
-#: ./mu/modes/microbit.py:516
+#: ./mu/modes/microbit.py:539
 msgid "The plotter and file system cannot work at the same time."
 msgstr "プロッターとファイルシステムは同時に利用できません。"
 
-#: ./mu/modes/microbit.py:518
+#: ./mu/modes/microbit.py:541
 msgid "The plotter and file system both use the same USB serial connection. Only one can be active at any time. Toggle the file system off and try again."
 msgstr ""
 "プロッターとファイルシステムはどちらも USB シリアル接続を利用しますが、有効にできるのは常に"
 "どちらか一方です。ファイルシステムの利用を止めて、もう一度試してください。"
 
-#: ./mu/modes/microbit.py:530
+#: ./mu/modes/microbit.py:553
 msgid "File system cannot work at the same time as the REPL or plotter."
 msgstr "ファイルシステムは REPL やプロッターと同時に利用できません。"
 
-#: ./mu/modes/microbit.py:532
+#: ./mu/modes/microbit.py:555
 msgid "The file system and the REPL and plotter use the same USB serial connection. Toggle the REPL and plotter off and try again."
 msgstr ""
 "ファイルシステムと REPL とプロッターは同じ USB シリアル接続を利用します。"
 "REPL とプロッターの利用を止めて、再度試してください。"
 
-#: ./mu/modes/microbit.py:554
+#: ./mu/modes/microbit.py:577
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
