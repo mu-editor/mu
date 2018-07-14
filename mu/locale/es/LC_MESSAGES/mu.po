@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-07-14 20:48+0100\n"
-"PO-Revision-Date: 2018-07-14 22:48+0100\n"
+"PO-Revision-Date: 2018-07-14 22:56+0100\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -214,7 +214,6 @@ msgid "{} REPL"
 msgstr "{} REPL"
 
 #: mu/interface/main.py:469
-#, fuzzy
 msgid "{} Plotter"
 msgstr "{} Trazador"
 
@@ -735,7 +734,6 @@ msgid "Open a serial connection to your device."
 msgstr "Abra una conexión en serie a su dispositivo."
 
 #: mu/modes/adafruit.py:72 mu/modes/microbit.py:215 mu/modes/python3.py:136
-#, fuzzy
 msgid "Plotter"
 msgstr "Trazador"
 
