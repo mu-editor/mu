@@ -576,6 +576,38 @@ def test_flash_with_attached_known_device_and_forced():
         mock_flasher_class.assert_called_once_with(['bar', ], b'', None)
 
 
+def test_force_flash_no_serial_connection():
+    """
+    If Mu cannot establish a serial connection to the micro:bit, BUT the path
+    to the micro:bit on the filesystem is known, then fall back to old-school
+    flashing of hex with script appended to the end.
+    """
+    mock_flasher = mock.MagicMock()
+    mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
+    with mock.patch('mu.contrib.uflash.find_microbit',
+                    return_value='bar'),\
+            mock.patch('mu.contrib.microfs.find_microbit',
+                       side_effect=IOError('bang')),\
+            mock.patch('mu.contrib.microfs.get_serial'),\
+            mock.patch('mu.contrib.microfs.version',
+                       side_effect=IOError('bang')),\
+            mock.patch('mu.logic.os.path.exists', return_value=True),\
+            mock.patch('mu.modes.microbit.DeviceFlasher',
+                       mock_flasher_class), \
+            mock.patch('mu.modes.microbit.sys.platform', 'win32'):
+        view = mock.MagicMock()
+        view.current_tab.text = mock.MagicMock(return_value='foo')
+        view.show_message = mock.MagicMock()
+        editor = mock.MagicMock()
+        editor.minify = False
+        editor.microbit_runtime = ''
+        mm = MicrobitMode(editor, view)
+        mm.flash()
+        mock_flasher_class.assert_called_once_with(['bar', ], b'foo', None)
+        mock_flasher.finished.connect.\
+            assert_called_once_with(mm.flash_finished)
+
+
 def test_force_flash_empty_script():
     """
     If the script to be flashed onto the device is empty, this is a signal to

@@ -294,10 +294,16 @@ class MicrobitMode(MicroPythonMode):
         self.python_script = python_script
         # Next step: find the microbit port and serial number.
         path_to_microbit = uflash.find_microbit()
-        port, serial_number = microfs.find_microbit()
         logger.info('Path to micro:bit: {}'.format(path_to_microbit))
-        logger.info('Serial port: {}'.format(port))
-        logger.info('Device serial number: {}'.format(serial_number))
+        port = None
+        serial_number = None
+        try:
+            port, serial_number = microfs.find_microbit()
+            logger.info('Serial port: {}'.format(port))
+            logger.info('Device serial number: {}'.format(serial_number))
+        except Exception as ex:
+            logger.warning('Unable to make serial connection to micro:bit.')
+            logger.warning(ex)
         # Determine the location of the BBC micro:bit. If it can't be found
         # fall back to asking the user to locate it.
         if path_to_microbit is None:
@@ -310,6 +316,10 @@ class MicrobitMode(MicroPythonMode):
         # on stale data.
         if path_to_microbit and os.path.exists(path_to_microbit):
             force_flash = False  # If set to true, fully flash the device.
+            # If there's no port but there's a path_to_microbit, then we're
+            # probably running on Windows with an old device, so force flash.
+            if not port:
+                force_flash = True
             if not self.python_script.strip():
                 # If the script is empty, this is a signal to simply force a
                 # flash.
@@ -371,14 +381,17 @@ class MicrobitMode(MicroPythonMode):
                 logger.info('Flashing new MicroPython runtime onto device')
                 self.editor.show_status_message(message, 10)
                 self.set_buttons(flash=False)
-                if user_defined_microbit_path:
+                if user_defined_microbit_path or not port:
                     # The user has provided a path to a location on the
                     # filesystem. In this case save the combined hex/script
                     # in the specified path_to_microbit.
+                    # Or... Mu has a path to a micro:bit but can't establish
+                    # a serial connection, so use the combined hex/script
+                    # to flash the device.
                     self.flash_thread = DeviceFlasher([path_to_microbit],
                                                       self.python_script,
                                                       rt_hex_path)
-                    # Reset python_script so Mu does try to copy it as the
+                    # Reset python_script so Mu doesn't try to copy it as the
                     # main.py file.
                     self.python_script = ''
                 else:
