@@ -350,7 +350,8 @@ class Window(QMainWindow):
             self.serial.setBaudRate(115200)
             self.serial.readyRead.connect(self.on_serial_read)
         else:
-            raise IOError("Cannot connect to device on port {}".format(port))
+            msg = _("Cannot connect to device on port {}").format(port)
+            raise IOError(msg)
 
     def close_serial_link(self):
         """

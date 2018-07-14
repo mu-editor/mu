@@ -267,6 +267,24 @@ def test_EditorPane_debugger_at_line():
     ep.ensureLineVisible.assert_called_once_with(99)
 
 
+def test_EditorPane_debugger_at_line_windows_line_endings():
+    """
+    Ensure the right calls are made to highlight the referenced line with the
+    DEBUG_INDICATOR.
+    """
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    ep.text = mock.MagicMock(return_value='baz\r\n')
+    ep.reset_debugger_highlight = mock.MagicMock()
+    ep.fillIndicatorRange = mock.MagicMock()
+    ep.ensureLineVisible = mock.MagicMock()
+    ep.debugger_at_line(99)
+    ep.reset_debugger_highlight.assert_called_once_with()
+    ep.text.assert_called_once_with(99)
+    ep.fillIndicatorRange.assert_called_once_with(99, 0, 99, 3,
+                                                  ep.DEBUG_INDICATOR)
+    ep.ensureLineVisible.assert_called_once_with(99)
+
+
 def test_EditorPane_reset_debugger_highlight():
     """
     Ensure all DEBUG_INDICATORs are removed from the editor.

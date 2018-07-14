@@ -716,8 +716,8 @@ class Editor:
                   "{0} or as the computer's default encoding {1}, but which "
                   "are encoded in some other way.\n\nIf this file was saved "
                   "in another application, re-save the file via the "
-                  "'Save as' option and set the encoding to {0}".
-                  format(ENCODING, locale.getpreferredencoding()))
+                  "'Save as' option and set the encoding to {0}")
+        error = error.format(ENCODING, locale.getpreferredencoding())
         # Does the file even exist?
         if not os.path.isfile(path):
             logger.info('The file {} does not exist.'.format(path))
@@ -897,7 +897,7 @@ class Editor:
             path = self._view.get_save_path(workspace)
             if path and self.check_for_shadow_module(path):
                 message = _('You cannot use the filename '
-                            '"{}"'.format(os.path.basename(path)))
+                            '"{}"').format(os.path.basename(path))
                 info = _('This name is already used by another part of '
                          'Python. If you use this name, things are '
                          'likely to break. Please try again with a '
@@ -1060,7 +1060,7 @@ class Editor:
                 message = _('Could not find MicroPython runtime.')
                 information = _("The micro:bit runtime you specified ('{}') "
                                 "does not exist. "
-                                "Please try again.".format(runtime))
+                                "Please try again.").format(runtime)
                 self._view.show_message(message, information)
             else:
                 self.microbit_runtime = runtime
@@ -1235,7 +1235,7 @@ class Editor:
             if new_path and new_path != tab.path:
                 if self.check_for_shadow_module(new_path):
                     message = _('You cannot use the filename '
-                                '"{}"'.format(os.path.basename(new_path)))
+                                '"{}"').format(os.path.basename(new_path))
                     info = _('This name is already used by another part of '
                              'Python. If you use that name, things are '
                              'likely to break. Please try again with a '
