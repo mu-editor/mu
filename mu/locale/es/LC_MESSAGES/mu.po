@@ -1,12 +1,12 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR ORGANIZATION
+# Translations for the Spanish language.
+# Copyright (c) 2015-2018 Nicholas H.Tollervey and others (see the AUTHORS file).
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-07-10 09:08+0100\n"
-"PO-Revision-Date: 2018-07-10 23:16+0100\n"
+"PO-Revision-Date: 2018-07-14 20:36+0100\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -34,12 +34,12 @@ msgid ""
 "Could not find localhost.\n"
 "Ensure you have '127.0.0.1 localhost' in your /etc/hosts file."
 msgstr ""
-"No se pudo encontrar localhost.\n"
+"No se pudo localizar localhost.\n"
 "Asegúrese de tener '127.0.0.1 localhost' en su archivo /etc/hosts."
 
 #: mu/interface/dialogs.py:55
 msgid "Select Mode"
-msgstr "Selecciona modo"
+msgstr "Selección de modo"
 
 #: mu/interface/dialogs.py:57
 msgid "Please select the desired mode then click \"OK\". Otherwise, click \"Cancel\"."
@@ -91,11 +91,11 @@ msgstr "Configuración de BBC micro:bit"
 
 #: mu/interface/dialogs.py:223
 msgid "Find / Replace"
-msgstr "Encontrar / Reemplazar"
+msgstr "Buscar / Reemplazar"
 
 #: mu/interface/dialogs.py:227
 msgid "Find:"
-msgstr "Encontrar:"
+msgstr "Buscar:"
 
 #: mu/interface/dialogs.py:233
 msgid "Replace (optional):"
@@ -107,7 +107,7 @@ msgstr "¿Reemplazar todo?"
 
 #: mu/interface/editor.py:222 mu/logic.py:960
 msgid "untitled"
-msgstr "intitulado"
+msgstr "sin titulo"
 
 #: mu/interface/main.py:68
 msgid "Mode"
@@ -139,7 +139,7 @@ msgstr "Guardar"
 
 #: mu/interface/main.py:76
 msgid "Save the current Python script."
-msgstr "Guardar el script de Python presente."
+msgstr "Guardar el script de Python actual."
 
 #: mu/interface/main.py:85
 msgid "Zoom-in"
@@ -171,7 +171,7 @@ msgstr "Comprobar"
 
 #: mu/interface/main.py:94
 msgid "Check your code for mistakes."
-msgstr "Comprobar código por errores."
+msgstr "Comprobar errores en el código."
 
 #: mu/interface/main.py:95
 msgid "Help"
@@ -411,13 +411,12 @@ msgid "If you don't know, ask. Nobody to ask? Just look it up."
 msgstr "Si no sabes, pregunta. ¿Nadie para preguntar? Búscalo."
 
 #: mu/logic.py:98
-#, fuzzy
 msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
-msgstr "La complejidad es el enemigo. MSE: ¡mantenlo simple, estúpido!"
+msgstr "La complejidad es el enemigo. KISS - keep it simple, stupid!: (¡mantenlo simple, estúpido!)"
 
 #: mu/logic.py:99
 msgid "Beautiful is better than ugly."
-msgstr "Hermoso es mejor que feo."
+msgstr "Bello es mejor que feo."
 
 #: mu/logic.py:100
 msgid "Explicit is better than implicit."
@@ -433,7 +432,7 @@ msgstr "Plano es mejor que anidado."
 
 #: mu/logic.py:103
 msgid "Sparse is better than dense."
-msgstr "Escaso es mejor que denso."
+msgstr "Disperso es mejor que denso."
 
 #: mu/logic.py:104
 msgid "Readability counts."
@@ -682,7 +681,6 @@ msgid "Replaced {} matches of \"{}\" with \"{}\"."
 msgstr "Remplazadas {} coincidencias de \"{}\" con \"{}\"."
 
 #: mu/logic.py:1295 mu/logic.py:1302
-#, fuzzy
 msgid "Could not find \"{}\"."
 msgstr "No pudo encontrar \"{}\"."
 
@@ -735,7 +733,7 @@ msgid ""
 "\n"
 "...to store your code."
 msgstr ""
-"Los archivos Python para dispositivos Adafruit CircuitPython se almacenan en el dispositivo. Por lo tanto, para editar estos archivos, debe tener el dispositivo conectado. Hasta que no conecte un dispositivo, Mu usará este directorio:\n"
+"Los archivos Python para Adafruit CircuitPython se almacenan en el dispositivo. Por lo tanto, para editar estos archivos, debe tener el dispositivo conectado. Hasta que no conecte uno, Mu usará este directorio:\n"
 "\n"
 "{}\n"
 "\n"
@@ -873,10 +871,9 @@ msgstr "BBC micro:bit"
 
 #: mu/modes/microbit.py:169
 msgid "Write MicroPython for the BBC micro:bit."
-msgstr "Escribe MicroPython para el BBC micro:bit."
+msgstr "Escribe MicroPython para BBC micro:bit."
 
 #: mu/modes/microbit.py:190
-#, fuzzy
 msgid "Flash"
 msgstr "Flash"
 
@@ -938,7 +935,7 @@ msgstr "No se pudo encontrar un BBC micro:bit conectado."
 
 #: mu/modes/microbit.py:420
 msgid "Please ensure you leave enough time for the BBC micro:bit to be attached and configured correctly by your computer. This may take several seconds. Alternatively, try removing and re-attaching the device or saving your work and restarting Mu if the device remains unfound."
-msgstr "Asegúrate de dejar tiempo suficiente para que el BBC micro:bit se conecte y sea configurado correctamente por tu ordenador. Esto puede tomar varios segundos. Alternativamente, si el dispositivo sigue sin descubrirse intenta desconectar y volver a conectar lo o guarda tu trabajo y reiniciar Mu."
+msgstr "Asegúrate de dejar tiempo suficiente para que el BBC micro:bit se conecte y sea configurado correctamente por tu ordenador. Esto puede tomar varios segundos. Alternativamente, si el dispositivo sigue sin descubrirse intenta desconectar y volver a conectarlo, o guarda tu trabajo y reiniciar Mu."
 
 #: mu/modes/microbit.py:434
 msgid "Finished flashing."
@@ -1048,7 +1045,7 @@ msgstr "Python 3"
 
 #: mu/modes/python3.py:98
 msgid "Create code using standard Python 3."
-msgstr "Crear código usando Python 3 estándar."
+msgstr "Crear código usando estándar Python 3."
 
 #: mu/modes/python3.py:113 mu/modes/python3.py:158
 msgid "Run"
