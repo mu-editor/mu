@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-07-10 09:08+0100\n"
-"PO-Revision-Date: 2018-07-14 20:36+0100\n"
+"POT-Creation-Date: 2018-07-14 20:48+0100\n"
+"PO-Revision-Date: 2018-07-14 22:48+0100\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -193,56 +193,60 @@ msgstr "Salir de Mu."
 msgid "Mu {}"
 msgstr "Mu {}"
 
-#: mu/interface/main.py:374
+#: mu/interface/main.py:353
+msgid "Cannot connect to device on port {}"
+msgstr "No se pudo conectar al dispositivo en el puerto {}"
+
+#: mu/interface/main.py:375
 msgid "Filesystem on micro:bit"
 msgstr "Sistema de archivos en micro:bit"
 
-#: mu/interface/main.py:433
+#: mu/interface/main.py:434
 msgid "Python3 data tuple"
 msgstr "Tupla de datos de Python3"
 
-#: mu/interface/main.py:445
+#: mu/interface/main.py:446
 msgid "Python3 (Jupyter)"
 msgstr "Python3 (Jupyter)"
 
-#: mu/interface/main.py:452
+#: mu/interface/main.py:453
 msgid "{} REPL"
 msgstr "{} REPL"
 
-#: mu/interface/main.py:468
+#: mu/interface/main.py:469
 #, fuzzy
 msgid "{} Plotter"
 msgstr "{} Trazador"
 
-#: mu/interface/main.py:509
+#: mu/interface/main.py:510
 msgid "Running: {}"
 msgstr "Ejecutando: {}"
 
-#: mu/interface/main.py:533
+#: mu/interface/main.py:534
 msgid "Debug Inspector"
 msgstr "Inspector de depuración"
 
-#: mu/interface/main.py:551
+#: mu/interface/main.py:552
 msgid "Name"
 msgstr "Nombre"
 
-#: mu/interface/main.py:551
+#: mu/interface/main.py:552
 msgid "Value"
 msgstr "Valor"
 
-#: mu/interface/main.py:568
+#: mu/interface/main.py:569
 msgid "(A list of {} items.)"
 msgstr "(Una lista de {} elementos.)"
 
-#: mu/interface/main.py:580
+#: mu/interface/main.py:581
 msgid "(A dict of {} items.)"
 msgstr "(Un diccionario de {} elementos.)"
 
-#: mu/interface/main.py:717
+#: mu/interface/main.py:718
 msgid "Mu"
 msgstr "Mu"
 
-#: mu/interface/main.py:966
+#: mu/interface/main.py:967
 msgid "Mu's current mode of behaviour."
 msgstr "Actual modo de comportamiento de Mu."
 
@@ -542,6 +546,16 @@ msgstr "Error de sintaxis. Python no puede entender esta línea. ¡Verifica si f
 msgid "# Write your code here :-)"
 msgstr "# Escribe tu código aquí :-)"
 
+#: mu/logic.py:715
+msgid ""
+"The file contains characters Mu expects to be encoded as {0} or as the computer's default encoding {1}, but which are encoded in some other way.\n"
+"\n"
+"If this file was saved in another application, re-save the file via the 'Save as' option and set the encoding to {0}"
+msgstr ""
+"El archivo contiene caracteres que Mu espera codificar como {0} o como la codificación predeterminada del ordenador {1}, pero están codificados de otra manera.\n"
+"\n"
+"Si este archivo fue guardado en otra aplicación, vuelva a guardar el archivo con la opción ‘Guardar como’ y ajusta la codificación a {0}"
+
 #: mu/logic.py:731
 msgid "The file \"{}\" is already open."
 msgstr "El archivo \"{}\" ya está abierto."
@@ -608,6 +622,10 @@ msgstr "No se pueden convertir todos los caracteres. Si tiene una línea de codi
 msgid "Saved file: {}"
 msgstr "Archivo guardado: {}"
 
+#: mu/logic.py:899 mu/logic.py:1237
+msgid "You cannot use the filename \"{}\""
+msgstr "No puedes usar el nombre de archivo “{}”"
+
 #: mu/logic.py:901
 msgid "This name is already used by another part of Python. If you use this name, things are likely to break. Please try again with a different filename."
 msgstr "Este nombre ya es usado por otra parte de Python. Si usa este nombre, es probable que algo se rompa. Por favor inténtalo de nuevo con un nombre de archivo diferente."
@@ -639,6 +657,10 @@ msgstr "Hay trabajo no guardado, salir de la aplicación hará que lo pierdas."
 #: mu/logic.py:1060
 msgid "Could not find MicroPython runtime."
 msgstr "No se pudo encontrar el intepretador de MicroPython."
+
+#: mu/logic.py:1061
+msgid "The micro:bit runtime you specified ('{}') does not exist. Please try again."
+msgstr "El interpretador para micro:bit especificado (‘{}’) no existe. Por favor inténtalo de nuevo."
 
 #: mu/logic.py:1131
 msgid "Changed to {} mode."
@@ -712,12 +734,12 @@ msgstr "Seriado"
 msgid "Open a serial connection to your device."
 msgstr "Abra una conexión en serie a su dispositivo."
 
-#: mu/modes/adafruit.py:72 mu/modes/microbit.py:213 mu/modes/python3.py:136
+#: mu/modes/adafruit.py:72 mu/modes/microbit.py:215 mu/modes/python3.py:136
 #, fuzzy
 msgid "Plotter"
 msgstr "Trazador"
 
-#: mu/modes/adafruit.py:73 mu/modes/microbit.py:214
+#: mu/modes/adafruit.py:73 mu/modes/microbit.py:216
 msgid "Plot incoming REPL data."
 msgstr "Trazar los entrantes datos del REPL."
 
@@ -873,107 +895,125 @@ msgstr "BBC micro:bit"
 msgid "Write MicroPython for the BBC micro:bit."
 msgstr "Escribe MicroPython para BBC micro:bit."
 
-#: mu/modes/microbit.py:190
+#: mu/modes/microbit.py:192
 msgid "Flash"
 msgstr "Flash"
 
-#: mu/modes/microbit.py:191
+#: mu/modes/microbit.py:193
 msgid "Flash your code onto the micro:bit."
 msgstr "Programa tu código en el micro:bit."
 
-#: mu/modes/microbit.py:197
+#: mu/modes/microbit.py:199
 msgid "Files"
 msgstr "Archivos"
 
-#: mu/modes/microbit.py:198
+#: mu/modes/microbit.py:200
 msgid "Access the file system on the micro:bit."
 msgstr "Accede al sistema de archivos en el micro:bit."
 
-#: mu/modes/microbit.py:204 mu/modes/python3.py:127
+#: mu/modes/microbit.py:206 mu/modes/python3.py:127
 msgid "REPL"
 msgstr "REPL"
 
-#: mu/modes/microbit.py:205
+#: mu/modes/microbit.py:207
 msgid "Use the REPL to live-code on the micro:bit."
 msgstr "Use el REPL para programar en vivo en el micro:bit."
 
-#: mu/modes/microbit.py:255
+#: mu/modes/microbit.py:257
 msgid "Unable to flash \"{}\""
 msgstr "No se puede programar \"{}\""
 
-#: mu/modes/microbit.py:265
+#: mu/modes/microbit.py:267
 msgid "Problem with script"
 msgstr "Problema con el script"
 
-#: mu/modes/microbit.py:266
+#: mu/modes/microbit.py:268
 msgid "{} [{}:{}]"
 msgstr "{} [{}: {}]"
 
-#: mu/modes/microbit.py:276
+#: mu/modes/microbit.py:278
 msgid "Our minifier tried but your script is too long!"
 msgstr "¡Nuestro minificador lo intentó pero tu script es demasiado largo!"
 
-#: mu/modes/microbit.py:281
+#: mu/modes/microbit.py:283
 msgid "Your script is too long and the minifier isn't available"
 msgstr "Tu script es demasiado largo y el minificador no está disponible"
 
-#: mu/modes/microbit.py:286
+#: mu/modes/microbit.py:288
 msgid "Your script is too long!"
 msgstr "¡Tu script es demasiado largo!"
 
-#: mu/modes/microbit.py:357
+#: mu/modes/microbit.py:368
 msgid "Flashing \"{}\" onto the micro:bit."
 msgstr "Programando \"{}\" en el micro:bit."
 
-#: mu/modes/microbit.py:359
+#: mu/modes/microbit.py:370
 msgid " Runtime: {}"
 msgstr " Interpretador: {}"
 
-#: mu/modes/microbit.py:419 mu/modes/microbit.py:553
+#: mu/modes/microbit.py:416
+msgid "Unsupported BBC micro:bit."
+msgstr "BBC micro:bit no soportado."
+
+#: mu/modes/microbit.py:417
+msgid ""
+"Your device is newer than this version of Mu. Please update Mu to the latest version to support this device.\n"
+"\n"
+"https://codewith.mu/"
+msgstr ""
+"Tu dispositivo es mas nuevo que esta versión de Mu. Por favor, actualiza a la ultima versión de Mu soportar este dispositvo.\n"
+"\n"
+"https://codewith.mu/"
+
+#: mu/modes/microbit.py:453 mu/modes/microbit.py:589
 msgid "Could not find an attached BBC micro:bit."
 msgstr "No se pudo encontrar un BBC micro:bit conectado."
 
-#: mu/modes/microbit.py:420
+#: mu/modes/microbit.py:454
 msgid "Please ensure you leave enough time for the BBC micro:bit to be attached and configured correctly by your computer. This may take several seconds. Alternatively, try removing and re-attaching the device or saving your work and restarting Mu if the device remains unfound."
 msgstr "Asegúrate de dejar tiempo suficiente para que el BBC micro:bit se conecte y sea configurado correctamente por tu ordenador. Esto puede tomar varios segundos. Alternativamente, si el dispositivo sigue sin descubrirse intenta desconectar y volver a conectarlo, o guarda tu trabajo y reiniciar Mu."
 
-#: mu/modes/microbit.py:434
+#: mu/modes/microbit.py:468
 msgid "Finished flashing."
 msgstr "Terminó de programar."
 
-#: mu/modes/microbit.py:476
+#: mu/modes/microbit.py:503
+msgid "Copied code onto micro:bit."
+msgstr "Código copiado al micro:bit."
+
+#: mu/modes/microbit.py:512
 msgid "There was a problem flashing the micro:bit."
 msgstr "Hubo un problema al programar el micro:bit."
 
-#: mu/modes/microbit.py:477
+#: mu/modes/microbit.py:513
 msgid "Please do not disconnect the device until flashing has completed. Please check the logs for more information."
 msgstr "Por favor, no desconecte el dispositivo hasta que la programación se haya completado. Por favor revisa los registros para más información."
 
-#: mu/modes/microbit.py:498
+#: mu/modes/microbit.py:534
 msgid "REPL and file system cannot work at the same time."
 msgstr "El REPL y el sistema de archivos no pueden funcionar al mismo tiempo."
 
-#: mu/modes/microbit.py:499
+#: mu/modes/microbit.py:535
 msgid "The REPL and file system both use the same USB serial connection. Only one can be active at any time. Toggle the file system off and try again."
 msgstr "El REPL y el sistema de archivos usan la misma conexión serial de USB. Solo uno puede estar activo en cualquier momento. Apaga el sistema de archivos e inténtalo de nuevo."
 
-#: mu/modes/microbit.py:516
+#: mu/modes/microbit.py:552
 msgid "The plotter and file system cannot work at the same time."
 msgstr "El trazador y el sistema de archivos no pueden funcionar al mismo tiempo."
 
-#: mu/modes/microbit.py:518
+#: mu/modes/microbit.py:554
 msgid "The plotter and file system both use the same USB serial connection. Only one can be active at any time. Toggle the file system off and try again."
 msgstr "El trazador y el sistema de archivos utilizan la misma conexión serial USB. Solo uno puede estar activo al mismo tiempo. Apaga el sistema de archivos e inténtalo de nuevo."
 
-#: mu/modes/microbit.py:530
+#: mu/modes/microbit.py:566
 msgid "File system cannot work at the same time as the REPL or plotter."
 msgstr "El sistema de archivos no puede funcionar al mismo tiempo que el REPL o trazador."
 
-#: mu/modes/microbit.py:532
+#: mu/modes/microbit.py:568
 msgid "The file system and the REPL and plotter use the same USB serial connection. Toggle the REPL and plotter off and try again."
 msgstr "El sistema de archivos, el REPL y el trazador usan la misma conexión serial de USB. Cierra el REPL y el trazador e inténtalo de nuevo."
 
-#: mu/modes/microbit.py:554
+#: mu/modes/microbit.py:590
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
