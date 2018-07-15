@@ -237,8 +237,6 @@ def test_flash_with_attached_device_has_latest_firmware():
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
     with mock.patch('mu.modes.microbit.uflash.find_microbit',
                     return_value='bar'),\
-            mock.patch('mu.modes.microbit.microfs.find_microbit',
-                       return_value=('bar', '12345')),\
             mock.patch('mu.modes.microbit.microfs.version',
                        return_value=version_info),\
             mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
@@ -252,6 +250,7 @@ def test_flash_with_attached_device_has_latest_firmware():
         editor.minify = False
         editor.microbit_runtime = ''
         mm = MicrobitMode(editor, view)
+        mm.find_device = mock.MagicMock(return_value=('bar', '12345'))
         mm.copy_main = mock.MagicMock()
         mm.set_buttons = mock.MagicMock()
         mm.flash()
@@ -275,8 +274,6 @@ def test_flash_with_attached_device_has_latest_firmware_encounters_problem():
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
     with mock.patch('mu.modes.microbit.uflash.find_microbit',
                     return_value='bar'),\
-            mock.patch('mu.modes.microbit.microfs.find_microbit',
-                       return_value=('bar', '12345')),\
             mock.patch('mu.modes.microbit.microfs.version',
                        return_value=version_info),\
             mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
@@ -290,6 +287,7 @@ def test_flash_with_attached_device_has_latest_firmware_encounters_problem():
         editor.minify = False
         editor.microbit_runtime = ''
         mm = MicrobitMode(editor, view)
+        mm.find_device = mock.MagicMock(return_value=('bar', '12345'))
         mm.flash_failed = mock.MagicMock()
         error = IOError('bang')
         mm.copy_main = mock.MagicMock(side_effect=error)
@@ -315,8 +313,6 @@ def test_flash_with_attached_device_has_old_firmware():
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
     with mock.patch('mu.modes.microbit.uflash.find_microbit',
                     return_value='bar'),\
-            mock.patch('mu.modes.microbit.microfs.find_microbit',
-                       return_value=('bar', '990112345')),\
             mock.patch('mu.modes.microbit.microfs.version',
                        return_value=version_info),\
             mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
@@ -330,6 +326,7 @@ def test_flash_with_attached_device_has_old_firmware():
         editor.minify = False
         editor.microbit_runtime = ''
         mm = MicrobitMode(editor, view)
+        mm.find_device = mock.MagicMock(return_value=('bar', '990112345'))
         mm.copy_main = mock.MagicMock()
         mm.set_buttons = mock.MagicMock()
         mm.flash()
@@ -353,8 +350,6 @@ def test_flash_force_with_no_micropython():
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
     with mock.patch('mu.modes.microbit.uflash.find_microbit',
                     return_value='bar'),\
-            mock.patch('mu.modes.microbit.microfs.find_microbit',
-                       return_value=('bar', '12345')),\
             mock.patch('mu.modes.microbit.microfs.version',
                        side_effect=ValueError('bang')),\
             mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
@@ -368,6 +363,7 @@ def test_flash_force_with_no_micropython():
         editor.minify = False
         editor.microbit_runtime = '/foo/bar'
         mm = MicrobitMode(editor, view)
+        mm.find_device = mock.MagicMock(return_value=('bar', '12345'))
         mm.set_buttons = mock.MagicMock()
         mm.flash()
         assert mm.flash_thread == mock_flasher
@@ -392,8 +388,6 @@ def test_flash_force_with_unsupported_microbit():
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
     with mock.patch('mu.modes.microbit.uflash.find_microbit',
                     return_value='bar'),\
-            mock.patch('mu.modes.microbit.microfs.find_microbit',
-                       return_value=('bar', '1234567890')),\
             mock.patch('mu.modes.microbit.microfs.version',
                        side_effect=ValueError('bang')),\
             mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
@@ -408,6 +402,7 @@ def test_flash_force_with_unsupported_microbit():
         editor.microbit_runtime = ''
         editor.minify = False
         mm = MicrobitMode(editor, view)
+        mm.find_device = mock.MagicMock(return_value=('bar', '1234567890'))
         mm.set_buttons = mock.MagicMock()
         mm.flash()
         assert view.show_message.call_count == 1
@@ -430,8 +425,6 @@ def test_flash_force_with_attached_device_as_windows():
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
     with mock.patch('mu.modes.microbit.uflash.find_microbit',
                     return_value='bar'),\
-            mock.patch('mu.modes.microbit.microfs.find_microbit',
-                       return_value=('bar', '12345')),\
             mock.patch('mu.modes.microbit.microfs.version',
                        return_value=version_info),\
             mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
@@ -446,6 +439,7 @@ def test_flash_force_with_attached_device_as_windows():
         editor.microbit_runtime = '/foo/bar'
         mm = MicrobitMode(editor, view)
         mm.set_buttons = mock.MagicMock()
+        mm.find_device = mock.MagicMock(return_value=('bar', '12345'))
         mm.flash()
         assert mm.flash_thread == mock_flasher
         assert editor.show_status_message.call_count == 1
@@ -478,8 +472,6 @@ def test_flash_forced_with_attached_device_as_not_windows():
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
     with mock.patch('mu.modes.microbit.uflash.find_microbit',
                     return_value='bar'),\
-            mock.patch('mu.modes.microbit.microfs.find_microbit',
-                       return_value=('COM0', '990112345')),\
             mock.patch('mu.modes.microbit.microfs.version',
                        return_value=version_info),\
             mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
@@ -494,6 +486,7 @@ def test_flash_forced_with_attached_device_as_not_windows():
         editor.minify = False
         editor.microbit_runtime = ''
         mm = MicrobitMode(editor, view)
+        mm.find_device = mock.MagicMock(return_value=('COM0', '990112345'))
         mm.set_buttons = mock.MagicMock()
         mm.copy_main = mock.MagicMock()
         mm.flash()
@@ -555,8 +548,6 @@ def test_flash_with_attached_known_device_and_forced():
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
     with mock.patch('mu.modes.microbit.uflash.find_microbit',
                     return_value='bar'),\
-            mock.patch('mu.modes.microbit.microfs.find_microbit',
-                       return_value=('COM0', '990112345')),\
             mock.patch('mu.modes.microbit.microfs.version',
                        return_value=version_info),\
             mock.patch('mu.modes.microbit.os.path.exists', return_value=True),\
@@ -571,6 +562,7 @@ def test_flash_with_attached_known_device_and_forced():
         editor.minify = False
         editor.microbit_runtime = ''
         mm = MicrobitMode(editor, view)
+        mm.find_device = mock.MagicMock(return_value=('COM0', '990112345'))
         mm.flash()
         assert mock_flasher_class.call_count == 1
         mock_flasher_class.assert_called_once_with(['bar', ], b'', None)
@@ -586,8 +578,6 @@ def test_force_flash_no_serial_connection():
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
     with mock.patch('mu.contrib.uflash.find_microbit',
                     return_value='bar'),\
-            mock.patch('mu.contrib.microfs.find_microbit',
-                       side_effect=IOError('bang')),\
             mock.patch('mu.contrib.microfs.get_serial'),\
             mock.patch('mu.contrib.microfs.version',
                        side_effect=IOError('bang')),\
@@ -602,6 +592,7 @@ def test_force_flash_no_serial_connection():
         editor.minify = False
         editor.microbit_runtime = ''
         mm = MicrobitMode(editor, view)
+        mm.find_device = mock.MagicMock(side_effect=IOError('bang'))
         mm.flash()
         mock_flasher_class.assert_called_once_with(['bar', ], b'foo', None)
         mock_flasher.finished.connect.\
@@ -626,8 +617,6 @@ def test_force_flash_empty_script():
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
     with mock.patch('mu.contrib.uflash.find_microbit',
                     return_value='bar'),\
-            mock.patch('mu.contrib.microfs.find_microbit',
-                       return_value=('COM0', '990112345')),\
             mock.patch('mu.contrib.microfs.get_serial'),\
             mock.patch('mu.contrib.microfs.version',
                        return_value=version_info),\
@@ -642,6 +631,7 @@ def test_force_flash_empty_script():
         editor.minify = False
         editor.microbit_runtime = ''
         mm = MicrobitMode(editor, view)
+        mm.find_device = mock.MagicMock(return_value=('COM0', '990112345'))
         mm.flash()
         mock_flasher_class.assert_called_once_with(['bar', ], b'', None)
         mock_flasher.finished.connect.\
@@ -666,8 +656,6 @@ def test_force_flash_user_specified_device_path():
     mock_flasher_class = mock.MagicMock(return_value=mock_flasher)
     with mock.patch('mu.contrib.uflash.find_microbit',
                     return_value=None),\
-            mock.patch('mu.contrib.microfs.find_microbit',
-                       return_value=(None, None)),\
             mock.patch('mu.contrib.microfs.get_serial'),\
             mock.patch('mu.contrib.microfs.version',
                        return_value=version_info),\
@@ -683,6 +671,7 @@ def test_force_flash_user_specified_device_path():
         editor.minify = False
         editor.microbit_runtime = ''
         mm = MicrobitMode(editor, view)
+        mm.find_device = mock.MagicMock(return_value=(None, None))
         mm.flash()
         home = HOME_DIRECTORY
         view.get_microbit_path.assert_called_once_with(home)
@@ -708,6 +697,7 @@ def test_flash_path_specified_does_not_exist():
         view.show_message = mock.MagicMock()
         editor = mock.MagicMock()
         mm = MicrobitMode(editor, view)
+        mm.find_device = mock.MagicMock(return_value=('COM0', '12345'))
         mm.user_defined_microbit_path = 'baz'
         mm.flash()
         message = 'Could not find an attached BBC micro:bit.'
@@ -729,8 +719,6 @@ def test_flash_without_device():
     with mock.patch('mu.contrib.uflash.hexlify', return_value=''), \
             mock.patch('mu.contrib.uflash.embed_hex', return_value='foo'), \
             mock.patch('mu.contrib.uflash.find_microbit', return_value=None),\
-            mock.patch('mu.contrib.microfs.find_microbit',
-                       return_value=(None, None)), \
             mock.patch('mu.contrib.uflash.save_hex', return_value=None) as s:
         view = mock.MagicMock()
         view.get_microbit_path = mock.MagicMock(return_value=None)
@@ -738,6 +726,7 @@ def test_flash_without_device():
         view.show_message = mock.MagicMock()
         editor = mock.MagicMock()
         mm = MicrobitMode(editor, view)
+        mm.find_device = mock.MagicMock(return_value=(None, None))
         mm.flash()
         message = 'Could not find an attached BBC micro:bit.'
         information = ("Please ensure you leave enough time for the BBC"
@@ -978,9 +967,8 @@ def test_add_fs():
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
     with mock.patch('mu.modes.microbit.FileManager') as mock_fm,\
-            mock.patch('mu.modes.microbit.QThread'),\
-            mock.patch('mu.modes.microbit.microfs.find_microbit',
-                       return_value=True):
+            mock.patch('mu.modes.microbit.QThread'):
+        mm.find_device = mock.MagicMock(return_value=('COM0', '12345'))
         mm.add_fs()
         workspace = mm.workspace_dir()
         view.add_filesystem.assert_called_once_with(workspace, mock_fm())
@@ -995,9 +983,8 @@ def test_add_fs_no_device():
     view.show_message = mock.MagicMock()
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
-    with mock.patch('mu.modes.microbit.microfs.find_microbit',
-                    return_value=False):
-        mm.add_fs()
+    mm.find_device = mock.MagicMock(return_value=(None, None))
+    mm.add_fs()
     assert view.show_message.call_count == 1
 
 

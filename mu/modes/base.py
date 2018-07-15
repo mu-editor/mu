@@ -193,8 +193,9 @@ class MicroPythonMode(BaseMode):
 
     def find_device(self, with_logging=True):
         """
-        Returns the port for the first MicroPython-ish device found connected
-        to the host computer. If no device is found, return None.
+        Returns the port and serial number for the first MicroPython-ish device
+        found connected to the host computer. If no device is found, returns
+        the tuple (None, None).
         """
         available_ports = QSerialPortInfo.availablePorts()
         for port in available_ports:
@@ -203,9 +204,11 @@ class MicroPythonMode(BaseMode):
             # Look for the port VID & PID in the list of know board IDs
             if (vid, pid) in self.valid_boards:
                 port_name = port.portName()
+                serial_number = port.serialNumber()
                 if with_logging:
                     logger.info('Found device on port: {}'.format(port_name))
-                return self.port_path(port_name)
+                    logger.info('Serial number: {}'.format(serial_number))
+                return (self.port_path(port_name), serial_number)
         if with_logging:
             logger.warning('Could not find device.')
             logger.debug('Available ports:')
@@ -213,7 +216,7 @@ class MicroPythonMode(BaseMode):
                                                          p.vendorIdentifier(),
                                                          p.portName())
                          for p in available_ports])
-        return None
+        return (None, None)
 
     def port_path(self, port_name):
         if os.name == 'posix':
@@ -249,7 +252,7 @@ class MicroPythonMode(BaseMode):
         Detect a connected MicroPython based device and, if found, connect to
         the REPL and display it to the user.
         """
-        device_port = self.find_device()
+        device_port, serial_number = self.find_device()
         if device_port:
             try:
                 self.view.add_micropython_repl(device_port, self.name,
@@ -289,7 +292,7 @@ class MicroPythonMode(BaseMode):
         """
         Check if REPL exists, and if so, enable the plotter pane!
         """
-        device_port = self.find_device()
+        device_port, serial_number = self.find_device()
         if device_port:
             try:
                 self.view.add_micropython_plotter(device_port, self.name, self)
