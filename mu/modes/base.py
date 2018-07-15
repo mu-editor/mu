@@ -22,6 +22,7 @@ import os.path
 import csv
 import time
 import logging
+import pkgutil
 from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtCore import QObject
 from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path
@@ -41,6 +42,12 @@ BOARD_IDS = set([
     (0x239A, 0x8015),  # circuitplayground m0 PID prototype
     (0x239A, 0x801B),  # feather m0 express PID
 ])
+
+
+# Cache module names for filename shadow checking later.
+MODULE_NAMES = set([name for _, name, _ in pkgutil.iter_modules()])
+MODULE_NAMES.add('sys')
+MODULE_NAMES.add('builtins')
 
 
 def get_default_workspace():
@@ -87,6 +94,7 @@ class BaseMode(QObject):
     save_timeout = 5  #: Number of seconds to wait before saving work.
     builtins = None  #: Symbols to assume as builtins when checking code style.
     file_extensions = []
+    module_names = MODULE_NAMES
 
     def __init__(self, editor, view):
         self.editor = editor

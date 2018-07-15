@@ -645,7 +645,6 @@ def test_editor_setup():
         assert mkd.call_args_list[0][0][0] == 'foo'
         assert mock_shutil.call_count == 3
     assert e.modes == mock_modes
-    assert isinstance(e.module_names, set)
     view.set_usb_checker.assert_called_once_with(1, e.check_usb)
 
 
@@ -1209,7 +1208,12 @@ def test_check_for_shadow_module_with_match():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    ed.module_names = set(['foo', 'bar', 'baz'])
+    mock_mode = mock.MagicMock()
+    mock_mode.module_names = set(['foo', 'bar', 'baz'])
+    ed.modes = {
+        'python': mock_mode,
+    }
+    ed.mode = 'python'
     assert ed.check_for_shadow_module('/a/long/path/with/foo.py')
 
 
@@ -1260,7 +1264,12 @@ def test_save_path_shadows_module():
     text, newline = "foo", "\n"
     ed = mocked_editor(text=text, path=None, newline=newline)
     ed._view.get_save_path.return_value = '/a/long/path/foo.py'
-    ed.module_names = set(['foo', 'bar', 'baz'])
+    mock_mode = mock.MagicMock()
+    mock_mode.module_names = set(['foo', 'bar', 'baz'])
+    ed.modes = {
+        'python': mock_mode,
+    }
+    ed.mode = 'python'
     ed.save()
     # The path isn't the empty string returned from get_save_path.
     assert ed._view.show_message.call_count == 1
