@@ -914,7 +914,8 @@ def test_Window_update_debug_inspector():
     w = mu.interface.main.Window()
     w.debug_model = mock.MagicMock()
     mock_standard_item = mock.MagicMock()
-    with mock.patch('mu.interface.main.QStandardItem', mock_standard_item):
+    with mock.patch('mu.interface.main.DebugInspectorItem',
+                    mock_standard_item):
         w.update_debug_inspector(locals_dict)
     w.debug_model.clear.assert_called_once_with()
     w.debug_model.setHorizontalHeaderLabels(['Name', 'Value', ])
@@ -934,7 +935,8 @@ def test_Window_update_debug_inspector_with_exception():
     w.debug_model = mock.MagicMock()
     mock_standard_item = mock.MagicMock()
     mock_eval = mock.MagicMock(side_effect=Exception('BOOM!'))
-    with mock.patch('mu.interface.main.QStandardItem', mock_standard_item), \
+    with mock.patch(
+        'mu.interface.main.DebugInspectorItem', mock_standard_item), \
             mock.patch('builtins.eval', mock_eval):
         w.update_debug_inspector(locals_dict)
     # You just have to believe this is correct. I checked! :-)
