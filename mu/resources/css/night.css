@@ -14,7 +14,8 @@ QToolButton:hover, QMenu::item:selected {
 
 QStackedWidget, QWidget, QApplication, QDialog,
 QLabel, QStatusBar, QTabBar, QMenu,
-QDockWidget::title, QHeaderView, QHeaderView::section {
+QDockWidget::title, QHeaderView, QHeaderView::section,
+QListWidget, QTreeView, QTreeView::branch {
     background: #222;
     color: white;
 }
@@ -80,11 +81,6 @@ QTabWidget::pane {
 
 QTabWidget::tab-bar {
     subcontrol-position: top left;
-}
-
-QListWidget, QTreeView {
-    background-color: #222;
-    color: white;
 }
 
 QListWidget::item:selected, QListWidget::item:hover, QListWidget::item:focus,
@@ -249,4 +245,12 @@ QHeaderView::section {
 QTreeView::item, QListWidget::item {
     padding: 0;
     margin: 0;
+}
+
+QTreeView::branch:has-children:open {
+    image: url(images:scroll-down.png);
+}
+
+QTreeView::branch:has-children:closed {
+    image: url(images:scroll-right.png);
 }
