@@ -443,6 +443,27 @@ class MicrobitMode(MicroPythonMode):
             else:
                 try:
                     self.copy_main()
+                except IOError as ioex:
+                    # There was a problem with the serial communication with
+                    # the device, so revert to forced flash... "old style".
+                    # THIS IS A HACK! :-(
+                    logger.warning('Could not copy file to device.')
+                    logger.error(ioex)
+                    logger.info('Falling back to old-style flashing.')
+                    self.flash_thread = DeviceFlasher([path_to_microbit],
+                                                      self.python_script,
+                                                      rt_hex_path)
+                    self.python_script = ''
+                    if sys.platform == 'win32':
+                        # Windows blocks on write.
+                        self.flash_thread.finished.connect(self.flash_finished)
+                    else:
+                        self.flash_timer = QTimer()
+                        self.flash_timer.timeout.connect(self.flash_finished)
+                        self.flash_timer.setSingleShot(True)
+                        self.flash_timer.start(10000)
+                    self.flash_thread.on_flash_fail.connect(self.flash_failed)
+                    self.flash_thread.start()
                 except Exception as ex:
                     self.flash_failed(ex)
         else:
