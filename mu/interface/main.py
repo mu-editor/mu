@@ -25,15 +25,16 @@ from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog, QMessageBox,
                              QLabel, QMainWindow, QStatusBar, QDockWidget,
                              QShortcut)
-from PyQt5.QtGui import QKeySequence, QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QKeySequence, QStandardItemModel
 from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
 from mu.interface.dialogs import ModeSelector, AdminDialog, FindReplaceDialog
 from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
                                  DEFAULT_FONT_SIZE)
-from mu.interface.panes import (DebugInspector, PythonProcessPane,
-                                JupyterREPLPane, MicroPythonREPLPane,
-                                FileSystemPane, PlotterPane)
+from mu.interface.panes import (DebugInspector, DebugInspectorItem,
+                                PythonProcessPane, JupyterREPLPane,
+                                MicroPythonREPLPane, FileSystemPane,
+                                PlotterPane)
 from mu.interface.editor import EditorPane
 from mu.resources import load_icon, load_pixmap
 
@@ -530,7 +531,6 @@ class Window(QMainWindow):
         self.debug_inspector = DebugInspector()
         self.debug_model = QStandardItemModel()
         self.debug_inspector.setModel(self.debug_model)
-        self.debug_inspector.setUniformRowHeights(True)
         self.inspector = QDockWidget(_('Debug Inspector'))
         self.inspector.setWidget(self.debug_inspector)
         self.inspector.setFeatures(QDockWidget.DockWidgetMovable)
@@ -558,32 +558,34 @@ class Window(QMainWindow):
                 val = None
             if isinstance(val, list):
                 # Show a list consisting of rows of position/value
-                list_item = QStandardItem(name)
+                list_item = DebugInspectorItem(name)
                 for i, i_val in enumerate(val):
                     list_item.appendRow([
-                        QStandardItem(str(i)),
-                        QStandardItem(repr(i_val))
+                        DebugInspectorItem(str(i)),
+                        DebugInspectorItem(repr(i_val))
                     ])
                 self.debug_model.appendRow([
                     list_item,
-                    QStandardItem(_('(A list of {} items.)').format(len(val)))
+                    DebugInspectorItem(_('(A list of {} items.)')
+                                       .format(len(val)))
                 ])
             elif isinstance(val, dict):
                 # Show a dict consisting of rows of key/value pairs.
-                dict_item = QStandardItem(name)
+                dict_item = DebugInspectorItem(name)
                 for k, k_val in val.items():
                     dict_item.appendRow([
-                        QStandardItem(repr(k)),
-                        QStandardItem(repr(k_val))
+                        DebugInspectorItem(repr(k)),
+                        DebugInspectorItem(repr(k_val))
                     ])
                 self.debug_model.appendRow([
                     dict_item,
-                    QStandardItem(_('(A dict of {} items.)').format(len(val)))
+                    DebugInspectorItem(_('(A dict of {} items.)')
+                                       .format(len(val)))
                 ])
             else:
                 self.debug_model.appendRow([
-                    QStandardItem(name),
-                    QStandardItem(locals_dict[name]),
+                    DebugInspectorItem(name),
+                    DebugInspectorItem(locals_dict[name]),
                 ])
 
     def remove_filesystem(self):
@@ -785,6 +787,7 @@ class Window(QMainWindow):
         self.update_title()
         self.read_only_tabs = False
         self.setMinimumSize(820, 400)
+        self.setTabPosition(Qt.AllDockWidgetAreas, QTabWidget.North)
 
         self.widget = QWidget()
 
