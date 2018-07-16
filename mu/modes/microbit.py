@@ -298,7 +298,7 @@ class MicrobitMode(MicroPythonMode):
         port = None
         serial_number = None
         try:
-            port, serial_number = microfs.find_microbit()
+            port, serial_number = self.find_device()
             logger.info('Serial port: {}'.format(port))
             logger.info('Device serial number: {}'.format(serial_number))
         except Exception as ex:
@@ -443,6 +443,27 @@ class MicrobitMode(MicroPythonMode):
             else:
                 try:
                     self.copy_main()
+                except IOError as ioex:
+                    # There was a problem with the serial communication with
+                    # the device, so revert to forced flash... "old style".
+                    # THIS IS A HACK! :-(
+                    logger.warning('Could not copy file to device.')
+                    logger.error(ioex)
+                    logger.info('Falling back to old-style flashing.')
+                    self.flash_thread = DeviceFlasher([path_to_microbit],
+                                                      self.python_script,
+                                                      rt_hex_path)
+                    self.python_script = ''
+                    if sys.platform == 'win32':
+                        # Windows blocks on write.
+                        self.flash_thread.finished.connect(self.flash_finished)
+                    else:
+                        self.flash_timer = QTimer()
+                        self.flash_timer.timeout.connect(self.flash_finished)
+                        self.flash_timer.setSingleShot(True)
+                        self.flash_timer.start(10000)
+                    self.flash_thread.on_flash_fail.connect(self.flash_failed)
+                    self.flash_thread.start()
                 except Exception as ex:
                     self.flash_failed(ex)
         else:
@@ -585,7 +606,8 @@ class MicrobitMode(MicroPythonMode):
         Add the file system navigator to the UI.
         """
         # Check for micro:bit
-        if not microfs.find_microbit():
+        port, serial_number = self.find_device()
+        if not port:
             message = _('Could not find an attached BBC micro:bit.')
             information = _("Please make sure the device is plugged "
                             "into this computer.\n\nThe device must "
