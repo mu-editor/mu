@@ -15,7 +15,8 @@ QToolButton:hover, QMenu::item:selected  {
 
 QStackedWidget, QWidget, QApplication, QDialog,
 QLabel, QStatusBar, QTabBar, QMenu,
-QDockWidget::title, QHeaderView, QHeaderView::section {
+QDockWidget::title, QHeaderView, QHeaderView::section,
+QListWidget, QTreeView, QTreeView::branch {
     background-color: black;
     color: white;
 }
@@ -252,4 +253,12 @@ QHeaderView::section {
 QTreeView::item, QListWidget::item {
     padding: 0;
     margin: 0;
+}
+
+QTreeView::branch:has-children:open {
+    image: url(images:scroll-down.png);
+}
+
+QTreeView::branch:has-children:closed {
+    image: url(images:scroll-right.png);
 }
