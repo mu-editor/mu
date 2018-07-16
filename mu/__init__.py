@@ -17,4 +17,4 @@ except (TypeError, ValueError):
 gettext.translation('mu', localedir=localedir,
                     languages=[language_code], fallback=True).install()
 
-__version__ = '1.0.0.beta.17'
+__version__ = '1.0.0.rc.1'

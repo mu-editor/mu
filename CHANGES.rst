@@ -1,6 +1,21 @@
 Release History
 ---------------
 
+1.0.0.rc.1
+==========
+
+* Various UI style clean ups to make sure the look of Mu is more consistent
+  between platforms. Thanks to Zander Brown for this valuable work.
+* Added French translation of the user interface. Thanks to Gerald Quintana.
+* Added Japanese translation of the user interface. Thanks to @MinoruInachi.
+* Added Spanish translation of the user interface. Thanks to Carlos Pereira
+  Atencio with help from Oier Echaniz.
+* Added Portuguese translation of the user interface. Thanks to Tiago Montes.
+* Fixed various edge cases relating to the new-style flashing of micro:bits.
+* Fixed off-by-one error in the visual debugger highlighting of code (caused
+  by Windows newlines not correctly handled).
+* Various minor bugs and niggles have been fixed.
+
 1.0.0.beta.17
 =============
 
