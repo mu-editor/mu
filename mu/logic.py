@@ -1150,7 +1150,7 @@ class Editor:
         for name, mode in self.modes.items():
             if hasattr(mode, 'find_device'):
                 # The mode can detect an attached device.
-                port = mode.find_device(with_logging=False)
+                port, serial = mode.find_device(with_logging=False)
                 if port:
                     devices.append((name, port))
                     device_types.add(name)

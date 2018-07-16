@@ -1983,7 +1983,7 @@ def test_check_usb():
     ed.change_mode = mock.MagicMock()
     mode_mb = mock.MagicMock()
     mode_mb.name = 'BBC micro:bit'
-    mode_mb.find_device.return_value = '/dev/ttyUSB0'
+    mode_mb.find_device.return_value = ('/dev/ttyUSB0', '12345')
     ed.modes = {
         'microbit': mode_mb,
     }
@@ -2005,7 +2005,7 @@ def test_check_usb_change_mode_cancel():
     ed.change_mode = mock.MagicMock()
     mode_cp = mock.MagicMock()
     mode_cp.name = 'CircuitPlayground'
-    mode_cp.find_device.return_value = '/dev/ttyUSB1'
+    mode_cp.find_device.return_value = ('/dev/ttyUSB1', '12345')
     ed.modes = {
         'circuitplayground': mode_cp,
     }
@@ -2027,9 +2027,9 @@ def test_check_usb_already_in_mode():
     ed.change_mode = mock.MagicMock()
     mode_mb = mock.MagicMock()
     mode_mb.name = 'BBC micro:bit'
-    mode_mb.find_device.return_value = '/dev/ttyUSB0'
+    mode_mb.find_device.return_value = ('/dev/ttyUSB0', '12345')
     mode_cp = mock.MagicMock()
-    mode_cp.find_device.return_value = None
+    mode_cp.find_device.return_value = (None, None)
     ed.modes = {
         'microbit': mode_mb,
         'circuitplayground': mode_cp
@@ -2051,10 +2051,10 @@ def test_check_usb_multiple_devices():
     ed.change_mode = mock.MagicMock()
     mode_mb = mock.MagicMock()
     mode_mb.name = 'BBC micro:bit'
-    mode_mb.find_device.return_value = '/dev/ttyUSB0'
+    mode_mb.find_device.return_value = ('/dev/ttyUSB0', '12345')
     mode_cp = mock.MagicMock()
     mode_cp.name = 'CircuitPlayground'
-    mode_cp.find_device.return_value = '/dev/ttyUSB1'
+    mode_cp.find_device.return_value = ('/dev/ttyUSB1', '54321')
     ed.modes = {
         'microbit': mode_mb,
         'circuitplayground': mode_cp
@@ -2080,7 +2080,7 @@ def test_check_usb_when_selecting_mode_is_silent():
     ed.change_mode = mock.MagicMock()
     mode_cp = mock.MagicMock()
     mode_cp.name = 'CircuitPlayground'
-    mode_cp.find_device.return_value = '/dev/ttyUSB1'
+    mode_cp.find_device.return_value = ('/dev/ttyUSB1', '12345')
     ed.modes = {
         'circuitplayground': mode_cp,
     }
