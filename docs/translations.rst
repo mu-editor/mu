@@ -23,24 +23,22 @@ translators, such as `poedit <https://poedit.net/>`_.
     You may need to run ``make translate`` as part of this process. This, in
     turn, depends on the presence of the ``pygettext.py`` command on your
     system. The ``pygettext.py`` command should come installed as part of the
-    Python language, but some operating systems don't include it by default. 
+    Python language, but some operating systems don't include it by default.
     For example, to install ``pygettext.py`` on Fedora you must make
     sure the ``python3-tools`` package is installed.
 
 To manually change the locale Mu uses for translation strings, look in
-``mu/app.py`` for the following lines of code at the start of the file::
+``mu/__init__.py`` for the following lines of code towards the start of the file::
 
-    # Configure locale and language
-    # Define where the translation assets are to be found.
-    localedir = os.path.join('mu', 'locale')
-    # Use the operating system's locale.
-    current_locale, encoding = locale.getdefaultlocale()
-    # Get the language code.
-    language_code = current_locale[:2]
-    # DEBUG/TRANSLATE: override the language code here (e.g. to Spanish).
-    # language_code = 'es'
-    gettext.translation('mu', localedir=localedir,
-                        languages=[language_code], fallback=True).install()
+    try:
+        # Use the operating system's locale.
+        current_locale, encoding = locale.getdefaultlocale()
+        # Get the language code.
+        language_code = current_locale[:2]
+    except (TypeError, ValueError):
+        language_code = 'en'
+    # DEBUG/TRANSLATE: override the language code here (e.g. to Chinese).
+    # language_code = 'zh'
 
 As the comment suggests, temporarily update the ``language_code`` to the target
 language for translation, make your changes, as explained below, and re-run
@@ -59,7 +57,7 @@ combination `as specified by gettext convention <https://www.gnu.org/software/ge
 Open the ``mu.po`` file in an editor or translation tool of your choice (we
 recommend `poedit <https://poedit.net/>`_ as a great solution for this). If
 you're using a plain text editor, remember to make your changes to the message
-string (``msgstr``) *not* the message id (``msgid``). 
+string (``msgstr``) *not* the message id (``msgid``).
 
 Once you've saved and, most importantly, **checked your translation strings
 appear as expected in Mu**, commit your changes and create a pull request via
