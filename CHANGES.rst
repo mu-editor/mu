@@ -14,6 +14,9 @@ Release History
 * Fixed various edge cases relating to the new-style flashing of micro:bits.
 * Fixed off-by-one error in the visual debugger highlighting of code (caused
   by Windows newlines not correctly handled).
+* Fixed shadow module related problem relating to Adafruit mode. It's now
+  possible to save "code.py" files onto boards.
+* Updated to latest version of uflash and MicroPython 1.0.0-rc.1 for micro:bit.
 * Various minor bugs and niggles have been fixed.
 
 1.0.0.beta.17
