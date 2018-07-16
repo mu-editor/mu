@@ -1900,6 +1900,12 @@ def test_PythonProcessPane_set_theme():
     ppp.set_theme('test')
 
 
+def test_DebugInspectorItem():
+    item = mu.interface.panes.DebugInspectorItem('test')
+    assert item.text() == 'test'
+    assert not item.isEditable()
+
+
 def test_DebugInspector_set_font_size():
     """
     Check the correct stylesheet values are being set.

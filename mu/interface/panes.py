@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
                              QTreeView)
 from PyQt5.QtGui import (QKeySequence, QTextCursor, QCursor, QPainter,
-                         QDesktopServices)
+                         QDesktopServices, QStandardItem)
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from mu.interface.themes import Font
 from mu.interface.themes import DEFAULT_FONT_SIZE
@@ -974,11 +974,22 @@ class PythonProcessPane(QTextEdit):
         pass
 
 
+class DebugInspectorItem(QStandardItem):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.setEditable(False)
+
+
 class DebugInspector(QTreeView):
     """
     Presents a tree like representation of the current state of the call stack
     to the user.
     """
+
+    def __init__(self):
+        super().__init__()
+        self.setUniformRowHeights(True)
+        self.setSelectionBehavior(QTreeView.SelectRows)
 
     def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
         """
