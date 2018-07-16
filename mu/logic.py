@@ -31,7 +31,6 @@ import random
 import locale
 import shutil
 import appdirs
-import pkgutil
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
@@ -603,11 +602,6 @@ class Editor:
         if not os.path.exists(music_path):
             logger.debug('Creating directory: {}'.format(music_path))
             os.makedirs(music_path)
-        # Cache module names for filename shadow checking later.
-        self.module_names = set([name for _, name, _ in
-                                pkgutil.iter_modules()])
-        self.module_names.add('sys')
-        self.module_names.add('builtins')
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
@@ -881,7 +875,7 @@ class Editor:
         """
         logger.info('Checking path "{}" for shadow module.'.format(path))
         filename = os.path.basename(path).replace('.py', '')
-        return filename in self.module_names
+        return filename in self.modes[self.mode].module_names
 
     def save(self):
         """

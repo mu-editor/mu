@@ -28,6 +28,7 @@ def test_adafruit_mode():
     assert actions[0]['handler'] == am.toggle_repl
     assert actions[1]['name'] == 'plotter'
     assert actions[1]['handler'] == am.toggle_plotter
+    assert 'code' not in am.module_names
 
 
 def test_adafruit_mode_no_charts():

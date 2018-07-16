@@ -298,7 +298,7 @@ class MicrobitMode(MicroPythonMode):
         port = None
         serial_number = None
         try:
-            port, serial_number = microfs.find_microbit()
+            port, serial_number = self.find_device()
             logger.info('Serial port: {}'.format(port))
             logger.info('Device serial number: {}'.format(serial_number))
         except Exception as ex:
@@ -585,7 +585,8 @@ class MicrobitMode(MicroPythonMode):
         Add the file system navigator to the UI.
         """
         # Check for micro:bit
-        if not microfs.find_microbit():
+        port, serial_number = self.find_device()
+        if not port:
             message = _('Could not find an attached BBC micro:bit.')
             information = _("Please make sure the device is plugged "
                             "into this computer.\n\nThe device must "
