@@ -37,7 +37,7 @@ def should_patch_osx_mojave_font():
     update FONT_NAME to use the default terminal font in OSX on mojave.
 
     This patch should be removed once the underlying issue has been resolved
-    
+
     github issue #552
     """
     return platform.platform().startswith("Darwin-18.")
