@@ -161,13 +161,10 @@ def test_debug_finished():
     view.button_bar.slots['step-in'].setEnabled.assert_called_once_with(False)
     view.button_bar.slots['step-out'].setEnabled.assert_called_once_with(False)
     # Tabs are set to the right state.
-    tab1.markerDeleteAll.assert_called_once_with()
-    tab1.breakpoint_lines == set([1, ])
     tab1.setSelection.assert_called_once_with(0, 0, 0, 0)
-    tab1.markerAdd(0, tab1.BREAKPOINT_MARKER)
-    tab2.markerDeleteAll.assert_called_once_with()
-    tab2.breakpoint_lines == set()
+    tab1.reset_debugger_highlight.assert_called_once_with()
     tab2.setSelection.assert_called_once_with(0, 0, 0, 0)
+    tab2.reset_debugger_highlight.assert_called_once_with()
 
 
 def test_debug_button_stop():
@@ -192,6 +189,7 @@ def test_debug_button_continue():
     dm.debugger = mock.MagicMock()
     dm.button_continue(None)
     dm.debugger.do_run.assert_called_once_with()
+    assert view.current_tab.reset_debugger_highlight.call_count == 1
 
 
 def test_debug_button_step_over():
@@ -204,6 +202,7 @@ def test_debug_button_step_over():
     dm.debugger = mock.MagicMock()
     dm.button_step_over(None)
     dm.debugger.do_next.assert_called_once_with()
+    assert view.current_tab.reset_debugger_highlight.call_count == 1
 
 
 def test_debug_button_step_in():
@@ -216,6 +215,7 @@ def test_debug_button_step_in():
     dm.debugger = mock.MagicMock()
     dm.button_step_in(None)
     dm.debugger.do_step.assert_called_once_with()
+    assert view.current_tab.reset_debugger_highlight.call_count == 1
 
 
 def test_debug_button_step_out():
@@ -228,6 +228,7 @@ def test_debug_button_step_out():
     dm.debugger = mock.MagicMock()
     dm.button_step_out(None)
     dm.debugger.do_return.assert_called_once_with()
+    assert view.current_tab.reset_debugger_highlight.call_count == 1
 
 
 def test_debug_toggle_breakpoint_off():
@@ -251,7 +252,33 @@ def test_debug_toggle_breakpoint_off():
     dm.toggle_breakpoint(0, mock_tab)
     mock_debugger.breakpoints.assert_called_once_with(mock_tab.path)
     mock_tab.markersAtLine.assert_called_once_with(0)
-    mock_debugger.disable_breakpoint(mock_breakpoint)
+    mock_debugger.disable_breakpoint.assert_called_once_with(mock_breakpoint)
+    mock_tab.markerDelete.assert_called_once_with(0,
+                                                  mock_tab.BREAKPOINT_MARKER)
+
+
+def test_debug_toggle_breakpoint_off_no_breakpoint():
+    """
+    If a breakpoint appears on a line, but it's not actually been created in
+    the debug runner process (perhaps because the breakpoint was created after
+    the process finished but before the stop button was created) then it's
+    toggled off with no further side-effects.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    mock_debugger = mock.MagicMock()
+    dm.debugger = mock_debugger
+    mock_debugger.breakpoints.side_effect = [
+        {}
+    ]
+    mock_tab = mock.MagicMock()
+    mock_tab.path = 'foo'
+    mock_tab.markersAtLine.return_value = True
+    dm.toggle_breakpoint(0, mock_tab)
+    mock_debugger.breakpoints.assert_called_once_with(mock_tab.path)
+    mock_tab.markersAtLine.assert_called_once_with(0)
+    assert mock_debugger.disable_breakpoint.call_count == 0
     mock_tab.markerDelete.assert_called_once_with(0,
                                                   mock_tab.BREAKPOINT_MARKER)
 
@@ -321,11 +348,75 @@ def test_debug_on_bootstrap():
     dm.debugger = mock.MagicMock()
     mock_tab = mock.MagicMock()
     mock_tab.path = 'foo'
-    mock_tab.breakpoint_lines = set([0, ])
+    mock_tab.text.return_value = "print('Hello')"
+    mock_tab.breakpoint_handles = set([0, ])
+    mock_tab.markerLine.return_value = 0
     view.widgets = [mock_tab, ]
     dm.debug_on_bootstrap()
     dm.debugger.create_breakpoint.assert_called_once_with(mock_tab.path, 1)
     dm.debugger.do_run.assert_called_once_with()
+
+
+def test_debug_on_bootstrap_remove_missing_marker_handles():
+    """
+    Ensure all marker handles that are not currently associated with a line
+    are removed from the breakpoint_handles set.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    dm.debugger = mock.MagicMock()
+    mock_tab = mock.MagicMock()
+    mock_tab.path = 'foo'
+    mock_tab.breakpoint_handles = set([0, ])
+    mock_tab.markerLine.return_value = -1
+    view.widgets = [mock_tab, ]
+    dm.debug_on_bootstrap()
+    assert dm.debugger.create_breakpoint.call_count == 0
+    assert 0 not in mock_tab.breakpoint_handles
+
+
+def test_debug_on_bootstrap_ignore_duplicate_handles():
+    """
+    Sometimes it's possible for two different handles to be found on a single
+    line due to how Scintilla moves markers around as lines are concatenated.
+    This ensures only one breakpoint is created per marker.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    dm.debugger = mock.MagicMock()
+    mock_tab = mock.MagicMock()
+    mock_tab.path = 'foo'
+    mock_tab.text.return_value = "print('Hello')"
+    mock_tab.breakpoint_handles = set([0, 1])
+    mock_tab.markerLine.side_effect = [1, 1]
+    view.widgets = [mock_tab, ]
+    dm.debug_on_bootstrap()
+    assert dm.debugger.create_breakpoint.call_count == 1
+
+
+def test_debug_on_bootstrap_remove_invalid_breaks():
+    """
+    Sometimes it's possible for a marker to end up on a line that is eventually
+    an in-valid breakpoint line. This checks that such markers don't end up
+    with an attempt to set a breakpoint and are ultimately discarded so the
+    visual state of the markers matches the breakpoint state of the debugger.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+    dm.debugger = mock.MagicMock()
+    mock_tab = mock.MagicMock()
+    mock_tab.path = 'foo'
+    mock_tab.breakpoint_handles = set([0, ])
+    mock_tab.markerLine.return_value = 1
+    view.widgets = [mock_tab, ]
+    with mock.patch('mu.modes.debugger.is_breakpoint_line',
+                    return_value=False):
+        dm.debug_on_bootstrap()
+    assert 0 not in mock_tab.breakpoint_handles
+    mock_tab.markerDelete.assert_called_once_with(1, -1)
 
 
 def test_debug_on_breakpoint_enable():
@@ -335,13 +426,57 @@ def test_debug_on_breakpoint_enable():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     mock_tab = mock.MagicMock()
+    mock_tab.markersAtLine.return_value = False
+    mock_tab.path = 'foo'
+    view.current_tab = mock_tab
+    dm = DebugMode(editor, view)
+    mock_breakpoint = mock.MagicMock()
+    mock_breakpoint.filename = 'foo'
+    mock_breakpoint.line = 1
+    dm.debug_on_breakpoint_enable(mock_breakpoint)
+    mock_tab.markerAdd.assert_called_once_with(mock_breakpoint.line - 1,
+                                               mock_tab.BREAKPOINT_MARKER)
+
+
+def test_debug_on_breakpoint_enable_different_tab():
+    """
+    When the breakpoints are set on bootstrap, some of them may be for tabs
+    that are not the currently visible tab. In any case, when breakpoints are
+    set "on_breakpoint_enable" is called. This check ensures the marker is only
+    created IF the current tab has the same path as the filename associated
+    with the newly created breakpoint.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    mock_tab = mock.MagicMock()
+    mock_tab.markersAtLine.return_value = False
+    mock_tab.path = 'foo'
+    view.current_tab = mock_tab
+    dm = DebugMode(editor, view)
+    mock_breakpoint = mock.MagicMock()
+    mock_breakpoint.filename = 'bar'
+    mock_breakpoint.line = 1
+    dm.debug_on_breakpoint_enable(mock_breakpoint)
+    assert mock_tab.markerAdd.call_count == 0
+
+
+def test_debug_on_breakpoint_enable_marker_already_exists():
+    """
+    Handle the signal that shows the debug runner has created a breakpoint
+    during the bootstrapping of the debug runner, so it doesn't add a second
+    marker at the same location as the pre-existing one that caused the
+    breakpoint to be created during bootstrapping.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    mock_tab = mock.MagicMock()
+    mock_tab.markersAtLine.return_value = True
     view.current_tab = mock_tab
     dm = DebugMode(editor, view)
     mock_breakpoint = mock.MagicMock()
     mock_breakpoint.line = 1
     dm.debug_on_breakpoint_enable(mock_breakpoint)
-    mock_tab.markerAdd.assert_called_once_with(mock_breakpoint.line - 1,
-                                               mock_tab.BREAKPOINT_MARKER)
+    mock_tab.markerAdd.call_count == 0
 
 
 def test_debug_on_breakpoint_disable():
@@ -556,9 +691,13 @@ def test_debug_on_restart():
 
 def test_debug_on_exception():
     """
-    Should do nothing.
+    Since an exception has been signalled, allow the script to run to the
+    end of life so the error is correctly reported via stdout.
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
     dm = DebugMode(editor, view)
-    assert dm.debug_on_exception(None, None) is None
+    dm.debugger = mock.MagicMock()
+    dm.debug_on_exception("Exception", "Exception information")
+    dm.debugger.do_run.assert_called_once_with()
+    assert view.current_tab.reset_debugger_highlight.call_count == 1

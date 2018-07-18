@@ -36,6 +36,7 @@ from mu.resources import load_pixmap, load_icon
 from mu.modes import (PythonMode, AdafruitMode, MicrobitMode, DebugMode,
                       PyGameZeroMode)
 from mu.debugger.runner import run as run_debugger
+from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
 
 def setup_logging():
@@ -120,9 +121,22 @@ def run():
     app.setDesktopFileName('mu.codewith.editor')
     app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
+    # Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
+    # unless this flag is set
+    app.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
     # Create the "window" we'll be looking at.
     editor_window = Window()
+
+    @editor_window.load_theme.connect
+    def load_theme(theme):
+        if theme == 'contrast':
+            app.setStyleSheet(CONTRAST_STYLE)
+        elif theme == 'night':
+            app.setStyleSheet(NIGHT_STYLE)
+        else:
+            app.setStyleSheet(DAY_STYLE)
+
     # Make sure all windows have the Mu icon as a fallback
     app.setWindowIcon(load_icon(editor_window.icon))
     # Create the "editor" that'll control the "window".
@@ -135,6 +149,8 @@ def run():
     editor.restore_session(sys.argv[1:])
     # Connect the various UI elements in the window to the editor.
     editor_window.connect_tab_rename(editor.rename_tab, 'Ctrl+Shift+S')
+    editor_window.connect_find_replace(editor.find_replace, 'Ctrl+F')
+    editor_window.connect_find_replace(editor.toggle_comments, 'Ctrl+K')
     status_bar = editor_window.status_bar
     status_bar.connect_logs(editor.show_admin, 'Ctrl+Shift+D')
 
@@ -142,11 +158,11 @@ def run():
     splash = QSplashScreen(load_pixmap('splash-screen'))
     splash.show()
 
-    # Finished starting up the application, so hide the splash icon.
+    # Hide the splash icon.
     splash_be_gone = QTimer()
     splash_be_gone.timeout.connect(lambda: splash.finish(editor_window))
     splash_be_gone.setSingleShot(True)
-    splash_be_gone.start(5000)
+    splash_be_gone.start(2000)
 
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())

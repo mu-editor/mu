@@ -16,7 +16,9 @@ all:
 	@echo "make publish-live - publish the project to PyPI production."
 	@echo "make docs - run sphinx to create project documentation."
 	@echo "make translate - create a messages.pot file for translations."
-	@echo "make translateall - as with translate but for all API strings.\n"
+	@echo "make translateall - as with translate but for all API strings."
+	@echo "make win32 - create a 32bit Windows installer for Mu."
+	@echo "make win64 - create a 64bit Windows installer for Mu.\n"
 
 clean:
 	rm -rf build
@@ -29,6 +31,7 @@ clean:
 	rm -rf lib
 	rm -rf pynsist_pkgs
 	rm -rf pynsist_tkinter*
+	rm -rf macOS
 	find . \( -name '*.py[co]' -o -name dropin.cache \) -delete
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
@@ -42,10 +45,10 @@ else
 endif
 
 pyflakes:
-	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
+	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils -o -path ./venv \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
 
 pycodestyle:
-	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pycodestyle --repeat --exclude=build/*,docs/*,mu/contrib*,mu/modes/api/*,utils/* --ignore=E731,E402,W504
+	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pycodestyle --repeat --exclude=build/*,docs/*,mu/contrib*,mu/modes/api/*,utils/*,venv/*,.vscode/* --ignore=E731,E402,W504
 
 test: clean
 	pytest

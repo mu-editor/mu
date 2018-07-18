@@ -24,10 +24,11 @@ def test_adafruit_mode():
 
     actions = am.actions()
     assert len(actions) == 2
-    assert actions[0]['name'] == 'repl'
+    assert actions[0]['name'] == 'serial'
     assert actions[0]['handler'] == am.toggle_repl
     assert actions[1]['name'] == 'plotter'
     assert actions[1]['handler'] == am.toggle_plotter
+    assert 'code' not in am.module_names
 
 
 def test_adafruit_mode_no_charts():
@@ -40,7 +41,7 @@ def test_adafruit_mode_no_charts():
     with mock.patch('mu.modes.adafruit.CHARTS', False):
         actions = am.actions()
         assert len(actions) == 1
-        assert actions[0]['name'] == 'repl'
+        assert actions[0]['name'] == 'serial'
         assert actions[0]['handler'] == am.toggle_repl
 
 

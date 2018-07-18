@@ -171,8 +171,15 @@ MicroPython's REPL. I wondered "how hard can it be?" and set out to create an
 editor based on Carrie Anne's comments about the needs of teachers and learners
 when it came to code editing.
 
-At around 33m 22s into the keynote Carrie Anne talks about a development
-environments for beginner programmers in Python.
+Halfway into the keynote Carrie Anne talks about a development
+environments for beginner programmers in Python:
+
+.. raw:: html
+
+    <div style="position: relative; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/_gU7sfTrz4c?rel=0&amp;start=2002" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+
 
 She starts by explaining the problems with online editors. Often they require
 users to sign up, thus excluding a large number of children who, for legal

@@ -45,6 +45,40 @@ def test_MicroPythonREPLPane_paste():
     mock_serial.write.assert_called_once_with(bytes('paste me!', 'utf8'))
 
 
+def test_MicroPythonREPLPane_paste_handle_unix_newlines():
+    """
+    Pasting into the REPL should handle '\n' properly.
+
+    '\n' -> '\r'
+    """
+    mock_serial = mock.MagicMock()
+    mock_clipboard = mock.MagicMock()
+    mock_clipboard.text.return_value = 'paste\nme!'
+    mock_application = mock.MagicMock()
+    mock_application.clipboard.return_value = mock_clipboard
+    with mock.patch('mu.interface.panes.QApplication', mock_application):
+        rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+        rp.paste()
+    mock_serial.write.assert_called_once_with(bytes('paste\rme!', 'utf8'))
+
+
+def test_MicroPythonREPLPane_paste_handle_windows_newlines():
+    """
+    Pasting into the REPL should handle '\r\n' properly.
+
+    '\r\n' -> '\r'
+    """
+    mock_serial = mock.MagicMock()
+    mock_clipboard = mock.MagicMock()
+    mock_clipboard.text.return_value = 'paste\r\nme!'
+    mock_application = mock.MagicMock()
+    mock_application.clipboard.return_value = mock_clipboard
+    with mock.patch('mu.interface.panes.QApplication', mock_application):
+        rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+        rp.paste()
+    mock_serial.write.assert_called_once_with(bytes('paste\rme!', 'utf8'))
+
+
 def test_MicroPythonREPLPane_paste_only_works_if_there_is_something_to_paste():
     """
     Pasting into the REPL should send bytes via the serial connection.
@@ -114,25 +148,6 @@ def test_MicroPythonREPLPane_context_menu_darwin():
     assert mock_qmenu.exec_.call_count == 1
 
 
-def test_MicroPythonREPLPane_set_theme():
-    """
-    Ensure the set_theme toggles as expected.
-    """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
-    rp.setStyleSheet = mock.MagicMock(return_value=None)
-    rp.set_theme('day')
-    rp.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-    rp.setStyleSheet.reset_mock()
-    rp.set_theme('night')
-    rp.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.NIGHT_STYLE)
-    rp.setStyleSheet.reset_mock()
-    rp.set_theme('contrast')
-    rp.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
-
-
 def test_MicroPythonREPLPane_keyPressEvent():
     """
     Ensure key presses in the REPL are handled correctly.
@@ -159,6 +174,20 @@ def test_MicroPythonREPLPane_keyPressEvent_backspace():
     data.modifiers = mock.MagicMock(return_value=None)
     rp.keyPressEvent(data)
     mock_serial.write.assert_called_once_with(b'\b')
+
+
+def test_MicroPythonREPLPane_keyPressEvent_delete():
+    """
+    Ensure delete in the REPL is handled correctly.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Delete)
+    data.text = mock.MagicMock(return_value='\b')
+    data.modifiers = mock.MagicMock(return_value=None)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(b'\x1B[\x33\x7E')
 
 
 def test_MicroPythonREPLPane_keyPressEvent_up():
@@ -559,6 +588,58 @@ def test_LocalFileList_on_get():
     lfs.list_files.emit.assert_called_once_with()
 
 
+def test_LocalFileList_contextMenuEvent():
+    """
+    Ensure that the menu displayed when a local file is
+    right-clicked works as expected when activated.
+    """
+    mock_menu = mock.MagicMock()
+    mock_action_first = mock.MagicMock()
+    mock_action_second = mock.MagicMock()
+    mock_menu.addAction.side_effect = [mock_action_first,
+                                       mock_action_second]
+    mock_menu.exec_.return_value = mock_action_first
+    mfs = mu.interface.panes.LocalFileList('homepath')
+    mock_open = mock.MagicMock()
+    mfs.open_file = mock.MagicMock()
+    mfs.open_file.emit = mock_open
+    mock_current = mock.MagicMock()
+    mock_current.text.return_value = 'foo.py'
+    mfs.currentItem = mock.MagicMock(return_value=mock_current)
+    mfs.set_message = mock.MagicMock()
+    mfs.mapToGlobal = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QMenu', return_value=mock_menu):
+        mfs.contextMenuEvent(mock_event)
+    assert mfs.set_message.emit.call_count == 0
+    mock_open.assert_called_once_with(os.path.join('homepath', 'foo.py'))
+
+
+def test_LocalFileList_contextMenuEvent_external():
+    """
+    Ensure that the menu displayed when a local file is
+    right-clicked works as expected when activated.
+    """
+    mock_menu = mock.MagicMock()
+    mock_action = mock.MagicMock()
+    mock_menu.addAction.side_effect = [mock_action, mock.MagicMock()]
+    mock_menu.exec_.return_value = mock_action
+    mfs = mu.interface.panes.LocalFileList('homepath')
+    mock_open = mock.MagicMock()
+    mfs.open_file = mock.MagicMock()
+    mfs.open_file.emit = mock_open
+    mock_current = mock.MagicMock()
+    mock_current.text.return_value = 'foo.qwerty'
+    mfs.currentItem = mock.MagicMock(return_value=mock_current)
+    mfs.set_message = mock.MagicMock()
+    mfs.mapToGlobal = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QMenu', return_value=mock_menu):
+        mfs.contextMenuEvent(mock_event)
+    assert mfs.set_message.emit.call_count == 1
+    assert mock_open.call_count == 0
+
+
 def test_FileSystemPane_init():
     """
     Check things are set up as expected.
@@ -613,6 +694,14 @@ def test_FileSystemPane_enable():
     fsp.local_fs.setDisabled.assert_called_once_with(False)
     fsp.microbit_fs.setAcceptDrops.assert_called_once_with(True)
     fsp.local_fs.setAcceptDrops.assert_called_once_with(True)
+
+
+def test_FileSystemPane_set_theme():
+    """
+    Setting theme doesn't error
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.set_theme('test')
 
 
 def test_FileSystemPane_show_message():
@@ -701,37 +790,6 @@ def test_FileSystem_Pane_on_get_fail():
     assert fsp.show_warning.call_count == 1
 
 
-def test_FileSystemPane_set_theme_day():
-    """
-    Ensures the day theme is set.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.setStyleSheet = mock.MagicMock()
-    fsp.set_theme('day')
-    fsp.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-
-
-def test_FileSystemPane_set_theme_night():
-    """
-    Ensures the night theme is set.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.setStyleSheet = mock.MagicMock()
-    fsp.set_theme('night')
-    fsp.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
-
-
-def test_FileSystemPane_set_theme_contrast():
-    """
-    Ensures the contrast theme is set.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.setStyleSheet = mock.MagicMock()
-    fsp.set_theme('contrast')
-    fsp.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
-
-
 def test_FileSystemPane_set_font_size():
     """
     Ensure the right size is set as the point size and the text based UI child
@@ -760,6 +818,18 @@ def test_FileSystemPane_zoom_in():
     fsp.zoomIn()
     expected = mu.interface.themes.DEFAULT_FONT_SIZE + 2
     fsp.set_font_size.assert_called_once_with(expected)
+
+
+def test_FileSystemPane_open_file():
+    """
+    FileSystemPane should propogate the open_file signal
+    """
+    fsp = mu.interface.panes.FileSystemPane('homepath')
+    fsp.open_file = mock.MagicMock()
+    mock_open_emit = mock.MagicMock()
+    fsp.open_file.emit = mock_open_emit
+    fsp.local_fs.open_file.emit('test')
+    mock_open_emit.assert_called_once_with('test')
 
 
 def test_FileSystemPane_zoom_out():
@@ -830,10 +900,8 @@ def test_JupyterREPLPane_set_theme_day():
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_default_style = mock.MagicMock()
-    jw.setStyleSheet = mock.MagicMock()
     jw.set_theme('day')
     jw.set_default_style.assert_called_once_with()
-    jw.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
 
 
 def test_JupyterREPLPane_set_theme_night():
@@ -842,10 +910,8 @@ def test_JupyterREPLPane_set_theme_night():
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_default_style = mock.MagicMock()
-    jw.setStyleSheet = mock.MagicMock()
     jw.set_theme('night')
     jw.set_default_style.assert_called_once_with(colors='nocolor')
-    jw.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
 
 
 def test_JupyterREPLPane_set_theme_contrast():
@@ -854,11 +920,8 @@ def test_JupyterREPLPane_set_theme_contrast():
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_default_style = mock.MagicMock()
-    jw.setStyleSheet = mock.MagicMock()
     jw.set_theme('contrast')
     jw.set_default_style.assert_called_once_with(colors='nocolor')
-    jw.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
 
 
 def test_JupyterREPLPane_setFocus():
@@ -942,10 +1005,12 @@ def test_PythonProcessPane_start_process_debugger():
         args = ['foo', 'bar', ]
         ppp.start_process('script.py', 'workspace', debugger=True,
                           command_args=args)
-    runner = 'mu-debug'
+    mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
+    runner = os.path.join(mu_dir, 'mu-debug.py')
+    python_exec = sys.executable
     expected_script = os.path.abspath(os.path.normcase('script.py'))
-    expected_args = [expected_script, 'foo', 'bar', ]
-    ppp.process.start.assert_called_once_with(runner, expected_args)
+    expected_args = [runner, expected_script, 'foo', 'bar', ]
+    ppp.process.start.assert_called_once_with(python_exec, expected_args)
 
 
 def test_PythonProcessPane_start_process_not_interactive():
@@ -987,10 +1052,47 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
         envars = [['name', 'value'], ]
         ppp.start_process('script.py', 'workspace', interactive=False,
                           envars=envars, runner='foo')
-    assert mock_environment.insert.call_count == 2
+    assert mock_environment.insert.call_count == 3
     assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
                                                             '1')
-    assert mock_environment.insert.call_args_list[1][0] == ('name', 'value')
+    assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
+                                                            'utf-8')
+    assert mock_environment.insert.call_args_list[2][0] == ('name', 'value')
+
+
+def test_PythonProcessPane_start_process_darwin_app_pythonpath():
+    """
+    When running on OSX as a packaged mu-editor.app, the PYTHONPATH needs to
+    be set so the child processes have access to the packaged libraries and
+    modules.
+    """
+    mock_process = mock.MagicMock()
+    mock_process_class = mock.MagicMock(return_value=mock_process)
+    mock_merge_chans = mock.MagicMock()
+    mock_process_class.MergedChannels = mock_merge_chans
+    mock_environment = mock.MagicMock()
+    mock_environment_class = mock.MagicMock()
+    mock_environment_class.systemEnvironment.return_value = mock_environment
+    mock_path = mock.MagicMock()
+    mock_path.return_value = ('/Applications/mu-editor.app/'
+                              'Contents/Resources/app/mu')
+    with mock.patch('mu.interface.panes.QProcess', mock_process_class), \
+            mock.patch('mu.interface.panes.QProcessEnvironment',
+                       mock_environment_class), \
+            mock.patch('os.path.dirname', mock_path), \
+            mock.patch('sys.platform', 'darwin'):
+        ppp = mu.interface.panes.PythonProcessPane()
+        envars = [['name', 'value'], ]
+        ppp.start_process('script.py', 'workspace', interactive=False,
+                          envars=envars, runner='foo')
+    assert mock_environment.insert.call_count == 4
+    assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
+                                                            '1')
+    assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
+                                                            'utf-8')
+    assert mock_environment.insert.call_args_list[2][0] == ('PYTHONPATH',
+                                                            ':'.join(sys.path))
+    assert mock_environment.insert.call_args_list[3][0] == ('name', 'value')
 
 
 def test_PythonProcessPane_start_process_custom_runner():
@@ -1010,6 +1112,26 @@ def test_PythonProcessPane_start_process_custom_runner():
     expected_script = os.path.abspath(os.path.normcase('script.py'))
     expected_args = [expected_script, 'foo', 'bar', ]
     ppp.process.start.assert_called_once_with('foo', expected_args)
+
+
+def test_PythonProcessPane_start_process_custom_python_args():
+    """
+    Ensure that if there are arguments to be passed into the Python runtime
+    starting the child process, these are passed on correctly.
+    """
+    mock_process = mock.MagicMock()
+    mock_process_class = mock.MagicMock(return_value=mock_process)
+    mock_merge_chans = mock.MagicMock()
+    mock_process_class.MergedChannels = mock_merge_chans
+    with mock.patch('mu.interface.panes.QProcess', mock_process_class):
+        ppp = mu.interface.panes.PythonProcessPane()
+        py_args = ['-m', 'pgzero', ]
+        ppp.start_process('script.py', 'workspace', interactive=False,
+                          python_args=py_args)
+    expected_script = os.path.abspath(os.path.normcase('script.py'))
+    expected_args = ['-m', 'pgzero', expected_script]
+    runner = sys.executable
+    ppp.process.start.assert_called_once_with(runner, expected_args)
 
 
 def test_PythonProcessPane_finished():
@@ -1130,6 +1252,21 @@ def test_PythonProcessPane_parse_paste():
     assert mock_timer.singleShot.call_count == 1
 
 
+def test_PythonProcessPane_parse_paste_non_ascii():
+    """
+    Given some non-ascii yet printable text, ensure that the first character is
+    correctly handled and the remaining text to be processed is scheduled to be
+    parsed in the future.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.parse_input = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.parse_paste('ÅÄÖ')
+    ppp.parse_input.assert_called_once_with(None, 'Å', None)
+    assert mock_timer.singleShot.call_count == 1
+
+
 def test_PythonProcessPane_parse_paste_newline():
     """
     As above, but ensure the correct handling of a newline character.
@@ -1182,6 +1319,19 @@ def test_PythonProcessPane_parse_input_a():
     modifiers = None
     ppp.parse_input(key, text, modifiers)
     ppp.insert.assert_called_once_with(b'a')
+
+
+def test_PythonProcessPane_parse_input_non_ascii():
+    """
+    Ensure a non-ascii printable character is inserted into the text area.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.insert = mock.MagicMock()
+    key = Qt.Key_A
+    text = 'Å'
+    modifiers = None
+    ppp.parse_input(key, text, modifiers)
+    ppp.insert.assert_called_once_with('Å'.encode('utf-8'))
 
 
 def test_PythonProcessPane_parse_input_ctrl_c():
@@ -1742,35 +1892,18 @@ def test_PythonProcessPane_zoomOut_min():
         assert mock_zoom.call_count == 0
 
 
-def test_PythonProcessPane_set_theme_day():
+def test_PythonProcessPane_set_theme():
     """
-    Set the theme to day.
-    """
-    ppp = mu.interface.panes.PythonProcessPane()
-    ppp.setStyleSheet = mock.MagicMock()
-    ppp.set_theme('day')
-    ppp.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-
-
-def test_PythonProcessPane_set_theme_night():
-    """
-    Set the theme to night.
+    Setting the theme shouldn't do anything
     """
     ppp = mu.interface.panes.PythonProcessPane()
-    ppp.setStyleSheet = mock.MagicMock()
-    ppp.set_theme('night')
-    ppp.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
+    ppp.set_theme('test')
 
 
-def test_PythonProcessPane_set_theme_contrast():
-    """
-    Set the theme to high contrast.
-    """
-    ppp = mu.interface.panes.PythonProcessPane()
-    ppp.setStyleSheet = mock.MagicMock()
-    ppp.set_theme('contrast')
-    ppp.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
+def test_DebugInspectorItem():
+    item = mu.interface.panes.DebugInspectorItem('test')
+    assert item.text() == 'test'
+    assert not item.isEditable()
 
 
 def test_DebugInspector_set_font_size():
@@ -1807,38 +1940,12 @@ def test_DebugInspector_zoomOut():
     di.set_font_size.assert_called_once_with(old_size - 4)
 
 
-def test_DebugInspector_set_theme_day():
+def test_DebugInspector_set_theme():
     """
-    Make sure the theme is correctly set for day.
-    """
-    di = mu.interface.panes.DebugInspector()
-    di.set_default_style = mock.MagicMock()
-    di.setStyleSheet = mock.MagicMock()
-    di.set_theme('day')
-    di.setStyleSheet.assert_called_once_with(mu.interface.themes.DAY_STYLE)
-
-
-def test_DebugInspector_set_theme_night():
-    """
-    Make sure the theme is correctly set for night.
+    Setting the theme shouldn't do anything
     """
     di = mu.interface.panes.DebugInspector()
-    di.set_default_style = mock.MagicMock()
-    di.setStyleSheet = mock.MagicMock()
-    di.set_theme('night')
-    di.setStyleSheet.assert_called_once_with(mu.interface.themes.NIGHT_STYLE)
-
-
-def test_DebugInspector_set_theme_contrast():
-    """
-    Make sure the theme is correctly set for high contrast.
-    """
-    di = mu.interface.panes.DebugInspector()
-    di.set_default_style = mock.MagicMock()
-    di.setStyleSheet = mock.MagicMock()
-    di.set_theme('contrast')
-    di.setStyleSheet.assert_called_once_with(
-        mu.interface.themes.CONTRAST_STYLE)
+    di.set_theme('test')
 
 
 def test_PlotterPane_init():

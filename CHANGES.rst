@@ -1,6 +1,50 @@
 Release History
 ---------------
 
+1.0.0.rc.1
+==========
+
+* Various UI style clean ups to make sure the look of Mu is more consistent
+  between platforms. Thanks to Zander Brown for this valuable work.
+* Added French translation of the user interface. Thanks to Gerald Quintana.
+* Added Japanese translation of the user interface. Thanks to @MinoruInachi.
+* Added Spanish translation of the user interface. Thanks to Carlos Pereira
+  Atencio with help from Oier Echaniz.
+* Added Portuguese translation of the user interface. Thanks to Tiago Montes.
+* Fixed various edge cases relating to the new-style flashing of micro:bits.
+* Fixed off-by-one error in the visual debugger highlighting of code (caused
+  by Windows newlines not correctly handled).
+* Fixed shadow module related problem relating to Adafruit mode. It's now
+  possible to save "code.py" files onto boards.
+* Updated to latest version of uflash and MicroPython 1.0.0-rc.1 for micro:bit.
+* Various minor bugs and niggles have been fixed.
+
+1.0.0.beta.17
+=============
+
+* Update to the latest version of uflash with the latest version of MicroPython
+  for the BBC micro:bit.
+* Change flashing the BBC micro:bit to become more efficient (based on the
+  copying of files to the boards small "fake" filesystem, rather than
+  re-flashing the whole device in one go).
+* Ensure user agrees to GPL3 license when installing on OSX.
+* Fix Windows "make" file to correctly report errors thanks to Tim Golden.
+* The debugger in Python mode now correctly handles user-generated exceptions.
+* The debugger in Python mode updates the stack when no breakpoints are set.
+* Major update of the OSX based automated build system.
+* Modal dialog boxes should behave better on GTK based desktops thanks to
+  Zander Brown.
+* Right click to access context menu in file panes in micro:bit mode so local
+  files can be opened in Mu.
+* Fix bug where REPL, Files and Plotter buttons got into a bad state on
+  mode change.
+* Update to use PyQt 5.11.
+* On save, check for shadow modules (i.e. user's are not allowed to save
+  code whose filename would override an existing module name).
+* Automatic comment toggling via Ctrl-K shortcut.
+* A simple find and replace diaolog is now available via the Ctrl-F shortcut.
+* Various minor bugs and niggles have been squashed.
+
 1.0.0.beta.16
 =============
 
@@ -43,6 +87,14 @@ Release History
 * Fix problem in OSX with the ``mount`` command when detecting Circuit Python
   boards. Thanks to Frank Morton for finding and fixing this.
 * Add data flood avoidance to the plotter.
+* OSX automated packaging. Thanks to Russell Keith-Magee and the team at
+  BeeWare for their invaluable help with this problematic task.
+* Refactoring and bug fixing of the visual debugger's user interface. Thank you
+  to Martin O'Hanlon and Carlos Pereira Atencio for their invaluable bug
+  reports and testing.
+* Various fixes to the way the UI and themes are displayed (crisper icons on
+  HiDPI displays and various other fixes). Thanks to Steve Stagg for putting
+  lipstick on the pig. ;-)
 * A huge number of minor bug fixes, UI clean-ups and simplifications.
 
 1.0.0.beta.15

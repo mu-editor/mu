@@ -33,13 +33,9 @@ import shutil
 import appdirs
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
-# Currently there is no pycodestyle deb packages, so fallback to old name
-try:  # pragma: no cover
-    from pycodestyle import StyleGuide, Checker
-except ImportError:  # pragma: no cover
-    from pep8 import StyleGuide, Checker
-from mu.contrib import uflash
+from pycodestyle import StyleGuide, Checker
 from mu.resources import path
+from mu.debugger.utils import is_breakpoint_line
 from mu import __version__
 
 
@@ -175,7 +171,7 @@ def save_and_encode(text, filepath, newline=os.linesep):
         try:
             codecs.lookup(encoding)
         except LookupError:
-            logger.warn("Invalid codec in encoding cookie: %s", encoding)
+            logger.warning("Invalid codec in encoding cookie: %s", encoding)
             encoding = ENCODING
     else:
         encoding = ENCODING
@@ -277,7 +273,7 @@ def read_and_decode(filepath):
             text = btext.decode(encoding)
             logger.info("Decoded with %s", encoding)
             break
-        except UnicodeDecodeError as exc:
+        except UnicodeDecodeError:
             continue
     else:
         raise UnicodeDecodeError(encoding, btext, 0, 0, "Unable to decode")
@@ -554,6 +550,10 @@ class Editor:
         self.minify = False
         self.microbit_runtime = ''
         self.connected_devices = set()
+        self.find = ''
+        self.replace = ''
+        self.global_replace = False
+        self.selecting_mode = False  # Flag to stop auto-detection of modes.
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
@@ -581,7 +581,9 @@ class Editor:
             os.makedirs(wd)
         # Ensure PyGameZero assets are copied over.
         images_path = os.path.join(wd, 'images')
+        fonts_path = os.path.join(wd, 'fonts')
         sounds_path = os.path.join(wd, 'sounds')
+        music_path = os.path.join(wd, 'music')
         if not os.path.exists(images_path):
             logger.debug('Creating directory: {}'.format(images_path))
             os.makedirs(images_path)
@@ -589,11 +591,17 @@ class Editor:
                         os.path.join(images_path, 'alien.png'))
             shutil.copy(path('alien_hurt.png', 'pygamezero/'),
                         os.path.join(images_path, 'alien_hurt.png'))
+        if not os.path.exists(fonts_path):
+            logger.debug('Creating directory: {}'.format(fonts_path))
+            os.makedirs(fonts_path)
         if not os.path.exists(sounds_path):
             logger.debug('Creating directory: {}'.format(sounds_path))
             os.makedirs(sounds_path)
             shutil.copy(path('eep.wav', 'pygamezero/'),
                         os.path.join(sounds_path, 'eep.wav'))
+        if not os.path.exists(music_path):
+            logger.debug('Creating directory: {}'.format(music_path))
+            os.makedirs(music_path)
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
@@ -702,8 +710,12 @@ class Editor:
                   "{0} or as the computer's default encoding {1}, but which "
                   "are encoded in some other way.\n\nIf this file was saved "
                   "in another application, re-save the file via the "
-                  "'Save as' option and set the encoding to {0}".
-                  format(ENCODING, locale.getpreferredencoding()))
+                  "'Save as' option and set the encoding to {0}")
+        error = error.format(ENCODING, locale.getpreferredencoding())
+        # Does the file even exist?
+        if not os.path.isfile(path):
+            logger.info('The file {} does not exist.'.format(path))
+            return
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
@@ -714,43 +726,43 @@ class Editor:
                 self._view.show_message(msg.format(os.path.basename(path)))
                 self._view.focus_tab(widget)
                 return
+        name, text, newline, file_mode = None, None, None, None
         try:
             if path.lower().endswith('.py'):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
                 try:
                     text, newline = read_and_decode(path)
-                except UnicodeDecodeError as exc:
+                except UnicodeDecodeError:
                     message = _("Mu cannot read the characters in {}")
                     filename = os.path.basename(path)
                     self._view.show_message(message.format(filename), error)
                     return
                 name = path
-            elif path.lower().endswith('.hex'):
-                # Open the hex, extract the Python script therein and set the
-                # name to None, thus forcing the user to work out what to name
-                # the recovered script.
-                try:
-                    with open(path, newline='') as f:
-                        text = uflash.extract_script(f.read())
-                        newline = sniff_newline_convention(text)
-                except Exception:
-                    filename = os.path.basename(path)
-                    message = _("Unable to load file {}").format(filename)
-                    info = _("Mu doesn't understand the hex file and cannot "
-                             "extract any Python code. Are you sure this is "
-                             "a hex file created with MicroPython?")
+            else:
+                # Delegate the open operation to the Mu modes. Leave the name
+                # as None, thus forcing the user to work out what to name the
+                # recovered script.
+                for mode_name, mode in self.modes.items():
+                    try:
+                        text = mode.open_file(path)
+                    except Exception as exc:
+                        # No worries, log it and try the next mode
+                        logger.warning('Error when mode {} try to open the '
+                                       '{} file.'.format(mode_name, path),
+                                       exc_info=exc)
+                    else:
+                        if text:
+                            newline = sniff_newline_convention(text)
+                            file_mode = mode_name
+                            break
+                else:
+                    message = _('Mu was not able to open this file')
+                    info = _('Currently Mu only works with Python source '
+                             'files or hex files created with embedded '
+                             'MicroPython code.')
                     self._view.show_message(message, info)
                     return
-                name = None
-            else:
-                # Mu won't open other file types, although this may change in
-                # the future.
-                message = _("Mu only opens .py and .hex files")
-                info = _("Currently Mu only works with Python source files or "
-                         "hex files created with embedded MicroPython code.")
-                self._view.show_message(message, info)
-                return
         except OSError:
             message = _("Could not load {}").format(path)
             logger.exception('Could not load {}'.format(path))
@@ -758,6 +770,15 @@ class Editor:
                      "permission to read it?\n\nPlease check and try again.")
             self._view.show_message(message, info)
         else:
+            if file_mode and self.mode != file_mode:
+                device_name = self.modes[file_mode].name
+                message = _('Is this a {} file?').format(device_name)
+                info = _('It looks like this could be a {} file.\n\n'
+                         'Would you like to change Mu to the {}'
+                         'mode?').format(device_name, device_name)
+                if self._view.show_confirmation(
+                        message, info, icon='Question') == QMessageBox.Ok:
+                    self.change_mode(file_mode)
             logger.debug(text)
             self._view.add_tab(
                 name, text, self.modes[self.mode].api(), newline)
@@ -767,7 +788,16 @@ class Editor:
         Loads a Python file from the file system or extracts a Python script
         from a hex file.
         """
-        path = self._view.get_load_path(self.modes[self.mode].workspace_dir())
+        # Get all supported extensions from the different modes
+        extensions = ['py']
+        for mode_name, mode in self.modes.items():
+            if mode.file_extensions:
+                extensions += mode.file_extensions
+        extensions = set([e.lower() for e in extensions])
+        extensions = '*.{} *.{}'.format(' *.'.join(extensions),
+                                        ' *.'.join(extensions).upper())
+        path = self._view.get_load_path(self.modes[self.mode].workspace_dir(),
+                                        extensions)
         if path:
             self._load(path)
 
@@ -787,7 +817,6 @@ class Editor:
                 # abspath will fail for non-paths
                 self.direct_load(os.path.abspath(p))
             except Exception as e:
-                self._view.show_message(_('Can\'t open {}'.format(p)))
                 logging.warning('Can\'t open file from command line {}'.
                                 format(p), exc_info=e)
 
@@ -834,6 +863,20 @@ class Editor:
             tab.setModified(False)
             self.show_status_message(_("Saved file: {}").format(tab.path))
 
+    def check_for_shadow_module(self, path):
+        """
+        Check if the filename in the path is a shadow of a module already in
+        the Python path. For example, many learners will save their first
+        turtle based script as turtle.py, thus causing Python to never find
+        the built in turtle module because of the name conflict.
+
+        If the filename shadows an existing module, return True, otherwise,
+        return False.
+        """
+        logger.info('Checking path "{}" for shadow module.'.format(path))
+        filename = os.path.basename(path).replace('.py', '')
+        return filename in self.modes[self.mode].module_names
+
     def save(self):
         """
         Save the content of the currently active editor tab.
@@ -845,7 +888,17 @@ class Editor:
         if not tab.path:
             # Unsaved file.
             workspace = self.modes[self.mode].workspace_dir()
-            tab.path = self._view.get_save_path(workspace)
+            path = self._view.get_save_path(workspace)
+            if path and self.check_for_shadow_module(path):
+                message = _('You cannot use the filename '
+                            '"{}"').format(os.path.basename(path))
+                info = _('This name is already used by another part of '
+                         'Python. If you use this name, things are '
+                         'likely to break. Please try again with a '
+                         'different filename.')
+                self._view.show_message(message, info)
+                return
+            tab.path = path
         if tab.path:
             # The user specified a path to a file.
             if os.path.splitext(tab.path)[1] == '':
@@ -861,10 +914,13 @@ class Editor:
         Given a path, returns either an existing tab for the path or creates /
         loads a new tab for the path.
         """
+        normalised_path = os.path.normcase(os.path.abspath(path))
         for tab in self._view.widgets:
-            if tab.path == path:
-                self._view.focus_tab(tab)
-                return tab
+            if tab.path:
+                tab_path = os.path.normcase(os.path.abspath(tab.path))
+                if tab_path == normalised_path:
+                    self._view.focus_tab(tab)
+                    return tab
         self.direct_load(path)
         return self._view.current_tab
 
@@ -895,7 +951,7 @@ class Editor:
         if tab.has_annotations:
             logger.info('Checking code.')
             self._view.reset_annotations()
-            filename = tab.path if tab.path else 'untitled'
+            filename = tab.path if tab.path else _('untitled')
             builtins = self.modes[self.mode].builtins
             flake = check_flake(filename, tab.text(), builtins)
             if flake:
@@ -926,8 +982,11 @@ class Editor:
         Display browser based help about Mu.
         """
         logger.info('Showing help.')
-        current_locale, encoding = locale.getdefaultlocale()
-        language_code = current_locale[:2]
+        try:
+            current_locale, encoding = locale.getdefaultlocale()
+            language_code = current_locale[:2]
+        except (TypeError, ValueError):
+            language_code = 'en'
         major_version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/{}/help/{}'.format(language_code,
                                                       major_version)
@@ -986,8 +1045,7 @@ class Editor:
             'microbit_runtime': self.microbit_runtime,
         }
         with open(LOG_FILE, 'r', encoding='utf8') as logfile:
-            new_settings = self._view.show_admin(logfile.read(), settings,
-                                                 self.theme)
+            new_settings = self._view.show_admin(logfile.read(), settings)
             self.envars = extract_envars(new_settings['envars'])
             self.minify = new_settings['minify']
             runtime = new_settings['microbit_runtime'].strip()
@@ -996,7 +1054,7 @@ class Editor:
                 message = _('Could not find MicroPython runtime.')
                 information = _("The micro:bit runtime you specified ('{}') "
                                 "does not exist. "
-                                "Please try again.".format(runtime))
+                                "Please try again.").format(runtime)
                 self._view.show_message(message, information)
             else:
                 self.microbit_runtime = runtime
@@ -1009,7 +1067,9 @@ class Editor:
             return
         logger.info('Showing available modes: {}'.format(
             list(self.modes.keys())))
-        new_mode = self._view.select_mode(self.modes, self.mode, self.theme)
+        self.selecting_mode = True  # Flag to stop auto-detection of modes.
+        new_mode = self._view.select_mode(self.modes, self.mode)
+        self.selecting_mode = False
         if new_mode and new_mode != self.mode:
             logger.info('New mode selected: {}'.format(new_mode))
             self.change_mode(new_mode)
@@ -1019,9 +1079,17 @@ class Editor:
         Given the name of a mode, will make the necessary changes to put the
         editor into the new mode.
         """
+        # Remove the old mode's REPL / filesystem / plotter if required.
+        old_mode = self.modes[self.mode]
+        if hasattr(old_mode, 'remove_repl'):
+            old_mode.remove_repl()
+        if hasattr(old_mode, 'remove_fs'):
+            old_mode.remove_fs()
+        if hasattr(old_mode, 'remove_plotter'):
+            if old_mode.plotter:
+                old_mode.remove_plotter()
+        # Re-assign to new mode.
         self.mode = mode
-        # Remove the old mode's REPL.
-        self._view.remove_repl()
         # Update buttons.
         self._view.change_mode(self.modes[mode])
         button_bar = self._view.button_bar
@@ -1052,7 +1120,7 @@ class Editor:
         # Update breakpoint states.
         if not (self.modes[mode].is_debugger or self.modes[mode].has_debugger):
             for tab in self._view.widgets:
-                tab.breakpoint_lines = set()
+                tab.breakpoint_handles = set()
                 tab.reset_annotations()
         self.show_status_message(_('Changed to {} mode.').format(
             mode.capitalize()))
@@ -1063,10 +1131,11 @@ class Editor:
         """
         if self._view.modified:
             # Something has changed, so save it!
-            logger.info('Autosave has detected changes.')
             for tab in self._view.widgets:
                 if tab.path and tab.isModified():
                     self.save_tab_to_file(tab)
+                    logger.info('Autosave detected and saved '
+                                'changes in {}.'.format(tab.path))
 
     def check_usb(self):
         """
@@ -1081,7 +1150,7 @@ class Editor:
         for name, mode in self.modes.items():
             if hasattr(mode, 'find_device'):
                 # The mode can detect an attached device.
-                port = mode.find_device(with_logging=False)
+                port, serial = mode.find_device(with_logging=False)
                 if port:
                     devices.append((name, port))
                     device_types.add(name)
@@ -1101,7 +1170,10 @@ class Editor:
                 msg = _('Detected new {} device.').format(device_name)
                 self.show_status_message(msg)
                 # Only ask to switch mode if a single device type is connected
-                if len(device_types) == 1 and self.mode != mode_name:
+                # and we're not already trying to select a new mode via the
+                # dialog.
+                if (len(device_types) == 1 and self.mode != mode_name and not
+                        self.selecting_mode):
                     msg_body = _('Would you like to change Mu to the {} '
                                  'mode?').format(device_name)
                     change_confirmation = self._view.show_confirmation(
@@ -1122,17 +1194,25 @@ class Editor:
         if (self.modes[self.mode].has_debugger or
                 self.modes[self.mode].is_debugger):
             tab = self._view.current_tab
+            code = tab.text(line)
             if self.mode == 'debugger':
                 # The debugger is running.
-                self.modes['debugger'].toggle_breakpoint(line, tab)
+                if is_breakpoint_line(code):
+                    self.modes['debugger'].toggle_breakpoint(line, tab)
+                    return
             else:
                 # The debugger isn't running.
-                if line in tab.breakpoint_lines:
-                    tab.markerDelete(line, tab.BREAKPOINT_MARKER)
-                    tab.breakpoint_lines.remove(line)
-                else:
-                    tab.markerAdd(line, tab.BREAKPOINT_MARKER)
-                    tab.breakpoint_lines.add(line)
+                if tab.markersAtLine(line):
+                    tab.markerDelete(line, -1)
+                    return
+                elif is_breakpoint_line(code):
+                    handle = tab.markerAdd(line, tab.BREAKPOINT_MARKER)
+                    tab.breakpoint_handles.add(handle)
+                    return
+            msg = _('Cannot Set Breakpoint.')
+            info = _("Lines that are comments or some multi-line "
+                     "statements cannot have breakpoints.")
+            self._view.show_message(msg, info)
 
     def rename_tab(self, tab_id=None):
         """
@@ -1146,7 +1226,16 @@ class Editor:
             tab = self._view.current_tab
         if tab:
             new_path = self._view.get_save_path(tab.path)
-            if new_path:
+            if new_path and new_path != tab.path:
+                if self.check_for_shadow_module(new_path):
+                    message = _('You cannot use the filename '
+                                '"{}"').format(os.path.basename(new_path))
+                    info = _('This name is already used by another part of '
+                             'Python. If you use that name, things are '
+                             'likely to break. Please try again with a '
+                             'different filename.')
+                    self._view.show_message(message, info)
+                    return
                 logger.info('Attempting to rename {} to {}'.format(tab.path,
                                                                    new_path))
                 # The user specified a path to a file.
@@ -1167,3 +1256,53 @@ class Editor:
                 tab.path = new_path
                 logger.info('Renamed file to: {}'.format(tab.path))
                 self.save()
+
+    def find_replace(self):
+        """
+        Handle find / replace functionality.
+
+        If find/replace dialog is dismissed, do nothing.
+
+        Otherwise, check there's something to find, warn if there isn't.
+
+        If there is, find (and, optionally, replace) then confirm outcome with
+        a status message.
+        """
+        result = self._view.show_find_replace(self.find, self.replace,
+                                              self.global_replace)
+        if result:
+            self.find, self.replace, self.global_replace = result
+            if self.find:
+                if self.replace:
+                    replaced = self._view.replace_text(self.find, self.replace,
+                                                       self.global_replace)
+                    if replaced == 1:
+                        msg = _('Replaced "{}" with "{}".')
+                        self.show_status_message(msg.format(self.find,
+                                                            self.replace))
+                    elif replaced > 1:
+                        msg = _('Replaced {} matches of "{}" with "{}".')
+                        self.show_status_message(msg.format(replaced,
+                                                            self.find,
+                                                            self.replace))
+                    else:
+                        msg = _('Could not find "{}".')
+                        self.show_status_message(msg.format(self.find))
+                else:
+                    matched = self._view.highlight_text(self.find)
+                    if matched:
+                        msg = _('Highlighting matches for "{}".')
+                    else:
+                        msg = _('Could not find "{}".')
+                    self.show_status_message(msg.format(self.find))
+            else:
+                message = _('You must provide something to find.')
+                information = _("Please try again, this time with something "
+                                "in the find box.")
+                self._view.show_message(message, information)
+
+    def toggle_comments(self):
+        """
+        Ensure all highlighted lines are toggled between comments/uncommented.
+        """
+        self._view.toggle_comments()
