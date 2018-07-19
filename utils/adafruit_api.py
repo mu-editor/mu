@@ -10,7 +10,7 @@ import scrapy
 from bs4 import BeautifulSoup
 
 
-URL = 'https://circuitpython.readthedocs.io/en/2.x/shared-bindings/index.html'
+URL = 'https://circuitpython.readthedocs.io/en/3.x/shared-bindings/index.html'
 
 
 class AdafruitSpider(scrapy.Spider):
