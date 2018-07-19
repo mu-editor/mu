@@ -70,7 +70,7 @@ class AdafruitMode(MicroPythonMode):
                 'display_name': _('Serial'),
                 'description': _('Open a serial connection to your device.'),
                 'handler': self.toggle_repl,
-                'shortcut': 'CTRL+Shift+S',
+                'shortcut': 'CTRL+Shift+U',
             }, ]
         if CHARTS:
             buttons.append({

@@ -72,7 +72,7 @@ class PyGameZeroMode(BaseMode):
                 'display_name': _('Sounds'),
                 'description': _('Show the sounds used by Pygame Zero.'),
                 'handler': self.show_sounds,
-                'shortcut': 'Ctrl+Shift+S',
+                'shortcut': 'Ctrl+Shift+N',
             },
             {
                 'name': 'music',
