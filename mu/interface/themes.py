@@ -46,10 +46,10 @@ def should_patch_osx_mojave_font():
 # The default font size.
 DEFAULT_FONT_SIZE = 14
 # All editor windows use the same font
-if should_patch_osx_mojave_font():
+if should_patch_osx_mojave_font():  # pragma: no cover
     logger.warn("Overriding built-in editor font due to Issue #552")
     FONT_NAME = "Monaco"
-else:
+else:  # pragma: no cover
     FONT_NAME = "Source Code Pro"
 
 FONT_FILENAME_PATTERN = "SourceCodePro-{variant}.otf"
