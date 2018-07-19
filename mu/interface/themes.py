@@ -17,14 +17,41 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import platform
+
 from PyQt5.QtGui import QColor, QFontDatabase
 from mu.resources import load_stylesheet, load_font_data
+
+
+logger = logging.getLogger(__name__)
+
+
+def should_patch_osx_mojave_font():
+    """
+    OSX mojave and qt5/qtscintilla has a bug where non-system installed fonts
+    are always rendered as black, regardless of the theme color.
+
+    This is inconvenient for light themes, but makes dark themes unusable.
+
+    Using a system-installed font doesn't exhibit this behaviour, so
+    update FONT_NAME to use the default terminal font in OSX on mojave.
+
+    This patch should be removed once the underlying issue has been resolved
+
+    github issue #552
+    """
+    return platform.platform().startswith("Darwin-18.")
 
 
 # The default font size.
 DEFAULT_FONT_SIZE = 14
 # All editor windows use the same font
-FONT_NAME = "Source Code Pro"
+if should_patch_osx_mojave_font():
+    logger.warn("Overriding built-in editor font due to Issue #552")
+    FONT_NAME = "Monaco"
+else:
+    FONT_NAME = "Source Code Pro"
+
 FONT_FILENAME_PATTERN = "SourceCodePro-{variant}.otf"
 FONT_VARIANTS = ("Bold", "BoldIt", "It", "Regular", "Semibold", "SemiboldIt")
 # Load the two themes from resources/css/[night|day].css
