@@ -507,6 +507,20 @@ def test_check_pycodestyle():
     assert result[6][0]['code'] == 'E303'
 
 
+def test_check_pycodestyle_with_non_ascii():
+    """
+    Ensure pycodestyle can at least see a file with non-ASCII characters
+    """
+    code = "x='\u2005'\n"
+    try:
+        mu.logic.check_pycodestyle(code)
+    except Exception as exc:
+        assert False, "Exception was raised: %s" % exc
+    #
+    # Doesn't actually matter what pycodestyle returns; we just want to make
+    # sure it didn't error out
+    #
+
 def test_MuFlakeCodeReporter_init():
     """
     Check state is set up as expected.
