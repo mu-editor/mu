@@ -521,6 +521,7 @@ def test_check_pycodestyle_with_non_ascii():
     # sure it didn't error out
     #
 
+
 def test_MuFlakeCodeReporter_init():
     """
     Check state is set up as expected.
