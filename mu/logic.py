@@ -408,8 +408,7 @@ def check_pycodestyle(code):
     # the code.
     code_fd, code_filename = tempfile.mkstemp()
     os.close(code_fd)
-    with open(code_filename, 'w', newline='') as code_file:
-        write_and_flush(code_file, code)
+    save_and_encode(code, code_filename)
     # Configure which PEP8 rules to ignore.
     ignore = ('E121', 'E123', 'E126', 'E226', 'E302', 'E305', 'E24', 'E704',
               'W291', 'W292', 'W293', 'W391', 'W503', )
@@ -427,7 +426,6 @@ def check_pycodestyle(code):
     temp_out.seek(0)
     results = temp_out.read()
     temp_out.close()
-    code_file.close()
     os.remove(code_filename)
     # Parse the output from the tool into a dictionary of structured data.
     style_feedback = {}
