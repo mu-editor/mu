@@ -715,7 +715,7 @@ class Window(QMainWindow):
         to override the icon to one of the following settings: NoIcon,
         Question, Information, Warning or Critical.
         """
-        message_box = QMessageBox()
+        message_box = QMessageBox(self)
         message_box.setText(message)
         message_box.setWindowTitle(_('Mu'))
         if information:
