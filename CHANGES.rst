@@ -1,6 +1,22 @@
 Release History
 ---------------
 
+1.0.0
+=====
+
+* Fix for font related issues in OSX Mojave. Thanks to Steve Stagg for spotting
+  and fixing.
+* Fix for encoding issue encountered during code checking. Thanks to Tim
+  Golden for a swift fix.
+* Fix for orphaned modal dialog. Thanks for spotting this Zander Brown.
+* Minor revisions to hot-key sequences to avoid duplications. All documented
+  at https://codewith.mu/en/tutorials/1.0/shortcuts.
+* Update to latest version of uflash and MicroPython 1.0.0-rc.2 for micro:bit.
+* Updated to latest GuiZero in Windows installers.
+* Update third party API documentation used by QScintilla for code completion
+  and call tips. Includes CircuitPython 3 and PyGame Zero 1.2.
+* Added swag related graphics to the repository (non-functional change).
+
 1.0.0.rc.1
 ==========
 
