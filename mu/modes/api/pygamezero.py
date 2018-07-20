@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 PYGAMEZERO_APIS = [
+    _('actor.Actor(image, pos=None, anchor=None, **kwargs) \nRect(left, top, width, height) -> Rect\nRect((left, top), (width, height)) -> Rect\nRect(object) -> Rect\npygame object for storing rectangular coordinates'),
     _('actor.atan2() \natan2(y, x)\n\nReturn the arc tangent (measured in radians) of y/x.\nUnlike atan(y/x), the signs of both x and y are considered.'),
     _('actor.cos() \ncos(x)\n\nReturn the cosine of x (measured in radians).'),
     _('actor.degrees() \ndegrees(x)\n\nConvert angle x from radians to degrees.'),
