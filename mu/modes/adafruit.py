@@ -51,6 +51,7 @@ class AdafruitMode(MicroPythonMode):
         (0x239A, 0x802A),  # Adafruit Feather 52840
         (0x239A, 0x802C),  # Adafruit Itsy M4
         (0x239A, 0x802E),  # Adafruit CRICKit M0
+        (0x239A, 0xD1ED),  # Adafruit HalloWing M0
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
