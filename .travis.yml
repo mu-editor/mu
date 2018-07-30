@@ -12,6 +12,11 @@ matrix:
       sudo: required
       language: python
       python: 3.6
+    - os: linux
+      dist: xenial  # required for Python 3.7 (travis-ci/travis-ci#9069)
+      sudo: required
+      language: python
+      python: 3.7
 
     # To maximise compatibility pick earliest image, OS X 10.10 Yosemite
     - os: osx
