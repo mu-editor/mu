@@ -240,7 +240,7 @@ class ESP8266Mode(MicroPythonMode):
         logger.debug(python_script)
 
         # Find serial port the ESP8266/ESP32 is connected to
-        device_port = super().find_device()
+        device_port, serial = super().find_device()
 
         if not device_port:
             message = _('Could not find an attached ESP8266/ESP32.')
@@ -257,7 +257,7 @@ class ESP8266Mode(MicroPythonMode):
         pyboard = Pyboard(device_port)
         message = _('Flashing "{}" onto the ESP8266/ESP32.').format(filename)
         self.editor.show_status_message(message, 10)
-        self.set_buttons(flash=False)
+        self.set_buttons(flash=False, repl=False, files=False)
 
         # Always write to "main.py" when flashing, regardless of filename
         self.flash_thread = DeviceFlasher(pyboard, "main.py", python_script)
@@ -280,7 +280,7 @@ class ESP8266Mode(MicroPythonMode):
         """
         Called when the thread used to flash the micro:bit has finished.
         """
-        self.set_buttons(flash=True)
+        self.set_buttons(flash=True, repl=True, files=True)
         self.editor.show_status_message(_("Finished flashing."))
         self.flash_thread = None
         self.flash_timer = None
@@ -298,7 +298,8 @@ class ESP8266Mode(MicroPythonMode):
         if self.flash_timer:
             self.flash_timer.stop()
             self.flash_timer = None
-        self.set_buttons(flash=True)
+        self.set_buttons(flash=True, repl=True, files=True)
+
         self.flash_thread = None
 
     def toggle_files(self, event):
@@ -318,11 +319,11 @@ class ESP8266Mode(MicroPythonMode):
                 self.add_fs()
                 if self.fs:
                     logger.info('Toggle filesystem on.')
-                    self.set_buttons(repl=False, plotter=False)
+                    self.set_buttons(flash=False, repl=False, plotter=False)
             else:
                 self.remove_fs()
                 logger.info('Toggle filesystem off.')
-                self.set_buttons(repl=True, plotter=True)
+                self.set_buttons(flash=False, repl=True, plotter=True)
 
     def add_fs(self):
         """
@@ -330,7 +331,7 @@ class ESP8266Mode(MicroPythonMode):
         """
 
         # Find serial port the ESP8266/ESP32 is connected to
-        device_port = super().find_device()
+        device_port, serial = super().find_device()
 
         # Check for micro:bit
         if not device_port:
@@ -363,8 +364,6 @@ class ESP8266Mode(MicroPythonMode):
         """
         Remove the file system navigator from the UI.
         """
-        if self.fs is None:
-            raise RuntimeError("File system not running")
         self.view.remove_filesystem()
         self.file_manager = None
         self.file_manager_thread = None
