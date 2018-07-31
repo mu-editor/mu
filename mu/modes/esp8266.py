@@ -323,7 +323,7 @@ class ESP8266Mode(MicroPythonMode):
             else:
                 self.remove_fs()
                 logger.info('Toggle filesystem off.')
-                self.set_buttons(flash=False, repl=True, plotter=True)
+                self.set_buttons(flash=True, repl=True, plotter=True)
 
     def add_fs(self):
         """
