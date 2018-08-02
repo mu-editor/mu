@@ -43,7 +43,7 @@ BOARD_IDS = set([
     (0x239A, 0x801B),  # feather m0 express PID
     (0x1A86, 0x7523),  # Wemos D1 Mini USB VID, PID
     (0x10C4, 0xEA60),  # Wemos D1 Mini Pro USB VID, PID
-    (0x0403, 0x6015),   # Sparkfun ESP32 PID, VID
+    (0x0403, 0x6015),   # Sparkfun ESP32 Thing VID, PID
 ])
 
 

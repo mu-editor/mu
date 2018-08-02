@@ -14,7 +14,7 @@ class DeviceFlasher(QThread):
     """
     Used to flash the ESP8266/ESP32 in a non-blocking manner.
     """
-    # Emitted when flashing the micro:bit fails for any reason.
+    # Emitted when flashing the MicroPython-device fails for any reason.
     on_flash_fail = pyqtSignal(str)
 
     def __init__(self, pyboard, filename, python_script):
@@ -175,7 +175,7 @@ class ESP8266Mode(MicroPythonMode):
             {
                 'name': 'files',
                 'display_name': _('Files'),
-                'description': _('Access the file system on the micro:bit.'),
+                'description': _('Access the file system on ESP8266/ESP32.'),
                 'handler': self.toggle_files,
                 'shortcut': 'F4',
             },
@@ -199,13 +199,18 @@ class ESP8266Mode(MicroPythonMode):
 
     def toggle_repl(self, event):
         if self.fs is None:
-            super().toggle_repl(event)
             if self.repl:
-                self.set_buttons(files=False)
-                self.set_buttons(flash=False)
-            elif not (self.repl or self.plotter):
+                # Remove REPL
+                super().toggle_repl(event)
+                files.Files._lock.release()
                 self.set_buttons(files=True)
                 self.set_buttons(flash=True)
+            elif not (self.repl or self.plotter):
+                # Add REPL
+                files.Files._lock.acquire()
+                super().toggle_repl(event)
+                self.set_buttons(files=False)
+                self.set_buttons(flash=False)
         else:
             message = _("REPL and file system cannot work at the same time.")
             information = _("The REPL and file system both use the same USB "
@@ -254,7 +259,7 @@ class ESP8266Mode(MicroPythonMode):
             self.view.show_message(message, information)
             return
 
-        pyboard = Pyboard(device_port)
+        pyboard = Pyboard(device_port, rawdelay=2)
         message = _('Flashing "{}" onto the ESP8266/ESP32.').format(filename)
         self.editor.show_status_message(message, 10)
         self.set_buttons(flash=False, repl=False, files=False)
@@ -262,17 +267,7 @@ class ESP8266Mode(MicroPythonMode):
         # Always write to "main.py" when flashing, regardless of filename
         self.flash_thread = DeviceFlasher(pyboard, "main.py", python_script)
 
-        if sys.platform == 'win32':
-            # Windows blocks on write.
-            self.flash_thread.finished.connect(self.flash_finished)
-        else:
-            # Other platforms don't block, so schedule the finish call
-            # for 10 seconds (approximately how long flashing the device
-            # takes).
-            self.flash_timer = QTimer()
-            self.flash_timer.timeout.connect(self.flash_finished)
-            self.flash_timer.setSingleShot(True)
-            self.flash_timer.start(10000)
+        self.flash_thread.finished.connect(self.flash_finished)
         self.flash_thread.on_flash_fail.connect(self.flash_failed)
         self.flash_thread.start()
 
@@ -291,7 +286,7 @@ class ESP8266Mode(MicroPythonMode):
         problem.
         """
         logger.error(error)
-        message = _("There was a problem flashing the micro:bit.")
+        message = _("There was a problem flashing the ESP8266/ESP32.")
         information = _("Please do not disconnect the device until flashing"
                         " has completed.")
         self.view.show_message(message, information, 'Warning')
@@ -305,7 +300,7 @@ class ESP8266Mode(MicroPythonMode):
     def toggle_files(self, event):
         """
         Check for the existence of the REPL or plotter before toggling the file
-        system navigator for the micro:bit on or off.
+        system navigator for the MicroPython device on or off.
         """
         if self.repl:
             message = _("File system cannot work at the same time as the "
@@ -333,7 +328,7 @@ class ESP8266Mode(MicroPythonMode):
         # Find serial port the ESP8266/ESP32 is connected to
         device_port, serial = super().find_device()
 
-        # Check for micro:bit
+        # Check for MicroPython device
         if not device_port:
             message = _('Could not find an attached ESP8266/ESP32.')
             information = _("Please make sure the device is plugged "
@@ -346,7 +341,7 @@ class ESP8266Mode(MicroPythonMode):
             self.view.show_message(message, information)
             return
 
-        pyboard = Pyboard(device_port)
+        pyboard = Pyboard(device_port, rawdelay=2)
         fs = files.Files(pyboard)
 
         self.file_manager_thread = QThread(self)
