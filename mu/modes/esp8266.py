@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 from mu.modes.base import MicroPythonMode
-from mu.modes.api import MICROBIT_APIS, SHARED_APIS
+from mu.modes.api import ESP_APIS, SHARED_APIS
 from mu.contrib.pyboard import Pyboard
 import mu.contrib.files as files
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
@@ -195,7 +195,7 @@ class ESP8266Mode(MicroPythonMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return SHARED_APIS + MICROBIT_APIS
+        return SHARED_APIS + ESP_APIS
 
     def toggle_repl(self, event):
         if self.fs is None:
