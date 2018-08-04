@@ -259,17 +259,24 @@ class ESP8266Mode(MicroPythonMode):
             self.view.show_message(message, information)
             return
 
-        pyboard = Pyboard(device_port, rawdelay=2)
-        message = _('Flashing "{}" onto the ESP8266/ESP32.').format(filename)
-        self.editor.show_status_message(message, 10)
-        self.set_buttons(flash=False, repl=False, files=False)
+        try:
+            pyboard = Pyboard(device_port, rawdelay=2)
+            message = _('Flashing "{}" onto the ESP8266/ESP32.').format(filename)
+            self.editor.show_status_message(message, 10)
+            self.set_buttons(flash=False, repl=False, files=False)
 
-        # Always write to "main.py" when flashing, regardless of filename
-        self.flash_thread = DeviceFlasher(pyboard, "main.py", python_script)
+            # Always write to "main.py" when flashing, regardless of filename
+            self.flash_thread = DeviceFlasher(pyboard, "main.py", python_script)
 
-        self.flash_thread.finished.connect(self.flash_finished)
-        self.flash_thread.on_flash_fail.connect(self.flash_failed)
-        self.flash_thread.start()
+            self.flash_thread.finished.connect(self.flash_finished)
+            self.flash_thread.on_flash_fail.connect(self.flash_failed)
+            self.flash_thread.start()
+        except PyboardError:
+            message = _("Failed to connect to device at '" + device_port + "'")
+            information = _("Found device at '" + device_port + "'"
+                            "but failed to establish connection while"
+                            "attempting to flash. Try again.")
+            self.view.show_message(message, information)
 
     def flash_finished(self):
         """
@@ -341,19 +348,27 @@ class ESP8266Mode(MicroPythonMode):
             self.view.show_message(message, information)
             return
 
-        pyboard = Pyboard(device_port, rawdelay=2)
-        fs = files.Files(pyboard)
+        try:
+            pyboard = Pyboard(device_port, rawdelay=2)
+            fs = files.Files(pyboard)
 
-        self.file_manager_thread = QThread(self)
-        self.file_manager = FileManager(pyboard, fs)
-        self.file_manager.moveToThread(self.file_manager_thread)
-        self.file_manager_thread.started.\
-            connect(self.file_manager.on_start)
-        self.fs = self.view.add_filesystem(self.workspace_dir(),
-                                           self.file_manager)
-        self.fs.set_message.connect(self.editor.show_status_message)
-        self.fs.set_warning.connect(self.view.show_message)
-        self.file_manager_thread.start()
+            self.file_manager_thread = QThread(self)
+            self.file_manager = FileManager(pyboard, fs)
+            self.file_manager.moveToThread(self.file_manager_thread)
+            self.file_manager_thread.started.\
+                connect(self.file_manager.on_start)
+            self.fs = self.view.add_filesystem(self.workspace_dir(),
+                                               self.file_manager)
+            self.fs.set_message.connect(self.editor.show_status_message)
+            self.fs.set_warning.connect(self.view.show_message)
+            self.file_manager_thread.start()
+        except PyboardError:
+            message = _("Failed to connect to device at '" + device_port + "'")
+            information = _("Found device at '" + device_port + "'"
+                            "but failed to establish connection while"
+                            "attempting to flash. Try again.")
+            self.view.show_message(message, information)
+
 
     def remove_fs(self):
         """
