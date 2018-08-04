@@ -241,8 +241,6 @@ class ESP8266Mode(MicroPythonMode):
             return
         filename = tab.label
         python_script = tab.text().encode('utf-8')
-        logger.debug('Python script:')
-        logger.debug(python_script)
 
         # Find serial port the ESP8266/ESP32 is connected to
         device_port, serial = super().find_device()
