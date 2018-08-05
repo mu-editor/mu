@@ -43,39 +43,38 @@ class DeviceFlasher(QThread):
 
 class FileManager(QObject):
     """
-    Used to manage micro:bit filesystem operations in a manner such that the
-    UI remains responsive.
+    Used to manage ESP8266/ESP32 filesystem operations in a manner
+    such that the UI remains responsive.
 
-    Provides an FTP-ish API. Emits signals on success or failure of different
-    operations.
+    Provides an FTP-ish API. Emits signals on success or failure of
+    different operations.
     """
 
-    # Emitted when the tuple of files on the micro:bit is known.
+    # Emitted when the tuple of files on the ESP8266/ESP32 is known.
     on_list_files = pyqtSignal(tuple)
-    # Emitted when the file with referenced filename is got from the micro:bit.
+    # Emitted when a file is downloaded from the ESP8266/ESP32.
     on_get_file = pyqtSignal(str)
-    # Emitted when the file with referenced filename is put onto the micro:bit.
+    # Emitted when a file with is put onto the ESP8266/ESP32.
     on_put_file = pyqtSignal(str)
-    # Emitted when the file with referenced filename is deleted from the
-    # micro:bit.
+    # Emitted when a file is deleted from the ESP8266/ESP32.
     on_delete_file = pyqtSignal(str)
-    # Emitted when Mu is unable to list the files on the micro:bit.
+    # Emitted when Mu is unable to list the files on the ESP8266/ESP32.
     on_list_fail = pyqtSignal()
-    # Emitted when the referenced file fails to be got from the micro:bit.
+    # Emitted when a file fails to be got from the ESP8266/ESP32.
     on_get_fail = pyqtSignal(str)
-    # Emitted when the referenced file fails to be put onto the micro:bit.
+    # Emitted when a file fails to be put onto the ESP8266/ESP32.
     on_put_fail = pyqtSignal(str)
-    # Emitted when the referenced file fails to be deleted from the micro:bit.
+    # Emitted when a file fails to be deleted from the ESP8266/ESP32.
     on_delete_fail = pyqtSignal(str)
 
     def __init__(self, pyboard, fs):
         """
-        The paths_to_microbits should be a list containing filesystem paths to
-        attached micro:bits to flash. The python_script should be the text of
-        the script to flash onto the device. The path_to_runtime should be the
-        path of the hex file for the MicroPython runtime to use. If the
-        path_to_runtime is None, the default MicroPython runtime is used by
-        default.
+        The paths_to_microbits should be a list containing filesystem
+        paths to attached ESP8266/ESP32s to flash. The python_script
+        should be the text of the script to flash onto the device. The
+        path_to_runtime should be the path of the hex file for the
+        MicroPython runtime to use. If the path_to_runtime is None,
+        the default MicroPython runtime is used by default.
         """
         QObject.__init__(self)
         self.pyboard = pyboard
@@ -84,14 +83,14 @@ class FileManager(QObject):
     def on_start(self):
         """
         Run when the thread containing this object's instance is started so
-        it can emit the list of files found on the connected micro:bit.
+        it can emit the list of files found on the connected ESP8266/ESP32.
         """
         self.ls()
 
     def ls(self):
         """
-        List the files on the micro:bit. Emit the resulting tuple of filenames
-        or emit a failure signal.
+        List the files on the ESP8266/ESP32. Emit the resulting tuple of
+        filenames or emit a failure signal.
         """
         try:
             result = tuple(self.fs.ls(long_format=False))
@@ -102,7 +101,7 @@ class FileManager(QObject):
 
     def get(self, microbit_filename, local_filename):
         """
-        Get the referenced micro:bit filename and save it to the local
+        Get the referenced ESP8266/ESP32 filename and save it to the local
         filename. Emit the name of the filename when complete or emit a
         failure signal.
         """
@@ -118,8 +117,8 @@ class FileManager(QObject):
 
     def put(self, local_filename):
         """
-        Put the referenced local file onto the filesystem on the micro:bit.
-        Emit the name of the file on the micro:bit when complete, or emit
+        Put the referenced local file onto the filesystem on the ESP8266/ESP32.
+        Emit the name of the file on the ESP8266/ESP32 when complete, or emit
         a failure signal.
         """
         try:
@@ -137,8 +136,8 @@ class FileManager(QObject):
 
     def delete(self, microbit_filename):
         """
-        Delete the referenced file on the micro:bit's filesystem. Emit the name
-        of the file when complete, or emit a failure signal.
+        Delete the referenced file on the ESP8266/ESP32's filesystem. Emit
+        the name of the file when complete, or emit a failure signal.
         """
         try:
             self.fs.rm(microbit_filename)
@@ -148,7 +147,7 @@ class FileManager(QObject):
             self.on_delete_fail.emit(microbit_filename)
 
 
-class ESP8266Mode(MicroPythonMode):
+class ESPMode(MicroPythonMode):
     """
     Represents the functionality required for running MicroPython on ESP8266
     """
@@ -259,12 +258,16 @@ class ESP8266Mode(MicroPythonMode):
 
         try:
             pyboard = Pyboard(device_port, rawdelay=2)
-            message = _('Flashing "{}" onto the ESP8266/ESP32.').format(filename)
+            message = (_('Flashing "{}" onto the ESP8266/ESP32.')
+                       .format(filename))
             self.editor.show_status_message(message, 10)
             self.set_buttons(flash=False, repl=False, files=False)
 
             # Always write to "main.py" when flashing, regardless of filename
-            self.flash_thread = DeviceFlasher(pyboard, "main.py", python_script)
+            # (similar to micro:bit mode)
+            self.flash_thread = DeviceFlasher(pyboard,
+                                              "main.py",
+                                              python_script)
 
             self.flash_thread.finished.connect(self.flash_finished)
             self.flash_thread.on_flash_fail.connect(self.flash_failed)
@@ -278,7 +281,7 @@ class ESP8266Mode(MicroPythonMode):
 
     def flash_finished(self):
         """
-        Called when the thread used to flash the micro:bit has finished.
+        Called when the thread used to flash the ESP8266/ESP32 has finished.
         """
         self.set_buttons(flash=True, repl=True, files=True)
         self.editor.show_status_message(_("Finished flashing."))
@@ -287,7 +290,7 @@ class ESP8266Mode(MicroPythonMode):
 
     def flash_failed(self, error):
         """
-        Called when the thread used to flash the micro:bit encounters a
+        Called when the thread used to flash the ESP8266/ESP32 encounters a
         problem.
         """
         logger.error(error)
@@ -366,7 +369,6 @@ class ESP8266Mode(MicroPythonMode):
                             "but failed to establish connection while"
                             "attempting to flash. Try again.")
             self.view.show_message(message, information)
-
 
     def remove_fs(self):
         """
