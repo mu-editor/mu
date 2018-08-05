@@ -1,9 +1,8 @@
 import os
-import sys
 import logging
 from mu.modes.base import MicroPythonMode
 from mu.modes.api import ESP_APIS, SHARED_APIS
-from mu.contrib.pyboard import Pyboard
+from mu.contrib.pyboard import Pyboard, PyboardError
 import mu.contrib.files as files
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
 
