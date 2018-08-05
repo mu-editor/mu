@@ -272,6 +272,13 @@ class ESPMode(MicroPythonMode):
             self.flash_thread.finished.connect(self.flash_finished)
             self.flash_thread.on_flash_fail.connect(self.flash_failed)
             self.flash_thread.start()
+            # We want to err if flashing isn't finished within 15 seconds
+            self.flash_timer = QTimer()
+            self.flash_timer.timeout.connect(
+                lambda: self.flash_failed("Timeout while flashing"))
+            self.flash_timer.setSingleShot(True)
+            self.flash_timer.start(15000)
+
         except PyboardError:
             message = _("Failed to connect to device at '" + device_port + "'")
             information = _("Found device at '" + device_port + "'"
@@ -286,7 +293,9 @@ class ESPMode(MicroPythonMode):
         self.set_buttons(flash=True, repl=True, files=True)
         self.editor.show_status_message(_("Finished flashing."))
         self.flash_thread = None
-        self.flash_timer = None
+        if self.flash_timer:
+            self.flash_timer.stop()
+            self.flash_timer = None
 
     def flash_failed(self, error):
         """
@@ -296,7 +305,8 @@ class ESPMode(MicroPythonMode):
         logger.error(error)
         message = _("There was a problem flashing the ESP8266/ESP32.")
         information = _("Please do not disconnect the device until flashing"
-                        " has completed.")
+                        " has completed, and"
+                        " check that no other programs are using device.")
         self.view.show_message(message, information, 'Warning')
         if self.flash_timer:
             self.flash_timer.stop()
