@@ -207,8 +207,12 @@ class ESPMode(MicroPythonMode):
                 # Add REPL
                 files.Files._lock.acquire()
                 super().toggle_repl(event)
-                self.set_buttons(files=False)
-                self.set_buttons(flash=False)
+                if self.repl:
+                    self.set_buttons(files=False)
+                    self.set_buttons(flash=False)
+                else:
+                    # could not open REPL, release lock
+                    files.Files._lock.release()
         else:
             message = _("REPL and file system cannot work at the same time.")
             information = _("The REPL and file system both use the same USB "
