@@ -666,9 +666,8 @@ class Editor:
         if paths and len(paths) > 0:
             self.load_cli(paths)
         if not self._view.tab_count:
-            py = _('# Write your code here :-)')+'\n'
+            py = _('# Write your code here :-)')
             self._view.add_tab(None, py, self.modes[self.mode].api(), NEWLINE)
-            self._view.current_tab.setSelection(1, 0, 1, 0)
             logger.info('Starting with blank file.')
         self.change_mode(self.mode)
         self._view.set_theme(self.theme)
