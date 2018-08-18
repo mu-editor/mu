@@ -282,6 +282,7 @@ class Window(QMainWindow):
         new_tab.setFocus()
         if self.read_only_tabs:
             new_tab.setReadOnly(self.read_only_tabs)
+        return new_tab
 
     def focus_tab(self, tab):
         index = self.tabs.indexOf(tab)
