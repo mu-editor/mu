@@ -9,5 +9,5 @@ Exec=mu-editor %F
 Terminal=false
 Categories=Application;Development;
 Keywords=Python;Editor;microbit;micro:bit;
-StartupWMClass=mu
+StartupWMClass=mu-editor
 MimeType=text/x-python3;text/x-python3;
