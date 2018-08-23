@@ -177,8 +177,11 @@ class Pyboard:
         if _rawdelay > 0:
             time.sleep(_rawdelay)
 
-        self.serial.write(b'\r\x03\x03') # ctrl-C twice: interrupt any running program
-
+        # self.serial.write(b'\r\x03\x03') # ctrl-C twice: interrupt any running program
+        self.serial.write(b'\x02') # ctrl-B: exit RAW repl
+        time.sleep(0.3) # not sure this is necessary
+        self.serial.write(b'\x03') # ctrl-C: interrupt any running program
+        time.sleep(0.3) # not sure this is necessary
         # flush input (without relying on serial.flushInput())
         n = self.serial.inWaiting()
         while n > 0:
@@ -190,6 +193,10 @@ class Pyboard:
         if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
             print(data)
             raise PyboardError('could not enter raw repl')
+
+        # There's an NLR jump failed error occuring in MicroPython on
+        # ESP32 if we don't do this sleep
+        time.sleep(0.3)
 
         self.serial.write(b'\x04') # ctrl-D: soft reset
         data = self.read_until(1, b'soft reboot\r\n')
