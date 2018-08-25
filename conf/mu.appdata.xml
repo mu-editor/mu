@@ -4,7 +4,7 @@
 	<metadata_license>CC0-1.0</metadata_license>
 	<project_license>GPL-3.0</project_license>
 	<name>Mu</name>
-	<summary>A simple Python editor for beginner programmers.</summary>
+	<summary>A simple Python editor for beginner programmers</summary>
 	<description>
         <p>Mu is a Python code editor for beginner programmers based on
         extensive feedback given by teachers and learners.</p>
@@ -18,14 +18,12 @@
         REPL (either running on the connected CircuitPython or MicroPython
         device or as a Jupyter based iPython session in Python3 mode).</p>
         <p>Mu is written in Python and works on Windows, OSX, Linux and
-        Raspberry Pi. The project's public facing website is
-        https://codewith.mu/. We celebrate the work done by users of mu at
-        https://madewith.mu/.</p>
+        Raspberry Pi.</p>
 	</description>
 	<url type="homepage">http://codewith.mu/</url>
 	<url type="help">http://codewith.mu/tutorials/</url>
 	<url type="bugtracker">https://github.com/mu-editor/mu/issues</url>
 	<project_group>mu-editor</project_group>
-	<_developer_name>Nicholas H.Tollervey</_developer_name>
+	<x-developer_name>Nicholas H.Tollervey</x-developer_name>
 	<translation type="gettext">mu</translation>
 </component>
