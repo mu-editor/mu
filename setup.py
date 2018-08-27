@@ -17,7 +17,7 @@ install_requires = ['pycodestyle==2.4.0', 'pyflakes==2.0.0',
                     'pgzero==1.2', 'PyQtChart==5.11.2', 'appdirs>=1.4.3',
                     'gpiozero>=1.4.1', 'guizero>=0.5.2',
                     'pigpio>=1.40.post1', 'Pillow>=5.2.0',
-                    'requests>=2.19.1', 'semver>=2.8.0', ]
+                    'requests>=2.19.1', 'semver>=2.8.0', 'nudatus>=0.0.3', ]
 
 # Exclude packages not available for ARM in PyPI/piwheels (Raspberry Pi)
 try:
