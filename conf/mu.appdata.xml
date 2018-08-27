@@ -24,6 +24,6 @@
 	<url type="help">http://codewith.mu/tutorials/</url>
 	<url type="bugtracker">https://github.com/mu-editor/mu/issues</url>
 	<project_group>mu-editor</project_group>
-	<x-developer_name>Nicholas H.Tollervey</x-developer_name>
+	<developer_name>Nicholas H.Tollervey</developer_name>
 	<translation type="gettext">mu</translation>
 </component>
