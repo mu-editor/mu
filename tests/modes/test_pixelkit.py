@@ -2,9 +2,10 @@
 """
 Tests for Pixel Kit mode.
 """
+import os
 import esptool
 from argparse import Namespace
-from mu.modes.pixelkit import DeviceFlasher
+from mu.modes.pixelkit import DeviceFlasher, FileManager
 from unittest import mock
 
 
@@ -150,3 +151,116 @@ def test_DeviceFlasher_flash_micropython():
         df.download_micropython.assert_called_once()
         df.get_addr_filename.assert_called_once_with(["0x1000", filename])
         df.write_flash.assert_called_once_with(addr_filename)
+
+def test_FileManager_on_start():
+    """
+    When a thread signals it has started, list the files.
+    """
+    fm = FileManager()
+    fm.ls = mock.MagicMock()
+    fm.on_start()
+    fm.ls.assert_called_once_with()
+
+
+def test_FileManager_ls():
+    """
+    The on_list_files signal is emitted with a tuple of files when pixelfs.ls
+    completes successfully.
+    """
+    fm = FileManager()
+    fm.on_list_files = mock.MagicMock()
+    mock_ls = mock.MagicMock(return_value=['foo.py', 'bar.py', ])
+    with mock.patch('mu.modes.pixelkit.pixelfs.ls', mock_ls):
+        fm.ls()
+    fm.on_list_files.emit.assert_called_once_with(('foo.py', 'bar.py'))
+
+
+def test_FileManager_ls_fail():
+    """
+    The on_list_fail signal is emitted when a problem is encountered.
+    """
+    fm = FileManager()
+    fm.on_list_fail = mock.MagicMock()
+    with mock.patch('mu.modes.pixelkit.pixelfs.ls',
+                    side_effect=Exception('boom')):
+        fm.ls()
+    fm.on_list_fail.emit.assert_called_once_with()
+
+
+def test_fileManager_get():
+    """
+    The on_get_file signal is emitted with the name of the effected file when
+    pixelfs.get completes successfully.
+    """
+    fm = FileManager()
+    fm.on_get_file = mock.MagicMock()
+    mock_get = mock.MagicMock()
+    with mock.patch('mu.modes.pixelkit.pixelfs.get', mock_get):
+        fm.get('foo.py', 'bar.py')
+    mock_get.assert_called_once_with('foo.py', 'bar.py')
+    fm.on_get_file.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_get_fail():
+    """
+    The on_get_fail signal is emitted when a problem is encountered.
+    """
+    fm = FileManager()
+    fm.on_get_fail = mock.MagicMock()
+    with mock.patch('mu.modes.pixelkit.pixelfs.get',
+                    side_effect=Exception('boom')):
+        fm.get('foo.py', 'bar.py')
+    fm.on_get_fail.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_put():
+    """
+    The on_put_file signal is emitted with the name of the effected file when
+    pixelfs.put completes successfully.
+    """
+    fm = FileManager()
+    fm.on_put_file = mock.MagicMock()
+    mock_put = mock.MagicMock()
+    path = os.path.join('directory', 'foo.py')
+    with mock.patch('mu.modes.pixelkit.pixelfs.put', mock_put):
+        fm.put(path)
+    mock_put.assert_called_once_with(path, target=None)
+    fm.on_put_file.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_put_fail():
+    """
+    The on_put_fail signal is emitted when a problem is encountered.
+    """
+    fm = FileManager()
+    fm.on_put_fail = mock.MagicMock()
+    with mock.patch('mu.modes.pixelkit.pixelfs.put',
+                    side_effect=Exception('boom')):
+        fm.put('foo.py')
+    fm.on_put_fail.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_delete():
+    """
+    The on_delete_file signal is emitted with the name of the effected file
+    when pixelfs.rm completes successfully.
+    """
+    fm = FileManager()
+    fm.on_delete_file = mock.MagicMock()
+    mock_rm = mock.MagicMock()
+    with mock.patch('mu.modes.pixelkit.pixelfs.rm', mock_rm):
+        fm.delete('foo.py')
+    mock_rm.assert_called_once_with('foo.py')
+    fm.on_delete_file.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_delete_fail():
+    """
+    The on_delete_fail signal is emitted when a problem is encountered.
+    """
+    fm = FileManager()
+    fm.on_delete_fail = mock.MagicMock()
+    with mock.patch('mu.modes.pixelkit.pixelfs.rm',
+                    side_effect=Exception('boom')):
+        fm.delete('foo.py')
+    fm.on_delete_fail.emit.assert_called_once_with('foo.py')
