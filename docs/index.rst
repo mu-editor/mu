@@ -134,6 +134,7 @@ Contents:
    api.rst
    design.rst
    release.rst
+   roadmap.rst
    authors.rst
    changes.rst
    license.rst
