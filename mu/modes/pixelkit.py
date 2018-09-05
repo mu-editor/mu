@@ -25,7 +25,11 @@ import esptool
 import tempfile
 import tarfile
 import urllib.request
+from time import sleep
 from PyQt5.QtCore import QThread, QObject, pyqtSignal
+from PyQt5.QtWidgets import QMessageBox
+from mu.modes.base import MicroPythonMode
+from mu.modes.api import SHARED_APIS
 from mu.contrib import pixelfs
 
 logger = logging.getLogger(__name__)
@@ -225,3 +229,262 @@ class FileManager(QObject):
         except Exception as ex:
             logger.error(ex)
             self.on_delete_fail.emit(board_filename)
+
+class PixelKitMode(MicroPythonMode):
+    """
+    Represents the functionality required by the Kano Pixel Kit mode.
+    """
+    name = _("Kano Pixel Kit")
+    description = _("Write MicroPython on the Kano Pixel Kit.")
+    icon = "pixelkit"
+    fs = None  #: Reference to filesystem navigator.
+    flash_thread = None
+    flash_timer = None
+
+    valid_boards = [
+        (0x0403, 0x6015),  # Kano Pixel Kit USB VID, PID
+    ]
+
+    def actions(self):
+        """
+        Return an ordered list of actions provided by this module. An action
+        is a name (also used to identify the icon) , description, and handler.
+        """
+        buttons = [
+            {
+                'name': 'run',
+                'display_name': _('Run'),
+                'description': _('Execute code from active tab.'),
+                'handler': self.run,
+                'shortcut': '',
+            },
+            {
+                'name': 'stop',
+                'display_name': _('Stop'),
+                'description': _('Interrupts running code.'),
+                'handler': self.stop,
+                'shortcut': '',
+            },
+            {
+                'name': 'mpfiles',
+                'display_name': _('Files'),
+                'description': _('Access the file system on the Pixel Kit.'),
+                'handler': self.toggle_files,
+                'shortcut': 'F4',
+            },
+            {
+                'name': 'repl',
+                'display_name': _('REPL'),
+                'description': _('Use the REPL to live-code on the '
+                                 'Pixel Kit.'),
+                'handler': self.toggle_repl,
+                'shortcut': 'Ctrl+Shift+I',
+            },
+            {
+                'name': 'mpflash',
+                'display_name': _('Flash'),
+                'description': _('Flash your Pixel Kit with MicroPython'),
+                'handler': self.flash,
+                'shortcut': 'Ctrl+Shift+I',
+            }, ]
+        return buttons
+
+    def api(self):
+        """
+        Return a list of API specifications to be used by auto-suggest and call
+        tips.
+        """
+        return SHARED_APIS
+
+    def run(self):
+        """
+        Run code on current tab.
+        """
+        port, serial_number = self.find_device()
+        if not port or not serial_number:
+            message = _('Could not find an attached Pixel Kit.')
+            information = _("Please make sure the device is plugged "
+                            "into this computer and turned on.\n\n"
+                            "If it's already on, try reseting it and waiting "
+                            "a few seconds before trying again.")
+            self.view.show_message(message, information)
+            return
+        if not self.repl:
+            self.toggle_repl(self)
+        serial = self.view.serial
+        if serial and self.view.current_tab and self.view.current_tab.text():
+            code = self.view.current_tab.text()
+            self.enter_raw_repl()
+            serial.write(bytes(code, 'ascii'))
+            sleep(0.01)
+            self.exit_raw_repl()
+
+    def enter_raw_repl(self):
+        self.view.serial.write(b'\x01')
+        sleep(0.01)
+
+    def exit_raw_repl(self):
+        self.view.serial.write(b'\x04') # CTRL-D
+        sleep(0.01)
+        self.view.serial.write(b'\x02') # CTRL-B
+        sleep(0.01)
+
+    def stop(self):
+        """
+        Send keyboard interrupt.
+        """
+        port, serial_number = self.find_device()
+        if not port or not serial_number:
+            message = _('Could not find an attached Pixel Kit.')
+            information = _("Please make sure the device is plugged "
+                            "into this computer and turned on.\n\n"
+                            "If it's already on, try reseting it and waiting "
+                            "a few seconds before trying again.")
+            self.view.show_message(message, information)
+            return
+        if not self.repl:
+            self.toggle_repl(self)
+        if self.view.serial:
+            self.view.serial.write(b'\x03') # CTRL-C
+
+    def flash(self):
+        tab = self.view.current_tab
+        if tab is None:
+            # There is no active text editor. Exit.
+            return
+        port, serial_number = self.find_device()
+        if not port or not serial_number:
+            message = _('Could not find an attached Pixel Kit.')
+            information = _("Please make sure the device is plugged "
+                            "into this computer and turned on.\n\n"
+                            "If it's already on, try reseting it and waiting "
+                            "a few seconds before trying again.")
+            self.view.show_message(message, information)
+            return
+        message = _("Flash your Pixel Kit with MicroPython.")
+        information = _("Make sure you have internet connection and don't "
+                        "disconnect your device during the process. It "
+                        "might take a minute or two but you will only need"
+                        "to do it once.")
+        if self.view.show_confirmation(message, information) != QMessageBox.Cancel:
+            self.set_buttons(mpflash=False, mpfiles=False, run=False, stop=False, repl=False)
+            self.flash_thread = DeviceFlasher(port)
+
+            self.flash_thread.finished.connect(self.flash_finished)
+            self.flash_thread.on_flash_fail.connect(self.flash_failed)
+            self.flash_thread.on_data.connect(self.on_flash_data)
+            self.flash_thread.start()
+
+    def flash_finished(self):
+        self.set_buttons(mpflash=True, mpfiles=True, run=True, stop=True, repl=True)
+        self.editor.show_status_message(_('Pixel Kit was flashed. Have fun!'))
+        message = _("Pixel Kit was flashed. Have fun!")
+        information = _("Your Pixel Kit now has MicroPython on it. Restart it "
+                        "to start using!")
+        self.view.show_message(message, information, 'Warning')
+        logger.info('Flash finished.')
+        self.flash_thread = None
+        self.flash_timer = None
+
+    def flash_failed(self, error):
+        self.set_buttons(mpflash=True, mpfiles=True, run=True, stop=True, repl=True)
+        logger.info('Flash failed.')
+        logger.error(error)
+        message = _("There was a problem flashing the Pixel Kit.")
+        information = _("Please do not disconnect the device until flashing"
+                        " has completed. Please check the logs for more"
+                        " information.")
+        self.view.show_message(message, information, 'Warning')
+        self.editor.show_status_message(_('Pixel Kit could not be flashed. Please restart the Pixel Kit and try again.'))
+        if self.flash_timer:
+            self.flash_timer.stop()
+            self.flash_timer = None
+        self.flash_thread = None
+
+    def on_flash_data(self, message):
+        self.editor.show_status_message(message)
+
+    def toggle_repl(self, event):
+        """
+        Check for the existence of the file pane before toggling REPL.
+        """
+        if self.fs is None:
+            super().toggle_repl(event)
+            if self.repl:
+                self.set_buttons(mpflash=False, mpfiles=False, run=True, stop=True,)
+            elif not (self.repl or self.plotter):
+                self.set_buttons(mpflash=True, mpfiles=True, run=True, stop=True,)
+        else:
+            message = _("REPL and file system cannot work at the same time.")
+            information = _("The REPL and file system both use the same USB "
+                            "serial connection. Only one can be active "
+                            "at any time. Toggle the file system off and "
+                            "try again.")
+            self.view.show_message(message, information)
+
+    def toggle_files(self, event):
+        """
+        Check for the existence of the REPL or plotter before toggling the file
+        system navigator for the Pixel Kit on or off.
+        """
+        if (self.repl or self.plotter):
+            message = _("File system cannot work at the same time as the "
+                        "REPL or plotter.")
+            information = _("The file system and the REPL and plotter "
+                            "use the same USB serial connection. Toggle the "
+                            "REPL and plotter off and try again.")
+            self.view.show_message(message, information)
+        else:
+            if self.fs is None:
+                self.add_fs()
+                if self.fs:
+                    logger.info('Toggle filesystem on.')
+                    self.set_buttons(mpflash=False, repl=False, run=False, stop=False, plotter=False)
+            else:
+                self.remove_fs()
+                logger.info('Toggle filesystem off.')
+                self.set_buttons(mpflash=True, repl=True, run=True, stop=True, plotter=True)
+
+    def add_fs(self):
+        """
+        Add the file system navigator to the UI.
+        """
+        # Check for Pixel Kit
+        port, serial_number = self.find_device()
+        if not port:
+            message = _('Could not find an attached Pixel Kit.')
+            information = _("Please make sure the device is plugged "
+                            "into this computer.\n\nThe device must "
+                            "have MicroPython flashed onto it before "
+                            "the file system will work.\n\n"
+                            "Finally, reset it and wait a few seconds "
+                            "before trying again.")
+            self.view.show_message(message, information)
+            return
+        self.file_manager_thread = QThread(self)
+        self.file_manager = FileManager()
+        self.file_manager.moveToThread(self.file_manager_thread)
+        self.file_manager_thread.started.\
+            connect(self.file_manager.on_start)
+        self.fs = self.view.add_filesystem(self.workspace_dir(),
+                                           self.file_manager)
+        self.fs.set_message.connect(self.editor.show_status_message)
+        self.fs.set_warning.connect(self.view.show_message)
+        self.file_manager_thread.start()
+
+    def remove_fs(self):
+        """
+        Remove the file system navigator from the UI.
+        """
+        self.view.remove_filesystem()
+        self.file_manager = None
+        self.file_manager_thread = None
+        self.fs = None
+
+    def on_data_flood(self):
+        """
+        Ensure the Files button is active before the REPL is killed off when
+        a data flood of the plotter is detected.
+        """
+        self.set_buttons(mpfiles=True)
+        super().on_data_flood()
