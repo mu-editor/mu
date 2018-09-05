@@ -26,3 +26,4 @@ setuptools
 sphinx
 twine
 wheel
+esptool
