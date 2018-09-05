@@ -18,13 +18,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
 import logging
 from argparse import Namespace
-import tempfile
-import urllib.request
-import tarfile
-from PyQt5.QtCore import QThread, pyqtSignal
 import esptool
+import tempfile
+import tarfile
+import urllib.request
+from PyQt5.QtCore import QThread, QObject, pyqtSignal
+from mu.contrib import pixelfs
 
 logger = logging.getLogger(__name__)
 
@@ -140,3 +142,86 @@ class DeviceFlasher(QThread):
         ]
         addr_filename = self.get_addr_filename(values)
         self.write_flash(addr_filename)
+
+class FileManager(QObject):
+    """
+    Used to manage Pixel Kit filesystem operations in a manner such that the
+    UI remains responsive.
+    Provides an FTP-ish API. Emits signals on success or failure of different
+    operations.
+    """
+
+    # Emitted when the tuple of files on the Pixel Kit is known.
+    on_list_files = pyqtSignal(tuple)
+    # Emitted when the file with referenced filename is got from the Pixel Kit.
+    on_get_file = pyqtSignal(str)
+    # Emitted when the file with referenced filename is put onto the Pixel Kit.
+    on_put_file = pyqtSignal(str)
+    # Emitted when the file with referenced filename is deleted from the
+    # Pixel Kit.
+    on_delete_file = pyqtSignal(str)
+    # Emitted when Mu is unable to list the files on the Pixel Kit.
+    on_list_fail = pyqtSignal()
+    # Emitted when the referenced file fails to be got from the Pixel Kit.
+    on_get_fail = pyqtSignal(str)
+    # Emitted when the referenced file fails to be put onto the Pixel Kit.
+    on_put_fail = pyqtSignal(str)
+    # Emitted when the referenced file fails to be deleted from the Pixel Kit.
+    on_delete_fail = pyqtSignal(str)
+
+    def on_start(self):
+        """
+        Run when the thread containing this object's instance is started so
+        it can emit the list of files found on the connected Pixel Kit.
+        """
+        self.ls()
+
+    def ls(self):
+        """
+        List the files on the Pixel Kit. Emit the resulting tuple of filenames
+        or emit a failure signal.
+        """
+        try:
+            result = tuple(pixelfs.ls())
+            self.on_list_files.emit(result)
+        except Exception as ex:
+            logger.exception(ex)
+            self.on_list_fail.emit()
+
+    def get(self, board_filename, local_filename):
+        """
+        Get the referenced Pixel Kit filename and save it to the local
+        filename. Emit the name of the filename when complete or emit a
+        failure signal.
+        """
+        try:
+            pixelfs.get(board_filename, local_filename)
+            self.on_get_file.emit(board_filename)
+        except Exception as ex:
+            logger.error(ex)
+            self.on_get_fail.emit(board_filename)
+
+    def put(self, local_filename):
+        """
+        Put the referenced local file onto the filesystem on the Pixel Kit.
+        Emit the name of the file on the Pixel Kit when complete, or emit
+        a failure signal.
+        """
+        try:
+            pixelfs.put(local_filename, target=None)
+            self.on_put_file.emit(os.path.basename(local_filename))
+        except Exception as ex:
+            logger.error(ex)
+            self.on_put_fail.emit(local_filename)
+
+    def delete(self, board_filename):
+        """
+        Delete the referenced file on the Pixel Kit's filesystem. Emit the name
+        of the file when complete, or emit a failure signal.
+        """
+        try:
+            pixelfs.rm(board_filename)
+            self.on_delete_file.emit(board_filename)
+        except Exception as ex:
+            logger.error(ex)
+            self.on_delete_fail.emit(board_filename)
