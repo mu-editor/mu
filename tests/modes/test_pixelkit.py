@@ -5,8 +5,10 @@ Tests for Pixel Kit mode.
 import os
 import esptool
 from argparse import Namespace
-from mu.modes.pixelkit import DeviceFlasher, FileManager
+from mu.modes.pixelkit import DeviceFlasher, FileManager, PixelKitMode
+from mu.modes.api import SHARED_APIS
 from unittest import mock
+from PyQt5.QtWidgets import QMessageBox
 
 
 TEST_ROOT = os.path.split(os.path.dirname(__file__))[0]
@@ -21,6 +23,7 @@ def test_DeviceFlasher_init():
     assert df.port == port
     assert df.firmware_type == firmware_type
 
+
 def test_DeviceFlasher_init_defaults():
     """
     Ensure the DeviceFlasher defaults firmware_type to 'micropython'
@@ -28,6 +31,7 @@ def test_DeviceFlasher_init_defaults():
     port = 'COM_PORT'
     df = DeviceFlasher(port)
     assert df.firmware_type == 'micropython'
+
 
 def test_DeviceFlasher_run():
     """
@@ -44,6 +48,7 @@ def test_DeviceFlasher_run():
         df_kc.run()
         df_mp.flash_kanocode.assert_called_once()
 
+
 def test_DeviceFlasher_run_fail():
     """
     Ensure the on_flash_fail signal is emitted if an exception is thrown when
@@ -55,9 +60,11 @@ def test_DeviceFlasher_run_fail():
     df_unknown.run()
     df_unknown.on_flash_fail.emit.assert_called_once_with('Unknown firmware type: unknown_firmware_type')
 
+
 def test_DeviceFlasher_get_addr_filename():
     # TODO
     pass
+
 
 def test_DeviceFlasher_write_flash():
     """
@@ -95,6 +102,7 @@ def test_DeviceFlasher_write_flash():
         mock_esptool.write_flash.assert_called_once_with(mock_stub, args)
         mock_stub.hard_reset.assert_called_once()
 
+
 def test_DeviceFlasher_write_flash_fail():
     """
     Ensure the on_flash_fail signal is emitted if an exception is thrown when
@@ -110,6 +118,7 @@ def test_DeviceFlasher_write_flash_fail():
         df.write_flash(addr_filename)
         df.on_flash_fail.emit.assert_called_once_with("Could not write to flash memory")
 
+
 def test_DeviceFlasher_download_micropython():
     """
     Ensure download_micropython returns a filename
@@ -120,6 +129,7 @@ def test_DeviceFlasher_download_micropython():
     with mock.patch('mu.modes.pixelkit.urllib.request', mock_request):
         fname = df.download_micropython()
         assert fname
+
 
 def test_DeviceFlasher_download_micropython_fail():
     """
@@ -134,6 +144,7 @@ def test_DeviceFlasher_download_micropython_fail():
         fname = df.download_micropython()
         assert fname == None
         df.on_flash_fail.emit.assert_called_once_with('Could not download MicroPython firmware')
+
 
 def test_DeviceFlasher_flash_micropython():
     """
@@ -151,6 +162,7 @@ def test_DeviceFlasher_flash_micropython():
         df.download_micropython.assert_called_once()
         df.get_addr_filename.assert_called_once_with(["0x1000", filename])
         df.write_flash.assert_called_once_with(addr_filename)
+
 
 def test_FileManager_on_start():
     """
@@ -264,3 +276,326 @@ def test_FileManager_delete_fail():
                     side_effect=Exception('boom')):
         fm.delete('foo.py')
     fm.on_delete_fail.emit.assert_called_once_with('foo.py')
+
+
+def test_pixelkit_mode():
+    """
+    Sanity check for setting up the mode.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    assert pm.name == 'Kano Pixel Kit'
+    assert pm.description is not 'Write MicroPython on the Kano Pixel Kit.'
+    assert pm.icon == 'pixelkit'
+    assert pm.editor == editor
+    assert pm.view == view
+
+    actions = pm.actions()
+    assert len(actions) == 5
+    assert actions[0]['name'] == 'run'
+    assert actions[0]['handler'] == pm.run
+    assert actions[1]['name'] == 'stop'
+    assert actions[1]['handler'] == pm.stop
+    assert actions[2]['name'] == 'mpfiles'
+    assert actions[2]['handler'] == pm.toggle_files
+    assert actions[3]['name'] == 'repl'
+    assert actions[3]['handler'] == pm.toggle_repl
+    assert actions[4]['name'] == 'mpflash'
+    assert actions[4]['handler'] == pm.flash
+
+
+def test_pixelkit_api():
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    api = pm.api()
+    assert api == SHARED_APIS
+
+
+def test_pixel_kit_run():
+    code = 'print("hello world")'
+    serial = mock.MagicMock()
+    view = mock.MagicMock()
+    view.serial = serial
+    view.current_tab.text.return_value = code
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+        mock.patch.object(pm, 'toggle_repl'), \
+        mock.patch.object(pm, 'enter_raw_repl'), \
+        mock.patch.object(pm, 'exit_raw_repl'):
+        pm.run()
+        pm.toggle_repl.assert_called_once()
+        pm.enter_raw_repl.assert_called_once_with(serial)
+        serial.write.assert_called_once_with(bytes(code, 'ascii'))
+        pm.exit_raw_repl.assert_called_once_with(serial)
+
+
+def test_pixel_kit_run_without_device():
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch.object(pm, 'find_device', return_value=(None, None)):
+        pm.run()
+        message = _('Could not find an attached Pixel Kit.')
+        information = _("Please make sure the device is plugged "
+                        "into this computer and turned on.\n\n"
+                        "If it's already on, try reseting it and waiting "
+                        "a few seconds before trying again.")
+        view.show_message.assert_called_once_with(message, information)
+
+
+def test_pixel_kit_run_opened_repl():
+    code = 'print("hello world")'
+    serial = mock.MagicMock()
+    view = mock.MagicMock()
+    view.serial = serial
+    view.current_tab.text.return_value = code
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch.object(pm, 'repl', new=True), \
+        mock.patch.object(pm, 'toggle_repl'), \
+        mock.patch.object(pm, 'enter_raw_repl'), \
+        mock.patch.object(pm, 'exit_raw_repl'):
+        pm.run()
+        pm.toggle_repl.assert_not_called()
+
+def test_pixel_kit_enter_raw_repl():
+    serial = mock.MagicMock()
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    pm.enter_raw_repl()
+    view.serial.write.assert_called_once_with(b'\x01')
+
+
+def test_pixel_kit_exit_raw_repl():
+    serial = mock.MagicMock()
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    pm.exit_raw_repl()
+    view.serial.write.assert_has_calls([mock.call(b'\x04'), mock.call(b'\x02')])
+
+
+def test_pixel_kit_stop():
+    serial = mock.MagicMock()
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+        mock.patch.object(pm, 'toggle_repl'):
+        pm.stop()
+        pm.toggle_repl.assert_called_once()
+        view.serial.write.assert_called_once_with(b'\x03')
+
+
+def test_pixel_kit_stop():
+    serial = mock.MagicMock()
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+        mock.patch.object(pm, 'toggle_repl'):
+        pm.stop()
+        pm.toggle_repl.assert_called_once()
+        view.serial.write.assert_called_once_with(b'\x03')
+
+
+def test_pixel_kit_stop_opened_repl():
+    serial = mock.MagicMock()
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+        mock.patch.object(pm, 'repl', new=True), \
+        mock.patch.object(pm, 'toggle_repl'):
+        pm.stop()
+        pm.toggle_repl.assert_not_called()
+
+
+def test_pixel_kit_stop_without_device():
+    serial = mock.MagicMock()
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch.object(pm, 'find_device', return_value=(None, None)), \
+        mock.patch.object(pm, 'toggle_repl'):
+        pm.stop()
+        message = _('Could not find an attached Pixel Kit.')
+        information = _("Please make sure the device is plugged "
+                        "into this computer and turned on.\n\n"
+                        "If it's already on, try reseting it and waiting "
+                        "a few seconds before trying again.")
+        view.show_message.assert_called_once_with(message, information)
+
+
+def test_flash_no_tab():
+    """
+    If there are no active tabs simply return.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
+    mp = PixelKitMode(editor, view)
+    assert mp.flash() is None
+
+
+def test_flash_without_device():
+    """
+    If no device is found and the user doesn't provide a path then ensure a
+    helpful status message is enacted.
+    """
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch.object(pm, 'find_device', return_value=(None, None)):
+        pm.flash()
+        message = _('Could not find an attached Pixel Kit.')
+        information = _("Please make sure the device is plugged "
+                        "into this computer and turned on.\n\n"
+                        "If it's already on, try reseting it and waiting "
+                        "a few seconds before trying again.")
+        view.show_message.assert_called_once_with(message, information)
+
+
+def test_flash_prompt():
+    """
+    When pressing the button to flash, a prompt will ask if you really want to
+    flash your Pixel Kit with MicroPython. It shouldn't do anything if user
+    clicks on cancel
+    """
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch('mu.modes.pixelkit.DeviceFlasher'), \
+        mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+        mock.patch.object(pm, 'set_buttons'), \
+        mock.patch.object(pm, 'flash_thread'):
+        pm.flash()
+        message = _("Flash your Pixel Kit with MicroPython.")
+        information = _("Make sure you have internet connection and don't "
+                        "disconnect your device during the process. It "
+                        "might take a minute or two but you will only need"
+                        "to do it once.")
+        view.show_confirmation.assert_called_once_with(message, information)
+
+
+def test_flash_prompt_cancel():
+    """
+    When pressing the button to flash, a prompt will ask if you really want to
+    flash your Pixel Kit with MicroPython. It shouldn't do anything if user
+    clicks on cancel
+    """
+    view = mock.MagicMock()
+    view.show_confirmation.return_value = QMessageBox.Cancel
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch('mu.modes.pixelkit.DeviceFlasher'), \
+        mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+        mock.patch.object(pm, 'set_buttons'), \
+        mock.patch.object(pm, 'flash_thread'):
+        pm.flash()
+        pm.set_buttons.assert_not_called()
+        pm.flash_thread.finished.connect.assert_not_called()
+        pm.flash_thread.on_flash_fail.connect.assert_not_called()
+        pm.flash_thread.on_data.connect.assert_not_called()
+        pm.flash_thread.start.assert_not_called()
+
+
+def test_flash_prompt_ok():
+    """
+    When pressing the button to flash, a prompt will ask if you really want to
+    flash your Pixel Kit with MicroPython. It should start flash thread if user
+    clicks on ok
+    """
+    view = mock.MagicMock()
+    view.show_confirmation.return_value = QMessageBox.Ok
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch('mu.modes.pixelkit.DeviceFlasher'), \
+        mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+        mock.patch.object(pm, 'set_buttons'), \
+        mock.patch.object(pm, 'flash_thread'):
+        pm.flash()
+        pm.set_buttons.assert_called_once_with(mpflash=False, mpfiles=False, run=False, stop=False, repl=False)
+        pm.flash_thread.finished.connect.assert_called_once()
+        pm.flash_thread.on_flash_fail.connect.assert_called_once()
+        pm.flash_thread.on_data.connect.assert_called_once()
+        pm.flash_thread.start.assert_called_once()
+
+
+def test_pixel_flash_thread_finished():
+    # TODO:
+    pass
+
+
+def test_pixel_flash_thread_fail():
+    # TODO:
+    pass
+
+
+def test_pixel_flash_thread_on_data():
+    # TODO:
+    pass
+
+
+def test_pixel_flash_finished():
+    # TODO:
+    pass
+
+
+def test_pixel_flash_failed():
+    # TODO:
+    pass
+
+
+def test_pixel_on_flash_data():
+    # TODO:
+    pass
+
+
+def test_pixel_on_toggle_repl():
+    # TODO:
+    pass
+
+
+def test_pixel_on_toggle_repl_fail():
+    # TODO:
+    pass
+
+
+def test_pixel_on_toggle_files():
+    # TODO:
+    pass
+
+
+def test_pixel_on_toggle_files_fail():
+    # TODO:
+    pass
+
+
+def test_pixel_add_fs():
+    # TODO:
+    pass
+
+
+def test_pixel_add_fs_fail():
+    # TODO:
+    pass
+
+
+def test_pixel_remove_fs():
+    # TODO:
+    pass
+
+
+def test_pixel_remove_fs_fail():
+    # TODO:
+    pass
+
+
+def test_pixel_data_flood():
+    # TODO:
+    pass
