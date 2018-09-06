@@ -40,7 +40,7 @@ def test_DeviceFlasher_run():
     """
     port = 'COM_PORT'
     with mock.patch.object(DeviceFlasher, 'flash_micropython'), \
-         mock.patch.object(DeviceFlasher, 'flash_kanocode'):
+            mock.patch.object(DeviceFlasher, 'flash_kanocode'):
         df_mp = DeviceFlasher(port, 'micropython')
         df_mp.run()
         df_mp.flash_micropython.assert_called_once()
@@ -160,15 +160,15 @@ def test_DeviceFlasher_flash_micropython():
     get_addr_filename and write_flash correctly
     """
     port = 'COM_PORT'
-    fname = 'micropython.bin'
+    f = 'micropython.bin'
     addr = [[int('0x1000', 0), '/tmp/filename']]
     df = DeviceFlasher(port, 'micropython')
     with mock.patch.object(df, 'get_addr_filename', return_value=addr), \
-         mock.patch.object(df, 'download_micropython', return_value=fname), \
-         mock.patch.object(df, 'write_flash'):
+            mock.patch.object(df, 'download_micropython', return_value=f), \
+            mock.patch.object(df, 'write_flash'):
         df.flash_micropython()
         df.download_micropython.assert_called_once()
-        df.get_addr_filename.assert_called_once_with(["0x1000", fname])
+        df.get_addr_filename.assert_called_once_with(["0x1000", f])
         df.write_flash.assert_called_once_with(addr)
 
 
@@ -330,9 +330,9 @@ def test_pixel_kit_run():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-         mock.patch.object(pm, 'toggle_repl'), \
-         mock.patch.object(pm, 'enter_raw_repl'), \
-         mock.patch.object(pm, 'exit_raw_repl'):
+            mock.patch.object(pm, 'toggle_repl'), \
+            mock.patch.object(pm, 'enter_raw_repl'), \
+            mock.patch.object(pm, 'exit_raw_repl'):
         pm.run()
         pm.toggle_repl.assert_called_once()
         pm.enter_raw_repl.assert_called_once()
@@ -363,9 +363,9 @@ def test_pixel_kit_run_opened_repl():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch.object(pm, 'repl', new=True), \
-         mock.patch.object(pm, 'toggle_repl'), \
-         mock.patch.object(pm, 'enter_raw_repl'), \
-         mock.patch.object(pm, 'exit_raw_repl'):
+            mock.patch.object(pm, 'toggle_repl'), \
+            mock.patch.object(pm, 'enter_raw_repl'), \
+            mock.patch.object(pm, 'exit_raw_repl'):
         pm.run()
         pm.toggle_repl.assert_not_called()
 
@@ -393,7 +393,7 @@ def test_pixel_kit_stop():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-         mock.patch.object(pm, 'toggle_repl'):
+            mock.patch.object(pm, 'toggle_repl'):
         pm.stop()
         pm.toggle_repl.assert_called_once()
         view.serial.write.assert_called_once_with(b'\x03')
@@ -404,8 +404,8 @@ def test_pixel_kit_stop_opened_repl():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-         mock.patch.object(pm, 'repl', new=True), \
-         mock.patch.object(pm, 'toggle_repl'):
+            mock.patch.object(pm, 'repl', new=True), \
+            mock.patch.object(pm, 'toggle_repl'):
         pm.stop()
         pm.toggle_repl.assert_not_called()
 
@@ -415,7 +415,7 @@ def test_pixel_kit_stop_without_device():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch.object(pm, 'find_device', return_value=(None, None)), \
-         mock.patch.object(pm, 'toggle_repl'):
+            mock.patch.object(pm, 'toggle_repl'):
         pm.stop()
         message = _('Could not find an attached Pixel Kit.')
         information = _("Please make sure the device is plugged "
@@ -464,9 +464,9 @@ def test_flash_prompt():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch('mu.modes.pixelkit.DeviceFlasher'), \
-         mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-         mock.patch.object(pm, 'set_buttons'), \
-         mock.patch.object(pm, 'flash_thread'):
+            mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+            mock.patch.object(pm, 'set_buttons'), \
+            mock.patch.object(pm, 'flash_thread'):
         pm.flash()
         message = _("Flash your Pixel Kit with MicroPython.")
         information = _("Make sure you have internet connection and don't "
@@ -487,9 +487,9 @@ def test_flash_prompt_cancel():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch('mu.modes.pixelkit.DeviceFlasher'), \
-         mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-         mock.patch.object(pm, 'set_buttons'), \
-         mock.patch.object(pm, 'flash_thread'):
+            mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+            mock.patch.object(pm, 'set_buttons'), \
+            mock.patch.object(pm, 'flash_thread'):
         pm.flash()
         pm.set_buttons.assert_not_called()
         pm.flash_thread.finished.connect.assert_not_called()
@@ -509,9 +509,9 @@ def test_flash_prompt_ok():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch('mu.modes.pixelkit.DeviceFlasher'), \
-         mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-         mock.patch.object(pm, 'set_buttons'), \
-         mock.patch.object(pm, 'flash_thread'):
+            mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+            mock.patch.object(pm, 'set_buttons'), \
+            mock.patch.object(pm, 'flash_thread'):
         pm.flash()
         pm.set_buttons.assert_called_once_with(
             mpflash=False, mpfiles=False, run=False, stop=False, repl=False
