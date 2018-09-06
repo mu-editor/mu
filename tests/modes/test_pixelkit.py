@@ -399,17 +399,6 @@ def test_pixel_kit_stop():
         view.serial.write.assert_called_once_with(b'\x03')
 
 
-def test_pixel_kit_stop():
-    view = mock.MagicMock()
-    editor = mock.MagicMock()
-    pm = PixelKitMode(editor, view)
-    with mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-         mock.patch.object(pm, 'toggle_repl'):
-        pm.stop()
-        pm.toggle_repl.assert_called_once()
-        view.serial.write.assert_called_once_with(b'\x03')
-
-
 def test_pixel_kit_stop_opened_repl():
     view = mock.MagicMock()
     editor = mock.MagicMock()
