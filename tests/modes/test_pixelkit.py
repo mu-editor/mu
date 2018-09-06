@@ -163,13 +163,13 @@ def test_DeviceFlasher_flash_micropython():
     fname = 'micropython.bin'
     addr = [[int('0x1000', 0), '/tmp/filename']]
     df = DeviceFlasher(port, 'micropython')
-    with mock.patch.object(df, 'get_addr', return_value=addr), \
+    with mock.patch.object(df, 'get_addr_filename', return_value=addr), \
          mock.patch.object(df, 'download_micropython', return_value=fname), \
          mock.patch.object(df, 'write_flash'):
         df.flash_micropython()
         df.download_micropython.assert_called_once()
         df.get_addr_filename.assert_called_once_with(["0x1000", fname])
-        df.write_flash.assert_called_once_with(addr_filename)
+        df.write_flash.assert_called_once_with(addr)
 
 
 def test_FileManager_on_start():
