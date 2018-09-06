@@ -34,6 +34,7 @@ from mu.contrib import pixelfs
 
 logger = logging.getLogger(__name__)
 
+
 class DeviceFlasher(QThread):
     """
     Used to flash the Pixel Kit in a non-blocking manner.
@@ -61,7 +62,8 @@ class DeviceFlasher(QThread):
         elif self.firmware_type == "kanocode":
             self.flash_kanocode()
         else:
-            self.on_flash_fail.emit("Unknown firmware type: {0}".format(self.firmware_type))
+            msg = "Unknown firmware type: {0}".format(self.firmware_type)
+            self.on_flash_fail.emit(msg)
 
     def get_addr_filename(self, values):
         if len(values) % 2 != 0:
@@ -69,7 +71,7 @@ class DeviceFlasher(QThread):
         addr_filename = []
         for i in range(0, len(values), 2):
             addr = int(values[i], 0)
-            file = open(values[i+1], 'rb')
+            file = open(values[i + 1], 'rb')
             addr_filename.append([addr, file])
         return addr_filename
 
@@ -87,7 +89,9 @@ class DeviceFlasher(QThread):
         args.verify = False
         args.addr_filename = addr_filename
         try:
-            esp32loader = esptool.ESPLoader.detect_chip(self.port, 115200, False)
+            esp32loader = esptool.ESPLoader.detect_chip(
+                self.port, 115200, False
+            )
             esp = esp32loader.run_stub()
             esp.change_baud(921600)
             esptool.detect_flash_size(esp, args)
@@ -102,13 +106,15 @@ class DeviceFlasher(QThread):
     def download_micropython(self):
         self.on_data.emit(_("Downloading MicroPython firmware"))
         logger.info("Downloading MicroPython firmware")
-        url = "http://micropython.org/resources/firmware/esp32-20180511-v1.9.4.bin"
+        url = "http://micropython.org/resources/firmware/" + \
+              "esp32-20180511-v1.9.4.bin"
         f = tempfile.NamedTemporaryFile()
         f.close()
         try:
             urllib.request.urlretrieve(url, f.name)
             # TODO: Checksum the firmware
-            logger.info("Downloaded MicroPython firmware to: {0}".format(f.name))
+            msg = "Downloaded MicroPython firmware to: {0}".format(f.name)
+            logger.info(msg)
             return f.name
         except Exception as ex:
             logger.error(ex)
@@ -145,6 +151,7 @@ class DeviceFlasher(QThread):
         ]
         addr_filename = self.get_addr_filename(values)
         self.write_flash(addr_filename)
+
 
 class FileManager(QObject):
     """
@@ -228,6 +235,7 @@ class FileManager(QObject):
         except Exception as ex:
             logger.error(ex)
             self.on_delete_fail.emit(board_filename)
+
 
 class PixelKitMode(MicroPythonMode):
     """
@@ -323,9 +331,9 @@ class PixelKitMode(MicroPythonMode):
         sleep(0.01)
 
     def exit_raw_repl(self):
-        self.view.serial.write(b'\x04') # CTRL-D
+        self.view.serial.write(b'\x04')  # CTRL-D
         sleep(0.01)
-        self.view.serial.write(b'\x02') # CTRL-B
+        self.view.serial.write(b'\x02')  # CTRL-B
         sleep(0.01)
 
     def stop(self):
@@ -344,7 +352,7 @@ class PixelKitMode(MicroPythonMode):
         if not self.repl:
             self.toggle_repl(self)
         if self.view.serial:
-            self.view.serial.write(b'\x03') # CTRL-C
+            self.view.serial.write(b'\x03')  # CTRL-C
 
     def flash(self):
         tab = self.view.current_tab
@@ -361,12 +369,15 @@ class PixelKitMode(MicroPythonMode):
             self.view.show_message(message, information)
             return
         message = _("Flash your Pixel Kit with MicroPython.")
-        information = _("Make sure you have internet connection and don't "
-                        "disconnect your device during the process. It "
-                        "might take a minute or two but you will only need"
-                        "to do it once.")
-        if self.view.show_confirmation(message, information) != QMessageBox.Cancel:
-            self.set_buttons(mpflash=False, mpfiles=False, run=False, stop=False, repl=False)
+        informaton = _("Make sure you have internet connection and don't "
+                       "disconnect your device during the process. It "
+                       "might take a minute or two but you will only need"
+                       "to do it once.")
+        confirmation = self.view.show_confirmation(message, informaton)
+        if confirmation != QMessageBox.Cancel:
+            self.set_buttons(
+                mpflash=False, mpfiles=False, run=False, stop=False, repl=False
+            )
             self.flash_thread = DeviceFlasher(port)
 
             self.flash_thread.finished.connect(self.flash_finished)
@@ -375,7 +386,9 @@ class PixelKitMode(MicroPythonMode):
             self.flash_thread.start()
 
     def flash_finished(self):
-        self.set_buttons(mpflash=True, mpfiles=True, run=True, stop=True, repl=True)
+        self.set_buttons(
+            mpflash=True, mpfiles=True, run=True, stop=True, repl=True
+        )
         self.editor.show_status_message(_('Pixel Kit was flashed. Have fun!'))
         message = _("Pixel Kit was flashed. Have fun!")
         information = _("Your Pixel Kit now has MicroPython on it. Restart it "
@@ -386,7 +399,9 @@ class PixelKitMode(MicroPythonMode):
         self.flash_timer = None
 
     def flash_failed(self, error):
-        self.set_buttons(mpflash=True, mpfiles=True, run=True, stop=True, repl=True)
+        self.set_buttons(
+            mpflash=True, mpfiles=True, run=True, stop=True, repl=True
+        )
         logger.info('Flash failed.')
         logger.error(error)
         message = _("There was a problem flashing the Pixel Kit.")
@@ -394,7 +409,9 @@ class PixelKitMode(MicroPythonMode):
                         " has completed. Please check the logs for more"
                         " information.")
         self.view.show_message(message, information, 'Warning')
-        self.editor.show_status_message(_('Pixel Kit could not be flashed. Please restart the Pixel Kit and try again.'))
+        self.editor.show_status_message(_("Pixel Kit could not be flashed. "
+                                          "Please restart the Pixel Kit and "
+                                          "try again."))
         if self.flash_timer:
             self.flash_timer.stop()
             self.flash_timer = None
@@ -410,9 +427,13 @@ class PixelKitMode(MicroPythonMode):
         if self.fs is None:
             super().toggle_repl(event)
             if self.repl:
-                self.set_buttons(mpflash=False, mpfiles=False, run=True, stop=True,)
+                self.set_buttons(
+                    mpflash=False, mpfiles=False, run=True, stop=True,
+                )
             elif not (self.repl or self.plotter):
-                self.set_buttons(mpflash=True, mpfiles=True, run=True, stop=True,)
+                self.set_buttons(
+                    mpflash=True, mpfiles=True, run=True, stop=True,
+                )
         else:
             message = _("REPL and file system cannot work at the same time.")
             information = _("The REPL and file system both use the same USB "
@@ -438,11 +459,16 @@ class PixelKitMode(MicroPythonMode):
                 self.add_fs()
                 if self.fs:
                     logger.info('Toggle filesystem on.')
-                    self.set_buttons(mpflash=False, repl=False, run=False, stop=False, plotter=False)
+                    self.set_buttons(
+                        mpflash=False, repl=False, run=False, stop=False,
+                        plotter=False,
+                    )
             else:
                 self.remove_fs()
                 logger.info('Toggle filesystem off.')
-                self.set_buttons(mpflash=True, repl=True, run=True, stop=True, plotter=True)
+                self.set_buttons(
+                    mpflash=True, repl=True, run=True, stop=True, plotter=True,
+                )
 
     def add_fs(self):
         """

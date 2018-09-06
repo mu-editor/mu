@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QMessageBox
 
 TEST_ROOT = os.path.split(os.path.dirname(__file__))[0]
 
+
 def test_DeviceFlasher_init():
     """
     Ensure the DeviceFlasher thread is set up correctly.
@@ -39,7 +40,7 @@ def test_DeviceFlasher_run():
     """
     port = 'COM_PORT'
     with mock.patch.object(DeviceFlasher, 'flash_micropython'), \
-        mock.patch.object(DeviceFlasher, 'flash_kanocode'):
+         mock.patch.object(DeviceFlasher, 'flash_kanocode'):
         df_mp = DeviceFlasher(port, 'micropython')
         df_mp.run()
         df_mp.flash_micropython.assert_called_once()
@@ -57,7 +58,9 @@ def test_DeviceFlasher_run_fail():
     df_unknown = DeviceFlasher(port, 'unknown_firmware_type')
     df_unknown.on_flash_fail = mock.MagicMock()
     df_unknown.run()
-    df_unknown.on_flash_fail.emit.assert_called_once_with('Unknown firmware type: unknown_firmware_type')
+    df_unknown.on_flash_fail.emit.assert_called_once_with(
+        'Unknown firmware type: unknown_firmware_type'
+    )
 
 
 def test_DeviceFlasher_get_addr_filename():
@@ -90,13 +93,15 @@ def test_DeviceFlasher_write_flash():
     df = DeviceFlasher(port)
     with mock.patch('mu.modes.pixelkit.esptool', mock_esptool):
         df.write_flash(addr_filename)
-        mock_esptool.ESPLoader.detect_chip.assert_called_once_with(port, 115200, False)
+        mock_esptool.ESPLoader.detect_chip.assert_called_once_with(
+            port, 115200, False
+        )
         mock_esp.run_stub.assert_called_once()
         mock_stub.change_baud.assert_called_once_with(921600)
         mock_esptool.detect_flash_size.assert_called_once_with(mock_stub, args)
         mock_esptool.flash_size_bytes.assert_called_once_with(args.flash_size)
-        flash_size_bytes = mock_esptool.flash_size_bytes(args.flash_size)
-        mock_stub.flash_set_parameters.assert_called_once_with(flash_size_bytes)
+        size_bytes = mock_esptool.flash_size_bytes(args.flash_size)
+        mock_stub.flash_set_parameters.assert_called_once_with(size_bytes)
         mock_esptool.erase_flash.assert_called_once_with(mock_stub, args)
         mock_esptool.write_flash.assert_called_once_with(mock_stub, args)
         mock_stub.hard_reset.assert_called_once()
@@ -115,7 +120,9 @@ def test_DeviceFlasher_write_flash_fail():
     df.on_flash_fail = mock.MagicMock()
     with mock.patch('mu.modes.pixelkit.esptool', mock_esptool):
         df.write_flash(addr_filename)
-        df.on_flash_fail.emit.assert_called_once_with("Could not write to flash memory")
+        df.on_flash_fail.emit.assert_called_once_with(
+            "Could not write to flash memory"
+        )
 
 
 def test_DeviceFlasher_download_micropython():
@@ -141,8 +148,10 @@ def test_DeviceFlasher_download_micropython_fail():
     mock_request.urlretrieve.side_effect = Exception('Problem')
     with mock.patch('mu.modes.pixelkit.urllib.request', mock_request):
         fname = df.download_micropython()
-        assert fname == None
-        df.on_flash_fail.emit.assert_called_once_with('Could not download MicroPython firmware')
+        assert fname is None
+        df.on_flash_fail.emit.assert_called_once_with(
+            'Could not download MicroPython firmware'
+        )
 
 
 def test_DeviceFlasher_flash_micropython():
@@ -151,15 +160,15 @@ def test_DeviceFlasher_flash_micropython():
     get_addr_filename and write_flash correctly
     """
     port = 'COM_PORT'
-    filename = 'micropython.bin'
-    addr_filename = [[int('0x1000', 0), '/tmp/filename']]
+    fname = 'micropython.bin'
+    addr = [[int('0x1000', 0), '/tmp/filename']]
     df = DeviceFlasher(port, 'micropython')
-    with mock.patch.object(df, 'get_addr_filename', return_value=addr_filename), \
-        mock.patch.object(df, 'download_micropython', return_value=filename), \
-        mock.patch.object(df, 'write_flash'):
+    with mock.patch.object(df, 'get_addr', return_value=addr), \
+         mock.patch.object(df, 'download_micropython', return_value=fname), \
+         mock.patch.object(df, 'write_flash'):
         df.flash_micropython()
         df.download_micropython.assert_called_once()
-        df.get_addr_filename.assert_called_once_with(["0x1000", filename])
+        df.get_addr_filename.assert_called_once_with(["0x1000", fname])
         df.write_flash.assert_called_once_with(addr_filename)
 
 
@@ -321,14 +330,14 @@ def test_pixel_kit_run():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-        mock.patch.object(pm, 'toggle_repl'), \
-        mock.patch.object(pm, 'enter_raw_repl'), \
-        mock.patch.object(pm, 'exit_raw_repl'):
+         mock.patch.object(pm, 'toggle_repl'), \
+         mock.patch.object(pm, 'enter_raw_repl'), \
+         mock.patch.object(pm, 'exit_raw_repl'):
         pm.run()
         pm.toggle_repl.assert_called_once()
-        pm.enter_raw_repl.assert_called_once_with(serial)
+        pm.enter_raw_repl.assert_called_once()
         serial.write.assert_called_once_with(bytes(code, 'ascii'))
-        pm.exit_raw_repl.assert_called_once_with(serial)
+        pm.exit_raw_repl.assert_called_once()
 
 
 def test_pixel_kit_run_without_device():
@@ -354,11 +363,12 @@ def test_pixel_kit_run_opened_repl():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch.object(pm, 'repl', new=True), \
-        mock.patch.object(pm, 'toggle_repl'), \
-        mock.patch.object(pm, 'enter_raw_repl'), \
-        mock.patch.object(pm, 'exit_raw_repl'):
+         mock.patch.object(pm, 'toggle_repl'), \
+         mock.patch.object(pm, 'enter_raw_repl'), \
+         mock.patch.object(pm, 'exit_raw_repl'):
         pm.run()
         pm.toggle_repl.assert_not_called()
+
 
 def test_pixel_kit_enter_raw_repl():
     view = mock.MagicMock()
@@ -373,7 +383,9 @@ def test_pixel_kit_exit_raw_repl():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     pm.exit_raw_repl()
-    view.serial.write.assert_has_calls([mock.call(b'\x04'), mock.call(b'\x02')])
+    view.serial.write.assert_has_calls([
+        mock.call(b'\x04'), mock.call(b'\x02')]
+    )
 
 
 def test_pixel_kit_stop():
@@ -381,7 +393,7 @@ def test_pixel_kit_stop():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-        mock.patch.object(pm, 'toggle_repl'):
+         mock.patch.object(pm, 'toggle_repl'):
         pm.stop()
         pm.toggle_repl.assert_called_once()
         view.serial.write.assert_called_once_with(b'\x03')
@@ -392,7 +404,7 @@ def test_pixel_kit_stop():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-        mock.patch.object(pm, 'toggle_repl'):
+         mock.patch.object(pm, 'toggle_repl'):
         pm.stop()
         pm.toggle_repl.assert_called_once()
         view.serial.write.assert_called_once_with(b'\x03')
@@ -403,8 +415,8 @@ def test_pixel_kit_stop_opened_repl():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-        mock.patch.object(pm, 'repl', new=True), \
-        mock.patch.object(pm, 'toggle_repl'):
+         mock.patch.object(pm, 'repl', new=True), \
+         mock.patch.object(pm, 'toggle_repl'):
         pm.stop()
         pm.toggle_repl.assert_not_called()
 
@@ -414,7 +426,7 @@ def test_pixel_kit_stop_without_device():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch.object(pm, 'find_device', return_value=(None, None)), \
-        mock.patch.object(pm, 'toggle_repl'):
+         mock.patch.object(pm, 'toggle_repl'):
         pm.stop()
         message = _('Could not find an attached Pixel Kit.')
         information = _("Please make sure the device is plugged "
@@ -463,9 +475,9 @@ def test_flash_prompt():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch('mu.modes.pixelkit.DeviceFlasher'), \
-        mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-        mock.patch.object(pm, 'set_buttons'), \
-        mock.patch.object(pm, 'flash_thread'):
+         mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+         mock.patch.object(pm, 'set_buttons'), \
+         mock.patch.object(pm, 'flash_thread'):
         pm.flash()
         message = _("Flash your Pixel Kit with MicroPython.")
         information = _("Make sure you have internet connection and don't "
@@ -486,9 +498,9 @@ def test_flash_prompt_cancel():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch('mu.modes.pixelkit.DeviceFlasher'), \
-        mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-        mock.patch.object(pm, 'set_buttons'), \
-        mock.patch.object(pm, 'flash_thread'):
+         mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+         mock.patch.object(pm, 'set_buttons'), \
+         mock.patch.object(pm, 'flash_thread'):
         pm.flash()
         pm.set_buttons.assert_not_called()
         pm.flash_thread.finished.connect.assert_not_called()
@@ -508,11 +520,13 @@ def test_flash_prompt_ok():
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
     with mock.patch('mu.modes.pixelkit.DeviceFlasher'), \
-        mock.patch.object(pm, 'find_device', return_value=(True, True)), \
-        mock.patch.object(pm, 'set_buttons'), \
-        mock.patch.object(pm, 'flash_thread'):
+         mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+         mock.patch.object(pm, 'set_buttons'), \
+         mock.patch.object(pm, 'flash_thread'):
         pm.flash()
-        pm.set_buttons.assert_called_once_with(mpflash=False, mpfiles=False, run=False, stop=False, repl=False)
+        pm.set_buttons.assert_called_once_with(
+            mpflash=False, mpfiles=False, run=False, stop=False, repl=False
+        )
         pm.flash_thread.finished.connect.assert_called_once()
         pm.flash_thread.on_flash_fail.connect.assert_called_once()
         pm.flash_thread.on_data.connect.assert_called_once()
