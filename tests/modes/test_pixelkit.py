@@ -3,7 +3,6 @@
 Tests for Pixel Kit mode.
 """
 import os
-import esptool
 from argparse import Namespace
 from mu.modes.pixelkit import DeviceFlasher, FileManager, PixelKitMode
 from mu.modes.api import SHARED_APIS
@@ -362,7 +361,6 @@ def test_pixel_kit_run_opened_repl():
         pm.toggle_repl.assert_not_called()
 
 def test_pixel_kit_enter_raw_repl():
-    serial = mock.MagicMock()
     view = mock.MagicMock()
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
@@ -371,7 +369,6 @@ def test_pixel_kit_enter_raw_repl():
 
 
 def test_pixel_kit_exit_raw_repl():
-    serial = mock.MagicMock()
     view = mock.MagicMock()
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
@@ -380,7 +377,6 @@ def test_pixel_kit_exit_raw_repl():
 
 
 def test_pixel_kit_stop():
-    serial = mock.MagicMock()
     view = mock.MagicMock()
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
@@ -392,7 +388,6 @@ def test_pixel_kit_stop():
 
 
 def test_pixel_kit_stop():
-    serial = mock.MagicMock()
     view = mock.MagicMock()
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
@@ -404,7 +399,6 @@ def test_pixel_kit_stop():
 
 
 def test_pixel_kit_stop_opened_repl():
-    serial = mock.MagicMock()
     view = mock.MagicMock()
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)
@@ -416,7 +410,6 @@ def test_pixel_kit_stop_opened_repl():
 
 
 def test_pixel_kit_stop_without_device():
-    serial = mock.MagicMock()
     view = mock.MagicMock()
     editor = mock.MagicMock()
     pm = PixelKitMode(editor, view)

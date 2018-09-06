@@ -137,7 +137,6 @@ class DeviceFlasher(QThread):
         firmware_path = self.download_kanocode()
         tar = tarfile.open(firmware_path)
         tmpdir = tempfile.TemporaryDirectory()
-        members = tar.getmembers()
         tar.extractall(path=tmpdir.name)
         values = [
             "0x1000", "{0}/RPK_Bootloader_V1_0_2.bin".format(tmpdir.name),
