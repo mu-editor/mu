@@ -769,6 +769,23 @@ class PythonProcessPane(QTextEdit):
         modifiers = data.modifiers()
         self.parse_input(key, text, modifiers)
 
+    def on_process_halt(self):
+        """
+        Called when the the user has manually halted a running process. Ensures
+        that the remaining data from the halted process's stdout is handled
+        properly.
+
+        When the process is halted the user is dropped into the Python prompt
+        and this method ensures the UI is updated in a clean, non-blocking
+        way.
+        """
+        data = self.process.readAll().data()
+        if data:
+            self.append(data)
+            self.on_append_text.emit(data)
+            cursor = self.textCursor()
+            self.start_of_current_line = cursor.position()
+
     def parse_input(self, key, text, modifiers):
         """
         Correctly encodes user input and sends it to the connected process.
@@ -789,11 +806,20 @@ class PythonProcessPane(QTextEdit):
                 pid = self.process.processId()
                 # NOTE: Windows related constraints don't allow us to send a
                 # CTRL-C, rather, the process will just terminate.
+                halt_flag = False
                 if key == Qt.Key_C:
+                    halt_flag = True
                     os.kill(pid, signal.SIGINT)
                 if key == Qt.Key_D:
+                    halt_flag = True
                     self.process.kill()
-            return
+                if halt_flag:
+                    # Clean up from kill signal.
+                    self.process.readAll()  # Discard queued output.
+                    # Schedule update of the UI after the process halts (in
+                    # next iteration of the event loop).
+                    QTimer.singleShot(1, self.on_process_halt)
+                    return
         elif key == Qt.Key_Up:
             self.history_back()
         elif key == Qt.Key_Down:
@@ -879,7 +905,7 @@ class PythonProcessPane(QTextEdit):
         """
         Process incoming data from the process's stdout.
         """
-        data = self.process.readAll().data()
+        data = self.process.read(256)
         if data:
             self.append(data)
             self.on_append_text.emit(data)
