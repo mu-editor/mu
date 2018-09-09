@@ -20,8 +20,8 @@ QDockWidget::title, QHeaderView, QHeaderView::section {
 }
 
 QTextEdit, QPlainTextEdit, QLineEdit {
-    background-color: white;
-    color: black;
+    background-color: #FEFEF7;
+    color: #181818;
 }
 
 QTabBar, QToolBar, QToolButton, QTextEdit, QPlainTextEdit, QLineEdit,
