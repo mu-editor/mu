@@ -12,6 +12,12 @@ QToolButton:hover, QMenu::item:selected {
     background-color: #333;
 }
 
+QToolBar::separator {
+    background: #6b6b6b;
+    width:1px;
+    margin:2px;
+}
+
 QStackedWidget, QWidget, QApplication, QDialog,
 QLabel, QStatusBar, QTabBar, QMenu,
 QDockWidget::title, QHeaderView, QHeaderView::section,
