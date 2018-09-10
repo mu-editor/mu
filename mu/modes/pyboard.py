@@ -135,9 +135,8 @@ class PyboardMode(MicroPythonMode):
             # after warning the user.
             wd = super().workspace_dir()
             if self.connected:
-                m = _('Could not find an attached Adafruit CircuitPython'
-                      ' device.')
-                info = _("Python files for Adafruit CircuitPython devices"
+                m = _('Could not find an attached PyBoard device.')
+                info = _("Python files for PyBoard MicroPython devices"
                          " are stored on the device. Therefore, to edit"
                          " these files you need to have the device plugged in."
                          " Until you plug in a device, Mu will use the"

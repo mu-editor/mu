@@ -6,6 +6,7 @@ from .shared import SHARED_APIS
 from .pygamezero import PYGAMEZERO_APIS
 from .esp import ESP_APIS
 from .flask import FLASK_APIS
+from .pyboard import PYBOARD_APIS
 
 __all__ = [
     "ADAFRUIT_APIS",
@@ -16,4 +17,5 @@ __all__ = [
     "PYGAMEZERO_APIS",
     "ESP_APIS",
     "FLASK_APIS",
+    "PYBOARD_APIS",
 ]

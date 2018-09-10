@@ -41,6 +41,7 @@ from mu.modes import (
     PyGameZeroMode,
     ESPMode,
     WebMode,
+    PyboardMode,
 )
 from mu.debugger.runner import run as run_debugger
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
@@ -87,6 +88,7 @@ def setup_modes(editor, view):
         "microbit": MicrobitMode(editor, view),
         "esp": ESPMode(editor, view),
         "web": WebMode(editor, view),
+        "pyboard": PyboardMode(editor, view),
         "debugger": DebugMode(editor, view),
     }
 
