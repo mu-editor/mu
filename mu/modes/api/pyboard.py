@@ -151,6 +151,19 @@ PYBOARD_APIS = [
     _('pyb.UART.write(buf) \nWrite the buffer of bytes to the bus.\nParameters:\nbuf (buffer) -- if characters are 7 or 8 bits wide then each byte is one character. If characters\nare 9 bits wide then two bytes are used for each character (little endian), and\nbuf must contain an even number of bytes\n\nReturns: number of bytes written. If a timeout occurs and no bytes were written returns None\n\nReturn type: int\n'),
     _('pyb.UART.writechar(char) \nWrite a single character on the bus\n\nParameters:\nchar (int) -- the integer to write\n'),
     _('pyb.UART.sendbreak() \nSend a break condition on the bus.\nThis drives the bus low for a duration of 13 bits.\n'),
-
-
+    _('pyb.USB_HID() \nCreate a new USB_HID object.\n'),
+    _('pyb.USB_HID.recv(data, *, timeout=5000) \nReceive data on the bus\n\nParameters:\ndata can be an integer, which is the number of bytes to receive, or a mutable\nbuffer (int or buffer) -- which will be filled with received bytes.\ntimeout (int) -- the timeout in milliseconds to wait for the receive\n\nReturns: if data is an integer then a new buffer of the bytes received, otherwise\nthe number of bytes read into data is returned\n\nReturn type: int or buffer\n'),
+    _('pyb.USB_HID.send(data) \nSend data over the USB HID interface\n\nParameters:\ndata (multiple) -- the data to send (a tuple/list of integers, or a bytearray)\n'),
+    _('pyb.USB_VCP() \nCreate a new USB_VCP object\n'),
+    _('pyb.USB_VCP.setinterrupt(chr) \nSet the character which interrupts running Python code, set to 3 (CTRL-C) by default.\n'),
+    _('pyb.USB_VCP.isconnected() \nWhether USB is connected as a serial device\n\nReturns: True if USB is connected as a serial device, else False\n\nReturn type: bool\n'),
+    _('pyb.USB_VCP.any() \nWhether any characters are waiting\n\nReturns: True if any characters waiting, else False\n\nReturn type: bool\n'),
+    _('pyb.USB_VCP.close() \nThis method does nothing. It exists so the USB_VCP object can act as a file.\n'),
+    _('pyb.USB_VCP.read([nbytes]) \nRead at most nbytes from the serial device and return them as a bytes object\n'),
+    _('pyb.USB_VCP.readinto(buf[, maxlen]) \nRead bytes from the serial device and store them into buf\n\nParameters:\nbuf (buffer) -- a buffer-like object to read into\nmaxlen (int) -- if maxlen is given and then at most min(maxlen, len(buf)) bytes are read\n\nReturns: the number of bytes read and stored into buf or None if no pending data available\n\nReturn type: int\n'),
+    _('pyb.USB_VCP.readline() \nRead a whole line from the serial device.\n\nReturns: a bytes object containing the data\n\nReturn type: bytes\n'),
+    _('pyb.USB_VCP.readlines() \nRead as much data as possible from the serial device, breaking it into lines\n\nReturns: a list of bytes objects, each object being one of the lines\n\nReturn type: list\n'),
+    _('pyb.USB_VCP.write(buf) \nWrite the bytes from buf to the serial device.\n'),
+    _('pyb.USB_VCP.recv(data, *, timeout=5000) \nReceive data on the bus\n\nParameters:\ndata (int or buffer) -- the number of bytes to receive, or a mutable buffer,\nwhich will be filled with received bytes\ntimeout (int) -- the timeout in milliseconds to wait for the receive\n\nReturns: if data is an integer then a new buffer of the bytes received, otherwise\nthe number of bytes read into data is returned\nReturn type: int or buffer\n'),
+    _('pyb.USB_VCP.send(data, *, timeout=5000) \nSend data over the USB VCP:\n\nParameters:\ndata (int of buffer) -- the data to send\ntimeout (int) -- the timeout in milliseconds to wait for the send.\n\nReturns: the number of bytes sent\n\nReturn type: int\n'),
 ]
