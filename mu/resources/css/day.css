@@ -4,6 +4,22 @@ QToolBar, QToolButton {
     padding: 0;
 }
 
+QToolBar::separator {
+    background: #b4b4b4; /* Border */
+    width: 1px;
+    margin: 6px 3px;
+}
+
+QToolButton#qt_toolbar_ext_button {
+    qproperty-icon: none;
+    margin: 6px 1px;
+    background: #666;
+}
+
+QToolButton#qt_toolbar_ext_button:hover {
+    background: black;
+}
+
 QToolButton {
     padding: 4px 2px;
 }
