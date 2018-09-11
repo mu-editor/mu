@@ -1,0 +1,1278 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2018-08-19 14:09-0700\n"
+"PO-Revision-Date: 2018-08-21 11:07+0200\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+"X-Generator: Poedit 2.1.1\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: sv\n"
+
+#: mu/app.py:66
+msgid "Logging to {}"
+msgstr "Loggar till {}"
+
+#: mu/app.py:183
+msgid "Debugger requires a Python script filename to run."
+msgstr "Debuggern måste ha namn på ett Python-skript för att kunna köra."
+
+#: mu/debugger/client.py:106
+msgid ""
+"Connection timed out. Is your machine slow or busy? Free up some of the "
+"machine's resources and try again."
+msgstr ""
+"Anslutningen timade ut. Är din maskin långsam eller upptagen? Fria upp några "
+"maskinens resurser och försök igen."
+
+#: mu/debugger/client.py:116
+msgid ""
+"Could not find localhost.\n"
+"Ensure you have '127.0.0.1 localhost' in your /etc/hosts file."
+msgstr ""
+"Kunde inte hitta localhost.\n"
+"Kontrollera att du har ‘127.0.0.1’ i din /etc/hosts fil."
+
+#: mu/interface/dialogs.py:55
+msgid "Select Mode"
+msgstr "Välj läge"
+
+#: mu/interface/dialogs.py:57
+msgid ""
+"Please select the desired mode then click \"OK\". Otherwise, click \"Cancel"
+"\"."
+msgstr "Välj det önskade läget och klicka på “OK”. Annars, klicka på “Cancel”."
+
+#: mu/interface/dialogs.py:73
+msgid ""
+"Change mode at any time by clicking the \"Mode\" button containing Mu's logo."
+msgstr ""
+"Ändra läge närsomhelst genom att klicka på “Läge”-knappen med Mus logga."
+
+#: mu/interface/dialogs.py:107
+msgid ""
+"When reporting a bug, copy and paste the content of the following log file."
+msgstr ""
+"Vid rapportering av en bugg, kopiera och klistra in innehållet i följande "
+"logg-fil."
+
+#: mu/interface/dialogs.py:127
+msgid ""
+"The environment variables shown below will be set each time you run a Python "
+"3 script.\n"
+"\n"
+"Each separate enviroment variable should be on a new line and of the form:\n"
+"NAME=VALUE"
+msgstr ""
+"Miljövariablerna nedan kommer sättas varje gång du kör ett Python 3-skript.\n"
+"\n"
+"Varje miljövariabel ska vara på sin egen rad och på formen:\n"
+"NAMN=VÄRDE"
+
+#: mu/interface/dialogs.py:150
+msgid "Minify Python code before flashing?"
+msgstr "Minifiera Python-koden innan flashning?"
+
+#: mu/interface/dialogs.py:153
+msgid ""
+"Override the built-in MicroPython runtime with the following hex file (empty "
+"means use the default):"
+msgstr ""
+"Skriv öven den inbyggda exekveringsmiljön för MicroPython med den här hex-"
+"filen (tomt betyder använd den inbyggda):"
+
+#: mu/interface/dialogs.py:175 mu/interface/main.py:977
+msgid "Mu Administration"
+msgstr "Mu-inställningar"
+
+#: mu/interface/dialogs.py:186
+msgid "Current Log"
+msgstr "Aktuell logg"
+
+#: mu/interface/dialogs.py:189
+msgid "Python3 Environment"
+msgstr "Python3 miljövariabler"
+
+#: mu/interface/dialogs.py:194
+msgid "BBC micro:bit Settings"
+msgstr "Inställningar för BBC micro:bit"
+
+#: mu/interface/dialogs.py:223
+msgid "Find / Replace"
+msgstr "Sök / ersätt"
+
+#: mu/interface/dialogs.py:227
+msgid "Find:"
+msgstr "Sök:"
+
+#: mu/interface/dialogs.py:233
+msgid "Replace (optional):"
+msgstr "Ersätt (valfritt):"
+
+#: mu/interface/dialogs.py:239
+msgid "Replace all?"
+msgstr "Ersätt alla?"
+
+#: mu/interface/editor.py:222 mu/logic.py:952
+msgid "untitled"
+msgstr "namnlös"
+
+#: mu/interface/main.py:69
+msgid "Mode"
+msgstr "Läge"
+
+#: mu/interface/main.py:70
+msgid "Change Mu's mode of behaviour."
+msgstr "Ändra Mus utvecklingsläge."
+
+#: mu/interface/main.py:72
+msgid "New"
+msgstr "Nytt"
+
+#: mu/interface/main.py:73
+msgid "Create a new Python script."
+msgstr "Skapa ett nytt Python-skript."
+
+#: mu/interface/main.py:74
+msgid "Load"
+msgstr "Öppna"
+
+#: mu/interface/main.py:75
+msgid "Load a Python script."
+msgstr "Öppna ett Python-skript."
+
+#: mu/interface/main.py:76
+msgid "Save"
+msgstr "Spara"
+
+#: mu/interface/main.py:77
+msgid "Save the current Python script."
+msgstr "Spara det aktuella Python-skriptet."
+
+#: mu/interface/main.py:86
+msgid "Zoom-in"
+msgstr "Zooma in"
+
+#: mu/interface/main.py:87
+msgid "Zoom in (to make the text bigger)."
+msgstr "Zooma in (gör texten större)"
+
+#: mu/interface/main.py:88
+msgid "Zoom-out"
+msgstr "Zooma ut"
+
+#: mu/interface/main.py:89
+msgid "Zoom out (to make the text smaller)."
+msgstr "Zooma ut (gör texten mindre)"
+
+#: mu/interface/main.py:90
+msgid "Theme"
+msgstr "Tema"
+
+#: mu/interface/main.py:91
+msgid "Toggle theme between day, night or high contrast."
+msgstr "Växla tema mellan dag, natt eller hög kontrast."
+
+#: mu/interface/main.py:94
+msgid "Check"
+msgstr "Kontrollera"
+
+#: mu/interface/main.py:95
+msgid "Check your code for mistakes."
+msgstr "Kontrollera din kod efter misstag."
+
+#: mu/interface/main.py:96
+msgid "Help"
+msgstr "Hjälp"
+
+#: mu/interface/main.py:97
+msgid "Show help about Mu in a browser."
+msgstr "Visa hjälp om Mu in en webbläsare."
+
+#: mu/interface/main.py:98
+msgid "Quit"
+msgstr "Avsluta"
+
+#: mu/interface/main.py:99
+msgid "Quit Mu."
+msgstr "Avsluta Mu."
+
+#: mu/interface/main.py:178
+msgid "Mu {}"
+msgstr "Mu {}"
+
+#: mu/interface/main.py:354
+msgid "Cannot connect to device on port {}"
+msgstr "Kan inte ansluta till enhet på port {}"
+
+#: mu/interface/main.py:376
+msgid "Filesystem on micro:bit"
+msgstr "Filsystemet på micro:bit"
+
+#: mu/interface/main.py:435
+msgid "Python3 data tuple"
+msgstr "Python3 data tupel"
+
+#: mu/interface/main.py:447
+msgid "Python3 (Jupyter)"
+msgstr "Python3 (Jupyter)"
+
+#: mu/interface/main.py:454
+msgid "{} REPL"
+msgstr "{} REPL"
+
+#: mu/interface/main.py:470
+msgid "{} Plotter"
+msgstr "{} Plotter"
+
+#: mu/interface/main.py:511
+msgid "Running: {}"
+msgstr "Kör: {}"
+
+#: mu/interface/main.py:534
+msgid "Debug Inspector"
+msgstr "Debut-inspektör"
+
+#: mu/interface/main.py:552
+msgid "Name"
+msgstr "Namn"
+
+#: mu/interface/main.py:552
+msgid "Value"
+msgstr "Värde"
+
+#: mu/interface/main.py:569
+msgid "(A list of {} items.)"
+msgstr "(En lista av {} saker.)"
+
+#: mu/interface/main.py:582
+msgid "(A dict of {} items.)"
+msgstr "(En dict av {} saker.)"
+
+#: mu/interface/main.py:720
+msgid "Mu"
+msgstr "Mu"
+
+#: mu/interface/main.py:970
+msgid "Mu's current mode of behaviour."
+msgstr "Mu nuvarande utvecklingsläge."
+
+#: mu/interface/panes.py:296
+msgid "File already exists; overwrite it?"
+msgstr "Filen finns redan; skriva över den?"
+
+#: mu/interface/panes.py:297
+msgid "File already exists"
+msgstr "Filen finns redan"
+
+#: mu/interface/panes.py:325
+msgid "Copying '{}' to micro:bit."
+msgstr "Kopierar ‘{}’ till micro:biten."
+
+#: mu/interface/panes.py:334
+msgid "'{}' successfully copied to micro:bit."
+msgstr "Lyckad kopiering av ‘{}’ till micro:biten."
+
+#: mu/interface/panes.py:340
+msgid "Delete (cannot be undone)"
+msgstr "Ta bort (kan inte ångras)"
+
+#: mu/interface/panes.py:346
+msgid "Deleting '{}' from micro:bit."
+msgstr "Tar bort '{}' från micro:biten."
+
+#: mu/interface/panes.py:355
+msgid "'{}' successfully deleted from micro:bit."
+msgstr "'{}' borttagen från micro:biten."
+
+#: mu/interface/panes.py:385
+msgid "Getting '{}' from micro:bit. Copying to '{}'."
+msgstr "Hämtar ‘{}’ från micro:biten. Kopierar till ‘{}’."
+
+#: mu/interface/panes.py:396
+msgid "Successfully copied '{}' from the micro:bit to your computer."
+msgstr "Kopierat ‘{}’ från micro:biten till din dator."
+
+#: mu/interface/panes.py:409
+msgid "Open in Mu"
+msgstr "Öppna i Mu"
+
+#: mu/interface/panes.py:411
+msgid "Open"
+msgstr "Öppna"
+
+#: mu/interface/panes.py:417
+msgid "Opening '{}'"
+msgstr "Öppnar ‘{}’"
+
+#: mu/interface/panes.py:457
+msgid "Files on your micro:bit:"
+msgstr "Filer på din micro:bit:"
+
+#: mu/interface/panes.py:459
+msgid "Files on your computer:"
+msgstr "Filer på din dator:"
+
+#: mu/interface/panes.py:527
+msgid ""
+"There was a problem getting the list of files on the micro:bit. Please check "
+"Mu's logs for technical information. Alternatively, try unplugging/plugging-"
+"in your micro:bit and/or restarting Mu."
+msgstr ""
+"Det var problem med att hämta fillistan på micro:biten. Titta i Mus loggar "
+"efter teknisk information. Alternativt, försök koppla loss och ansluta din "
+"micro:bit och/eller start om Mu."
+
+#: mu/interface/panes.py:538
+msgid ""
+"There was a problem copying the file '{}' onto the micro:bit. Please check "
+"Mu's logs for more information."
+msgstr ""
+"Det var problem med att kopiera filen ‘{}’ till micro:biten. Titta i Mus "
+"loggar efter mer information."
+
+#: mu/interface/panes.py:546
+msgid ""
+"There was a problem deleting '{}' from the micro:bit. Please check Mu's logs "
+"for more information."
+msgstr ""
+"Det var problem med att ta bort ‘{}’ från micro:biten. Titta i Mus loggar "
+"efter mer information."
+
+#: mu/interface/panes.py:554
+msgid ""
+"There was a problem getting '{}' from the micro:bit. Please check Mu's logs "
+"for more information."
+msgstr ""
+"Det var problem med att hämta ‘{}’ från micro:biten. Titta i Mus loggar "
+"efter mer information."
+
+#: mu/logic.py:68
+msgid "Hello, World!"
+msgstr "Hello, World!"
+
+#: mu/logic.py:69
+msgid ""
+"This editor is free software written in Python. You can modify it, add "
+"features or fix bugs if you like."
+msgstr ""
+"Den här editorn är skriven i Python. Du kan ändra den, lägga till saker "
+"eller fixa buggar om du vill."
+
+#: mu/logic.py:71
+msgid "This editor is called Mu (you say it 'mew' or 'moo')."
+msgstr "Den här editorn heter Mu (Utalas mu)."
+
+#: mu/logic.py:72
+msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
+msgstr "Google, Facebook, NASA, Pixar, Disney och många fler använder Python."
+
+#: mu/logic.py:73
+msgid ""
+"Programming is a form of magic. Learn to cast the right spells with code and "
+"you'll be a wizard."
+msgstr ""
+"Programmering är en form av magi. Lär dig kasta de rätt formlerna med kod "
+"och du kommer bli en trollkarl."
+
+#: mu/logic.py:75
+msgid ""
+"REPL stands for read, evaluate, print, loop. It's a fun way to talk to your "
+"computer! :-)"
+msgstr ""
+"REPL är en förkortning för “read, evaluate, print, loop”. Det är ett kul "
+"sätt att kommunicera med din dator!"
+
+#: mu/logic.py:77
+msgid "Be brave, break things, learn and have fun!"
+msgstr "Var modig, ta sönder saker, lär dig och ha kul!"
+
+#: mu/logic.py:78
+msgid "Make your software both useful AND fun. Empower your users."
+msgstr "Gör din mjukvara både användbar och kul. Stärk dina användare."
+
+#: mu/logic.py:79
+msgid "For the Zen of Python: import this"
+msgstr "För Python Zen: import this"
+
+#: mu/logic.py:80
+msgid "Diversity promotes creativity."
+msgstr "Mångfald föder kreativitet."
+
+#: mu/logic.py:81
+msgid "An open mind, spirit of adventure and respect for diversity are key."
+msgstr ""
+"Ett öppet sinne, äventyrslusta och respekt för mångfald är essentiellt."
+
+#: mu/logic.py:82
+msgid ""
+"Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
+msgstr ""
+"Oroa dig inte ifall det inte fungerar. Lär dig, lös det och försök igen! :-)"
+
+#: mu/logic.py:84
+msgid "Coding is collaboration."
+msgstr "Att koda är att sammarbeta."
+
+#: mu/logic.py:85
+msgid "Compliment and amplify the good things with code."
+msgstr "Komplettera och förstärk bra saker med kod."
+
+#: mu/logic.py:86
+msgid ""
+"In theory, theory and practice are the same. In practice, they're not. ;-)"
+msgstr ""
+"I teorin så är teori och praktik samma sak. In praktiken, så är de inte det."
+
+#: mu/logic.py:88
+msgid "Debugging is twice as hard as writing the code in the first place."
+msgstr "Debugging är dubbelt så svårt att skiva koden."
+
+#: mu/logic.py:89
+msgid "It's fun to program."
+msgstr "Det är kul att programmera."
+
+#: mu/logic.py:90
+msgid "Programming has more to do with problem solving than writing code."
+msgstr "Programmering har mer med problemlösningar att göra än att skriva kod."
+
+#: mu/logic.py:91
+msgid "Start with your users' needs."
+msgstr "Starta med dina användares behov."
+
+#: mu/logic.py:92
+msgid "Try to see things from your users' point of view."
+msgstr "Försök att se saker från dina användares håll."
+
+#: mu/logic.py:93
+msgid "Put yourself in your users' shoes."
+msgstr "Sätt dig själv i användarens skor."
+
+#: mu/logic.py:94
+msgid ""
+"Explaining a programming problem to a friend often reveals the solution. :-)"
+msgstr ""
+"Lösningen visar sig ofta när man förklarar sitt problem för en vän. :-)"
+
+#: mu/logic.py:96
+msgid "If you don't know, ask. Nobody to ask? Just look it up."
+msgstr "Fråga om du inte vet. Ingen att fråga? Då är det bara att slå upp det."
+
+#: mu/logic.py:97
+msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
+msgstr "Komplexitet är en fiende. Håll det enkelt, dummer!"
+
+#: mu/logic.py:98
+msgid "Beautiful is better than ugly."
+msgstr "Vackert är bättre än fult."
+
+#: mu/logic.py:99
+msgid "Explicit is better than implicit."
+msgstr "Explicit är bättre än implicit."
+
+#: mu/logic.py:100
+msgid "Simple is better than complex. Complex is better than complicated."
+msgstr "Enkelt är bättre än komplext. Komplext är bättre än komplicerat."
+
+#: mu/logic.py:101
+msgid "Flat is better than nested."
+msgstr "Flat är bättre nestlat."
+
+#: mu/logic.py:102
+msgid "Sparse is better than dense."
+msgstr "Glest är bättre än tätt."
+
+#: mu/logic.py:103
+msgid "Readability counts."
+msgstr "Läsbarhet räknas."
+
+#: mu/logic.py:104
+msgid ""
+"Special cases aren't special enough to break the rules. Although "
+"practicality beats purity."
+msgstr ""
+"Specialfall är inte speciella nog för att bryta reglerna. Pragmatism slår "
+"dock renhet."
+
+#: mu/logic.py:106
+msgid "Errors should never pass silently. Unless explicitly silenced."
+msgstr "Fel ska aldrig passera tyst. Såvida explicit tystade."
+
+#: mu/logic.py:107
+msgid "In the face of ambiguity, refuse the temptation to guess."
+msgstr "Vid tvetydighet, motstå frestelsen att gissa."
+
+#: mu/logic.py:108
+msgid "There should be one-- and preferably only one --obvious way to do it."
+msgstr "Det ska finnas ett — och helst bara ett — uppenbart sätt att göra det."
+
+#: mu/logic.py:109
+msgid ""
+"Now is better than never. Although never is often better than *right* now."
+msgstr ""
+"Nu är bättre än aldrig. Aldrig är i och för sig ofta bättre än *just* nu."
+
+#: mu/logic.py:111
+msgid "If the implementation is hard to explain, it's a bad idea."
+msgstr "Om en implementation är svår att förklara, så är den en dålig idé."
+
+#: mu/logic.py:112
+msgid "If the implementation is easy to explain, it may be a good idea."
+msgstr "Om en implementation är lätt att förklara, så är den nog en god idé."
+
+#: mu/logic.py:113
+msgid "Namespaces are one honking great idea -- let's do more of those!"
+msgstr "Namnrymder är en kanonidé — låt oss använda dem mer!"
+
+#: mu/logic.py:114
+msgid "Mu was created by Nicholas H.Tollervey."
+msgstr "Mu skapades av Nicholas H.Tollervey."
+
+#: mu/logic.py:115
+msgid "To understand what recursion is, you must first understand recursion."
+msgstr "För att förstår rekursion, måste du först förstå rekursion."
+
+#: mu/logic.py:116
+msgid ""
+"Algorithm: a word used by programmers when they don't want to explain what "
+"they did."
+msgstr ""
+"Algoritm: ett ord som används av programmerare när det inte vill förklara "
+"vad de gjort."
+
+#: mu/logic.py:118
+msgid "Programmers count from zero."
+msgstr "Programmerare räknar från noll."
+
+#: mu/logic.py:119
+msgid "Simplicity is the ultimate sophistication."
+msgstr "Enkelhet är den ultimata sofistikeringen."
+
+#: mu/logic.py:120
+msgid "A good programmer is humble."
+msgstr "En bra programmerare är ödmjuk."
+
+#: mu/logic.py:121
+msgid "A good programmer is playful."
+msgstr "A bra programmerare är lekfull."
+
+#: mu/logic.py:122
+msgid "A good programmer learns to learn."
+msgstr "En bra programmerare lär sig lärande."
+
+#: mu/logic.py:123
+msgid "A good programmer thinks beyond the obvious."
+msgstr "En bra programmerare tänker bortom det uppenbara."
+
+#: mu/logic.py:124
+msgid "A good programmer promotes simplicity."
+msgstr "En bra programmerare föredrar enkelhet."
+
+#: mu/logic.py:125
+msgid "A good programmer avoids complexity."
+msgstr "En bra programmerare undviker komplexitet."
+
+#: mu/logic.py:126
+msgid "A good programmer is patient."
+msgstr "En bra programmerare har tålamod."
+
+#: mu/logic.py:127
+msgid "A good programmer asks questions."
+msgstr "En bra programmerare ställer frågor."
+
+#: mu/logic.py:128
+msgid "A good programmer is willing to say, 'I don't know'."
+msgstr "A bra programmerare säger gärna: ‘Jag vet inte’."
+
+#: mu/logic.py:129
+msgid "Wisest are they that know they know nothing."
+msgstr "Visast är de som vet att det inte vet någonting."
+
+#: mu/logic.py:439
+msgid " above this line"
+msgstr " ovanför den här raden"
+
+#: mu/logic.py:484
+msgid ""
+"Syntax error. Python cannot understand this line. Check for missing "
+"characters!"
+msgstr ""
+"Syntaxfel. Python kan inte förstå den här raden. Kontrollera om det saknas "
+"tecken!"
+
+#: mu/logic.py:669
+msgid "# Write your code here :-)"
+msgstr "# Skriv din kod här :-)"
+
+#: mu/logic.py:707
+msgid ""
+"The file contains characters Mu expects to be encoded as {0} or as the "
+"computer's default encoding {1}, but which are encoded in some other way.\n"
+"\n"
+"If this file was saved in another application, re-save the file via the "
+"'Save as' option and set the encoding to {0}"
+msgstr ""
+"Filen innehåller tecken Mu förväntar sig teckenkodas som {0} eller med "
+"datorns standardkodning {1}, men är teckenkodad på något annat sätt.\n"
+"\n"
+"Om filen sparades i en annan applikation, spara om den via ‘Spara som’ och "
+"sätt teckenkodningen till {0}"
+
+#: mu/logic.py:723
+msgid "The file \"{}\" is already open."
+msgstr "Filen “{}” är redan öppen."
+
+#: mu/logic.py:735
+msgid "Mu cannot read the characters in {}"
+msgstr "Mu kan inte läsa tecknen i {}"
+
+#: mu/logic.py:758
+msgid "Mu was not able to open this file"
+msgstr "Mu kunde inte öppna filen"
+
+#: mu/logic.py:759
+msgid ""
+"Currently Mu only works with Python source files or hex files created with "
+"embedded MicroPython code."
+msgstr ""
+"För nuvarande fungerar bara Mu med Python källkodsfiler eller hex-filer med "
+"MicroPython-kod."
+
+#: mu/logic.py:765
+msgid "Could not load {}"
+msgstr "Kunde inte ladda {}"
+
+#: mu/logic.py:767
+msgid ""
+"Does this file exist?\n"
+"If it does, do you have permission to read it?\n"
+"\n"
+"Please check and try again."
+msgstr ""
+"Existerar filen?\n"
+"Om den gör det, har tillåtelse att läsa den?\n"
+"\n"
+"Undersök och försök igen."
+
+#: mu/logic.py:773
+msgid "Is this a {} file?"
+msgstr "Är det här en {} fil?"
+
+#: mu/logic.py:774
+msgid ""
+"It looks like this could be a {} file.\n"
+"\n"
+"Would you like to change Mu to the {}mode?"
+msgstr ""
+"Det verkar som det här är en {}-fil.\n"
+"\n"
+"Vill du ändra Mu till {}-läget?"
+
+#: mu/logic.py:846
+msgid "Could not save file (disk problem)"
+msgstr "Kunde inte spara filen (disk-problem)"
+
+#: mu/logic.py:847
+msgid ""
+"Error saving file to disk. Ensure you have permission to write the file and "
+"sufficient disk space."
+msgstr ""
+"Kunde inte spara till disk. Kontrollera att du ha rättighet att skriva till "
+"filen och att det finns tillräckligt med diskutrymme."
+
+#: mu/logic.py:851
+msgid "Could not save file (encoding problem)"
+msgstr "Kunde inte spara file (teckenkodningsproblem)"
+
+#: mu/logic.py:853
+msgid ""
+"Unable to convert all the characters. If you have an encoding line at the "
+"top of the file, remove it and try again."
+msgstr ""
+"Kunde inte konvertera alla tecken. Om du har en teckenkodningsrad i början "
+"av filen, ta bort den och försök igen."
+
+#: mu/logic.py:862
+msgid "Saved file: {}"
+msgstr "Sparat filen: {}"
+
+#: mu/logic.py:891 mu/logic.py:1229
+msgid "You cannot use the filename \"{}\""
+msgstr "Du kan inte använda filnamnet “{}”"
+
+#: mu/logic.py:893
+msgid ""
+"This name is already used by another part of Python. If you use this name, "
+"things are likely to break. Please try again with a different filename."
+msgstr ""
+"Det här namnet används redan av en annan del av Python. Om du använder det, "
+"så kommer saker antagligen inte att fungera. Försök med ett annat filnamn."
+
+#: mu/logic.py:968
+msgid "Good job! No problems found."
+msgstr "Snyggt jobbat! Hittade inga problem."
+
+#: mu/logic.py:969
+msgid "Hurrah! Checker turned up no problems."
+msgstr "Hurra! Hittade inga problem efter kontrollen."
+
+#: mu/logic.py:970
+msgid "Nice one! Zero problems detected."
+msgstr "Snyggt! Noll detekterade problem."
+
+#: mu/logic.py:971
+msgid "Well done! No problems here."
+msgstr "Bra gjort! Inga problem här inte."
+
+#: mu/logic.py:972
+msgid "Awesome! Zero problems found."
+msgstr "Häftigt! Inga hittade problem."
+
+#: mu/logic.py:999
+msgid ""
+"There is un-saved work, exiting the application will cause you to lose it."
+msgstr ""
+"Det finns arbete som inte är sparat, om avslutar du applikationen förloras "
+"det."
+
+#: mu/logic.py:1052
+msgid "Could not find MicroPython runtime."
+msgstr "Kunde inte hitta någon exekveringsmiljö för MicroPython."
+
+#: mu/logic.py:1053
+msgid ""
+"The micro:bit runtime you specified ('{}') does not exist. Please try again."
+msgstr "Exekveringsmiljön (‘{}’) du angav finns inte. Försök igen."
+
+#: mu/logic.py:1123
+msgid "Changed to {} mode."
+msgstr "Ändrat till {}-läget."
+
+#: mu/logic.py:1168
+msgid "Detected new {} device."
+msgstr "Upptäckt new {} enhet."
+
+#: mu/logic.py:1175
+msgid "Would you like to change Mu to the {} mode?"
+msgstr "Vill du ändra Mu till {}-läget?"
+
+#: mu/logic.py:1210
+msgid "Cannot Set Breakpoint."
+msgstr "Kan inte sätta brytpunkt."
+
+#: mu/logic.py:1211
+msgid ""
+"Lines that are comments or some multi-line statements cannot have "
+"breakpoints."
+msgstr ""
+"Kommentarsrader eller vissa flerraders statements kan inte ha brytpunkter."
+
+#: mu/logic.py:1231
+msgid ""
+"This name is already used by another part of Python. If you use that name, "
+"things are likely to break. Please try again with a different filename."
+msgstr ""
+"Det här namnet används redan av en annan del av Python. Om du använder det, "
+"så kommer saker antagligen inte att fungera. Försök med ett annat filnamn."
+
+#: mu/logic.py:1248
+msgid "Could not rename file."
+msgstr "Kunde inte byta namn på filen."
+
+#: mu/logic.py:1249
+msgid "A file of that name is already open in Mu."
+msgstr "En fil med det namnet har redan öppnats i Mu."
+
+#: mu/logic.py:1278
+msgid "Replaced \"{}\" with \"{}\"."
+msgstr "Ersatte “{}” med “{}”."
+
+#: mu/logic.py:1282
+msgid "Replaced {} matches of \"{}\" with \"{}\"."
+msgstr "Ersatte {} träffar av “{}” med “{}”."
+
+#: mu/logic.py:1287 mu/logic.py:1294
+msgid "Could not find \"{}\"."
+msgstr "Kunde inte hitta “{}”."
+
+#: mu/logic.py:1292
+msgid "Highlighting matches for \"{}\"."
+msgstr "Markerar träffar för \"{}\"."
+
+#: mu/logic.py:1297
+msgid "You must provide something to find."
+msgstr "Du måste ange något att söka efter."
+
+#: mu/logic.py:1298
+msgid "Please try again, this time with something in the find box."
+msgstr "Försök igen, den här gången med något i sök-rutan."
+
+#: mu/modes/adafruit.py:32
+msgid "Adafruit CircuitPython"
+msgstr "Adafruit CircuitPython"
+
+#: mu/modes/adafruit.py:33
+msgid "Use CircuitPython on Adafruit's line of boards."
+msgstr "Använd CircuitPython på utvecklingskort från Adafruit."
+
+#: mu/modes/adafruit.py:71
+msgid "Serial"
+msgstr "Seriell"
+
+#: mu/modes/adafruit.py:72
+msgid "Open a serial connection to your device."
+msgstr "Öppna en seriell anslutning till din enhet."
+
+#: mu/modes/adafruit.py:79 mu/modes/microbit.py:215 mu/modes/python3.py:136
+msgid "Plotter"
+msgstr "Plotter"
+
+#: mu/modes/adafruit.py:80 mu/modes/microbit.py:216
+msgid "Plot incoming REPL data."
+msgstr "Plotta inkommande REPL-data."
+
+#: mu/modes/adafruit.py:150
+msgid "Could not find an attached Adafruit CircuitPython device."
+msgstr "Kunde inte hitta någon ansluten Adafruit CircuitPython-enhet."
+
+#: mu/modes/adafruit.py:152
+msgid ""
+"Python files for Adafruit CircuitPython devices are stored on the device. "
+"Therefore, to edit these files you need to have the device plugged in. Until "
+"you plug in a device, Mu will use the directory found here:\n"
+"\n"
+" {}\n"
+"\n"
+"...to store your code."
+msgstr ""
+"Python-filer för Adafruit CircuitPython-enheter lagras på enheten. Därför "
+"måste du ha enheten ansluten för att kunna ändra filerna. Tills dess att du "
+"ansluter en enhet, kommer Mu använda katalogen:\n"
+"\n"
+" {}\n"
+"\n"
+"…för att lagra din kod."
+
+#: mu/modes/base.py:177
+msgid "Data Flood Detected!"
+msgstr "Dataöverflöde upptäckt!"
+
+#: mu/modes/base.py:178
+msgid ""
+"The plotter is flooded with data which will make Mu unresponsive and freeze. "
+"As a safeguard, the plotter has been stopped.\n"
+"\n"
+"Flooding is when chunks of data of more than 1024 bytes are repeatedly sent "
+"to the plotter.\n"
+"\n"
+"To fix this, make sure your code prints small tuples of data between calls "
+"to 'sleep' for a very short period of time."
+msgstr ""
+"Plottern är överflödad med data, vilket kommer göra frysa Mu och göra den "
+"icke-responsiv. Som en säkerhetsåtgärd har plotter stoppats.\n"
+"\n"
+"Överflödning är när datamängder på mer än 1024 bytes kontinuerligt skickas "
+"till plotter.\n"
+"\n"
+"För att lösa detta, kontrollera så att din kod skriver små datatupler "
+"blandat med anrop till ‘sleep’ med kort tid."
+
+#: mu/modes/base.py:273 mu/modes/base.py:312
+msgid ""
+"Click on the device's reset button, wait a few seconds and then try again."
+msgstr ""
+"Tryck på enhetens reset-knapp, vänta att par sekunder och försök sedan igen."
+
+#: mu/modes/base.py:279 mu/modes/base.py:318
+msgid "Could not find an attached device."
+msgstr "Kunde inte hitta någon ansluten enhet."
+
+#: mu/modes/base.py:280
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it "
+"before the REPL will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+"Kontrollera att enheten är ansluten till den här datorn.\n"
+"\n"
+"Den måste ha en version av MicroPython (eller CircuitPython) flashad på sig "
+"innan REPL fungerar.\n"
+"\n"
+"Slutligen, tryck på enhetens reset-knapp och vänta ett par sekunder innan du "
+"försöker igen."
+
+#: mu/modes/base.py:319
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it "
+"before the Plotter will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+"Kontrollera att enheten är ansluten till den här datorn.\n"
+"\n"
+"Den måste ha en version av MicroPython (eller CircuitPython) flashad på sig "
+"innan plotter fungerar.\n"
+"\n"
+"Slutligen, tryck på enhetens reset-knapp och vänta ett par sekunder innan du "
+"försöker igen."
+
+#: mu/modes/debugger.py:35
+msgid "Graphical Debugger"
+msgstr "Grafisk debuter"
+
+#: mu/modes/debugger.py:36
+msgid "Debug your Python 3 code."
+msgstr "Debugga din Python 3-kod."
+
+#: mu/modes/debugger.py:50 mu/modes/pygamezero.py:109 mu/modes/python3.py:166
+msgid "Stop"
+msgstr "Stopp"
+
+#: mu/modes/debugger.py:51
+msgid "Stop the running code."
+msgstr "Stoppa den körande koden."
+
+#: mu/modes/debugger.py:57
+msgid "Continue"
+msgstr "Fortsätt"
+
+#: mu/modes/debugger.py:58
+msgid "Continue to run your Python script."
+msgstr "Fortsätt att köra ditt Python-skript."
+
+#: mu/modes/debugger.py:64
+msgid "Step Over"
+msgstr "Stega över"
+
+#: mu/modes/debugger.py:65
+msgid "Step over a line of code."
+msgstr "Stega över en kodrad."
+
+#: mu/modes/debugger.py:71
+msgid "Step In"
+msgstr "Stega in"
+
+#: mu/modes/debugger.py:72
+msgid "Step into a function."
+msgstr "Stega in i en funktion."
+
+#: mu/modes/debugger.py:78
+msgid "Step Out"
+msgstr "Stega ut"
+
+#: mu/modes/debugger.py:79
+msgid "Step out of a function."
+msgstr "Stega ut ur en funktion."
+
+#: mu/modes/debugger.py:156
+msgid "Your script has finished running."
+msgstr "Ditt skript har slutat köra."
+
+#: mu/modes/debugger.py:224
+msgid ""
+"Unable to connect to the Python debugger.\n"
+"\n"
+msgstr ""
+"Kan inte koppla till Python-debuggern\n"
+"\n"
+
+#: mu/modes/debugger.py:308
+msgid "Debugger info: {}"
+msgstr "Debugger-info: {}"
+
+#: mu/modes/debugger.py:314
+msgid "Debugger warning: {}"
+msgstr "Debugger-varning: {}"
+
+#: mu/modes/debugger.py:321
+msgid "Debugger error: {}"
+msgstr "Debugger-fel: {}"
+
+#: mu/modes/microbit.py:168
+msgid "BBC micro:bit"
+msgstr "BBC micro:bit"
+
+#: mu/modes/microbit.py:169
+msgid "Write MicroPython for the BBC micro:bit."
+msgstr "Skriv MicroPython för BBC micro:bit."
+
+#: mu/modes/microbit.py:192
+msgid "Flash"
+msgstr "Flasha"
+
+#: mu/modes/microbit.py:193
+msgid "Flash your code onto the micro:bit."
+msgstr "Flasha din kod till micro:biten."
+
+#: mu/modes/microbit.py:199
+msgid "Files"
+msgstr "Filer"
+
+#: mu/modes/microbit.py:200
+msgid "Access the file system on the micro:bit."
+msgstr "Accessa filsystemet på micro:biten."
+
+#: mu/modes/microbit.py:206 mu/modes/python3.py:127
+msgid "REPL"
+msgstr "REPL"
+
+#: mu/modes/microbit.py:207
+msgid "Use the REPL to live-code on the micro:bit."
+msgstr "Använd REPL för att live-koda på micro:biten."
+
+#: mu/modes/microbit.py:257
+msgid "Unable to flash \"{}\""
+msgstr "Kunde inte flasha “{}”"
+
+#: mu/modes/microbit.py:267
+msgid "Problem with script"
+msgstr "Problem med skrytet"
+
+#: mu/modes/microbit.py:268
+msgid "{} [{}:{}]"
+msgstr "{} [{}:{}]"
+
+#: mu/modes/microbit.py:278
+msgid "Our minifier tried but your script is too long!"
+msgstr "Vår minifierare försökte, men ditt skript är för långt!"
+
+#: mu/modes/microbit.py:283
+msgid "Your script is too long and the minifier isn't available"
+msgstr "Ditt skript är för långt och minifieraren är inte tillgänglig"
+
+#: mu/modes/microbit.py:288
+msgid "Your script is too long!"
+msgstr "Ditt skript är för långt!"
+
+#: mu/modes/microbit.py:368
+msgid "Flashing \"{}\" onto the micro:bit."
+msgstr "Flashar “{}” till micro:biten."
+
+#: mu/modes/microbit.py:370
+msgid " Runtime: {}"
+msgstr " Exekveringsmiljö: {}"
+
+#: mu/modes/microbit.py:416
+msgid "Unsupported BBC micro:bit."
+msgstr "Osupportad BBC micro:bit."
+
+#: mu/modes/microbit.py:417
+msgid ""
+"Your device is newer than this version of Mu. Please update Mu to the latest "
+"version to support this device.\n"
+"\n"
+"https://codewith.mu/"
+msgstr ""
+"Din enhet är nyare än den här versionen av Mu. Uppdatera Mu till den senaste "
+"version för att stödja enheten.\n"
+"\n"
+"https://codewith.mu/"
+
+#: mu/modes/microbit.py:474 mu/modes/microbit.py:611
+msgid "Could not find an attached BBC micro:bit."
+msgstr "Kunde inte hitta en ansluten BBC micro:bit."
+
+#: mu/modes/microbit.py:475
+msgid ""
+"Please ensure you leave enough time for the BBC micro:bit to be attached and "
+"configured correctly by your computer. This may take several seconds. "
+"Alternatively, try removing and re-attaching the device or saving your work "
+"and restarting Mu if the device remains unfound."
+msgstr ""
+"Lämna tillräckligt med tid för att BBC micro:biten ska hinna anslutas och "
+"konfigureras av din datorn. Det kan ta flera sekunder. Alterntivt, försök "
+"koppla loss och anslut sedan enheten igen eller spara ditt arbete och start "
+"om Mu om enheten fortfarande inte hittas."
+
+#: mu/modes/microbit.py:489
+msgid "Finished flashing."
+msgstr "Avslutat flashning."
+
+#: mu/modes/microbit.py:524
+msgid "Copied code onto micro:bit."
+msgstr "Kopierar koden till micro:biten."
+
+#: mu/modes/microbit.py:533
+msgid "There was a problem flashing the micro:bit."
+msgstr "Det var ett problem med att flasha micro:biten."
+
+#: mu/modes/microbit.py:534
+msgid ""
+"Please do not disconnect the device until flashing has completed. Please "
+"check the logs for more information."
+msgstr ""
+"Koppla inte bort enheten innan flashingen har avslutat. Titta i loggar efter "
+"mer information."
+
+#: mu/modes/microbit.py:555
+msgid "REPL and file system cannot work at the same time."
+msgstr "REPL och filsystem kan inte användas samtidigt."
+
+#: mu/modes/microbit.py:556
+msgid ""
+"The REPL and file system both use the same USB serial connection. Only one "
+"can be active at any time. Toggle the file system off and try again."
+msgstr ""
+"REPL och filsystemet använder båda samma seriella USB-anslutning. Bara en "
+"kan vara aktiv åt gången. Stäng av filsystemet och försök igen."
+
+#: mu/modes/microbit.py:573
+msgid "The plotter and file system cannot work at the same time."
+msgstr "Plottern och filsystem kan inte användas samtidigt."
+
+#: mu/modes/microbit.py:575
+msgid ""
+"The plotter and file system both use the same USB serial connection. Only "
+"one can be active at any time. Toggle the file system off and try again."
+msgstr ""
+"Plottern och filsystemet använder båda samma seriella USB-anslutning. Bara "
+"en kan vara aktiv åt gången. Stäng av filsystemet och försök igen."
+
+#: mu/modes/microbit.py:587
+msgid "File system cannot work at the same time as the REPL or plotter."
+msgstr "Filsystemet kan inte användas samtidigt som REPL eller plottern."
+
+#: mu/modes/microbit.py:589
+msgid ""
+"The file system and the REPL and plotter use the same USB serial connection. "
+"Toggle the REPL and plotter off and try again."
+msgstr ""
+"Filsystemet, REPL och plottern använder samma seriella USB-koppling. Stänga "
+"av REPL och plotter och försök igen."
+
+#: mu/modes/microbit.py:612
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"The device must have MicroPython flashed onto it before the file system will "
+"work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+"Kontrollera att enheter är kopplad till den här datorn.\n"
+"\n"
+"Enheten måste ha MicroPython flashat till den innan filsystemet kan "
+"fungera.\n"
+"\n"
+"Slutligen, tryck på enhetens reset-knapp och vänta ett par sekunder innan du "
+"försöker igen."
+
+#: mu/modes/pygamezero.py:35
+msgid "Pygame Zero"
+msgstr "Pygame Zero"
+
+#: mu/modes/pygamezero.py:36
+msgid "Make games with Pygame Zero."
+msgstr "Gör spel med Pygame Zero."
+
+#: mu/modes/pygamezero.py:51 mu/modes/pygamezero.py:101
+msgid "Play"
+msgstr "Spela"
+
+#: mu/modes/pygamezero.py:52 mu/modes/pygamezero.py:102
+msgid "Play your Pygame Zero game."
+msgstr "Spela ditt Pygame Zero-spel."
+
+#: mu/modes/pygamezero.py:58
+msgid "Images"
+msgstr "Bilder"
+
+#: mu/modes/pygamezero.py:59
+msgid "Show the images used by Pygame Zero."
+msgstr "Visa bilderna som används av Pygame Zero."
+
+#: mu/modes/pygamezero.py:65
+msgid "Fonts"
+msgstr "Fonter"
+
+#: mu/modes/pygamezero.py:66
+msgid "Show the fonts used by Pygame Zero."
+msgstr "Visa fonterna som används av Pygame Zero."
+
+#: mu/modes/pygamezero.py:72
+msgid "Sounds"
+msgstr "Ljud"
+
+#: mu/modes/pygamezero.py:73
+msgid "Show the sounds used by Pygame Zero."
+msgstr "Visa ljuden som används av Pygame Zero."
+
+#: mu/modes/pygamezero.py:79
+msgid "Music"
+msgstr "Musik"
+
+#: mu/modes/pygamezero.py:80
+msgid "Show the music used by Pygame Zero."
+msgstr "Visa musiken som används av Pygame Zero."
+
+#: mu/modes/pygamezero.py:110
+msgid "Stop your Pygame Zero game."
+msgstr "Stoppa ditt Pygame Zero-spel."
+
+#: mu/modes/python3.py:97
+msgid "Python 3"
+msgstr "Python 3"
+
+#: mu/modes/python3.py:98
+msgid "Create code using standard Python 3."
+msgstr "Skapa kod med standard Python 3."
+
+#: mu/modes/python3.py:113 mu/modes/python3.py:158
+msgid "Run"
+msgstr "Kör"
+
+#: mu/modes/python3.py:114 mu/modes/python3.py:159
+msgid "Run your Python script."
+msgstr "Kör ditt Python-skript."
+
+#: mu/modes/python3.py:120
+msgid "Debug"
+msgstr "Debugga"
+
+#: mu/modes/python3.py:121
+msgid "Debug your Python script."
+msgstr "Debugga ditt Python-skript."
+
+#: mu/modes/python3.py:128
+msgid "Use the REPL for live coding."
+msgstr "Använd REPL för live-kodning."
+
+#: mu/modes/python3.py:137
+msgid "Plot data from your script or the REPL."
+msgstr "Plotta data från ditt skript eller från REPL."
+
+#: mu/modes/python3.py:167
+msgid "Stop your Python script."
+msgstr "Stoppa ditt Python-skript."
+
+#: mu/modes/python3.py:230
+msgid "Starting iPython REPL."
+msgstr "Startar iPython REPL."
+
+#: mu/modes/python3.py:234
+msgid "Stopping iPython REPL (this may take a short amount of time)."
+msgstr "Stoppar iPython REPL (det här kan ta en liten stund)."
+
+#: mu/modes/python3.py:319
+msgid "REPL started."
+msgstr "REPL startad."
+
+#: mu/modes/python3.py:328
+msgid "REPL stopped."
+msgstr "REPL stoppad."
