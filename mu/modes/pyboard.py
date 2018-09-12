@@ -29,13 +29,13 @@ class PyboardMode(MicroPythonMode):
     Represents the functionality required by the Pyboard mode.
     """
 
-    name = _('Pyboard Micropython')
-    description = _("Use Micropython on the Pyboard line of boards")
+    name = _('Pyboard MicroPython')
+    description = _("Use MicroPython on the Pyboard line of boards")
     icon = 'pyboard'
     save_timeout = 0
     connected = True
     force_interrupt = False
-    # Currently, all boards build using the STM32 port of Micropython use the
+    # Currently, all boards build using the STM32 port of MicroPython use the
     # same VID and PID by default for mass storage.
     valid_boards = [
         ('0xF055', '0x9800'),  # Pyboard v1, v1.1, etc.
