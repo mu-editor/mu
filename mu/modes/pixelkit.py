@@ -63,17 +63,33 @@ class DeviceFlasher(QThread):
             self.flash_kanocode()
         else:
             msg = "Unknown firmware type: {0}".format(self.firmware_type)
+            logger.info(msg)
             self.on_flash_fail.emit(msg)
 
     def get_addr_filename(self, values):
-        if len(values) % 2 != 0:
-            raise Exception('Values must come in pairs')
+        """
+        Given a list of tuples containing the memory address and file to
+        write at that address, return another list of tuples containing
+        the address and a file object.
+        """
+        if not isinstance(values, list):
+            logger.info('Values must be a list')
+            self.on_flash_fail.emit('Values must be a list')
+            return
+        if any(not isinstance(value, tuple) for value in values):
+            logger.info('Values items must be tuples')
+            self.on_flash_fail.emit('Values items must be tuples')
+            return
         addr_filename = []
-        for i in range(0, len(values), 2):
-            addr = int(values[i], 0)
-            file = open(values[i + 1], 'rb')
-            addr_filename.append([addr, file])
-        return addr_filename
+        try:
+            for value in values:
+                addr = int(value[0], 0)
+                file = open(value[1], 'rb')
+                addr_filename.append((addr, file))
+                return addr_filename
+        except Exception as ex:
+            logger.error(ex)
+            self.on_flash_fail.emit('Could not open file')
 
     def write_flash(self, addr_filename):
         self.on_data.emit(_("Writing firmware to flash memory"))
@@ -122,7 +138,7 @@ class DeviceFlasher(QThread):
 
     def flash_micropython(self):
         firmware_path = self.download_micropython()
-        addr_filename = self.get_addr_filename(["0x1000", firmware_path])
+        addr_filename = self.get_addr_filename([("0x1000", firmware_path)])
         self.write_flash(addr_filename)
 
     def download_kanocode(self):
@@ -145,9 +161,9 @@ class DeviceFlasher(QThread):
         tmpdir = tempfile.TemporaryDirectory()
         tar.extractall(path=tmpdir.name)
         values = [
-            "0x1000", "{0}/RPK_Bootloader_V1_0_2.bin".format(tmpdir.name),
-            "0x10000", "{0}/RPK_App_V1_0_2.bin".format(tmpdir.name),
-            "0x8000", "{0}/RPK_Partitions_V1_0_2.bin".format(tmpdir.name)
+            ("0x1000", "{0}/RPK_Bootloader_V1_0_2.bin".format(tmpdir.name)),
+            ("0x10000", "{0}/RPK_App_V1_0_2.bin".format(tmpdir.name)),
+            ("0x8000", "{0}/RPK_Partitions_V1_0_2.bin".format(tmpdir.name))
         ]
         addr_filename = self.get_addr_filename(values)
         self.write_flash(addr_filename)
@@ -391,8 +407,8 @@ class PixelKitMode(MicroPythonMode):
         )
         self.editor.show_status_message(_('Pixel Kit was flashed. Have fun!'))
         message = _("Pixel Kit was flashed. Have fun!")
-        information = _("Your Pixel Kit now has MicroPython on it. Restart it "
-                        "to start using!")
+        information = _("Your Pixel Kit now has MicroPython on it. Switch it "
+                        "off and on again to start using!")
         self.view.show_message(message, information, 'Warning')
         logger.info('Flash finished.')
         self.flash_thread = None

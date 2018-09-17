@@ -64,8 +64,51 @@ def test_DeviceFlasher_run_fail():
 
 
 def test_DeviceFlasher_get_addr_filename():
-    # TODO
-    pass
+    """
+    Get a list of tuples from get_addr_filename containing the address and
+    file object
+    """
+    port = 'COM_PORT'
+    mock_open = mock.mock_open()
+    df = DeviceFlasher(port)
+    addr_filename = [('0x1000', '/tmp/filename')]
+    with mock.patch('mu.modes.pixelkit.open', mock_open, create=True):
+        result = df.get_addr_filename(addr_filename)
+        assert isinstance(result, list)
+        assert len(result) == len(addr_filename)
+        assert isinstance(result, list)
+        assert isinstance(result[0], tuple)
+        assert result[0][0] == int(addr_filename[0][0], 0)
+        assert isinstance(result[0][1], mock.MagicMock)
+
+
+def test_DeviceFlasher_get_addr_filename_fail():
+    """
+    nsure the on_flash_fail signal is emitted if an exception is thrown when
+    something goes wrong on get_addr_filename function
+    """
+    port = 'COM_PORT'
+    mock_open = mock.mock_open()
+    arg_string = '/tmp/filename'
+    arg_tuple = ('0x1000', '/tmp/filename')
+    arg_list_string = ['0x1000', '/tmp/filename']
+    with mock.patch('mu.modes.pixelkit.open', mock_open, create=True):
+        df = DeviceFlasher(port)
+        df.on_flash_fail = mock.MagicMock()
+        result = df.get_addr_filename(arg_string)
+        df.on_flash_fail.emit.assert_called_once_with(
+            'Values must be a list'
+        )
+        df.on_flash_fail = mock.MagicMock()
+        result = df.get_addr_filename(arg_tuple)
+        df.on_flash_fail.emit.assert_called_once_with(
+            'Values must be a list'
+        )
+        df.on_flash_fail = mock.MagicMock()
+        result = df.get_addr_filename(arg_list_string)
+        df.on_flash_fail.emit.assert_called_once_with(
+            'Values items must be tuples'
+        )
 
 
 def test_DeviceFlasher_write_flash():
@@ -73,7 +116,7 @@ def test_DeviceFlasher_write_flash():
     Ensure erase_flash will call esptool functions correctly
     """
     port = 'COM_PORT'
-    addr_filename = [[int('0x1000', 0), '/tmp/filename']]
+    addr_filename = [(int('0x1000', 0), '/tmp/filename')]
     args = Namespace()
     args.flash_freq = "40m"
     args.flash_mode = "dio"
@@ -113,7 +156,7 @@ def test_DeviceFlasher_write_flash_fail():
     something goes wrong on write_flash function
     """
     port = 'COM_PORT'
-    addr_filename = [[int('0x1000', 0), '/tmp/filename']]
+    addr_filename = [(int('0x1000', 0), '/tmp/filename')]
     mock_esptool = mock.MagicMock()
     mock_esptool.ESPLoader.detect_chip.side_effect = Exception('Problem')
     df = DeviceFlasher(port)
@@ -168,7 +211,7 @@ def test_DeviceFlasher_flash_micropython():
             mock.patch.object(df, 'write_flash'):
         df.flash_micropython()
         df.download_micropython.assert_called_once()
-        df.get_addr_filename.assert_called_once_with(["0x1000", f])
+        df.get_addr_filename.assert_called_once_with([("0x1000", f)])
         df.write_flash.assert_called_once_with(addr)
 
 
