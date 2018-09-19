@@ -11,25 +11,12 @@ with open('README.rst') as f:
 with open('CHANGES.rst') as f:
     changes = f.read()
 
-install_requires = ['pycodestyle==2.4.0', 'pyflakes==2.0.0',
-                    'pyserial==3.4', 'pyqt5==5.11.2', 'qscintilla==2.10.7',
-                    'qtconsole==4.3.1', 'matplotlib==2.2.2',
-                    'pgzero==1.2', 'PyQtChart==5.11.2', 'appdirs>=1.4.3',
-                    'gpiozero>=1.4.1', 'guizero>=0.5.2',
-                    'pigpio>=1.40.post1', 'Pillow>=5.2.0',
-                    'requests>=2.19.1', 'semver>=2.8.0', ]
-
-# Exclude packages not available for ARM in PyPI/piwheels (Raspberry Pi)
-try:
-    machine = platform.machine()
-    if machine.lower().startswith('arm'):
-        exclude = ('pyqt5', 'qscintilla', 'qtconsole', 'PyQtChart')
-        install_requires = [requirement for requirement in install_requires
-                            if not requirement.startswith(exclude)]
-except Exception:
-    # Something unexpected happened, so simply keep all requires
-    pass
-
+install_requires = ['pycodestyle', 'pyflakes',
+                    'pyserial', 'appdirs', 'semver',
+                    'qtconsole',
+                    # Mode dependencies:
+                    'pgzero', 'gpiozero', 'guizero',
+                    'pigpio', 'Pillow']
 
 setup(
     name='mu-editor',
