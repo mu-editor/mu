@@ -22,6 +22,7 @@ import os.path
 import csv
 import time
 import logging
+import pkgutil
 from PyQt5.QtSerialPort import QSerialPortInfo
 from PyQt5.QtCore import QObject
 from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path
@@ -41,6 +42,12 @@ BOARD_IDS = set([
     (0x239A, 0x8015),  # circuitplayground m0 PID prototype
     (0x239A, 0x801B),  # feather m0 express PID
 ])
+
+
+# Cache module names for filename shadow checking later.
+MODULE_NAMES = set([name for _, name, _ in pkgutil.iter_modules()])
+MODULE_NAMES.add('sys')
+MODULE_NAMES.add('builtins')
 
 
 def get_default_workspace():
@@ -87,6 +94,7 @@ class BaseMode(QObject):
     save_timeout = 5  #: Number of seconds to wait before saving work.
     builtins = None  #: Symbols to assume as builtins when checking code style.
     file_extensions = []
+    module_names = MODULE_NAMES
 
     def __init__(self, editor, view):
         self.editor = editor
@@ -193,8 +201,9 @@ class MicroPythonMode(BaseMode):
 
     def find_device(self, with_logging=True):
         """
-        Returns the port for the first MicroPython-ish device found connected
-        to the host computer. If no device is found, return None.
+        Returns the port and serial number for the first MicroPython-ish device
+        found connected to the host computer. If no device is found, returns
+        the tuple (None, None).
         """
         available_ports = QSerialPortInfo.availablePorts()
         for port in available_ports:
@@ -203,9 +212,11 @@ class MicroPythonMode(BaseMode):
             # Look for the port VID & PID in the list of know board IDs
             if (vid, pid) in self.valid_boards:
                 port_name = port.portName()
+                serial_number = port.serialNumber()
                 if with_logging:
                     logger.info('Found device on port: {}'.format(port_name))
-                return self.port_path(port_name)
+                    logger.info('Serial number: {}'.format(serial_number))
+                return (self.port_path(port_name), serial_number)
         if with_logging:
             logger.warning('Could not find device.')
             logger.debug('Available ports:')
@@ -213,7 +224,7 @@ class MicroPythonMode(BaseMode):
                                                          p.vendorIdentifier(),
                                                          p.portName())
                          for p in available_ports])
-        return None
+        return (None, None)
 
     def port_path(self, port_name):
         if os.name == 'posix':
@@ -249,7 +260,7 @@ class MicroPythonMode(BaseMode):
         Detect a connected MicroPython based device and, if found, connect to
         the REPL and display it to the user.
         """
-        device_port = self.find_device()
+        device_port, serial_number = self.find_device()
         if device_port:
             try:
                 self.view.add_micropython_repl(device_port, self.name,
@@ -289,7 +300,7 @@ class MicroPythonMode(BaseMode):
         """
         Check if REPL exists, and if so, enable the plotter pane!
         """
-        device_port = self.find_device()
+        device_port, serial_number = self.find_device()
         if device_port:
             try:
                 self.view.add_micropython_plotter(device_port, self.name, self)

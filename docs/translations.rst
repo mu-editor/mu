@@ -28,7 +28,7 @@ translators, such as `poedit <https://poedit.net/>`_.
     sure the ``python3-tools`` package is installed.
 
 To manually change the locale Mu uses for translation strings, look in
-``mu/app.py`` for the following lines of code at the start of the file::
+``mu/__init__.py`` for the following lines of code at the start of the file::
 
     # Configure locale and language
     # Define where the translation assets are to be found.

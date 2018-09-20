@@ -367,6 +367,8 @@ class DebugMode(BaseMode):
     def debug_on_exception(self, name, value):
         """
         Handle when the debugger encounters a named exception with an
-        associated value. Currently an unimplemented extra feature.
+        associated value. Clear the highlighted line and allow the script to
+        run until the end so the error message is printed to stdout.
         """
-        pass
+        self.view.current_tab.reset_debugger_highlight()
+        self.debugger.do_run()

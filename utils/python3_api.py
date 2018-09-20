@@ -23,12 +23,15 @@ for module in modules:
         name = ''
         try:
             name = obj.__name__
-        except:
+        except Exception as ex:
+            print(ex)
             print(obj)
         try:
             args = [a.replace('(', '').replace(')', '') for a in
                     str(inspect.signature(obj)).split(', ')]
-        except:
+        except Exception as ex:
+            print(ex)
+            print(obj)
             args = None
         description = inspect.getdoc(obj)
         if name and description:

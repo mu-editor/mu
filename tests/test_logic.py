@@ -509,6 +509,21 @@ def test_check_pycodestyle():
     assert result[6][0]['code'] == 'E303'
 
 
+def test_check_pycodestyle_with_non_ascii():
+    """
+    Ensure pycodestyle can at least see a file with non-ASCII characters
+    """
+    code = "x='\u2005'\n"
+    try:
+        mu.logic.check_pycodestyle(code)
+    except Exception as exc:
+        assert False, "Exception was raised: %s" % exc
+    #
+    # Doesn't actually matter what pycodestyle returns; we just want to make
+    # sure it didn't error out
+    #
+
+
 def test_MuFlakeCodeReporter_init():
     """
     Check state is set up as expected.
@@ -614,6 +629,16 @@ def test_editor_init():
         e = mu.logic.Editor(view)
         assert e._view == view
         assert e.theme == 'day'
+        assert e.mode == 'python'
+        assert e.modes == {}
+        assert e.envars == []
+        assert e.minify is False
+        assert e.microbit_runtime == ''
+        assert e.connected_devices == set()
+        assert e.find == ''
+        assert e.replace == ''
+        assert e.global_replace is False
+        assert e.selecting_mode is False
         assert mkd.call_count == 1
         assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
 
@@ -637,6 +662,7 @@ def test_editor_setup():
         assert mkd.call_args_list[0][0][0] == 'foo'
         assert mock_shutil.call_count == 3
     assert e.modes == mock_modes
+    view.set_usb_checker.assert_called_once_with(1, e.check_usb)
 
 
 def test_editor_restore_session_existing_runtime():
@@ -1193,6 +1219,23 @@ def test_load_error():
     assert view.add_tab.call_count == 0
 
 
+def test_check_for_shadow_module_with_match():
+    """
+    If the name of the file in the path passed into check_for_shadow_module
+    (without the .py file extension) is found in module_names then return
+    True since the filename shadows that of a module found on the Python path.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    mock_mode = mock.MagicMock()
+    mock_mode.module_names = set(['foo', 'bar', 'baz'])
+    ed.modes = {
+        'python': mock_mode,
+    }
+    ed.mode = 'python'
+    assert ed.check_for_shadow_module('/a/long/path/with/foo.py')
+
+
 def test_save_no_tab():
     """
     If there's no active tab then do nothing.
@@ -1213,6 +1256,7 @@ def test_save_no_path():
     text, path, newline = "foo", "foo.py", "\n"
     ed = mocked_editor(text=text, path=None, newline=newline)
     ed._view.get_save_path.return_value = path
+    ed.check_for_shadow_module = mock.MagicMock(return_value=False)
     with mock.patch("mu.logic.save_and_encode") as mock_save:
         ed.save()
     mock_save.assert_called_with(text, path, newline)
@@ -1228,6 +1272,26 @@ def test_save_no_path_no_path_given():
     ed._view.get_save_path.return_value = ''
     ed.save()
     # The path isn't the empty string returned from get_save_path.
+    assert ed._view.current_tab.path is None
+
+
+def test_save_path_shadows_module():
+    """
+    If the filename in the path shadows a module then display a warning message
+    and abort.
+    """
+    text, newline = "foo", "\n"
+    ed = mocked_editor(text=text, path=None, newline=newline)
+    ed._view.get_save_path.return_value = '/a/long/path/foo.py'
+    mock_mode = mock.MagicMock()
+    mock_mode.module_names = set(['foo', 'bar', 'baz'])
+    ed.modes = {
+        'python': mock_mode,
+    }
+    ed.mode = 'python'
+    ed.save()
+    # The path isn't the empty string returned from get_save_path.
+    assert ed._view.show_message.call_count == 1
     assert ed._view.current_tab.path is None
 
 
@@ -1825,6 +1889,15 @@ def test_change_mode():
     view.button_bar = mock_button_bar
     view.change_mode = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    old_mode = mock.MagicMock()
+    old_mode.save_timeout = 5
+    old_mode.actions.return_value = [
+        {
+            'name': 'name',
+            'handler': 'handler',
+            'shortcut': 'Ctrl+X',
+        },
+    ]
     mode = mock.MagicMock()
     mode.save_timeout = 5
     mode.actions.return_value = [
@@ -1835,13 +1908,17 @@ def test_change_mode():
         },
     ]
     ed.modes = {
+        'microbit': old_mode,
         'python': mode,
     }
+    ed.mode = 'microbit'
     ed.change_mode('python')
+    # Check the old mode is closed properly.
+    old_mode.remove_repl.assert_called_once_with()
+    old_mode.remove_fs.assert_called_once_with()
+    old_mode.remove_plotter.assert_called_once_with()
+    # Check the new mode is set up correctly.
     assert ed.mode == 'python'
-    view.remove_repl.assert_called_once_with()
-    view.remove_filesystem.assert_called_once_with()
-    view.remove_plotter.assert_called_once_with()
     view.change_mode.assert_called_once_with(mode)
     assert mock_button_bar.connect.call_count == 11
     view.status_bar.set_mode.assert_called_once_with('python')
@@ -1894,7 +1971,9 @@ def test_change_mode_reset_breakpoints():
     mode.save_timeout = 5
     ed.modes = {
         'microbit': mode,
+        'debug': mock.MagicMock(),
     }
+    ed.mode = 'debug'
     ed.change_mode('microbit')
     assert ed.mode == 'microbit'
     assert mock_tab.breakpoint_handles == set()
@@ -1928,7 +2007,7 @@ def test_check_usb():
     ed.change_mode = mock.MagicMock()
     mode_mb = mock.MagicMock()
     mode_mb.name = 'BBC micro:bit'
-    mode_mb.find_device.return_value = '/dev/ttyUSB0'
+    mode_mb.find_device.return_value = ('/dev/ttyUSB0', '12345')
     ed.modes = {
         'microbit': mode_mb,
     }
@@ -1950,7 +2029,7 @@ def test_check_usb_change_mode_cancel():
     ed.change_mode = mock.MagicMock()
     mode_cp = mock.MagicMock()
     mode_cp.name = 'CircuitPlayground'
-    mode_cp.find_device.return_value = '/dev/ttyUSB1'
+    mode_cp.find_device.return_value = ('/dev/ttyUSB1', '12345')
     ed.modes = {
         'circuitplayground': mode_cp,
     }
@@ -1972,9 +2051,9 @@ def test_check_usb_already_in_mode():
     ed.change_mode = mock.MagicMock()
     mode_mb = mock.MagicMock()
     mode_mb.name = 'BBC micro:bit'
-    mode_mb.find_device.return_value = '/dev/ttyUSB0'
+    mode_mb.find_device.return_value = ('/dev/ttyUSB0', '12345')
     mode_cp = mock.MagicMock()
-    mode_cp.find_device.return_value = None
+    mode_cp.find_device.return_value = (None, None)
     ed.modes = {
         'microbit': mode_mb,
         'circuitplayground': mode_cp
@@ -1996,10 +2075,10 @@ def test_check_usb_multiple_devices():
     ed.change_mode = mock.MagicMock()
     mode_mb = mock.MagicMock()
     mode_mb.name = 'BBC micro:bit'
-    mode_mb.find_device.return_value = '/dev/ttyUSB0'
+    mode_mb.find_device.return_value = ('/dev/ttyUSB0', '12345')
     mode_cp = mock.MagicMock()
     mode_cp.name = 'CircuitPlayground'
-    mode_cp.find_device.return_value = '/dev/ttyUSB1'
+    mode_cp.find_device.return_value = ('/dev/ttyUSB1', '54321')
     ed.modes = {
         'microbit': mode_mb,
         'circuitplayground': mode_cp
@@ -2011,6 +2090,30 @@ def test_check_usb_multiple_devices():
     ed.show_status_message.assert_has_calls((expected_mb, expected_cp),
                                             any_order=True)
     view.show_confirmation.assert_not_called()
+    ed.change_mode.assert_not_called()
+
+
+def test_check_usb_when_selecting_mode_is_silent():
+    """
+    Ensure the check_usb doesn't ask to change mode if the user has the mode
+    selection dialog active (indicated by the selecting_mode flag.
+    """
+    view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mode_cp = mock.MagicMock()
+    mode_cp.name = 'CircuitPlayground'
+    mode_cp.find_device.return_value = ('/dev/ttyUSB1', '12345')
+    ed.modes = {
+        'circuitplayground': mode_cp,
+    }
+    ed.show_status_message = mock.MagicMock()
+    ed.selecting_mode = True
+    ed.check_usb()
+    expected = 'Detected new CircuitPlayground device.'
+    ed.show_status_message.assert_called_with(expected)
+    assert view.show_confirmation.call_count == 0
     ed.change_mode.assert_not_called()
 
 
@@ -2156,6 +2259,7 @@ def test_rename_tab_no_tab_id():
     view.current_tab = mock_tab
     ed = mu.logic.Editor(view)
     ed.save = mock.MagicMock()
+    ed.check_for_shadow_module = mock.MagicMock(return_value=False)
     ed.rename_tab()
     view.get_save_path.assert_called_once_with('old.py')
     assert mock_tab.path == 'foo.py'
@@ -2174,11 +2278,33 @@ def test_rename_tab():
     view.tabs.widget.return_value = mock_tab
     ed = mu.logic.Editor(view)
     ed.save = mock.MagicMock()
+    ed.check_for_shadow_module = mock.MagicMock(return_value=False)
     ed.rename_tab(1)
     view.get_save_path.assert_called_once_with('old.py')
     view.tabs.widget.assert_called_once_with(1)
     assert mock_tab.path == 'foo.py'
     ed.save.assert_called_once_with()
+
+
+def test_rename_tab_with_shadow_module():
+    """
+    If the user attempts to rename the tab to a filename which shadows a
+    Python module, then a warning should appear and the process aborted.
+    """
+    view = mock.MagicMock()
+    view.get_save_path.return_value = 'foo'
+    mock_tab = mock.MagicMock()
+    mock_tab.path = 'old.py'
+    view.tabs.widget.return_value = mock_tab
+    ed = mu.logic.Editor(view)
+    ed.save = mock.MagicMock()
+    ed.check_for_shadow_module = mock.MagicMock(return_value=True)
+    ed.rename_tab(1)
+    view.get_save_path.assert_called_once_with('old.py')
+    view.tabs.widget.assert_called_once_with(1)
+    assert view.show_message.call_count == 1
+    assert mock_tab.path == 'old.py'
+    assert ed.save.call_count == 0
 
 
 def test_rename_tab_avoid_duplicating_other_tab_name():
@@ -2195,6 +2321,7 @@ def test_rename_tab_avoid_duplicating_other_tab_name():
     mock_tab.path = 'old.py'
     view.tabs.widget.return_value = mock_tab
     ed = mu.logic.Editor(view)
+    ed.check_for_shadow_module = mock.MagicMock(return_value=False)
     ed.rename_tab(1)
     view.show_message.assert_called_once_with('Could not rename file.',
                                               'A file of that name is already '
@@ -2517,3 +2644,133 @@ def test_abspath_fail():
     assert len(result) == 2
     assert os.path.abspath('foo') in result
     assert os.path.abspath('bar') in result
+
+
+def test_find_replace_cancelled():
+    """
+    If the activated find/replace dialog is cancelled, no status message is
+    displayed.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = False
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find_replace()
+    ed.show_status_message.call_count == 0
+
+
+def test_find_replace_no_find():
+    """
+    If the user fails to supply something to find, display a modal warning
+    message to explain the problem.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = ('', '', False)
+    ed = mu.logic.Editor(mock_view)
+    ed.show_message = mock.MagicMock()
+    ed.find_replace()
+    msg = 'You must provide something to find.'
+    info = "Please try again, this time with something in the find box."
+    mock_view.show_message.assert_called_once_with(msg, info)
+
+
+def test_find_replace_find_matched():
+    """
+    If the user just supplies a find target and it is matched in the code then
+    the expected status message should be shown.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = ('foo', '', False)
+    mock_view.highlight_text.return_value = True
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find_replace()
+    mock_view.highlight_text.assert_called_once_with('foo')
+    assert ed.find == 'foo'
+    assert ed.replace == ''
+    assert ed.global_replace is False
+    ed.show_status_message.\
+        assert_called_once_with('Highlighting matches for "foo".')
+
+
+def test_find_replace_find_unmatched():
+    """
+    If the user just supplies a find target and it is UN-matched in the code
+    then the expected status message should be shown.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = ('foo', '', False)
+    mock_view.highlight_text.return_value = False
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find_replace()
+    ed.show_status_message.\
+        assert_called_once_with('Could not find "foo".')
+
+
+def test_find_replace_replace_no_match():
+    """
+    If the user supplies both a find and replace target and the find target is
+    UN-matched in the code, then the expected status message should be shown.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = ('foo', 'bar', False)
+    mock_view.replace_text.return_value = 0
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find_replace()
+    assert ed.find == 'foo'
+    assert ed.replace == 'bar'
+    assert ed.global_replace is False
+    mock_view.replace_text.assert_called_once_with('foo', 'bar', False)
+    ed.show_status_message.\
+        assert_called_once_with('Could not find "foo".')
+
+
+def test_find_replace_replace_single_match():
+    """
+    If the user supplies both a find and replace target and the find target is
+    matched once in the code, then the expected status message should be shown.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = ('foo', 'bar', False)
+    mock_view.replace_text.return_value = 1
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find_replace()
+    assert ed.find == 'foo'
+    assert ed.replace == 'bar'
+    assert ed.global_replace is False
+    mock_view.replace_text.assert_called_once_with('foo', 'bar', False)
+    ed.show_status_message.\
+        assert_called_once_with('Replaced "foo" with "bar".')
+
+
+def test_find_replace_replace_multi_match():
+    """
+    If the user supplies both a find and replace target and the find target is
+    matched many times in the code, then the expected status message should be
+    shown.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.show_find_replace.return_value = ('foo', 'bar', True)
+    mock_view.replace_text.return_value = 4
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find_replace()
+    assert ed.find == 'foo'
+    assert ed.replace == 'bar'
+    assert ed.global_replace is True
+    mock_view.replace_text.assert_called_once_with('foo', 'bar', True)
+    ed.show_status_message.\
+        assert_called_once_with('Replaced 4 matches of "foo" with "bar".')
+
+
+def test_toggle_comments():
+    """
+    Ensure the method in the view for toggling comments on and off is called.
+    """
+    mock_view = mock.MagicMock()
+    ed = mu.logic.Editor(mock_view)
+    ed.toggle_comments()
+    mock_view.toggle_comments.assert_called_once_with()

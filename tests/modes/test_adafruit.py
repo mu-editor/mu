@@ -23,6 +23,7 @@ def test_adafruit_mode():
     assert am.view == view
 
     actions = am.actions()
+# <<<<<<< HEAD
     assert len(actions) == 3
     assert actions[0]['name'] == 'run'
     assert actions[0]['handler'] == am.run
@@ -30,6 +31,14 @@ def test_adafruit_mode():
     assert actions[1]['handler'] == am.toggle_repl
     assert actions[2]['name'] == 'plotter'
     assert actions[2]['handler'] == am.toggle_plotter
+# =======
+#    assert len(actions) == 2
+#    assert actions[0]['name'] == 'serial'
+#    assert actions[0]['handler'] == am.toggle_repl
+#    assert actions[1]['name'] == 'plotter'
+#    assert actions[1]['handler'] == am.toggle_plotter
+#    assert 'code' not in am.module_names
+# >>>>>>> bd722c72f63bd0d6f51847e82852bf0638c22002
 
 
 def test_adafruit_mode_no_charts():

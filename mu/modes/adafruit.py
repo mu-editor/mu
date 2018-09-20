@@ -53,30 +53,36 @@ class AdafruitMode(MicroPythonMode):
         (0x239A, 0x802A),  # Adafruit Feather 52840
         (0x239A, 0x802C),  # Adafruit Itsy M4
         (0x239A, 0x802E),  # Adafruit CRICKit M0
+        (0x239A, 0xD1ED),  # Adafruit HalloWing M0
     ]
+    # Modules built into CircuitPython which mustn't be used as file names
+    # for source code.
+    module_names = {'storage', 'os', 'touchio', 'microcontroller', 'bitbangio',
+                    'digitalio', 'audiobusio', 'multiterminal', 'nvm',
+                    'pulseio', 'usb_hid', 'analogio', 'time', 'busio',
+                    'random', 'audioio', 'sys', 'math', 'builtins'}
 
     def actions(self):
         """
         Return an ordered list of actions provided by this module. An action
         is a name (also used to identify the icon) , description, and handler.
         """
-        buttons = []
-        if self.editor.adafruit_run:
-            buttons.append({
+        buttons = [
+            {
                 'name': 'run',
                 'display_name': _('Run'),
                 'description': _('Save and run your current file '
                                  'on CIRCUITPY'),
                 'handler': self.run,
                 'shortcut': 'CTRL+Shift+R',
-            })
-        buttons.append({
-            'name': 'serial',
-            'display_name': _('Serial'),
-            'description': _('Open a serial connection to your device.'),
-            'handler': self.toggle_repl,
-            'shortcut': 'CTRL+Shift+S',
-        })
+            },
+            {
+                'name': 'serial',
+                'display_name': _('Serial'),
+                'description': _('Open a serial connection to your device.'),
+                'handler': self.toggle_repl,
+                'shortcut': 'CTRL+Shift+U',
+            }, ]
         if CHARTS:
             buttons.append({
                 'name': 'plotter',
