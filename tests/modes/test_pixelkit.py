@@ -95,17 +95,17 @@ def test_DeviceFlasher_get_addr_filename_fail():
     with mock.patch('mu.modes.pixelkit.open', mock_open, create=True):
         df = DeviceFlasher(port)
         df.on_flash_fail = mock.MagicMock()
-        result = df.get_addr_filename(arg_string)
+        df.get_addr_filename(arg_string)
         df.on_flash_fail.emit.assert_called_once_with(
             'Values must be a list'
         )
         df.on_flash_fail = mock.MagicMock()
-        result = df.get_addr_filename(arg_tuple)
+        df.get_addr_filename(arg_tuple)
         df.on_flash_fail.emit.assert_called_once_with(
             'Values must be a list'
         )
         df.on_flash_fail = mock.MagicMock()
-        result = df.get_addr_filename(arg_list_string)
+        df.get_addr_filename(arg_list_string)
         df.on_flash_fail.emit.assert_called_once_with(
             'Values items must be tuples'
         )
