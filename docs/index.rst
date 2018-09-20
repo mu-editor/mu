@@ -20,6 +20,29 @@ Mu: A Python Code Editor
     If you're interested in the fun, educational, inspiring and sometimes
     hilarious ways in which people use Mu, check out: https://madewith.mu/
 
+Quickstart
+----------
+
+Mu works with Python 3.6 or above.
+
+Clone the repository::
+
+    git clone https://github.com/mu-editor/mu.git
+
+Make a virtualenv, then install the requirements::
+
+    pip install -r requirements.txt
+
+Start Mu::
+
+    python run.py
+
+Run the test suite::
+
+    make check
+
+Read on to learn more about Mu, its aims and how you can contribute.
+
 What?
 -----
 
