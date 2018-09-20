@@ -69,20 +69,21 @@ class AdafruitMode(MicroPythonMode):
         """
         buttons = [
             {
-                'name': 'run',
-                'display_name': _('Run'),
-                'description': _('Save and run your current file '
-                                 'on CIRCUITPY'),
-                'handler': self.run,
-                'shortcut': 'CTRL+Shift+R',
-            },
-            {
                 'name': 'serial',
                 'display_name': _('Serial'),
                 'description': _('Open a serial connection to your device.'),
                 'handler': self.toggle_repl,
                 'shortcut': 'CTRL+Shift+U',
             }, ]
+        if self.editor.adafruit_run:
+            buttons.insert(0, {
+                'name': 'run',
+                'display_name': _('Run'),
+                'description': _('Save and run your current file '
+                                 'on CIRCUITPY'),
+                'handler': self.run,
+                'shortcut': 'CTRL+Shift+R',
+            })
         if CHARTS:
             buttons.append({
                 'name': 'plotter',
