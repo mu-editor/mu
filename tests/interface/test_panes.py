@@ -1308,6 +1308,25 @@ def test_PythonProcessPane_keyPressEvent_a():
     ppp.parse_input.assert_called_once_with(Qt.Key_A, 'a', None)
 
 
+def test_PythonProcessPane_on_process_halt():
+    """
+    Ensure the output from the halted process is dumped to the UI.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.readAll().data.return_value = b'halted'
+    ppp.append = mock.MagicMock()
+    ppp.on_append_text = mock.MagicMock()
+    mock_cursor = mock.MagicMock()
+    mock_cursor.position.return_value = 666
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.on_process_halt()
+    ppp.process.readAll().data.assert_called_once_with()
+    ppp.append.assert_called_once_with(b'halted')
+    ppp.on_append_text.emit.assert_called_once_with(b'halted')
+    ppp.start_of_current_line = 666
+
+
 def test_PythonProcessPane_parse_input_a():
     """
     Ensure a regular printable character is inserted into the text area.
@@ -1346,11 +1365,15 @@ def test_PythonProcessPane_parse_input_ctrl_c():
     text = ''
     modifiers = Qt.ControlModifier
     mock_kill = mock.MagicMock()
+    mock_timer = mock.MagicMock()
     with mock.patch('mu.interface.panes.os.kill', mock_kill), \
+            mock.patch('mu.interface.panes.QTimer', mock_timer), \
             mock.patch('mu.interface.panes.platform.system',
                        return_value='win32'):
         ppp.parse_input(key, text, modifiers)
     mock_kill.assert_called_once_with(123, signal.SIGINT)
+    ppp.process.readAll.assert_called_once_with()
+    mock_timer.singleShot.assert_called_once_with(1, ppp.on_process_halt)
 
 
 def test_PythonProcessPane_parse_input_ctrl_d():
@@ -1363,10 +1386,14 @@ def test_PythonProcessPane_parse_input_ctrl_d():
     key = Qt.Key_D
     text = ''
     modifiers = Qt.ControlModifier
+    mock_timer = mock.MagicMock()
     with mock.patch('mu.interface.panes.platform.system',
-                    return_value='win32'):
+                    return_value='win32'), \
+            mock.patch('mu.interface.panes.QTimer', mock_timer):
         ppp.parse_input(key, text, modifiers)
         ppp.process.kill.assert_called_once_with()
+    ppp.process.readAll.assert_called_once_with()
+    mock_timer.singleShot.assert_called_once_with(1, ppp.on_process_halt)
 
 
 def test_PythonProcessPane_parse_input_ctrl_c_after_process_finished():
@@ -1687,11 +1714,11 @@ def test_PythonProcessPane_read_from_stdout():
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.append = mock.MagicMock()
     ppp.process = mock.MagicMock()
-    ppp.process.readAll().data.return_value = b'hello world'
+    ppp.process.read.return_value = b'hello world'
     ppp.on_append_text = mock.MagicMock()
     ppp.read_from_stdout()
     assert ppp.append.call_count == 1
-    assert ppp.process.readAll().data.call_count == 1
+    ppp.process.read.assert_called_once_with(256)
     assert ppp.start_of_current_line == 123
     ppp.on_append_text.emit.assert_called_once_with(b'hello world')
 

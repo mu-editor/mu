@@ -361,7 +361,7 @@ class MicrobitMode(MicroPythonMode):
                 # device has a really old version of MicroPython or is running
                 # something else. In any case, flash MicroPython onto the
                 # device.
-                logger.warn('Could not detect version of MicroPython.')
+                logger.warning('Could not detect version of MicroPython.')
                 force_flash = True
             # Check use of custom runtime.
             rt_hex_path = self.editor.microbit_runtime.strip()
