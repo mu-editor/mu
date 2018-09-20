@@ -1066,6 +1066,9 @@ class Editor:
             self.envars = extract_envars(new_settings['envars'])
             self.minify = new_settings['minify']
             self.adafruit_run = new_settings['adafruit_run']
+            #  show/hide adafruit "run" button potentially changed in admin
+            if self.mode == 'adafruit':
+                self.change_mode(self.mode)
             runtime = new_settings['microbit_runtime'].strip()
             if runtime and not os.path.isfile(runtime):
                 self.microbit_runtime = ''
