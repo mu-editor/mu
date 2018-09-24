@@ -86,7 +86,7 @@ class DeviceFlasher(QThread):
                 addr = int(value[0], 0)
                 file = open(value[1], 'rb')
                 addr_filename.append((addr, file))
-                return addr_filename
+            return addr_filename
         except Exception as ex:
             logger.error(ex)
             self.on_flash_fail.emit('Could not open file')
