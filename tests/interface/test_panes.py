@@ -862,14 +862,11 @@ def test_JupyterREPLPane_append_plain_text():
 
 def test_JupyterREPLPane_set_font_size():
     """
-    Check the correct stylesheet values are being set.
+    Check the new point size is succesfully applied.
     """
     jw = mu.interface.panes.JupyterREPLPane()
-    jw.setStyleSheet = mock.MagicMock()
     jw.set_font_size(16)
-    style = jw.setStyleSheet.call_args[0][0]
-    assert 'font-size: 16pt;' in style
-    assert 'font-family: Monospace;' in style
+    assert jw.font.pointSize() == 16
 
 
 def test_JupyterREPLPane_zoomIn():
