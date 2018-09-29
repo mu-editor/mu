@@ -860,9 +860,15 @@ class PythonProcessPane(QTextEdit):
             self.backspace()
         if key == Qt.Key_Delete:
             self.delete()
-        if not self.isReadOnly() and msg:
-            self.insert(msg)
         if key == Qt.Key_Enter or key == Qt.Key_Return:
+            # First move cursor to the end of the line and insert newline in
+            # case return/enter is pressed while the cursor is in the
+            # middle of the line
+            cursor = self.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            self.setTextCursor(cursor)
+            self.insert(msg)
+            # Then write line to std_in and add to history
             content = self.toPlainText()
             line = content[self.start_of_current_line:].encode('utf-8')
             self.write_to_stdin(line)
@@ -870,6 +876,8 @@ class PythonProcessPane(QTextEdit):
                 self.input_history.append(line.replace(b'\n', b''))
             self.history_position = 0
             self.start_of_current_line = self.textCursor().position()
+        elif not self.isReadOnly() and msg:
+            self.insert(msg)
 
     def history_back(self):
         """
