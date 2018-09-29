@@ -85,7 +85,8 @@ QTabBar::tab::selected {
 QTabBar::close-button {
     image: url(images:close-tab.png);
     padding: 3px;
-    subcontrol-position: right;
+    /* See https://github.com/mu-editor/mu/issues/594 */
+    /* subcontrol-position: right; */
 }
 
 QTabBar::close-button:hover {
