@@ -653,7 +653,7 @@ class PythonProcessPane(QTextEdit):
         env.insert('PYTHONIOENCODING', 'utf-8')
         if sys.platform == 'darwin':
             parent_dir = os.path.dirname(__file__)
-            if '/mu-editor.app/Contents/Resources/app/mu' in parent_dir:
+            if '.app/Contents/Resources/app/mu' in parent_dir:
                 # Mu is running as a macOS app bundle. Ensure the expected
                 # paths are in PYTHONPATH of the subprocess.
                 env.insert('PYTHONPATH', ':'.join(sys.path))
