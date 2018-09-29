@@ -7,9 +7,9 @@ import os
 localedir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'locale'))
 try:
     # Use the operating system's locale.
-    current_locale, encoding = locale.getdefaultlocale()
-    # Get the language code.
-    language_code = current_locale[:2]
+    language_code, encoding = locale.getdefaultlocale()
+    if not language_code:
+        raise ValueError()
 except (TypeError, ValueError):
     language_code = 'en'
 # DEBUG/TRANSLATE: override the language code here (e.g. to Chinese).

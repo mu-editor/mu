@@ -29,7 +29,7 @@ def test_gettext_translation():
     else:
         del os.environ['LC_ALL']
     assert translation.call_count == 1
-    assert translation.call_args[1]['languages'] == ['es']
+    assert translation.call_args[1]['languages'] == ['es_ES']
 
 
 def test_defaultlocale_type_error():
