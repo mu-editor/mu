@@ -37,6 +37,10 @@ QListWidget, QTreeView, QTreeView::branch {
     color: white;
 }
 
+CallTipWidget {
+    color:black;
+}
+
 QTextEdit, QPlainTextEdit, QLineEdit {
     background-color: white;
     color: black;
