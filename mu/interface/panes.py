@@ -72,9 +72,9 @@ class JupyterREPLPane(RichJupyterWidget):
         """
         Sets the font size for all the textual elements in this pane.
         """
-        stylesheet = ("QWidget{font-size: " + str(new_size) +
-                      "pt; font-family: Monospace;}")
-        self.setStyleSheet(stylesheet)
+        font = self.font
+        font.setPointSize(new_size)
+        self._set_font(font)
 
     def zoomIn(self, delta=2):
         """
