@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=mu
-GenericName=A Python editor for beginner programmers 
+GenericName=A Python editor for beginner programmers
 Comment=A Python editor for beginner programmers
 Icon=mu.codewith.editor
 TryExec=mu-editor
