@@ -6,11 +6,6 @@ matrix:
       dist: trusty
       sudo: required
       language: python
-      python: 3.5
-    - os: linux
-      dist: trusty
-      sudo: required
-      language: python
       python: 3.6
 
     # To maximise compatibility pick earliest image, OS X 10.10 Yosemite
