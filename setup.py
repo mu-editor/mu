@@ -1,4 +1,5 @@
 import platform
+import sys
 from setuptools import setup
 from mu import __version__
 
@@ -29,6 +30,13 @@ try:
 except Exception:
     # Something unexpected happened, so simply keep all requires
     pass
+
+if not hasattr(sys, 'version_info') or sys.version_info < (3, 5):
+    raise SystemExit(
+        'Mu only works with Python version 3.5 or above. '
+        'For more information see: '
+        'https://codewith.mu/en/howto/install_with_python'
+    )
 
 
 setup(
