@@ -40,7 +40,7 @@ install:
   # Install Mu dependencies
   - pip install -r requirements.txt
   # Install packager for OSX
-  - pip install briefcase
+  - pip install briefcase==0.2.5
   # Install disk image maker for OSX
   - pip install dmgbuild 
   # Install helpful pytest plug-in
