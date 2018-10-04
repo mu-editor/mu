@@ -862,14 +862,11 @@ def test_JupyterREPLPane_append_plain_text():
 
 def test_JupyterREPLPane_set_font_size():
     """
-    Check the correct stylesheet values are being set.
+    Check the new point size is succesfully applied.
     """
     jw = mu.interface.panes.JupyterREPLPane()
-    jw.setStyleSheet = mock.MagicMock()
     jw.set_font_size(16)
-    style = jw.setStyleSheet.call_args[0][0]
-    assert 'font-size: 16pt;' in style
-    assert 'font-family: Monospace;' in style
+    assert jw.font.pointSize() == 16
 
 
 def test_JupyterREPLPane_zoomIn():
@@ -1610,6 +1607,7 @@ def test_PythonProcessPane_parse_input_newline():
     ppp.start_of_current_line = 0
     ppp.textCursor = mock.MagicMock()
     ppp.textCursor().position.return_value = 666
+    ppp.setTextCursor = mock.MagicMock()
     ppp.insert = mock.MagicMock()
     ppp.write_to_stdin = mock.MagicMock()
     key = Qt.Key_Enter
@@ -1640,6 +1638,19 @@ def test_PythonProcessPane_parse_input_newline_ignore_empty_input_in_history():
     ppp.write_to_stdin.assert_called_once_with(b'   \n')
     assert len(ppp.input_history) == 0
     assert ppp.history_position == 0
+
+
+def test_PythonProcessPane_parse_input_newline_with_cursor_midline():
+    """
+    Ensure that when the cursor is placed in the middle of a line and enter is
+    pressed the whole line is sent to std_in.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.write_to_stdin = mock.MagicMock()
+    ppp.parse_input(None, "abc", None)
+    ppp.parse_input(Qt.Key_Left, None, None)
+    ppp.parse_input(Qt.Key_Enter, '\r', None)
+    ppp.write_to_stdin.assert_called_with(b'abc\n')
 
 
 def test_PythonProcessPane_history_back():

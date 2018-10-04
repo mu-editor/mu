@@ -32,7 +32,7 @@ msgid ""
 "machine's resources and try again."
 msgstr ""
 "Zeitüberschreitung der Verbindung. Ist Ihre Maschine langsam oder "
-"beschäftigt? Geben Sie einige Ressources des Geräts frei und versuchen Sie "
+"beschäftigt? Geben Sie einige Ressourcen des Geräts frei und versuchen Sie "
 "es erneut."
 
 #: mu/debugger/client.py:116
@@ -402,11 +402,11 @@ msgstr ""
 
 #: mu/logic.py:77
 msgid "Be brave, break things, learn and have fun!"
-msgstr "Sei mutig, zerbreche Dinge, lerne und hab Spaß!"
+msgstr "Sei mutig, zerstöre Dinge, lerne und hab Spaß!"
 
 #: mu/logic.py:78
 msgid "Make your software both useful AND fun. Empower your users."
-msgstr "Mache Deine Software sowohl nützlich als auch Spaß zu benutzen."
+msgstr "Mache Deine Software sowohl nützlich als auch spaßig zu benutzen."
 
 #: mu/logic.py:79
 msgid "For the Zen of Python: import this"
@@ -414,12 +414,12 @@ msgstr "Für den Zen von Python: importiere dies"
 
 #: mu/logic.py:80
 msgid "Diversity promotes creativity."
-msgstr "Diversität unterstützt Kreativität."
+msgstr "Vielfalt unterstützt Kreativität."
 
 #: mu/logic.py:81
 msgid "An open mind, spirit of adventure and respect for diversity are key."
 msgstr ""
-"Ein offener Geist, Abenteuerlust und Respekt für Diversität sind der "
+"Ein offener Geist, Abenteuerlust und Respekt für Vielfalt sind der "
 "Schlüssel"
 
 #: mu/logic.py:82
@@ -446,7 +446,7 @@ msgstr ""
 
 #: mu/logic.py:88
 msgid "Debugging is twice as hard as writing the code in the first place."
-msgstr "Debugging ist zwei mal so schwer wie das Programmieren."
+msgstr "Debuggen ist zwei mal so schwer wie das Programmieren."
 
 #: mu/logic.py:89
 msgid "It's fun to program."
@@ -501,7 +501,7 @@ msgstr "Einfach ist besser als komplex. Komplex ist besser als kompliziert."
 
 #: mu/logic.py:101
 msgid "Flat is better than nested."
-msgstr "Flach ist besser als "
+msgstr "Kurz ist besser als verschachtelt."
 
 #: mu/logic.py:102
 msgid "Sparse is better than dense."
@@ -522,7 +522,7 @@ msgstr ""
 #: mu/logic.py:106
 msgid "Errors should never pass silently. Unless explicitly silenced."
 msgstr ""
-"Fehler sollten niemals still vorbei ziehen. Außer sie wurden explizit zum "
+"Fehler sollten niemals still vorbeiziehen. Außer sie wurden explizit zum "
 "Schweigen gebracht."
 
 #: mu/logic.py:107
@@ -782,7 +782,7 @@ msgstr "Konnte die MicroPython runtime nicht finden."
 msgid ""
 "The micro:bit runtime you specified ('{}') does not exist. Please try again."
 msgstr ""
-"Die spezifizierte micro:bit runtime ('{}') existiert nicht. Bitte versuche "
+"Die angegebene micro:bit runtime ('{}') existiert nicht. Bitte versuche "
 "es erneut."
 
 #: mu/logic.py:1123
@@ -970,7 +970,7 @@ msgstr ""
 
 #: mu/modes/debugger.py:35
 msgid "Graphical Debugger"
-msgstr "Graphischer Debugger"
+msgstr "Grafischer Debugger"
 
 #: mu/modes/debugger.py:36
 msgid "Debug your Python 3 code."
@@ -994,11 +994,11 @@ msgstr "Ausführung des Python-Skripts fortsetzen."
 
 #: mu/modes/debugger.py:64
 msgid "Step Over"
-msgstr "Schritt über"
+msgstr "Überspringen"
 
 #: mu/modes/debugger.py:65
 msgid "Step over a line of code."
-msgstr "Schritt über eine Code-Zeile."
+msgstr "Überspringe eine Code-Zeile."
 
 #: mu/modes/debugger.py:71
 msgid "Step In"
@@ -1134,7 +1134,7 @@ msgstr ""
 "Bitte stelle sicher, dass du genug Zeit lässt damit der BBC micro:bit "
 "korrekt vom Computer konfiguriert werden kann. Dies kann einige Sekunden "
 "dauern. Alternativ, versuche das Gerät aus und wieder einzustecken oder "
-"Änderungen zu speichern und Mu neu zu starten falls das Gerät weiterhin "
+"Änderungen zu speichern und Mu neu zu starten, falls das Gerät weiterhin "
 "nicht gefunden wird."
 
 #: mu/modes/microbit.py:489
