@@ -862,14 +862,11 @@ def test_JupyterREPLPane_append_plain_text():
 
 def test_JupyterREPLPane_set_font_size():
     """
-    Check the correct stylesheet values are being set.
+    Check the new point size is succesfully applied.
     """
     jw = mu.interface.panes.JupyterREPLPane()
-    jw.setStyleSheet = mock.MagicMock()
     jw.set_font_size(16)
-    style = jw.setStyleSheet.call_args[0][0]
-    assert 'font-size: 16pt;' in style
-    assert 'font-family: Monospace;' in style
+    assert jw.font.pointSize() == 16
 
 
 def test_JupyterREPLPane_zoomIn():
@@ -1308,6 +1305,25 @@ def test_PythonProcessPane_keyPressEvent_a():
     ppp.parse_input.assert_called_once_with(Qt.Key_A, 'a', None)
 
 
+def test_PythonProcessPane_on_process_halt():
+    """
+    Ensure the output from the halted process is dumped to the UI.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.readAll().data.return_value = b'halted'
+    ppp.append = mock.MagicMock()
+    ppp.on_append_text = mock.MagicMock()
+    mock_cursor = mock.MagicMock()
+    mock_cursor.position.return_value = 666
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.on_process_halt()
+    ppp.process.readAll().data.assert_called_once_with()
+    ppp.append.assert_called_once_with(b'halted')
+    ppp.on_append_text.emit.assert_called_once_with(b'halted')
+    ppp.start_of_current_line = 666
+
+
 def test_PythonProcessPane_parse_input_a():
     """
     Ensure a regular printable character is inserted into the text area.
@@ -1346,11 +1362,15 @@ def test_PythonProcessPane_parse_input_ctrl_c():
     text = ''
     modifiers = Qt.ControlModifier
     mock_kill = mock.MagicMock()
+    mock_timer = mock.MagicMock()
     with mock.patch('mu.interface.panes.os.kill', mock_kill), \
+            mock.patch('mu.interface.panes.QTimer', mock_timer), \
             mock.patch('mu.interface.panes.platform.system',
                        return_value='win32'):
         ppp.parse_input(key, text, modifiers)
     mock_kill.assert_called_once_with(123, signal.SIGINT)
+    ppp.process.readAll.assert_called_once_with()
+    mock_timer.singleShot.assert_called_once_with(1, ppp.on_process_halt)
 
 
 def test_PythonProcessPane_parse_input_ctrl_d():
@@ -1363,10 +1383,14 @@ def test_PythonProcessPane_parse_input_ctrl_d():
     key = Qt.Key_D
     text = ''
     modifiers = Qt.ControlModifier
+    mock_timer = mock.MagicMock()
     with mock.patch('mu.interface.panes.platform.system',
-                    return_value='win32'):
+                    return_value='win32'), \
+            mock.patch('mu.interface.panes.QTimer', mock_timer):
         ppp.parse_input(key, text, modifiers)
         ppp.process.kill.assert_called_once_with()
+    ppp.process.readAll.assert_called_once_with()
+    mock_timer.singleShot.assert_called_once_with(1, ppp.on_process_halt)
 
 
 def test_PythonProcessPane_parse_input_ctrl_c_after_process_finished():
@@ -1583,6 +1607,7 @@ def test_PythonProcessPane_parse_input_newline():
     ppp.start_of_current_line = 0
     ppp.textCursor = mock.MagicMock()
     ppp.textCursor().position.return_value = 666
+    ppp.setTextCursor = mock.MagicMock()
     ppp.insert = mock.MagicMock()
     ppp.write_to_stdin = mock.MagicMock()
     key = Qt.Key_Enter
@@ -1613,6 +1638,19 @@ def test_PythonProcessPane_parse_input_newline_ignore_empty_input_in_history():
     ppp.write_to_stdin.assert_called_once_with(b'   \n')
     assert len(ppp.input_history) == 0
     assert ppp.history_position == 0
+
+
+def test_PythonProcessPane_parse_input_newline_with_cursor_midline():
+    """
+    Ensure that when the cursor is placed in the middle of a line and enter is
+    pressed the whole line is sent to std_in.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.write_to_stdin = mock.MagicMock()
+    ppp.parse_input(None, "abc", None)
+    ppp.parse_input(Qt.Key_Left, None, None)
+    ppp.parse_input(Qt.Key_Enter, '\r', None)
+    ppp.write_to_stdin.assert_called_with(b'abc\n')
 
 
 def test_PythonProcessPane_history_back():
@@ -1687,11 +1725,11 @@ def test_PythonProcessPane_read_from_stdout():
     ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.append = mock.MagicMock()
     ppp.process = mock.MagicMock()
-    ppp.process.readAll().data.return_value = b'hello world'
+    ppp.process.read.return_value = b'hello world'
     ppp.on_append_text = mock.MagicMock()
     ppp.read_from_stdout()
     assert ppp.append.call_count == 1
-    assert ppp.process.readAll().data.call_count == 1
+    ppp.process.read.assert_called_once_with(256)
     assert ppp.start_of_current_line == 123
     ppp.on_append_text.emit.assert_called_once_with(b'hello world')
 

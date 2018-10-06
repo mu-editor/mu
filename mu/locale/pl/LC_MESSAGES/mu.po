@@ -1,0 +1,1120 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) PyPolska
+# Filip Kłębczyk <fklebczyk@gmail.com>, 2018.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2018-09-07 18:34+CEST\n"
+"PO-Revision-Date: 2018-09-11 18:23+0200\n"
+"Last-Translator: ABIX Edukacja - Adam Jurkiewicz <biuro@abixedukacja.eu>\n"
+"Language-Team: polski <pypolska@python.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Generated-By: pygettext.py 1.5\n"
+"Language: pl\n"
+"X-Generator: Poedit 2.0.6\n"
+
+#: mu/app.py:66
+msgid "Logging to {}"
+msgstr "Logowanie do {}"
+
+#: mu/app.py:183
+msgid "Debugger requires a Python script filename to run."
+msgstr "Debugger wymaga nazwę pliku skryptu Pythona by działać"
+
+#: mu/debugger/client.py:106
+msgid "Connection timed out. Is your machine slow or busy? Free up some of the machine's resources and try again."
+msgstr "Połączenie przekroczyło czas. Czy Twoja maszyna jest wolna lub zajęta? Zwolnij trochę zasobów maszyny i spróbuj ponownie."
+
+#: mu/debugger/client.py:116
+msgid ""
+"Could not find localhost.\n"
+"Ensure you have '127.0.0.1 localhost' in your /etc/hosts file."
+msgstr ""
+"Nie mogę znaleźć localhosta.\n"
+"Upewnij się, że masz '127.0.0.1 localhost' w swoim pliku /etc/hosts."
+
+#: mu/interface/dialogs.py:55
+msgid "Select Mode"
+msgstr "Wybierz Tryb"
+
+#: mu/interface/dialogs.py:57
+msgid "Please select the desired mode then click \"OK\". Otherwise, click \"Cancel\"."
+msgstr "Proszę wybierz pożądany tryb a następnie kliknij \"OK\". W przeciwnym razie kliknij \"Anuluj\"."
+
+#: mu/interface/dialogs.py:73
+msgid "Change mode at any time by clicking the \"Mode\" button containing Mu's logo."
+msgstr "Zmień tryb w dowolnym momencie kilkając na przycisk \"Tryb\" zawierający logo Mu."
+
+#: mu/interface/dialogs.py:107
+msgid "When reporting a bug, copy and paste the content of the following log file."
+msgstr "Gdy zgłaszasz błąd, kopiuj i wklejaj zawartość następującego pliku logów."
+
+#: mu/interface/dialogs.py:127
+msgid ""
+"The environment variables shown below will be set each time you run a Python 3 script.\n"
+"\n"
+"Each separate enviroment variable should be on a new line and of the form:\n"
+"NAME=VALUE"
+msgstr ""
+"Zmienne środowiskowe podane poniżej będą ustawiane za każdym razem gdy uruchamiasz skrypt Pythona 3.\n"
+"\n"
+"Każda oddzielna zmienna środowiskowa powinna być w nowej linii i w formacie:\n"
+"NAZWA=WARTOŚĆ"
+
+#: mu/interface/dialogs.py:150
+msgid "Minify Python code before flashing?"
+msgstr "Nadpisz wbudowany program MicroPythona następującym plikiem hex (pusty oznacza użycie domyślnego):"
+
+#: mu/interface/dialogs.py:153
+msgid "Override the built-in MicroPython runtime with the following hex file (empty means use the default):"
+msgstr "Nadpisz wbudowany program MicroPythona następującym plikiem hex (pusty oznacza użycie domyślnego):"
+
+#: mu/interface/dialogs.py:175 mu/interface/main.py:977
+msgid "Mu Administration"
+msgstr "Administracja Mu"
+
+#: mu/interface/dialogs.py:186
+msgid "Current Log"
+msgstr "Aktualny Log"
+
+#: mu/interface/dialogs.py:189
+msgid "Python3 Environment"
+msgstr "Środowisko Pythona 3"
+
+#: mu/interface/dialogs.py:194
+msgid "BBC micro:bit Settings"
+msgstr "Ustawienia BBC micro:bit"
+
+#: mu/interface/dialogs.py:223
+msgid "Find / Replace"
+msgstr "Znajdź / Zastąp"
+
+#: mu/interface/dialogs.py:227
+msgid "Find:"
+msgstr "Znajdź:"
+
+#: mu/interface/dialogs.py:233
+msgid "Replace (optional):"
+msgstr "Zastąp (opcjonalne)"
+
+#: mu/interface/dialogs.py:239
+msgid "Replace all?"
+msgstr "Zastąp wszystkie?"
+
+#: mu/interface/editor.py:222 mu/logic.py:952
+msgid "untitled"
+msgstr "nienazwany"
+
+#: mu/interface/main.py:69
+msgid "Mode"
+msgstr "Tryb"
+
+#: mu/interface/main.py:70
+msgid "Change Mu's mode of behaviour."
+msgstr "Zmień tryb działania Mu"
+
+#: mu/interface/main.py:72
+msgid "New"
+msgstr "Nowy"
+
+#: mu/interface/main.py:73
+msgid "Create a new Python script."
+msgstr "Stwórz nowy skrypt w Pythonie."
+
+#: mu/interface/main.py:74
+msgid "Load"
+msgstr "Otwórz"
+
+#: mu/interface/main.py:75
+msgid "Load a Python script."
+msgstr "Otwórz skrypt w Pythonie."
+
+#: mu/interface/main.py:76
+msgid "Save"
+msgstr "Zapisz"
+
+#: mu/interface/main.py:77
+msgid "Save the current Python script."
+msgstr "Zapisz aktualny skrypt w Pythonie."
+
+#: mu/interface/main.py:86
+msgid "Zoom-in"
+msgstr "Powiększ"
+
+#: mu/interface/main.py:87
+msgid "Zoom in (to make the text bigger)."
+msgstr "Powiększ (by tekst by większy)"
+
+#: mu/interface/main.py:88
+msgid "Zoom-out"
+msgstr "Pomniejsz"
+
+#: mu/interface/main.py:89
+msgid "Zoom out (to make the text smaller)."
+msgstr "Pomniejsz (by tekst był mniejszy)."
+
+#: mu/interface/main.py:90
+msgid "Theme"
+msgstr "Motyw"
+
+#: mu/interface/main.py:91
+msgid "Toggle theme between day, night or high contrast."
+msgstr "Przełączaj motyw między dniem, nocą lub wysokim kontrastem"
+
+#: mu/interface/main.py:94
+msgid "Check"
+msgstr "Sprawdź"
+
+#: mu/interface/main.py:95
+msgid "Check your code for mistakes."
+msgstr "Sprawdź swój kod pod kątem błędów."
+
+#: mu/interface/main.py:96
+msgid "Help"
+msgstr "Pomoc"
+
+#: mu/interface/main.py:97
+msgid "Show help about Mu in a browser."
+msgstr "Pokaż pomoc na temat Mu w przeglądarce."
+
+#: mu/interface/main.py:98
+msgid "Quit"
+msgstr "Zakończ"
+
+#: mu/interface/main.py:99
+msgid "Quit Mu."
+msgstr "Wyjdź z Mu"
+
+#: mu/interface/main.py:178
+msgid "Mu {}"
+msgstr "Mu {}"
+
+#: mu/interface/main.py:354
+msgid "Cannot connect to device on port {}"
+msgstr "Nie można połączyć się z urządzeniem na porcie {}"
+
+#: mu/interface/main.py:376
+msgid "Filesystem on micro:bit"
+msgstr "System plików na micro:bitcie"
+
+#: mu/interface/main.py:435
+msgid "Python3 data tuple"
+msgstr "krotka z danymi Pythona 3"
+
+#: mu/interface/main.py:447
+msgid "Python3 (Jupyter)"
+msgstr "Python 3 (Jupyter)"
+
+#: mu/interface/main.py:454
+msgid "{} REPL"
+msgstr "{} REPL"
+
+#: mu/interface/main.py:470
+msgid "{} Plotter"
+msgstr "{} Plotter"
+
+#: mu/interface/main.py:511
+msgid "Running: {}"
+msgstr "Wykonywanie: {}"
+
+#: mu/interface/main.py:534
+msgid "Debug Inspector"
+msgstr "Inspektor debugowania"
+
+#: mu/interface/main.py:552
+msgid "Name"
+msgstr "Nazwa"
+
+#: mu/interface/main.py:552
+msgid "Value"
+msgstr "Wartość"
+
+#: mu/interface/main.py:569
+msgid "(A list of {} items.)"
+msgstr "(Lista {} elementów.)"
+
+#: mu/interface/main.py:582
+msgid "(A dict of {} items.)"
+msgstr "(Słownik {} elementów.)"
+
+#: mu/interface/main.py:720
+msgid "Mu"
+msgstr "Mu"
+
+#: mu/interface/main.py:970
+msgid "Mu's current mode of behaviour."
+msgstr "Aktualny tryb działania Mu."
+
+#: mu/interface/panes.py:296
+msgid "File already exists; overwrite it?"
+msgstr "Plik już istnieje; Nadpisać go?"
+
+#: mu/interface/panes.py:297
+msgid "File already exists"
+msgstr "Plik już istnieje"
+
+#: mu/interface/panes.py:325
+msgid "Copying '{}' to micro:bit."
+msgstr "Kopiowanie '{}' na micro:bita."
+
+#: mu/interface/panes.py:334
+msgid "'{}' successfully copied to micro:bit."
+msgstr "'{}' skopiowane z sukcesem na micro:bita."
+
+#: mu/interface/panes.py:340
+msgid "Delete (cannot be undone)"
+msgstr "Usuń (nie może zostać cofnięte)"
+
+#: mu/interface/panes.py:346
+msgid "Deleting '{}' from micro:bit."
+msgstr "Usuwanie '{}' z micro:bita."
+
+#: mu/interface/panes.py:355
+msgid "'{}' successfully deleted from micro:bit."
+msgstr "'{}' usunięto z sukcesem z micro:bita."
+
+#: mu/interface/panes.py:385
+msgid "Getting '{}' from micro:bit. Copying to '{}'."
+msgstr "Pobieranie '{}' z micro:bita. Kopiowanie do '{}'."
+
+#: mu/interface/panes.py:396
+msgid "Successfully copied '{}' from the micro:bit to your computer."
+msgstr "Skopiowałem z powodzeniem '{}' z micro:bita na Twój komputer."
+
+#: mu/interface/panes.py:409
+msgid "Open in Mu"
+msgstr "Otwórz w Mu"
+
+#: mu/interface/panes.py:411
+msgid "Open"
+msgstr "Otwórz"
+
+#: mu/interface/panes.py:417
+msgid "Opening '{}'"
+msgstr "Otwieranie '{}'"
+
+#: mu/interface/panes.py:457
+msgid "Files on your micro:bit:"
+msgstr "Pliki na Twoim micro:bit:"
+
+#: mu/interface/panes.py:459
+msgid "Files on your computer:"
+msgstr "Pliki na Twoim komputerze:"
+
+#: mu/interface/panes.py:527
+msgid "There was a problem getting the list of files on the micro:bit. Please check Mu's logs for technical information. Alternatively, try unplugging/plugging-in your micro:bit and/or restarting Mu."
+msgstr "Był problem z pobraniem listy plików na micro:bitcie. Proszę sprawdź logi Mu dla informacji technicznych. Alternatywnie, spróbuj odłączyc/podłączyć swojego micro:bita i/lub zrestartować Mu."
+
+#: mu/interface/panes.py:538 mu/interface/panes.py:546
+msgid "There was a problem deleting '{}' from the micro:bit. Please check Mu's logs for more information."
+msgstr "Był problem z usunięciem '{}' z micro:bita. Proszę sprawdź logi Mu w celu uzyskania więcej informacji."
+
+#: mu/interface/panes.py:554 mu/logic.py:68
+msgid "Hello, World!"
+msgstr "Ahoj, przygodo!"
+
+#: mu/logic.py:69
+msgid "This editor is free software written in Python. You can modify it, add features or fix bugs if you like."
+msgstr "Ten edytor jest wolnym oprogramowaniem napisanym w Pythonie. Możesz go modyfikować, dodawać funkcje lub naprawiać błędy jeśli masz ochotę."
+
+#: mu/logic.py:71
+msgid "This editor is called Mu (you say it 'mew' or 'moo')."
+msgstr "Edytor nazywa się Mu (możesz to wymawiać \"mu\" lub \"muuu\")."
+
+#: mu/logic.py:72
+msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
+msgstr "Google, Facebook, NASA, Pixar, Disney i wiele innych używają Pythona."
+
+#: mu/logic.py:73
+msgid "Programming is a form of magic. Learn to cast the right spells with code and you'll be a wizard."
+msgstr "Programowanie jest formą magii. Naucz się rzucać właściwe zaklęcia z kodem i będziesz czarodziejką/czarodziejem."
+
+#: mu/logic.py:75
+msgid "REPL stands for read, evaluate, print, loop. It's a fun way to talk to your computer! :-)"
+msgstr "REPL to skrót od angielskiego read (czytaj), evaluate (ewaluuj), print (wypisuj), loop (zapętlaj). To zabawny sposób by rozmawiać ze swoim komputerem! :-)"
+
+#: mu/logic.py:77
+msgid "Be brave, break things, learn and have fun!"
+msgstr "Bądź odważna/odważny, psuj rzeczy, ucz się i miej zabawę!"
+
+#: mu/logic.py:78
+msgid "Make your software both useful AND fun. Empower your users."
+msgstr "Sprawiaj by Twoje oprogramowanie było użyteczne I zabawne. Wzmacniaj swoich użytkowników."
+
+#: mu/logic.py:79
+msgid "For the Zen of Python: import this"
+msgstr "Dla Zen of Python: import this"
+
+#: mu/logic.py:80
+msgid "Diversity promotes creativity."
+msgstr "Różnorodność wspiera kreatywność."
+
+#: mu/logic.py:81
+msgid "An open mind, spirit of adventure and respect for diversity are key."
+msgstr "Otwarty umysł, duch przygody i szacunek dla różnorodności to klucz."
+
+#: mu/logic.py:82
+msgid "Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
+msgstr "Nie martw się jeśli to nie zadziała. Wyciągnij z tego naukę, napraw i spróbuj jeszcze raz! :-)"
+
+#: mu/logic.py:84
+msgid "Coding is collaboration."
+msgstr "Programowanie to współpraca."
+
+#: mu/logic.py:85
+msgid "Compliment and amplify the good things with code."
+msgstr "Komplementuj i wzmacniaj dobre rzeczy w kodzie."
+
+#: mu/logic.py:86
+msgid "In theory, theory and practice are the same. In practice, they're not. ;-)"
+msgstr "W teorii, teoria i praktyka to to samo. W praktyce tak nie jest. ;-)"
+
+#: mu/logic.py:88 mu/logic.py:89
+msgid "It's fun to program."
+msgstr "Programowanie to zabawa."
+
+#: mu/logic.py:90
+msgid "Programming has more to do with problem solving than writing code."
+msgstr "Programowanie ma więcej wspólnego z rozwiązywaniem problemów niż pisaniem kodu"
+
+#: mu/logic.py:91
+msgid "Start with your users' needs."
+msgstr "Zacznij od potrzeb Twoich użytkowników."
+
+#: mu/logic.py:92
+msgid "Try to see things from your users' point of view."
+msgstr "Spróbuj zobaczyć rzeczy z punktu widzenia Twoich użytkowników."
+
+#: mu/logic.py:93
+msgid "Put yourself in your users' shoes."
+msgstr "Wejdź w buty swoich użytkowników."
+
+#: mu/logic.py:94
+msgid "Explaining a programming problem to a friend often reveals the solution. :-)"
+msgstr "Wytłumaczenie problemu programistycznego przyjacielowi często odkrywa rozwiązanie. :-)"
+
+#: mu/logic.py:96
+msgid "If you don't know, ask. Nobody to ask? Just look it up."
+msgstr "Jeśli nie wiesz, pytaj. Nie ma nikogo by zapytać? Po prostu znajdź"
+
+#: mu/logic.py:97
+msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
+msgstr "Złożoność jest wrogiem. Zrób, żeby to było proste, głupcze!"
+
+#: mu/logic.py:98
+msgid "Beautiful is better than ugly."
+msgstr "Piękne jest lepsze niż brzydkie."
+
+#: mu/logic.py:99
+msgid "Explicit is better than implicit."
+msgstr "Wyrażone wprost jest lepsze niż domniemane."
+
+#: mu/logic.py:100
+msgid "Simple is better than complex. Complex is better than complicated."
+msgstr "Proste jest lepsze niż złożone. Złożone jest lepsze niż skomplikowane."
+
+#: mu/logic.py:101
+msgid "Flat is better than nested."
+msgstr "Płaskie jest lepsze niż wielopoziomowe."
+
+#: mu/logic.py:102
+msgid "Sparse is better than dense."
+msgstr "Rzadkie jest lepsze niż gęste."
+
+#: mu/logic.py:103
+msgid "Readability counts."
+msgstr "Czytelność się liczy."
+
+#: mu/logic.py:104
+msgid "Special cases aren't special enough to break the rules. Although practicality beats purity."
+msgstr "Sytuacje wyjątkowe nie są na tyle wyjątkowe, aby łamać reguły. Choć praktyczność przeważa nad konsekwencją."
+
+#: mu/logic.py:106
+msgid "Errors should never pass silently. Unless explicitly silenced."
+msgstr "Błędy zawsze powinny być sygnalizowane. Chyba że zostaną celowo ukryte."
+
+#: mu/logic.py:107
+msgid "In the face of ambiguity, refuse the temptation to guess."
+msgstr "W razie niejasności powstrzymaj pokusę zgadywania."
+
+#: mu/logic.py:108
+msgid "There should be one-- and preferably only one --obvious way to do it."
+msgstr "Powinien być jeden -- i najlepiej tylko jeden -- oczywisty sposób na zrobienie danej rzeczy."
+
+#: mu/logic.py:109
+msgid "Now is better than never. Although never is often better than *right* now."
+msgstr "Teraz jest lepsze niż nigdy. Chociaż nigdy jest często lepsze niż natychmiast."
+
+#: mu/logic.py:111
+msgid "If the implementation is hard to explain, it's a bad idea."
+msgstr "Jeśli rozwiązanie jest trudno wyjaśnić, to jest ono złym pomysłem."
+
+#: mu/logic.py:112
+msgid "If the implementation is easy to explain, it may be a good idea."
+msgstr "Jeśli rozwiązanie jest łatwo wyjaśnić, to może ono być dobrym pomysłem."
+
+#: mu/logic.py:113
+msgid "Namespaces are one honking great idea -- let's do more of those!"
+msgstr "Przestrzenie nazw to jeden z niesamowicie genialnych pomysłów -- miejmy ich więcej!"
+
+#: mu/logic.py:114
+msgid "Mu was created by Nicholas H.Tollervey."
+msgstr "Mu zostało stworzoone przez Nicholasa H.Tollerveya."
+
+#: mu/logic.py:115
+msgid "To understand what recursion is, you must first understand recursion."
+msgstr "Aby zrozumieć rekurencję, musisz najpierw zrozumieć rekurencję."
+
+#: mu/logic.py:116
+msgid "Algorithm: a word used by programmers when they don't want to explain what they did."
+msgstr "Algorytm: słowo używane przez programistów, gdy nie chcą wyjaśnić, co zrobili."
+
+#: mu/logic.py:118
+msgid "Programmers count from zero."
+msgstr "Programiści liczą od zera."
+
+#: mu/logic.py:119
+msgid "Simplicity is the ultimate sophistication."
+msgstr "Prostota jest ostatecznym wyrafinowaniem."
+
+#: mu/logic.py:120
+msgid "A good programmer is humble."
+msgstr "Dobry programista jest skromny."
+
+#: mu/logic.py:121
+msgid "A good programmer is playful."
+msgstr "Dobry programista jest zabawny."
+
+#: mu/logic.py:122
+msgid "A good programmer learns to learn."
+msgstr "Dobry programista uczy się uczyć."
+
+#: mu/logic.py:123
+msgid "A good programmer thinks beyond the obvious."
+msgstr "Dobry programista myśli ponad to, co oczywiste."
+
+#: mu/logic.py:124
+msgid "A good programmer promotes simplicity."
+msgstr "Dobry programista promuje prostotę."
+
+#: mu/logic.py:125
+msgid "A good programmer avoids complexity."
+msgstr "Dobry programista unika złożoności."
+
+#: mu/logic.py:126
+msgid "A good programmer is patient."
+msgstr "Dobry programista jest cierpliwy."
+
+#: mu/logic.py:127
+msgid "A good programmer asks questions."
+msgstr "Dobry programista zadaje pytania."
+
+#: mu/logic.py:128
+msgid "A good programmer is willing to say, 'I don't know'."
+msgstr "Dobry programista jest gotów powiedzieć: \"Nie wiem\"."
+
+#: mu/logic.py:129
+msgid "Wisest are they that know they know nothing."
+msgstr "Najmądrzejsi są ci, którzy wiedzą, że nic nie wiedzą."
+
+#: mu/logic.py:439
+msgid " above this line"
+msgstr "powyżej tej linii"
+
+#: mu/logic.py:484
+msgid "Syntax error. Python cannot understand this line. Check for missing characters!"
+msgstr "Błąd składni. Python nie może zrozumieć tej linii. Sprawdź, czy nie ma brakujących znaków!"
+
+#: mu/logic.py:669
+msgid "# Write your code here :-)"
+msgstr "# Tutaj pisz swój kod, młody padawanie ;-)"
+
+#: mu/logic.py:707
+msgid ""
+"The file contains characters Mu expects to be encoded as {0} or as the computer's default encoding {1}, but which are encoded in some other way.\n"
+"\n"
+"If this file was saved in another application, re-save the file via the 'Save as' option and set the encoding to {0}"
+msgstr ""
+"Plik zawiera znaki Mu oczekuje, że będzie zakodowany jako {0} lub jako domyślne kodowanie komputera {1}, ale które są zakodowane w inny sposób.\n"
+"\n"
+"Jeśli plik ten został zapisany w innej aplikacji, ponownie zapisz plik za pomocą opcji \"Zapisz jako\" i ustaw kodowanie na {0}"
+
+#: mu/logic.py:723
+msgid "The file \"{}\" is already open."
+msgstr "Plik \"{}\" jest już otwarty."
+
+#: mu/logic.py:735
+msgid "Mu cannot read the characters in {}"
+msgstr "Mu nie może odczytać znaków w {}"
+
+#: mu/logic.py:758
+msgid "Mu was not able to open this file"
+msgstr "Mu nie było w stanie otworzyć tego pliku"
+
+#: mu/logic.py:759
+msgid "Currently Mu only works with Python source files or hex files created with embedded MicroPython code."
+msgstr "Aktualnie Mu działa tylko z plikami źródłowymi Pythona lub plikami hex stworzonymi z wbudowanym kodem MicroPythona."
+
+#: mu/logic.py:765
+msgid "Could not load {}"
+msgstr "Nie mogę otworzyć {}"
+
+#: mu/logic.py:767
+msgid ""
+"Does this file exist?\n"
+"If it does, do you have permission to read it?\n"
+"\n"
+"Please check and try again."
+msgstr ""
+"Czy plik istnieje?\n"
+"Jeśli tak, to czy masz uprawnienia, żeby go odczytać?\n"
+"\n"
+"Proszę sprawdź i spróbuj ponownie."
+
+#: mu/logic.py:773
+msgid "Is this a {} file?"
+msgstr "Czy {} jest plikiem?"
+
+#: mu/logic.py:774
+msgid ""
+"It looks like this could be a {} file.\n"
+"\n"
+"Would you like to change Mu to the {}mode?"
+msgstr ""
+"To wygląda, że może być plikiem {}.\n"
+"\n"
+"Czy chciałbyś, żeby Mu zmieniło na tryb {}?"
+
+#: mu/logic.py:846
+msgid "Could not save file (disk problem)"
+msgstr "Nie mogę zapisać pliku (problem dysku)"
+
+#: mu/logic.py:847
+msgid "Error saving file to disk. Ensure you have permission to write the file and sufficient disk space."
+msgstr "Błąd w zapisywaniu na dysk. Upewnij się, że masz uprawnienia do pliku i wystarczającą ilość miejsca"
+
+#: mu/logic.py:851
+msgid "Could not save file (encoding problem)"
+msgstr "Nie można było zapisać pliku (problem kodowania)"
+
+#: mu/logic.py:853
+msgid "Unable to convert all the characters. If you have an encoding line at the top of the file, remove it and try again."
+msgstr "Nie można skonwertować wszystkich znaków. Jeśli masz linie z kodowaniem na początku pliku usuń ją i spróbuj ponownie."
+
+#: mu/logic.py:862
+msgid "Saved file: {}"
+msgstr "Zapisano plik: {}"
+
+#: mu/logic.py:891 mu/logic.py:1229
+msgid "You cannot use the filename \"{}\""
+msgstr "Nie możesz używasz nazwy pliku \"{}\""
+
+#: mu/logic.py:893
+msgid "This name is already used by another part of Python. If you use this name, things are likely to break. Please try again with a different filename."
+msgstr "Ta nazwa jest już używana przez inną część Pythona. Jeśli użyjesz tej nazwy, najprawdopodobniej coś się popsuje. Spróbuj ponownie z inną nazwą pliku."
+
+#: mu/logic.py:968
+msgid "Good job! No problems found."
+msgstr "Dobra robota! Nie znaleziono problemów."
+
+#: mu/logic.py:969
+msgid "Hurrah! Checker turned up no problems."
+msgstr "Hurra! Sprawdzanie zakończyło się bez problemów."
+
+#: mu/logic.py:970
+msgid "Nice one! Zero problems detected."
+msgstr "Dobrze! Zero problemów wykrytych."
+
+#: mu/logic.py:971
+msgid "Well done! No problems here."
+msgstr "Bardzo dobrze! Żadnych problemów tutaj"
+
+#: mu/logic.py:972
+msgid "Awesome! Zero problems found."
+msgstr "Wspaniale! Zero znalezionych problemów."
+
+#: mu/logic.py:999
+msgid "There is un-saved work, exiting the application will cause you to lose it."
+msgstr "Jest niezapisana praca, wyjście z aplikacji spowoduje jej utratę."
+
+#: mu/logic.py:1052
+msgid "Could not find MicroPython runtime."
+msgstr "Nie mogłem znaleźć wersji wykonywalnej MicroPythona"
+
+#: mu/logic.py:1053
+msgid "The micro:bit runtime you specified ('{}') does not exist. Please try again."
+msgstr "Wersja wykonywalna micro:bit, którą podałeś ('{}') nie istnieje. Proszę spróbuj ponownie."
+
+#: mu/logic.py:1123
+msgid "Changed to {} mode."
+msgstr "Zmieniłem na tryb {}"
+
+#: mu/logic.py:1168
+msgid "Detected new {} device."
+msgstr "Wykryto nowe urządzenie {}."
+
+#: mu/logic.py:1175
+msgid "Would you like to change Mu to the {} mode?"
+msgstr "Czy chciałbyś przełączyć Mu w tryb {}?"
+
+#: mu/logic.py:1210
+msgid "Cannot Set Breakpoint."
+msgstr "Nie mogę ustawić punktu przerwania."
+
+#: mu/logic.py:1211
+msgid "Lines that are comments or some multi-line statements cannot have breakpoints."
+msgstr "Linie, które są komentarzami lub wielolinijowymi wyrażeniami nie mogą mieć punktów przerwania."
+
+#: mu/logic.py:1231
+msgid "This name is already used by another part of Python. If you use that name, things are likely to break. Please try again with a different filename."
+msgstr "Ta nazwa jest już używana przez inną część Pythona. Jeśli użyjesz tej nazwy, najprawdopodobniej coś się popsuje. Spróbuj ponownie z inną nazwą pliku."
+
+#: mu/logic.py:1248
+msgid "Could not rename file."
+msgstr "Nie mogę zmienić nazwy pliku."
+
+#: mu/logic.py:1249
+msgid "A file of that name is already open in Mu."
+msgstr "Plik o tej nazwie jest już otwarty w Mu."
+
+#: mu/logic.py:1278
+msgid "Replaced \"{}\" with \"{}\"."
+msgstr "Zamieniono \"{}\" na \"{}\"."
+
+#: mu/logic.py:1282
+msgid "Replaced {} matches of \"{}\" with \"{}\"."
+msgstr "Zamieniono {} wystąpienia \"{}\" na \"{}\"."
+
+#: mu/logic.py:1287 mu/logic.py:1294
+msgid "Could not find \"{}\"."
+msgstr "Nie mogę znaleźć \"{}\"."
+
+#: mu/logic.py:1292
+msgid "Highlighting matches for \"{}\"."
+msgstr "Podświetlanie wystąpień \"{}\"."
+
+#: mu/logic.py:1297
+msgid "You must provide something to find."
+msgstr "Musisz podać coś do znalezienia."
+
+#: mu/logic.py:1298
+msgid "Please try again, this time with something in the find box."
+msgstr "Spróbuj ponownie, tym razem z czymś w polu wyszukiwania."
+
+#: mu/modes/adafruit.py:32
+msgid "Adafruit CircuitPython"
+msgstr "Adafruit CircuitPython"
+
+#: mu/modes/adafruit.py:33
+msgid "Use CircuitPython on Adafruit's line of boards."
+msgstr "Używaj CircuitPython na linii płytek Adafruit"
+
+#: mu/modes/adafruit.py:71
+msgid "Serial"
+msgstr "Szeregowe"
+
+#: mu/modes/adafruit.py:72
+msgid "Open a serial connection to your device."
+msgstr "Otwórz połączenie szeregowe do Twojego urządzenia"
+
+#: mu/modes/adafruit.py:79 mu/modes/microbit.py:215 mu/modes/python3.py:136
+msgid "Plotter"
+msgstr "Plotter"
+
+#: mu/modes/adafruit.py:80 mu/modes/microbit.py:216
+msgid "Plot incoming REPL data."
+msgstr "Rysuj nadchodzące dane REPLa"
+
+#: mu/modes/adafruit.py:150
+msgid "Could not find an attached Adafruit CircuitPython device."
+msgstr "Nie mogę znaleźć podłączonych urządzeń Adafruit CircuitPython"
+
+#: mu/modes/adafruit.py:152
+msgid ""
+"Python files for Adafruit CircuitPython devices are stored on the device. Therefore, to edit these files you need to have the device plugged in. Until you plug in a device, Mu will use the directory found here:\n"
+"\n"
+" {}\n"
+"\n"
+"...to store your code."
+msgstr ""
+"Pliki pythonowe dla urządzeń Adafruit CircuitPython są przechowywane na urządzeniu. W związku z tym, by edytować te pliki potrzebujesz podłączonego urządzenia. Dopóki go nie podłączysz, Mu będzie używał katalogu znalezionego tutaj:\n"
+"\n"
+" {}\n"
+"\n"
+"...do przechowywania Twojego kodu."
+
+#: mu/modes/base.py:177
+msgid "Data Flood Detected!"
+msgstr "Przepełnienie danymi wykryte!"
+
+#: mu/modes/base.py:178
+msgid ""
+"The plotter is flooded with data which will make Mu unresponsive and freeze. As a safeguard, the plotter has been stopped.\n"
+"\n"
+"Flooding is when chunks of data of more than 1024 bytes are repeatedly sent to the plotter.\n"
+"\n"
+"To fix this, make sure your code prints small tuples of data between calls to 'sleep' for a very short period of time."
+msgstr ""
+"Plotter jest przepełniony danymi, które sprawią, że Mu będzie nieresponsywny i się zawiesi. Dla bezpieczeństwa, plotter został zatrzymany\n"
+"\n"
+"Przepełnianie występuje gdy porcje danych są większe niż 1024 bajty i powtórnie wysyłane na plotter.\n"
+"\n"
+"By naprawić to, upewnij się, że Twój kod wypisuje małe krotki danych pomiędzy wywołaniami 'sleep' na krótki okres czasu."
+
+#: mu/modes/base.py:273 mu/modes/base.py:312
+msgid "Click on the device's reset button, wait a few seconds and then try again."
+msgstr "Naciśnij przycisk reset urządzenia, poczekaj kilka sekund i potem spróbuj ponownie."
+
+#: mu/modes/base.py:279 mu/modes/base.py:318
+msgid "Could not find an attached device."
+msgstr "Nie mogę znaleźć podłączonego urządzenia."
+
+#: mu/modes/base.py:280
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it before the REPL will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before trying again."
+msgstr ""
+"Proszę upewnij się, że urządzenie jest podłączone do tego komputera.\n"
+"\n"
+"Musi posiadać wersję MicroPythona (lub CircuitPythona) zflashowaną na nim, zanim REPL będzie działać.\n"
+"\n"
+"Na końcu, naciśnij przycisk reset na urządzeniu i poczekaj kilka sekund przed ponowną próbą."
+
+#: mu/modes/base.py:319
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it before the Plotter will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before trying again."
+msgstr ""
+"Proszę upewnij się, że urządzenie jest podłączone do tego komputera.\n"
+"\n"
+"Musi posiadać wersję MicroPythona (lub CircuitPythona) zflashowaną na nim, zanim Plotter będzie działać.\n"
+"\n"
+"Na końcu, naciśnij przycisk reset na urządzeniu i poczekaj kilka sekund przed ponowną próbą."
+
+#: mu/modes/debugger.py:35
+msgid "Graphical Debugger"
+msgstr "Graficzny Debugger"
+
+#: mu/modes/debugger.py:36
+msgid "Debug your Python 3 code."
+msgstr "Debuguj swój kod Pythona 3."
+
+#: mu/modes/debugger.py:50 mu/modes/pygamezero.py:109 mu/modes/python3.py:166
+msgid "Stop"
+msgstr "Zatrzymaj"
+
+#: mu/modes/debugger.py:51
+msgid "Stop the running code."
+msgstr "Zatrzymaj wykonywany kod."
+
+#: mu/modes/debugger.py:57
+msgid "Continue"
+msgstr "Kontynuuj"
+
+#: mu/modes/debugger.py:58
+msgid "Continue to run your Python script."
+msgstr "Kontynuuj wykonywanie swojego skryptu Pythona."
+
+#: mu/modes/debugger.py:64
+msgid "Step Over"
+msgstr "Przekrocz"
+
+#: mu/modes/debugger.py:65
+msgid "Step over a line of code."
+msgstr "Przekrocz linię kodu."
+
+#: mu/modes/debugger.py:71
+msgid "Step In"
+msgstr "Krok do wewnątrz"
+
+#: mu/modes/debugger.py:72
+msgid "Step into a function."
+msgstr "Krok do wewnątrz funkcji."
+
+#: mu/modes/debugger.py:78
+msgid "Step Out"
+msgstr "Krok na zewnątrz"
+
+#: mu/modes/debugger.py:79
+msgid "Step out of a function."
+msgstr "Krok na zewnątrz funkcji."
+
+#: mu/modes/debugger.py:156
+msgid "Your script has finished running."
+msgstr "Twój skrypt zakończył wykonywanie."
+
+#: mu/modes/debugger.py:224
+msgid ""
+"Unable to connect to the Python debugger.\n"
+"\n"
+msgstr ""
+"Nie jestem w stanie połączyć się z debuggerem Pythona.\n"
+"\n"
+
+#: mu/modes/debugger.py:308
+msgid "Debugger info: {}"
+msgstr "Informacje debuggera: {}"
+
+#: mu/modes/debugger.py:314
+msgid "Debugger warning: {}"
+msgstr "Ostrzeżenie debuggera: {}"
+
+#: mu/modes/debugger.py:321
+msgid "Debugger error: {}"
+msgstr "Błędy debuggera: {}"
+
+#: mu/modes/microbit.py:168
+msgid "BBC micro:bit"
+msgstr "BBC micro:bit"
+
+#: mu/modes/microbit.py:169
+msgid "Write MicroPython for the BBC micro:bit."
+msgstr "Pisz w MicroPython dla BBC micro:bita."
+
+#: mu/modes/microbit.py:192
+msgid "Flash"
+msgstr "Fleszuj"
+
+#: mu/modes/microbit.py:193
+msgid "Flash your code onto the micro:bit."
+msgstr "Fleszuj swój kod na micro:bita."
+
+#: mu/modes/microbit.py:199
+msgid "Files"
+msgstr "Pliki"
+
+#: mu/modes/microbit.py:200
+msgid "Access the file system on the micro:bit."
+msgstr "Uzyskaj dostęp do systemu plików na micro:bit."
+
+#: mu/modes/microbit.py:206 mu/modes/python3.py:127
+msgid "REPL"
+msgstr "REPL"
+
+#: mu/modes/microbit.py:207
+msgid "Use the REPL to live-code on the micro:bit."
+msgstr "Używaj REPL do kodowania na żywo na micro:bit."
+
+#: mu/modes/microbit.py:257
+msgid "Unable to flash \"{}\""
+msgstr "Nie mogę fleszować \"{}\""
+
+#: mu/modes/microbit.py:267
+msgid "Problem with script"
+msgstr "Problem ze skryptem"
+
+#: mu/modes/microbit.py:268
+msgid "{} [{}:{}]"
+msgstr "{} [{}:{}]"
+
+#: mu/modes/microbit.py:278
+msgid "Our minifier tried but your script is too long!"
+msgstr "Nasz minifier (co to jest?) próbował, ale Twój skrypt jest zbyt długi!"
+
+#: mu/modes/microbit.py:283
+msgid "Your script is too long and the minifier isn't available"
+msgstr "Twój skrypt jest za długi i pomniejszacz nie jest dostępny"
+
+#: mu/modes/microbit.py:288
+msgid "Your script is too long!"
+msgstr "Twój skrypt jest za długi!"
+
+#: mu/modes/microbit.py:368
+msgid "Flashing \"{}\" onto the micro:bit."
+msgstr "Fleszowanie \"{}\" na micro:bita."
+
+#: mu/modes/microbit.py:370
+msgid " Runtime: {}"
+msgstr " Wykonanie: {}"
+
+#: mu/modes/microbit.py:416
+msgid "Unsupported BBC micro:bit."
+msgstr "Niewspierany BBC micro:bit."
+
+#: mu/modes/microbit.py:417
+msgid ""
+"Your device is newer than this version of Mu. Please update Mu to the latest version to support this device.\n"
+"\n"
+"https://codewith.mu/"
+msgstr ""
+"Twoje urządzenie jest nowsze niż ta wersja Mu. Proszę zaktualizuj Mu do najnowszej wersji by wspierać to urządzenie.\n"
+"\n"
+"https://codewith.mu/"
+
+#: mu/modes/microbit.py:474 mu/modes/microbit.py:611
+msgid "Could not find an attached BBC micro:bit."
+msgstr "Nie mogę znaleźć podłączonego BBC micro:bita."
+
+#: mu/modes/microbit.py:475
+msgid "Please ensure you leave enough time for the BBC micro:bit to be attached and configured correctly by your computer. This may take several seconds. Alternatively, try removing and re-attaching the device or saving your work and restarting Mu if the device remains unfound."
+msgstr ""
+"Proszę upewnij się, że dajesz wystarczająco dużo czasu dla BBC micro:bit, że by został podłączony i skonfigurowany poprawnie przez Twój komputer. To może zająć kilka sekund. Alternatywnie, próbuj odłączyć i podłączyć ponownie urządzenie lub zapisać swoją pracę a następnie "
+"zrestartuj Mu, jeśli urządzenie pozostaje niewykryte."
+
+#: mu/modes/microbit.py:489
+msgid "Finished flashing."
+msgstr "Zakończono fleszowanie."
+
+#: mu/modes/microbit.py:524
+msgid "Copied code onto micro:bit."
+msgstr "Skopiowana kod na micro:bita."
+
+#: mu/modes/microbit.py:533
+msgid "There was a problem flashing the micro:bit."
+msgstr "Wystąpił problem z fleszowaniem micro:bita."
+
+#: mu/modes/microbit.py:534
+msgid "Please do not disconnect the device until flashing has completed. Please check the logs for more information."
+msgstr "Proszę nie odłączaj urządzenia dopóki fleszowanie nie zostało ukończone."
+
+#: mu/modes/microbit.py:555
+msgid "REPL and file system cannot work at the same time."
+msgstr "REPL i system plików nie mogą działać w tym samym czasie."
+
+#: mu/modes/microbit.py:556
+msgid "The REPL and file system both use the same USB serial connection. Only one can be active at any time. Toggle the file system off and try again."
+msgstr "REPL i system plików oba używają tego samego połączenia szeregowego USB. Tylko jeden może być aktywny w dowolnym momencie. Wyłącz system plików i próbuj ponownie."
+
+#: mu/modes/microbit.py:573
+msgid "The plotter and file system cannot work at the same time."
+msgstr "Plotter i system plików nie mogą być używane w tym samym czasie."
+
+#: mu/modes/microbit.py:575
+msgid "The plotter and file system both use the same USB serial connection. Only one can be active at any time. Toggle the file system off and try again."
+msgstr "Plotter i system plików oba używają tego samego połączenia szeregowego USB. Tylko jeden może być aktywny w dowolnym momencie. Wyłącz system plików i próbuj ponownie."
+
+#: mu/modes/microbit.py:587
+msgid "File system cannot work at the same time as the REPL or plotter."
+msgstr "System plików nie może działać w tym samym czasie co REPL lub plotter."
+
+#: mu/modes/microbit.py:589
+msgid "The file system and the REPL and plotter use the same USB serial connection. Toggle the REPL and plotter off and try again."
+msgstr "System plików i REPL i plotter używają tego samego połączenia szeregowego USB. Wyłącz REPL i plotter i próbuj ponownie."
+
+#: mu/modes/microbit.py:612
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"The device must have MicroPython flashed onto it before the file system will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before trying again."
+msgstr ""
+"Proszę upewnij się, że urządzenie jest podłączone do komputera.\n"
+"\n"
+"Urządzenie musi zawierać sflaszowany Micropython na nim zanim system plików będzie działać.\n"
+"\n"
+"Na końcu naciśnij przycisk reset urządzenia i poczekaj kilka sekund przed ponowną próbą."
+
+#: mu/modes/pygamezero.py:35
+msgid "Pygame Zero"
+msgstr "Pygame Zero"
+
+#: mu/modes/pygamezero.py:36
+msgid "Make games with Pygame Zero."
+msgstr "Twórz gry z Pygame Zero."
+
+#: mu/modes/pygamezero.py:51 mu/modes/pygamezero.py:101
+msgid "Play"
+msgstr "Graj"
+
+#: mu/modes/pygamezero.py:52 mu/modes/pygamezero.py:102
+msgid "Play your Pygame Zero game."
+msgstr "Graj w swoją grę Pygame Zero."
+
+#: mu/modes/pygamezero.py:58
+msgid "Images"
+msgstr "Obrazki"
+
+#: mu/modes/pygamezero.py:59
+msgid "Show the images used by Pygame Zero."
+msgstr "Pokaż obrazki używane przez Pygame Zero."
+
+#: mu/modes/pygamezero.py:65
+msgid "Fonts"
+msgstr "Czcionki"
+
+#: mu/modes/pygamezero.py:66
+msgid "Show the fonts used by Pygame Zero."
+msgstr "Pokaż czcionki używane przez Pygame Zero."
+
+#: mu/modes/pygamezero.py:72
+msgid "Sounds"
+msgstr "Dźwięki"
+
+#: mu/modes/pygamezero.py:73
+msgid "Show the sounds used by Pygame Zero."
+msgstr "Pokaż dźwięki używane przez Pygame Zero."
+
+#: mu/modes/pygamezero.py:79
+msgid "Music"
+msgstr "Muzyka"
+
+#: mu/modes/pygamezero.py:80
+msgid "Show the music used by Pygame Zero."
+msgstr "Pokaż muzykę używaną przez Pygame Zero."
+
+#: mu/modes/pygamezero.py:110
+msgid "Stop your Pygame Zero game."
+msgstr "Zatrzymaj swoją grę Pygame Zero."
+
+#: mu/modes/python3.py:97
+msgid "Python 3"
+msgstr "Python 3"
+
+#: mu/modes/python3.py:98
+msgid "Create code using standard Python 3."
+msgstr "Twórz kod używając standardowego Pythona 3."
+
+#: mu/modes/python3.py:113 mu/modes/python3.py:158
+msgid "Run"
+msgstr "Wykonuj"
+
+#: mu/modes/python3.py:114 mu/modes/python3.py:159
+msgid "Run your Python script."
+msgstr "Wykonuj swój skrypt w Pythonie "
+
+#: mu/modes/python3.py:120
+msgid "Debug"
+msgstr "Debuguj"
+
+#: mu/modes/python3.py:121
+msgid "Debug your Python script."
+msgstr "Debuguj swój skrypt w Pythonie."
+
+#: mu/modes/python3.py:128
+msgid "Use the REPL for live coding."
+msgstr "Używaj REPL do kodowania na żywo."
+
+#: mu/modes/python3.py:137
+msgid "Plot data from your script or the REPL."
+msgstr "Rysuj dane ze swojego skryptu lub REPLa."
+
+#: mu/modes/python3.py:167
+msgid "Stop your Python script."
+msgstr "Zatrzymaj swój skrypt w Pythonie"
+
+#: mu/modes/python3.py:230
+msgid "Starting iPython REPL."
+msgstr "Uruchamianie iPython REPL"
+
+#: mu/modes/python3.py:234
+msgid "Stopping iPython REPL (this may take a short amount of time)."
+msgstr "Zatrzymywanie iPython REPL (to może potrwać krótką chwilę czasu)."
+
+#: mu/modes/python3.py:319
+msgid "REPL started."
+msgstr "REPL uruchomiony."
+
+#: mu/modes/python3.py:328
+msgid "REPL stopped."
+msgstr "REPL zatrzymany."

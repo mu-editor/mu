@@ -190,6 +190,7 @@ class Window(QMainWindow):
     data_received = pyqtSignal(bytes)
     open_file = pyqtSignal(str)
     load_theme = pyqtSignal(str)
+    previous_folder = None
 
     def zoom_in(self):
         """
@@ -230,8 +231,11 @@ class Window(QMainWindow):
         Displays a dialog for selecting a file to load. Returns the selected
         path. Defaults to start in the referenced folder.
         """
-        path, _ = QFileDialog.getOpenFileName(self.widget, 'Open file', folder,
-                                              extensions)
+        path, _ = QFileDialog.getOpenFileName(
+            self.widget, 'Open file',
+            folder if self.previous_folder is None else self.previous_folder,
+            extensions)
+        self.previous_folder = os.path.dirname(path)
         logger.debug('Getting load path: {}'.format(path))
         return path
 
@@ -240,7 +244,10 @@ class Window(QMainWindow):
         Displays a dialog for selecting a file to save. Returns the selected
         path. Defaults to start in the referenced folder.
         """
-        path, _ = QFileDialog.getSaveFileName(self.widget, 'Save file', folder)
+        path, _ = QFileDialog.getSaveFileName(
+            self.widget, 'Save file',
+            folder if self.previous_folder is None else self.previous_folder)
+        self.previous_folder = os.path.dirname(path)
         logger.debug('Getting save path: {}'.format(path))
         return path
 
@@ -250,9 +257,11 @@ class Window(QMainWindow):
         host computer's filesystem. Returns the selected path. Defaults to
         start in the referenced folder.
         """
-        path = QFileDialog.getExistingDirectory(self.widget,
-                                                'Locate BBC micro:bit', folder,
-                                                QFileDialog.ShowDirsOnly)
+        path = QFileDialog.getExistingDirectory(
+            self.widget, 'Locate BBC micro:bit',
+            folder if self.previous_folder is None else self.previous_folder,
+            QFileDialog.ShowDirsOnly)
+        self.previous_folder = os.path.dirname(path)
         logger.debug('Getting micro:bit path: {}'.format(path))
         return path
 
@@ -282,6 +291,7 @@ class Window(QMainWindow):
         new_tab.setFocus()
         if self.read_only_tabs:
             new_tab.setReadOnly(self.read_only_tabs)
+        return new_tab
 
     def focus_tab(self, tab):
         index = self.tabs.indexOf(tab)

@@ -73,7 +73,8 @@ class Font:
     """
     _DATABASE = None
 
-    def __init__(self, color='black', paper='white', bold=False, italic=False):
+    def __init__(self, color='#181818', paper='#FEFEF7', bold=False,
+                 italic=False):
         self.color = color
         self.paper = paper
         self.bold = bold
@@ -154,8 +155,8 @@ class DayTheme(Theme):
     Default = Identifier = Font()
     Operator = Font(color='#400040')
     HighlightedIdentifier = Font(color='#0000a0')
-    Paper = QColor('white')
-    Caret = QColor('black')
+    Paper = QColor('#FEFEF7')
+    Caret = QColor('#181818')
     Margin = QColor('#EEE')
     IndicatorError = QColor('red')
     IndicatorStyle = QColor('blue')

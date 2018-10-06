@@ -18,7 +18,8 @@ all:
 	@echo "make translate - create a messages.pot file for translations."
 	@echo "make translateall - as with translate but for all API strings."
 	@echo "make win32 - create a 32bit Windows installer for Mu."
-	@echo "make win64 - create a 64bit Windows installer for Mu.\n"
+	@echo "make win64 - create a 64bit Windows installer for Mu."
+	@echo "make video - create an mp4 video representing code commits.\n"
 
 clean:
 	rm -rf build
@@ -32,6 +33,8 @@ clean:
 	rm -rf pynsist_pkgs
 	rm -rf pynsist_tkinter*
 	rm -rf macOS
+	rm -rf *.mp4
+	rm -rf .git/avatar/*
 	find . \( -name '*.py[co]' -o -name dropin.cache \) -delete
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
@@ -93,3 +96,9 @@ win32: check
 win64: check
 	@echo "\nBuilding 64bit Windows installer."
 	python win_installer.py 64
+
+video: clean
+	@echo "\nFetching contributor avatars."
+	python utils/avatar.py
+	@echo "\nMaking video of source commits."
+	gource --user-image-dir .git/avatar/ --title "The Making of Mu" --logo ~/Pictures/icon.png --font-size 24 --file-idle-time 0 --key -1280x720 -s 0.1 --auto-skip-seconds .1 --multi-sampling --stop-at-end --hide mouse,progress --output-ppm-stream - --output-framerate 30 | ffmpeg -y -r 30 -f image2pipe -vcodec ppm -i - -b 65536K movie.mp4

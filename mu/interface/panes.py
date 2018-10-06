@@ -72,9 +72,9 @@ class JupyterREPLPane(RichJupyterWidget):
         """
         Sets the font size for all the textual elements in this pane.
         """
-        stylesheet = ("QWidget{font-size: " + str(new_size) +
-                      "pt; font-family: Monospace;}")
-        self.setStyleSheet(stylesheet)
+        font = self.font
+        font.setPointSize(new_size)
+        self._set_font(font)
 
     def zoomIn(self, delta=2):
         """
@@ -228,37 +228,39 @@ class MicroPythonREPLPane(QTextEdit):
                 self.setTextCursor(tc)
             elif data[i] == 13:  # \r
                 pass
-            elif data[i] == 27 and data[i + 1] == 91:  # VT100 cursor: <Esc>[
+            elif len(data) > 1 and data[i] == 27 and data[i + 1] == 91:
+                # VT100 cursor detected: <Esc>[
                 i += 2  # move index to after the [
-                m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])',
-                              data[i:].decode('utf-8'))
+                regex = r'(?P<count>[\d]*)(;?[\d]*)*(?P<action>[ABCDKm])'
+                m = re.search(regex, data[i:].decode('utf-8'))
+                if m:
+                    # move to (almost) after control seq
+                    # (will ++ at end of loop)
+                    i += m.end() - 1
 
-                # move to (almost) after control seq (will ++ at end of loop)
-                i += m.end() - 1
+                    if m.group("count") == '':
+                        count = 1
+                    else:
+                        count = int(m.group("count"))
 
-                if m.group("count") == '':
-                    count = 1
-                else:
-                    count = int(m.group("count"))
-
-                if m.group("action") == "A":  # up
-                    tc.movePosition(QTextCursor.Up, n=count)
-                    self.setTextCursor(tc)
-                elif m.group("action") == "B":  # down
-                    tc.movePosition(QTextCursor.Down, n=count)
-                    self.setTextCursor(tc)
-                elif m.group("action") == "C":  # right
-                    tc.movePosition(QTextCursor.Right, n=count)
-                    self.setTextCursor(tc)
-                elif m.group("action") == "D":  # left
-                    tc.movePosition(QTextCursor.Left, n=count)
-                    self.setTextCursor(tc)
-                elif m.group("action") == "K":  # delete things
-                    if m.group("count") == "":  # delete to end of line
-                        tc.movePosition(QTextCursor.EndOfLine,
-                                        mode=QTextCursor.KeepAnchor)
-                        tc.removeSelectedText()
+                    if m.group("action") == "A":  # up
+                        tc.movePosition(QTextCursor.Up, n=count)
                         self.setTextCursor(tc)
+                    elif m.group("action") == "B":  # down
+                        tc.movePosition(QTextCursor.Down, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "C":  # right
+                        tc.movePosition(QTextCursor.Right, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "D":  # left
+                        tc.movePosition(QTextCursor.Left, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "K":  # delete things
+                        if m.group("count") == "":  # delete to end of line
+                            tc.movePosition(QTextCursor.EndOfLine,
+                                            mode=QTextCursor.KeepAnchor)
+                            tc.removeSelectedText()
+                            self.setTextCursor(tc)
             elif data[i] == 10:  # \n
                 tc.movePosition(QTextCursor.End)
                 self.setTextCursor(tc)
@@ -653,7 +655,7 @@ class PythonProcessPane(QTextEdit):
         env.insert('PYTHONIOENCODING', 'utf-8')
         if sys.platform == 'darwin':
             parent_dir = os.path.dirname(__file__)
-            if '/mu-editor.app/Contents/Resources/app/mu' in parent_dir:
+            if '.app/Contents/Resources/app/mu' in parent_dir:
                 # Mu is running as a macOS app bundle. Ensure the expected
                 # paths are in PYTHONPATH of the subprocess.
                 env.insert('PYTHONPATH', ':'.join(sys.path))
@@ -769,6 +771,23 @@ class PythonProcessPane(QTextEdit):
         modifiers = data.modifiers()
         self.parse_input(key, text, modifiers)
 
+    def on_process_halt(self):
+        """
+        Called when the the user has manually halted a running process. Ensures
+        that the remaining data from the halted process's stdout is handled
+        properly.
+
+        When the process is halted the user is dropped into the Python prompt
+        and this method ensures the UI is updated in a clean, non-blocking
+        way.
+        """
+        data = self.process.readAll().data()
+        if data:
+            self.append(data)
+            self.on_append_text.emit(data)
+            cursor = self.textCursor()
+            self.start_of_current_line = cursor.position()
+
     def parse_input(self, key, text, modifiers):
         """
         Correctly encodes user input and sends it to the connected process.
@@ -789,11 +808,20 @@ class PythonProcessPane(QTextEdit):
                 pid = self.process.processId()
                 # NOTE: Windows related constraints don't allow us to send a
                 # CTRL-C, rather, the process will just terminate.
+                halt_flag = False
                 if key == Qt.Key_C:
+                    halt_flag = True
                     os.kill(pid, signal.SIGINT)
                 if key == Qt.Key_D:
+                    halt_flag = True
                     self.process.kill()
-            return
+                if halt_flag:
+                    # Clean up from kill signal.
+                    self.process.readAll()  # Discard queued output.
+                    # Schedule update of the UI after the process halts (in
+                    # next iteration of the event loop).
+                    QTimer.singleShot(1, self.on_process_halt)
+                    return
         elif key == Qt.Key_Up:
             self.history_back()
         elif key == Qt.Key_Down:
@@ -834,9 +862,15 @@ class PythonProcessPane(QTextEdit):
             self.backspace()
         if key == Qt.Key_Delete:
             self.delete()
-        if not self.isReadOnly() and msg:
-            self.insert(msg)
         if key == Qt.Key_Enter or key == Qt.Key_Return:
+            # First move cursor to the end of the line and insert newline in
+            # case return/enter is pressed while the cursor is in the
+            # middle of the line
+            cursor = self.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            self.setTextCursor(cursor)
+            self.insert(msg)
+            # Then write line to std_in and add to history
             content = self.toPlainText()
             line = content[self.start_of_current_line:].encode('utf-8')
             self.write_to_stdin(line)
@@ -844,6 +878,8 @@ class PythonProcessPane(QTextEdit):
                 self.input_history.append(line.replace(b'\n', b''))
             self.history_position = 0
             self.start_of_current_line = self.textCursor().position()
+        elif not self.isReadOnly() and msg:
+            self.insert(msg)
 
     def history_back(self):
         """
@@ -879,7 +915,7 @@ class PythonProcessPane(QTextEdit):
         """
         Process incoming data from the process's stdout.
         """
-        data = self.process.readAll().data()
+        data = self.process.read(256)
         if data:
             self.append(data)
             self.on_append_text.emit(data)

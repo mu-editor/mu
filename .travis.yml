@@ -6,11 +6,6 @@ matrix:
       dist: trusty
       sudo: required
       language: python
-      python: 3.5
-    - os: linux
-      dist: trusty
-      sudo: required
-      language: python
       python: 3.6
 
     # To maximise compatibility pick earliest image, OS X 10.10 Yosemite
@@ -63,7 +58,7 @@ script:
   # Package it for OSX
   #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then echo "[install]" >> setup.cfg; echo "prefix=" >> setup.cfg; fi
   #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo mkdir -p /lib/python3.6/site-packages/; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.5/python3-reduced.tar.gz; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir dist; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then zip -r -X dist/mu-editor.zip macOS/mu-editor.app; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then du -sk dist/; fi

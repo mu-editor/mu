@@ -1,6 +1,32 @@
 Release History
 ---------------
 
+1.0.1
+=====
+
+This is a bugfix and new translation release. No new features were added. The
+next release will be 1.1.0 with some new features.
+
+* Added a German translation by René Raab.
+* Added various new Adafruit boards, thanks Limor!
+* Added a Vietnamese translation by GitHub user @doanminhdang.
+* Fix bug in MicroPython REPL when dealing with colour escape sequences, thanks
+  Martin Dybdal of Coding Pirates! Arrr.
+* Ensured anyone trying to setup on an incompatible version of Python is given
+  a friendly message explaining the problem. Thanks to the hugely talented
+  René Dudfield for migrating this helpful function from PyGame!
+* Added a Brasilian translation by Marco A L Barbosa.
+* Added missing API docs for PyGameZero. Thanks to Justin Riley.
+* Added a Swedish translation by Filip Korling.
+* Fixes to various metadata configuration entries by Nick Morrott.
+* Updated to a revised Chinese translation. Thanks to John Guan.
+* Added the Mappa MUndi (roadmap) to the developer documentation.
+* Added a Polish translation by Filip Kłębczyk.
+* Fixes and enhancements to the UI to aid dyslexic users by Tim McCurrach.
+* Updated to version 1.0.0.final for MicroPython on the BBC micro:bit. Many
+  thanks to Damien George of the MicroPython project for his amazing work.
+* Many other minor bugs caught and fixed by the likes of Zander and Carlos!
+
 1.0.0
 =====
 
