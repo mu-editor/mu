@@ -117,7 +117,7 @@ class MicroPythonREPLPane(QTextEdit):
     """
     REPL = Read, Evaluate, Print, Loop.
 
-    This widget represents a REPL client connected to a BBC micro:bit running
+    This widget represents a REPL client connected to a BBC device running
     MicroPython.
 
     The device MUST be flashed with MicroPython for this to work.
@@ -301,7 +301,7 @@ class MuFileList(QListWidget):
 
 class MicrobitFileList(MuFileList):
     """
-    Represents a list of files on the micro:bit.
+    Represents a list of files on the device.
     """
 
     put = pyqtSignal(str)
@@ -322,7 +322,7 @@ class MicrobitFileList(MuFileList):
                 self.disable.emit()
                 local_filename = os.path.join(self.home,
                                               source.currentItem().text())
-                msg = _("Copying '{}' to micro:bit.").format(local_filename)
+                msg = _("Copying '{}' to device.").format(local_filename)
                 logger.info(msg)
                 self.set_message.emit(msg)
                 self.put.emit(local_filename)
@@ -331,7 +331,7 @@ class MicrobitFileList(MuFileList):
         """
         Fired when the put event is completed for the given filename.
         """
-        msg = _("'{}' successfully copied to micro:bit.").format(microbit_file)
+        msg = _("'{}' successfully copied to device.").format(microbit_file)
         self.set_message.emit(msg)
         self.list_files.emit()
 
@@ -343,7 +343,7 @@ class MicrobitFileList(MuFileList):
             self.disable.emit()
             microbit_filename = self.currentItem().text()
             logger.info("Deleting {}".format(microbit_filename))
-            msg = _("Deleting '{}' from micro:bit.").format(microbit_filename)
+            msg = _("Deleting '{}' from device.").format(microbit_filename)
             logger.info(msg)
             self.set_message.emit(msg)
             self.delete.emit(microbit_filename)
@@ -352,7 +352,7 @@ class MicrobitFileList(MuFileList):
         """
         Fired when the delete event is completed for the given filename.
         """
-        msg = _("'{}' successfully deleted from micro:bit.").\
+        msg = _("'{}' successfully deleted from device.").\
             format(microbit_file)
         self.set_message.emit(msg)
         self.list_files.emit()
@@ -382,7 +382,7 @@ class LocalFileList(MuFileList):
                 microbit_filename = source.currentItem().text()
                 local_filename = os.path.join(self.home,
                                               microbit_filename)
-                msg = _("Getting '{}' from micro:bit. "
+                msg = _("Getting '{}' from device. "
                         "Copying to '{}'.").format(microbit_filename,
                                                    local_filename)
                 logger.info(msg)
@@ -394,7 +394,7 @@ class LocalFileList(MuFileList):
         Fired when the get event is completed for the given filename.
         """
         msg = _("Successfully copied '{}' "
-                "from the micro:bit to your computer.").format(microbit_file)
+                "from the device to your computer.").format(microbit_file)
         self.set_message.emit(msg)
         self.list_files.emit()
 
@@ -404,7 +404,7 @@ class LocalFileList(MuFileList):
         # Get the file extension
         ext = os.path.splitext(local_filename)[1].lower()
         open_internal_action = None
-        # Mu micro:bit mode only handles .py & .hex
+        # Mu device mode only handles .py & .hex
         if ext == '.py' or ext == '.hex':
             open_internal_action = menu.addAction(_("Open in Mu"))
         # Open outside Mu (things get meta if Mu is the default application)
@@ -429,7 +429,7 @@ class LocalFileList(MuFileList):
 
 class FileSystemPane(QFrame):
     """
-    Contains two QListWidgets representing the micro:bit and the user's code
+    Contains two QListWidgets representing the device and the user's code
     directory. Users transfer files by dragging and dropping. Highlighted files
     can be selected for deletion.
     """
@@ -454,7 +454,7 @@ class FileSystemPane(QFrame):
         layout = QGridLayout()
         self.setLayout(layout)
         microbit_label = QLabel()
-        microbit_label.setText(_('Files on your micro:bit:'))
+        microbit_label.setText(_('Files on your device:'))
         local_label = QLabel()
         local_label.setText(_('Files on your computer:'))
         self.microbit_label = microbit_label
@@ -503,10 +503,10 @@ class FileSystemPane(QFrame):
 
     def on_ls(self, microbit_files):
         """
-        Displays a list of the files on the micro:bit.
+        Displays a list of the files on the device.
 
         Since listing files is always the final event in any interaction
-        between Mu and the micro:bit, this enables the controls again for
+        between Mu and the device, this enables the controls again for
         further interactions to take place.
         """
         self.microbit_fs.clear()
@@ -525,34 +525,34 @@ class FileSystemPane(QFrame):
         Fired when listing files fails.
         """
         self.show_warning(_("There was a problem getting the list of files on "
-                            "the micro:bit. Please check Mu's logs for "
+                            "the device. Please check Mu's logs for "
                             "technical information. Alternatively, try "
-                            "unplugging/plugging-in your micro:bit and/or "
+                            "unplugging/plugging-in your device and/or "
                             "restarting Mu."))
         self.disable()
 
     def on_put_fail(self, filename):
         """
-        Fired when the referenced file cannot be copied onto the micro:bit.
+        Fired when the referenced file cannot be copied onto the device.
         """
         self.show_warning(_("There was a problem copying the file '{}' onto "
-                            "the micro:bit. Please check Mu's logs for "
+                            "the device. Please check Mu's logs for "
                             "more information.").format(filename))
 
     def on_delete_fail(self, filename):
         """
-        Fired when a deletion on the micro:bit for the given file failed.
+        Fired when a deletion on the device for the given file failed.
         """
         self.show_warning(_("There was a problem deleting '{}' from the "
-                            "micro:bit. Please check Mu's logs for "
+                            "device. Please check Mu's logs for "
                             "more information.").format(filename))
 
     def on_get_fail(self, filename):
         """
-        Fired when getting the referenced file on the micro:bit failed.
+        Fired when getting the referenced file on the device failed.
         """
         self.show_warning(_("There was a problem getting '{}' from the "
-                            "micro:bit. Please check Mu's logs for "
+                            "device. Please check Mu's logs for "
                             "more information.").format(filename))
 
     def set_theme(self, theme):
