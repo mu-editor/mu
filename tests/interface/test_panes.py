@@ -486,14 +486,14 @@ def test_MicrobitFileList_on_put():
     mfs.set_message = mock.MagicMock()
     mfs.list_files = mock.MagicMock()
     mfs.on_put('my_file.py')
-    msg = "'my_file.py' successfully copied to micro:bit."
+    msg = "'my_file.py' successfully copied to device."
     mfs.set_message.emit.assert_called_once_with(msg)
     mfs.list_files.emit.assert_called_once_with()
 
 
 def test_MicrobitFileList_contextMenuEvent():
     """
-    Ensure that the menu displayed when a file on the micro:bit is
+    Ensure that the menu displayed when a file on the device is
     right-clicked works as expected when activated.
     """
     mock_menu = mock.MagicMock()
@@ -524,7 +524,7 @@ def test_MicrobitFileList_on_delete():
     mfs.set_message = mock.MagicMock()
     mfs.list_files = mock.MagicMock()
     mfs.on_delete('my_file.py')
-    msg = "'my_file.py' successfully deleted from micro:bit."
+    msg = "'my_file.py' successfully deleted from device."
     mfs.set_message.emit.assert_called_once_with(msg)
     mfs.list_files.emit.assert_called_once_with()
 
@@ -582,7 +582,7 @@ def test_LocalFileList_on_get():
     lfs.set_message = mock.MagicMock()
     lfs.list_files = mock.MagicMock()
     lfs.on_get('my_file.py')
-    msg = ("Successfully copied 'my_file.py' from the micro:bit "
+    msg = ("Successfully copied 'my_file.py' from the device "
            "to your computer.")
     lfs.set_message.emit.assert_called_once_with(msg)
     lfs.list_files.emit.assert_called_once_with()
@@ -726,7 +726,7 @@ def test_FileSystemPane_show_warning():
 
 def test_FileSystemPane_on_ls():
     """
-    When lists of files have been obtained from the micro:bit and local
+    When lists of files have been obtained from the device and local
     filesystem, make sure they're properly processed by the on_ls event
     handler.
     """
@@ -762,7 +762,7 @@ def test_FileSystemPane_on_ls_fail():
 
 def test_FileSystem_Pane_on_put_fail():
     """
-    A warning is emitted if putting files on the micro:bit fails.
+    A warning is emitted if putting files on the device fails.
     """
     fsp = mu.interface.panes.FileSystemPane('homepath')
     fsp.show_warning = mock.MagicMock()
@@ -772,7 +772,7 @@ def test_FileSystem_Pane_on_put_fail():
 
 def test_FileSystem_Pane_on_delete_fail():
     """
-    A warning is emitted if deleting files on the micro:bit fails.
+    A warning is emitted if deleting files on the device fails.
     """
     fsp = mu.interface.panes.FileSystemPane('homepath')
     fsp.show_warning = mock.MagicMock()
@@ -782,7 +782,7 @@ def test_FileSystem_Pane_on_delete_fail():
 
 def test_FileSystem_Pane_on_get_fail():
     """
-    A warning is emitted if getting files from the micro:bit fails.
+    A warning is emitted if getting files from the device fails.
     """
     fsp = mu.interface.panes.FileSystemPane('homepath')
     fsp.show_warning = mock.MagicMock()
