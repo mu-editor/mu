@@ -263,6 +263,7 @@ class PixelKitMode(MicroPythonMode):
     fs = None  #: Reference to filesystem navigator.
     flash_thread = None
     flash_timer = None
+    confirmation = None
 
     valid_boards = [
         (0x0403, 0x6015),  # Kano Pixel Kit USB VID, PID
@@ -389,8 +390,8 @@ class PixelKitMode(MicroPythonMode):
                        "disconnect your device during the process. It "
                        "might take a minute or two but you will only need"
                        "to do it once.")
-        confirmation = self.view.show_confirmation(message, informaton)
-        if confirmation != QMessageBox.Cancel:
+        self.confirmation = self.view.show_confirmation(message, informaton)
+        if self.confirmation != QMessageBox.Cancel:
             self.set_buttons(
                 mpflash=False, mpfiles=False, run=False, stop=False, repl=False
             )

@@ -556,9 +556,40 @@ def test_flash_prompt_ok():
             mock.patch.object(pm, 'set_buttons'), \
             mock.patch.object(pm, 'flash_thread'):
         pm.flash()
+        assert pm.confirmation == QMessageBox.Ok
+
+
+def test_pixel_flash_buttons_state():
+    """
+    If users confirm they want to flash, all Pixel Kit buttons should be
+    disabled
+    """
+    view = mock.MagicMock()
+    view.show_confirmation.return_value = QMessageBox.Ok
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch('mu.modes.pixelkit.DeviceFlasher'), \
+            mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+            mock.patch.object(pm, 'set_buttons'):
+        pm.flash()
         pm.set_buttons.assert_called_once_with(
             mpflash=False, mpfiles=False, run=False, stop=False, repl=False
         )
+
+
+def test_pixel_flash_thread_started():
+    """
+    If users confirm they want to flash, a flash thread should be started and
+    the signals connected
+    """
+    view = mock.MagicMock()
+    view.show_confirmation.return_value = QMessageBox.Ok
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch('mu.modes.pixelkit.DeviceFlasher'), \
+            mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+            mock.patch.object(pm, 'flash_thread'):
+        pm.flash()
         pm.flash_thread.finished.connect.assert_called_once()
         pm.flash_thread.on_flash_fail.connect.assert_called_once()
         pm.flash_thread.on_data.connect.assert_called_once()
@@ -566,8 +597,19 @@ def test_flash_prompt_ok():
 
 
 def test_pixel_flash_thread_finished():
-    # TODO:
-    pass
+    """
+    If users confirm they want to flash, a flash thread should be started and
+    the signals connected
+    """
+    view = mock.MagicMock()
+    view.show_confirmation.return_value = QMessageBox.Ok
+    editor = mock.MagicMock()
+    pm = PixelKitMode(editor, view)
+    with mock.patch('mu.modes.pixelkit.DeviceFlasher'), \
+            mock.patch.object(pm, 'find_device', return_value=(True, True)), \
+            mock.patch.object(pm, 'flash_thread'):
+        pm.flash()
+        pm.flash_thread.start.assert_called_once()
 
 
 def test_pixel_flash_thread_fail():
