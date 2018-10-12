@@ -10,11 +10,9 @@ import logging
 import sys
 
 
-
 _FALLBACK_LANG_CODE = 'en_GB'
 
 _logger = logging.getLogger(__name__)
-
 
 
 def language_code(fallback=_FALLBACK_LANG_CODE):
@@ -41,7 +39,6 @@ def language_code(fallback=_FALLBACK_LANG_CODE):
     return language_code
 
 
-
 def _platform_language_code(fallback):
     """
     Returns the user's environment language code by delegating to platform
@@ -60,8 +57,6 @@ def _platform_language_code(fallback):
         language_code = function(fallback)
 
     return language_code
-
-
 
 
 def _language_code_darwin(fallback):
