@@ -34,6 +34,7 @@ import appdirs
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
+from . import localedetect
 from mu.resources import path
 from mu.debugger.utils import is_breakpoint_line
 from mu import __version__
@@ -981,15 +982,11 @@ class Editor:
         """
         Display browser based help about Mu.
         """
-        logger.info('Showing help.')
-        try:
-            current_locale, encoding = locale.getdefaultlocale()
-            language_code = current_locale[:2]
-        except (TypeError, ValueError):
-            language_code = 'en'
+        language_code = localedetect.language_code()[:2]
         major_version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/{}/help/{}'.format(language_code,
                                                       major_version)
+        logger.info('Showing help at %r.', url)
         webbrowser.open_new(url)
 
     def quit(self, *args, **kwargs):
