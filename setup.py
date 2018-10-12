@@ -20,6 +20,12 @@ install_requires = ['pycodestyle==2.4.0', 'pyflakes==2.0.0',
                     'pigpio>=1.40.post1', 'Pillow>=5.2.0',
                     'requests>=2.19.1', 'semver>=2.8.0', 'nudatus>=0.0.3', ]
 
+# Extend installation requirements with platform specific packages.
+platform_requires = {
+    'darwin': ['rubicon-objc==0.3.0'],
+}
+install_requires.extend(platform_requires.get(sys.platform, []))
+
 # Exclude packages not available for ARM in PyPI/piwheels (Raspberry Pi)
 try:
     machine = platform.machine()
