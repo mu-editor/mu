@@ -76,6 +76,55 @@ def test_localedetect_fail_handler_handling(fallback, value, exc, expected):
     assert lc == expected
 
 
+def test_localedetect_default_fail_handler_unsupported_platform(caplog):
+    """
+    Test that localedetect.language_detect uses a platform dependent fail
+    handler, by default, that, in unsupported platforms, will log a warning
+    message, returning nothing. With that, localedetect.language_detect should
+    return the passed in fallback value.
+    """
+    # Force fail_handler to be used
+    mock_locale = mock.MagicMock(return_value=('',''))
+
+    with mock.patch('locale.getdefaultlocale', mock_locale), \
+        mock.patch('sys.platform', 'zx81'):
+        lc = mu.localedetect.language_code(fallback='sinclair')
+
+    # Assert message was logged: no platform detection exists for 'zx81'.
+    expected_log_msg = "No platform specific language detection for 'zx81'."
+    for record in caplog.records:
+        if record.getMessage() == expected_log_msg:
+            break
+    else:
+        assert False, 'Expected log message missing.'
+
+    # Assert fallback value was returned.
+    assert lc == 'sinclair'
+
+
+
+def test_localedetect_default_fail_handler_supported_platform(caplog):
+    """
+    Test that localedetect.language_detect uses a platform dependent fail
+    handler, by default, that, on supported platforms is named
+    '_language_code_{sys.platform}.
+    """
+    # Force fail_handler to be used
+    mock_locale = mock.MagicMock(return_value=('',''))
+    mock_zx81 = mock.Mock(return_value='sinclair')
+
+    try:
+        mu.localedetect._language_code_zx81 = mock_zx81
+        with mock.patch('locale.getdefaultlocale', mock_locale), \
+            mock.patch('sys.platform', 'zx81'):
+            lc = mu.localedetect.language_code()
+    finally:
+        del mu.localedetect._language_code_zx81
+
+    assert mock_zx81.call_count == 1
+    assert lc == 'sinclair'
+
+
 def test_defaultlocale_type_error():
     """
     Test that a TypeError in the locale.getdefaultlocale is detected and
