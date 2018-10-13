@@ -15,7 +15,7 @@ _FALLBACK_LANG_CODE = 'en_GB'
 _logger = logging.getLogger(__name__)
 
 
-def language_code(fallback=_FALLBACK_LANG_CODE):
+def language_code(fallback=_FALLBACK_LANG_CODE, fail_handler=None):
     """
     Returns the user's environment language as a language code string.
     (examples: 'en_GB', 'en_US', 'pt_PT', 'pt_BR', etc.)
@@ -27,39 +27,39 @@ def language_code(fallback=_FALLBACK_LANG_CODE):
             raise ValueError()
     except (TypeError, ValueError):
         # Commonly fails on macOS which does not set LANG / LC_ALL env vars.
-        _logger.warning('Failed locale.getdefaultlocale() call: '
-                        'trying platform specific language detection.')
+        fail_handler = fail_handler or _platform_fail_handler()
+        _logger.warning('Failed locale.getdefaultlocale() call. '
+                        'Trying fail handler %r.', fail_handler)
         try:
-            language_code = _platform_language_code(fallback)
+            language_code = fail_handler()
         except Exception as e:
-            _logger.warning('Platform specific language detection failed: %s. '
+            _logger.warning('Fail handler also failed: %s. '
                             'Falling back to %r', e, fallback)
             language_code = fallback
 
-    return language_code
+    # Return the fallback value if language_code is empty.
+    return language_code or fallback
 
 
-def _platform_language_code(fallback):
+def _platform_fail_handler():
     """
-    Returns the user's environment language code by delegating to platform
-    specific detection functions, falling back to the passed in value when
-    no plaform specific code is found.
+    Returns a callable, the platform specific language detection function, if
+    it exists in this module. Otherwise, returns a function that just logs the
+    unavailability of such a platform specific function.
     """
-    try:
-        platform = sys.platform
-        function_name = '_language_code_{}'.format(platform)
-        function = getattr(sys.modules[__name__], function_name)
-    except AttributeError:
-        _logger.warning('No platform specific language detection for %r: '
-                        'falling back to %r', platform, fallback)
-        language_code = fallback
-    else:
-        language_code = function(fallback)
+    def _no_platform_handler():
+        """
+        Used as the fallback platform specific language detection handler.
+        """
+        _logger.warning('No platform specific language detection for %r.',
+                        sys.platform)
 
-    return language_code
+    return getattr(sys.modules[__name__],
+                   '_language_code_{}'.format(sys.platform),
+                   _no_platform_handler)
 
 
-def _language_code_darwin(fallback):
+def _language_code_darwin():
     """
     Returns the user's language preference as defined in the Language & Region
     preference pane in macOS's System Preferences.
@@ -70,9 +70,9 @@ def _language_code_darwin(fallback):
 
     # Rubicon-ObjC (https://pypi.org/project/rubicon-objc/) is a pure Python
     # package used to dynamically access the native macOS APIs without the need
-    # for a C compiler which should simplify testing, deployment and packaging.
+    # for a C compiler. This should simplify testing, deployment and packaging.
 
-    # Platform specific imports avoid import failures on other platforms.
+    # Platform specific imports here avoid import failures on other platforms.
     import ctypes
     from rubicon import objc
 
@@ -85,5 +85,4 @@ def _language_code_darwin(fallback):
     standard_user_defaults = NSUserDefaults.standardUserDefaults
     language_code = str(standard_user_defaults.stringForKey_(PREF_NAME))
 
-    # Return the fallback value if language_code is empty.
-    return language_code or fallback
+    return language_code
