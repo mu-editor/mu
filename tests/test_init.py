@@ -7,6 +7,8 @@ import sys
 import importlib
 from unittest import mock
 
+import pytest
+
 import mu
 
 
@@ -30,6 +32,48 @@ def test_gettext_translation():
         del os.environ['LC_ALL']
     assert translation.call_count == 1
     assert translation.call_args[1]['languages'] == ['es_ES']
+
+
+@pytest.mark.parametrize('value, exc', [
+    (None, TypeError('type error text')),
+    (None, ValueError('value error text')),
+    (('', ''), None),
+])
+def test_localedetect_getdefaultlocale_failure_calls_fail_handler(value, exc):
+    """
+    Test that either a Type/ValueError exception in the locale.getdefaultlocale
+    call, or an empty language_code, are detected and that the fail_handler is
+    called.
+    """
+    mock_locale = mock.MagicMock(return_value=value, side_effect=exc)
+    mock_fail_handler = mock.Mock()
+
+    with mock.patch('locale.getdefaultlocale', mock_locale):
+        mu.localedetect.language_code(fail_handler=mock_fail_handler)
+
+    assert mock_fail_handler.call_count == 1
+
+
+@pytest.mark.parametrize('fallback, value, exc, expected', [
+    ('fallback', 'a language code', None, 'a language code'),
+    ('fallback', '', None, 'fallback'),
+    ('fallback', None, Exception('fail handler failed!'), 'fallback'),
+])
+def test_localedetect_fail_handler_handling(fallback, value, exc, expected):
+    """
+    Test that when localedetect.language_detect uses the fail_handler, it
+    returns its returned value; unless it's empty or it raises an exception: in
+    that case, the passed in fallback value should be returned.
+    """
+    # Force fail_handler to be used
+    mock_locale = mock.MagicMock(return_value=('',''))
+    mock_fail_handler = mock.Mock(return_value=value, side_effect=exc)
+
+    with mock.patch('locale.getdefaultlocale', mock_locale):
+        lc = mu.localedetect.language_code(fallback=fallback,
+                                           fail_handler=mock_fail_handler)
+
+    assert lc == expected
 
 
 def test_defaultlocale_type_error():
