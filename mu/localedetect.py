@@ -83,6 +83,7 @@ def _language_code_darwin(fallback):
 
     NSUserDefaults = objc.ObjCClass('NSUserDefaults')
     standard_user_defaults = NSUserDefaults.standardUserDefaults
-    language_code = standard_user_defaults.stringForKey_(PREF_NAME) or fallback
+    language_code = str(standard_user_defaults.stringForKey_(PREF_NAME))
 
-    return language_code
+    # Return the fallback value if language_code is empty.
+    return language_code or fallback
