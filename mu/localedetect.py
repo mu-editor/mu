@@ -79,7 +79,7 @@ def _language_code_darwin(fallback):
     PREF_NAME = 'AppleLocale'
 
     lib_path = ctypes.util.find_library('Foundation')
-    _Foundation = ctypes.cdll.LoadLibrary(lib_path)
+    ctypes.cdll.LoadLibrary(lib_path)
 
     NSUserDefaults = objc.ObjCClass('NSUserDefaults')
     standard_user_defaults = NSUserDefaults.standardUserDefaults
