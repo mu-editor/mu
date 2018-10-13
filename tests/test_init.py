@@ -3,6 +3,7 @@
 Tests for the module __init__ file.
 """
 import os
+import subprocess
 import sys
 import importlib
 from unittest import mock
@@ -123,6 +124,19 @@ def test_localedetect_default_fail_handler_supported_platform():
 
     assert mock_zx81.call_count == 1
     assert lc == 'sinclair'
+
+
+@pytest.mark.skipif(sys.platform != 'darwin',
+                    reason='Platform specific: macOS.')
+def test_localedetect_language_code_macos():
+    """
+    Tests that localedetect._language_code_darwin returns the same string as
+    the command line: defaults read -g AppleLocale.
+    """
+    mu_lc = mu.localedetect._language_code_darwin()
+    cmd_line_lc = subprocess.getoutput('defaults read -g AppleLocale')
+
+    assert mu_lc == cmd_line_lc
 
 
 def test_defaultlocale_type_error():
