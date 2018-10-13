@@ -1,5 +1,4 @@
 import gettext
-import locale
 import os
 
 from . import localedetect
