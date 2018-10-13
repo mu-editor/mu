@@ -61,7 +61,7 @@ def test_localedetect_getdefaultlocale_failure_calls_fail_handler(value, exc):
 ])
 def test_localedetect_fail_handler_handling(fallback, value, exc, expected):
     """
-    Test that when localedetect.language_detect uses the fail_handler, it
+    Test that when localedetect.language_code uses the fail_handler, it
     returns its returned value; unless it's empty or it raises an exception: in
     that case, the passed in fallback value should be returned.
     """
@@ -78,9 +78,9 @@ def test_localedetect_fail_handler_handling(fallback, value, exc, expected):
 
 def test_localedetect_default_fail_handler_unsupported_platform(caplog):
     """
-    Test that localedetect.language_detect uses a platform dependent fail
+    Test that localedetect.language_code uses a platform dependent fail
     handler, by default, that, in unsupported platforms, will log a warning
-    message, returning nothing. With that, localedetect.language_detect should
+    message, returning nothing. With that, localedetect.language_code should
     return the passed in fallback value.
     """
     # Force fail_handler to be used
@@ -103,9 +103,9 @@ def test_localedetect_default_fail_handler_unsupported_platform(caplog):
 
 
 
-def test_localedetect_default_fail_handler_supported_platform(caplog):
+def test_localedetect_default_fail_handler_supported_platform():
     """
-    Test that localedetect.language_detect uses a platform dependent fail
+    Test that localedetect.language_code uses a platform dependent fail
     handler, by default, that, on supported platforms is named
     '_language_code_{sys.platform}.
     """
