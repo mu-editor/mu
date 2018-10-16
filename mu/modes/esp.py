@@ -238,8 +238,8 @@ class ESPMode(MicroPythonMode):
         if tab is None:
             # There is no active text editor.
             message = _("Cannot flash without any active editor tabs.")
-            information = _("Flashing transfers the content of the current tab "
-                            "to the device. It seems like you don't have any "
+            information = _("Flashing transfers the content of the current tab"
+                            " to the device. It seems like you don't have any "
                             "tabs open.")
             self.view.show_message(message, information)
             return
