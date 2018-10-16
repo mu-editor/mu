@@ -96,7 +96,7 @@ class FileManager(QObject):
             self.on_list_files.emit(result)
         except Exception as ex:
             logger.exception(ex)
-            self.on_list_fail.emit()
+            self.on_list_fail.emit(str(ex))
 
     def get(self, microbit_filename, local_filename):
         """
@@ -187,7 +187,6 @@ class ESPMode(MicroPythonMode):
             }, ]
         return buttons
 
-    # TODO Update to reflect MicryPython APIs
     def api(self):
         """
         Return a list of API specifications to be used by auto-suggest and call
@@ -201,15 +200,13 @@ class ESPMode(MicroPythonMode):
                 # Remove REPL
                 super().toggle_repl(event)
                 files.Files._lock.release()
-                self.set_buttons(files=True)
-                self.set_buttons(flash=True)
+                self.set_buttons(files=True, flash=True)
             elif not (self.repl or self.plotter):
                 # Add REPL
                 files.Files._lock.acquire()
                 super().toggle_repl(event)
                 if self.repl:
-                    self.set_buttons(files=False)
-                    self.set_buttons(flash=False)
+                    self.set_buttons(files=False, flash=False)
                 else:
                     # could not open REPL, release lock
                     files.Files._lock.release()
@@ -240,12 +237,17 @@ class ESPMode(MicroPythonMode):
         tab = self.view.current_tab
         if tab is None:
             # There is no active text editor.
+            message = _("Cannot flash without any active editor tabs.")
+            information = _("Flashing transfers the content of the current tab "
+                            "to the device. It seems like you don't have any "
+                            "tabs open.")
+            self.view.show_message(message, information)
             return
         filename = tab.label
         python_script = tab.text().encode('utf-8')
 
         # Find serial port the ESP8266/ESP32 is connected to
-        device_port, serial = super().find_device()
+        device_port, serial_number = self.find_device()
 
         if not device_port:
             message = _('Could not find an attached ESP8266/ESP32.')
@@ -260,11 +262,11 @@ class ESPMode(MicroPythonMode):
             return
 
         try:
+            self.set_buttons(flash=False, repl=False, files=False)
             pyboard = Pyboard(device_port, rawdelay=2)
             message = (_('Flashing "{}" onto the ESP8266/ESP32.')
                        .format(filename))
             self.editor.show_status_message(message, 10)
-            self.set_buttons(flash=False, repl=False, files=False)
 
             # Always write to "main.py" when flashing, regardless of filename
             # (similar to micro:bit mode)
@@ -283,6 +285,7 @@ class ESPMode(MicroPythonMode):
             self.flash_timer.start(15000)
 
         except PyboardError:
+            self.set_buttons(flash=True, repl=True, files=True)
             message = _("Failed to connect to device at '" + device_port + "'")
             information = _("Found device at '" + device_port + "'"
                             "but failed to establish connection while"
@@ -347,7 +350,7 @@ class ESPMode(MicroPythonMode):
         """
 
         # Find serial port the ESP8266/ESP32 is connected to
-        device_port, serial = super().find_device()
+        device_port, serial_number = self.find_device()
 
         # Check for MicroPython device
         if not device_port:
@@ -378,9 +381,9 @@ class ESPMode(MicroPythonMode):
             self.file_manager_thread.start()
         except PyboardError:
             message = _("Failed to connect to device at '" + device_port + "'")
-            information = _("Found device at '" + device_port + "'"
-                            "but failed to establish connection while"
-                            "attempting to flash. Try again.")
+            information = _("Found device at '" + device_port + "' "
+                            "but failed to establish connection while "
+                            "attempting to open file manager. Try again.")
             self.view.show_message(message, information)
 
     def remove_fs(self):
