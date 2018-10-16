@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import time
 import ctypes
 from shutil import copyfile
 from subprocess import check_output
@@ -190,7 +191,36 @@ class AdafruitMode(MicroPythonMode):
         if not self.workspace_dir_cp() and self.workspace_cp_avail():
             pathname = get_pathname(self)
             if pathname:
-                destination = self.workspace_dir() + "/code.py"
+                dst_dir = self.workspace_dir()
+                destination = dst_dir + "/code.py"
+
+                # copy library files on to device if not working on the device
+                lib_dir = os.path.dirname(pathname) + "/lib"
+                if os.path.isdir(lib_dir):
+                    replace_cnt = 0
+                    for root, dirs, files in os.walk(lib_dir):
+                        for filename in files:
+                            src_lib = lib_dir + "/" + filename
+                            dst_lib_dir = dst_dir + "/lib"
+                            dst_lib = dst_lib_dir + "/" + filename
+                            if not os.path.exists(dst_lib):
+                                replace_lib = True
+                            else:
+                                src_tm = time.ctime(os.path.getmtime(src_lib))
+                                dst_tm = time.ctime(os.path.getmtime(dst_lib))
+                                replace_lib = (src_tm > dst_tm)
+                            if replace_lib:
+                                if replace_cnt == 0:
+                                    if not os.path.exists(dst_lib_dir):
+                                        os.makedirs(dst_lib_dir)
+                                copyfile(src_lib, dst_lib)
+                                replace_cnt = replace_cnt + 1
+
+                    # let libraries load before copying source main source file
+                    if replace_cnt > 0:
+                        time.sleep(5)
+
+                # copy edited source file on to device
                 copyfile(pathname, destination)
 
     def api(self):
