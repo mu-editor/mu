@@ -145,7 +145,7 @@ class Files(object):
         with Files._lock:
             self._pyboard.enter_raw_repl()
             try:
-                out = self._pyboard.exec_(textwrap.dedent(command))
+                self._pyboard.exec_(textwrap.dedent(command))
             except PyboardError as ex:
                 # Check if this is an OSError #17, i.e. directory already exists.
                 if ex.args[2].decode('utf-8').find('OSError: [Errno 17] EEXIST') != -1:
@@ -186,7 +186,7 @@ class Files(object):
         with Files._lock:
             self._pyboard.enter_raw_repl()
             try:
-                out = self._pyboard.exec_(textwrap.dedent(command))
+                self._pyboard.exec_(textwrap.dedent(command))
             except PyboardError as ex:
                 message = ex.args[2].decode('utf-8')
                 # Check if this is an OSError #2, i.e. file/directory doesn't exist
@@ -232,7 +232,7 @@ class Files(object):
         with Files._lock:
             self._pyboard.enter_raw_repl()
             try:
-                out = self._pyboard.exec_(textwrap.dedent(command))
+                self._pyboard.exec_(textwrap.dedent(command))
             except PyboardError as ex:
                 message = ex.args[2].decode('utf-8')
                 # Check if this is an OSError #2, i.e. directory doesn't exist
