@@ -36,21 +36,24 @@ def test_language_code_bad_getdefaultlocale_calls_fail_handler(gdl_rv, gdl_se):
     assert mock_fail_handler.call_count == 1
 
 
-@pytest.mark.parametrize('fallback, value, exc, expected', [
+@pytest.mark.parametrize('fallback, fh_rv, fh_se, expected', [
+    # Fail handler returns a useful language code:
     ('fallback_lang', 'nice_lang', None, 'nice_lang'),
+    # Fail handler returns an empty language code:
     ('fallback_lang', '', None, 'fallback_lang'),
+    # Fail handler raises an exception:
     ('fallback_lang', None, Exception('Fail handler failed'), 'fallback_lang'),
 ])
-def test_language_code_fail_handler_handling(fallback, value, exc, expected):
+def test_language_code_fail_handler_handling(fallback, fh_rv, fh_se, expected):
     """
     When language_code() uses the fail_handler, it returns either whatever
     the fail_handler returns, unless that raises an exception or returns an
     empty/false-y value: it such cases, language_code() returns the passed in
     fallback value.
     """
-    # Force fail_handler to be used
+    # Force fail_handler to be used.
     mock_getdefaultlocale = mock.MagicMock(return_value=('', ''))
-    mock_fail_handler = mock.Mock(return_value=value, side_effect=exc)
+    mock_fail_handler = mock.Mock(return_value=fh_rv, side_effect=fh_se)
 
     with mock.patch('locale.getdefaultlocale', mock_getdefaultlocale):
         lang_code = localedetect.language_code(fallback=fallback,
@@ -66,7 +69,7 @@ def test_language_code_default_fail_handler_unsupported_platform(caplog):
     returning nothing; in such cases, language_code() returns the passed in
     fallback value.
     """
-    # Force fail_handler to be used
+    # Force fail_handler to be used.
     mock_getdefaultlocale = mock.MagicMock(return_value=('', ''))
 
     # Fake 'zx81' platform which is (unfortunatelly?) an unsupported platform.
@@ -91,7 +94,7 @@ def test_language_code_default_fail_handler_supported_platform():
     The language_code() function uses a platform dependent fail handler that,
     by default, on supported platforms, is named _language_code_{sys.platform}.
     """
-    # Force fail_handler to be used
+    # Force fail_handler to be used.
     mock_getdefaultlocale = mock.MagicMock(return_value=('', ''))
     mock_language_code_zx81 = mock.Mock(return_value='sinclair')
 
