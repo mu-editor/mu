@@ -33,8 +33,8 @@ SESSION = json.dumps({
         ['name', 'value'],
     ],
 })
-ENCODING_COOKIE = '# -*- coding: {} -*- {}'.format(mu.logic.ENCODING,
-                                                   mu.logic.NEWLINE)
+ENCODING_COOKIE = '# -*- coding: {} -*-{}'.format(mu.logic.ENCODING,
+                                                  mu.logic.NEWLINE)
 
 
 #
@@ -1193,6 +1193,21 @@ def test_save_restores_newline():
             ed = mocked_editor(text=test_text, newline=newline, path=filepath)
             ed.save()
             assert mock_save.called_with(test_text, filepath, newline)
+
+
+def test_save_strips_trailing_spaces():
+    """
+    When a file is saved any trailing spaces should be removed from each line
+    leaving any newlines intact. NB we inadvertently strip trailing newlines
+    in any case via save_and_encode
+    """
+    words = "the cat sat on the mat".split()
+    test_text = mu.logic.NEWLINE.join("%s " % w for w in words)
+    stripped_text = mu.logic.NEWLINE.join(words)
+    with generate_python_file(test_text) as filepath:
+        mu.logic.save_and_encode(test_text, filepath)
+        with open(filepath) as f:
+            assert f.read() == stripped_text
 
 
 def test_load_error():
