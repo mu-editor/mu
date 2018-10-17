@@ -11,18 +11,23 @@ import pytest
 from mu import localedetect
 
 
-@pytest.mark.parametrize('value, exc', [
-    (None, TypeError('type error text')),
-    (None, ValueError('value error text')),
+_GETDEFAULTLOCALE_FAILURES = [
+    # (return value, side effect) tuples
+    (None, TypeError('getdefaultlocale() raised this')),
+    (None, ValueError('getdefaultlocale() raised this')),
     (('', ''), None),
-])
-def test_language_code_getdefaultlocale_failure_calls_fail_handler(value, exc):
+]
+
+
+@pytest.mark.parametrize('gdl_rv, gdl_se', _GETDEFAULTLOCALE_FAILURES)
+def test_language_code_bad_getdefaultlocale_calls_fail_handler(gdl_rv, gdl_se):
     """
     If the locale.getdefaultlocale() call used by the language_code() function
     either a) raises a Type/ValueError or b) returns an empty language code,
     the passed in fail_handler is called.
     """
-    mock_getdefaultlocale = mock.MagicMock(return_value=value, side_effect=exc)
+    mock_getdefaultlocale = mock.MagicMock(return_value=gdl_rv,
+                                           side_effect=gdl_se)
     mock_fail_handler = mock.Mock()
 
     with mock.patch('locale.getdefaultlocale', mock_getdefaultlocale):
@@ -113,3 +118,25 @@ def test_language_code_macos():
     cmd_line_lang_code = subprocess.getoutput('defaults read -g AppleLocale')
 
     assert mu_lang_code == cmd_line_lang_code
+
+
+@pytest.mark.parametrize('gdl_rv, gdl_se', _GETDEFAULTLOCALE_FAILURES)
+@pytest.mark.parametrize('fh_rv, fh_se', [
+    (None, Exception('fail_handler raised this')),
+    ('', None),
+])
+def test_language_code_failures_return_en_GB(gdl_rv, gdl_se, fh_rv, fh_se):
+    """
+    The language_code() function returns 'en_GB' if any failure during its
+    execution is found:
+    - locale.getdefaultlocale() raising Type/ValueError or returning an empty
+      language code.
+    - fail_handler() raising any exceptionor returning an empty language code.
+    """
+    mock_getdefaultlocale = mock.Mock(return_value=gdl_rv, side_effect=gdl_se)
+    mock_fail_handler = mock.Mock(return_value=fh_rv, side_effect=fh_se)
+
+    with mock.patch('locale.getdefaultlocale', mock_getdefaultlocale):
+        lang_code = localedetect.language_code(fail_handler=mock_fail_handler)
+
+    assert lang_code == 'en_GB'
