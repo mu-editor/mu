@@ -67,7 +67,7 @@ def test_localedetect_fail_handler_handling(fallback, value, exc, expected):
     that case, the passed in fallback value should be returned.
     """
     # Force fail_handler to be used
-    mock_locale = mock.MagicMock(return_value=('',''))
+    mock_locale = mock.MagicMock(return_value=('', ''))
     mock_fail_handler = mock.Mock(return_value=value, side_effect=exc)
 
     with mock.patch('locale.getdefaultlocale', mock_locale):
@@ -85,10 +85,10 @@ def test_localedetect_default_fail_handler_unsupported_platform(caplog):
     return the passed in fallback value.
     """
     # Force fail_handler to be used
-    mock_locale = mock.MagicMock(return_value=('',''))
+    mock_locale = mock.MagicMock(return_value=('', ''))
 
     with mock.patch('locale.getdefaultlocale', mock_locale), \
-        mock.patch('sys.platform', 'zx81'):
+            mock.patch('sys.platform', 'zx81'):
         lc = mu.localedetect.language_code(fallback='sinclair')
 
     # Assert message was logged: no platform detection exists for 'zx81'.
@@ -103,7 +103,6 @@ def test_localedetect_default_fail_handler_unsupported_platform(caplog):
     assert lc == 'sinclair'
 
 
-
 def test_localedetect_default_fail_handler_supported_platform():
     """
     Test that localedetect.language_code uses a platform dependent fail
@@ -111,13 +110,13 @@ def test_localedetect_default_fail_handler_supported_platform():
     '_language_code_{sys.platform}.
     """
     # Force fail_handler to be used
-    mock_locale = mock.MagicMock(return_value=('',''))
+    mock_locale = mock.MagicMock(return_value=('', ''))
     mock_zx81 = mock.Mock(return_value='sinclair')
 
     try:
         mu.localedetect._language_code_zx81 = mock_zx81
         with mock.patch('locale.getdefaultlocale', mock_locale), \
-            mock.patch('sys.platform', 'zx81'):
+                mock.patch('sys.platform', 'zx81'):
             lc = mu.localedetect.language_code()
     finally:
         del mu.localedetect._language_code_zx81
