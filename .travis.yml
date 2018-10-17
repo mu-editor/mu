@@ -37,6 +37,8 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then source venv/bin/activate; fi
 
 install:
+  # Install Mu
+  - pip install .
   # Install Mu dependencies
   - pip install -r requirements.txt
   # Install packager for OSX
