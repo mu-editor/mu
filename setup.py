@@ -18,13 +18,10 @@ install_requires = ['pycodestyle==2.4.0', 'pyflakes==2.0.0',
                     'pgzero==1.2', 'PyQtChart==5.11.2', 'appdirs>=1.4.3',
                     'gpiozero>=1.4.1', 'guizero>=0.5.2',
                     'pigpio>=1.40.post1', 'Pillow>=5.2.0',
-                    'requests>=2.19.1', 'semver>=2.8.0', 'nudatus>=0.0.3', ]
-
-# Extend installation requirements with platform specific packages.
-platform_requires = {
-    'darwin': ['rubicon-objc==0.3.0'],
-}
-install_requires.extend(platform_requires.get(sys.platform, []))
+                    'requests>=2.19.1', 'semver>=2.8.0', 'nudatus>=0.0.3',
+                    # macOS platform specific dependencies
+                    'rubicon-objc==0.3.0;sys_platform=="darwin"',
+                    ]
 
 # Exclude packages not available for ARM in PyPI/piwheels (Raspberry Pi)
 try:
