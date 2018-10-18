@@ -1,5 +1,4 @@
 import platform
-import sys
 from setuptools import setup
 from mu import __version__
 
@@ -13,9 +12,9 @@ with open('CHANGES.rst') as f:
     changes = f.read()
 
 install_requires = ['pycodestyle==2.4.0', 'pyflakes==2.0.0',
-                    'pyserial==3.4', 'pyqt5==5.11.2', 'qscintilla==2.10.7',
+                    'pyserial==3.4', 'pyqt5==5.11.3', 'qscintilla==2.10.8',
                     'qtconsole==4.3.1', 'matplotlib==2.2.2',
-                    'pgzero==1.2', 'PyQtChart==5.11.2', 'appdirs>=1.4.3',
+                    'pgzero==1.2', 'PyQtChart==5.11.3', 'appdirs>=1.4.3',
                     'gpiozero>=1.4.1', 'guizero>=0.5.2',
                     'pigpio>=1.40.post1', 'Pillow>=5.2.0',
                     'requests>=2.19.1', 'semver>=2.8.0', 'nudatus>=0.0.3', ]
@@ -30,13 +29,6 @@ try:
 except Exception:
     # Something unexpected happened, so simply keep all requires
     pass
-
-if not hasattr(sys, 'version_info') or sys.version_info < (3, 6):
-    raise SystemExit(
-        'Mu only works with Python version 3.6 or above. '
-        'For more information see: '
-        'https://codewith.mu/en/howto/install_with_python'
-    )
 
 
 setup(
