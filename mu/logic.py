@@ -560,6 +560,7 @@ class Editor:
         self.minify = False
         self.microbit_runtime = ''
         self.adafruit_run = False
+        self.adafruit_lib = False
         self.connected_devices = set()
         self.find = ''
         self.replace = ''
@@ -678,6 +679,10 @@ class Editor:
                     self.adafruit_run = old_session['adafruit_run']
                     logger.info('Enable Adafruit "Run" button? '
                                 '{}'.format(self.adafruit_run))
+                if 'adafruit_lib' in old_session:
+                    self.adafruit_lib = old_session['adafruit_lib']
+                    logger.info('Enable Adafruit copy library function? '
+                                '{}'.format(self.adafruit_lib))
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
@@ -1039,6 +1044,7 @@ class Editor:
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
             'adafruit_run': self.adafruit_run,
+            'adafruit_lib': self.adafruit_lib,
         }
         session_path = get_session_path()
         with open(session_path, 'w') as out:
@@ -1062,12 +1068,14 @@ class Editor:
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
             'adafruit_run': self.adafruit_run,
+            'adafruit_lib': self.adafruit_lib,
         }
         with open(LOG_FILE, 'r', encoding='utf8') as logfile:
             new_settings = self._view.show_admin(logfile.read(), settings)
             self.envars = extract_envars(new_settings['envars'])
             self.minify = new_settings['minify']
             self.adafruit_run = new_settings['adafruit_run']
+            self.adafruit_lib = new_settings['adafruit_lib']
             #  show/hide adafruit "run" button potentially changed in admin
             if self.mode == 'adafruit':
                 self.change_mode(self.mode)

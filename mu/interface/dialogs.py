@@ -168,7 +168,7 @@ class AdafruitSettingsWidget(QWidget):
     * Enable the "Run" button.
     """
 
-    def setup(self, adafruit_run):
+    def setup(self, adafruit_run, adafruit_lib):
         widget_layout = QVBoxLayout()
         self.setLayout(widget_layout)
         self.adafruit_run = QCheckBox(_('Enable the "Run" button to '
@@ -176,6 +176,10 @@ class AdafruitSettingsWidget(QWidget):
                                         'file to CIRCUITPY?'))
         self.adafruit_run.setChecked(adafruit_run)
         widget_layout.addWidget(self.adafruit_run)
+        self.adafruit_lib = QCheckBox(_('Enable the copy library to '
+                                        'CIRCUITPY function?'))
+        self.adafruit_lib.setChecked(adafruit_lib)
+        widget_layout.addWidget(self.adafruit_lib)
         widget_layout.addStretch()
 
 
@@ -211,7 +215,8 @@ class AdminDialog(QDialog):
                                    settings.get('microbit_runtime', ''))
         self.tabs.addTab(self.microbit_widget, _('BBC micro:bit Settings'))
         self.adafruit_widget = AdafruitSettingsWidget()
-        self.adafruit_widget.setup(settings.get('adafruit_run', False))
+        self.adafruit_widget.setup(settings.get('adafruit_run', False),
+                                   settings.get('adafruit_lib', False))
         self.tabs.addTab(self.adafruit_widget, _('Adafruit Settings'))
 
     def settings(self):
@@ -224,7 +229,8 @@ class AdminDialog(QDialog):
             'envars': self.envar_widget.text_area.toPlainText(),
             'minify': self.microbit_widget.minify.isChecked(),
             'microbit_runtime': self.microbit_widget.runtime_path.text(),
-            'adafruit_run': self.adafruit_widget.adafruit_run.isChecked()
+            'adafruit_run': self.adafruit_widget.adafruit_run.isChecked(),
+            'adafruit_lib': self.adafruit_widget.adafruit_lib.isChecked()
         }
 
 

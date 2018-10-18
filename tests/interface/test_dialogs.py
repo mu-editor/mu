@@ -139,9 +139,11 @@ def test_AdafruitSettingsWidget_setup():
     displays the referenced settings data in the expected way.
     """
     adafruit_run = True
+    adafruit_lib = True
     mbsw = mu.interface.dialogs.AdafruitSettingsWidget()
-    mbsw.setup(adafruit_run)
+    mbsw.setup(adafruit_run, adafruit_lib)
     assert mbsw.adafruit_run.isChecked()
+    assert mbsw.adafruit_lib.isChecked()
 
 
 def test_AdminDialog_setup():
@@ -154,7 +156,8 @@ def test_AdminDialog_setup():
         'envars': 'name=value',
         'minify': True,
         'microbit_runtime': '/foo/bar',
-        'adafruit_run': True
+        'adafruit_run': True,
+        'adafruit_lib': True
     }
     mock_window = QWidget()
     ad = mu.interface.dialogs.AdminDialog(mock_window)

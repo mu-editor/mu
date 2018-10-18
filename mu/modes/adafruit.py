@@ -182,6 +182,35 @@ class AdafruitMode(MicroPythonMode):
         """
         return "CIRCUITPY" in str(self.workspace_dir())
 
+    def run_adafruit_lib_copy(self, pathname, dst_dir):
+        """
+        Optionally copy lib files to CIRCUITPY.
+        """
+        lib_dir = os.path.dirname(pathname) + "/lib"
+        if not os.path.isdir(lib_dir):
+            return
+        replace_cnt = 0
+        for root, dirs, files in os.walk(lib_dir):
+            for filename in files:
+                src_lib = lib_dir + "/" + filename
+                dst_lib_dir = dst_dir + "/lib"
+                dst_lib = dst_lib_dir + "/" + filename
+                if not os.path.exists(dst_lib):
+                    replace_lib = True
+                else:
+                    src_tm = time.ctime(os.path.getmtime(src_lib))
+                    dst_tm = time.ctime(os.path.getmtime(dst_lib))
+                    replace_lib = (src_tm > dst_tm)
+                if replace_lib:
+                    if replace_cnt == 0:
+                        if not os.path.exists(dst_lib_dir):
+                            os.makedirs(dst_lib_dir)
+                    copyfile(src_lib, dst_lib)
+                    replace_cnt = replace_cnt + 1
+        # let libraries load before copying source main source file
+        if replace_cnt > 0:
+            time.sleep(3)
+
     def run(self, event):
         """
         Save the file and copy to CIRCUITPY if not already there and available.
@@ -195,30 +224,8 @@ class AdafruitMode(MicroPythonMode):
                 destination = dst_dir + "/code.py"
 
                 # copy library files on to device if not working on the device
-                lib_dir = os.path.dirname(pathname) + "/lib"
-                if os.path.isdir(lib_dir):
-                    replace_cnt = 0
-                    for root, dirs, files in os.walk(lib_dir):
-                        for filename in files:
-                            src_lib = lib_dir + "/" + filename
-                            dst_lib_dir = dst_dir + "/lib"
-                            dst_lib = dst_lib_dir + "/" + filename
-                            if not os.path.exists(dst_lib):
-                                replace_lib = True
-                            else:
-                                src_tm = time.ctime(os.path.getmtime(src_lib))
-                                dst_tm = time.ctime(os.path.getmtime(dst_lib))
-                                replace_lib = (src_tm > dst_tm)
-                            if replace_lib:
-                                if replace_cnt == 0:
-                                    if not os.path.exists(dst_lib_dir):
-                                        os.makedirs(dst_lib_dir)
-                                copyfile(src_lib, dst_lib)
-                                replace_cnt = replace_cnt + 1
-
-                    # let libraries load before copying source main source file
-                    if replace_cnt > 0:
-                        time.sleep(5)
+                if self.editor.adafruit_lib:
+                    self.run_adafruit_lib_copy(pathname, dst_dir)
 
                 # copy edited source file on to device
                 copyfile(pathname, destination)
