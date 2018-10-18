@@ -19,7 +19,7 @@ install_requires = ['pycodestyle==2.4.0', 'pyflakes==2.0.0',
                     'requests>=2.19.1', 'semver>=2.8.0', 'nudatus>=0.0.3', ]
 
 # Add environmental marker for packages not available for ARM in PyPI/piwheels
-arm_exclude = ('pyqt5', 'qscintilla', 'qtconsole', 'PyQtChart')
+arm_exclude = ('pyqt5', 'qscintilla', 'PyQtChart')
 install_requires = ['{}; "arm" not in platform_machine'.format(req)
                     if req.startswith(arm_exclude) else req
                     for req in install_requires]

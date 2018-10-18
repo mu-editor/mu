@@ -6,7 +6,7 @@ guizero
 matplotlib
 nudatus
 qscintilla; "arm" not in platform_machine
-qtconsole; "arm" not in platform_machine
+qtconsole
 pgzero
 pigpio
 Pillow
