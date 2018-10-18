@@ -5,16 +5,16 @@ gpiozero
 guizero
 matplotlib
 nudatus
-qscintilla
-qtconsole
+qscintilla; "arm" not in platform_machine
+qtconsole; "arm" not in platform_machine
 pgzero
 pigpio
 Pillow
 pycodestyle
 pyflakes
-pynsist
-pyqt5
-PyQtChart
+pynsist; sys_platform == "win32"
+pyqt5; "arm" not in platform_machine
+PyQtChart; "arm" not in platform_machine
 pyserial
 pytest
 pytest-cov
