@@ -348,7 +348,7 @@ class Window(QMainWindow):
         self.serial = QSerialPort()
         self.serial.setPortName(port)
         if self.serial.open(QIODevice.ReadWrite):
-            self.serial.dataTerminalReady = True
+            self.serial.setDataTerminalReady(True)
             if not self.serial.isDataTerminalReady():
                 # Using pyserial as a 'hack' to open the port and set DTR
                 # as QtSerial does not seem to work on some Windows :(
