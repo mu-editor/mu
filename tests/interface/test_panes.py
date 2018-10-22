@@ -968,6 +968,7 @@ def test_PythonProcessPane_start_process():
     expected_args = ['-i', expected_script, ]  # called with interactive flag.
     ppp.process.start.assert_called_once_with(runner, expected_args)
     assert ppp.running is True
+    assert ppp.data_flooded is False
 
 
 def test_PythonProcessPane_start_process_command_args():
@@ -1715,6 +1716,60 @@ def test_PythonProcessPane_history_forward_at_last_item():
     assert ppp.history_position == 0
 
 
+def test_PythonProcessPane_on_data_flood():
+    """
+    Ensure incoming bytes from sub-process's stout are processed correctly, and
+    that data_flood is turned off.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    mock_cursor = mock.MagicMock()
+    mock_cursor.position.return_value = 123
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.append = mock.MagicMock()
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = b'hello world'
+    ppp.process.bytesAvailable.return_value = False
+    ppp.data_flood = mock.MagicMock()
+    ppp.data_flooded = True
+    ppp.on_append_text = mock.MagicMock()
+    ppp.on_data_flood()
+    assert ppp.append.call_count == 1
+    ppp.process.read.assert_called_once_with(256)
+    assert ppp.start_of_current_line == 123
+    ppp.on_append_text.emit.assert_called_once_with(b'hello world')
+    assert ppp.data_flooded is False
+    ppp.data_flood.emit.call_count == 1
+
+
+def test_PythonProcessPane_on_data_flood_long_string():
+    """
+    Ensure that when there are still bytes to be read from sub-process's stout,
+    that the data_flood signal is emitted again.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = b'a' * 256
+    ppp.process.bytesAvailable.return_value = True
+    ppp.data_flood = mock.MagicMock()
+    ppp.on_data_flood()
+    ppp.data_flood.emit.assert_called_once()
+
+
+def test_PythonProcessPane_on_data_flood_data_argument_given():
+    """
+    Ensure that data passed in through the data keyword-argument is processed
+    correctly.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.append = mock.MagicMock()
+    ppp.process = mock.MagicMock()
+    ppp.on_append_text = mock.MagicMock()
+    ppp.on_data_flood(data=b'Hello world')
+    assert ppp.process.read.call_count == 0
+    ppp.on_append_text.emit.assert_called_once_with(b'Hello world')
+    ppp.append.assert_called_once_with(b'Hello world')
+
+
 def test_PythonProcessPane_read_from_stdout():
     """
     Ensure incoming bytes from sub-process's stout are processed correctly.
@@ -1726,12 +1781,43 @@ def test_PythonProcessPane_read_from_stdout():
     ppp.append = mock.MagicMock()
     ppp.process = mock.MagicMock()
     ppp.process.read.return_value = b'hello world'
+    ppp.process.bytesAvailable.return_value = False
     ppp.on_append_text = mock.MagicMock()
     ppp.read_from_stdout()
     assert ppp.append.call_count == 1
     ppp.process.read.assert_called_once_with(256)
     assert ppp.start_of_current_line == 123
     ppp.on_append_text.emit.assert_called_once_with(b'hello world')
+
+
+def test_PythonProcessPane_read_from_stdout_long_string():
+    """
+    Ensure incoming bytes from sub-process's stout are passed on to
+    on_data_flood, and data_flooded is set to True.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.on_data_flood = mock.MagicMock()
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = b'a' * 256
+    ppp.process.bytesAvailable.return_value = True
+    ppp.read_from_stdout()
+    assert ppp.data_flooded is True
+    ppp.on_data_flood.assert_called_once_with(data=b'a' * 256)
+
+
+def test_PythonProcessPane_read_from_stdout_during_data_flood():
+    """
+    Ensure that nothing happens if data_flooded is set to True
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.data_flooded = True
+    ppp.append = mock.MagicMock()
+    ppp.on_append_text = mock.MagicMock()
+    ppp.on_data_flood = mock.MagicMock()
+    ppp.read_from_stdout()
+    assert ppp.append.call_count == 0
+    assert ppp.on_append_text.emit.call_count == 0
+    assert ppp.on_data_flood.call_count == 0
 
 
 def test_PythonProcessPane_write_to_stdin():

@@ -596,6 +596,7 @@ class PythonProcessPane(QTextEdit):
     """
 
     on_append_text = pyqtSignal(bytes)
+    data_flood = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -611,6 +612,9 @@ class PythonProcessPane(QTextEdit):
         self.input_history = []  # history of inputs entered in this session.
         self.start_of_current_line = 0  # start position of the input line.
         self.history_position = 0  # current position when navigation history.
+        # Flag to show data-flood from process stdout
+        self.data_flooded = False
+        self.data_flood.connect(self.on_data_flood, type=Qt.QueuedConnection)
 
     def start_process(self, script_name, working_directory, interactive=True,
                       debugger=False, command_args=None, envars=None,
@@ -911,12 +915,40 @@ class PythonProcessPane(QTextEdit):
             history_item = self.input_history[history_pos]
             self.replace_input_line(history_item)
 
+    def on_data_flood(self, data=None):
+        """
+        Process incoming data from the process's standard out during a data
+        flood. If there is remaining data to be written, keep emitting
+        data_flood signal so data continues to be read in a non-blocking
+        manner.
+        """
+        if data is None:
+            data = self.process.read(256)
+        if data:
+            self.append(data)
+            self.on_append_text.emit(data)
+            cursor = self.textCursor()
+            self.start_of_current_line = cursor.position()
+        if self.process.bytesAvailable():
+            self.data_flood.emit()
+        else:
+            self.data_flooded = False
+
     def read_from_stdout(self):
         """
         Process incoming data from the process's stdout.
         """
+        # Ignore singal from readyRead during data flood
+        if self.data_flooded:
+            return
         data = self.process.read(256)
-        if data:
+        # If there are more than 256 bytes to write, pass data on to
+        # on_data_flood to append the data.
+        if self.process.bytesAvailable():
+            self.data_flooded = True
+            self.on_data_flood(data=data)
+        # Otherwise append data as normal
+        elif data:
             self.append(data)
             self.on_append_text.emit(data)
             cursor = self.textCursor()
