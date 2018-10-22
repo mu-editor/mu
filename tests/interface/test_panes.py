@@ -1716,6 +1716,88 @@ def test_PythonProcessPane_history_forward_at_last_item():
     assert ppp.history_position == 0
 
 
+def test_PythonProcessPane_detect_missing_utf8_bytes():
+    """
+    Ensure detect_missing_utf8_bytes accurately determines the correct number
+    of missing bytes from utf-8 encoded strings.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    test_cases = [
+        (b'abcdef', 0),               # Normal string
+        (b'abc\xce\xbc', 0),          # ends in a μ
+        (b'abc\xce', 1),              # μ with a missing byte
+        (b'abc\xe2\xb2\x98', 0),      # Ends in a coptic mu - Ⲙ
+        (b'abc\xe2\xb2', 1),          # As above, 1 byte missing
+        (b'abc\xe2', 2),              # As above, 2 bytes missing
+        (b'abc\xf0\x9d\x9c\x87', 0),  # Ends in a mathematical mu 𝜇
+        (b'abc\xf0\x9d\x9c', 1),      # As above, 1 byte missing
+        (b'abc\xf0\x9d', 2),          # As above, 2 byte missing
+        (b'abc\xf0', 3),              # As above, 3 byte missing
+        (b'\xf0', 3),                 # Really short string
+        (b'ab\x9d\x9d\x9d\x9d', -1),  # Too many continuation bytes
+        (b'abc\xfe', -1),             # Illegal initial byte
+        (b'\xce\xbc\xbc', -1)  # Too many continuation bytes for initial byte
+    ]
+    for test_case, expected_result in test_cases:
+        assert ppp.detect_missing_utf8_bytes(test_case) == expected_result
+
+
+def test_PythonProcessPane_handle_split_data():
+    """
+    Given an incomplete utf-8 string, ensure that the apropriate number of
+    characters are fetched, and a complete string is returned.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.detect_missing_utf8_bytes = mock.MagicMock()
+    ppp.detect_missing_utf8_bytes.return_value = 1
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = b'\x98'
+    data = ppp.handle_split_data(b'abc\xe2\xb2')
+    ppp.detect_missing_utf8_bytes.assert_called_once_with(b'abc\xe2\xb2')
+    ppp.process.read.assert_called_once_with(1)
+    assert data == b'abc\xe2\xb2\x98'
+
+
+def test_PythonProcessPane_handle_split_data_bad_string():
+    """
+    Given a string ending in an ill-formed byte sequence, ensure that this is
+    logged, and that an empty string is returned.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.detect_missing_utf8_bytes = mock.MagicMock()
+    ppp.detect_missing_utf8_bytes.return_value = -1
+    with mock.patch('mu.interface.panes.logger') as mock_logger:
+        data = ppp.handle_split_data(b'\xe2\xb2\x98\x98')
+        assert mock_logger.info.call_count == 1
+        assert data == b''
+
+
+def test_PythonProcessPane_handle_split_data_split_newline():
+    """
+    Given a string ending in a '/r' ensure the next character is retrieved, and
+    if it is a '/n' to append it to the string.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.getChar.return_value = (0, b'\n')
+    data = ppp.handle_split_data(b'abc\r')
+    ppp.process.getChar.assert_called_once()
+    assert data == b'abc\r\n'
+
+
+def test_PythonProcessPane_handle_split_data_suspected_newline():
+    """
+    Ensure that if getChar is called, and the returned character is not '/n'
+    then the returned charcter is passed back through ungetChar
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.getChar.return_value = (0, b'a')
+    data = ppp.handle_split_data(b'abc\r')
+    ppp.process.ungetChar.assert_called_once_with(b'a')
+    assert data == b'abc\r'
+
+
 def test_PythonProcessPane_on_data_flood():
     """
     Ensure incoming bytes from sub-process's stout are processed correctly, and

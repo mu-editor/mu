@@ -915,6 +915,56 @@ class PythonProcessPane(QTextEdit):
             history_item = self.input_history[history_pos]
             self.replace_input_line(history_item)
 
+    def detect_missing_utf8_bytes(self, byte_string):
+        """
+        Return the number of bytes missing from the end of a utf-8 encoded
+        byte-string. Return -1 if the byte-string is ill-formed.
+        """
+        if byte_string[-1] >> 7 == 0:  # Single byte character
+            return 0
+        for continuation_bytes in range(min(4, len(byte_string))):
+            if not byte_string[-1 * continuation_bytes - 1] >> 6 == 2:
+                break
+        else:
+            return -1
+        initial_byte = byte_string[-1 * continuation_bytes - 1]
+        if initial_byte >> 5 == 6:  # 2-byte character
+            character_length = 2
+        elif initial_byte >> 4 == 14:  # 3-byte character
+            character_length = 3
+        elif initial_byte >> 3 == 30:  # 4-byte character
+            character_length = 4
+        else:
+            return -1
+        result = character_length - continuation_bytes - 1
+        if result >= 0:
+            return result
+        return -1
+
+    def handle_split_data(self, data):
+        """
+        Ensures any data passed to append has not been 'split' in a bad way.
+
+        Because mu appends data in 256 byte chunks, sometimes a utf-8 character
+        or new-line character might be split across two 256 byte chunks.
+        """
+        # Handle a split utf-8 character
+        missing_bytes = self.detect_missing_utf8_bytes(data)
+        if missing_bytes == -1:
+            logger.info('Data from std_out ends with ill-formed utf-8 byte'
+                        ' sequence: {}'.format(data[-4:]))
+            return b""
+        elif missing_bytes:
+            data += self.process.read(missing_bytes)
+        # handle a split '\r\n'
+        if data[-1:] == b'\r':
+            next_char = self.process.getChar()[1]
+            if next_char == b'\n':
+                data += next_char
+            elif next_char is not None:
+                self.process.ungetChar(next_char)
+        return data
+
     def on_data_flood(self, data=None):
         """
         Process incoming data from the process's standard out during a data
@@ -925,6 +975,7 @@ class PythonProcessPane(QTextEdit):
         if data is None:
             data = self.process.read(256)
         if data:
+            data = self.handle_split_data(data)
             self.append(data)
             self.on_append_text.emit(data)
             cursor = self.textCursor()
