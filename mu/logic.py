@@ -410,7 +410,7 @@ def check_pycodestyle(code):
     os.close(code_fd)
     save_and_encode(code, code_filename)
     # Configure which PEP8 rules to ignore.
-    ignore = ('E121', 'E123', 'E126', 'E226', 'E302', 'E305', 'E24', 'E704',
+    ignore = ('E121', 'E123', 'E126', 'E226', 'E203', 'E302', 'E305', 'E24', 'E704',
               'W291', 'W292', 'W293', 'W391', 'W503', )
     style = StyleGuide(parse_argv=False, config_file=False)
     style.options.ignore = ignore
@@ -1319,15 +1319,6 @@ class Editor:
 
         # TODO: register undo/redo.
         # TODO: automatic width.
+        # TODO: keep cursor at the same token (requires changes to Black).
         from black import format_str, FileMode
-        tab.setText(
-            format_str(
-                tab.text(),
-                line_length=88,
-                mode=(
-                    FileMode.PYTHON36
-                    | FileMode.NO_NUMERIC_UNDERSCORE_NORMALIZATION
-                    | FileMode.NO_STRING_NORMALIZATION
-                ),
-            )
-        )
+        tab.setText(format_str(tab.text(), line_length=88, mode=FileMode.PYTHON36))
