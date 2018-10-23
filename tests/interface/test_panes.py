@@ -1769,6 +1769,9 @@ def test_PythonProcessPane_handle_split_data_bad_string():
     with mock.patch('mu.interface.panes.logger') as mock_logger:
         data = ppp.handle_split_data(b'\xe2\xb2\x98\x98')
         assert mock_logger.info.call_count == 1
+        mock_logger.info.assert_called_once_with(
+            'Data from std_out ends with ill-formed utf-8 byte'
+            ' sequence: b\'\\xe2\\xb2\\x98\\x98\'')
         assert data == b''
 
 
