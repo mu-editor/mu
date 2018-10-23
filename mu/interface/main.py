@@ -93,6 +93,8 @@ class ButtonBar(QToolBar):
         self.addSeparator()
         self.addAction(name="check", display_name=_('Check'),
                        tool_text=_("Check your code for mistakes."))
+        self.addAction(name="make-pretty", display_name=_('Make Pretty'),
+                       tool_text=_("Make your code look prettier."))
         self.addAction(name="help", display_name=_('Help'),
                        tool_text=_("Show help about Mu in a browser."))
         self.addAction(name="quit", display_name=_('Quit'),

@@ -1104,6 +1104,7 @@ class Editor:
         button_bar.connect("zoom-out", self.zoom_out, "Ctrl+-")
         button_bar.connect("theme", self.toggle_theme, "F1")
         button_bar.connect("check", self.check_code, "F2")
+        button_bar.connect("make-pretty", self.make_pretty, "F10")
         button_bar.connect("help", self.show_help, "Ctrl+H")
         button_bar.connect("quit", self.quit, "Ctrl+Q")
         self._view.status_bar.set_mode(mode)
@@ -1306,3 +1307,27 @@ class Editor:
         Ensure all highlighted lines are toggled between comments/uncommented.
         """
         self._view.toggle_comments()
+
+
+    def make_pretty(self):
+        """
+        Prettify code with Black.
+        """
+        tab = self._view.current_tab
+        if not tab or sys.version_info[:2] < (3, 6):
+            return
+
+        # TODO: register undo/redo.
+        # TODO: automatic width.
+        from black import format_str, FileMode
+        tab.setText(
+            format_str(
+                tab.text(),
+                line_length=88,
+                mode=(
+                    FileMode.PYTHON36
+                    | FileMode.NO_NUMERIC_UNDERSCORE_NORMALIZATION
+                    | FileMode.NO_STRING_NORMALIZATION
+                ),
+            )
+        )
