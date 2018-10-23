@@ -1,6 +1,7 @@
 # You also need to apt-get install the packages listed in https://mu.readthedocs.io/en/latest/setup.html#raspberry-pi
 appdirs
 beautifulsoup4
+black
 coverage
 guizero
 pigpio

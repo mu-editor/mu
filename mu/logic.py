@@ -1308,7 +1308,6 @@ class Editor:
         """
         self._view.toggle_comments()
 
-
     def make_pretty(self):
         """
         Prettify code with Black.
@@ -1321,4 +1320,6 @@ class Editor:
         # TODO: automatic width.
         # TODO: keep cursor at the same token (requires changes to Black).
         from black import format_str, FileMode
-        tab.setText(format_str(tab.text(), line_length=88, mode=FileMode.PYTHON36))
+        tab.setText(
+            format_str(tab.text(), line_length=88, mode=FileMode.PYTHON36)
+        )

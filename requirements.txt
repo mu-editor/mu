@@ -1,5 +1,6 @@
 appdirs
 beautifulsoup4
+black
 coverage
 gpiozero
 guizero
