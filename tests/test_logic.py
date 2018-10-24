@@ -1911,7 +1911,7 @@ def test_change_mode():
     # Check the new mode is set up correctly.
     assert ed.mode == 'python'
     view.change_mode.assert_called_once_with(mode)
-    assert mock_button_bar.connect.call_count == 11
+    assert mock_button_bar.connect.call_count == 12
     view.status_bar.set_mode.assert_called_once_with('python')
     view.set_timer.assert_called_once_with(5, ed.autosave)
 
@@ -1941,7 +1941,7 @@ def test_change_mode_no_timer():
     ed.change_mode('python')
     assert ed.mode == 'python'
     view.change_mode.assert_called_once_with(mode)
-    assert mock_button_bar.connect.call_count == 11
+    assert mock_button_bar.connect.call_count == 12
     view.status_bar.set_mode.assert_called_once_with('python')
     view.stop_timer.assert_called_once_with()
 

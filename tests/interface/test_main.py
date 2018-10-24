@@ -83,7 +83,7 @@ def test_ButtonBar_change_mode():
         mock_reset.reset_mock()
         b.change_mode(mock_mode)
         mock_reset.assert_called_once_with()
-        assert mock_add_action.call_count == 11
+        assert mock_add_action.call_count == 12
         assert mock_add_separator.call_count == 4
 
 
