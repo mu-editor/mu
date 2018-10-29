@@ -1784,7 +1784,7 @@ def test_PythonProcessPane_handle_split_data_split_newline():
     ppp.process = mock.MagicMock()
     ppp.process.getChar.return_value = (0, b'\n')
     data = ppp.handle_split_data(b'abc\r')
-    ppp.process.getChar.assert_called_once()
+    assert ppp.process.getChar.call_count == 1
     assert data == b'abc\r\n'
 
 
@@ -1837,7 +1837,7 @@ def test_PythonProcessPane_on_data_flood_long_string():
     ppp.process.bytesAvailable.return_value = True
     ppp.data_flood = mock.MagicMock()
     ppp.on_data_flood()
-    ppp.data_flood.emit.assert_called_once()
+    assert ppp.data_flood.call_count == 1
 
 
 def test_PythonProcessPane_on_data_flood_data_argument_given():
