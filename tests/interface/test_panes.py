@@ -1837,7 +1837,7 @@ def test_PythonProcessPane_on_data_flood_long_string():
     ppp.process.bytesAvailable.return_value = True
     ppp.data_flood = mock.MagicMock()
     ppp.on_data_flood()
-    assert ppp.data_flood.call_count == 1
+    assert ppp.data_flood.emit.call_count == 1
 
 
 def test_PythonProcessPane_on_data_flood_data_argument_given():
