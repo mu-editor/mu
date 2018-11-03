@@ -209,7 +209,7 @@ class AdafruitMode(MicroPythonMode):
                     replace_cnt = replace_cnt + 1
         # let libraries load before copying source main source file
         if replace_cnt > 0:
-            time.sleep(3)
+            time.sleep(4)
 
     def run(self, event):
         """
