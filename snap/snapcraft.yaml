@@ -1,0 +1,63 @@
+name: mu-editor
+version: 1.0.0
+summary: A simple Python code editor
+description: |
+    Mu is a simple code editor for beginner programmers based on extensive
+    feedback from teachers and learners. Having said that, Mu is for anyone who
+    wants to use a simple "no frills" editor.
+
+grade: stable
+confinement: strict
+
+apps:
+  mu-editor:
+    command: desktop-launch mu-editor
+    plugs:
+      - desktop
+      - desktop-legacy
+      - gsettings
+      - hardware-observe
+      - home
+      - network
+      - opengl
+      - pulseaudio
+      - wayland
+      - unity7
+      - x11
+
+parts:
+  desktop-qt5:
+    build-packages:
+      - build-essential
+      - qtbase5-dev
+      - dpkg-dev
+    make-parameters:
+      - FLAVOR=qt5
+    plugin: make
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: qt
+    stage-packages:
+      - libxkbcommon0
+      - shared-mime-info
+      - libqt5gui5
+      - libgdk-pixbuf2.0-0
+      - libqt5svg5
+      - try:
+        - appmenu-qt5
+      - locales-all
+      - xdg-user-dirs
+
+  mu-editor:
+    after:
+      - desktop-qt5
+    plugin: python
+    python-version: python3
+    source: .
+    stage-packages:
+      - python3-pyqt5
+      - python3-pyqt5.qsci
+      - python3-pyqt5.qtsvg
+      - python3-pyqt5.qtserialport
+      - python3-serial
+      - python3-appdirs
+      - python3-semver
