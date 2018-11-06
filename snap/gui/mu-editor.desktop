@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=mu-editor
+Exec=mu-editor
+Icon=${SNAP}/meta/gui/mu-editor.png
+Type=Application
+Terminal=false
+Categories=Development;
