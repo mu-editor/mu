@@ -22,6 +22,7 @@ apps:
       - opengl
       - pulseaudio
       - wayland
+      - usb-raw
       - unity7
       - x11
 
