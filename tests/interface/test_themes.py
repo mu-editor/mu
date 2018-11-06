@@ -31,8 +31,8 @@ def test_Font():
     """
     f = mu.interface.themes.Font()
     # Defaults
-    assert f.color == 'black'
-    assert f.paper == 'white'
+    assert f.color == '#181818'
+    assert f.paper == '#FEFEF7'
     assert f.bold is False
     assert f.italic is False
     # Passed in arguments

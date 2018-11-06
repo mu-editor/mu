@@ -1,4 +1,5 @@
 import platform
+import sys
 from setuptools import setup
 from mu import __version__
 

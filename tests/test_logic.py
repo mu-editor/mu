@@ -764,7 +764,7 @@ def test_editor_restore_session_no_session_file():
     with mock.patch('os.path.exists', return_value=False):
         ed.restore_session()
     py = '# Write your code here :-)'.format(
-        os.linesep, os.linesep)
+        os.linesep, os.linesep) + mu.logic.NEWLINE
     ed._view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
     ed.select_mode.assert_called_once_with(None)
 
@@ -793,7 +793,7 @@ def test_editor_restore_session_invalid_file():
     with mock.patch('builtins.open', mock_open), \
             mock.patch('os.path.exists', return_value=True):
         ed.restore_session()
-    py = '# Write your code here :-)'
+    py = '# Write your code here :-)' + mu.logic.NEWLINE
     ed._view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
 
 
