@@ -143,7 +143,7 @@ class FileManager(QObject):
         a failure signal.
         """
         try:
-            logger.info("File to be put on mini: "+local_filename)
+            logger.info("File to be put on mini: " + local_filename)
             minifs.put(local_filename, target=None)
             self.on_put_file.emit(os.path.basename(local_filename))
         except Exception as ex:
@@ -179,7 +179,8 @@ class CalliopeMode(MicroPythonMode):
         (0x0D28, 0x0204),  # mini USB VID, PID
     ]
 
-    valid_serial_numbers = ["12A0","9900"]  # Serial numbers of supported boards.
+    valid_serial_numbers = ["12A0", "9900"]
+    # Serial numbers of supported boards.
     python_script = ''
 
     def actions(self):
@@ -229,7 +230,8 @@ class CalliopeMode(MicroPythonMode):
 
     def flash(self):
         """
-        Takes the currently active tab, compiles the Python script therein into
+        Takes the currently active tab,
+        compiles the Python script therein into
         a hex file and flashes it all onto the connected device.
 
         WARNING: This method is getting more complex due to several edge
@@ -294,7 +296,6 @@ class CalliopeMode(MicroPythonMode):
         # method.
         self.python_script = python_script
         # Next step: find the microbit port and serial number.
-        
         path_to_mini = mflash.find_mini()
         logger.warning('found mini...')
         logger.info('Path to mini: {}'.format(path_to_mini))
@@ -317,9 +318,8 @@ class CalliopeMode(MicroPythonMode):
             user_defined_microbit_path = path_to_mini
             logger.debug('User defined path to mini: {}'.format(
                          user_defined_microbit_path))
-        # Check the path and that it exists simply because the path maybe based
-        # on stale data.
-        
+        # Check the path and that it exists simply because the path
+        # maybe based on stale data.
         if path_to_mini and os.path.exists(path_to_mini):
             force_flash = False  # If set to true, fully flash the device.
             # If there's no port but there's a path_to_mini, then we're
@@ -372,18 +372,14 @@ class CalliopeMode(MicroPythonMode):
                 force_flash = True
             # Check use of custom runtime.
             rt_hex_path = self.editor.mini_runtime.strip()
-            # rt_hex_path = "mini_runtime.hex"
-            # rt_hex_path = os.path.dirname(os.path.realpath(__file__))+"/mini_runtime.hex"
-            # self.view.show_message("hex path used", rt_hex_path)
-            # rt_hex_path = os.path.join(dir,"")
+
             message = _('Flashing "{}" onto the mini.').format(tab.label)
 
             if (rt_hex_path and os.path.exists(rt_hex_path)):
                 message = message + _(" Runtime: {}").format(rt_hex_path)
-                #self.view.show_message("hex path used", rt_hex_path)
-                force_flash = True  # Using a custom runtime, so flash it.
+                force_flash = True
+                # Using a custom runtime, so flash it.
             else:
-                # self.view.show_message("hex path not used", rt_hex_path)
                 rt_hex_path = None
                 self.editor.mini_runtime = ''
             # Check for use of user defined path (to save hex onto local
@@ -446,7 +442,8 @@ class CalliopeMode(MicroPythonMode):
                         # Call the flash_finished immediately the thread
                         # finishes if Mu is writing the hex file to a user
                         # defined location on the local filesystem.
-                        self.flash_thread.finished.connect(self.flash_finished)
+                        self.flash_thread.finished.connect(
+                                        self.flash_finished)
                     else:
                         # Other platforms don't block, so schedule the finish
                         # call for 10 seconds (approximately how long flashing
@@ -473,7 +470,8 @@ class CalliopeMode(MicroPythonMode):
                     self.python_script = ''
                     if sys.platform == 'win32':
                         # Windows blocks on write.
-                        self.flash_thread.finished.connect(self.flash_finished)
+                        self.flash_thread.finished.connect(
+                            self.flash_finished)
                     else:
                         self.flash_timer = QTimer()
                         self.flash_timer.timeout.connect(self.flash_finished)
@@ -510,12 +508,13 @@ class CalliopeMode(MicroPythonMode):
             try:
                 self.copy_main()
             except Exception as ex:
-                
+
                 self.flash_failed(ex)
 
     def copy_main(self):
         """
-        If the attribute self.python_script contains any code, copy it onto the
+        If the attribute self.python_script
+        contains any code, copy it onto the
         connected mini as main.py, then restart the board (CTRL-D).
         """
         if self.python_script.strip():
@@ -535,7 +534,7 @@ class CalliopeMode(MicroPythonMode):
             out, err = minifs.execute(commands, serial)
             logger.info((out, err))
             if err:
-                self.view.show_message("",err)
+                self.view.show_message("", err)
                 raise IOError(minifs.clean_error(err))
             # Reset the device.
             serial.write(b'import calliope_mini\r\n')
@@ -599,7 +598,8 @@ class CalliopeMode(MicroPythonMode):
 
     def toggle_files(self, event):
         """
-        Check for the existence of the REPL or plotter before toggling the file
+        Check for the existence of the 
+        REPL or plotter before toggling the file
         system navigator for the mini on or off.
         """
         if (self.repl or self.plotter):
