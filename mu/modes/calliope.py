@@ -538,8 +538,8 @@ class CalliopeMode(MicroPythonMode):
                 self.view.show_message("",err)
                 raise IOError(minifs.clean_error(err))
             # Reset the device.
-            serial.write(b'import microbit\r\n')
-            serial.write(b'microbit.reset()\r\n')
+            serial.write(b'import calliope_mini\r\n')
+            serial.write(b'calliope_mini.reset()\r\n')
             self.editor.show_status_message(_('Copied code onto mini.'))
         self.python_script = ''
 
