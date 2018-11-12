@@ -55,13 +55,21 @@ STYLE_REGEX = re.compile(r'.*:(\d+):(\d+):\s+(.*)')
 FLAKE_REGEX = re.compile(r'.*:(\d+):\s+(.*)')
 # Regex to match false positive flake errors if microbit.* is expanded.
 EXPAND_FALSE_POSITIVE = re.compile(r"^'microbit\.(\w+)' imported but unused$")
-# The text to which "from microbit import \*" should be expanded.
+EXPAND_FALSE_POSITIVE_CALLIOPE = re.compile(r"^'calliope_mini\.(\w+)' imported but unused$")
+# The text to which "from microbit import \*" and 
+# "from calliope_mini import\*" should be expanded.
 EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
                    " pin3, pin6, pin4, i2c, pin5, pin7, pin8, Image, "
                    "pin9, pin14, pin16, reset, pin19, temperature, "
                    "sleep, pin20, button_a, button_b, running_time, "
                    "accelerometer, display, uart, spi, panic, pin13, "
                    "pin12, pin11, pin10, compass")
+EXPANDED_IMPORT_CALLIOPE = ("from calliope_mini import sleep, Image, reset, "
+                   "button_a, button_b, sensor, display, uart, spi, "
+                   "panic, pin0, pin1, pin2, pin3, pin4, pin5, pin6, "
+                   "pin7, pin8, pin9, pin10, pin11, pin12, pin13, pin14, "
+                   "pin15, pin16, pin17, pin18, pin19, pin20, pin21, pin22, "
+                   "pin23, pin24, pin25, pin26, pin27, pin28, pin29, pin30 ")
 # Port number for debugger.
 DEBUGGER_PORT = 31415
 MOTD = [  # Candidate phrases for the message of the day (MOTD).
@@ -372,10 +380,15 @@ def check_flake(filename, code, builtins=None):
     additional builtins available when run by Mu.
     """
     import_all = "from microbit import *" in code
+    import_calliope = "from calliope_mini import *" in code
     if import_all:
         # Massage code so "from microbit import *" is expanded so the symbols
         # are known to flake.
         code = code.replace("from microbit import *", EXPANDED_IMPORT)
+    elif import_calliope:
+        # Massage code so "from calliope_mini import *" is expanded so the symbols
+        # are known to flake.
+        code = code.replace("from calliope_mini import *", EXPANDED_IMPORT_CALLIOPE)
     reporter = MuFlakeCodeReporter()
     check(code, filename, reporter)
     if builtins:
@@ -387,6 +400,11 @@ def check_flake(filename, code, builtins=None):
             # Guard to stop unwanted "microbit.* imported but unused" messages.
             message = log['message']
             if EXPAND_FALSE_POSITIVE.match(message):
+                continue
+        elif import_calliope:
+            # Guard to stop unwanted "calliope_mini.* imported but unused" messages.
+            message = log['message']
+            if EXPAND_FALSE_POSITIVE_CALLIOPE.match(message):
                 continue
         if builtins:
             if builtins_regex.match(log['message']):
