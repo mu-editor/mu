@@ -17,7 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os
+import os,time
 import sys
 import codecs
 import io
@@ -547,6 +547,7 @@ class Editor:
         self.envars = []  # See restore session and show_admin
         self.minify = False
         self.microbit_runtime = ''
+        self.mini_runtime = ''
         self.connected_devices = set()
         self.find = ''
         self.replace = ''
@@ -658,6 +659,16 @@ class Editor:
                                     '{}'.format(self.microbit_runtime))
                         if not os.path.isfile(self.microbit_runtime):
                             self.microbit_runtime = ''
+                            logger.warning('The specified micro:bit runtime '
+                                           'does not exist. Using default '
+                                           'runtime instead.')
+                if 'mini_runtime' in old_session:
+                    self.mini_runtime = old_session['mini_runtime']
+                    if self.mini_runtime:
+                        logger.info('Custom Calliope mini runtime path: '
+                                    '{}'.format(self.mini_runtime))
+                        if not os.path.isfile(self.mini_runtime):
+                            self.mini_runtime = ''
                             logger.warning('The specified micro:bit runtime '
                                            'does not exist. Using default '
                                            'runtime instead.')
@@ -1021,6 +1032,7 @@ class Editor:
             'envars': self.envars,
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
+            'mini_runtime': self.mini_runtime,
         }
         session_path = get_session_path()
         with open(session_path, 'w') as out:
@@ -1043,6 +1055,7 @@ class Editor:
             'envars': envars,
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
+            'mini_runtime': self.mini_runtime,
         }
         with open(LOG_FILE, 'r', encoding='utf8') as logfile:
             new_settings = self._view.show_admin(logfile.read(), settings)
@@ -1059,6 +1072,16 @@ class Editor:
             else:
                 self.microbit_runtime = runtime
 
+            runtime = new_settings['mini_runtime'].strip()
+            if runtime and not os.path.isfile(runtime):
+                self.mini_runtime = ''
+                message = _('Could not find MicroPython runtime.')
+                information = _("The Calliope mini runtime you specified ('{}') "
+                                "does not exist. "
+                                "Please try again.").format(runtime)
+                self._view.show_message(message, information)
+            else:
+                self.mini_runtime = runtime
     def select_mode(self, event=None):
         """
         Select the mode that editor is supposed to be in.
@@ -1144,6 +1167,69 @@ class Editor:
         If a single device is found and Mu is in a different mode ask the user
         if they'd like to change mode.
         """
+        import ctypes
+        from subprocess import check_output
+
+        def find_device():
+            """
+            Returns a path on the filesystem that represents the plugged in BBC
+            micro:bit that is to be flashed. If no micro:bit is found, it returns
+            None.
+
+            Works on Linux, OSX and Windows. Will raise a NotImplementedError
+            exception if run on any other operating system.
+            """
+            # Check what sort of operating system we're on.
+            if os.name == 'posix':
+                # 'posix' means we're on Linux or OSX (Mac).
+                # Call the unix "mount" command to list the mounted volumes.
+                mount_output = check_output('mount').splitlines()
+                mounted_volumes = [x.split()[2] for x in mount_output]
+                for volume in mounted_volumes:
+                    if volume.endswith(b'MINI') or volume.endswith(b'MICROBIT'):
+                        return volume.decode('utf-8')  # Return a string not bytes.
+            elif os.name == 'nt':
+                # 'nt' means we're on Windows.
+
+                def get_volume_name(disk_name):
+                    """
+                    Each disk or external device connected to windows has an attribute
+                    called "volume name". This function returns the volume name for
+                    the given disk/device.
+
+                    Code from http://stackoverflow.com/a/12056414
+                    """
+                    vol_name_buf = ctypes.create_unicode_buffer(1024)
+                    ctypes.windll.kernel32.GetVolumeInformationW(
+                        ctypes.c_wchar_p(disk_name), vol_name_buf,
+                        ctypes.sizeof(vol_name_buf), None, None, None, None, 0)
+                    return vol_name_buf.value
+
+                #
+                # In certain circumstances, volumes are allocated to USB
+                # storage devices which cause a Windows popup to raise if their
+                # volume contains no media. Wrapping the check in SetErrorMode
+                # with SEM_FAILCRITICALERRORS (1) prevents this popup.
+                #
+                old_mode = ctypes.windll.kernel32.SetErrorMode(1)
+                try:
+                    for disk in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+                        path = '{}:\\'.format(disk)
+                        #
+                        # Don't bother looking if the drive isn't removable
+                        #
+                        if ctypes.windll.kernel32.GetDriveTypeW(path) != 2:
+                            continue
+                        if os.path.exists(path) and \
+                                get_volume_name(path) == 'MINI' or get_volume_name(path) == 'MICROBIT':
+                            return get_volume_name(path)
+                finally:
+                    ctypes.windll.kernel32.SetErrorMode(old_mode)
+            else:
+                # No support for unknown operating systems.
+                #raise NotImplementedError('OS "{}" not supported.'.format(os.name))
+                return None
+            return None
         devices = []
         device_types = set()
         # Detect connected devices.
@@ -1163,9 +1249,14 @@ class Editor:
             self.connected_devices.remove(device)
         # Add newly connected devices.
         for device in devices:
+            mode_name = "microbit"
+            while find_device() is None: # differenciate if device is Calliope mini or microbit
+                pass
+            d = find_device().lower()
+            if d.find("mini") > -1:
+                mode_name = "calliope"
             if device not in self.connected_devices:
                 self.connected_devices.add(device)
-                mode_name = device[0]
                 device_name = self.modes[mode_name].name
                 msg = _('Detected new {} device.').format(device_name)
                 self.show_status_message(msg)
