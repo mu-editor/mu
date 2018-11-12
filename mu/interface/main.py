@@ -264,6 +264,18 @@ class Window(QMainWindow):
         self.previous_folder = os.path.dirname(path)
         logger.debug('Getting micro:bit path: {}'.format(path))
         return path
+    
+    def get_calliopemini_path(self, folder):
+        """
+        Displays a dialog for locating the location of the Calliope mini in the
+        host computer's filesystem. Returns the selected path. Defaults to
+        start in the referenced folder.
+        """
+        path = QFileDialog.getExistingDirectory(self.widget,
+                                                'Locate Calliope mini', folder,
+                                                QFileDialog.ShowDirsOnly)
+        logger.debug('Getting Calliope mini path: {}'.format(path))
+        return path
 
     def add_tab(self, path, text, api, newline):
         """
@@ -383,7 +395,7 @@ class Window(QMainWindow):
             # Bubble the signal up
             self.open_file.emit(file)
 
-        self.fs = QDockWidget(_('Filesystem on micro:bit'))
+        self.fs = QDockWidget(_('Filesystem on device'))
         self.fs.setWidget(self.fs_pane)
         self.fs.setFeatures(QDockWidget.DockWidgetMovable)
         self.fs.setAllowedAreas(Qt.BottomDockWidgetArea)
@@ -1017,4 +1029,7 @@ class StatusBar(QStatusBar):
         """
         Updates the mode label to the new mode.
         """
-        self.mode_label.setText(mode.capitalize())
+        if(self.mode == 'calliope'): # Versuch das Toolbarproblem zu lösen.
+            self.mode_label.setText('Calliope mini')
+        else:
+            self.mode_label.setText(mode.capitalize())

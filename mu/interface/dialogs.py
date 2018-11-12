@@ -188,10 +188,17 @@ class AdminDialog(QDialog):
         self.envar_widget.setup(settings.get('envars', ''))
         self.tabs.addTab(self.envar_widget, _('Python3 Environment'))
         self.log_widget.log_text_area.setFocus()
+
+        self.mini_widget = MicrobitSettingsWidget()
+        self.mini_widget.setup(settings.get('minify', False),
+                                   settings.get('mini_runtime', ''))
+        self.tabs.addTab(self.mini_widget, _('Calliope mini Settings'))
+
         self.microbit_widget = MicrobitSettingsWidget()
         self.microbit_widget.setup(settings.get('minify', False),
                                    settings.get('microbit_runtime', ''))
         self.tabs.addTab(self.microbit_widget, _('BBC micro:bit Settings'))
+        
 
     def settings(self):
         """
@@ -203,6 +210,7 @@ class AdminDialog(QDialog):
             'envars': self.envar_widget.text_area.toPlainText(),
             'minify': self.microbit_widget.minify.isChecked(),
             'microbit_runtime': self.microbit_widget.runtime_path.text(),
+            'mini_runtime': self.mini_widget.runtime_path.text(),
         }
 
 
