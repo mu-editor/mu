@@ -582,9 +582,11 @@ class FileSystemPane(QFrame):
         microbit_fs = MicrobitFileList(home)
         local_fs = LocalFileList(home)
         self.device_displayName = "micro:bit"
-        if find_device().lower().find("mini") > -1:
-            microbit_fs = CalliopeMiniFileList(home)
-            self.device_displayName = "Calliope mini"
+        device = find_device()
+        if device is not None:
+            if device.lower().find("mini") > -1:
+                microbit_fs = CalliopeMiniFileList(home)
+                self.device_displayName = "Calliope mini"
 
         @local_fs.open_file.connect
         def on_open_file(file):
