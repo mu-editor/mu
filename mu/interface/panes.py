@@ -571,7 +571,8 @@ class FileSystemPane(QFrame):
                     ctypes.windll.kernel32.SetErrorMode(old_mode)
             else:
                 # No support for unknown operating systems.
-                # raise NotImplementedError('OS "{}" not supported.'.format(os.name))
+                # raise NotImplementedError
+                # ('OS "{}" not supported.'.format(os.name))
                 return None
             return None
 
@@ -584,10 +585,13 @@ class FileSystemPane(QFrame):
         if find_device().lower().find("mini") > -1:
             microbit_fs = CalliopeMiniFileList(home)
             self.device_displayName = "Calliope mini"
+
         @local_fs.open_file.connect
 
         def on_open_file(file):
-            # Bubble the signal up
+            """
+            Bubble the signal up
+            """
             self.open_file.emit(file)
 
         layout = QGridLayout()

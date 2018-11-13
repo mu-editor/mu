@@ -67,10 +67,11 @@ EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
                    "pin12, pin11, pin10, compass")
 EXPANDED_IMPORT_CALLIOPE = ("from calliope_mini import sleep, Image, reset, "
                             "button_a, button_b, sensor, display, uart, spi, "
-                            "panic, pin0, pin1, pin2, pin3, pin4, pin5, pin6, "
-                            "pin7, pin8, pin9, pin10, pin11, pin12, pin13, pin14, "
-                            "pin15, pin16, pin17, pin18, pin19, pin20, pin21, pin22, "
-                            "pin23, pin24, pin25, pin26, pin27, pin28, pin29, pin30 ")
+                            "panic, pin0, pin1, pin2, pin3, pin4, pin5, "
+                            "pin6, pin7, pin8, pin9, pin10, pin11, pin12, "
+                            "pin13, pin14, pin15, pin16, pin17, pin18, "
+                            "pin19, pin20, pin21, pin22, pin23, pin24, "
+                            "pin25, pin26, pin27, pin28, pin29, pin30 ")
 # Port number for debugger.
 DEBUGGER_PORT = 31415
 MOTD = [  # Candidate phrases for the message of the day (MOTD).
@@ -1249,7 +1250,7 @@ class Editor:
                             continue
                         if os.path.exists(path) and \
                                 get_volume_name(path) == 'MINI' or \
-                                        get_volume_name(path) == 'MICROBIT':
+                                    get_volume_name(path) == 'MICROBIT':
                             return get_volume_name(path)
                 finally:
                     ctypes.windll.kernel32.SetErrorMode(old_mode)
