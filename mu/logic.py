@@ -1250,7 +1250,7 @@ class Editor:
                             continue
                         if os.path.exists(path) and \
                                 get_volume_name(path) == 'MINI' or \
-                                    get_volume_name(path) == 'MICROBIT':
+                                get_volume_name(path) == 'MICROBIT':
                             return get_volume_name(path)
                 finally:
                     ctypes.windll.kernel32.SetErrorMode(old_mode)
