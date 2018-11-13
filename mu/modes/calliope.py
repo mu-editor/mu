@@ -443,7 +443,7 @@ class CalliopeMode(MicroPythonMode):
                         # finishes if Mu is writing the hex file to a user
                         # defined location on the local filesystem.
                         self.flash_thread.finished.connect(
-                                        self.flash_finished)
+                            self.flash_finished)
                     else:
                         # Other platforms don't block, so schedule the finish
                         # call for 10 seconds (approximately how long flashing
@@ -598,7 +598,7 @@ class CalliopeMode(MicroPythonMode):
 
     def toggle_files(self, event):
         """
-        Check for the existence of the 
+        Check for the existence of the
         REPL or plotter before toggling the file
         system navigator for the mini on or off.
         """

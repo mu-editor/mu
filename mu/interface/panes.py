@@ -359,6 +359,7 @@ class MicrobitFileList(MuFileList):
         self.set_message.emit(msg)
         self.list_files.emit()
 
+
 class CalliopeMiniFileList(MuFileList):
     """
     Represents a list of files on the Calliope mini.
@@ -382,7 +383,8 @@ class CalliopeMiniFileList(MuFileList):
                 self.disable.emit()
                 local_filename = os.path.join(self.home,
                                               source.currentItem().text())
-                msg = _("Copying '{}' to Calliope mini.").format(local_filename)
+                msg = _("Copying '{}' to Calliope mini."
+                        ).format(local_filename)
                 logger.info(msg)
                 self.set_message.emit(msg)
                 self.put.emit(local_filename)
@@ -391,7 +393,8 @@ class CalliopeMiniFileList(MuFileList):
         """
         Fired when the put event is completed for the given filename.
         """
-        msg = _("'{}' successfully copied to Calliope mini.").format(microbit_file)
+        msg = _("'{}' successfully copied to Calliope mini."
+                ).format(microbit_file)
         self.set_message.emit(msg)
         self.list_files.emit()
 
@@ -403,7 +406,8 @@ class CalliopeMiniFileList(MuFileList):
             self.disable.emit()
             microbit_filename = self.currentItem().text()
             logger.info("Deleting {}".format(microbit_filename))
-            msg = _("Deleting '{}' from Calliope mini.").format(microbit_filename)
+            msg = _("Deleting '{}' from Calliope mini."
+                    ).format(microbit_filename)
             logger.info(msg)
             self.set_message.emit(msg)
             self.delete.emit(microbit_filename)
@@ -502,10 +506,13 @@ class FileSystemPane(QFrame):
     def __init__(self, home):
         import ctypes
         from subprocess import check_output
+
         def find_device():
             """
-            Returns a path on the filesystem that represents the plugged in BBC
-            micro:bit that is to be flashed. If no micro:bit is found, it returns
+            Returns a path on the filesystem that represents
+            the plugged in BBC
+            micro:bit that is to be flashed. If no micro:bit
+            is found, it returns
             None.
 
             Works on Linux, OSX and Windows. Will raise a NotImplementedError
@@ -518,15 +525,19 @@ class FileSystemPane(QFrame):
                 mount_output = check_output('mount').splitlines()
                 mounted_volumes = [x.split()[2] for x in mount_output]
                 for volume in mounted_volumes:
-                    if volume.endswith(b'MINI') or volume.endswith(b'MICROBIT'):
-                        return volume.decode('utf-8')  # Return a string not bytes.
+                    if volume.endswith(b'MINI') or \
+                            volume.endswith(b'MICROBIT'):
+                        return volume.decode('utf-8')
+                        # Return a string not bytes.
             elif os.name == 'nt':
                 # 'nt' means we're on Windows.
 
                 def get_volume_name(disk_name):
                     """
-                    Each disk or external device connected to windows has an attribute
-                    called "volume name". This function returns the volume name for
+                    Each disk or external device connected to windows
+                    has an attribute
+                    called "volume name". This function returns the
+                    volume name for
                     the given disk/device.
 
                     Code from http://stackoverflow.com/a/12056414
@@ -553,16 +564,17 @@ class FileSystemPane(QFrame):
                         if ctypes.windll.kernel32.GetDriveTypeW(path) != 2:
                             continue
                         if os.path.exists(path) and \
-                                get_volume_name(path) == 'MINI' or get_volume_name(path) == 'MICROBIT':
+                                get_volume_name(path) == 'MINI' or \
+                                get_volume_name(path) == 'MICROBIT':
                             return get_volume_name(path)
                 finally:
                     ctypes.windll.kernel32.SetErrorMode(old_mode)
             else:
                 # No support for unknown operating systems.
-                #raise NotImplementedError('OS "{}" not supported.'.format(os.name))
+                # raise NotImplementedError('OS "{}" not supported.'.format(os.name))
                 return None
             return None
-        
+
         super().__init__()
         self.home = home
         self.font = Font().load()
@@ -573,6 +585,7 @@ class FileSystemPane(QFrame):
             microbit_fs = CalliopeMiniFileList(home)
             self.device_displayName = "Calliope mini"
         @local_fs.open_file.connect
+
         def on_open_file(file):
             # Bubble the signal up
             self.open_file.emit(file)
@@ -580,7 +593,8 @@ class FileSystemPane(QFrame):
         layout = QGridLayout()
         self.setLayout(layout)
         microbit_label = QLabel()
-        microbit_label.setText(_('Files on your {}:'.format(self.device_displayName)))
+        microbit_label.setText(_('Files on your {}:'.format(
+                                 self.device_displayName)))
         local_label = QLabel()
         local_label.setText(_('Files on your computer:'))
         self.microbit_label = microbit_label

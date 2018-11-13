@@ -25,6 +25,7 @@ from mu.resources import load_icon
 
 logger = logging.getLogger(__name__)
 
+
 class ModeItem(QListWidgetItem):
     """
     Represents an available mode listed for selection.
@@ -38,6 +39,7 @@ class ModeItem(QListWidgetItem):
         text = "{}\n{}".format(name, description)
         self.setText(text)
         self.setIcon(load_icon(self.icon))
+
 
 class ModeSelector(QDialog):
     """
@@ -92,6 +94,7 @@ class ModeSelector(QDialog):
         else:
             raise RuntimeError('Mode change cancelled.')
 
+
 class LogWidget(QWidget):
     """
     Used to display Mu's logs.
@@ -109,6 +112,7 @@ class LogWidget(QWidget):
         self.log_text_area.setLineWrapMode(QPlainTextEdit.NoWrap)
         self.log_text_area.setPlainText(log)
         widget_layout.addWidget(self.log_text_area)
+
 
 class EnvironmentVariablesWidget(QWidget):
     """
@@ -129,6 +133,7 @@ class EnvironmentVariablesWidget(QWidget):
         self.text_area.setLineWrapMode(QPlainTextEdit.NoWrap)
         self.text_area.setPlainText(envars)
         widget_layout.addWidget(self.text_area)
+
 
 class MicrobitSettingsWidget(QWidget):
     """
@@ -153,6 +158,7 @@ class MicrobitSettingsWidget(QWidget):
         self.runtime_path.setText(custom_runtime_path)
         widget_layout.addWidget(self.runtime_path)
         widget_layout.addStretch()
+
 
 class AdminDialog(QDialog):
     """
@@ -184,7 +190,7 @@ class AdminDialog(QDialog):
 
         self.mini_widget = MicrobitSettingsWidget()
         self.mini_widget.setup(settings.get('minify', False),
-                                   settings.get('mini_runtime', ''))
+                               settings.get('mini_runtime', ''))
         self.tabs.addTab(self.mini_widget, _('Calliope mini Settings'))
 
         self.microbit_widget = MicrobitSettingsWidget()
@@ -204,6 +210,7 @@ class AdminDialog(QDialog):
             'microbit_runtime': self.microbit_widget.runtime_path.text(),
             'mini_runtime': self.mini_widget.runtime_path.text(),
         }
+
 
 class FindReplaceDialog(QDialog):
     """

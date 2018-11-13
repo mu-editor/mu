@@ -21,7 +21,7 @@ from serial.tools.list_ports import comports as list_serial_ports
 from serial import Serial
 
 
-PY2 = sys.version_info < (3,)
+PY2 = sys.version_info < (3, )
 
 
 __all__ = ['ls', 'rm', 'put', 'get', 'get_serial']

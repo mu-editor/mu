@@ -55,8 +55,9 @@ STYLE_REGEX = re.compile(r'.*:(\d+):(\d+):\s+(.*)')
 FLAKE_REGEX = re.compile(r'.*:(\d+):\s+(.*)')
 # Regex to match false positive flake errors if microbit.* is expanded.
 EXPAND_FALSE_POSITIVE = re.compile(r"^'microbit\.(\w+)' imported but unused$")
-EXPAND_FALSE_POSITIVE_CALLIOPE = re.compile(r"^'calliope_mini\.(\w+)' imported but unused$")
-# The text to which "from microbit import \*" and 
+EXPAND_FALSE_POSITIVE_CALLIOPE = re.compile(
+    r"^'calliope_mini\.(\w+)' imported but unused$")
+# The text to which "from microbit import \*" and
 # "from calliope_mini import\*" should be expanded.
 EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
                    " pin3, pin6, pin4, i2c, pin5, pin7, pin8, Image, "
@@ -65,11 +66,11 @@ EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
                    "accelerometer, display, uart, spi, panic, pin13, "
                    "pin12, pin11, pin10, compass")
 EXPANDED_IMPORT_CALLIOPE = ("from calliope_mini import sleep, Image, reset, "
-                   "button_a, button_b, sensor, display, uart, spi, "
-                   "panic, pin0, pin1, pin2, pin3, pin4, pin5, pin6, "
-                   "pin7, pin8, pin9, pin10, pin11, pin12, pin13, pin14, "
-                   "pin15, pin16, pin17, pin18, pin19, pin20, pin21, pin22, "
-                   "pin23, pin24, pin25, pin26, pin27, pin28, pin29, pin30 ")
+                            "button_a, button_b, sensor, display, uart, spi, "
+                            "panic, pin0, pin1, pin2, pin3, pin4, pin5, pin6, "
+                            "pin7, pin8, pin9, pin10, pin11, pin12, pin13, pin14, "
+                            "pin15, pin16, pin17, pin18, pin19, pin20, pin21, pin22, "
+                            "pin23, pin24, pin25, pin26, pin27, pin28, pin29, pin30 ")
 # Port number for debugger.
 DEBUGGER_PORT = 31415
 MOTD = [  # Candidate phrases for the message of the day (MOTD).
@@ -386,9 +387,10 @@ def check_flake(filename, code, builtins=None):
         # are known to flake.
         code = code.replace("from microbit import *", EXPANDED_IMPORT)
     elif import_calliope:
-        # Massage code so "from calliope_mini import *" is expanded so the symbols
-        # are known to flake.
-        code = code.replace("from calliope_mini import *", EXPANDED_IMPORT_CALLIOPE)
+        # Massage code so "from calliope_mini import *" is
+        # expanded so the symbols are known to flake.
+        code = code.replace("from calliope_mini import *",
+                            EXPANDED_IMPORT_CALLIOPE)
     reporter = MuFlakeCodeReporter()
     check(code, filename, reporter)
     if builtins:
@@ -402,7 +404,6 @@ def check_flake(filename, code, builtins=None):
             if EXPAND_FALSE_POSITIVE.match(message):
                 continue
         elif import_calliope:
-            # Guard to stop unwanted "calliope_mini.* imported but unused" messages.
             message = log['message']
             if EXPAND_FALSE_POSITIVE_CALLIOPE.match(message):
                 continue
@@ -1094,12 +1095,14 @@ class Editor:
             if runtime and not os.path.isfile(runtime):
                 self.mini_runtime = ''
                 message = _('Could not find MicroPython runtime.')
-                information = _("The Calliope mini runtime you specified ('{}') "
+                information = _("The Calliope mini runtime you "
+                                "specified ('{}') "
                                 "does not exist. "
                                 "Please try again.").format(runtime)
                 self._view.show_message(message, information)
             else:
                 self.mini_runtime = runtime
+
     def select_mode(self, event=None):
         """
         Select the mode that editor is supposed to be in.
@@ -1190,8 +1193,10 @@ class Editor:
 
         def find_device():
             """
-            Returns a path on the filesystem that represents the plugged in BBC
-            micro:bit that is to be flashed. If no micro:bit is found, it returns
+            Returns a path on the filesystem
+            that represents the plugged in BBC
+            micro:bit that is to be flashed.
+            If no micro:bit is found, it returns
             None.
 
             Works on Linux, OSX and Windows. Will raise a NotImplementedError
@@ -1204,15 +1209,19 @@ class Editor:
                 mount_output = check_output('mount').splitlines()
                 mounted_volumes = [x.split()[2] for x in mount_output]
                 for volume in mounted_volumes:
-                    if volume.endswith(b'MINI') or volume.endswith(b'MICROBIT'):
-                        return volume.decode('utf-8')  # Return a string not bytes.
+                    if volume.endswith(b'MINI') or \
+                            volume.endswith(b'MICROBIT'):
+                        return volume.decode('utf-8')
+                        # Return a string not bytes.
             elif os.name == 'nt':
                 # 'nt' means we're on Windows.
 
                 def get_volume_name(disk_name):
                     """
-                    Each disk or external device connected to windows has an attribute
-                    called "volume name". This function returns the volume name for
+                    Each disk or external device connected
+                    to windows has an attribute
+                    called "volume name". This function
+                    returns the volume name for
                     the given disk/device.
 
                     Code from http://stackoverflow.com/a/12056414
@@ -1239,13 +1248,15 @@ class Editor:
                         if ctypes.windll.kernel32.GetDriveTypeW(path) != 2:
                             continue
                         if os.path.exists(path) and \
-                                get_volume_name(path) == 'MINI' or get_volume_name(path) == 'MICROBIT':
+                                get_volume_name(path) == 'MINI' or \
+                                        get_volume_name(path) == 'MICROBIT':
                             return get_volume_name(path)
                 finally:
                     ctypes.windll.kernel32.SetErrorMode(old_mode)
             else:
                 # No support for unknown operating systems.
-                #raise NotImplementedError('OS "{}" not supported.'.format(os.name))
+                # raise NotImplementedError('OS "{}"
+                # not supported.'.format(os.name))
                 return None
             return None
         devices = []
@@ -1268,7 +1279,8 @@ class Editor:
         # Add newly connected devices.
         for device in devices:
             mode_name = "microbit"
-            while find_device() is None: # differenciate if device is Calliope mini or microbit
+            while find_device() is None:
+                # differenciate if device is Calliope mini or microbit
                 pass
             d = find_device().lower()
             if d.find("mini") > -1:
