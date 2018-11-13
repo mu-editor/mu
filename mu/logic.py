@@ -1283,12 +1283,12 @@ class Editor:
             mode_name = "microbit"
             for i in range(50):
                 # differenciate if device is Calliope mini or microbit
-                if find_device() is not None:
+                d = find_device()
+                if d is not None:
+                    if d.lower().find("mini") > -1:
+                        mode_name = "calliope"
                     break
                 time.sleep(0.1)
-            d = find_device().lower()
-            if d.find("mini") > -1:
-                mode_name = "calliope"
             if device not in self.connected_devices:
                 self.connected_devices.add(device)
                 device_name = self.modes[mode_name].name
