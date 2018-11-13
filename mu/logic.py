@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
 import codecs
+import time
 import io
 import re
 import json
@@ -1280,9 +1281,11 @@ class Editor:
         # Add newly connected devices.
         for device in devices:
             mode_name = "microbit"
-            while find_device() is None:
+            for i in range(50):
                 # differenciate if device is Calliope mini or microbit
-                pass
+                if find_device() is not None:
+                    break
+                time.sleep(0.1)
             d = find_device().lower()
             if d.find("mini") > -1:
                 mode_name = "calliope"
