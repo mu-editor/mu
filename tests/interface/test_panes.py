@@ -1715,23 +1715,74 @@ def test_PythonProcessPane_history_forward_at_last_item():
     assert ppp.history_position == 0
 
 
+def test_PythonProcessPane_read_from_buffer():
+    """
+    Ensure data in buffer is processed correctly
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.buffer = b'hello world'
+    ppp.process = mock.MagicMock()
+    ppp.process.bytesAvailable.return_value = True
+    mock_cursor = mock.MagicMock()
+    mock_cursor.position.return_value = 123
+    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.append = mock.MagicMock()
+    ppp.on_append_text = mock.MagicMock()
+    ppp.read_from_stdout = mock.MagicMock()
+    ppp.read_from_buffer()
+    assert ppp.append.call_count == 1
+    assert ppp.start_of_current_line == 123
+    ppp.on_append_text.emit.assert_called_once_with(b'hello world')
+    assert ppp.reading_from_buffer is False
+    assert ppp.read_from_stdout.call_count == 1
+    assert ppp.buffer == b''
+
+
+def test_PythonProcessPane_read_from_buffer_multiple_lines():
+    """
+    Ensure that when the buffer contains a long string containing a new line,
+    that the first portion is appended, and that the read_buffer signal is
+    emitted.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.buffer = b'a' * 260 + b'\n' + b'xyz'
+    ppp.append = mock.MagicMock()
+    ppp.on_append_text = mock.MagicMock()
+    ppp.read_buffer = mock.MagicMock()
+    ppp.read_from_buffer()
+    assert ppp.append.call_count == 1
+    ppp.on_append_text.emit.assert_called_once_with(b'a' * 260 + b'\n')
+    assert ppp.reading_from_buffer is True
+    assert ppp.buffer == b'xyz'
+    assert ppp.read_buffer.emit.call_count == 1
+
+
 def test_PythonProcessPane_read_from_stdout():
     """
     Ensure incoming bytes from sub-process's stout are processed correctly.
     """
     ppp = mu.interface.panes.PythonProcessPane()
-    mock_cursor = mock.MagicMock()
-    mock_cursor.position.return_value = 123
-    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
-    ppp.append = mock.MagicMock()
     ppp.process = mock.MagicMock()
-    ppp.process.read.return_value = b'hello world'
-    ppp.on_append_text = mock.MagicMock()
+    ppp.process.readAll.return_value.data.return_value = b'hello world'
+    ppp.read_buffer = mock.MagicMock()
     ppp.read_from_stdout()
-    assert ppp.append.call_count == 1
-    ppp.process.read.assert_called_once_with(256)
-    assert ppp.start_of_current_line == 123
-    ppp.on_append_text.emit.assert_called_once_with(b'hello world')
+    assert ppp.process.readAll.call_count == 1
+    assert ppp.reading_from_buffer is True
+    assert ppp.buffer == b'hello world'
+    assert ppp.read_buffer.emit.call_count == 1
+
+
+def test_PythonProcessPane_read_from_stdout_reading_from_buffer_false():
+    """
+    Ensure function simply returns when reading_from_buffer is True
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.read_buffer = mock.MagicMock()
+    ppp.reading_from_buffer = True
+    ppp.read_from_stdout()
+    assert ppp.process.readAll.call_count == 0
+    assert ppp.read_buffer.emit.call_count == 0
 
 
 def test_PythonProcessPane_write_to_stdin():

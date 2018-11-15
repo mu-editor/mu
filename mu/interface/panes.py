@@ -596,6 +596,7 @@ class PythonProcessPane(QTextEdit):
     """
 
     on_append_text = pyqtSignal(bytes)
+    read_buffer = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -611,6 +612,10 @@ class PythonProcessPane(QTextEdit):
         self.input_history = []  # history of inputs entered in this session.
         self.start_of_current_line = 0  # start position of the input line.
         self.history_position = 0  # current position when navigation history.
+        self.buffer = b''  # Holds data from std_out before being printed
+        self.reading_from_buffer = False  # Blocks read_from_stdout
+        self.read_buffer.connect(self.read_from_buffer,
+                                 type=Qt.QueuedConnection)
 
     def start_process(self, script_name, working_directory, interactive=True,
                       debugger=False, command_args=None, envars=None,
@@ -911,16 +916,50 @@ class PythonProcessPane(QTextEdit):
             history_item = self.input_history[history_pos]
             self.replace_input_line(history_item)
 
+    def read_from_buffer(self):
+        """
+        Read data from buffer in chunks, so that the interace does not freeze.
+        """
+        if self.buffer:
+            # Read 256 bytes plus extra till end of line
+            data, self.buffer = self.buffer[:256], self.buffer[256:]
+            newline_index = self.buffer.find(b"\n")
+            # If no new-line character can be found, empty the buffer
+            if newline_index == -1:
+                data += self.buffer
+                self.buffer = b''
+            # Otherwise empty up to the new-line.
+            else:
+                data += self.buffer[:newline_index + 1]
+                self.buffer = self.buffer[newline_index + 1:]
+            # Output data to the Pane (print the data)
+            if data:
+                self.append(data)
+                self.on_append_text.emit(data)
+                cursor = self.textCursor()
+                self.start_of_current_line = cursor.position()
+            # If there is still data in buffer to be read, read the next chunk
+            if self.buffer:
+                self.reading_from_buffer = True  # Block read_from_stdout
+                self.read_buffer.emit()
+            # Otherwise, un-block read_from_stdout and check if there is more
+            # to be read from std_out
+            else:
+                self.reading_from_buffer = False
+                if self.process.bytesAvailable():
+                    self.read_from_stdout()
+
     def read_from_stdout(self):
         """
         Process incoming data from the process's stdout.
         """
-        data = self.process.read(256)
-        if data:
-            self.append(data)
-            self.on_append_text.emit(data)
-            cursor = self.textCursor()
-            self.start_of_current_line = cursor.position()
+        # reading from stdout whilst the buffer is calling itself decreases
+        # the responsiveness of the interface
+        if self.reading_from_buffer:
+            return
+        self.buffer += self.process.readAll().data()
+        self.reading_from_buffer = True
+        self.read_buffer.emit()
 
     def write_to_stdin(self, data):
         """
