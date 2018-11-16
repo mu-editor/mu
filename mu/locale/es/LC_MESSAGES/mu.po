@@ -39,7 +39,7 @@ msgstr ""
 
 #: mu/interface/dialogs.py:55
 msgid "Select Mode"
-msgstr "Seleccionar de modo"
+msgstr "Seleccionar modo"
 
 #: mu/interface/dialogs.py:57
 msgid "Please select the desired mode then click \"OK\". Otherwise, click \"Cancel\"."
