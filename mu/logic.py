@@ -690,9 +690,9 @@ class Editor:
                                     '{}'.format(self.mini_runtime))
                         if not os.path.isfile(self.mini_runtime):
                             self.mini_runtime = ''
-                            logger.warning('The specified Calliope mini runtime '
-                                           'does not exist. Using default '
-                                           'runtime instead.')
+                            logger.warning('The specified Calliope mini '
+                                           'runtime does not exist. Using '
+                                           'default runtime instead.')
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
