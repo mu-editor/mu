@@ -690,7 +690,7 @@ class Editor:
                                     '{}'.format(self.mini_runtime))
                         if not os.path.isfile(self.mini_runtime):
                             self.mini_runtime = ''
-                            logger.warning('The specified micro:bit runtime '
+                            logger.warning('The specified Calliope mini runtime '
                                            'does not exist. Using default '
                                            'runtime instead.')
         # handle os passed file last,
@@ -1092,8 +1092,9 @@ class Editor:
                 self._view.show_message(message, information)
             else:
                 self.microbit_runtime = runtime
-
-            runtime = new_settings['mini_runtime'].strip()
+            runtime = ''
+            if 'mini_runtime' in new_settings:
+                runtime = new_settings['mini_runtime'].strip()
             if runtime and not os.path.isfile(runtime):
                 self.mini_runtime = ''
                 message = _('Could not find MicroPython runtime.')
