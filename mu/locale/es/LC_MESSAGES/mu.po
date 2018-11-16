@@ -35,7 +35,7 @@ msgid ""
 "Ensure you have '127.0.0.1 localhost' in your /etc/hosts file."
 msgstr ""
 "No se pudo localizar localhost.\n"
-"Asegúrate de tener '127.0.0.1 localhost' en su archivo /etc/hosts."
+"Asegúrate de tener '127.0.0.1 localhost' en tu archivo /etc/hosts."
 
 #: mu/interface/dialogs.py:55
 msgid "Select Mode"
