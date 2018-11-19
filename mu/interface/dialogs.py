@@ -162,7 +162,7 @@ class MicrobitSettingsWidget(QWidget):
 
 class CalliopeMiniSettingsWidget(QWidget):
     """
-    Used for configuring how to interact with the micro:bit:
+    Used for configuring how to interact with the Calliope mini:
 
     * Set custom runtime path
     """
