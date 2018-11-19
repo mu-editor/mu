@@ -159,6 +159,7 @@ class MicrobitSettingsWidget(QWidget):
         widget_layout.addWidget(self.runtime_path)
         widget_layout.addStretch()
 
+
 class CalliopeMiniSettingsWidget(QWidget):
     """
     Used for configuring how to interact with the micro:bit:
@@ -178,6 +179,7 @@ class CalliopeMiniSettingsWidget(QWidget):
         self.runtime_path.setText(custom_runtime_path)
         widget_layout.addWidget(self.runtime_path)
         widget_layout.addStretch()
+
 
 class AdminDialog(QDialog):
     """
