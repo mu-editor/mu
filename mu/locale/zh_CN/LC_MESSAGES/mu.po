@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mu Chinese\n"
 "POT-Creation-Date: 2018-08-07 18:21+0800\n"
-"PO-Revision-Date: 2018-10-10 21:29+0800\n"
+"PO-Revision-Date: 2018-11-19 13:46+0800\n"
 "Language-Team: 管宁川John (Guan.NingChuan@Gmail.Com)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -30,7 +30,7 @@ msgid ""
 "Connection timed out. Is your machine slow or busy? Free up some of the "
 "machine's resources and try again."
 msgstr ""
-"连接超时。是你的电脑运行太慢还是运行的东西太多？尝试释放一些机器资源再试一次"
+"连接超时。是你的电脑运行太慢还是运行的东西太多？尝试清理内存或CPU占用再试一次"
 "吧。"
 
 #: mu/debugger/client.py:116
@@ -59,7 +59,7 @@ msgstr "通过点击有Mu图标的“模式”按钮来随时更改模式。"
 #: mu/interface/dialogs.py:107
 msgid ""
 "When reporting a bug, copy and paste the content of the following log file."
-msgstr "报告 bug 时，复制并粘贴以下日志文件的内容。"
+msgstr "反馈 bug 时，复制并粘贴以下日志文件的内容。"
 
 #: mu/interface/dialogs.py:127
 msgid ""
@@ -174,7 +174,7 @@ msgstr "主题"
 
 #: mu/interface/main.py:91
 msgid "Toggle theme between day, night or high contrast."
-msgstr "切换白天、夜间或者高对比度的主题。"
+msgstr "切换日间、夜间或者高对比度的主题。"
 
 #: mu/interface/main.py:94
 msgid "Check"
@@ -358,7 +358,7 @@ msgstr ""
 
 #: mu/logic.py:71
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
-msgstr "这个编辑器名为 Mu ，你可以读作“谬(mew)”或“沐(moo)”。"
+msgstr "这个编辑器名为 Mu ，你可以读作“谬(miu)”或“沐(mu)”。"
 
 #: mu/logic.py:72
 msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
@@ -401,7 +401,7 @@ msgstr "开阔思路、冒险精神及尊重是多样性的关键。"
 #: mu/logic.py:82
 msgid ""
 "Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
-msgstr "如果它不起作用，别担心。 学习课程，修复它，然后再试一次！:-)"
+msgstr "如果它不起作用，别担心。 看看教程，修复它，然后再试一次！:-)"
 
 #: mu/logic.py:84
 msgid "Coding is collaboration."
@@ -414,19 +414,19 @@ msgstr "使用代码来赞美和放大美好的东西。"
 #: mu/logic.py:86
 msgid ""
 "In theory, theory and practice are the same. In practice, they're not. ;-)"
-msgstr "理论上，理论和实践都是一样的。 在实践中，并不是。;-)"
+msgstr "理论上来说，理论和实践都是一样的。 在实践中，并不是。;-)"
 
 #: mu/logic.py:88
 msgid "Debugging is twice as hard as writing the code in the first place."
-msgstr "在开始的时候，调试比写代码难两倍。"
+msgstr "在开始的时候，调试代码比写代码要难两倍。"
 
 #: mu/logic.py:89
 msgid "It's fun to program."
-msgstr "编程很有趣。"
+msgstr "编程是个有趣的事情。"
 
 #: mu/logic.py:90
 msgid "Programming has more to do with problem solving than writing code."
-msgstr "编程更多地与解决问题有关，而不是单纯的写代码。"
+msgstr "编程更多地是为了解决问题，而不是单纯的写代码。"
 
 #: mu/logic.py:91
 msgid "Start with your users' needs."
@@ -443,15 +443,15 @@ msgstr "让自己站在用户的位置上。"
 #: mu/logic.py:94
 msgid ""
 "Explaining a programming problem to a friend often reveals the solution. :-)"
-msgstr "向朋友解释编程的问题，通常会获得解决方案。:-)"
+msgstr "与朋友讨论编程中遇到的问题，通常会获得新的解决方案。:-)"
 
 #: mu/logic.py:96
 msgid "If you don't know, ask. Nobody to ask? Just look it up."
-msgstr "如果你不知道，请提问题。 没有人提问？ 查查看吧。"
+msgstr "如果你不知道，就提问吧。找不到人问的话，就自己查查看吧。"
 
 #: mu/logic.py:97
 msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
-msgstr "复杂是敌人。 KISS - keep it simple, stupid!（保持简单和愚蠢！）"
+msgstr "复杂是敌人。 KISS - keep it simple, stupid!（保持简单和纯粹！）"
 
 #: mu/logic.py:98
 msgid "Beautiful is better than ugly."
@@ -502,11 +502,11 @@ msgstr "做比不做好，但立马去做有时还不如不做。"
 
 #: mu/logic.py:111
 msgid "If the implementation is hard to explain, it's a bad idea."
-msgstr "如果实现很难说明，那它是个坏想法。"
+msgstr "如果写的代码很难清楚表述的话，那就是个糟糕想法。"
 
 #: mu/logic.py:112
 msgid "If the implementation is easy to explain, it may be a good idea."
-msgstr "如果实现容易解释，那它有可能是个好想法。"
+msgstr "如果写的代码很容易清楚表述的话，那很有可能是个好想法。"
 
 #: mu/logic.py:113
 msgid "Namespaces are one honking great idea -- let's do more of those!"
@@ -528,7 +528,7 @@ msgstr "算法：程序员在不想解释他们所做的事情时使用的一个
 
 #: mu/logic.py:118
 msgid "Programmers count from zero."
-msgstr "程序员们都从零开始计数。"
+msgstr "程序员们都从0开始计数。"
 
 #: mu/logic.py:119
 msgid "Simplicity is the ultimate sophistication."
@@ -689,7 +689,7 @@ msgstr ""
 
 #: mu/logic.py:968
 msgid "Good job! No problems found."
-msgstr "做得好！ 没有发现问题。"
+msgstr "干得漂亮！ 没有发现问题。"
 
 #: mu/logic.py:969
 msgid "Hurrah! Checker turned up no problems."
@@ -710,7 +710,7 @@ msgstr "真棒！没发现问题。"
 #: mu/logic.py:999
 msgid ""
 "There is un-saved work, exiting the application will cause you to lose it."
-msgstr "你有还没有保存的代码，如果退出程序将会导致你丢失它们。"
+msgstr "你有还没有保存的代码，如果现在退出程序的话将不会保存。"
 
 #: mu/logic.py:1052
 msgid "Could not find MicroPython runtime."
@@ -777,11 +777,11 @@ msgstr "高亮显示“{}”的匹配项。"
 
 #: mu/logic.py:1297
 msgid "You must provide something to find."
-msgstr "你必须提供需要查找的内容。"
+msgstr "你需要提供需要查找的内容。"
 
 #: mu/logic.py:1298
 msgid "Please try again, this time with something in the find box."
-msgstr "请再次尝试，这次是在查找框中的内容。"
+msgstr "请在查找框中输入内容，然后重试。"
 
 #: mu/modes/adafruit.py:32
 msgid "Adafruit CircuitPython"
