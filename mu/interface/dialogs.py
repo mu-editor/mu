@@ -159,6 +159,25 @@ class MicrobitSettingsWidget(QWidget):
         widget_layout.addWidget(self.runtime_path)
         widget_layout.addStretch()
 
+class CalliopeMiniSettingsWidget(QWidget):
+    """
+    Used for configuring how to interact with the micro:bit:
+
+    * Set custom runtime path
+    """
+
+    def setup(self, custom_runtime_path):
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+        label = QLabel(_('Override the built-in MicroPython runtime with '
+                         'the following hex file (empty means use the '
+                         'default):'))
+        label.setWordWrap(True)
+        widget_layout.addWidget(label)
+        self.runtime_path = QLineEdit()
+        self.runtime_path.setText(custom_runtime_path)
+        widget_layout.addWidget(self.runtime_path)
+        widget_layout.addStretch()
 
 class AdminDialog(QDialog):
     """
@@ -188,9 +207,8 @@ class AdminDialog(QDialog):
         self.tabs.addTab(self.envar_widget, _('Python3 Environment'))
         self.log_widget.log_text_area.setFocus()
 
-        self.mini_widget = MicrobitSettingsWidget()
-        self.mini_widget.setup(settings.get('minify', False),
-                               settings.get('mini_runtime', ''))
+        self.mini_widget = CalliopeMiniSettingsWidget()
+        self.mini_widget.setup(settings.get('mini_runtime', ''))
         self.tabs.addTab(self.mini_widget, _('Calliope mini Settings'))
 
         self.microbit_widget = MicrobitSettingsWidget()
