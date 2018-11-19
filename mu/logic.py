@@ -1091,7 +1091,7 @@ class Editor:
                 self._view.show_message(message, information)
             else:
                 self.microbit_runtime = runtime
-            runtime = new_settings.get('mini_runtime','').strip()
+            runtime = new_settings.get('mini_runtime', '').strip()
             if runtime and not os.path.isfile(runtime):
                 self.mini_runtime = ''
                 message = _('Could not find MicroPython runtime.')
