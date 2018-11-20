@@ -68,7 +68,7 @@ msgid ""
 "When reporting a bug, copy and paste the content of the following log file."
 msgstr ""
 "Wenn Sie einen Fehler melden, kopieren Sie bitte den Inhalt der folgenden "
-"Protkolldatei."
+"Protokolldatei."
 
 #: mu/interface/dialogs.py:127
 msgid ""
@@ -78,7 +78,7 @@ msgid ""
 "Each separate enviroment variable should be on a new line and of the form:\n"
 "NAME=VALUE"
 msgstr ""
-"Die nachfolgende Umgebungsvariable wird jedes mal gesetzt, wenn Sie ein "
+"Die nachfolgenden Umgebungsvariablen werden jedes mal gesetzt, wenn Sie ein "
 "Python 3 Skript ausführen.\n"
 "\n"
 "Jede separate Umgebungsvariable sollte in einer eigenen Zeile und von der "
@@ -107,7 +107,7 @@ msgstr "Aktuelles Protokoll"
 
 #: mu/interface/dialogs.py:189
 msgid "Python3 Environment"
-msgstr "Python3 Umbegung"
+msgstr "Python3 Umgebung"
 
 #: mu/interface/dialogs.py:194
 msgid "BBC micro:bit Settings"
@@ -187,7 +187,7 @@ msgstr "Thema"
 
 #: mu/interface/main.py:91
 msgid "Toggle theme between day, night or high contrast."
-msgstr "Thema zwischen Tag, Nach oder hoher Kontrast umschalten."
+msgstr "Thema zwischen Tag, Nacht oder hoher Kontrast umschalten."
 
 #: mu/interface/main.py:94
 msgid "Check"
@@ -410,7 +410,7 @@ msgstr "Mache Deine Software sowohl nützlich als auch spaßig zu benutzen."
 
 #: mu/logic.py:79
 msgid "For the Zen of Python: import this"
-msgstr "Für den Zen von Python: importiere dies"
+msgstr "Für den Zen von Python: import this"
 
 #: mu/logic.py:80
 msgid "Diversity promotes creativity."
@@ -479,7 +479,7 @@ msgstr ""
 
 #: mu/logic.py:96
 msgid "If you don't know, ask. Nobody to ask? Just look it up."
-msgstr "Wenn Du etwas nicht weiß, frag. Niemand zum Fragen? Schlag' es nach."
+msgstr "Wenn Du etwas nicht weißt, frag. Niemand zum Fragen? Schlag' es nach."
 
 #: mu/logic.py:97
 msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
@@ -600,7 +600,7 @@ msgstr ""
 
 #: mu/logic.py:124
 msgid "A good programmer promotes simplicity."
-msgstr "Ein(e) gute(r) Programmierer(in) ist fördert Schlichtheit."
+msgstr "Ein(e) gute(r) Programmierer(in) fördert Schlichtheit."
 
 #: mu/logic.py:125
 msgid "A good programmer avoids complexity."
@@ -672,7 +672,7 @@ msgid ""
 "Currently Mu only works with Python source files or hex files created with "
 "embedded MicroPython code."
 msgstr ""
-"Momenten funktioniert Mu nur mit Python Quelldateien oder hex-Dateien die "
+"Im Moment funktioniert Mu nur mit Python Quelldateien oder hex-Dateien die "
 "mit MicroPython Code erstellt wurden."
 
 #: mu/logic.py:765
@@ -771,7 +771,7 @@ msgstr "Ausgezeichnet! Keine Probleme gefunden."
 msgid ""
 "There is un-saved work, exiting the application will cause you to lose it."
 msgstr ""
-"Es existieren nicht gespeicherte Änderungen. Das beenden der Anwendung "
+"Es existieren nicht gespeicherte Änderungen. Das Beenden der Anwendung "
 "verwirft diese Änderungen."
 
 #: mu/logic.py:1052
@@ -1133,7 +1133,7 @@ msgid ""
 msgstr ""
 "Bitte stelle sicher, dass du genug Zeit lässt damit der BBC micro:bit "
 "korrekt vom Computer konfiguriert werden kann. Dies kann einige Sekunden "
-"dauern. Alternativ, versuche das Gerät aus und wieder einzustecken oder "
+"dauern. Alternativ, versuche das Gerät aus- und wieder einzustecken oder "
 "Änderungen zu speichern und Mu neu zu starten, falls das Gerät weiterhin "
 "nicht gefunden wird."
 
@@ -1251,7 +1251,7 @@ msgstr "Geräusche"
 
 #: mu/modes/pygamezero.py:73
 msgid "Show the sounds used by Pygame Zero."
-msgstr "Geräusche anzeigen, die von Pygame Zero benutzt wird."
+msgstr "Geräusche anzeigen, die von Pygame Zero benutzt werden."
 
 #: mu/modes/pygamezero.py:79
 msgid "Music"
