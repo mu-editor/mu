@@ -142,7 +142,7 @@ def test_AdminDialog_setup():
     settings = {
         'envars': 'name=value',
         'minify': True,
-        'mini_runtime': '/foo/bar',
+        'mini_runtime': '',
         'microbit_runtime': '/foo/bar',
     }
     mock_window = QWidget()
