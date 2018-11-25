@@ -70,3 +70,4 @@ Discussion in:
 
 (Later)
 * https://github.com/mu-editor/mu/issues/402
+* https://github.com/mu-editor/mu/issues/696
