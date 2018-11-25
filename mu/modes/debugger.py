@@ -105,11 +105,8 @@ class DebugMode(BaseMode):
         if tab.path:
             # If needed, save the script.
             if tab.isModified():
-                with open(tab.path, 'w', newline='') as f:
-                    logger.info('Saving script to: {}'.format(tab.path))
-                    logger.debug(tab.text())
-                    write_and_flush(f, tab.text())
-                    tab.setModified(False)
+                self.editor.save_tab_to_file(tab)
+                tab.setModified(False)
             logger.debug(tab.text())
             self.set_buttons(modes=False)
             envars = self.editor.envars

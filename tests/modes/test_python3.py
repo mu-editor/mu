@@ -6,7 +6,9 @@ import sys
 from mu.modes.python3 import PythonMode, KernelRunner
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from unittest import mock
+import tempfile
 
+from . import UNICODE_TEST_STRING
 
 def test_kernel_runner_start_kernel():
     """
@@ -181,14 +183,13 @@ def test_python_run_script():
     view = mock.MagicMock()
     view.current_tab.path = '/foo'
     view.current_tab.isModified.return_value = True
+    view.current_tab.text = mock.MagicMock(return_value="abc")
     mock_runner = mock.MagicMock()
     view.add_python3_runner.return_value = mock_runner
     pm = PythonMode(editor, view)
     pm.workspace_dir = mock.MagicMock(return_value='/bar')
-    with mock.patch('builtins.open') as oa, \
-            mock.patch('mu.modes.python3.write_and_flush'):
-        pm.run_script()
-        oa.assert_called_once_with('/foo', 'w', newline='')
+    pm.run_script()
+    editor.save_tab_to_file.assert_called_once_with(view.current_tab)
     view.add_python3_runner.assert_called_once_with('/foo', '/bar',
                                                     interactive=True,
                                                     envars=editor.envars)
@@ -197,16 +198,12 @@ def test_python_run_script():
     # mode are also in play.
     pm.set_buttons = mock.MagicMock()
     pm.kernel_runner = True
-    with mock.patch('builtins.open') as oa, \
-            mock.patch('mu.modes.python3.write_and_flush'):
-        pm.run_script()
+    pm.run_script()
     pm.set_buttons.assert_called_once_with(plotter=False)
     pm.set_buttons.reset_mock()
     pm.kernel_runner = False
     pm.plotter = True
-    with mock.patch('builtins.open') as oa, \
-            mock.patch('mu.modes.python3.write_and_flush'):
-        pm.run_script()
+    pm.run_script()
     pm.set_buttons.assert_called_once_with(repl=False)
 
 
@@ -236,6 +233,23 @@ def test_python_run_script_needs_saving():
     pm.stop_script = mock.MagicMock()
     pm.run_script()
     editor.save.assert_called_once_with()
+
+
+def test_python_run_script_uses_editor_save():
+    """The run code uses the common editor save code, invoking
+    encoding checks and useful messages
+    """
+    filepath = "foo"
+    
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab.IsModified.return_value = True
+    view.current_tab.path = "foo"
+    view.current_tab.text = mock.MagicMock(return_value="foo")
+    pm = PythonMode(editor, view)
+    pm.stop_script = mock.MagicMock()
+    pm.run_script()
+    editor.save_tab_to_file.assert_called_once_with(view.current_tab)
 
 
 def test_python_stop_script():
