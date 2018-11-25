@@ -172,26 +172,17 @@ class PythonMode(BaseMode):
         """
         # Grab the Python file.
         tab = self.view.current_tab
-        print("Tab is", tab)
         if tab is None:
-            print("Tab is None")
             logger.debug('There is no active text editor.')
             self.stop_script()
             return
         if tab.path is None:
-            print("Tab.path is None")
             # Unsaved file.
             self.editor.save()
         if tab.path:
-            print("Tab path is", tab.path)
             # If needed, save the script.
             if tab.isModified():
-                print("Tab is modified")
                 self.editor.save_tab_to_file(tab)
-                # logger.info('Saving script to: {}'.format(tab.path))
-                # logger.debug(tab.text())
-                # save_and_encode(tab.text())
-                # tab.setModified(False)
             envars = self.editor.envars
             self.runner = self.view.add_python3_runner(tab.path,
                                                        self.workspace_dir(),

@@ -106,7 +106,6 @@ class DebugMode(BaseMode):
             # If needed, save the script.
             if tab.isModified():
                 self.editor.save_tab_to_file(tab)
-                tab.setModified(False)
             logger.debug(tab.text())
             self.set_buttons(modes=False)
             envars = self.editor.envars
