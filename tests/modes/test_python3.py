@@ -6,9 +6,7 @@ import sys
 from mu.modes.python3 import PythonMode, KernelRunner
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from unittest import mock
-import tempfile
 
-from . import UNICODE_TEST_STRING
 
 def test_kernel_runner_start_kernel():
     """
@@ -239,8 +237,6 @@ def test_python_run_script_uses_editor_save():
     """The run code uses the common editor save code, invoking
     encoding checks and useful messages
     """
-    filepath = "foo"
-    
     editor = mock.MagicMock()
     view = mock.MagicMock()
     view.current_tab.IsModified.return_value = True

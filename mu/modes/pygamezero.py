@@ -20,7 +20,6 @@ import os
 import logging
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS, PYGAMEZERO_APIS
-from mu.logic import write_and_flush
 from mu.resources import load_icon
 
 
