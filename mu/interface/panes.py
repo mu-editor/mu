@@ -360,6 +360,68 @@ class MicrobitFileList(MuFileList):
         self.list_files.emit()
 
 
+class CalliopeMiniFileList(MuFileList):
+    """
+    Represents a list of files on the Calliope mini.
+    """
+
+    put = pyqtSignal(str)
+    delete = pyqtSignal(str)
+
+    def __init__(self, home):
+        super().__init__()
+        self.home = home
+        self.setDragDropMode(QListWidget.DragDrop)
+
+    def dropEvent(self, event):
+        source = event.source()
+        if isinstance(source, LocalFileList):
+            file_exists = self.findItems(source.currentItem().text(),
+                                         Qt.MatchExactly)
+            if not file_exists or \
+                    file_exists and self.show_confirm_overwrite_dialog():
+                self.disable.emit()
+                local_filename = os.path.join(self.home,
+                                              source.currentItem().text())
+                msg = _("Copying '{}' to Calliope mini."
+                        ).format(local_filename)
+                logger.info(msg)
+                self.set_message.emit(msg)
+                self.put.emit(local_filename)
+
+    def on_put(self, microbit_file):
+        """
+        Fired when the put event is completed for the given filename.
+        """
+        msg = _("'{}' successfully copied to Calliope mini."
+                ).format(microbit_file)
+        self.set_message.emit(msg)
+        self.list_files.emit()
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        delete_action = menu.addAction(_("Delete (cannot be undone)"))
+        action = menu.exec_(self.mapToGlobal(event.pos()))
+        if action == delete_action:
+            self.disable.emit()
+            microbit_filename = self.currentItem().text()
+            logger.info("Deleting {}".format(microbit_filename))
+            msg = _("Deleting '{}' from Calliope mini."
+                    ).format(microbit_filename)
+            logger.info(msg)
+            self.set_message.emit(msg)
+            self.delete.emit(microbit_filename)
+
+    def on_delete(self, microbit_file):
+        """
+        Fired when the delete event is completed for the given filename.
+        """
+        msg = _("'{}' successfully deleted from Calliope mini.").\
+            format(microbit_file)
+        self.set_message.emit(msg)
+        self.list_files.emit()
+
+
 class LocalFileList(MuFileList):
     """
     Represents a list of files in the Mu directory on the local machine.
@@ -442,21 +504,102 @@ class FileSystemPane(QFrame):
     open_file = pyqtSignal(str)
 
     def __init__(self, home):
+        import ctypes
+        from subprocess import check_output
+
+        def find_device():
+            """
+            Returns a path on the filesystem that represents
+            the plugged in BBC
+            micro:bit that is to be flashed. If no micro:bit
+            is found, it returns
+            None.
+
+            Works on Linux, OSX and Windows. Will raise a NotImplementedError
+            exception if run on any other operating system.
+            """
+            # Check what sort of operating system we're on.
+            if os.name == 'posix':
+                # 'posix' means we're on Linux or OSX (Mac).
+                # Call the unix "mount" command to list the mounted volumes.
+                mount_output = check_output('mount').splitlines()
+                mounted_volumes = [x.split()[2] for x in mount_output]
+                for volume in mounted_volumes:
+                    if volume.endswith(b'MINI') or \
+                            volume.endswith(b'MICROBIT'):
+                        return volume.decode('utf-8')
+                        # Return a string not bytes.
+            elif os.name == 'nt':
+                # 'nt' means we're on Windows.
+
+                def get_volume_name(disk_name):
+                    """
+                    Each disk or external device connected to windows
+                    has an attribute
+                    called "volume name". This function returns the
+                    volume name for
+                    the given disk/device.
+
+                    Code from http://stackoverflow.com/a/12056414
+                    """
+                    vol_name_buf = ctypes.create_unicode_buffer(1024)
+                    ctypes.windll.kernel32.GetVolumeInformationW(
+                        ctypes.c_wchar_p(disk_name), vol_name_buf,
+                        ctypes.sizeof(vol_name_buf), None, None, None, None, 0)
+                    return vol_name_buf.value
+
+                #
+                # In certain circumstances, volumes are allocated to USB
+                # storage devices which cause a Windows popup to raise if their
+                # volume contains no media. Wrapping the check in SetErrorMode
+                # with SEM_FAILCRITICALERRORS (1) prevents this popup.
+                #
+                old_mode = ctypes.windll.kernel32.SetErrorMode(1)
+                try:
+                    for disk in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+                        path = '{}:\\'.format(disk)
+                        #
+                        # Don't bother looking if the drive isn't removable
+                        #
+                        if ctypes.windll.kernel32.GetDriveTypeW(path) != 2:
+                            continue
+                        if os.path.exists(path) and \
+                                get_volume_name(path) == 'MINI' or \
+                                get_volume_name(path) == 'MICROBIT':
+                            return get_volume_name(path)
+                finally:
+                    ctypes.windll.kernel32.SetErrorMode(old_mode)
+            else:
+                # No support for unknown operating systems.
+                # raise NotImplementedError
+                # ('OS "{}" not supported.'.format(os.name))
+                return None
+            return None
+
         super().__init__()
         self.home = home
         self.font = Font().load()
         microbit_fs = MicrobitFileList(home)
         local_fs = LocalFileList(home)
+        self.device_displayName = "micro:bit"
+        device = find_device()
+        if device is not None:
+            if device.lower().find("mini") > -1:
+                microbit_fs = CalliopeMiniFileList(home)
+                self.device_displayName = "Calliope mini"
 
         @local_fs.open_file.connect
         def on_open_file(file):
-            # Bubble the signal up
+            """
+            Bubble the signal up
+            """
             self.open_file.emit(file)
 
         layout = QGridLayout()
         self.setLayout(layout)
         microbit_label = QLabel()
-        microbit_label.setText(_('Files on your micro:bit:'))
+        microbit_label.setText(_('Files on your {}:'.format(
+                                 self.device_displayName)))
         local_label = QLabel()
         local_label.setText(_('Files on your computer:'))
         self.microbit_label = microbit_label

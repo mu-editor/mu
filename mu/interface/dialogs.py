@@ -23,7 +23,6 @@ from PyQt5.QtWidgets import (QVBoxLayout, QListWidget, QLabel, QListWidgetItem,
                              QTabWidget, QWidget, QCheckBox, QLineEdit)
 from mu.resources import load_icon
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -161,6 +160,27 @@ class MicrobitSettingsWidget(QWidget):
         widget_layout.addStretch()
 
 
+class CalliopeMiniSettingsWidget(QWidget):
+    """
+    Used for configuring how to interact with the Calliope mini:
+
+    * Set custom runtime path
+    """
+
+    def setup(self, custom_runtime_path):
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+        label = QLabel(_('Override the built-in MicroPython runtime with '
+                         'the following hex file (empty means use the '
+                         'default):'))
+        label.setWordWrap(True)
+        widget_layout.addWidget(label)
+        self.runtime_path = QLineEdit()
+        self.runtime_path.setText(custom_runtime_path)
+        widget_layout.addWidget(self.runtime_path)
+        widget_layout.addStretch()
+
+
 class AdminDialog(QDialog):
     """
     Displays administrative related information and settings (logs, environment
@@ -188,6 +208,11 @@ class AdminDialog(QDialog):
         self.envar_widget.setup(settings.get('envars', ''))
         self.tabs.addTab(self.envar_widget, _('Python3 Environment'))
         self.log_widget.log_text_area.setFocus()
+
+        self.mini_widget = CalliopeMiniSettingsWidget()
+        self.mini_widget.setup(settings.get('mini_runtime', ''))
+        self.tabs.addTab(self.mini_widget, _('Calliope mini Settings'))
+
         self.microbit_widget = MicrobitSettingsWidget()
         self.microbit_widget.setup(settings.get('minify', False),
                                    settings.get('microbit_runtime', ''))
@@ -203,6 +228,7 @@ class AdminDialog(QDialog):
             'envars': self.envar_widget.text_area.toPlainText(),
             'minify': self.microbit_widget.minify.isChecked(),
             'microbit_runtime': self.microbit_widget.runtime_path.text(),
+            'mini_runtime': self.mini_widget.runtime_path.text(),
         }
 
 

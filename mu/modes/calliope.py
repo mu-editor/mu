@@ -1,6 +1,6 @@
 """
-The mode for working with the BBC micro:bit. Conatains most of the origial
-functionality from Mu when it was only a micro:bit related editor.
+The mode for working with the mini. Conatains most of the origial
+functionality from Mu when it was only a mini related editor.
 
 Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
 
@@ -17,6 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 import os
 import sys
 import os.path
@@ -24,8 +25,8 @@ import logging
 import semver
 from tokenize import TokenError
 from mu.logic import HOME_DIRECTORY
-from mu.contrib import uflash, microfs
-from mu.modes.api import MICROBIT_APIS, SHARED_APIS
+from mu.contrib import mflash, minifs
+from mu.modes.api import CALLIOPEMINI_APIS, SHARED_APIS
 from mu.modes.base import MicroPythonMode
 from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
@@ -42,15 +43,15 @@ logger = logging.getLogger(__name__)
 
 class DeviceFlasher(QThread):
     """
-    Used to flash the micro:bit in a non-blocking manner.
+    Used to flash the mini in a non-blocking manner.
     """
-    # Emitted when flashing the micro:bit fails for any reason.
+    # Emitted when flashing the mini fails for any reason.
     on_flash_fail = pyqtSignal(str)
 
     def __init__(self, paths_to_microbits, python_script, path_to_runtime):
         """
         The paths_to_microbits should be a list containing filesystem paths to
-        attached micro:bits to flash. The python_script should be the text of
+        attached minis to flash. The python_script should be the text of
         the script to flash onto the device. The path_to_runtime should be the
         path of the hex file for the MicroPython runtime to use. If the
         path_to_runtime is None, the default MicroPython runtime is used by
@@ -66,7 +67,7 @@ class DeviceFlasher(QThread):
         Flash the device.
         """
         try:
-            uflash.flash(paths_to_microbits=self.paths_to_microbits,
+            mflash.flash(paths_to_microbits=self.paths_to_microbits,
                          python_script=self.python_script,
                          path_to_runtime=self.path_to_runtime)
         except Exception as ex:
@@ -78,45 +79,45 @@ class DeviceFlasher(QThread):
 
 class FileManager(QObject):
     """
-    Used to manage micro:bit filesystem operations in a manner such that the
+    Used to manage mini filesystem operations in a manner such that the
     UI remains responsive.
 
     Provides an FTP-ish API. Emits signals on success or failure of different
     operations.
     """
 
-    # Emitted when the tuple of files on the micro:bit is known.
+    # Emitted when the tuple of files on the mini is known.
     on_list_files = pyqtSignal(tuple)
-    # Emitted when the file with referenced filename is got from the micro:bit.
+    # Emitted when the file with referenced filename is got from the mini.
     on_get_file = pyqtSignal(str)
-    # Emitted when the file with referenced filename is put onto the micro:bit.
+    # Emitted when the file with referenced filename is put onto the mini.
     on_put_file = pyqtSignal(str)
     # Emitted when the file with referenced filename is deleted from the
-    # micro:bit.
+    # mini.
     on_delete_file = pyqtSignal(str)
-    # Emitted when Mu is unable to list the files on the micro:bit.
+    # Emitted when Mu is unable to list the files on the mini.
     on_list_fail = pyqtSignal()
-    # Emitted when the referenced file fails to be got from the micro:bit.
+    # Emitted when the referenced file fails to be got from the mini.
     on_get_fail = pyqtSignal(str)
-    # Emitted when the referenced file fails to be put onto the micro:bit.
+    # Emitted when the referenced file fails to be put onto the mini.
     on_put_fail = pyqtSignal(str)
-    # Emitted when the referenced file fails to be deleted from the micro:bit.
+    # Emitted when the referenced file fails to be deleted from the mini.
     on_delete_fail = pyqtSignal(str)
 
     def on_start(self):
         """
         Run when the thread containing this object's instance is started so
-        it can emit the list of files found on the connected micro:bit.
+        it can emit the list of files found on the connected mini.
         """
         self.ls()
 
     def ls(self):
         """
-        List the files on the micro:bit. Emit the resulting tuple of filenames
+        List the files on the mini. Emit the resulting tuple of filenames
         or emit a failure signal.
         """
         try:
-            result = tuple(microfs.ls())
+            result = tuple(minifs.ls())
             self.on_list_files.emit(result)
         except Exception as ex:
             logger.exception(ex)
@@ -124,12 +125,12 @@ class FileManager(QObject):
 
     def get(self, microbit_filename, local_filename):
         """
-        Get the referenced micro:bit filename and save it to the local
+        Get the referenced mini filename and save it to the local
         filename. Emit the name of the filename when complete or emit a
         failure signal.
         """
         try:
-            microfs.get(microbit_filename, local_filename)
+            minifs.get(microbit_filename, local_filename)
             self.on_get_file.emit(microbit_filename)
         except Exception as ex:
             logger.error(ex)
@@ -137,12 +138,13 @@ class FileManager(QObject):
 
     def put(self, local_filename):
         """
-        Put the referenced local file onto the filesystem on the micro:bit.
-        Emit the name of the file on the micro:bit when complete, or emit
+        Put the referenced local file onto the filesystem on the mini.
+        Emit the name of the file on the mini when complete, or emit
         a failure signal.
         """
         try:
-            microfs.put(local_filename, target=None)
+            logger.info("File to be put on mini: " + local_filename)
+            minifs.put(local_filename, target=None)
             self.on_put_file.emit(os.path.basename(local_filename))
         except Exception as ex:
             logger.error(ex)
@@ -150,35 +152,35 @@ class FileManager(QObject):
 
     def delete(self, microbit_filename):
         """
-        Delete the referenced file on the micro:bit's filesystem. Emit the name
+        Delete the referenced file on the mini's filesystem. Emit the name
         of the file when complete, or emit a failure signal.
         """
         try:
-            microfs.rm(microbit_filename)
+            minifs.rm(microbit_filename)
             self.on_delete_file.emit(microbit_filename)
         except Exception as ex:
             logger.error(ex)
             self.on_delete_fail.emit(microbit_filename)
 
 
-class MicrobitMode(MicroPythonMode):
+class CalliopeMode(MicroPythonMode):
     """
-    Represents the functionality required by the micro:bit mode.
+    Represents the functionality required by the mini mode.
     """
-    name = _('BBC micro:bit')
-    description = _("Write MicroPython for the BBC micro:bit.")
-    icon = 'microbit'
+    name = _('Calliope mini')
+    description = _("Write MicroPython for the Calliope mini.")
+    icon = 'calliope'
     fs = None  #: Reference to filesystem navigator.
     flash_thread = None
     flash_timer = None
     file_extensions = ['hex']
 
     valid_boards = [
-        (0x0D28, 0x0204),  # micro:bit USB VID, PID
+        (0x0D28, 0x0204),  # mini USB VID, PID
     ]
 
-    valid_serial_numbers = [9900, 9901]  # Serial numbers of supported boards.
-
+    valid_serial_numbers = ["12A0", "9900"]
+    # Serial numbers of supported boards.
     python_script = ''
 
     def actions(self):
@@ -188,16 +190,16 @@ class MicrobitMode(MicroPythonMode):
         """
         buttons = [
             {
-                'name': 'flash',
+                'name': 'calliope_flash',
                 'display_name': _('Flash'),
-                'description': _('Flash your code onto the micro:bit.'),
+                'description': _('Flash your code onto the mini.'),
                 'handler': self.flash,
                 'shortcut': 'F3',
             },
             {
-                'name': 'files',
+                'name': 'calliope_files',
                 'display_name': _('Files'),
-                'description': _('Access the file system on the micro:bit.'),
+                'description': _('Access the file system on the mini.'),
                 'handler': self.toggle_files,
                 'shortcut': 'F4',
             },
@@ -205,7 +207,7 @@ class MicrobitMode(MicroPythonMode):
                 'name': 'repl',
                 'display_name': _('REPL'),
                 'description': _('Use the REPL to live-code on the '
-                                 'micro:bit.'),
+                                 'mini.'),
                 'handler': self.toggle_repl,
                 'shortcut': 'Ctrl+Shift+I',
             }, ]
@@ -224,11 +226,12 @@ class MicrobitMode(MicroPythonMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return SHARED_APIS + MICROBIT_APIS
+        return SHARED_APIS + CALLIOPEMINI_APIS
 
     def flash(self):
         """
-        Takes the currently active tab, compiles the Python script therein into
+        Takes the currently active tab,
+        compiles the Python script therein into
         a hex file and flashes it all onto the connected device.
 
         WARNING: This method is getting more complex due to several edge
@@ -250,10 +253,10 @@ class MicrobitMode(MicroPythonMode):
         logger.debug(python_script)
         # Check minification status.
         minify = False
-        if uflash.get_minifier():
+        if mflash.get_minifier():
             minify = self.editor.minify
         # Attempt and handle minification.
-        if len(python_script) >= uflash._MAX_SIZE:
+        if len(python_script) >= mflash._MAX_SIZE:
             message = _('Unable to flash "{}"').format(tab.label)
             if minify and can_minify:
                 orginal = len(python_script)
@@ -293,30 +296,33 @@ class MicrobitMode(MicroPythonMode):
         # method.
         self.python_script = python_script
         # Next step: find the microbit port and serial number.
-        path_to_microbit = uflash.find_microbit()
-        logger.info('Path to micro:bit: {}'.format(path_to_microbit))
+        path_to_mini = mflash.find_mini()
+        logger.warning('found mini...')
+        logger.info('Path to mini: {}'.format(path_to_mini))
         port = None
         serial_number = None
+
         try:
             port, serial_number = self.find_device()
             logger.info('Serial port: {}'.format(port))
             logger.info('Device serial number: {}'.format(serial_number))
         except Exception as ex:
-            logger.warning('Unable to make serial connection to micro:bit.')
+            logger.warning('Unable to make serial connection to mini.')
             logger.warning(ex)
-        # Determine the location of the BBC micro:bit. If it can't be found
+        # Determine the location of the mini mini. If it can't be found
         # fall back to asking the user to locate it.
-        if path_to_microbit is None:
+        user_defined_microbit_path = path_to_mini
+        if path_to_mini is None:
             # Ask the user to locate the device.
-            path_to_microbit = self.view.get_microbit_path(HOME_DIRECTORY)
-            user_defined_microbit_path = path_to_microbit
-            logger.debug('User defined path to micro:bit: {}'.format(
+            path_to_mini = self.view.get_calliopemini_path(HOME_DIRECTORY)
+            user_defined_microbit_path = path_to_mini
+            logger.debug('User defined path to mini: {}'.format(
                          user_defined_microbit_path))
-        # Check the path and that it exists simply because the path maybe based
-        # on stale data.
-        if path_to_microbit and os.path.exists(path_to_microbit):
+        # Check the path and that it exists simply because the path
+        # maybe based on stale data.
+        if path_to_mini and os.path.exists(path_to_mini):
             force_flash = False  # If set to true, fully flash the device.
-            # If there's no port but there's a path_to_microbit, then we're
+            # If there's no port but there's a path_to_mini, then we're
             # probably running on Windows with an old device, so force flash.
             if not port:
                 force_flash = True
@@ -326,12 +332,13 @@ class MicrobitMode(MicroPythonMode):
                 logger.info("Python script empty. Forcing flash.")
                 force_flash = True
             logger.info("Checking target device.")
+
             # Get the version of MicroPython on the device.
             try:
-                version_info = microfs.version()
+                version_info = minifs.version()
                 logger.info(version_info)
                 board_info = version_info['version'].split()
-                if (board_info[0] == 'micro:bit' and
+                if (board_info[0] == 'mini' and
                         board_info[1].startswith('v')):
                     # New style versions, so the correct information will be
                     # in the "release" field.
@@ -350,32 +357,36 @@ class MicrobitMode(MicroPythonMode):
                     board_version = '0.0.1'
                 logger.info('Board MicroPython: {}'.format(board_version))
                 logger.info(
-                    'Mu MicroPython: {}'.format(uflash.MICROPYTHON_VERSION))
+                    'Mu MicroPython: {}'.format(mflash.MICROPYTHON_VERSION))
                 # If there's an older version of MicroPython on the device,
                 # update it with the one packaged with Mu.
                 if semver.compare(board_version,
-                                  uflash.MICROPYTHON_VERSION) < 0:
+                                  mflash.MICROPYTHON_VERSION) < 0:
                     force_flash = True
             except Exception:
                 # Could not get version of MicroPython. This means either the
                 # device has a really old version of MicroPython or is running
                 # something else. In any case, flash MicroPython onto the
                 # device.
-                logger.warning('Could not detect version of MicroPython.')
+                logger.warn('Could not detect version of MicroPython.')
                 force_flash = True
             # Check use of custom runtime.
-            rt_hex_path = self.editor.microbit_runtime.strip()
-            message = _('Flashing "{}" onto the micro:bit.').format(tab.label)
+            rt_hex_path = self.editor.mini_runtime.strip()
+
+            message = _('Flashing "{}" onto the mini.').format(tab.label)
+
             if (rt_hex_path and os.path.exists(rt_hex_path)):
                 message = message + _(" Runtime: {}").format(rt_hex_path)
-                force_flash = True  # Using a custom runtime, so flash it.
+                force_flash = True
+                # Using a custom runtime, so flash it.
             else:
                 rt_hex_path = None
-                self.editor.microbit_runtime = ''
+                self.editor.mini_runtime = ''
             # Check for use of user defined path (to save hex onto local
             # file system.
             if user_defined_microbit_path:
                 force_flash = True
+
             # If we need to flash the device with a clean hex, do so now.
             if force_flash:
                 logger.info('Flashing new MicroPython runtime onto device')
@@ -384,36 +395,38 @@ class MicrobitMode(MicroPythonMode):
                 if user_defined_microbit_path or not port:
                     # The user has provided a path to a location on the
                     # filesystem. In this case save the combined hex/script
-                    # in the specified path_to_microbit.
-                    # Or... Mu has a path to a micro:bit but can't establish
+                    # in the specified path_to_mini.
+                    # Or... Mu has a path to a mini but can't establish
                     # a serial connection, so use the combined hex/script
                     # to flash the device.
-                    self.flash_thread = DeviceFlasher([path_to_microbit],
+
+                    self.flash_thread = DeviceFlasher([path_to_mini],
                                                       self.python_script,
                                                       rt_hex_path)
                     # Reset python_script so Mu doesn't try to copy it as the
                     # main.py file.
                     self.python_script = ''
+
                 else:
-                    # We appear to need to flash a connected micro:bit device,
+                    # We appear to need to flash a connected mini device,
                     # so just flash the Python hex with no embedded Python
                     # script, since this will be copied over when the
                     # flashing operation has finished.
-                    model_serial_number = int(serial_number[:4])
+                    model_serial_number = serial_number[:4]
                     if rt_hex_path:
                         # If the user has specified a bespoke runtime hex file
                         # assume they know what they're doing and hope for the
                         # best.
-                        self.flash_thread = DeviceFlasher([path_to_microbit],
+                        self.flash_thread = DeviceFlasher([path_to_mini],
                                                           b'', rt_hex_path)
                     elif model_serial_number in self.valid_serial_numbers:
                         # The connected board has a serial number that
                         # indicates the MicroPython hex bundled with Mu
                         # supports it. In which case, flash it.
-                        self.flash_thread = DeviceFlasher([path_to_microbit],
+                        self.flash_thread = DeviceFlasher([path_to_mini],
                                                           b'', None)
                     else:
-                        message = _('Unsupported BBC micro:bit.')
+                        message = _('Unsupported mini.')
                         information = _("Your device is newer than this "
                                         "version of Mu. Please update Mu "
                                         "to the latest version to support "
@@ -429,7 +442,8 @@ class MicrobitMode(MicroPythonMode):
                         # Call the flash_finished immediately the thread
                         # finishes if Mu is writing the hex file to a user
                         # defined location on the local filesystem.
-                        self.flash_thread.finished.connect(self.flash_finished)
+                        self.flash_thread.finished.connect(
+                            self.flash_finished)
                     else:
                         # Other platforms don't block, so schedule the finish
                         # call for 10 seconds (approximately how long flashing
@@ -437,7 +451,7 @@ class MicrobitMode(MicroPythonMode):
                         self.flash_timer = QTimer()
                         self.flash_timer.timeout.connect(self.flash_finished)
                         self.flash_timer.setSingleShot(True)
-                        self.flash_timer.start(10000)
+                        self.flash_timer.start(20000)
                 self.flash_thread.on_flash_fail.connect(self.flash_failed)
                 self.flash_thread.start()
             else:
@@ -450,18 +464,19 @@ class MicrobitMode(MicroPythonMode):
                     logger.warning('Could not copy file to device.')
                     logger.error(ioex)
                     logger.info('Falling back to old-style flashing.')
-                    self.flash_thread = DeviceFlasher([path_to_microbit],
+                    self.flash_thread = DeviceFlasher([path_to_mini],
                                                       self.python_script,
                                                       rt_hex_path)
                     self.python_script = ''
                     if sys.platform == 'win32':
                         # Windows blocks on write.
-                        self.flash_thread.finished.connect(self.flash_finished)
+                        self.flash_thread.finished.connect(
+                            self.flash_finished)
                     else:
                         self.flash_timer = QTimer()
                         self.flash_timer.timeout.connect(self.flash_finished)
                         self.flash_timer.setSingleShot(True)
-                        self.flash_timer.start(10000)
+                        self.flash_timer.start(20000)
                     self.flash_thread.on_flash_fail.connect(self.flash_failed)
                     self.flash_thread.start()
                 except Exception as ex:
@@ -471,9 +486,9 @@ class MicrobitMode(MicroPythonMode):
             # prompt for patience while the device is mounted and/or do the
             # classic "have you tried switching it off and on again?" trick.
             # This one's for James at the Raspberry Pi Foundation. ;-)
-            message = _('Could not find an attached BBC micro:bit.')
-            information = _("Please ensure you leave enough time for the BBC"
-                            " micro:bit to be attached and configured"
+            message = _('Could not find an attached mini.')
+            information = _("Please ensure you leave enough time for the"
+                            " mini to be attached and configured"
                             " correctly by your computer. This may take"
                             " several seconds."
                             " Alternatively, try removing and re-attaching the"
@@ -483,7 +498,7 @@ class MicrobitMode(MicroPythonMode):
 
     def flash_finished(self):
         """
-        Called when the thread used to flash the micro:bit has finished.
+        Called when the thread used to flash the mini has finished.
         """
         self.set_buttons(flash=True)
         self.editor.show_status_message(_("Finished flashing."))
@@ -493,12 +508,14 @@ class MicrobitMode(MicroPythonMode):
             try:
                 self.copy_main()
             except Exception as ex:
+
                 self.flash_failed(ex)
 
     def copy_main(self):
         """
-        If the attribute self.python_script contains any code, copy it onto the
-        connected micro:bit as main.py, then restart the board (CTRL-D).
+        If the attribute self.python_script
+        contains any code, copy it onto the
+        connected mini as main.py, then restart the board (CTRL-D).
         """
         if self.python_script.strip():
             script = self.python_script
@@ -513,24 +530,25 @@ class MicrobitMode(MicroPythonMode):
                 script = script[64:]
             commands.append('fd.close()')
             logger.info(commands)
-            serial = microfs.get_serial()
-            out, err = microfs.execute(commands, serial)
+            serial = minifs.get_serial()
+            out, err = minifs.execute(commands, serial)
             logger.info((out, err))
             if err:
-                raise IOError(microfs.clean_error(err))
+                self.view.show_message("", err)
+                raise IOError(minifs.clean_error(err))
             # Reset the device.
-            serial.write(b'import microbit\r\n')
-            serial.write(b'microbit.reset()\r\n')
-            self.editor.show_status_message(_('Copied code onto micro:bit.'))
+            serial.write(b'import calliope_mini\r\n')
+            serial.write(b'calliope_mini.reset()\r\n')
+            self.editor.show_status_message(_('Copied code onto mini.'))
         self.python_script = ''
 
     def flash_failed(self, error):
         """
-        Called when the thread used to flash the micro:bit encounters a
+        Called when the thread used to flash the mini encounters a
         problem.
         """
         logger.error(error)
-        message = _("There was a problem flashing the micro:bit.")
+        message = _("There was a problem flashing the mini.")
         information = _("Please do not disconnect the device until flashing"
                         " has completed. Please check the logs for more"
                         " information.")
@@ -580,8 +598,9 @@ class MicrobitMode(MicroPythonMode):
 
     def toggle_files(self, event):
         """
-        Check for the existence of the REPL or plotter before toggling the file
-        system navigator for the micro:bit on or off.
+        Check for the existence of the
+        REPL or plotter before toggling the file
+        system navigator for the mini on or off.
         """
         if (self.repl or self.plotter):
             message = _("File system cannot work at the same time as the "
@@ -605,10 +624,10 @@ class MicrobitMode(MicroPythonMode):
         """
         Add the file system navigator to the UI.
         """
-        # Check for micro:bit
+        # Check for mini
         port, serial_number = self.find_device()
         if not port:
-            message = _('Could not find an attached BBC micro:bit.')
+            message = _('Could not find an attached mini.')
             information = _("Please make sure the device is plugged "
                             "into this computer.\n\nThe device must "
                             "have MicroPython flashed onto it before "
@@ -655,7 +674,7 @@ class MicrobitMode(MicroPythonMode):
             # Try to open the hex and extract the Python script
             try:
                 with open(path, newline='') as f:
-                    text = uflash.extract_script(f.read())
+                    text = mflash.extract_script(f.read())
             except Exception:
                 return None
         return text

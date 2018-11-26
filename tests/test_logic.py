@@ -1787,6 +1787,7 @@ def test_show_admin():
     settings = {
         'envars': 'name=value',
         'minify': True,
+        'mini_runtime': '',
         'microbit_runtime': '/foo/bar'
     }
     view.show_admin.return_value = settings
@@ -1816,6 +1817,7 @@ def test_show_admin_missing_microbit_runtime():
     settings = {
         'envars': 'name=value',
         'minify': True,
+        'mini_runtime': '',
         'microbit_runtime': '/foo/bar'
     }
     view.show_admin.return_value = settings
