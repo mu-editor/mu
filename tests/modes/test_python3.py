@@ -252,7 +252,20 @@ def test_python_stop_script():
     mock_runner.process.kill.assert_called_once_with()
     mock_runner.process.waitForFinished.assert_called_once_with()
     assert pm.runner is None
-    view.remove_python_runner.assert_called_once_with()
+
+
+def test_python_stop_resets_focus():
+    """
+    Check that, when a child process is killed, the current
+    tab regains focus.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    mock_runner = mock.MagicMock()
+    pm.runner = mock_runner
+    pm.stop_script()
+    view.current_tab.setFocus.assert_called_once_with()
 
 
 def test_python_stop_script_no_runner():
@@ -347,6 +360,21 @@ def test_python_remove_repl():
     pm.set_buttons.assert_called_once_with(repl=False)
 
 
+def test_python_remove_repl_reset_focus():
+    """
+    Make sure the REPL is removed properly.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.set_buttons = mock.MagicMock()
+    pm.stop_kernel = mock.MagicMock()
+    pm.remove_repl()
+    pm.stop_kernel.emit.assert_called_once_with()
+    pm.set_buttons.assert_called_once_with(repl=False)
+    view.current_tab.setFocus.assert_called_once_with()
+
+
 def test_python_toggle_plotter():
     """
     Ensure toggling the plotter causes it to be added/removed.
@@ -408,6 +436,18 @@ def test_python_remove_plotter():
         pm.remove_plotter()
         pm.set_buttons.assert_called_once_with(run=True, repl=True, debug=True)
         mock_super().remove_plotter.assert_called_once_with()
+
+
+def test_python_remove_plotter_reset_focus():
+    """
+    Ensure the button states are returned to normal before calling super
+    method.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.remove_plotter()
+    view.current_tab.setFocus.assert_called_once_with()
 
 
 def test_python_on_data_flood():
