@@ -210,7 +210,7 @@ class MicroPythonMode(BaseMode):
             pid = port.productIdentifier()
             vid = port.vendorIdentifier()
             # Look for the port VID & PID in the list of know board IDs
-            if (vid, pid) in self.valid_boards:
+            if (vid, pid) in self.valid_boards or (vid, None) in self.valid_boards:
                 port_name = port.portName()
                 serial_number = port.serialNumber()
                 if with_logging:
@@ -220,7 +220,7 @@ class MicroPythonMode(BaseMode):
         if with_logging:
             logger.warning('Could not find device.')
             logger.debug('Available ports:')
-            logger.debug(['PID:{} VID:{} PORT:{}'.format(p.productIdentifier(),
+            logger.debug(['PID:0x{:02x} VID:0x{:02x} PORT:{}'.format(p.productIdentifier(),
                                                          p.vendorIdentifier(),
                                                          p.portName())
                          for p in available_ports])
