@@ -224,8 +224,7 @@ class MicroPythonMode(BaseMode):
             logger.debug(['PID:0x{:04x} VID:0x{:04x} PORT:{}'.format(
                 p.productIdentifier(),
                 p.vendorIdentifier(),
-                p.portName())
-                         for p in available_ports])
+                p.portName()) for p in available_ports])
         return (None, None)
 
     def port_path(self, port_name):
