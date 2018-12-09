@@ -1,7 +1,8 @@
 name: mu-editor
+license: GNU General Public License v3.0
 version: 1.0.1
 summary: A simple Python code editor
-description: |
+description: | 
     Mu is a simple code editor for beginner programmers based on extensive
     feedback from teachers and learners. Having said that, Mu is for anyone who
     wants to use a simple "no frills" editor.
