@@ -205,6 +205,7 @@ class PythonMode(BaseMode):
             self.runner = None
         self.view.remove_python_runner()
         self.set_buttons(plotter=True, repl=True)
+        self.return_focus_to_current_tab()
 
     def debug(self, event):
         """
@@ -254,6 +255,7 @@ class PythonMode(BaseMode):
         self.set_buttons(repl=False)
         # Don't block the GUI
         self.stop_kernel.emit()
+        self.return_focus_to_current_tab()
 
     def toggle_plotter(self):
         """

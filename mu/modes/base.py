@@ -134,6 +134,14 @@ class BaseMode(QObject):
             if k in self.view.button_bar.slots:
                 self.view.button_bar.slots[k].setEnabled(bool(v))
 
+    def return_focus_to_current_tab(self):
+        """
+        After, eg, stopping the plotter or closing the REPL return the focus
+        to the currently-active tab is there is one.
+        """
+        if self.view.current_tab:
+            self.view.current_tab.setFocus()
+
     def add_plotter(self):
         """
         Mode specific implementation of adding and connecting a plotter to
@@ -162,6 +170,7 @@ class BaseMode(QObject):
         self.view.remove_plotter()
         self.plotter = None
         logger.info('Removing plotter')
+        self.return_focus_to_current_tab()
 
     def on_data_flood(self):
         """
