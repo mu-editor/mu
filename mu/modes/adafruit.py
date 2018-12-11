@@ -221,7 +221,10 @@ class AdafruitMode(MicroPythonMode):
             pathname = get_pathname(self)
             if pathname:
                 dst_dir = self.workspace_dir()
-                destination = dst_dir + "/code.py"
+                if pathname.find("/lib/") == -1:
+                    destination = dst_dir + "/code.py"
+                else:
+                    destination = dst_dir + "/lib/" + os.path.basename(pathname)
 
                 # copy library files on to device if not working on the device
                 if self.editor.adafruit_lib:
