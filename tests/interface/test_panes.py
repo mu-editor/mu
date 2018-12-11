@@ -1734,7 +1734,7 @@ def test_PythonProcessPane_read_from_stdout():
     ppp.process.read.assert_called_once_with(256)
     assert ppp.start_of_current_line == 123
     ppp.on_append_text.emit.assert_called_once_with(b'hello world')
-    mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
+    mock_timer.singleShot.assert_called_once_with(1, ppp.read_from_stdout)
 
 
 def test_PythonProcessPane_write_to_stdin():
