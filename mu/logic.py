@@ -177,7 +177,8 @@ def save_and_encode(text, filepath, newline=os.linesep):
         encoding = ENCODING
 
     with open(filepath, "w", encoding=encoding, newline='') as f:
-        write_and_flush(f, newline.join(text.splitlines()))
+        text_to_write = newline.join(l.rstrip(" ") for l in text.splitlines())
+        write_and_flush(f, text_to_write)
 
 
 def sniff_encoding(filepath):
