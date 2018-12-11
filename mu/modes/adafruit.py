@@ -52,6 +52,15 @@ class AdafruitMode(MicroPythonMode):
         (0x239A, 0x802C),  # Adafruit Itsy M4
         (0x239A, 0x802E),  # Adafruit CRICKit M0
         (0x239A, 0xD1ED),  # Adafruit HalloWing M0
+        (0x239A, 0x8030),  # Adafruit NeoTrellis M4
+        (0x239A, 0x8032),  # Grand Central
+        (0x239A, 0x8034),  # future board
+        (0x239A, 0x8036),  # future board
+        (0x239A, 0x8038),  # future board
+        (0x239A, 0x803A),  # future board
+        (0x239A, 0x803C),  # future board
+        (0x239A, 0x803E),  # future board
+        (0x239A, None),    # Any Adafruit Boards
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
