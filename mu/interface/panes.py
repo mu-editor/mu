@@ -921,6 +921,7 @@ class PythonProcessPane(QTextEdit):
             self.on_append_text.emit(data)
             cursor = self.textCursor()
             self.start_of_current_line = cursor.position()
+            QTimer.singleShot(2, self.read_from_stdout)
 
     def write_to_stdin(self, data):
         """

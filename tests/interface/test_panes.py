@@ -1727,11 +1727,14 @@ def test_PythonProcessPane_read_from_stdout():
     ppp.process = mock.MagicMock()
     ppp.process.read.return_value = b'hello world'
     ppp.on_append_text = mock.MagicMock()
-    ppp.read_from_stdout()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.read_from_stdout()
     assert ppp.append.call_count == 1
     ppp.process.read.assert_called_once_with(256)
     assert ppp.start_of_current_line == 123
     ppp.on_append_text.emit.assert_called_once_with(b'hello world')
+    mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
 
 
 def test_PythonProcessPane_write_to_stdin():
