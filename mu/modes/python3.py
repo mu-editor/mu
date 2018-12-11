@@ -21,7 +21,6 @@ import os
 import logging
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
-from mu.logic import write_and_flush
 from mu.resources import load_icon
 from mu.interface.panes import CHARTS
 from qtconsole.manager import QtKernelManager
@@ -183,12 +182,7 @@ class PythonMode(BaseMode):
         if tab.path:
             # If needed, save the script.
             if tab.isModified():
-                with open(tab.path, 'w', newline='') as f:
-                    logger.info('Saving script to: {}'.format(tab.path))
-                    logger.debug(tab.text())
-                    write_and_flush(f, tab.text())
-                    tab.setModified(False)
-            logger.debug(tab.text())
+                self.editor.save_tab_to_file(tab)
             envars = self.editor.envars
             self.runner = self.view.add_python3_runner(tab.path,
                                                        self.workspace_dir(),
