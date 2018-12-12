@@ -1314,14 +1314,32 @@ def test_PythonProcessPane_on_process_halt():
     ppp.process.readAll().data.return_value = b'halted'
     ppp.append = mock.MagicMock()
     ppp.on_append_text = mock.MagicMock()
-    mock_cursor = mock.MagicMock()
-    mock_cursor.position.return_value = 666
-    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.set_start_of_current_line = mock.MagicMock()
     ppp.on_process_halt()
     ppp.process.readAll().data.assert_called_once_with()
     ppp.append.assert_called_once_with(b'halted')
     ppp.on_append_text.emit.assert_called_once_with(b'halted')
-    ppp.start_of_current_line = 666
+    ppp.set_start_of_current_line.assert_called_once_with()
+
+
+def test_PythonProcessPane_on_process_halt_badly_formed_bytes():
+    """
+    If the bytes read from the child process's stdout starts with a badly
+    formed unicode character (e.g. a fragment of a multi-byte character such as
+    "𠜎"), then ensure the problem bytes at the start of the data are discarded
+    until a valid result can be turned into a string.
+    """
+    data = "𠜎Hello, World!".encode('utf-8')  # Contains a multi-byte char.
+    data = data[1:]  # Split the muti-byte character (cause UnicodeDecodeError)
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.readAll().data.return_value = data
+    ppp.on_append_text = mock.MagicMock()
+    ppp.set_start_of_current_line = mock.MagicMock()
+    ppp.on_process_halt()
+    ppp.process.readAll().data.assert_called_once_with()
+    ppp.on_append_text.emit.assert_called_once_with(b'Hello, World!')
+    ppp.set_start_of_current_line.assert_called_once_with()
 
 
 def test_PythonProcessPane_parse_input_a():
@@ -1618,7 +1636,7 @@ def test_PythonProcessPane_parse_input_newline():
     assert b'abc' in ppp.input_history
     assert ppp.history_position == 0
     # On newline, the start of the current line should be set correctly.
-    assert ppp.start_of_current_line == 666
+    assert ppp.start_of_current_line == 4   # len('abc\n')
 
 
 def test_PythonProcessPane_parse_input_newline_ignore_empty_input_in_history():
@@ -1720,21 +1738,69 @@ def test_PythonProcessPane_read_from_stdout():
     Ensure incoming bytes from sub-process's stout are processed correctly.
     """
     ppp = mu.interface.panes.PythonProcessPane()
-    mock_cursor = mock.MagicMock()
-    mock_cursor.position.return_value = 123
-    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.append = mock.MagicMock()
     ppp.process = mock.MagicMock()
     ppp.process.read.return_value = b'hello world'
     ppp.on_append_text = mock.MagicMock()
+    ppp.set_start_of_current_line = mock.MagicMock()
     mock_timer = mock.MagicMock()
     with mock.patch('mu.interface.panes.QTimer', mock_timer):
         ppp.read_from_stdout()
     assert ppp.append.call_count == 1
     ppp.process.read.assert_called_once_with(256)
-    assert ppp.start_of_current_line == 123
     ppp.on_append_text.emit.assert_called_once_with(b'hello world')
-    mock_timer.singleShot.assert_called_once_with(1, ppp.read_from_stdout)
+    ppp.set_start_of_current_line.assert_called_once_with()
+    mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
+
+
+def test_PythonProcessPane_read_from_stdout_with_stdout_buffer():
+    """
+    Ensure incoming bytes from sub-process's stdout are processed correctly if
+    there was a split between reads in a multi-byte character (such as "𠜎").
+
+    The buffer is pre-pended to the current read, thus resulting in bytes that
+    can be successfully represented in a UTF based string.
+    """
+    msg = "Hello 𠜎 world".encode('utf-8')
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.stdout_buffer = msg[:7]  # Start of msg but split in multi-byte char.
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = msg[7:]  # Remainder of msg.
+    ppp.on_append_text = mock.MagicMock()
+    ppp.set_start_of_current_line = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.read_from_stdout()
+    ppp.process.read.assert_called_once_with(256)
+    ppp.on_append_text.emit.assert_called_once_with(msg)
+    ppp.set_start_of_current_line.assert_called_once_with()
+    mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
+    assert ppp.stdout_buffer == b''
+
+
+def test_PythonProcessPane_read_from_stdout_with_unicode_error():
+    """
+    Ensure incoming bytes from sub-process's stdout are processed correctly if
+    there was a split between reads in a multi-byte character (such as "𠜎").
+
+    If the read bytes end with a split of a multi-byte character, ensure they
+    are put into the self.stdout_buffer so they can be pre-pended to the next
+    bytes read from the child process.
+    """
+    msg = "Hello 𠜎 world".encode('utf-8')
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = msg[:7]  # Split the multi-byte character.
+    ppp.on_append_text = mock.MagicMock()
+    ppp.set_start_of_current_line = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.read_from_stdout()
+    ppp.process.read.assert_called_once_with(256)
+    assert ppp.on_append_text.emit.call_count == 0
+    assert ppp.set_start_of_current_line.call_count == 0
+    mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
+    assert ppp.stdout_buffer == msg[:7]
 
 
 def test_PythonProcessPane_write_to_stdin():

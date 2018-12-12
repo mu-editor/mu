@@ -611,6 +611,7 @@ class PythonProcessPane(QTextEdit):
         self.input_history = []  # history of inputs entered in this session.
         self.start_of_current_line = 0  # start position of the input line.
         self.history_position = 0  # current position when navigation history.
+        self.stdout_buffer = b''  # contains non-decoded bytes from stdout.
 
     def start_process(self, script_name, working_directory, interactive=True,
                       debugger=False, command_args=None, envars=None,
@@ -783,10 +784,16 @@ class PythonProcessPane(QTextEdit):
         """
         data = self.process.readAll().data()
         if data:
-            self.append(data)
-            self.on_append_text.emit(data)
-            cursor = self.textCursor()
-            self.start_of_current_line = cursor.position()
+            while True:
+                try:
+                    self.append(data)
+                    self.on_append_text.emit(data)
+                    self.set_start_of_current_line()
+                    break
+                except UnicodeDecodeError:
+                    # Discard problematic start byte and try again.
+                    # (This may be caused by a split in multi-byte characters).
+                    data = data[1:]
 
     def parse_input(self, key, text, modifiers):
         """
@@ -818,6 +825,7 @@ class PythonProcessPane(QTextEdit):
                 if halt_flag:
                     # Clean up from kill signal.
                     self.process.readAll()  # Discard queued output.
+                    self.stdout_buffer = b''
                     # Schedule update of the UI after the process halts (in
                     # next iteration of the event loop).
                     QTimer.singleShot(1, self.on_process_halt)
@@ -877,9 +885,20 @@ class PythonProcessPane(QTextEdit):
             if line.strip():
                 self.input_history.append(line.replace(b'\n', b''))
             self.history_position = 0
-            self.start_of_current_line = self.textCursor().position()
+            self.set_start_of_current_line()
         elif not self.isReadOnly() and msg:
             self.insert(msg)
+
+    def set_start_of_current_line(self):
+        """
+        Set the flag to indicate the start of the current line (used before
+        waiting for input).
+
+        This flag is used to discard the preceeding text in the text entry
+        field when Mu parses new input from the user (i.e. any text beyond the
+        self.start_of_current_line).
+        """
+        self.start_of_current_line = len(self.toPlainText())
 
     def history_back(self):
         """
@@ -915,13 +934,16 @@ class PythonProcessPane(QTextEdit):
         """
         Process incoming data from the process's stdout.
         """
-        data = self.process.read(256)
+        data = self.stdout_buffer + self.process.read(256)
         if data:
-            self.append(data)
-            self.on_append_text.emit(data)
-            cursor = self.textCursor()
-            self.start_of_current_line = cursor.position()
-            QTimer.singleShot(1, self.read_from_stdout)
+            try:
+                self.append(data)
+                self.on_append_text.emit(data)
+                self.set_start_of_current_line()
+                self.stdout_buffer = b''
+            except UnicodeDecodeError:
+                self.stdout_buffer = data
+            QTimer.singleShot(2, self.read_from_stdout)
 
     def write_to_stdin(self, data):
         """
