@@ -13,7 +13,7 @@ graphical debugger). Some of the modes make available a REPL (either
 running on the connected CircuitPython or MicroPython device or as a Jupyter
 based iPython session in Python3 mode).
 
-Mu is written in Python and works on Windows, OSX, Linux and Raspberry Pi. The
+Mu is written in Python and works on Windows, macOS, Linux and Raspberry Pi. The
 project's public facing website is
 `https://codewith.mu/ <https://codewith.mu/>`_. We celebrate the work done by
 users of mu at `https://madewith.mu/ <https://madewith.mu/>`_.
