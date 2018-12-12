@@ -1671,6 +1671,17 @@ def test_PythonProcessPane_parse_input_newline_with_cursor_midline():
     ppp.write_to_stdin.assert_called_with(b'abc\n')
 
 
+def test_PythonProcessPane_set_start_of_current_line():
+    """
+    Ensure the start of the current line is set to the current length of the
+    text in the editor pane.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.toPlainText = mock.MagicMock(return_value="Hello𠜎")
+    ppp.set_start_of_current_line()
+    assert ppp.start_of_current_line == len("Hello𠜎")
+
+
 def test_PythonProcessPane_history_back():
     """
     Ensure the current input line is replaced by the next item back in time
