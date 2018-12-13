@@ -933,7 +933,7 @@ def test_JupyterREPLPane_setFocus():
 
 def test_PythonProcessPane_init():
     """
-    Check the font and input_buffer is set.
+    Check the font, input_buffer and other initial state is set as expected.
     """
     ppp = mu.interface.panes.PythonProcessPane()
     assert ppp.font()
@@ -942,6 +942,8 @@ def test_PythonProcessPane_init():
     assert ppp.start_of_current_line == 0
     assert ppp.history_position == 0
     assert ppp.running is False
+    assert ppp.stdout_buffer == b''
+    assert ppp.reading_stdout is False
 
 
 def test_PythonProcessPane_start_process():
@@ -960,7 +962,8 @@ def test_PythonProcessPane_start_process():
     assert ppp.process == mock_process
     ppp.process.setProcessChannelMode.assert_called_once_with(mock_merge_chans)
     ppp.process.setWorkingDirectory.assert_called_once_with('workspace')
-    ppp.process.readyRead.connect.assert_called_once_with(ppp.read_from_stdout)
+    ppp.process.readyRead.connect.\
+        assert_called_once_with(ppp.try_read_from_stdout)
     ppp.process.finished.connect.assert_called_once_with(ppp.finished)
     expected_script = os.path.abspath(os.path.normcase('script.py'))
     assert ppp.script == expected_script
@@ -1314,14 +1317,32 @@ def test_PythonProcessPane_on_process_halt():
     ppp.process.readAll().data.return_value = b'halted'
     ppp.append = mock.MagicMock()
     ppp.on_append_text = mock.MagicMock()
-    mock_cursor = mock.MagicMock()
-    mock_cursor.position.return_value = 666
-    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.set_start_of_current_line = mock.MagicMock()
     ppp.on_process_halt()
     ppp.process.readAll().data.assert_called_once_with()
     ppp.append.assert_called_once_with(b'halted')
     ppp.on_append_text.emit.assert_called_once_with(b'halted')
-    ppp.start_of_current_line = 666
+    ppp.set_start_of_current_line.assert_called_once_with()
+
+
+def test_PythonProcessPane_on_process_halt_badly_formed_bytes():
+    """
+    If the bytes read from the child process's stdout starts with a badly
+    formed unicode character (e.g. a fragment of a multi-byte character such as
+    "𠜎"), then ensure the problem bytes at the start of the data are discarded
+    until a valid result can be turned into a string.
+    """
+    data = "𠜎Hello, World!".encode('utf-8')  # Contains a multi-byte char.
+    data = data[1:]  # Split the muti-byte character (cause UnicodeDecodeError)
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.readAll().data.return_value = data
+    ppp.on_append_text = mock.MagicMock()
+    ppp.set_start_of_current_line = mock.MagicMock()
+    ppp.on_process_halt()
+    ppp.process.readAll().data.assert_called_once_with()
+    ppp.on_append_text.emit.assert_called_once_with(b'Hello, World!')
+    ppp.set_start_of_current_line.assert_called_once_with()
 
 
 def test_PythonProcessPane_parse_input_a():
@@ -1618,7 +1639,7 @@ def test_PythonProcessPane_parse_input_newline():
     assert b'abc' in ppp.input_history
     assert ppp.history_position == 0
     # On newline, the start of the current line should be set correctly.
-    assert ppp.start_of_current_line == 666
+    assert ppp.start_of_current_line == 4   # len('abc\n')
 
 
 def test_PythonProcessPane_parse_input_newline_ignore_empty_input_in_history():
@@ -1651,6 +1672,17 @@ def test_PythonProcessPane_parse_input_newline_with_cursor_midline():
     ppp.parse_input(Qt.Key_Left, None, None)
     ppp.parse_input(Qt.Key_Enter, '\r', None)
     ppp.write_to_stdin.assert_called_with(b'abc\n')
+
+
+def test_PythonProcessPane_set_start_of_current_line():
+    """
+    Ensure the start of the current line is set to the current length of the
+    text in the editor pane.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.toPlainText = mock.MagicMock(return_value="Hello𠜎")
+    ppp.set_start_of_current_line()
+    assert ppp.start_of_current_line == len("Hello𠜎")
 
 
 def test_PythonProcessPane_history_back():
@@ -1715,23 +1747,111 @@ def test_PythonProcessPane_history_forward_at_last_item():
     assert ppp.history_position == 0
 
 
+def test_PythonProcessPane_try_read_from_stdout_not_started():
+    """
+    If the process pane is NOT already reading from STDOUT then ensure it
+    starts to.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.read_from_stdout = mock.MagicMock()
+    ppp.try_read_from_stdout()
+    assert ppp.reading_stdout is True
+    ppp.read_from_stdout.assert_called_once_with()
+
+
+def test_PythonProcessPane_try_read_from_stdout_has_started():
+    """
+    If the process pane is already reading from STDOUT then ensure it
+    doesn't keep trying.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.read_from_stdout = mock.MagicMock()
+    ppp.reading_stdout = True
+    ppp.try_read_from_stdout()
+    assert ppp.reading_stdout is True
+    assert ppp.read_from_stdout.call_count == 0
+
+
 def test_PythonProcessPane_read_from_stdout():
     """
     Ensure incoming bytes from sub-process's stout are processed correctly.
     """
     ppp = mu.interface.panes.PythonProcessPane()
-    mock_cursor = mock.MagicMock()
-    mock_cursor.position.return_value = 123
-    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.append = mock.MagicMock()
     ppp.process = mock.MagicMock()
     ppp.process.read.return_value = b'hello world'
     ppp.on_append_text = mock.MagicMock()
-    ppp.read_from_stdout()
+    ppp.set_start_of_current_line = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.read_from_stdout()
     assert ppp.append.call_count == 1
     ppp.process.read.assert_called_once_with(256)
-    assert ppp.start_of_current_line == 123
     ppp.on_append_text.emit.assert_called_once_with(b'hello world')
+    ppp.set_start_of_current_line.assert_called_once_with()
+    mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
+
+
+def test_PythonProcessPane_read_from_stdout_with_stdout_buffer():
+    """
+    Ensure incoming bytes from sub-process's stdout are processed correctly if
+    there was a split between reads in a multi-byte character (such as "𠜎").
+
+    The buffer is pre-pended to the current read, thus resulting in bytes that
+    can be successfully represented in a UTF based string.
+    """
+    msg = "Hello 𠜎 world".encode('utf-8')
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.stdout_buffer = msg[:7]  # Start of msg but split in multi-byte char.
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = msg[7:]  # Remainder of msg.
+    ppp.on_append_text = mock.MagicMock()
+    ppp.set_start_of_current_line = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.read_from_stdout()
+    ppp.process.read.assert_called_once_with(256)
+    ppp.on_append_text.emit.assert_called_once_with(msg)
+    ppp.set_start_of_current_line.assert_called_once_with()
+    mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
+    assert ppp.stdout_buffer == b''
+
+
+def test_PythonProcessPane_read_from_stdout_with_unicode_error():
+    """
+    Ensure incoming bytes from sub-process's stdout are processed correctly if
+    there was a split between reads in a multi-byte character (such as "𠜎").
+
+    If the read bytes end with a split of a multi-byte character, ensure they
+    are put into the self.stdout_buffer so they can be pre-pended to the next
+    bytes read from the child process.
+    """
+    msg = "Hello 𠜎 world".encode('utf-8')
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = msg[:7]  # Split the multi-byte character.
+    ppp.on_append_text = mock.MagicMock()
+    ppp.set_start_of_current_line = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.read_from_stdout()
+    ppp.process.read.assert_called_once_with(256)
+    assert ppp.on_append_text.emit.call_count == 0
+    assert ppp.set_start_of_current_line.call_count == 0
+    mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
+    assert ppp.stdout_buffer == msg[:7]
+
+
+def test_PythonProcessPane_read_from_stdout_no_data():
+    """
+    If no data is returned, ensure the reading_stdout flag is reset to False.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.reading_stdout = True
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = b''
+    ppp.read_from_stdout()
+    assert ppp.reading_stdout is False
 
 
 def test_PythonProcessPane_write_to_stdin():
