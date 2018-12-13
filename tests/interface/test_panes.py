@@ -933,7 +933,7 @@ def test_JupyterREPLPane_setFocus():
 
 def test_PythonProcessPane_init():
     """
-    Check the font and input_buffer is set.
+    Check the font, input_buffer and other initial state is set as expected.
     """
     ppp = mu.interface.panes.PythonProcessPane()
     assert ppp.font()
@@ -942,6 +942,8 @@ def test_PythonProcessPane_init():
     assert ppp.start_of_current_line == 0
     assert ppp.history_position == 0
     assert ppp.running is False
+    assert ppp.stdout_buffer == b''
+    assert ppp.reading_stdout is False
 
 
 def test_PythonProcessPane_start_process():
@@ -960,7 +962,8 @@ def test_PythonProcessPane_start_process():
     assert ppp.process == mock_process
     ppp.process.setProcessChannelMode.assert_called_once_with(mock_merge_chans)
     ppp.process.setWorkingDirectory.assert_called_once_with('workspace')
-    ppp.process.readyRead.connect.assert_called_once_with(ppp.read_from_stdout)
+    ppp.process.readyRead.connect.\
+        assert_called_once_with(ppp.try_read_from_stdout)
     ppp.process.finished.connect.assert_called_once_with(ppp.finished)
     expected_script = os.path.abspath(os.path.normcase('script.py'))
     assert ppp.script == expected_script
@@ -1744,6 +1747,31 @@ def test_PythonProcessPane_history_forward_at_last_item():
     assert ppp.history_position == 0
 
 
+def test_PythonProcessPane_try_read_from_stdout_not_started():
+    """
+    If the process pane is NOT already reading from STDOUT then ensure it
+    starts to.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.read_from_stdout = mock.MagicMock()
+    ppp.try_read_from_stdout()
+    assert ppp.reading_stdout is True
+    ppp.read_from_stdout.assert_called_once_with()
+
+
+def test_PythonProcessPane_try_read_from_stdout_has_started():
+    """
+    If the process pane is already reading from STDOUT then ensure it
+    doesn't keep trying.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.read_from_stdout = mock.MagicMock()
+    ppp.reading_stdout = True
+    ppp.try_read_from_stdout()
+    assert ppp.reading_stdout is True
+    assert ppp.read_from_stdout.call_count == 0
+
+
 def test_PythonProcessPane_read_from_stdout():
     """
     Ensure incoming bytes from sub-process's stout are processed correctly.
@@ -1812,6 +1840,18 @@ def test_PythonProcessPane_read_from_stdout_with_unicode_error():
     assert ppp.set_start_of_current_line.call_count == 0
     mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
     assert ppp.stdout_buffer == msg[:7]
+
+
+def test_PythonProcessPane_read_from_stdout_no_data():
+    """
+    If no data is returned, ensure the reading_stdout flag is reset to False.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.reading_stdout = True
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = b''
+    ppp.read_from_stdout()
+    assert ppp.reading_stdout is False
 
 
 def test_PythonProcessPane_write_to_stdin():

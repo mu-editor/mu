@@ -612,6 +612,7 @@ class PythonProcessPane(QTextEdit):
         self.start_of_current_line = 0  # start position of the input line.
         self.history_position = 0  # current position when navigation history.
         self.stdout_buffer = b''  # contains non-decoded bytes from stdout.
+        self.reading_stdout = False  # flag showing if already reading stdout.
 
     def start_process(self, script_name, working_directory, interactive=True,
                       debugger=False, command_args=None, envars=None,
@@ -668,7 +669,7 @@ class PythonProcessPane(QTextEdit):
         logger.info('Working directory: {}'.format(working_directory))
         self.process.setWorkingDirectory(working_directory)
         self.process.setProcessEnvironment(env)
-        self.process.readyRead.connect(self.read_from_stdout)
+        self.process.readyRead.connect(self.try_read_from_stdout)
         self.process.finished.connect(self.finished)
         logger.info('Python path: {}'.format(sys.path))
         if debugger:
@@ -930,6 +931,15 @@ class PythonProcessPane(QTextEdit):
             history_item = self.input_history[history_pos]
             self.replace_input_line(history_item)
 
+    def try_read_from_stdout(self):
+        """
+        Ensure reading from stdout only happens if there is NOT already current
+        attempts to read from stdout.
+        """
+        if not self.reading_stdout:
+            self.reading_stdout = True
+            self.read_from_stdout()
+
     def read_from_stdout(self):
         """
         Process incoming data from the process's stdout.
@@ -944,6 +954,8 @@ class PythonProcessPane(QTextEdit):
             except UnicodeDecodeError:
                 self.stdout_buffer = data
             QTimer.singleShot(2, self.read_from_stdout)
+        else:
+            self.reading_stdout = False
 
     def write_to_stdin(self, data):
         """
