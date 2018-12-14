@@ -20,6 +20,7 @@ _TEST_MATRIX_PLATFORM_DEFAULT = [
     (None, None, Exception('ups'), _DEFAULT_LANG_CODE),
 ]
 
+
 @pytest.mark.parametrize('lang_code, encoding, exc, expected',
                          _TEST_MATRIX_PLATFORM_DEFAULT)
 def test_language_code_default_platform(lang_code, encoding, exc, expected):
@@ -47,6 +48,7 @@ _TEST_MATRIX_PLATFORM_MAC = [
     (127, '-bash: defaults: command not found', None, _DEFAULT_LANG_CODE),
     (None, None, Exception('ups'), _DEFAULT_LANG_CODE),
 ]
+
 
 @pytest.mark.parametrize('status, output, exc, expected',
                          _TEST_MATRIX_PLATFORM_MAC)

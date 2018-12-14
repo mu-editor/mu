@@ -59,7 +59,7 @@ def _lang_code_mac():
     # - It exists and is in the shell's PATH.
     # - It accepts those arguments.
     # - It returns a usable language code.
-    # 
+    #
     # Reference documentation:
     # - The man page for the `defaults` command on macOS.
     # - The macOS underlying API:
