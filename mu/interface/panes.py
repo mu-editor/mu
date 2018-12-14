@@ -228,7 +228,7 @@ class MicroPythonREPLPane(QTextEdit):
                 self.setTextCursor(tc)
             elif data[i] == 13:  # \r
                 pass
-            elif len(data) > 1 and data[i] == 27 and data[i + 1] == 91:
+            elif len(data) > i + 1 and data[i] == 27 and data[i + 1] == 91:
                 # VT100 cursor detected: <Esc>[
                 i += 2  # move index to after the [
                 regex = r'(?P<count>[\d]*)(;?[\d]*)*(?P<action>[ABCDKm])'
