@@ -1,88 +1,78 @@
 """
 Language detection.
 
-Uses standard library's locale module, falling back to platform specific
-techniques when locale.getdefaultlocale() returns no useful information.
+Uses the standard library's `locale` module on all platforms, including Windows
+and Linux, except on macOS where a shell based command is used instead.
 """
 
 import locale
 import logging
+import subprocess
 import sys
 
 
-_FALLBACK_LANG_CODE = 'en_GB'
+_DEFAULT_LANG_CODE = 'en_GB'
 
 _logger = logging.getLogger(__name__)
 
 
-def language_code(fallback=_FALLBACK_LANG_CODE, fail_handler=None):
+def language_code():
     """
     Returns the user's environment language as a language code string.
     (examples: 'en_GB', 'en_US', 'pt_PT', 'pt_BR', etc.)
     """
+
+    # Systems running macOS need to use platform specific language detection.
+    this_is_a_mac = sys.platform == 'darwin'
+
     try:
-        # Use the operating system's locale.
-        language_code, _encoding = locale.getdefaultlocale()
-        if not language_code:
-            raise ValueError()
-    except (TypeError, ValueError):
-        # Commonly fails on macOS which does not set LANG / LC_ALL env vars.
-        fail_handler = fail_handler or _platform_fail_handler()
-        _logger.warning('Failed locale.getdefaultlocale() call. '
-                        'Trying fail handler %r.', fail_handler)
-        try:
-            language_code = fail_handler()
-        except Exception as e:
-            _logger.warning('Fail handler also failed: %s. '
-                            'Falling back to %r', e, fallback)
-            language_code = fallback
+        lang_code = _lang_code_mac() if this_is_a_mac else _lang_code_generic()
+    except Exception:
+        lang_code = _DEFAULT_LANG_CODE
+        _logger.warning('Language detection failed. Using %r', lang_code,
+                        exc_info=True)
+    else:
+        if not lang_code:
+            lang_code = _DEFAULT_LANG_CODE
+            _logger.warning('No language detected. Using %r', lang_code)
 
-    # Return the fallback value if language_code is empty.
-    return language_code or fallback
+    return lang_code
 
 
-def _platform_fail_handler():
+def _lang_code_generic():
     """
-    Returns a callable, the platform specific language detection function, if
-    it exists in this module. Otherwise, returns a function that just logs the
-    unavailability of such a platform specific function.
+    Returns the user's language preference on the Windows and Linux plaforms,
+    using the standard library's `locale` module.
     """
-    def _no_platform_handler():
-        """
-        Used as the fallback platform specific language detection handler.
-        """
-        _logger.warning('No platform specific language detection for %r.',
-                        sys.platform)
-
-    return getattr(sys.modules[__name__],
-                   '_language_code_{}'.format(sys.platform),
-                   _no_platform_handler)
+    lang_code, _encoding = locale.getdefaultlocale()
+    return lang_code
 
 
-def _language_code_darwin():
+def _lang_code_mac():
     """
     Returns the user's language preference as defined in the Language & Region
     preference pane in macOS's System Preferences.
     """
 
-    # Uses native macOS APIs to read the user's language preference per
-    # https://developer.apple.com/documentation/foundation/nsuserdefaults.
+    # Uses the shell command `defaults read -g AppleLocale` that prints out a
+    # language code to standard output. Assumptions about the command:
+    # - It exists and is in the shell's PATH.
+    # - It accepts those arguments.
+    # - It returns a usable language code.
+    # 
+    # Reference documentation:
+    # - The man page for the `defaults` command on macOS.
+    # - The macOS underlying API:
+    #   https://developer.apple.com/documentation/foundation/nsuserdefaults.
 
-    # Rubicon-ObjC (https://pypi.org/project/rubicon-objc/) is a pure Python
-    # package used to dynamically access the native macOS APIs without the need
-    # for a C compiler. This should simplify testing, deployment and packaging.
+    LANG_DETECT_COMMAND = 'defaults read -g AppleLocale'
 
-    # Platform specific imports here avoid import failures on other platforms.
-    import ctypes
-    from rubicon import objc
+    status, output = subprocess.getstatusoutput(LANG_DETECT_COMMAND)
+    if status == 0:
+        # Command was successful.
+        lang_code = output
+    else:
+        _logger.warning('Language detection command failed: %r', output)
+        lang_code = ''
 
-    PREF_NAME = 'AppleLocale'
-
-    lib_path = ctypes.util.find_library('Foundation')
-    ctypes.cdll.LoadLibrary(lib_path)
-
-    NSUserDefaults = objc.ObjCClass('NSUserDefaults')
-    standard_user_defaults = NSUserDefaults.standardUserDefaults
-    language_code = str(standard_user_defaults.stringForKey_(PREF_NAME))
-
-    return language_code
+    return lang_code
