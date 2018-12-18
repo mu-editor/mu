@@ -50,6 +50,17 @@ except ImportError:  # pragma: no cover
     CHARTS = False
 
 
+PANE_ZOOM_SIZES = {
+    'xs': 8,
+    's': 10,
+    'm': 14,
+    'l': 16,
+    'xl': 18,
+    'xxl': 24,
+    'xxxl': 28,
+}
+
+
 class JupyterREPLPane(RichJupyterWidget):
     """
     REPL = Read, Evaluate, Print, Loop.
@@ -65,6 +76,9 @@ class JupyterREPLPane(RichJupyterWidget):
         self.console_height = 10
 
     def _append_plain_text(self, text, *args, **kwargs):
+        """
+        Ensures appended text is emitted as a signal with associated bytes.
+        """
         super()._append_plain_text(text, *args, **kwargs)
         self.on_append_text.emit(text.encode('utf-8'))
 
@@ -76,23 +90,11 @@ class JupyterREPLPane(RichJupyterWidget):
         font.setPointSize(new_size)
         self._set_font(font)
 
-    def zoomIn(self, delta=2):
+    def set_zoom(self, size):
         """
-        Zoom in (increase) the size of the font by delta amount difference in
-        point size upto 34 points.
+        Set the current zoom level given the "t-shirt" size.
         """
-        old_size = self.font.pointSize()
-        new_size = min(old_size + delta, 34)
-        self.set_font_size(new_size)
-
-    def zoomOut(self, delta=2):
-        """
-        Zoom out (decrease) the size of the font by delta amount difference in
-        point size down to 4 points.
-        """
-        old_size = self.font.pointSize()
-        new_size = max(old_size - delta, 4)
-        self.set_font_size(new_size)
+        self.set_font_size(PANE_ZOOM_SIZES[size])
 
     def set_theme(self, theme):
         """
@@ -277,6 +279,20 @@ class MicroPythonREPLPane(QTextEdit):
         Clears the text of the REPL.
         """
         self.setText('')
+
+    def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
+        """
+        Sets the font size for all the textual elements in this pane.
+        """
+        font = self.font()
+        font.setPointSize(new_size)
+        self.setFont(font)
+
+    def set_zoom(self, size):
+        """
+        Set the current zoom level given the "t-shirt" size.
+        """
+        self.set_font_size(PANE_ZOOM_SIZES[size])
 
 
 class MuFileList(QListWidget):
@@ -570,23 +586,11 @@ class FileSystemPane(QFrame):
         self.microbit_fs.setFont(self.font)
         self.local_fs.setFont(self.font)
 
-    def zoomIn(self, delta=2):
+    def set_zoom(self, size):
         """
-        Zoom in (increase) the size of the font by delta amount difference in
-        point size upto 34 points.
+        Set the current zoom level given the "t-shirt" size.
         """
-        old_size = self.font.pointSize()
-        new_size = min(old_size + delta, 34)
-        self.set_font_size(new_size)
-
-    def zoomOut(self, delta=2):
-        """
-        Zoom out (decrease) the size of the font by delta amount difference in
-        point size down to 4 points.
-        """
-        old_size = self.font.pointSize()
-        new_size = max(old_size - delta, 4)
-        self.set_font_size(new_size)
+        self.set_font_size(PANE_ZOOM_SIZES[size])
 
 
 class PythonProcessPane(QTextEdit):
@@ -1021,25 +1025,19 @@ class PythonProcessPane(QTextEdit):
         self.clear_input_line()
         self.append(text)
 
-    def zoomIn(self, delta=2):
+    def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
         """
-        Zoom in (increase) the size of the font by delta amount difference in
-        point size upto 34 points.
+        Sets the font size for all the textual elements in this pane.
         """
-        old_size = self.font().pointSize()
-        new_size = old_size + delta
-        if new_size <= 34:
-            super().zoomIn(delta)
+        f = self.font()
+        f.setPointSize(new_size)
+        self.setFont(f)
 
-    def zoomOut(self, delta=2):
+    def set_zoom(self, size):
         """
-        Zoom out (decrease) the size of the font by delta amount difference in
-        point size down to 4 points.
+        Set the current zoom level given the "t-shirt" size.
         """
-        old_size = self.font().pointSize()
-        new_size = old_size - delta
-        if new_size >= 4:
-            super().zoomOut(delta)
+        self.set_font_size(PANE_ZOOM_SIZES[size])
 
     def set_theme(self, theme):
         pass
@@ -1070,23 +1068,11 @@ class DebugInspector(QTreeView):
                       "pt; font-family: Monospace;}")
         self.setStyleSheet(stylesheet)
 
-    def zoomIn(self, delta=2):
+    def set_zoom(self, size):
         """
-        Zoom in (increase) the size of the font by delta amount difference in
-        point size upto 34 points.
+        Set the current zoom level given the "t-shirt" size.
         """
-        old_size = self.font().pointSize()
-        new_size = min(old_size + delta, 34)
-        self.set_font_size(new_size)
-
-    def zoomOut(self, delta=2):
-        """
-        Zoom out (decrease) the size of the font by delta amount difference in
-        point size down to 4 points.
-        """
-        old_size = self.font().pointSize()
-        new_size = max(old_size - delta, 4)
-        self.set_font_size(new_size)
+        self.set_font_size(PANE_ZOOM_SIZES[size])
 
     def set_theme(self, theme):
         pass

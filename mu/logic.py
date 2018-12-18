@@ -663,6 +663,8 @@ class Editor:
                             logger.warning('The specified micro:bit runtime '
                                            'does not exist. Using default '
                                            'runtime instead.')
+                if 'zoom_level' in old_session:
+                    self._view.zoom_position = old_session['zoom_level']
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
@@ -1019,6 +1021,7 @@ class Editor:
             'envars': self.envars,
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
+            'zoom_level': self._view.zoom_position,
         }
         session_path = get_session_path()
         with open(session_path, 'w') as out:

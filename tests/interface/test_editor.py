@@ -76,6 +76,7 @@ def test_EditorPane_configure():
     ep.setAnnotationDisplay = mock.MagicMock()
     ep.selectionChanged = mock.MagicMock()
     ep.selectionChanged.connect = mock.MagicMock()
+    ep.set_zoom = mock.MagicMock()
     ep.configure()
     assert ep.api is None
     assert ep.setFont.call_count == 1
@@ -103,6 +104,7 @@ def test_EditorPane_configure():
          mock.call(ep.StraightBoxIndicator,
                    ep.search_indicators['selection']['id'])],
         any_order=True)
+    assert ep.set_zoom.call_count == 1
 
 
 def test_Editor_connect_margin():
@@ -131,6 +133,16 @@ def test_EditorPane_set_theme():
         mapi.assert_called_once_with(ep.lexer)
         mock_api.add.assert_called_once_with('api help text')
         mock_api.prepare.assert_called_once_with()
+
+
+def test_EditorPane_set_zoom():
+    """
+    Ensure the t-shirt size is turned into a call to parent's zoomTo.
+    """
+    ep = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
+    ep.zoomTo = mock.MagicMock()
+    ep.set_zoom('xl')
+    ep.zoomTo.assert_called_once_with(8)
 
 
 def test_EditorPane_label():

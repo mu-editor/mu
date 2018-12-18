@@ -89,7 +89,7 @@ def generate_python_file(text="", dirpath=None):
 @contextlib.contextmanager
 def generate_session(theme="day", mode="python", file_contents=None,
                      filepath=None, envars=[['name', 'value'], ], minify=False,
-                     microbit_runtime=None, **kwargs):
+                     microbit_runtime=None, zoom_level=2, **kwargs):
     """Generate a temporary session file for one test
 
     By default, the session file will be created inside a temporary directory
@@ -131,6 +131,8 @@ def generate_session(theme="day", mode="python", file_contents=None,
         session_data['minify'] = minify
     if microbit_runtime:
         session_data['microbit_runtime'] = microbit_runtime
+    if zoom_level:
+        session_data['zoom_level'] = zoom_level
     session_data.update(**kwargs)
 
     if filepath is None:
@@ -672,7 +674,7 @@ def test_editor_restore_session_existing_runtime():
     ed = mocked_editor(mode)
     with mock.patch('os.path.isfile', return_value=True):
         with generate_session(theme, mode, file_contents,
-                              microbit_runtime='/foo'):
+                              microbit_runtime='/foo', zoom_level=5):
             ed.restore_session()
 
     assert ed.theme == theme
@@ -681,6 +683,7 @@ def test_editor_restore_session_existing_runtime():
     assert ed.envars == [['name', 'value'], ]
     assert ed.minify is False
     assert ed.microbit_runtime == '/foo'
+    assert ed._view.zoom_position == 5
 
 
 def test_editor_restore_session_missing_runtime():
@@ -1650,6 +1653,7 @@ def test_quit_save_tabs_with_paths():
     """
     view = mock.MagicMock()
     view.modified = True
+    view.zoom_position = 2
     view.show_confirmation = mock.MagicMock(return_value=True)
     w1 = mock.MagicMock()
     w1.path = 'foo.py'
@@ -1687,6 +1691,7 @@ def test_quit_save_theme():
     """
     view = mock.MagicMock()
     view.modified = True
+    view.zoom_position = 2
     view.show_confirmation = mock.MagicMock(return_value=True)
     w1 = mock.MagicMock()
     w1.path = 'foo.py'
@@ -1726,6 +1731,7 @@ def test_quit_save_envars():
     """
     view = mock.MagicMock()
     view.modified = True
+    view.zoom_position = 2
     view.show_confirmation = mock.MagicMock(return_value=True)
     w1 = mock.MagicMock()
     w1.path = 'foo.py'
@@ -1760,6 +1766,50 @@ def test_quit_save_envars():
                         in mock_open.return_value.write.call_args_list])
     session = json.loads(recovered)
     assert session['envars'] == [['name1', 'value1'], ['name2', 'value2'], ]
+
+
+def test_quit_save_zoom_level():
+    """
+    When saving the session, ensure the zoom level is logged in the session
+    file.
+    """
+    view = mock.MagicMock()
+    view.modified = True
+    view.zoom_position = 2
+    view.show_confirmation = mock.MagicMock(return_value=True)
+    w1 = mock.MagicMock()
+    w1.path = 'foo.py'
+    view.widgets = [w1, ]
+    ed = mu.logic.Editor(view)
+    ed.theme = 'night'
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = 'foo/bar'
+    mock_mode.get_hex_path.return_value = 'foo/bar'
+    ed.modes = {
+        'python': mock_mode,
+        'microbit': mock_mode,
+    }
+    ed.envars = [
+        ['name1', 'value1'],
+        ['name2', 'value2'],
+    ]
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.write = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    mock_event.ignore = mock.MagicMock(return_value=None)
+    with mock.patch('sys.exit', return_value=None), \
+            mock.patch('builtins.open', mock_open):
+        ed.quit(mock_event)
+    assert view.show_confirmation.call_count == 1
+    assert mock_event.ignore.call_count == 0
+    assert mock_open.call_count == 1
+    assert mock_open.return_value.write.call_count > 0
+    recovered = ''.join([i[0][0] for i
+                        in mock_open.return_value.write.call_args_list])
+    session = json.loads(recovered)
+    assert session['zoom_level'] == 2
 
 
 def test_quit_calls_sys_exit():

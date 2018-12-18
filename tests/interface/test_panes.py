@@ -21,6 +21,16 @@ import mu.interface.panes
 app = QApplication([])
 
 
+def test_PANE_ZOOM_SIZES():
+    """
+    Ensure the expected entries define font sizes in PANE_ZOOM_SIZES.
+    """
+    expected_sizes = ('xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl')
+    for size in expected_sizes:
+        assert size in mu.interface.panes.PANE_ZOOM_SIZES
+    assert len(expected_sizes) == len(mu.interface.panes.PANE_ZOOM_SIZES)
+
+
 def test_MicroPythonREPLPane_init_default_args():
     """
     Ensure the MicroPython REPLPane object is instantiated as expected.
@@ -411,6 +421,32 @@ def test_MicroPythonREPLPane_clear():
     rp.setText = mock.MagicMock(return_value=None)
     rp.clear()
     rp.setText.assert_called_once_with('')
+
+
+def test_MicroPythonREPLPane_set_font_size():
+    """
+    Ensure the font is updated to the expected point size.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_font = mock.MagicMock()
+    rp.font = mock.MagicMock(return_value=mock_font)
+    rp.setFont = mock.MagicMock()
+    rp.set_font_size(123)
+    mock_font.setPointSize.assert_called_once_with(123)
+    rp.setFont.assert_called_once_with(mock_font)
+
+
+def test_MicroPythonREPLPane_set_zoom():
+    """
+    Ensure the font size is correctly set from the t-shirt size.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    rp.set_font_size = mock.MagicMock()
+    rp.set_zoom('xxl')
+    expected = mu.interface.panes.PANE_ZOOM_SIZES['xxl']
+    rp.set_font_size.assert_called_once_with(expected)
 
 
 def test_MuFileList_show_confirm_overwrite_dialog():
@@ -809,17 +845,6 @@ def test_FileSystemPane_set_font_size():
     fsp.local_fs.setFont.assert_called_once_with(fsp.font)
 
 
-def test_FileSystemPane_zoom_in():
-    """
-    Ensure the font is re-set bigger when zooming in.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.set_font_size = mock.MagicMock()
-    fsp.zoomIn()
-    expected = mu.interface.themes.DEFAULT_FONT_SIZE + 2
-    fsp.set_font_size.assert_called_once_with(expected)
-
-
 def test_FileSystemPane_open_file():
     """
     FileSystemPane should propogate the open_file signal
@@ -832,17 +857,6 @@ def test_FileSystemPane_open_file():
     mock_open_emit.assert_called_once_with('test')
 
 
-def test_FileSystemPane_zoom_out():
-    """
-    Ensure the font is re-set smaller when zooming out.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.set_font_size = mock.MagicMock()
-    fsp.zoomOut()
-    expected = mu.interface.themes.DEFAULT_FONT_SIZE - 2
-    fsp.set_font_size.assert_called_once_with(expected)
-
-
 def test_JupyterREPLPane_init():
     """
     Ensure the widget is setup with the correct defaults.
@@ -853,6 +867,8 @@ def test_JupyterREPLPane_init():
 
 def test_JupyterREPLPane_append_plain_text():
     """
+    Ensure signal and expected bytes are emitted when _append_plain_text is
+    called.
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.on_append_text = mock.MagicMock()
@@ -869,26 +885,15 @@ def test_JupyterREPLPane_set_font_size():
     assert jw.font.pointSize() == 16
 
 
-def test_JupyterREPLPane_zoomIn():
+def test_JupyterREPLPane_set_zoom():
     """
-    Ensure zooming in increases the font size.
-    """
-    jw = mu.interface.panes.JupyterREPLPane()
-    jw.set_font_size = mock.MagicMock()
-    old_size = jw.font.pointSize()
-    jw.zoomIn(delta=4)
-    jw.set_font_size.assert_called_once_with(old_size + 4)
-
-
-def test_JupyterREPLPane_zoomOut():
-    """
-    Ensure zooming out decreases the font size.
+    Ensure the expected font point size is set from the zoom size.
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_font_size = mock.MagicMock()
-    old_size = jw.font.pointSize()
-    jw.zoomOut(delta=4)
-    jw.set_font_size.assert_called_once_with(old_size - 4)
+    jw.set_zoom('xxl')
+    jw.set_font_size.\
+        assert_called_once_with(mu.interface.panes.PANE_ZOOM_SIZES['xxl'])
 
 
 def test_JupyterREPLPane_set_theme_day():
@@ -2002,52 +2007,28 @@ def test_PythonProcessPane_replace_input_line():
     ppp.append.assert_called_once_with('hello')
 
 
-def test_PythonProcessPane_zoomIn():
+def test_PythonProcessPane_set_font_size():
     """
-    Check ZoomIn increases point size.
-    """
-    ppp = mu.interface.panes.PythonProcessPane()
-    ppp.font = mock.MagicMock()
-    ppp.font().pointSize.return_value = 12
-    with mock.patch('mu.interface.panes.QTextEdit.zoomIn') as mock_zoom:
-        ppp.zoomIn(8)
-        mock_zoom.assert_called_once_with(8)
-
-
-def test_PythonProcessPane_zoomIn_max():
-    """
-    Check ZoomIn only works up to point size of 34
+    Ensure the font size is set to the expected point size.
     """
     ppp = mu.interface.panes.PythonProcessPane()
-    ppp.font = mock.MagicMock()
-    ppp.font().pointSize.return_value = 34
-    with mock.patch('mu.interface.panes.QTextEdit.zoomIn') as mock_zoom:
-        ppp.zoomIn(8)
-        assert mock_zoom.call_count == 0
+    mock_font = mock.MagicMock()
+    ppp.font = mock.MagicMock(return_value=mock_font)
+    ppp.setFont = mock.MagicMock()
+    ppp.set_font_size(123)
+    mock_font.setPointSize.assert_called_once_with(123)
+    ppp.setFont.assert_called_once_with(mock_font)
 
 
-def test_PythonProcessPane_zoomOut():
+def test_PythonProcessPane_set_zoom():
     """
-    Check ZoomOut decreases point size.
-    """
-    ppp = mu.interface.panes.PythonProcessPane()
-    ppp.font = mock.MagicMock()
-    ppp.font().pointSize.return_value = 12
-    with mock.patch('mu.interface.panes.QTextEdit.zoomOut') as mock_zoom:
-        ppp.zoomOut(6)
-        mock_zoom.assert_called_once_with(6)
-
-
-def test_PythonProcessPane_zoomOut_min():
-    """
-    Check ZoomOut decreases point size down to 4
+    Ensure the expected point size is set from the given "t-shirt" size.
     """
     ppp = mu.interface.panes.PythonProcessPane()
-    ppp.font = mock.MagicMock()
-    ppp.font().pointSize.return_value = 4
-    with mock.patch('mu.interface.panes.QTextEdit.zoomOut') as mock_zoom:
-        ppp.zoomOut(8)
-        assert mock_zoom.call_count == 0
+    ppp.set_font_size = mock.MagicMock()
+    ppp.set_zoom('xl')
+    expected = mu.interface.panes.PANE_ZOOM_SIZES['xl']
+    ppp.set_font_size.assert_called_once_with(expected)
 
 
 def test_PythonProcessPane_set_theme():
@@ -2076,26 +2057,15 @@ def test_DebugInspector_set_font_size():
     assert 'font-family: Monospace;' in style
 
 
-def test_DebugInspector_zoomIn():
+def test_DebugInspector_set_zoom():
     """
-    Ensure zooming in increases the font size.
-    """
-    di = mu.interface.panes.DebugInspector()
-    di.set_font_size = mock.MagicMock()
-    old_size = di.font().pointSize()
-    di.zoomIn(delta=4)
-    di.set_font_size.assert_called_once_with(old_size + 4)
-
-
-def test_DebugInspector_zoomOut():
-    """
-    Ensure zooming out decreases the font size.
+    Ensure the expected point size is set from the given "t-shirt" size.
     """
     di = mu.interface.panes.DebugInspector()
     di.set_font_size = mock.MagicMock()
-    old_size = di.font().pointSize()
-    di.zoomOut(delta=4)
-    di.set_font_size.assert_called_once_with(old_size - 4)
+    di.set_zoom('xl')
+    expected = mu.interface.panes.PANE_ZOOM_SIZES['xl']
+    di.set_font_size.assert_called_once_with(expected)
 
 
 def test_DebugInspector_set_theme():
