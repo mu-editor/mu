@@ -1172,9 +1172,12 @@ class Editor:
                 self.show_status_message(msg)
                 # Only ask to switch mode if a single device type is connected
                 # and we're not already trying to select a new mode via the
-                # dialog.
+                # dialog. Cannot change mode if a script is already being run
+                # by the current mode.
+                m = self.modes[self.mode]
+                running = hasattr(m, "runner") and m.runner
                 if (len(device_types) == 1 and self.mode != mode_name and not
-                        self.selecting_mode):
+                        self.selecting_mode) and not running:
                     msg_body = _('Would you like to change Mu to the {} '
                                  'mode?').format(device_name)
                     change_confirmation = self._view.show_confirmation(

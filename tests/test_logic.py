@@ -2061,11 +2061,16 @@ def test_check_usb():
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
     ed = mu.logic.Editor(view)
     ed.change_mode = mock.MagicMock()
+    mode_py = mock.MagicMock()
+    mode_py.name = "Python3"
+    mode_py.runner = None
+    mode_py.find_device.return_value = (None, None)
     mode_mb = mock.MagicMock()
     mode_mb.name = 'BBC micro:bit'
     mode_mb.find_device.return_value = ('/dev/ttyUSB0', '12345')
     ed.modes = {
         'microbit': mode_mb,
+        'python': mode_py,
     }
     ed.show_status_message = mock.MagicMock()
     ed.check_usb()
@@ -2083,11 +2088,16 @@ def test_check_usb_change_mode_cancel():
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
     ed = mu.logic.Editor(view)
     ed.change_mode = mock.MagicMock()
+    mode_py = mock.MagicMock()
+    mode_py.name = "Python3"
+    mode_py.runner = None
+    mode_py.find_device.return_value = (None, None)
     mode_cp = mock.MagicMock()
     mode_cp.name = 'CircuitPlayground'
     mode_cp.find_device.return_value = ('/dev/ttyUSB1', '12345')
     ed.modes = {
         'circuitplayground': mode_cp,
+        'python': mode_py,
     }
     ed.show_status_message = mock.MagicMock()
     ed.check_usb()
@@ -2121,6 +2131,32 @@ def test_check_usb_already_in_mode():
     ed.change_mode.assert_not_called()
 
 
+def test_check_usb_currently_running_code():
+    """
+    Ensure the check_usb doesn't ask to change mode if the current mode is
+    running code.
+    """
+    view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mode_py = mock.MagicMock()
+    mode_py.name = "Python3"
+    mode_py.runner = True
+    mode_py.find_device.return_value = (None, None)
+    mode_mb = mock.MagicMock()
+    mode_mb.name = 'BBC micro:bit'
+    mode_mb.find_device.return_value = ('/dev/ttyUSB0', '12345')
+    ed.modes = {
+        'microbit': mode_mb,
+        'python': mode_py,
+    }
+    ed.show_status_message = mock.MagicMock()
+    ed.check_usb()
+    view.show_confirmation.assert_not_called()
+    ed.change_mode.assert_not_called()
+
+
 def test_check_usb_multiple_devices():
     """
     Ensure the check_usb doesn't ask to change mode if multiple devices found.
@@ -2129,6 +2165,10 @@ def test_check_usb_multiple_devices():
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
     ed = mu.logic.Editor(view)
     ed.change_mode = mock.MagicMock()
+    mode_py = mock.MagicMock()
+    mode_py.name = "Python3"
+    mode_py.runner = None
+    mode_py.find_device.return_value = (None, None)
     mode_mb = mock.MagicMock()
     mode_mb.name = 'BBC micro:bit'
     mode_mb.find_device.return_value = ('/dev/ttyUSB0', '12345')
@@ -2137,7 +2177,8 @@ def test_check_usb_multiple_devices():
     mode_cp.find_device.return_value = ('/dev/ttyUSB1', '54321')
     ed.modes = {
         'microbit': mode_mb,
-        'circuitplayground': mode_cp
+        'circuitplayground': mode_cp,
+        'python': mode_py,
     }
     ed.show_status_message = mock.MagicMock()
     ed.check_usb()
@@ -2158,11 +2199,16 @@ def test_check_usb_when_selecting_mode_is_silent():
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
     ed = mu.logic.Editor(view)
     ed.change_mode = mock.MagicMock()
+    mode_py = mock.MagicMock()
+    mode_py.name = "Python3"
+    mode_py.runner = None
+    mode_py.find_device.return_value = (None, None)
     mode_cp = mock.MagicMock()
     mode_cp.name = 'CircuitPlayground'
     mode_cp.find_device.return_value = ('/dev/ttyUSB1', '12345')
     ed.modes = {
         'circuitplayground': mode_cp,
+        'python': mode_py,
     }
     ed.show_status_message = mock.MagicMock()
     ed.selecting_mode = True
