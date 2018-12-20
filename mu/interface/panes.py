@@ -948,8 +948,9 @@ class PythonProcessPane(QTextEdit):
         """
         Process incoming data from the process's stdout.
         """
-        data = self.stdout_buffer + self.process.read(256)
+        data = self.process.read(256)
         if data:
+            data = self.stdout_buffer + data
             try:
                 self.append(data)
                 self.on_append_text.emit(data)
