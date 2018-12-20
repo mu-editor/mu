@@ -12,4 +12,4 @@ language_code = localedetect.language_code()
 gettext.translation('mu', localedir=localedir,
                     languages=[language_code], fallback=True).install()
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
