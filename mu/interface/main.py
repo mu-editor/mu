@@ -194,6 +194,12 @@ class Window(QMainWindow):
     load_theme = pyqtSignal(str)
     previous_folder = None
 
+    def set_zoom(self):
+        """
+        Sets the zoom to current zoom_position level.
+        """
+        self._zoom_in.emit(self.zooms[self.zoom_position])
+
     def zoom_in(self):
         """
         Handles zooming in.

@@ -31,6 +31,7 @@ import random
 import locale
 import shutil
 import appdirs
+import site
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
@@ -665,6 +666,7 @@ class Editor:
                                            'runtime instead.')
                 if 'zoom_level' in old_session:
                     self._view.zoom_position = old_session['zoom_level']
+                    self._view.set_zoom()
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
@@ -1028,6 +1030,18 @@ class Editor:
             logger.debug('Session: {}'.format(session))
             logger.debug('Saving session to: {}'.format(session_path))
             json.dump(session, out, indent=2)
+        # Clean up temporary mu.pth file if needed (Windows only).
+        if sys.platform == 'win32' and 'pythonw.exe' in sys.executable:
+            if site.ENABLE_USER_SITE:
+                site_path = site.USER_SITE
+                path_file = os.path.join(site_path, 'mu.pth')
+                if os.path.exists(path_file):
+                    try:
+                        os.remove(path_file)
+                        logger.info('{} removed.'.format(path_file))
+                    except Exception as ex:
+                        logger.error('Unable to delete {}'.format(path_file))
+                        logger.error(ex)
         logger.info('Quitting.\n\n')
         sys.exit(0)
 

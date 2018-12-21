@@ -1812,6 +1812,101 @@ def test_quit_save_zoom_level():
     assert session['zoom_level'] == 2
 
 
+def test_quit_cleans_temporary_pth_file_on_windows():
+    """
+    If the platform is Windows and Mu is running as installed by the official
+    Windows installer, then check for the existence of mu.pth, and if found,
+    delete it.
+    """
+    view = mock.MagicMock()
+    view.modified = True
+    view.show_confirmation = mock.MagicMock(return_value=True)
+    w1 = mock.MagicMock()
+    w1.path = 'foo.py'
+    view.widgets = [w1, ]
+    ed = mu.logic.Editor(view)
+    ed.theme = 'night'
+    ed.modes = {
+        'python': mock.MagicMock(),
+        'microbit': mock.MagicMock(),
+    }
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.write = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    mock_event.ignore = mock.MagicMock(return_value=None)
+    mock_sys = mock.MagicMock()
+    mock_sys.platform = 'win32'
+    mock_sys.executable = 'C:\\Program Files\\Mu\\Python\\pythonw.exe'
+    mock_os_p_e = mock.MagicMock(return_value=True)
+    mock_os_remove = mock.MagicMock()
+    mock_site = mock.MagicMock()
+    mock_site.ENABLE_USER_SITE = True
+    mock_site.USER_SITE = ('C:\\Users\\foo\\AppData\\Roaming\\Python\\'
+                           'Python36\\site-packages')
+    with mock.patch('sys.exit', return_value=None), \
+            mock.patch('builtins.open', mock_open),\
+            mock.patch('json.dump'),\
+            mock.patch('mu.logic.sys', mock_sys),\
+            mock.patch('mu.logic.os.path.exists', mock_os_p_e),\
+            mock.patch('mu.logic.os.remove', mock_os_remove),\
+            mock.patch('mu.logic.site', mock_site):
+        ed.quit(mock_event)
+    expected_path = os.path.join(mock_site.USER_SITE, 'mu.pth')
+    mock_os_remove.assert_called_once_with(expected_path)
+
+
+def test_quit_unable_to_clean_temporary_pth_file_on_windows():
+    """
+    If the platform is Windows and Mu is running as installed by the official
+    Windows installer, then check for the existence of mu.pth, and if found,
+    attempt to delete it, but in the case of an error, simply log the error
+    for future reference / debugging.
+    """
+    view = mock.MagicMock()
+    view.modified = True
+    view.show_confirmation = mock.MagicMock(return_value=True)
+    w1 = mock.MagicMock()
+    w1.path = 'foo.py'
+    view.widgets = [w1, ]
+    ed = mu.logic.Editor(view)
+    ed.theme = 'night'
+    ed.modes = {
+        'python': mock.MagicMock(),
+        'microbit': mock.MagicMock(),
+    }
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.write = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    mock_event.ignore = mock.MagicMock(return_value=None)
+    mock_sys = mock.MagicMock()
+    mock_sys.platform = 'win32'
+    mock_sys.executable = 'C:\\Program Files\\Mu\\Python\\pythonw.exe'
+    mock_os_p_e = mock.MagicMock(return_value=True)
+    mock_os_remove = mock.MagicMock(side_effect=PermissionError('Boom'))
+    mock_site = mock.MagicMock()
+    mock_site.ENABLE_USER_SITE = True
+    mock_site.USER_SITE = ('C:\\Users\\foo\\AppData\\Roaming\\Python\\'
+                           'Python36\\site-packages')
+    mock_log = mock.MagicMock()
+    with mock.patch('sys.exit', return_value=None), \
+            mock.patch('builtins.open', mock_open),\
+            mock.patch('json.dump'),\
+            mock.patch('mu.logic.sys', mock_sys),\
+            mock.patch('mu.logic.os.path.exists', mock_os_p_e),\
+            mock.patch('mu.logic.os.remove', mock_os_remove),\
+            mock.patch('mu.logic.site', mock_site),\
+            mock.patch('mu.logic.logger', mock_log):
+        ed.quit(mock_event)
+    logs = [call[0][0] for call in mock_log.error.call_args_list]
+    expected_path = os.path.join(mock_site.USER_SITE, 'mu.pth')
+    expected = 'Unable to delete {}'.format(expected_path)
+    assert expected in logs
+
+
 def test_quit_calls_sys_exit():
     """
     Ensure that sys.exit(0) is called.
