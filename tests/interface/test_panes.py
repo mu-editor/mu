@@ -1051,19 +1051,24 @@ def test_PythonProcessPane_start_process_windows_path():
     mock_sys.platform = 'win32'
     mock_sys.executable = 'C:\\Program Files\\Mu\\Python\\pythonw.exe'
     mock_os_p_e = mock.MagicMock(return_value=True)
+    mock_os_makedirs = mock.MagicMock()
     mock_site = mock.MagicMock()
     mock_site.ENABLE_USER_SITE = True
     mock_site.USER_SITE = ('C:\\Users\\foo\\AppData\\Roaming\\Python\\'
                            'Python36\\site-packages')
+    mock_site.getusersitepackages.return_value = mock_site.USER_SITE
     mock_open = mock.mock_open()
     with mock.patch('mu.interface.panes.QProcess', mock_process_class),\
             mock.patch('mu.interface.panes.sys', mock_sys),\
             mock.patch('mu.interface.panes.os.path.exists', mock_os_p_e),\
+            mock.patch('mu.interface.panes.os.makedirs', mock_os_makedirs),\
             mock.patch('mu.interface.panes.site', mock_site),\
             mock.patch('builtins.open', mock_open):
         ppp = mu.interface.panes.PythonProcessPane()
         ppp.start_process('script.py', 'workspace', interactive=False)
     expected_pth = os.path.join(mock_site.USER_SITE, 'mu.pth')
+    mock_os_makedirs.assert_called_once_with(mock_site.USER_SITE,
+                                             exist_ok=True)
     mock_open.assert_called_once_with(expected_pth, 'w')
     expected = [
         'workspace',

@@ -676,6 +676,8 @@ class PythonProcessPane(QTextEdit):
             # working_directory, the directory containing the script to run.
             try:
                 if site.ENABLE_USER_SITE:
+                    # Ensure the USER_SITE directory exists.
+                    os.makedirs(site.getusersitepackages(), exist_ok=True)
                     site_path = site.USER_SITE
                     path_file = os.path.join(site_path, 'mu.pth')
                     logger.info('Python paths set via {}'.format(path_file))
