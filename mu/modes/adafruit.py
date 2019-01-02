@@ -54,6 +54,7 @@ class AdafruitMode(MicroPythonMode):
         (0x239A, 0xD1ED),  # Adafruit HalloWing M0
         (0x239A, 0x8030),  # Adafruit NeoTrellis M4
         (0x239A, 0x8032),  # Grand Central
+        (0x2b04, 0xC00C),  # Particle Argon
         (0x239A, 0x8034),  # future board
         (0x239A, 0x8036),  # future board
         (0x239A, 0x8038),  # future board
