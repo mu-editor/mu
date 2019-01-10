@@ -54,10 +54,10 @@ pycodestyle:
 	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pycodestyle --repeat --exclude=build/*,docs/*,mu/contrib*,mu/modes/api/*,utils/*,venv/*,.vscode/* --ignore=E731,E402,W504
 
 test: clean
-	pytest
+	pytest --random-order
 
 coverage: clean
-	pytest --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
+	pytest --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
 check: clean pycodestyle pyflakes coverage
 
@@ -69,7 +69,7 @@ publish-test: dist
 	@echo "\nPackaging complete... Uploading to PyPi..."
 	twine upload -r test --sign dist/*
 
-publish-live: dist 
+publish-live: dist
 	@echo "\nPackaging complete... Uploading to PyPi..."
 	twine upload --sign dist/*
 
