@@ -308,6 +308,16 @@ def test_Window_change_mode():
     tab2.set_api.assert_called_once_with(api)
 
 
+def test_Window_set_zoom():
+    """
+    Ensure the correct signal is emitted.
+    """
+    w = mu.interface.main.Window()
+    w._zoom_in = mock.MagicMock()
+    w.set_zoom()
+    w._zoom_in.emit.assert_called_once_with('m')
+
+
 def test_Window_zoom_in():
     """
     Ensure the correct signal is emitted.
