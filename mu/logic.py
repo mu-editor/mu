@@ -553,6 +553,7 @@ class Editor:
         self.connected_devices = set()
         self.find = ''
         self.replace = ''
+        self.current_path = ''  # Directory of last loaded file.
         self.global_replace = False
         self.selecting_mode = False  # Flag to stop auto-detection of modes.
         if not os.path.exists(DATA_DIR):
@@ -789,6 +790,27 @@ class Editor:
             self._view.add_tab(
                 name, text, self.modes[self.mode].api(), newline)
 
+    def get_dialog_directory(self):
+        """
+        Return the directory folder in which a load/save dialog box should
+        open into. In order of precedence this function will return:
+
+        1) The last location used by a load/save dialog.
+        2) The directory containing the current file.
+        3) The mode's reported workspace directory.
+        """
+        if self.current_path and os.path.isdir(self.current_path):
+            folder = self.current_path
+        else:
+            current_file_path = ''
+            workspace_path = self.modes[self.mode].workspace_dir()
+            tab = self._view.current_tab
+            if tab and tab.path:
+                current_file_path = os.path.dirname(os.path.abspath(tab.path))
+            folder = current_file_path if current_file_path else workspace_path
+        logger.info('Using path for file dialog: {}'.format(folder))
+        return folder
+
     def load(self):
         """
         Loads a Python file from the file system or extracts a Python script
@@ -802,9 +824,10 @@ class Editor:
         extensions = set([e.lower() for e in extensions])
         extensions = '*.{} *.{}'.format(' *.'.join(extensions),
                                         ' *.'.join(extensions).upper())
-        path = self._view.get_load_path(self.modes[self.mode].workspace_dir(),
-                                        extensions)
+        folder = self.get_dialog_directory()
+        path = self._view.get_load_path(folder, extensions)
         if path:
+            self.current_path = os.path.dirname(os.path.abspath(path))
             self._load(path)
 
     def direct_load(self, path):
@@ -893,8 +916,8 @@ class Editor:
             return
         if not tab.path:
             # Unsaved file.
-            workspace = self.modes[self.mode].workspace_dir()
-            path = self._view.get_save_path(workspace)
+            folder = self.get_dialog_directory()
+            path = self._view.get_save_path(folder)
             if path and self.check_for_shadow_module(path):
                 message = _('You cannot use the filename '
                             '"{}"').format(os.path.basename(path))
@@ -1125,6 +1148,8 @@ class Editor:
         # Update references to default file locations.
         logger.info('Workspace directory: {}'.format(
             self.modes[mode].workspace_dir()))
+        # Reset remembered current path for load/save dialogs.
+        self.current_path = ''
         # Ensure auto-save timeouts are set.
         if self.modes[mode].save_timeout > 0:
             # Start the timer

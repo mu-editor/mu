@@ -1019,6 +1019,7 @@ def test_no_duplicate_load_python_file():
     editor_window.widgets = [unsaved_tab, brown_tab]
 
     editor_window.get_load_path = mock.MagicMock(return_value=brown_script)
+    editor_window.current_tab.path = 'path'
     # Create the "editor" that'll control the "window".
     editor = mu.logic.Editor(view=editor_window)
     mock_mode = mock.MagicMock()
@@ -1026,7 +1027,6 @@ def test_no_duplicate_load_python_file():
     editor.modes = {
         'python': mock_mode,
     }
-
     editor.load()
     message = 'The file "{}" is already open.'.format(os.path.basename(
                                                       brown_script))
@@ -1043,6 +1043,7 @@ def test_load_other_file():
     view.get_load_path = mock.MagicMock(return_value='foo.hex')
     view.add_tab = mock.MagicMock()
     view.show_confirmation = mock.MagicMock()
+    view.current_tab.path = 'path'
     ed = mu.logic.Editor(view)
     ed.change_mode = mock.MagicMock()
     api = ['API specification', ]
@@ -1078,6 +1079,7 @@ def test_load_other_file_change_mode():
     view.get_load_path = mock.MagicMock(return_value='foo.hex')
     view.add_tab = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
+    view.current_tab.path = 'path'
     ed = mu.logic.Editor(view)
     ed.change_mode = mock.MagicMock()
     api = ['API specification', ]
@@ -1114,6 +1116,7 @@ def test_load_other_file_with_exception():
     view.get_load_path = mock.MagicMock(return_value='foo.hex')
     view.add_tab = mock.MagicMock()
     view.show_confirmation = mock.MagicMock()
+    view.current_tab.path = 'path'
     ed = mu.logic.Editor(view)
     ed.change_mode = mock.MagicMock()
     mock_mb = mock.MagicMock()
@@ -1220,6 +1223,7 @@ def test_load_error():
     view = mock.MagicMock()
     view.get_load_path = mock.MagicMock(return_value='foo.py')
     view.add_tab = mock.MagicMock()
+    view.current_tab.path = 'path'
     ed = mu.logic.Editor(view)
     mock_open = mock.MagicMock(side_effect=FileNotFoundError())
     mock_mode = mock.MagicMock()
@@ -1231,6 +1235,120 @@ def test_load_error():
         ed.load()
     assert view.get_load_path.call_count == 1
     assert view.add_tab.call_count == 0
+
+
+def test_load_sets_current_path():
+    """
+    When a path has been selected for loading by the OS's file selector,
+    ensure that the directory containing the selected file is set as the
+    self.current_path for re-use later on.
+    """
+    view = mock.MagicMock()
+    view.get_load_path = mock.MagicMock(return_value=os.path.join('path',
+                                                                  'foo.py'))
+    view.current_tab.path = os.path.join('old_path', 'foo.py')
+    ed = mu.logic.Editor(view)
+    ed._load = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    mock_mode.file_extensions = ['html', 'css']
+    ed.modes = {
+        'python': mock_mode,
+    }
+    ed.load()
+    assert ed.current_path == os.path.abspath('path')
+
+
+def test_load_no_current_path():
+    """
+    If there is no self.current_path the default location to look for a file
+    to load is the directory containing the file currently being edited.
+    """
+    view = mock.MagicMock()
+    view.get_load_path = mock.MagicMock(return_value=os.path.join('path',
+                                                                  'foo.py'))
+    view.current_tab.path = os.path.join('old_path', 'foo.py')
+    ed = mu.logic.Editor(view)
+    ed._load = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    mock_mode.file_extensions = []
+    ed.modes = {
+        'python': mock_mode,
+    }
+    ed.load()
+    expected = os.path.abspath('old_path')
+    view.get_load_path.assert_called_once_with(expected, '*.py *.PY')
+
+
+def test_load_no_current_path_no_current_tab():
+    """
+    If there is no self.current_path nor is there a current file being edited
+    then the default location to look for a file to load is the current
+    mode's workspace directory. This used to be the default behaviour, but now
+    acts as a sensible fall-back.
+    """
+    view = mock.MagicMock()
+    view.get_load_path = mock.MagicMock(return_value=os.path.join('path',
+                                                                  'foo.py'))
+    view.current_tab = None
+    ed = mu.logic.Editor(view)
+    ed._load = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = os.path.join('fake', 'path')
+    mock_mode.file_extensions = []
+    ed.modes = {
+        'python': mock_mode,
+    }
+    ed.load()
+    expected = mock_mode.workspace_dir()
+    view.get_load_path.assert_called_once_with(expected, '*.py *.PY')
+
+
+def test_load_has_current_path_does_not_exist():
+    """
+    If there is a self.current_path but it doesn't exist, then use the expected
+    fallback as the location to look for a file to load.
+    """
+    view = mock.MagicMock()
+    view.get_load_path = mock.MagicMock(return_value=os.path.join('path',
+                                                                  'foo.py'))
+    view.current_tab = None
+    ed = mu.logic.Editor(view)
+    ed._load = mock.MagicMock()
+    ed.current_path = 'foo'
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = os.path.join('fake', 'path')
+    mock_mode.file_extensions = []
+    ed.modes = {
+        'python': mock_mode,
+    }
+    ed.load()
+    expected = mock_mode.workspace_dir()
+    view.get_load_path.assert_called_once_with(expected, '*.py *.PY')
+
+
+def test_load_has_current_path():
+    """
+    If there is a self.current_path then use this as the location to look for
+    a file to load.
+    """
+    view = mock.MagicMock()
+    view.get_load_path = mock.MagicMock(return_value=os.path.join('path',
+                                                                  'foo.py'))
+    view.current_tab = None
+    ed = mu.logic.Editor(view)
+    ed._load = mock.MagicMock()
+    ed.current_path = 'foo'
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = os.path.join('fake', 'path')
+    mock_mode.file_extensions = []
+    ed.modes = {
+        'python': mock_mode,
+    }
+    with mock.patch('os.path.isdir', return_value=True):
+        ed.load()
+    view.get_load_path.assert_called_once_with('foo', '*.py *.PY')
 
 
 def test_check_for_shadow_module_with_match():
