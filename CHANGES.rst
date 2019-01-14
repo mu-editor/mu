@@ -28,6 +28,14 @@ there are show-stoppers, the next release will be 1.1 with new features.
   being truncated.
 * Fix an off-by-one error when reading bytes from UART on MicroPython devices.
 * Ensure zoom is consistent and remembered between panes and sessions.
+* Ensure mu_code and/or current directory of current script are on Python path
+  in Mu installed from the installer on Windows. Thanks to Tim Golden and Tim
+  McCurrach for helping to test the fix.
+* Added Argon, Boron and Xenon boards to Adafruit mode since they're also
+  supported by Adafruit's CircuitPython.
+* The directory used to start a load/save dialog is either what the user last
+  selected, the current directory of the current file or the mode's working
+  directory (in order of precedence). This is reset when the mode is changed.
 * Various minor typo and bug fixes.
 
 1.0.1
