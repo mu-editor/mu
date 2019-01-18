@@ -1,5 +1,5 @@
 # MU MESSAGES TRANSLATION INTO VIETNAMESE
-# Licensed under Creative Commons by-nc-sa 4.0 as with Mu
+# Licensed under GPL v3.0 as with Mu
 # Doãn Minh Đăng <minhdang@linux.com>, 2018.
 #
 msgid ""
