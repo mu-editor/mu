@@ -63,7 +63,6 @@ def setup_logging():
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
     sys.excepthook = excepthook
-    print(_('Logging to {}').format(LOG_FILE))
 
 
 def setup_modes(editor, view):
