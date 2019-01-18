@@ -180,4 +180,5 @@ def debug():
         args = sys.argv[2:]
         run_debugger('localhost', DEBUGGER_PORT, filename, args)
     else:
-        print(_("Debugger requires a Python script filename to run."))
+        # See https://github.com/mu-editor/mu/issues/743
+        print("Debugger requires a Python script filename to run.")
