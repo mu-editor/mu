@@ -64,7 +64,7 @@ class AdafruitMode(MicroPythonMode):
         (0x239A, 0x803C),  # future board
         (0x239A, 0x803E),  # future board
         (0x239A, None),    # Any Adafruit Boards
-        
+
         # Non-Adafruit boards
         (0x1B4F, 0x8D22),  # SparkFun SAMD21 Mini Breakout
         (0x1B4F, 0x8D23),  # SparkFun SAMD21 Dev Breakout
