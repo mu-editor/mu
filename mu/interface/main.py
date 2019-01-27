@@ -763,17 +763,24 @@ class Window(QMainWindow):
             title += ' - ' + filename
         self.setWindowTitle(title)
 
+    def screen_size(self):
+        """
+        Returns an (width, height) tuple with the screen geometry.
+        """
+        screen = QDesktopWidget().screenGeometry()
+        return screen.width(), screen.height()
+
     def autosize_window(self):
         """
         Makes the editor 80% of the width*height of the screen and centres it.
         """
-        screen = QDesktopWidget().screenGeometry()
-        w = int(screen.width() * 0.8)
-        h = int(screen.height() * 0.8)
+        screen_width, screen_height = self.screen_size()
+        w = int(screen_width * 0.8)
+        h = int(screen_height * 0.8)
         self.resize(w, h)
         size = self.geometry()
-        self.move((screen.width() - size.width()) / 2,
-                  (screen.height() - size.height()) / 2)
+        self.move((screen_width - size.width()) / 2,
+                  (screen_height - size.height()) / 2)
 
     def reset_annotations(self):
         """
@@ -808,11 +815,10 @@ class Window(QMainWindow):
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
         self.read_only_tabs = False
-        self.setMinimumSize(820, 400)
+        screen_width, screen_height = self.screen_size()
+        self.setMinimumSize(screen_width // 2, screen_height // 2)
         self.setTabPosition(Qt.AllDockWidgetAreas, QTabWidget.North)
-
         self.widget = QWidget()
-
         widget_layout = QVBoxLayout()
         self.widget.setLayout(widget_layout)
         self.button_bar = ButtonBar(self.widget)
