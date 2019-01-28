@@ -668,6 +668,8 @@ class Editor:
                 if 'zoom_level' in old_session:
                     self._view.zoom_position = old_session['zoom_level']
                     self._view.set_zoom()
+                old_window = old_session.get('window', {})
+                self._view.size_window(**old_window)
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
@@ -1047,6 +1049,12 @@ class Editor:
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
             'zoom_level': self._view.zoom_position,
+            'window': {
+                'x': self._view.x(),
+                'y': self._view.y(),
+                'w': self._view.width(),
+                'h': self._view.height(),
+            }
         }
         session_path = get_session_path()
         with open(session_path, 'w') as out:
