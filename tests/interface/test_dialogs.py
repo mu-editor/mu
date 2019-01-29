@@ -257,7 +257,7 @@ def test_PackageDialog_remove_package():
         pd.remove_package()
         assert pd.pkg_dirs == {}
         assert mock_remove.call_count == 3
-        assert mock_shutil.rmtree.call_count == 2
+        assert mock_shutil.rmtree.call_count == 3
         pd.append_data.assert_called_once_with('Removed foo\n')
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
@@ -291,7 +291,7 @@ def test_PackageDialog_remove_package_cannot_delete():
         assert pd.pkg_dirs == {}
         assert mock_remove.call_count == 3
         assert mock_log.call_count == 6
-        assert mock_shutil.rmtree.call_count == 2
+        assert mock_shutil.rmtree.call_count == 3
         pd.append_data.assert_called_once_with('Removed foo\n')
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
@@ -299,14 +299,25 @@ def test_PackageDialog_remove_package_cannot_delete():
 def test_PackageDialog_remove_package_end_state():
     """
     If there are no more packages to remove and there's nothing to be done for
-    adding packages, then ensure the expected end-state is called.
+    adding packages, then ensure all directories that do not contain files are
+    deleted and the expected end-state is called.
     """
     pd = mu.interface.dialogs.PackageDialog()
+    pd.module_dir = 'foo'
     pd.pkg_dirs = {}
     pd.to_add = {}
     pd.process = None
     pd.end_state = mock.MagicMock()
-    pd.remove_package()
+    with mock.patch('mu.interface.dialogs.os.listdir',
+                    return_value=['bar', 'baz']), \
+            mock.patch('mu.interface.dialogs.os.walk',
+                       side_effect=[[('bar', [], [])],
+                                    [('baz', [], ['x'])]]), \
+            mock.patch('mu.interface.dialogs.shutil') as mock_shutil:
+        pd.remove_package()
+        expected_path = os.path.join(pd.module_dir, 'bar')
+        mock_shutil.rmtree.assert_called_once_with(expected_path,
+                                                   ignore_errors=True)
     pd.end_state.assert_called_once_with()
 
 

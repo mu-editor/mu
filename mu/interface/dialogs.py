@@ -348,7 +348,7 @@ class PackageDialog(QDialog):
         self.pkg_dirs = {}
         for pkg in self.to_remove:
             for d in dirs:
-                if os.path.basename(d).lower().startswith(pkg + '-'):
+                if os.path.basename(d).lower().startswith(pkg.lower() + '-'):
                     self.pkg_dirs[pkg] = d
         if self.pkg_dirs:
             # If there are packages to remove, schedule removal.
@@ -373,11 +373,26 @@ class PackageDialog(QDialog):
                         logger.error('Unable to remove: {}'.format(to_delete))
                         logger.error(ex)
             shutil.rmtree(dist, ignore_errors=True)
-            shutil.rmtree(os.path.join(self.module_dir, package),
-                          ignore_errors=True)
+            # Some modules don't use the module name for the module directory
+            # (they use a lower case variant thereof). E.g. "Fom" vs. "fom".
+            normal_module = os.path.join(self.module_dir, package)
+            lower_module = os.path.join(self.module_dir, package.lower())
+            shutil.rmtree(normal_module, ignore_errors=True)
+            shutil.rmtree(lower_module, ignore_errors=True)
             self.append_data('Removed {}\n'.format(package))
             QTimer.singleShot(2, self.remove_package)
         else:
+            # Clean any directories not containing files.
+            dirs = [os.path.join(self.module_dir, d)
+                    for d in os.listdir(self.module_dir)]
+            for d in dirs:
+                keep = False
+                for entry in os.walk(d):
+                    if entry[2]:
+                        keep = True
+                if not keep:
+                    shutil.rmtree(d, ignore_errors=True)
+            # Check for end state.
             if not (self.to_add or self.process):
                 self.end_state()
 
