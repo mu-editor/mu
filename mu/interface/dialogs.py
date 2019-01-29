@@ -179,7 +179,8 @@ class PackagesWidget(QWidget):
                          'import in Python 3 mode. Delete a package from the '
                          'list to remove its availability.\n\n'
                          'Each separate package name should be on a new '
-                         'line.'))
+                         'line. Packages are installed from PyPI '
+                         '(see: https://pypi.org/).'))
         label.setWordWrap(True)
         widget_layout.addWidget(label)
         self.text_area = QPlainTextEdit()
