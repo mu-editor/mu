@@ -314,6 +314,7 @@ class PackageDialog(QDialog):
         self.to_add = to_add
         self.module_dir = module_dir
         self.pkg_dirs = {}  # To hold locations of to-be-removed packages.
+        self.process = None
         # Basic layout.
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_('Third Party Package Status'))
