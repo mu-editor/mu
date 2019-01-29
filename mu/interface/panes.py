@@ -647,6 +647,8 @@ class PythonProcessPane(QTextEdit):
         If python_args is given, these are passed as arguments to the Python
         runtime used to launch the child process.
         """
+        if not envars:  # Envars must be a list if not passed a value.
+            envars = []
         self.script = os.path.abspath(os.path.normcase(script_name))
         logger.info('Running script: {}'.format(self.script))
         if interactive:
@@ -706,6 +708,8 @@ class PythonProcessPane(QTextEdit):
                 # this to fail.
                 logger.error('Could not set Python paths with mu.pth file.')
                 logger.error(ex)
+        if 'PYTHONPATH' not in envars:
+            envars.append(('PYTHONPATH', ':'.join(sys.path)))
         if envars:
             logger.info('Running with environment variables: '
                         '{}'.format(envars))

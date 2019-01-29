@@ -191,6 +191,26 @@ def test_CONSTANTS():
     assert mu.logic.WORKSPACE_NAME
 
 
+def test_installed_packages():
+    """
+    Ensure module meta-data is processed properly to give a return value of a
+    list containing all the installed modules currently in the MODULE_DIR.
+    """
+    mock_listdir = mock.MagicMock(return_value=['foo-1.0.0.dist-info',
+                                                'bar-2.0.0.dist-info', 'baz'])
+    mock_open = mock.MagicMock()
+    mock_file = mock.MagicMock()
+    mock_open().__enter__ = mock.MagicMock(return_value=mock_file)
+    foo_metadata = ["Metadata-Version: 2.1", "Name: foo"]
+    bar_metadata = ["Metadata-Version: 2.1", "Name: bar"]
+    mock_file.readlines = mock.MagicMock(side_effect=[foo_metadata,
+                                                      bar_metadata])
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.logic.os.listdir', mock_listdir):
+        result = mu.logic.installed_packages()
+        assert result == ['bar', 'foo', ]  # ordered result.
+
+
 def test_write_and_flush():
     """
     Ensure the write and flush function tries to write to the filesystem and
@@ -639,8 +659,9 @@ def test_editor_init():
         assert e.replace == ''
         assert e.global_replace is False
         assert e.selecting_mode is False
-        assert mkd.call_count == 1
+        assert mkd.call_count == 2
         assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
+        assert mkd.call_args_list[1][0][0] == mu.logic.MODULE_DIR
 
 
 def test_editor_setup():
@@ -2059,6 +2080,7 @@ def test_show_admin():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.sync_package_state = mock.MagicMock()
     ed.envars = [['name', 'value'], ]
     ed.minify = True
     ed.microbit_runtime = '/foo/bar'
@@ -2067,10 +2089,18 @@ def test_show_admin():
         'minify': True,
         'microbit_runtime': '/foo/bar'
     }
-    view.show_admin.return_value = settings
+    new_settings = {
+        'envars': 'name=value',
+        'minify': True,
+        'microbit_runtime': '/foo/bar',
+        'packages': 'baz\n',
+    }
+    view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
+    mock_ip = mock.MagicMock(return_value=['foo', 'bar'])
     with mock.patch('builtins.open', mock_open), \
-            mock.patch('os.path.isfile', return_value=True):
+            mock.patch('os.path.isfile', return_value=True), \
+            mock.patch('mu.logic.installed_packages', mock_ip):
         ed.show_admin(None)
         mock_open.assert_called_once_with(mu.logic.LOG_FILE, 'r',
                                           encoding='utf8')
@@ -2079,6 +2109,28 @@ def test_show_admin():
         assert ed.envars == [['name', 'value']]
         assert ed.minify is True
         assert ed.microbit_runtime == '/foo/bar'
+        ed.sync_package_state.assert_called_once_with(['foo', 'bar'], ['baz'])
+
+
+def test_show_admin_no_change():
+    """
+    If the dialog is cancelled, no changes are made to settings.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.sync_package_state = mock.MagicMock()
+    ed.envars = [['name', 'value'], ]
+    ed.minify = True
+    ed.microbit_runtime = '/foo/bar'
+    new_settings = {}
+    view.show_admin.return_value = new_settings
+    mock_open = mock.mock_open()
+    mock_ip = mock.MagicMock(return_value=['foo', 'bar'])
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('os.path.isfile', return_value=True), \
+            mock.patch('mu.logic.installed_packages', mock_ip):
+        ed.show_admin(None)
+        assert ed.sync_package_state.call_count == 0
 
 
 def test_show_admin_missing_microbit_runtime():
@@ -2088,18 +2140,27 @@ def test_show_admin_missing_microbit_runtime():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.sync_package_state = mock.MagicMock()
     ed.envars = [['name', 'value'], ]
     ed.minify = True
     ed.microbit_runtime = '/foo/bar'
     settings = {
         'envars': 'name=value',
         'minify': True,
-        'microbit_runtime': '/foo/bar'
+        'microbit_runtime': '/foo/bar',
     }
-    view.show_admin.return_value = settings
+    new_settings = {
+        'envars': 'name=value',
+        'minify': True,
+        'microbit_runtime': '/foo/bar',
+        'packages': 'baz\n',
+    }
+    view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
+    mock_ip = mock.MagicMock(return_value=['foo', 'bar'])
     with mock.patch('builtins.open', mock_open), \
-            mock.patch('os.path.isfile', return_value=False):
+            mock.patch('os.path.isfile', return_value=False), \
+            mock.patch('mu.logic.installed_packages', mock_ip):
         ed.show_admin(None)
         mock_open.assert_called_once_with(mu.logic.LOG_FILE, 'r',
                                           encoding='utf8')
@@ -2109,6 +2170,21 @@ def test_show_admin_missing_microbit_runtime():
         assert ed.minify is True
         assert ed.microbit_runtime == ''
         assert view.show_message.call_count == 1
+        ed.sync_package_state.assert_called_once_with(['foo', 'bar'], ['baz'])
+
+
+def test_sync_package_state():
+    """
+    Ensure that the expected set operations are carried out so that the
+    view's sync_packages method is called with the correct packages.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    old_packages = ['foo', 'bar', ]
+    new_packages = ['bar', 'baz', ]
+    ed.sync_package_state(old_packages, new_packages)
+    view.sync_packages.assert_called_once_with({'foo'}, {'baz'},
+                                               mu.logic.MODULE_DIR)
 
 
 def test_select_mode():

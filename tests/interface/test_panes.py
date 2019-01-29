@@ -1161,12 +1161,14 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
         envars = [['name', 'value'], ]
         ppp.start_process('script.py', 'workspace', interactive=False,
                           envars=envars, runner='foo')
-    assert mock_environment.insert.call_count == 3
+    assert mock_environment.insert.call_count == 4
     assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
                                                             '1')
     assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
                                                             'utf-8')
     assert mock_environment.insert.call_args_list[2][0] == ('name', 'value')
+    assert mock_environment.insert.call_args_list[3][0] == ('PYTHONPATH',
+                                                            ':'.join(sys.path))
 
 
 def test_PythonProcessPane_start_process_darwin_app_pythonpath():
@@ -1194,7 +1196,7 @@ def test_PythonProcessPane_start_process_darwin_app_pythonpath():
         envars = [['name', 'value'], ]
         ppp.start_process('script.py', 'workspace', interactive=False,
                           envars=envars, runner='foo')
-    assert mock_environment.insert.call_count == 4
+    assert mock_environment.insert.call_count == 5
     assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
                                                             '1')
     assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
@@ -1202,6 +1204,8 @@ def test_PythonProcessPane_start_process_darwin_app_pythonpath():
     assert mock_environment.insert.call_args_list[2][0] == ('PYTHONPATH',
                                                             ':'.join(sys.path))
     assert mock_environment.insert.call_args_list[3][0] == ('name', 'value')
+    assert mock_environment.insert.call_args_list[4][0] == ('PYTHONPATH',
+                                                            ':'.join(sys.path))
 
 
 def test_PythonProcessPane_start_process_custom_runner():
