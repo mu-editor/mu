@@ -662,12 +662,6 @@ class PythonProcessPane(QTextEdit):
         env = QProcessEnvironment.systemEnvironment()
         env.insert('PYTHONUNBUFFERED', '1')
         env.insert('PYTHONIOENCODING', 'utf-8')
-        if sys.platform == 'darwin':
-            parent_dir = os.path.dirname(__file__)
-            if '.app/Contents/Resources/app/mu' in parent_dir:
-                # Mu is running as a macOS app bundle. Ensure the expected
-                # paths are in PYTHONPATH of the subprocess.
-                env.insert('PYTHONPATH', ':'.join(sys.path))
         if sys.platform == 'win32' and 'pythonw.exe' in sys.executable:
             # On Windows, if installed via NSIS then Python is always run in
             # isolated mode via pythonw.exe so none of the expected directories
