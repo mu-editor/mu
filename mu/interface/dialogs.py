@@ -348,7 +348,9 @@ class PackageDialog(QDialog):
         self.pkg_dirs = {}
         for pkg in self.to_remove:
             for d in dirs:
-                if os.path.basename(d).lower().startswith(pkg.lower() + '-'):
+                # Assets on the filesystem use a normalised package name.
+                pkg_name = pkg.replace('-', '_').lower()
+                if os.path.basename(d).lower().startswith(pkg_name + '-'):
                     self.pkg_dirs[pkg] = d
         if self.pkg_dirs:
             # If there are packages to remove, schedule removal.
@@ -412,6 +414,7 @@ class PackageDialog(QDialog):
         args = ['-m', 'pip', 'install', package, '--target',
                 self.module_dir]
         self.process = QProcess(self)
+        self.process.setProcessChannelMode(QProcess.MergedChannels)
         self.process.readyRead.connect(self.read_process)
         self.process.finished.connect(self.finished)
         self.process.start(sys.executable, args)

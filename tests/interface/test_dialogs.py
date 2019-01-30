@@ -219,14 +219,17 @@ def test_PackageDialog_remove_packages():
     remove_package method is scheduled.
     """
     pd = mu.interface.dialogs.PackageDialog()
-    pd.to_remove = {'foo'}
-    pd.module_dir = 'bar'
-    with mock.patch('mu.interface.dialogs.os.listdir',
-                    return_value=['foo-1.0.0.dist-info', 'foo']), \
+    pd.to_remove = {'foo', 'bar-baz', 'Quux'}
+    pd.module_dir = 'wibble'
+    dirs = ['foo-1.0.0.dist-info', 'foo', 'bar_baz-1.0.0.dist-info', 'bar_baz',
+            'quux-1.0.0.dist-info', 'quux', ]
+    with mock.patch('mu.interface.dialogs.os.listdir', return_value=dirs), \
             mock.patch('mu.interface.dialogs.QTimer') as mock_qtimer:
         pd.remove_packages()
         assert pd.pkg_dirs == {
-            'foo': os.path.join('bar', 'foo-1.0.0.dist-info')
+            'foo': os.path.join('wibble', 'foo-1.0.0.dist-info'),
+            'bar-baz': os.path.join('wibble', 'bar_baz-1.0.0.dist-info'),
+            'Quux': os.path.join('wibble', 'quux-1.0.0.dist-info'),
         }
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
