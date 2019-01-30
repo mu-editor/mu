@@ -709,7 +709,7 @@ class PythonProcessPane(QTextEdit):
                 logger.error('Could not set Python paths with mu.pth file.')
                 logger.error(ex)
         if 'PYTHONPATH' not in envars:
-            envars.append(('PYTHONPATH', ':'.join(sys.path)))
+            envars.append(('PYTHONPATH', os.pathsep.join(sys.path)))
         if envars:
             logger.info('Running with environment variables: '
                         '{}'.format(envars))

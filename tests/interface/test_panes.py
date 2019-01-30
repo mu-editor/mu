@@ -1167,8 +1167,9 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
     assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
                                                             'utf-8')
     assert mock_environment.insert.call_args_list[2][0] == ('name', 'value')
+    expected_path = os.pathsep.join(sys.path)
     assert mock_environment.insert.call_args_list[3][0] == ('PYTHONPATH',
-                                                            ':'.join(sys.path))
+                                                            expected_path)
 
 
 def test_PythonProcessPane_start_process_darwin_app_pythonpath():
@@ -1201,11 +1202,12 @@ def test_PythonProcessPane_start_process_darwin_app_pythonpath():
                                                             '1')
     assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
                                                             'utf-8')
+    expected_path = os.pathsep.join(sys.path)
     assert mock_environment.insert.call_args_list[2][0] == ('PYTHONPATH',
-                                                            ':'.join(sys.path))
+                                                            expected_path)
     assert mock_environment.insert.call_args_list[3][0] == ('name', 'value')
     assert mock_environment.insert.call_args_list[4][0] == ('PYTHONPATH',
-                                                            ':'.join(sys.path))
+                                                            expected_path)
 
 
 def test_PythonProcessPane_start_process_custom_runner():

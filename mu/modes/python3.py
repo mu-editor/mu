@@ -65,7 +65,7 @@ class KernelRunner(QObject):
         # Ensure the expected paths are in PYTHONPATH of the subprocess so the
         # kernel and Mu-installed third party applications can be found.
         if 'PYTHONPATH' not in os.environ:
-            os.environ['PYTHONPATH'] = ':'.join(sys.path)
+            os.environ['PYTHONPATH'] = os.pathsep.join(sys.path)
         self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.start_kernel()
         self.repl_kernel_client = self.repl_kernel_manager.client()
