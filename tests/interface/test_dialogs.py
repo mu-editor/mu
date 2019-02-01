@@ -168,6 +168,31 @@ def test_AdminDialog_setup():
     assert s == settings
 
 
+def test_AdminDialog_setup_raspberry_pi():
+    """
+    The package related widget must NOT be visible if Mu is running on a
+    Raspberry Pi. See:
+    https://github.com/mu-editor/mu/pull/749#issuecomment-459031400
+    for further context.
+    """
+    log = 'this is the contents of a log file'
+    settings = {
+        'envars': 'name=value',
+        'minify': True,
+        'microbit_runtime': '/foo/bar',
+    }
+    packages = 'foo\nbar\nbaz\n'
+    mock_window = QWidget()
+    mock_platform = mock.MagicMock()
+    platform = "Linux-4.14.79-v7+-armv7l-with-debian-9.6"
+    mock_platform.platform.return_value = platform
+    ad = mu.interface.dialogs.AdminDialog(mock_window)
+    with mock.patch('mu.interface.dialogs.platform', mock_platform):
+        ad.setup(log, settings, packages)
+    # Package tab not added to tabs widget (position -1)
+    assert ad.tabs.indexOf(ad.package_widget) == -1
+
+
 def test_FindReplaceDialog_setup():
     """
     Ensure the find/replace dialog is setup properly given only the theme

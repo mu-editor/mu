@@ -21,6 +21,7 @@ import sys
 import logging
 import csv
 import shutil
+import platform
 from PyQt5.QtCore import QSize, QProcess, QTimer
 from PyQt5.QtWidgets import (QVBoxLayout, QListWidget, QLabel, QListWidgetItem,
                              QDialog, QDialogButtonBox, QPlainTextEdit,
@@ -224,7 +225,11 @@ class AdminDialog(QDialog):
         self.tabs.addTab(self.microbit_widget, _('BBC micro:bit Settings'))
         self.package_widget = PackagesWidget()
         self.package_widget.setup(packages)
-        self.tabs.addTab(self.package_widget, _('Third Party Packages'))
+        if 'armv' not in platform.platform():
+            # Only allow third party package management if NOT running on a
+            # Raspberry Pi. See:
+            # https://github.com/mu-editor/mu/pull/749#issuecomment-459051823
+            self.tabs.addTab(self.package_widget, _('Third Party Packages'))
 
     def settings(self):
         """
