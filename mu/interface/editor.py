@@ -29,7 +29,7 @@ from mu.logic import NEWLINE
 
 
 # Regular Expression for valid individual code 'words'
-RE_VALID_WORD = re.compile('^[A-Za-z0-9_-]*$')
+RE_VALID_WORD = re.compile(r'^\w+$')
 
 
 logger = logging.getLogger(__name__)
