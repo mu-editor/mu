@@ -452,6 +452,42 @@ def test_EditorPane_highlight_selected_matches_with_match():
     assert ep.search_indicators['selection']['positions'] == expected_ranges
 
 
+def test_EditorPane_highlight_selected_matches_with_match_in_nonASCII_text():
+    """
+    Ensure that if the current selection is a single word then it causes the
+    expected search/highlight call when the text is not ASCII only.
+
+    There appears to be no way to iterate over indicators within the editor.
+    So we're using the search_indicators structure as a proxy
+    """
+    text = "résumé foo bar foo baz foo"
+    search_for = "foo"
+
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    ep.setText(text)
+
+    #
+    # Determine what ranges would be found and highlighted and arbitrarily
+    # use the last one for the selection
+    #
+    expected_ranges = []
+    selected_range = None
+    for range in _ranges_in_text(text, search_for):
+        if selected_range is None:
+            selected_range = range
+        else:
+            (line_start, col_start, line_end, col_end) = range
+            expected_ranges.append(
+                dict(
+                    line_start=line_start, col_start=col_start,
+                    line_end=line_end, col_end=col_end
+                )
+            )
+
+    ep.setSelection(*selected_range)
+    assert ep.search_indicators['selection']['positions'] == expected_ranges
+
+
 def test_EditorPane_highlight_selected_matches_incomplete_word():
     """
     Ensure that if the current selection is not a complete word
