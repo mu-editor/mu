@@ -1,4 +1,4 @@
-Roadmap (Mappa MUndi)
+Roadmap (Mappa Mundi)
 ---------------------
 
 (Apologies for the pun: https://en.wikipedia.org/wiki/Mappa_mundi)
