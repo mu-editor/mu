@@ -362,6 +362,27 @@ def _ranges_in_text(text, search_for):
             yield n_line, match.start(), n_line, match.end()
 
 
+def _matched_selection(text, search_for):
+    """
+    Determine what ranges would be found and highlighted and arbitrarily
+    use the last one for the selection
+    """
+    expected_ranges = []
+    selected_range = None
+    for range in _ranges_in_text(text, search_for):
+        if selected_range is None:
+            selected_range = range
+        else:
+            (line_start, col_start, line_end, col_end) = range
+            expected_ranges.append(
+                dict(
+                    line_start=line_start, col_start=col_start,
+                    line_end=line_end, col_end=col_end
+                )
+            )
+    return expected_ranges, selected_range
+
+
 def test_EditorPane_highlight_selected_matches_no_selection():
     """
     Ensure that if the current selection is empty then all highlights
@@ -430,23 +451,7 @@ def test_EditorPane_highlight_selected_matches_with_match():
     ep = mu.interface.editor.EditorPane(None, 'baz')
     ep.setText(text)
 
-    #
-    # Determine what ranges would be found and highlighted and arbitrarily
-    # use the last one for the selection
-    #
-    expected_ranges = []
-    selected_range = None
-    for range in _ranges_in_text(text, search_for):
-        if selected_range is None:
-            selected_range = range
-        else:
-            (line_start, col_start, line_end, col_end) = range
-            expected_ranges.append(
-                dict(
-                    line_start=line_start, col_start=col_start,
-                    line_end=line_end, col_end=col_end
-                )
-            )
+    expected_ranges, selected_range = _matched_selection(text, search_for)
 
     ep.setSelection(*selected_range)
     assert ep.search_indicators['selection']['positions'] == expected_ranges
@@ -466,23 +471,7 @@ def test_EditorPane_highlight_selected_matches_with_match_in_nonASCII_text():
     ep = mu.interface.editor.EditorPane(None, 'baz')
     ep.setText(text)
 
-    #
-    # Determine what ranges would be found and highlighted and arbitrarily
-    # use the last one for the selection
-    #
-    expected_ranges = []
-    selected_range = None
-    for range in _ranges_in_text(text, search_for):
-        if selected_range is None:
-            selected_range = range
-        else:
-            (line_start, col_start, line_end, col_end) = range
-            expected_ranges.append(
-                dict(
-                    line_start=line_start, col_start=col_start,
-                    line_end=line_end, col_end=col_end
-                )
-            )
+    expected_ranges, selected_range = _matched_selection(text, search_for)
 
     ep.setSelection(*selected_range)
     assert ep.search_indicators['selection']['positions'] == expected_ranges
@@ -502,23 +491,7 @@ def test_EditorPane_highlight_selected_matches_with_nonASCII_match():
     ep = mu.interface.editor.EditorPane(None, 'baz')
     ep.setText(text)
 
-    #
-    # Determine what ranges would be found and highlighted and arbitrarily
-    # use the last one for the selection
-    #
-    expected_ranges = []
-    selected_range = None
-    for range in _ranges_in_text(text, search_for):
-        if selected_range is None:
-            selected_range = range
-        else:
-            (line_start, col_start, line_end, col_end) = range
-            expected_ranges.append(
-                dict(
-                    line_start=line_start, col_start=col_start,
-                    line_end=line_end, col_end=col_end
-                )
-            )
+    expected_ranges, selected_range = _matched_selection(text, search_for)
 
     ep.setSelection(*selected_range)
     assert ep.search_indicators['selection']['positions'] == expected_ranges
