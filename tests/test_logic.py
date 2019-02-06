@@ -1659,26 +1659,10 @@ def test_show_help():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    qlocale_system = mock.MagicMock()
+    qlocale_system.name.return_value = 'en_GB'
     with mock.patch('mu.logic.webbrowser.open_new', return_value=None) as wb, \
-            mock.patch('mu.logic.locale.getdefaultlocale',
-                       return_value=('en_GB', 'UTF-8')):
-        ed.show_help()
-        version = '.'.join(__version__.split('.')[:2])
-        url = 'https://codewith.mu/en/help/{}'.format(version)
-        wb.assert_called_once_with(url)
-
-
-def test_show_help_exploding_getdefaultlocale():
-    """
-    Sometimes, on OSX the getdefaultlocale method causes a TypeError or
-    ValueError. Ensure when this happens, Mu defaults to 'en' as the language
-    code.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.webbrowser.open_new', return_value=None) as wb, \
-            mock.patch('mu.logic.locale.getdefaultlocale',
-                       side_effect=TypeError('Boom!')):
+            mock.patch('PyQt5.Qt.QLocale.system', return_value=qlocale_system):
         ed.show_help()
         version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/en/help/{}'.format(version)
