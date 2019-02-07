@@ -129,8 +129,9 @@ class PyGameZeroMode(BaseMode):
             logger.debug(tab.text())
             envars = self.editor.envars
             args = ['-m', 'pgzero']
+            cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(tab.path,
-                                                       os.path.dirname(tab.path),
+                                                       cwd,
                                                        interactive=False,
                                                        envars=envars,
                                                        python_args=args)
