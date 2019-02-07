@@ -185,7 +185,7 @@ class PythonMode(BaseMode):
                 self.editor.save_tab_to_file(tab)
             envars = self.editor.envars
             self.runner = self.view.add_python3_runner(tab.path,
-                                                       self.workspace_dir(),
+                                                       os.path.dirname(tab.path),
                                                        interactive=True,
                                                        envars=envars)
             self.runner.process.waitForStarted()
