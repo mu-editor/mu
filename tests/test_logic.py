@@ -89,7 +89,8 @@ def generate_python_file(text="", dirpath=None):
 @contextlib.contextmanager
 def generate_session(theme="day", mode="python", file_contents=None,
                      filepath=None, envars=[['name', 'value'], ], minify=False,
-                     microbit_runtime=None, zoom_level=2, **kwargs):
+                     microbit_runtime=None, zoom_level=2, window=None,
+                     **kwargs):
     """Generate a temporary session file for one test
 
     By default, the session file will be created inside a temporary directory
@@ -133,6 +134,8 @@ def generate_session(theme="day", mode="python", file_contents=None,
         session_data['microbit_runtime'] = microbit_runtime
     if zoom_level:
         session_data['zoom_level'] = zoom_level
+    if window:
+        session_data['window'] = window
     session_data.update(**kwargs)
 
     if filepath is None:
@@ -798,6 +801,18 @@ def test_editor_restore_session_invalid_file():
         ed.restore_session()
     py = '# Write your code here :-)' + mu.logic.NEWLINE
     ed._view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
+
+
+def test_editor_restore_saved_window_geometry():
+    """
+    Window geometry specified in the session file is restored properly.
+    """
+    ed = mocked_editor()
+    window = {'x': 10, 'y': 20, 'w': 1000, 'h': 600}
+    with mock.patch('os.path.isfile', return_value=True):
+        with generate_session(window=window):
+            ed.restore_session()
+    ed._view.size_window.assert_called_once_with(**window)
 
 
 def test_editor_open_focus_passed_file():
