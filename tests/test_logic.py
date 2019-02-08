@@ -815,6 +815,17 @@ def test_editor_restore_saved_window_geometry():
     ed._view.size_window.assert_called_once_with(**window)
 
 
+def test_editor_restore_default_window_geometry():
+    """
+    Window is sized by default if no geometry exists in the session file.
+    """
+    ed = mocked_editor()
+    with mock.patch('os.path.isfile', return_value=True):
+        with generate_session():
+            ed.restore_session()
+    ed._view.size_window.assert_called_once_with()
+
+
 def test_editor_open_focus_passed_file():
     """
     A file passed in by the OS is opened
