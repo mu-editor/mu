@@ -1284,7 +1284,7 @@ def test_Window_update_title():
     w.setWindowTitle.assert_called_once_with('Mu - foo.py')
 
 
-def test_Window_autosize_window():
+def test_Window_size_window():
     """
     Check the correct calculations take place and methods are called so the
     window is resized and positioned correctly.
@@ -1303,7 +1303,7 @@ def test_Window_autosize_window():
     w.geometry = mock.MagicMock(return_value=mock_size)
     w.move = mock.MagicMock(return_value=None)
     with mock.patch('mu.interface.main.QDesktopWidget', mock_qdw):
-        w.autosize_window()
+        w.size_window()
     mock_qdw.assert_called_once_with()
     w.resize.assert_called_once_with(int(1024 * 0.8), int(768 * 0.8))
     w.geometry.assert_called_once_with()
@@ -1364,7 +1364,7 @@ def test_Window_setup():
     w.show = mock.MagicMock(return_value=None)
     w.setCentralWidget = mock.MagicMock(return_value=None)
     w.addToolBar = mock.MagicMock(return_value=None)
-    w.autosize_window = mock.MagicMock(return_value=None)
+    w.size_window = mock.MagicMock(return_value=None)
     mock_widget = mock.MagicMock()
     mock_widget.setLayout = mock.MagicMock(return_value=None)
     mock_widget_class = mock.MagicMock(return_value=mock_widget)
@@ -1394,7 +1394,7 @@ def test_Window_setup():
     w.show.assert_called_once_with()
     w.setCentralWidget.call_count == 1
     w.addToolBar.call_count == 1
-    w.autosize_window.assert_called_once_with()
+    assert w.size_window.call_count == 0
 
 
 def test_Window_set_usb_checker():
