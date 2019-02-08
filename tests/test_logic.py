@@ -1764,15 +1764,28 @@ def test_quit_modified_ok():
     assert mock_open.return_value.write.call_count > 0
 
 
-def test_quit_save_tabs_with_paths():
+def _editor_view_mock():
     """
-    When saving the session, ensure those tabs with associated paths are
-    logged in the session file.
+    Return a mocked mu.interface.Window to be used as a mu.logic.Editor view
+    in the test_quit_save* tests.
     """
     view = mock.MagicMock()
     view.modified = True
     view.zoom_position = 2
     view.show_confirmation = mock.MagicMock(return_value=True)
+    view.x.return_value = 100
+    view.y.return_value = 200
+    view.width.return_value = 300
+    view.height.return_value = 400
+    return view
+
+
+def test_quit_save_tabs_with_paths():
+    """
+    When saving the session, ensure those tabs with associated paths are
+    logged in the session file.
+    """
+    view = _editor_view_mock()
     w1 = mock.MagicMock()
     w1.path = 'foo.py'
     view.widgets = [w1, ]
@@ -1807,10 +1820,7 @@ def test_quit_save_theme():
     """
     When saving the session, ensure the theme is logged in the session file.
     """
-    view = mock.MagicMock()
-    view.modified = True
-    view.zoom_position = 2
-    view.show_confirmation = mock.MagicMock(return_value=True)
+    view = _editor_view_mock()
     w1 = mock.MagicMock()
     w1.path = 'foo.py'
     view.widgets = [w1, ]
@@ -1847,10 +1857,7 @@ def test_quit_save_envars():
     When saving the session, ensure the user defined envars are logged in the
     session file.
     """
-    view = mock.MagicMock()
-    view.modified = True
-    view.zoom_position = 2
-    view.show_confirmation = mock.MagicMock(return_value=True)
+    view = _editor_view_mock()
     w1 = mock.MagicMock()
     w1.path = 'foo.py'
     view.widgets = [w1, ]
@@ -1891,10 +1898,7 @@ def test_quit_save_zoom_level():
     When saving the session, ensure the zoom level is logged in the session
     file.
     """
-    view = mock.MagicMock()
-    view.modified = True
-    view.zoom_position = 2
-    view.show_confirmation = mock.MagicMock(return_value=True)
+    view = _editor_view_mock()
     w1 = mock.MagicMock()
     w1.path = 'foo.py'
     view.widgets = [w1, ]
@@ -1930,15 +1934,54 @@ def test_quit_save_zoom_level():
     assert session['zoom_level'] == 2
 
 
+def test_quit_save_window_geometry():
+    """
+    When saving the session, ensure the window geometry is saved in the session
+    file.
+    """
+    view = _editor_view_mock()
+    w1 = mock.MagicMock()
+    w1.path = 'foo.py'
+    view.widgets = [w1, ]
+    ed = mu.logic.Editor(view)
+    ed.theme = 'night'
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = 'foo/bar'
+    mock_mode.get_hex_path.return_value = 'foo/bar'
+    ed.modes = {
+        'python': mock_mode,
+        'microbit': mock_mode,
+    }
+    ed.envars = [
+        ['name1', 'value1'],
+        ['name2', 'value2'],
+    ]
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.write = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    mock_event.ignore = mock.MagicMock(return_value=None)
+    with mock.patch('sys.exit', return_value=None), \
+            mock.patch('builtins.open', mock_open):
+        ed.quit(mock_event)
+    assert view.show_confirmation.call_count == 1
+    assert mock_event.ignore.call_count == 0
+    assert mock_open.call_count == 1
+    assert mock_open.return_value.write.call_count > 0
+    recovered = ''.join([i[0][0] for i
+                        in mock_open.return_value.write.call_args_list])
+    session = json.loads(recovered)
+    assert session['window'] == {'x': 100, 'y': 200, 'w': 300, 'h': 400}
+
+
 def test_quit_cleans_temporary_pth_file_on_windows():
     """
     If the platform is Windows and Mu is running as installed by the official
     Windows installer, then check for the existence of mu.pth, and if found,
     delete it.
     """
-    view = mock.MagicMock()
-    view.modified = True
-    view.show_confirmation = mock.MagicMock(return_value=True)
+    view = _editor_view_mock()
     w1 = mock.MagicMock()
     w1.path = 'foo.py'
     view.widgets = [w1, ]
