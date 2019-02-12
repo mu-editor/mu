@@ -176,18 +176,31 @@ class PackagesWidget(QWidget):
     def setup(self, packages):
         widget_layout = QVBoxLayout()
         self.setLayout(widget_layout)
-        label = QLabel(_('The packages shown below will be available to '
-                         'import in Python 3 mode. Delete a package from the '
-                         'list to remove its availability.\n\n'
-                         'Each separate package name should be on a new '
-                         'line. Packages are installed from PyPI '
-                         '(see: https://pypi.org/).'))
-        label.setWordWrap(True)
-        widget_layout.addWidget(label)
         self.text_area = QPlainTextEdit()
         self.text_area.setLineWrapMode(QPlainTextEdit.NoWrap)
-        self.text_area.setPlainText(packages)
-        widget_layout.addWidget(self.text_area)
+        if 'armv' in platform.platform():
+            # Only allow third party package management if NOT running on a
+            # Raspberry Pi. See:
+            # https://github.com/mu-editor/mu/pull/749#issuecomment-459051823
+            label = QLabel(_('Third party packages are not supported on the '
+                             'Raspberry Pi. Please use the operating '
+                             "system's package manager instead (refer to the "
+                             "operating system's documentation for how to do "
+                             "this)."))
+            label.setWordWrap(True)
+            widget_layout.addWidget(label)
+            self.text_area.setPlainText('')
+        else:
+            label = QLabel(_('The packages shown below will be available to '
+                             'import in Python 3 mode. Delete a package from '
+                             'the list to remove its availability.\n\n'
+                             'Each separate package name should be on a new '
+                             'line. Packages are installed from PyPI '
+                             '(see: https://pypi.org/).'))
+            label.setWordWrap(True)
+            widget_layout.addWidget(label)
+            self.text_area.setPlainText(packages)
+            widget_layout.addWidget(self.text_area)
 
 
 class AdminDialog(QDialog):
@@ -225,11 +238,7 @@ class AdminDialog(QDialog):
         self.tabs.addTab(self.microbit_widget, _('BBC micro:bit Settings'))
         self.package_widget = PackagesWidget()
         self.package_widget.setup(packages)
-        if 'armv' not in platform.platform():
-            # Only allow third party package management if NOT running on a
-            # Raspberry Pi. See:
-            # https://github.com/mu-editor/mu/pull/749#issuecomment-459051823
-            self.tabs.addTab(self.package_widget, _('Third Party Packages'))
+        self.tabs.addTab(self.package_widget, _('Third Party Packages'))
 
     def settings(self):
         """

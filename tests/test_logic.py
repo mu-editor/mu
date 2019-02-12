@@ -201,8 +201,10 @@ def test_installed_packages():
     mock_open = mock.MagicMock()
     mock_file = mock.MagicMock()
     mock_open().__enter__ = mock.MagicMock(return_value=mock_file)
-    foo_metadata = ["Metadata-Version: 2.1", "Name: foo"]
-    bar_metadata = ["Metadata-Version: 2.1", "Name: bar"]
+    foo_metadata = [b"Metadata-Version: 2.1", b"Name: foo",
+                    b"test: \xe6\x88\x91"]
+    bar_metadata = [b"Metadata-Version: 2.1", b"Name: bar",
+                    b"test: \xe6\x88\x91"]
     mock_file.readlines = mock.MagicMock(side_effect=[foo_metadata,
                                                       bar_metadata])
     with mock.patch('builtins.open', mock_open), \

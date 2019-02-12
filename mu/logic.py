@@ -156,10 +156,10 @@ def installed_packages():
                 if d.endswith("dist-info")]
     for pkg in pkg_dirs:
         metadata_file = os.path.join(pkg, 'METADATA')
-        with open(metadata_file) as f:
+        with open(metadata_file, 'rb') as f:
             lines = f.readlines()
-            name = lines[1].rsplit(':')[-1].strip()
-            result.append(name)
+            name = lines[1].rsplit(b':')[-1].strip()
+            result.append(name.decode('utf-8'))
     return sorted(result)
 
 
@@ -1108,25 +1108,25 @@ class Editor:
         with open(LOG_FILE, 'r', encoding='utf8') as logfile:
             new_settings = self._view.show_admin(logfile.read(), settings,
                                                  '\n'.join(packages))
-            if new_settings:
-                self.envars = extract_envars(new_settings['envars'])
-                self.minify = new_settings['minify']
-                runtime = new_settings['microbit_runtime'].strip()
-                if runtime and not os.path.isfile(runtime):
-                    self.microbit_runtime = ''
-                    message = _('Could not find MicroPython runtime.')
-                    information = _("The micro:bit runtime you specified "
-                                    "('{}') does not exist. "
-                                    "Please try again.").format(runtime)
-                    self._view.show_message(message, information)
-                else:
-                    self.microbit_runtime = runtime
-                new_packages = [p for p in
-                                new_settings['packages'].lower().split('\n')
-                                if p.strip()]
-                self.sync_package_state(packages, new_packages)
+        if new_settings:
+            self.envars = extract_envars(new_settings['envars'])
+            self.minify = new_settings['minify']
+            runtime = new_settings['microbit_runtime'].strip()
+            if runtime and not os.path.isfile(runtime):
+                self.microbit_runtime = ''
+                message = _('Could not find MicroPython runtime.')
+                information = _("The micro:bit runtime you specified "
+                                "('{}') does not exist. "
+                                "Please try again.").format(runtime)
+                self._view.show_message(message, information)
             else:
-                logger.info("No admin settings changed.")
+                self.microbit_runtime = runtime
+            new_packages = [p for p in
+                            new_settings['packages'].lower().split('\n')
+                            if p.strip()]
+            self.sync_package_state(packages, new_packages)
+        else:
+            logger.info("No admin settings changed.")
 
     def sync_package_state(self, old_packages, new_packages):
         """
