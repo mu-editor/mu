@@ -1124,7 +1124,8 @@ class Editor:
             new_packages = [p for p in
                             new_settings['packages'].lower().split('\n')
                             if p.strip()]
-            self.sync_package_state(packages, new_packages)
+            old_packages = [p.lower() for p in packages]
+            self.sync_package_state(old_packages, new_packages)
         else:
             logger.info("No admin settings changed.")
 
@@ -1137,9 +1138,15 @@ class Editor:
         """
         old = set(old_packages)
         new = set(new_packages)
+        logger.info('Synchronize package states...')
+        logger.info('Old: {}'.format(old))
+        logger.info('New: {}'.format(new))
         to_remove = old.difference(new)
         to_add = new.difference(old)
         if to_remove or to_add:
+            logger.info('To add: {}'.format(to_add))
+            logger.info('To remove: {}'.format(to_remove))
+            logger.info('Site packages: {}'.format(MODULE_DIR))
             self._view.sync_packages(to_remove, to_add, MODULE_DIR)
 
     def select_mode(self, event=None):

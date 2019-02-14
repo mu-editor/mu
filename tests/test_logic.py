@@ -2099,7 +2099,7 @@ def test_show_admin():
     }
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    mock_ip = mock.MagicMock(return_value=['foo', 'bar'])
+    mock_ip = mock.MagicMock(return_value=['Foo', 'bar'])
     with mock.patch('builtins.open', mock_open), \
             mock.patch('os.path.isfile', return_value=True), \
             mock.patch('mu.logic.installed_packages', mock_ip):
@@ -2111,6 +2111,7 @@ def test_show_admin():
         assert ed.envars == [['name', 'value']]
         assert ed.minify is True
         assert ed.microbit_runtime == '/foo/bar'
+        # Expect package names to be normalised to lowercase.
         ed.sync_package_state.assert_called_once_with(['foo', 'bar'], ['baz'])
 
 
