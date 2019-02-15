@@ -18,10 +18,7 @@ import mu.interface.panes
 # Required so the QWidget tests don't abort with the message:
 # "QWidget: Must construct a QApplication before a QWidget"
 # The QApplication need only be instantiated once.
-try:
-    app = QApplication([])
-except Exception:
-    pass
+app = QApplication([])
 
 
 def test_PANE_ZOOM_SIZES():

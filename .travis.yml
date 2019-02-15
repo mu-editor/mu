@@ -30,6 +30,9 @@ before_install:
   # OS and default Python info
   - uname -a
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sw_vers; fi
+  # Linux packages needed for Qt to work.
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo pt-get update; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libxkbcommon-x11-0; fi
   # Python 3 installation required
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv install 3.6.5; fi
