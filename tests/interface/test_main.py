@@ -235,6 +235,8 @@ def test_Window_attributes():
     w = mu.interface.main.Window()
     assert w.title == "Mu {}".format(__version__)
     assert w.icon == "icon"
+    assert w.zoom_position == 2
+    assert w.zooms == ('xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl')
 
 
 def test_Window_resizeEvent():
@@ -306,15 +308,24 @@ def test_Window_change_mode():
     tab2.set_api.assert_called_once_with(api)
 
 
+def test_Window_set_zoom():
+    """
+    Ensure the correct signal is emitted.
+    """
+    w = mu.interface.main.Window()
+    w._zoom_in = mock.MagicMock()
+    w.set_zoom()
+    w._zoom_in.emit.assert_called_once_with('m')
+
+
 def test_Window_zoom_in():
     """
     Ensure the correct signal is emitted.
     """
     w = mu.interface.main.Window()
     w._zoom_in = mock.MagicMock()
-    w._zoom_in.emit = mock.MagicMock()
     w.zoom_in()
-    w._zoom_in.emit.assert_called_once_with(2)
+    w._zoom_in.emit.assert_called_once_with('l')
 
 
 def test_Window_zoom_out():
@@ -323,9 +334,8 @@ def test_Window_zoom_out():
     """
     w = mu.interface.main.Window()
     w._zoom_out = mock.MagicMock()
-    w._zoom_out.emit = mock.MagicMock()
     w.zoom_out()
-    w._zoom_out.emit.assert_called_once_with(2)
+    w._zoom_out.emit.assert_called_once_with('s')
 
 
 def test_Window_connect_zoom():

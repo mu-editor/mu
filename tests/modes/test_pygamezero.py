@@ -121,10 +121,8 @@ def test_pgzero_run_game():
     view.add_python3_runner.return_value = mock_runner
     pm = PyGameZeroMode(editor, view)
     pm.workspace_dir = mock.MagicMock(return_value='/bar')
-    with mock.patch('builtins.open') as oa, \
-            mock.patch('mu.modes.pygamezero.write_and_flush'):
-        pm.run_game()
-        oa.assert_called_once_with('/foo', 'w', newline='')
+    pm.run_game()
+    editor.save_tab_to_file.called_once_with(view.current_tab)
     py_args = ['-m', 'pgzero']
     view.add_python3_runner.assert_called_once_with('/foo', '/bar',
                                                     interactive=False,

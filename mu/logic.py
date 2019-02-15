@@ -31,9 +31,11 @@ import random
 import locale
 import shutil
 import appdirs
+import site
 from PyQt5.QtWidgets import QMessageBox
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
+from . import localedetect
 from mu.resources import path
 from mu.debugger.utils import is_breakpoint_line
 from mu import __version__
@@ -177,7 +179,8 @@ def save_and_encode(text, filepath, newline=os.linesep):
         encoding = ENCODING
 
     with open(filepath, "w", encoding=encoding, newline='') as f:
-        write_and_flush(f, newline.join(text.splitlines()))
+        text_to_write = newline.join(l.rstrip(" ") for l in text.splitlines())
+        write_and_flush(f, text_to_write)
 
 
 def sniff_encoding(filepath):
@@ -550,6 +553,7 @@ class Editor:
         self.connected_devices = set()
         self.find = ''
         self.replace = ''
+        self.current_path = ''  # Directory of last loaded file.
         self.global_replace = False
         self.selecting_mode = False  # Flag to stop auto-detection of modes.
         if not os.path.exists(DATA_DIR):
@@ -661,6 +665,9 @@ class Editor:
                             logger.warning('The specified micro:bit runtime '
                                            'does not exist. Using default '
                                            'runtime instead.')
+                if 'zoom_level' in old_session:
+                    self._view.zoom_position = old_session['zoom_level']
+                    self._view.set_zoom()
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
@@ -783,6 +790,27 @@ class Editor:
             self._view.add_tab(
                 name, text, self.modes[self.mode].api(), newline)
 
+    def get_dialog_directory(self):
+        """
+        Return the directory folder in which a load/save dialog box should
+        open into. In order of precedence this function will return:
+
+        1) The last location used by a load/save dialog.
+        2) The directory containing the current file.
+        3) The mode's reported workspace directory.
+        """
+        if self.current_path and os.path.isdir(self.current_path):
+            folder = self.current_path
+        else:
+            current_file_path = ''
+            workspace_path = self.modes[self.mode].workspace_dir()
+            tab = self._view.current_tab
+            if tab and tab.path:
+                current_file_path = os.path.dirname(os.path.abspath(tab.path))
+            folder = current_file_path if current_file_path else workspace_path
+        logger.info('Using path for file dialog: {}'.format(folder))
+        return folder
+
     def load(self):
         """
         Loads a Python file from the file system or extracts a Python script
@@ -796,9 +824,10 @@ class Editor:
         extensions = set([e.lower() for e in extensions])
         extensions = '*.{} *.{}'.format(' *.'.join(extensions),
                                         ' *.'.join(extensions).upper())
-        path = self._view.get_load_path(self.modes[self.mode].workspace_dir(),
-                                        extensions)
+        folder = self.get_dialog_directory()
+        path = self._view.get_load_path(folder, extensions)
         if path:
+            self.current_path = os.path.dirname(os.path.abspath(path))
             self._load(path)
 
     def direct_load(self, path):
@@ -887,8 +916,8 @@ class Editor:
             return
         if not tab.path:
             # Unsaved file.
-            workspace = self.modes[self.mode].workspace_dir()
-            path = self._view.get_save_path(workspace)
+            folder = self.get_dialog_directory()
+            path = self._view.get_save_path(folder)
             if path and self.check_for_shadow_module(path):
                 message = _('You cannot use the filename '
                             '"{}"').format(os.path.basename(path))
@@ -981,15 +1010,11 @@ class Editor:
         """
         Display browser based help about Mu.
         """
-        logger.info('Showing help.')
-        try:
-            current_locale, encoding = locale.getdefaultlocale()
-            language_code = current_locale[:2]
-        except (TypeError, ValueError):
-            language_code = 'en'
+        language_code = localedetect.language_code()[:2]
         major_version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/{}/help/{}'.format(language_code,
                                                       major_version)
+        logger.info('Showing help at %r.', url)
         webbrowser.open_new(url)
 
     def quit(self, *args, **kwargs):
@@ -1021,12 +1046,25 @@ class Editor:
             'envars': self.envars,
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
+            'zoom_level': self._view.zoom_position,
         }
         session_path = get_session_path()
         with open(session_path, 'w') as out:
             logger.debug('Session: {}'.format(session))
             logger.debug('Saving session to: {}'.format(session_path))
             json.dump(session, out, indent=2)
+        # Clean up temporary mu.pth file if needed (Windows only).
+        if sys.platform == 'win32' and 'pythonw.exe' in sys.executable:
+            if site.ENABLE_USER_SITE:
+                site_path = site.USER_SITE
+                path_file = os.path.join(site_path, 'mu.pth')
+                if os.path.exists(path_file):
+                    try:
+                        os.remove(path_file)
+                        logger.info('{} removed.'.format(path_file))
+                    except Exception as ex:
+                        logger.error('Unable to delete {}'.format(path_file))
+                        logger.error(ex)
         logger.info('Quitting.\n\n')
         sys.exit(0)
 
@@ -1110,6 +1148,8 @@ class Editor:
         # Update references to default file locations.
         logger.info('Workspace directory: {}'.format(
             self.modes[mode].workspace_dir()))
+        # Reset remembered current path for load/save dialogs.
+        self.current_path = ''
         # Ensure auto-save timeouts are set.
         if self.modes[mode].save_timeout > 0:
             # Start the timer
@@ -1171,9 +1211,12 @@ class Editor:
                 self.show_status_message(msg)
                 # Only ask to switch mode if a single device type is connected
                 # and we're not already trying to select a new mode via the
-                # dialog.
+                # dialog. Cannot change mode if a script is already being run
+                # by the current mode.
+                m = self.modes[self.mode]
+                running = hasattr(m, "runner") and m.runner
                 if (len(device_types) == 1 and self.mode != mode_name and not
-                        self.selecting_mode):
+                        self.selecting_mode) and not running:
                     msg_body = _('Would you like to change Mu to the {} '
                                  'mode?').format(device_name)
                     change_confirmation = self._view.show_confirmation(

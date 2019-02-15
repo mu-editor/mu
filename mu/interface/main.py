@@ -182,9 +182,11 @@ class Window(QMainWindow):
     serial = None
     repl = None
     plotter = None
+    zooms = ('xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl')  # levels of zoom.
+    zoom_position = 2  # current level of zoom (as position in zooms tuple).
 
-    _zoom_in = pyqtSignal(int)
-    _zoom_out = pyqtSignal(int)
+    _zoom_in = pyqtSignal(str)
+    _zoom_out = pyqtSignal(str)
     close_serial = pyqtSignal()
     write_to_serial = pyqtSignal(bytes)
     data_received = pyqtSignal(bytes)
@@ -192,24 +194,34 @@ class Window(QMainWindow):
     load_theme = pyqtSignal(str)
     previous_folder = None
 
+    def set_zoom(self):
+        """
+        Sets the zoom to current zoom_position level.
+        """
+        self._zoom_in.emit(self.zooms[self.zoom_position])
+
     def zoom_in(self):
         """
         Handles zooming in.
         """
-        self._zoom_in.emit(2)
+        self.zoom_position = min(self.zoom_position + 1, len(self.zooms) - 1)
+        self._zoom_in.emit(self.zooms[self.zoom_position])
 
     def zoom_out(self):
         """
         Handles zooming out.
         """
-        self._zoom_out.emit(2)
+        self.zoom_position = max(self.zoom_position - 1, 0)
+        self._zoom_out.emit(self.zooms[self.zoom_position])
 
     def connect_zoom(self, widget):
         """
-        Connects a referenced widget to the zoom related signals.
+        Connects a referenced widget to the zoom related signals and sets
+        the zoom of the widget to the current zoom level.
         """
-        self._zoom_in.connect(widget.zoomIn)
-        self._zoom_out.connect(widget.zoomOut)
+        self._zoom_in.connect(widget.set_zoom)
+        self._zoom_out.connect(widget.set_zoom)
+        widget.set_zoom(self.zooms[self.zoom_position])
 
     @property
     def current_tab(self):
@@ -348,7 +360,7 @@ class Window(QMainWindow):
         self.serial = QSerialPort()
         self.serial.setPortName(port)
         if self.serial.open(QIODevice.ReadWrite):
-            self.serial.dataTerminalReady = True
+            self.serial.setDataTerminalReady(True)
             if not self.serial.isDataTerminalReady():
                 # Using pyserial as a 'hack' to open the port and set DTR
                 # as QtSerial does not seem to work on some Windows :(

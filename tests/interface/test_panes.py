@@ -21,6 +21,16 @@ import mu.interface.panes
 app = QApplication([])
 
 
+def test_PANE_ZOOM_SIZES():
+    """
+    Ensure the expected entries define font sizes in PANE_ZOOM_SIZES.
+    """
+    expected_sizes = ('xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl')
+    for size in expected_sizes:
+        assert size in mu.interface.panes.PANE_ZOOM_SIZES
+    assert len(expected_sizes) == len(mu.interface.panes.PANE_ZOOM_SIZES)
+
+
 def test_MicroPythonREPLPane_init_default_args():
     """
     Ensure the MicroPython REPLPane object is instantiated as expected.
@@ -411,6 +421,32 @@ def test_MicroPythonREPLPane_clear():
     rp.setText = mock.MagicMock(return_value=None)
     rp.clear()
     rp.setText.assert_called_once_with('')
+
+
+def test_MicroPythonREPLPane_set_font_size():
+    """
+    Ensure the font is updated to the expected point size.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_font = mock.MagicMock()
+    rp.font = mock.MagicMock(return_value=mock_font)
+    rp.setFont = mock.MagicMock()
+    rp.set_font_size(123)
+    mock_font.setPointSize.assert_called_once_with(123)
+    rp.setFont.assert_called_once_with(mock_font)
+
+
+def test_MicroPythonREPLPane_set_zoom():
+    """
+    Ensure the font size is correctly set from the t-shirt size.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    rp.set_font_size = mock.MagicMock()
+    rp.set_zoom('xxl')
+    expected = mu.interface.panes.PANE_ZOOM_SIZES['xxl']
+    rp.set_font_size.assert_called_once_with(expected)
 
 
 def test_MuFileList_show_confirm_overwrite_dialog():
@@ -809,17 +845,6 @@ def test_FileSystemPane_set_font_size():
     fsp.local_fs.setFont.assert_called_once_with(fsp.font)
 
 
-def test_FileSystemPane_zoom_in():
-    """
-    Ensure the font is re-set bigger when zooming in.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.set_font_size = mock.MagicMock()
-    fsp.zoomIn()
-    expected = mu.interface.themes.DEFAULT_FONT_SIZE + 2
-    fsp.set_font_size.assert_called_once_with(expected)
-
-
 def test_FileSystemPane_open_file():
     """
     FileSystemPane should propogate the open_file signal
@@ -832,17 +857,6 @@ def test_FileSystemPane_open_file():
     mock_open_emit.assert_called_once_with('test')
 
 
-def test_FileSystemPane_zoom_out():
-    """
-    Ensure the font is re-set smaller when zooming out.
-    """
-    fsp = mu.interface.panes.FileSystemPane('homepath')
-    fsp.set_font_size = mock.MagicMock()
-    fsp.zoomOut()
-    expected = mu.interface.themes.DEFAULT_FONT_SIZE - 2
-    fsp.set_font_size.assert_called_once_with(expected)
-
-
 def test_JupyterREPLPane_init():
     """
     Ensure the widget is setup with the correct defaults.
@@ -853,6 +867,8 @@ def test_JupyterREPLPane_init():
 
 def test_JupyterREPLPane_append_plain_text():
     """
+    Ensure signal and expected bytes are emitted when _append_plain_text is
+    called.
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.on_append_text = mock.MagicMock()
@@ -869,26 +885,15 @@ def test_JupyterREPLPane_set_font_size():
     assert jw.font.pointSize() == 16
 
 
-def test_JupyterREPLPane_zoomIn():
+def test_JupyterREPLPane_set_zoom():
     """
-    Ensure zooming in increases the font size.
-    """
-    jw = mu.interface.panes.JupyterREPLPane()
-    jw.set_font_size = mock.MagicMock()
-    old_size = jw.font.pointSize()
-    jw.zoomIn(delta=4)
-    jw.set_font_size.assert_called_once_with(old_size + 4)
-
-
-def test_JupyterREPLPane_zoomOut():
-    """
-    Ensure zooming out decreases the font size.
+    Ensure the expected font point size is set from the zoom size.
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_font_size = mock.MagicMock()
-    old_size = jw.font.pointSize()
-    jw.zoomOut(delta=4)
-    jw.set_font_size.assert_called_once_with(old_size - 4)
+    jw.set_zoom('xxl')
+    jw.set_font_size.\
+        assert_called_once_with(mu.interface.panes.PANE_ZOOM_SIZES['xxl'])
 
 
 def test_JupyterREPLPane_set_theme_day():
@@ -933,7 +938,7 @@ def test_JupyterREPLPane_setFocus():
 
 def test_PythonProcessPane_init():
     """
-    Check the font and input_buffer is set.
+    Check the font, input_buffer and other initial state is set as expected.
     """
     ppp = mu.interface.panes.PythonProcessPane()
     assert ppp.font()
@@ -942,6 +947,8 @@ def test_PythonProcessPane_init():
     assert ppp.start_of_current_line == 0
     assert ppp.history_position == 0
     assert ppp.running is False
+    assert ppp.stdout_buffer == b''
+    assert ppp.reading_stdout is False
 
 
 def test_PythonProcessPane_start_process():
@@ -960,7 +967,8 @@ def test_PythonProcessPane_start_process():
     assert ppp.process == mock_process
     ppp.process.setProcessChannelMode.assert_called_once_with(mock_merge_chans)
     ppp.process.setWorkingDirectory.assert_called_once_with('workspace')
-    ppp.process.readyRead.connect.assert_called_once_with(ppp.read_from_stdout)
+    ppp.process.readyRead.connect.\
+        assert_called_once_with(ppp.try_read_from_stdout)
     ppp.process.finished.connect.assert_called_once_with(ppp.finished)
     expected_script = os.path.abspath(os.path.normcase('script.py'))
     assert ppp.script == expected_script
@@ -1028,6 +1036,110 @@ def test_PythonProcessPane_start_process_not_interactive():
     expected_script = os.path.abspath(os.path.normcase('script.py'))
     expected_args = [expected_script, 'foo', 'bar', ]
     ppp.process.start.assert_called_once_with(runner, expected_args)
+
+
+def test_PythonProcessPane_start_process_windows_path():
+    """
+    If running on Windows via the installer ensure that the expected paths
+    find their way into a temporary mu.pth file.
+    """
+    mock_process = mock.MagicMock()
+    mock_process_class = mock.MagicMock(return_value=mock_process)
+    mock_merge_chans = mock.MagicMock()
+    mock_process_class.MergedChannels = mock_merge_chans
+    mock_sys = mock.MagicMock()
+    mock_sys.platform = 'win32'
+    mock_sys.executable = 'C:\\Program Files\\Mu\\Python\\pythonw.exe'
+    mock_os_p_e = mock.MagicMock(return_value=True)
+    mock_os_makedirs = mock.MagicMock()
+    mock_site = mock.MagicMock()
+    mock_site.ENABLE_USER_SITE = True
+    mock_site.USER_SITE = ('C:\\Users\\foo\\AppData\\Roaming\\Python\\'
+                           'Python36\\site-packages')
+    mock_site.getusersitepackages.return_value = mock_site.USER_SITE
+    mock_open = mock.mock_open()
+    with mock.patch('mu.interface.panes.QProcess', mock_process_class),\
+            mock.patch('mu.interface.panes.sys', mock_sys),\
+            mock.patch('mu.interface.panes.os.path.exists', mock_os_p_e),\
+            mock.patch('mu.interface.panes.os.makedirs', mock_os_makedirs),\
+            mock.patch('mu.interface.panes.site', mock_site),\
+            mock.patch('builtins.open', mock_open):
+        ppp = mu.interface.panes.PythonProcessPane()
+        ppp.start_process('script.py', 'workspace', interactive=False)
+    expected_pth = os.path.join(mock_site.USER_SITE, 'mu.pth')
+    mock_os_makedirs.assert_called_once_with(mock_site.USER_SITE,
+                                             exist_ok=True)
+    mock_open.assert_called_once_with(expected_pth, 'w')
+    expected = [
+        'workspace',
+        os.path.normcase(os.path.dirname(os.path.abspath('script.py'))),
+    ]
+    mock_file = mock_open()
+    added_paths = [call[0][0] for call in mock_file.write.call_args_list]
+    for e in expected:
+        assert e + '\n' in added_paths
+
+
+def test_PythonProcessPane_start_process_windows_path_no_user_site():
+    """
+    If running on Windows via the installer ensure that the Mu logs the
+    fact it's unable to use the temporary mu.pth file because there is no
+    USER_SITE enabled.
+    """
+    mock_process = mock.MagicMock()
+    mock_process_class = mock.MagicMock(return_value=mock_process)
+    mock_merge_chans = mock.MagicMock()
+    mock_process_class.MergedChannels = mock_merge_chans
+    mock_sys = mock.MagicMock()
+    mock_sys.platform = 'win32'
+    mock_sys.executable = 'C:\\Program Files\\Mu\\Python\\pythonw.exe'
+    mock_os_p_e = mock.MagicMock(return_value=True)
+    mock_site = mock.MagicMock()
+    mock_site.ENABLE_USER_SITE = False
+    mock_log = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QProcess', mock_process_class),\
+            mock.patch('mu.interface.panes.sys', mock_sys),\
+            mock.patch('mu.interface.panes.os.path.exists', mock_os_p_e),\
+            mock.patch('mu.interface.panes.site', mock_site),\
+            mock.patch('mu.interface.panes.logger', mock_log):
+        ppp = mu.interface.panes.PythonProcessPane()
+        ppp.start_process('script.py', 'workspace', interactive=False)
+    logs = [call[0][0] for call in mock_log.info.call_args_list]
+    expected = ("Unable to set Python paths. Python's USER_SITE not enabled."
+                " Check configuration with administrator.")
+    assert expected in logs
+
+
+def test_PythonProcessPane_start_process_windows_path_with_exception():
+    """
+    If running on Windows via the installer ensure that the expected paths
+    find their way into a temporary mu.pth file.
+    """
+    mock_process = mock.MagicMock()
+    mock_process_class = mock.MagicMock(return_value=mock_process)
+    mock_merge_chans = mock.MagicMock()
+    mock_process_class.MergedChannels = mock_merge_chans
+    mock_sys = mock.MagicMock()
+    mock_sys.platform = 'win32'
+    mock_sys.executable = 'C:\\Program Files\\Mu\\Python\\pythonw.exe'
+    mock_os_p_e = mock.MagicMock(return_value=True)
+    mock_site = mock.MagicMock()
+    mock_site.ENABLE_USER_SITE = True
+    mock_site.USER_SITE = ('C:\\Users\\foo\\AppData\\Roaming\\Python\\'
+                           'Python36\\site-packages')
+    mock_open = mock.MagicMock(side_effect=Exception("Boom"))
+    mock_log = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QProcess', mock_process_class),\
+            mock.patch('mu.interface.panes.sys', mock_sys),\
+            mock.patch('mu.interface.panes.os.path.exists', mock_os_p_e),\
+            mock.patch('mu.interface.panes.site', mock_site),\
+            mock.patch('builtins.open', mock_open),\
+            mock.patch('mu.interface.panes.logger', mock_log):
+        ppp = mu.interface.panes.PythonProcessPane()
+        ppp.start_process('script.py', 'workspace', interactive=False)
+    logs = [call[0][0] for call in mock_log.error.call_args_list]
+    expected = ("Could not set Python paths with mu.pth file.")
+    assert expected in logs
 
 
 def test_PythonProcessPane_start_process_user_enviroment_variables():
@@ -1314,14 +1426,32 @@ def test_PythonProcessPane_on_process_halt():
     ppp.process.readAll().data.return_value = b'halted'
     ppp.append = mock.MagicMock()
     ppp.on_append_text = mock.MagicMock()
-    mock_cursor = mock.MagicMock()
-    mock_cursor.position.return_value = 666
-    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
+    ppp.set_start_of_current_line = mock.MagicMock()
     ppp.on_process_halt()
     ppp.process.readAll().data.assert_called_once_with()
     ppp.append.assert_called_once_with(b'halted')
     ppp.on_append_text.emit.assert_called_once_with(b'halted')
-    ppp.start_of_current_line = 666
+    ppp.set_start_of_current_line.assert_called_once_with()
+
+
+def test_PythonProcessPane_on_process_halt_badly_formed_bytes():
+    """
+    If the bytes read from the child process's stdout starts with a badly
+    formed unicode character (e.g. a fragment of a multi-byte character such as
+    "𠜎"), then ensure the problem bytes at the start of the data are discarded
+    until a valid result can be turned into a string.
+    """
+    data = "𠜎Hello, World!".encode('utf-8')  # Contains a multi-byte char.
+    data = data[1:]  # Split the muti-byte character (cause UnicodeDecodeError)
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.readAll().data.return_value = data
+    ppp.on_append_text = mock.MagicMock()
+    ppp.set_start_of_current_line = mock.MagicMock()
+    ppp.on_process_halt()
+    ppp.process.readAll().data.assert_called_once_with()
+    ppp.on_append_text.emit.assert_called_once_with(b'Hello, World!')
+    ppp.set_start_of_current_line.assert_called_once_with()
 
 
 def test_PythonProcessPane_parse_input_a():
@@ -1618,7 +1748,7 @@ def test_PythonProcessPane_parse_input_newline():
     assert b'abc' in ppp.input_history
     assert ppp.history_position == 0
     # On newline, the start of the current line should be set correctly.
-    assert ppp.start_of_current_line == 666
+    assert ppp.start_of_current_line == 4   # len('abc\n')
 
 
 def test_PythonProcessPane_parse_input_newline_ignore_empty_input_in_history():
@@ -1651,6 +1781,17 @@ def test_PythonProcessPane_parse_input_newline_with_cursor_midline():
     ppp.parse_input(Qt.Key_Left, None, None)
     ppp.parse_input(Qt.Key_Enter, '\r', None)
     ppp.write_to_stdin.assert_called_with(b'abc\n')
+
+
+def test_PythonProcessPane_set_start_of_current_line():
+    """
+    Ensure the start of the current line is set to the current length of the
+    text in the editor pane.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.toPlainText = mock.MagicMock(return_value="Hello𠜎")
+    ppp.set_start_of_current_line()
+    assert ppp.start_of_current_line == len("Hello𠜎")
 
 
 def test_PythonProcessPane_history_back():
@@ -1715,23 +1856,111 @@ def test_PythonProcessPane_history_forward_at_last_item():
     assert ppp.history_position == 0
 
 
+def test_PythonProcessPane_try_read_from_stdout_not_started():
+    """
+    If the process pane is NOT already reading from STDOUT then ensure it
+    starts to.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.read_from_stdout = mock.MagicMock()
+    ppp.try_read_from_stdout()
+    assert ppp.reading_stdout is True
+    ppp.read_from_stdout.assert_called_once_with()
+
+
+def test_PythonProcessPane_try_read_from_stdout_has_started():
+    """
+    If the process pane is already reading from STDOUT then ensure it
+    doesn't keep trying.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.read_from_stdout = mock.MagicMock()
+    ppp.reading_stdout = True
+    ppp.try_read_from_stdout()
+    assert ppp.reading_stdout is True
+    assert ppp.read_from_stdout.call_count == 0
+
+
 def test_PythonProcessPane_read_from_stdout():
     """
     Ensure incoming bytes from sub-process's stout are processed correctly.
     """
     ppp = mu.interface.panes.PythonProcessPane()
-    mock_cursor = mock.MagicMock()
-    mock_cursor.position.return_value = 123
-    ppp.textCursor = mock.MagicMock(return_value=mock_cursor)
     ppp.append = mock.MagicMock()
     ppp.process = mock.MagicMock()
     ppp.process.read.return_value = b'hello world'
     ppp.on_append_text = mock.MagicMock()
-    ppp.read_from_stdout()
+    ppp.set_start_of_current_line = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.read_from_stdout()
     assert ppp.append.call_count == 1
     ppp.process.read.assert_called_once_with(256)
-    assert ppp.start_of_current_line == 123
     ppp.on_append_text.emit.assert_called_once_with(b'hello world')
+    ppp.set_start_of_current_line.assert_called_once_with()
+    mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
+
+
+def test_PythonProcessPane_read_from_stdout_with_stdout_buffer():
+    """
+    Ensure incoming bytes from sub-process's stdout are processed correctly if
+    there was a split between reads in a multi-byte character (such as "𠜎").
+
+    The buffer is pre-pended to the current read, thus resulting in bytes that
+    can be successfully represented in a UTF based string.
+    """
+    msg = "Hello 𠜎 world".encode('utf-8')
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.stdout_buffer = msg[:7]  # Start of msg but split in multi-byte char.
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = msg[7:]  # Remainder of msg.
+    ppp.on_append_text = mock.MagicMock()
+    ppp.set_start_of_current_line = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.read_from_stdout()
+    ppp.process.read.assert_called_once_with(256)
+    ppp.on_append_text.emit.assert_called_once_with(msg)
+    ppp.set_start_of_current_line.assert_called_once_with()
+    mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
+    assert ppp.stdout_buffer == b''
+
+
+def test_PythonProcessPane_read_from_stdout_with_unicode_error():
+    """
+    Ensure incoming bytes from sub-process's stdout are processed correctly if
+    there was a split between reads in a multi-byte character (such as "𠜎").
+
+    If the read bytes end with a split of a multi-byte character, ensure they
+    are put into the self.stdout_buffer so they can be pre-pended to the next
+    bytes read from the child process.
+    """
+    msg = "Hello 𠜎 world".encode('utf-8')
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = msg[:7]  # Split the multi-byte character.
+    ppp.on_append_text = mock.MagicMock()
+    ppp.set_start_of_current_line = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.panes.QTimer', mock_timer):
+        ppp.read_from_stdout()
+    ppp.process.read.assert_called_once_with(256)
+    assert ppp.on_append_text.emit.call_count == 0
+    assert ppp.set_start_of_current_line.call_count == 0
+    mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
+    assert ppp.stdout_buffer == msg[:7]
+
+
+def test_PythonProcessPane_read_from_stdout_no_data():
+    """
+    If no data is returned, ensure the reading_stdout flag is reset to False.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.reading_stdout = True
+    ppp.process = mock.MagicMock()
+    ppp.process.read.return_value = b''
+    ppp.read_from_stdout()
+    assert ppp.reading_stdout is False
 
 
 def test_PythonProcessPane_write_to_stdin():
@@ -1882,52 +2111,28 @@ def test_PythonProcessPane_replace_input_line():
     ppp.append.assert_called_once_with('hello')
 
 
-def test_PythonProcessPane_zoomIn():
+def test_PythonProcessPane_set_font_size():
     """
-    Check ZoomIn increases point size.
-    """
-    ppp = mu.interface.panes.PythonProcessPane()
-    ppp.font = mock.MagicMock()
-    ppp.font().pointSize.return_value = 12
-    with mock.patch('mu.interface.panes.QTextEdit.zoomIn') as mock_zoom:
-        ppp.zoomIn(8)
-        mock_zoom.assert_called_once_with(8)
-
-
-def test_PythonProcessPane_zoomIn_max():
-    """
-    Check ZoomIn only works up to point size of 34
+    Ensure the font size is set to the expected point size.
     """
     ppp = mu.interface.panes.PythonProcessPane()
-    ppp.font = mock.MagicMock()
-    ppp.font().pointSize.return_value = 34
-    with mock.patch('mu.interface.panes.QTextEdit.zoomIn') as mock_zoom:
-        ppp.zoomIn(8)
-        assert mock_zoom.call_count == 0
+    mock_font = mock.MagicMock()
+    ppp.font = mock.MagicMock(return_value=mock_font)
+    ppp.setFont = mock.MagicMock()
+    ppp.set_font_size(123)
+    mock_font.setPointSize.assert_called_once_with(123)
+    ppp.setFont.assert_called_once_with(mock_font)
 
 
-def test_PythonProcessPane_zoomOut():
+def test_PythonProcessPane_set_zoom():
     """
-    Check ZoomOut decreases point size.
-    """
-    ppp = mu.interface.panes.PythonProcessPane()
-    ppp.font = mock.MagicMock()
-    ppp.font().pointSize.return_value = 12
-    with mock.patch('mu.interface.panes.QTextEdit.zoomOut') as mock_zoom:
-        ppp.zoomOut(6)
-        mock_zoom.assert_called_once_with(6)
-
-
-def test_PythonProcessPane_zoomOut_min():
-    """
-    Check ZoomOut decreases point size down to 4
+    Ensure the expected point size is set from the given "t-shirt" size.
     """
     ppp = mu.interface.panes.PythonProcessPane()
-    ppp.font = mock.MagicMock()
-    ppp.font().pointSize.return_value = 4
-    with mock.patch('mu.interface.panes.QTextEdit.zoomOut') as mock_zoom:
-        ppp.zoomOut(8)
-        assert mock_zoom.call_count == 0
+    ppp.set_font_size = mock.MagicMock()
+    ppp.set_zoom('xl')
+    expected = mu.interface.panes.PANE_ZOOM_SIZES['xl']
+    ppp.set_font_size.assert_called_once_with(expected)
 
 
 def test_PythonProcessPane_set_theme():
@@ -1956,26 +2161,15 @@ def test_DebugInspector_set_font_size():
     assert 'font-family: Monospace;' in style
 
 
-def test_DebugInspector_zoomIn():
+def test_DebugInspector_set_zoom():
     """
-    Ensure zooming in increases the font size.
-    """
-    di = mu.interface.panes.DebugInspector()
-    di.set_font_size = mock.MagicMock()
-    old_size = di.font().pointSize()
-    di.zoomIn(delta=4)
-    di.set_font_size.assert_called_once_with(old_size + 4)
-
-
-def test_DebugInspector_zoomOut():
-    """
-    Ensure zooming out decreases the font size.
+    Ensure the expected point size is set from the given "t-shirt" size.
     """
     di = mu.interface.panes.DebugInspector()
     di.set_font_size = mock.MagicMock()
-    old_size = di.font().pointSize()
-    di.zoomOut(delta=4)
-    di.set_font_size.assert_called_once_with(old_size - 4)
+    di.set_zoom('xl')
+    expected = mu.interface.panes.PANE_ZOOM_SIZES['xl']
+    di.set_font_size.assert_called_once_with(expected)
 
 
 def test_DebugInspector_set_theme():

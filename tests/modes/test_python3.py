@@ -181,14 +181,13 @@ def test_python_run_script():
     view = mock.MagicMock()
     view.current_tab.path = '/foo'
     view.current_tab.isModified.return_value = True
+    view.current_tab.text = mock.MagicMock(return_value="abc")
     mock_runner = mock.MagicMock()
     view.add_python3_runner.return_value = mock_runner
     pm = PythonMode(editor, view)
     pm.workspace_dir = mock.MagicMock(return_value='/bar')
-    with mock.patch('builtins.open') as oa, \
-            mock.patch('mu.modes.python3.write_and_flush'):
-        pm.run_script()
-        oa.assert_called_once_with('/foo', 'w', newline='')
+    pm.run_script()
+    editor.save_tab_to_file.assert_called_once_with(view.current_tab)
     view.add_python3_runner.assert_called_once_with('/foo', '/bar',
                                                     interactive=True,
                                                     envars=editor.envars)
@@ -197,16 +196,12 @@ def test_python_run_script():
     # mode are also in play.
     pm.set_buttons = mock.MagicMock()
     pm.kernel_runner = True
-    with mock.patch('builtins.open') as oa, \
-            mock.patch('mu.modes.python3.write_and_flush'):
-        pm.run_script()
+    pm.run_script()
     pm.set_buttons.assert_called_once_with(plotter=False)
     pm.set_buttons.reset_mock()
     pm.kernel_runner = False
     pm.plotter = True
-    with mock.patch('builtins.open') as oa, \
-            mock.patch('mu.modes.python3.write_and_flush'):
-        pm.run_script()
+    pm.run_script()
     pm.set_buttons.assert_called_once_with(repl=False)
 
 
@@ -238,6 +233,21 @@ def test_python_run_script_needs_saving():
     editor.save.assert_called_once_with()
 
 
+def test_python_run_script_uses_editor_save():
+    """The run code uses the common editor save code, invoking
+    encoding checks and useful messages
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab.IsModified.return_value = True
+    view.current_tab.path = "foo"
+    view.current_tab.text = mock.MagicMock(return_value="foo")
+    pm = PythonMode(editor, view)
+    pm.stop_script = mock.MagicMock()
+    pm.run_script()
+    editor.save_tab_to_file.assert_called_once_with(view.current_tab)
+
+
 def test_python_stop_script():
     """
     Check that the child process is killed, the runner cleaned up and UI
@@ -252,7 +262,20 @@ def test_python_stop_script():
     mock_runner.process.kill.assert_called_once_with()
     mock_runner.process.waitForFinished.assert_called_once_with()
     assert pm.runner is None
-    view.remove_python_runner.assert_called_once_with()
+
+
+def test_python_stop_resets_focus():
+    """
+    Check that, when a child process is killed, the current
+    tab regains focus.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    mock_runner = mock.MagicMock()
+    pm.runner = mock_runner
+    pm.stop_script()
+    view.current_tab.setFocus.assert_called_once_with()
 
 
 def test_python_stop_script_no_runner():
@@ -347,6 +370,21 @@ def test_python_remove_repl():
     pm.set_buttons.assert_called_once_with(repl=False)
 
 
+def test_python_remove_repl_reset_focus():
+    """
+    Make sure the REPL is removed properly.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.set_buttons = mock.MagicMock()
+    pm.stop_kernel = mock.MagicMock()
+    pm.remove_repl()
+    pm.stop_kernel.emit.assert_called_once_with()
+    pm.set_buttons.assert_called_once_with(repl=False)
+    view.current_tab.setFocus.assert_called_once_with()
+
+
 def test_python_toggle_plotter():
     """
     Ensure toggling the plotter causes it to be added/removed.
@@ -408,6 +446,18 @@ def test_python_remove_plotter():
         pm.remove_plotter()
         pm.set_buttons.assert_called_once_with(run=True, repl=True, debug=True)
         mock_super().remove_plotter.assert_called_once_with()
+
+
+def test_python_remove_plotter_reset_focus():
+    """
+    Ensure the button states are returned to normal before calling super
+    method.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.remove_plotter()
+    view.current_tab.setFocus.assert_called_once_with()
 
 
 def test_python_on_data_flood():

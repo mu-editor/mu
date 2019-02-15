@@ -162,6 +162,7 @@ class EditorPane(QsciScintilla):
         self.indicatorDefine(self.FullBoxIndicator, self.DEBUG_INDICATOR)
         self.setAnnotationDisplay(self.AnnotationBoxed)
         self.selectionChanged.connect(self.selection_change_listener)
+        self.set_zoom()
 
     def connect_margin(self, func):
         """
@@ -206,6 +207,22 @@ class EditorPane(QsciScintilla):
         for entry in api_definitions:
             self.api.add(entry)
         self.api.prepare()
+
+    def set_zoom(self, size='m'):
+        """
+        Sets the font zoom to the specified base point size for all fonts given
+        a t-shirt size.
+        """
+        sizes = {
+            'xs': -4,
+            's': -2,
+            'm': 1,
+            'l': 4,
+            'xl': 8,
+            'xxl': 16,
+            'xxxl': 48,
+        }
+        self.zoomTo(sizes[size])
 
     @property
     def label(self):

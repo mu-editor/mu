@@ -13,7 +13,7 @@ pyflakes
 pyserial
 pytest
 pytest-cov
-pytest-random-order
+pytest-random-order>=1.0.0
 requests
 scrapy
 setuptools
