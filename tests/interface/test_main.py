@@ -1152,11 +1152,48 @@ def test_Window_show_admin():
     mock_admin_display.return_value = mock_admin_box
     with mock.patch('mu.interface.main.AdminDialog', mock_admin_display):
         w = mu.interface.main.Window()
-        result = w.show_admin('log', 'envars')
+        result = w.show_admin('log', 'envars', 'packages')
         mock_admin_display.assert_called_once_with(w)
-        mock_admin_box.setup.assert_called_once_with('log', 'envars')
+        mock_admin_box.setup.assert_called_once_with('log', 'envars',
+                                                     'packages')
         mock_admin_box.exec.assert_called_once_with()
         assert result == 'this is the expected result'
+
+
+def test_Window_show_admin_cancelled():
+    """
+    If the modal dialog for the admin functions is cancelled, ensure an
+    empty dictionary (indicating a "falsey" no change) is returned.
+    """
+    mock_admin_display = mock.MagicMock()
+    mock_admin_box = mock.MagicMock()
+    mock_admin_box.exec.return_value = False
+    mock_admin_display.return_value = mock_admin_box
+    with mock.patch('mu.interface.main.AdminDialog', mock_admin_display):
+        w = mu.interface.main.Window()
+        result = w.show_admin('log', 'envars', 'packages')
+        mock_admin_display.assert_called_once_with(w)
+        mock_admin_box.setup.assert_called_once_with('log', 'envars',
+                                                     'packages')
+        mock_admin_box.exec.assert_called_once_with()
+        assert result == {}
+
+
+def test_Window_sync_packages():
+    """
+    Ensure the expected modal dialog indicating progress of third party package
+    add/removal is displayed with the expected settings.
+    """
+    mock_package_dialog = mock.MagicMock()
+    with mock.patch('mu.interface.main.PackageDialog', mock_package_dialog):
+        w = mu.interface.main.Window()
+        to_remove = {'foo'}
+        to_add = {'bar'}
+        module_dir = 'baz'
+        w.sync_packages(to_remove, to_add, module_dir)
+        dialog = mock_package_dialog()
+        dialog.setup.assert_called_once_with(to_remove, to_add, module_dir)
+        dialog.exec.assert_called_once_with()
 
 
 def test_Window_show_message():

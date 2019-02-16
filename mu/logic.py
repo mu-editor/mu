@@ -47,6 +47,9 @@ HOME_DIRECTORY = os.path.expanduser('~')
 WORKSPACE_NAME = 'mu_code'
 # The default directory for application data (i.e., configuration).
 DATA_DIR = appdirs.user_data_dir(appname='mu', appauthor='python')
+# The directory containing user installed third party modules.
+MODULE_DIR = os.path.join(DATA_DIR, 'site-packages')
+sys.path.append(MODULE_DIR)
 # The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir(appname='mu', appauthor='python')
 # The path to the log file for the application.
@@ -142,6 +145,22 @@ ENCODING_COOKIE_RE = re.compile(
     "^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
 
 logger = logging.getLogger(__name__)
+
+
+def installed_packages():
+    """
+    List all the third party modules installed by the user.
+    """
+    result = []
+    pkg_dirs = [os.path.join(MODULE_DIR, d) for d in os.listdir(MODULE_DIR)
+                if d.endswith("dist-info")]
+    for pkg in pkg_dirs:
+        metadata_file = os.path.join(pkg, 'METADATA')
+        with open(metadata_file, 'rb') as f:
+            lines = f.readlines()
+            name = lines[1].rsplit(b':')[-1].strip()
+            result.append(name.decode('utf-8'))
+    return sorted(result)
 
 
 def write_and_flush(fileobj, content):
@@ -559,6 +578,9 @@ class Editor:
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
+        if not os.path.exists(MODULE_DIR):
+            logger.debug('Creating directory: {}'.format(MODULE_DIR))
+            os.makedirs(MODULE_DIR)
         logger.info('Settings path: {}'.format(get_settings_path()))
         logger.info('Session path: {}'.format(get_session_path()))
         logger.info('Log directory: {}'.format(LOG_DIR))
@@ -1074,7 +1096,7 @@ class Editor:
 
         Ensure any changes to the envars is updated.
         """
-        logger.info('Showing logs from {}'.format(LOG_FILE))
+        logger.info('Showing admin with logs from {}'.format(LOG_FILE))
         envars = '\n'.join(['{}={}'.format(name, value) for name, value in
                             self.envars])
         settings = {
@@ -1082,20 +1104,50 @@ class Editor:
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
         }
+        packages = installed_packages()
         with open(LOG_FILE, 'r', encoding='utf8') as logfile:
-            new_settings = self._view.show_admin(logfile.read(), settings)
+            new_settings = self._view.show_admin(logfile.read(), settings,
+                                                 '\n'.join(packages))
+        if new_settings:
             self.envars = extract_envars(new_settings['envars'])
             self.minify = new_settings['minify']
             runtime = new_settings['microbit_runtime'].strip()
             if runtime and not os.path.isfile(runtime):
                 self.microbit_runtime = ''
                 message = _('Could not find MicroPython runtime.')
-                information = _("The micro:bit runtime you specified ('{}') "
-                                "does not exist. "
+                information = _("The micro:bit runtime you specified "
+                                "('{}') does not exist. "
                                 "Please try again.").format(runtime)
                 self._view.show_message(message, information)
             else:
                 self.microbit_runtime = runtime
+            new_packages = [p for p in
+                            new_settings['packages'].lower().split('\n')
+                            if p.strip()]
+            old_packages = [p.lower() for p in packages]
+            self.sync_package_state(old_packages, new_packages)
+        else:
+            logger.info("No admin settings changed.")
+
+    def sync_package_state(self, old_packages, new_packages):
+        """
+        Given the state of the old third party packages, compared to the new
+        third party packages, ensure that pip uninstalls and installs the
+        packages so the currently available third party packages reflects the
+        new state.
+        """
+        old = set(old_packages)
+        new = set(new_packages)
+        logger.info('Synchronize package states...')
+        logger.info('Old: {}'.format(old))
+        logger.info('New: {}'.format(new))
+        to_remove = old.difference(new)
+        to_add = new.difference(old)
+        if to_remove or to_add:
+            logger.info('To add: {}'.format(to_add))
+            logger.info('To remove: {}'.format(to_remove))
+            logger.info('Site packages: {}'.format(MODULE_DIR))
+            self._view.sync_packages(to_remove, to_add, MODULE_DIR)
 
     def select_mode(self, event=None):
         """

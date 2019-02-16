@@ -1161,47 +1161,15 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
         envars = [['name', 'value'], ]
         ppp.start_process('script.py', 'workspace', interactive=False,
                           envars=envars, runner='foo')
-    assert mock_environment.insert.call_count == 3
-    assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
-                                                            '1')
-    assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
-                                                            'utf-8')
-    assert mock_environment.insert.call_args_list[2][0] == ('name', 'value')
-
-
-def test_PythonProcessPane_start_process_darwin_app_pythonpath():
-    """
-    When running on OSX as a packaged mu-editor.app, the PYTHONPATH needs to
-    be set so the child processes have access to the packaged libraries and
-    modules.
-    """
-    mock_process = mock.MagicMock()
-    mock_process_class = mock.MagicMock(return_value=mock_process)
-    mock_merge_chans = mock.MagicMock()
-    mock_process_class.MergedChannels = mock_merge_chans
-    mock_environment = mock.MagicMock()
-    mock_environment_class = mock.MagicMock()
-    mock_environment_class.systemEnvironment.return_value = mock_environment
-    mock_path = mock.MagicMock()
-    mock_path.return_value = ('/Applications/mu-editor.app/'
-                              'Contents/Resources/app/mu')
-    with mock.patch('mu.interface.panes.QProcess', mock_process_class), \
-            mock.patch('mu.interface.panes.QProcessEnvironment',
-                       mock_environment_class), \
-            mock.patch('os.path.dirname', mock_path), \
-            mock.patch('sys.platform', 'darwin'):
-        ppp = mu.interface.panes.PythonProcessPane()
-        envars = [['name', 'value'], ]
-        ppp.start_process('script.py', 'workspace', interactive=False,
-                          envars=envars, runner='foo')
     assert mock_environment.insert.call_count == 4
     assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
                                                             '1')
     assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
                                                             'utf-8')
-    assert mock_environment.insert.call_args_list[2][0] == ('PYTHONPATH',
-                                                            ':'.join(sys.path))
-    assert mock_environment.insert.call_args_list[3][0] == ('name', 'value')
+    assert mock_environment.insert.call_args_list[2][0] == ('name', 'value')
+    expected_path = os.pathsep.join(sys.path)
+    assert mock_environment.insert.call_args_list[3][0] == ('PYTHONPATH',
+                                                            expected_path)
 
 
 def test_PythonProcessPane_start_process_custom_runner():
