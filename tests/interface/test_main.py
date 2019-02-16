@@ -1321,17 +1321,26 @@ def test_Window_update_title():
     w.setWindowTitle.assert_called_once_with('Mu - foo.py')
 
 
+def _qdesktopwidget_mock(width, height):
+    """
+    Create and return a usable mock for QDesktopWidget that supports the
+    QDesktopWidget().screenGeometry() use case: it returns a mocked QRect
+    responding to .width() and .height() per the passed in arguments.
+    """
+    mock_sg = mock.MagicMock()
+    mock_screen = mock.MagicMock()
+    mock_screen.width = mock.MagicMock(return_value=width)
+    mock_screen.height = mock.MagicMock(return_value=height)
+    mock_sg.screenGeometry = mock.MagicMock(return_value=mock_screen)
+    return mock.MagicMock(return_value=mock_sg)
+
+
 def test_Window_autosize_window():
     """
     Check the correct calculations take place and methods are called so the
     window is resized and positioned correctly.
     """
-    mock_sg = mock.MagicMock()
-    mock_screen = mock.MagicMock()
-    mock_screen.width = mock.MagicMock(return_value=1024)
-    mock_screen.height = mock.MagicMock(return_value=768)
-    mock_sg.screenGeometry = mock.MagicMock(return_value=mock_screen)
-    mock_qdw = mock.MagicMock(return_value=mock_sg)
+    mock_qdw = _qdesktopwidget_mock(1024, 768)
     w = mu.interface.main.Window()
     w.resize = mock.MagicMock(return_value=None)
     mock_size = mock.MagicMock()
@@ -1415,16 +1424,18 @@ def test_Window_setup():
     mock_qtw_class = mock.MagicMock(return_value=mock_qtw)
     theme = 'night'
     breakpoint_toggle = mock.MagicMock()
+    mock_qdw = _qdesktopwidget_mock(1000, 600)
     with mock.patch('mu.interface.main.QWidget', mock_widget_class), \
             mock.patch('mu.interface.main.ButtonBar', mock_button_bar_class), \
-            mock.patch('mu.interface.main.FileTabs', mock_qtw_class):
+            mock.patch('mu.interface.main.FileTabs', mock_qtw_class), \
+            mock.patch('mu.interface.main.QDesktopWidget', mock_qdw):
         w.setup(breakpoint_toggle, theme)
     assert w.breakpoint_toggle == breakpoint_toggle
     assert w.theme == theme
     assert w.setWindowIcon.call_count == 1
     assert isinstance(w.setWindowIcon.call_args[0][0], QIcon)
     w.update_title.assert_called_once_with()
-    w.setMinimumSize.assert_called_once_with(820, 400)
+    w.setMinimumSize.assert_called_once_with(500, 300)
     assert w.widget == mock_widget
     assert w.button_bar == mock_button_bar
     assert w.tabs == mock_qtw
