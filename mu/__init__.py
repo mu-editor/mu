@@ -3,6 +3,7 @@ import os
 
 from PyQt5.Qt import QLocale
 
+
 # Configure locale and language
 # Define where the translation assets are to be found.
 localedir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'locale'))
