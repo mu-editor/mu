@@ -432,8 +432,8 @@ def check_pycodestyle(code):
     os.close(code_fd)
     save_and_encode(code, code_filename)
     # Configure which PEP8 rules to ignore.
-    ignore = ('E121', 'E123', 'E126', 'E226', 'E302', 'E305', 'E24', 'E704',
-              'W291', 'W292', 'W293', 'W391', 'W503', )
+    ignore = ('E121', 'E123', 'E126', 'E226', 'E203', 'E302', 'E305', 'E24',
+              'E704', 'W291', 'W292', 'W293', 'W391', 'W503', )
     style = StyleGuide(parse_argv=False, config_file=False)
     style.options.ignore = ignore
     checker = Checker(code_filename, options=style.options)
@@ -1194,6 +1194,7 @@ class Editor:
         button_bar.connect("zoom-out", self.zoom_out, "Ctrl+-")
         button_bar.connect("theme", self.toggle_theme, "F1")
         button_bar.connect("check", self.check_code, "F2")
+        button_bar.connect("make-pretty", self.make_pretty, "F10")
         button_bar.connect("help", self.show_help, "Ctrl+H")
         button_bar.connect("quit", self.quit, "Ctrl+Q")
         self._view.status_bar.set_mode(mode)
@@ -1401,3 +1402,19 @@ class Editor:
         Ensure all highlighted lines are toggled between comments/uncommented.
         """
         self._view.toggle_comments()
+
+    def make_pretty(self):
+        """
+        Prettify code with Black.
+        """
+        tab = self._view.current_tab
+        if not tab or sys.version_info[:2] < (3, 6):
+            return
+
+        # TODO: register undo/redo.
+        # TODO: automatic width.
+        # TODO: keep cursor at the same token (requires changes to Black).
+        from black import format_str, FileMode
+        tab.setText(
+            format_str(tab.text(), line_length=88, mode=FileMode.PYTHON36)
+        )
