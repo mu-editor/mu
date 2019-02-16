@@ -2,11 +2,13 @@
 """
 Tests for the user interface elements of Mu.
 """
-from PyQt5.QtWidgets import QApplication, QDialog, QWidget
+import sys
+import os
+import pytest
+import mu.interface.dialogs
+from PyQt5.QtWidgets import QApplication, QDialog, QWidget, QDialogButtonBox
 from unittest import mock
 from mu.modes import PythonMode, AdafruitMode, MicrobitMode, DebugMode
-import mu.interface.dialogs
-import pytest
 
 
 # Required so the QWidget tests don't abort with the message:
@@ -133,6 +135,34 @@ def test_MicrobitSettingsWidget_setup():
     assert mbsw.runtime_path.text() == '/foo/bar'
 
 
+def test_PackagesWidget_setup():
+    """
+    Ensure the widget for editing settings related to third party packages
+    displays the referenced data in the expected way.
+    """
+    packages = 'foo\nbar\nbaz'
+    pw = mu.interface.dialogs.PackagesWidget()
+    pw.setup(packages)
+    assert pw.text_area.toPlainText() == packages
+
+
+def test_PackagesWidget_setup_raspberry_pi():
+    """
+    The package related widget must be disabled in some way if Mu is running
+    on a Raspberry Pi. See:
+    https://github.com/mu-editor/mu/pull/749#issuecomment-459031400
+    for further context.
+    """
+    packages = 'foo\nbar\nbaz'
+    pw = mu.interface.dialogs.PackagesWidget()
+    mock_platform = mock.MagicMock()
+    platform = "Linux-4.14.79-v7+-armv7l-with-debian-9.6"
+    mock_platform.platform.return_value = platform
+    with mock.patch('mu.interface.dialogs.platform', mock_platform):
+        pw.setup(packages)
+    assert pw.text_area.toPlainText() == ''  # No packages
+
+
 def test_AdminDialog_setup():
     """
     Ensure the admin dialog is setup properly given the content of a log
@@ -144,11 +174,15 @@ def test_AdminDialog_setup():
         'minify': True,
         'microbit_runtime': '/foo/bar',
     }
+    packages = 'foo\nbar\nbaz\n'
     mock_window = QWidget()
     ad = mu.interface.dialogs.AdminDialog(mock_window)
-    ad.setup(log, settings)
+    ad.setup(log, settings, packages)
     assert ad.log_widget.log_text_area.toPlainText() == log
-    assert ad.settings() == settings
+    s = ad.settings()
+    assert s['packages'] == packages
+    del(s['packages'])
+    assert s == settings
 
 
 def test_FindReplaceDialog_setup():
@@ -176,3 +210,227 @@ def test_FindReplaceDialog_setup_with_args():
     assert frd.find() == find
     assert frd.replace() == replace
     assert frd.replace_flag()
+
+
+def test_PackageDialog_setup():
+    """
+    Ensure the PackageDialog is set up correctly and kicks off the process of
+    removing and adding packages.
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.remove_packages = mock.MagicMock()
+    pd.run_pip = mock.MagicMock()
+    to_remove = {'foo'}
+    to_add = {'bar'}
+    module_dir = 'baz'
+    pd.setup(to_remove, to_add, module_dir)
+    pd.remove_packages.assert_called_once_with()
+    pd.run_pip.assert_called_once_with()
+    assert pd.button_box.button(QDialogButtonBox.Ok).isEnabled() is False
+    assert pd.pkg_dirs == {}
+
+
+def test_PackageDialog_remove_packages():
+    """
+    Ensure the pkg_dirs of to-be-removed packages is correctly filled and the
+    remove_package method is scheduled.
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.to_remove = {'foo', 'bar-baz', 'Quux'}
+    pd.module_dir = 'wibble'
+    dirs = ['foo-1.0.0.dist-info', 'foo', 'bar_baz-1.0.0.dist-info', 'bar_baz',
+            'quux-1.0.0.dist-info', 'quux', ]
+    with mock.patch('mu.interface.dialogs.os.listdir', return_value=dirs), \
+            mock.patch('mu.interface.dialogs.QTimer') as mock_qtimer:
+        pd.remove_packages()
+        assert pd.pkg_dirs == {
+            'foo': os.path.join('wibble', 'foo-1.0.0.dist-info'),
+            'bar-baz': os.path.join('wibble', 'bar_baz-1.0.0.dist-info'),
+            'Quux': os.path.join('wibble', 'quux-1.0.0.dist-info'),
+        }
+        mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
+
+
+def test_PackageDialog_remove_package():
+    """
+    Ensures that if there are packages remaining to be deleted, then the next
+    one is deleted as expected.
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.append_data = mock.MagicMock()
+    pd.pkg_dirs = {'foo': os.path.join('bar', 'foo-1.0.0.dist-info')}
+    pd.module_dir = 'baz'
+    files = [
+        ['filename1', '', ],
+        ['filename2', '', ],
+        ['filename3', '', ],
+    ]
+    mock_remove = mock.MagicMock()
+    mock_shutil = mock.MagicMock()
+    mock_qtimer = mock.MagicMock()
+    with mock.patch('builtins.open'), \
+            mock.patch('mu.interface.dialogs.csv.reader',
+                       return_value=files), \
+            mock.patch('mu.interface.dialogs.os.remove', mock_remove), \
+            mock.patch('mu.interface.dialogs.shutil', mock_shutil), \
+            mock.patch('mu.interface.dialogs.QTimer', mock_qtimer):
+        pd.remove_package()
+        assert pd.pkg_dirs == {}
+        assert mock_remove.call_count == 3
+        assert mock_shutil.rmtree.call_count == 3
+        pd.append_data.assert_called_once_with('Removed foo\n')
+        mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
+
+
+def test_PackageDialog_remove_package_cannot_delete():
+    """
+    Ensures that if there are packages remaining to be deleted, then the next
+    one is deleted and any failures are logged.
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.append_data = mock.MagicMock()
+    pd.pkg_dirs = {'foo': os.path.join('bar', 'foo-1.0.0.dist-info')}
+    pd.module_dir = 'baz'
+    files = [
+        ['filename1', '', ],
+        ['filename2', '', ],
+        ['filename3', '', ],
+    ]
+    mock_remove = mock.MagicMock(side_effect=Exception('Bang'))
+    mock_shutil = mock.MagicMock()
+    mock_qtimer = mock.MagicMock()
+    mock_log = mock.MagicMock()
+    with mock.patch('builtins.open'), \
+            mock.patch('mu.interface.dialogs.csv.reader',
+                       return_value=files), \
+            mock.patch('mu.interface.dialogs.os.remove', mock_remove), \
+            mock.patch('mu.interface.dialogs.logger.error', mock_log), \
+            mock.patch('mu.interface.dialogs.shutil', mock_shutil), \
+            mock.patch('mu.interface.dialogs.QTimer', mock_qtimer):
+        pd.remove_package()
+        assert pd.pkg_dirs == {}
+        assert mock_remove.call_count == 3
+        assert mock_log.call_count == 6
+        assert mock_shutil.rmtree.call_count == 3
+        pd.append_data.assert_called_once_with('Removed foo\n')
+        mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
+
+
+def test_PackageDialog_remove_package_end_state():
+    """
+    If there are no more packages to remove and there's nothing to be done for
+    adding packages, then ensure all directories that do not contain files are
+    deleted and the expected end-state is called.
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.module_dir = 'foo'
+    pd.pkg_dirs = {}
+    pd.to_add = {}
+    pd.process = None
+    pd.end_state = mock.MagicMock()
+    with mock.patch('mu.interface.dialogs.os.listdir',
+                    return_value=['bar', 'baz']), \
+            mock.patch('mu.interface.dialogs.os.walk',
+                       side_effect=[[('bar', [], [])],
+                                    [('baz', [], ['x'])]]), \
+            mock.patch('mu.interface.dialogs.shutil') as mock_shutil:
+        pd.remove_package()
+        expected_path = os.path.join(pd.module_dir, 'bar')
+        mock_shutil.rmtree.assert_called_once_with(expected_path,
+                                                   ignore_errors=True)
+    pd.end_state.assert_called_once_with()
+
+
+def test_PackageDialog_end_state():
+    """
+    Ensure the expected end-state is correctly cofigured (for when all tasks
+    relating to third party packages have finished).
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.append_data = mock.MagicMock()
+    pd.button_box = mock.MagicMock()
+    pd.end_state()
+    pd.append_data.assert_called_once_with('\nFINISHED')
+    pd.button_box.button().setEnabled.assert_called_once_with(True)
+
+
+def test_PackageDialog_run_pip():
+    """
+    Ensure the expected package to be installed is done so via the expected
+    correct call to "pip" in a new process (as per the recommended way to
+    us "pip").
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.to_add = {'foo'}
+    pd.module_dir = 'bar'
+    mock_process = mock.MagicMock()
+    with mock.patch('mu.interface.dialogs.QProcess', mock_process):
+        pd.run_pip()
+        assert pd.to_add == set()
+        pd.process.readyRead.connect.assert_called_once_with(pd.read_process)
+        pd.process.finished.connect.assert_called_once_with(pd.finished)
+        args = [
+            '-m',  # run the module
+            'pip',  # called pip
+            'install',  # to install
+            'foo',  # a package called "foo"
+            '--target',  # and the target directory for package assets is...
+            'bar',  # ...this directory
+        ]
+        pd.process.start.assert_called_once_with(sys.executable, args)
+
+
+def test_PackageDialog_finished_with_more_to_remove():
+    """
+    When the pip process is finished, check if there are more packages to
+    install and run again.
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.to_add = {'foo'}
+    pd.run_pip = mock.MagicMock()
+    pd.process = mock.MagicMock()
+    pd.finished()
+    assert pd.process is None
+    pd.run_pip.assert_called_once_with()
+
+
+def test_PackageDialog_finished_to_end_state():
+    """
+    When the pip process is finished, if there are no more packages to install
+    and there's no more activity for removing packages, move to the end state.
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.to_add = set()
+    pd.pkg_dirs = {}
+    pd.end_state = mock.MagicMock()
+    pd.finished()
+    pd.end_state.assert_called_once_with()
+
+
+def test_PackageDialog_read_process():
+    """
+    Ensure any data from the subprocess running "pip" is read and appended to
+    the text area.
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.process = mock.MagicMock()
+    pd.process.readAll().data.return_value = b'hello'
+    pd.append_data = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    with mock.patch('mu.interface.dialogs.QTimer', mock_timer):
+        pd.read_process()
+        pd.append_data.assert_called_once_with('hello')
+        mock_timer.singleShot.assert_called_once_with(2, pd.read_process)
+
+
+def test_PackageDialog_append_data():
+    """
+    Ensure that when data is appended, it's added to the end of the text area!
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.text_area = mock.MagicMock()
+    pd.append_data('hello')
+    c = pd.text_area.textCursor()
+    assert c.movePosition.call_count == 2
+    c.insertText.assert_called_once_with('hello')
+    pd.text_area.setTextCursor.assert_called_once_with(c)

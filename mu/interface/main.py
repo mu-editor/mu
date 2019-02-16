@@ -28,7 +28,8 @@ from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
 from PyQt5.QtGui import QKeySequence, QStandardItemModel
 from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
-from mu.interface.dialogs import ModeSelector, AdminDialog, FindReplaceDialog
+from mu.interface.dialogs import (ModeSelector, AdminDialog, FindReplaceDialog,
+                                  PackageDialog)
 from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
                                  DEFAULT_FONT_SIZE)
 from mu.interface.panes import (DebugInspector, DebugInspectorItem,
@@ -688,16 +689,28 @@ class Window(QMainWindow):
         if hasattr(self, 'plotter') and self.plotter:
             self.plotter_pane.set_theme(theme)
 
-    def show_admin(self, log, settings):
+    def show_admin(self, log, settings, packages):
         """
         Display the administrative dialog with referenced content of the log
         and settings. Return a dictionary of the settings that may have been
         changed by the admin dialog.
         """
         admin_box = AdminDialog(self)
-        admin_box.setup(log, settings)
-        admin_box.exec()
-        return admin_box.settings()
+        admin_box.setup(log, settings, packages)
+        result = admin_box.exec()
+        if result:
+            return admin_box.settings()
+        else:
+            return {}
+
+    def sync_packages(self, to_remove, to_add, module_dir):
+        """
+        Display a modal dialog that indicates the status of the add/remove
+        package management operation.
+        """
+        package_box = PackageDialog(self)
+        package_box.setup(to_remove, to_add, module_dir)
+        package_box.exec()
 
     def show_message(self, message, information=None, icon=None):
         """
