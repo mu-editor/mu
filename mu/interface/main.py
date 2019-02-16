@@ -783,17 +783,20 @@ class Window(QMainWindow):
         screen = QDesktopWidget().screenGeometry()
         return screen.width(), screen.height()
 
-    def autosize_window(self):
+    def size_window(self, x=None, y=None, w=None, h=None):
         """
-        Makes the editor 80% of the width*height of the screen and centres it.
+        Makes the editor 80% of the width*height of the screen and centres it
+        when none of x, y, w and h is passed in; otherwise uses the passed in
+        values to position and size the editor window.
         """
         screen_width, screen_height = self.screen_size()
-        w = int(screen_width * 0.8)
-        h = int(screen_height * 0.8)
+        w = int(screen_width * 0.8) if w is None else w
+        h = int(screen_height * 0.8) if h is None else h
         self.resize(w, h)
         size = self.geometry()
-        self.move((screen_width - size.width()) / 2,
-                  (screen_height - size.height()) / 2)
+        x = (screen_width - size.width()) / 2 if x is None else x
+        y = (screen_height - size.height()) / 2 if y is None else y
+        self.move(x, y)
 
     def reset_annotations(self):
         """
@@ -842,7 +845,6 @@ class Window(QMainWindow):
         self.setStatusBar(self.status_bar)
         self.addToolBar(self.button_bar)
         self.show()
-        self.autosize_window()
 
     def resizeEvent(self, resizeEvent):
         """
