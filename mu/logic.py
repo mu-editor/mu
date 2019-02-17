@@ -432,8 +432,8 @@ def check_pycodestyle(code):
     os.close(code_fd)
     save_and_encode(code, code_filename)
     # Configure which PEP8 rules to ignore.
-    ignore = ('E121', 'E123', 'E126', 'E226', 'E302', 'E305', 'E24', 'E704',
-              'W291', 'W292', 'W293', 'W391', 'W503', )
+    ignore = ('E121', 'E123', 'E126', 'E226', 'E203', 'E302', 'E305', 'E24',
+              'E704', 'W291', 'W292', 'W293', 'W391', 'W503', )
     style = StyleGuide(parse_argv=False, config_file=False)
     style.options.ignore = ignore
     checker = Checker(code_filename, options=style.options)
@@ -1194,6 +1194,8 @@ class Editor:
         button_bar.connect("zoom-out", self.zoom_out, "Ctrl+-")
         button_bar.connect("theme", self.toggle_theme, "F1")
         button_bar.connect("check", self.check_code, "F2")
+        if sys.version_info[:2] >= (3, 6):
+            button_bar.connect("tidy", self.tidy_code, "F10")
         button_bar.connect("help", self.show_help, "Ctrl+H")
         button_bar.connect("quit", self.quit, "Ctrl+Q")
         self._view.status_bar.set_mode(mode)
@@ -1401,3 +1403,34 @@ class Editor:
         Ensure all highlighted lines are toggled between comments/uncommented.
         """
         self._view.toggle_comments()
+
+    def tidy_code(self):
+        """
+        Prettify code with Black.
+        """
+        tab = self._view.current_tab
+        if not tab or sys.version_info[:2] < (3, 6):
+            return
+
+        from black import format_str, FileMode
+        try:
+            source_code = tab.text()
+            logger.info('Tidy code.')
+            logger.info(source_code)
+            tidy_code = format_str(source_code, line_length=88,
+                                   mode=FileMode.PYTHON36)
+            # The following bypasses tab.setText which resets the undo history.
+            # Doing it this way means the user can use CTRL-Z to undo the
+            # reformatting from black.
+            tab.SendScintilla(tab.SCI_SETTEXT, tidy_code.encode('utf-8'))
+            self.show_status_message(_("Successfully cleaned the code. "
+                                       "Use CTRL-Z to undo."))
+        except Exception as ex:
+            # The user's code is problematic. Recover with a modal dialog
+            # containing a helpful message.
+            logger.error(ex)
+            message = _('Your code contains problems.')
+            information = _("These must be fixed before tidying will work. "
+                            "Please use the 'Check' button to highlight "
+                            "these problems.")
+            self._view.show_message(message, information)
