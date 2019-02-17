@@ -1194,7 +1194,8 @@ class Editor:
         button_bar.connect("zoom-out", self.zoom_out, "Ctrl+-")
         button_bar.connect("theme", self.toggle_theme, "F1")
         button_bar.connect("check", self.check_code, "F2")
-        button_bar.connect("make-pretty", self.make_pretty, "F10")
+        if sys.version_info[:2] >= (3, 6):
+            button_bar.connect("tidy", self.tidy_code, "F10")
         button_bar.connect("help", self.show_help, "Ctrl+H")
         button_bar.connect("quit", self.quit, "Ctrl+Q")
         self._view.status_bar.set_mode(mode)
@@ -1403,7 +1404,7 @@ class Editor:
         """
         self._view.toggle_comments()
 
-    def make_pretty(self):
+    def tidy_code(self):
         """
         Prettify code with Black.
         """
@@ -1411,10 +1412,25 @@ class Editor:
         if not tab or sys.version_info[:2] < (3, 6):
             return
 
-        # TODO: register undo/redo.
-        # TODO: automatic width.
-        # TODO: keep cursor at the same token (requires changes to Black).
         from black import format_str, FileMode
-        tab.setText(
-            format_str(tab.text(), line_length=88, mode=FileMode.PYTHON36)
-        )
+        try:
+            source_code = tab.text()
+            logger.info('Tidy code.')
+            logger.info(source_code)
+            tidy_code = format_str(source_code, line_length=88,
+                                   mode=FileMode.PYTHON36)
+            # The following bypasses tab.setText which resets the undo history.
+            # Doing it this way means the user can use CTRL-Z to undo the
+            # reformatting from black.
+            tab.SendScintilla(tab.SCI_SETTEXT, tidy_code.encode('utf-8'))
+            self.show_status_message(_("Successfully cleaned the code. "
+                                       "Use CTRL-Z to undo."))
+        except Exception as ex:
+            # The user's code is problematic. Recover with a modal dialog
+            # containing a helpful message.
+            logger.error(ex)
+            message = _('Your code contains problems.')
+            information = _("These must be fixed before tidying will work. "
+                            "Please use the 'Check' button to highlight "
+                            "these problems.")
+            self._view.show_message(message, information)

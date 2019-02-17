@@ -3168,3 +3168,46 @@ def test_toggle_comments():
     ed = mu.logic.Editor(mock_view)
     ed.toggle_comments()
     mock_view.toggle_comments.assert_called_once_with()
+
+
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="Requires Python3.6")
+def test_tidy_code_no_tab():
+    """
+    If there's no current tab ensure black isn't called.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.current_tab = None
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.tidy_code()
+    assert ed.show_status_message.call_count == 0
+
+
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="Requires Python3.6")
+def test_tidy_code_valid_python():
+    """
+    Ensure the "good case" works as expected (the code is reformatted and Mu
+    shows a status message to confirm so).
+    """
+    mock_view = mock.MagicMock()
+    mock_view.current_tab.text.return_value = "print('hello')"
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.tidy_code()
+    tab = mock_view.current_tab
+    tab.SendScintilla.assert_called_once_with(tab.SCI_SETTEXT,
+                                              b'print("hello")\n')
+    assert ed.show_status_message.call_count == 1
+
+
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="Requires Python3.6")
+def test_tidy_code_invalid_python():
+    """
+    If the code is incorrectly formatted so black can't do its thing, ensure
+    that a message is shown to the user to say so.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.current_tab.text.return_value = "print('hello'"
+    ed = mu.logic.Editor(mock_view)
+    ed.tidy_code()
+    assert mock_view.show_message.call_count == 1
