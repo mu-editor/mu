@@ -1,16 +1,7 @@
 import platform
-import pathlib
-import re
 from setuptools import setup
+from mu import __version__
 
-# Grab Mu's version from mu/__init__.py without importing it.
-INIT_FILE = pathlib.Path(__file__).parent / 'mu' / '__init__.py'
-with open(INIT_FILE, encoding='UTF-8', errors='replace') as f:
-    init_contents = f.read()
-match = re.search(r'''^__version__\s*=\s*['"](.*)['"]''', init_contents, re.M)
-if not match:
-    raise RuntimeError("Could not determine version from Mu's package.")
-VERSION = match.group(1)
 
 with open('README.rst') as f:
     readme = f.read()
@@ -42,7 +33,7 @@ except Exception:
 
 setup(
     name='mu-editor',
-    version=VERSION,
+    version=__version__,
     description='A simple Python editor for beginner programmers.',
     long_description='{}\n\n{}'.format(readme, changes),
     author='Nicholas H.Tollervey',
