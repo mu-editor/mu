@@ -3,8 +3,6 @@ environment:
     - PYTHON: "C:\\Python36"
       PYTHON_VERSION: "3.6.4"
       PYTHON_ARCH: "32"
-      # Could it be that Qt's locale calls fail without this?
-      LANG: "en_GB"
 
 platform: x86
 
@@ -50,7 +48,6 @@ install:
 
   # Build mu using pynsist, rename dist folder and executable with timestamp
   # 64bit
-  - cmd: ECHO About to "make win64" with LANG set to %LANG%.
   - cmd: make win64
   - ps: Rename-Item -path .\build upload64
   - cmd: dir upload64\nsis
