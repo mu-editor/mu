@@ -28,8 +28,9 @@ import sys
 
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QApplication, QSplashScreen
+from PyQt5.Qt import QLocale
 
-from mu import __version__, language_code
+from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface import Window
 from mu.resources import load_pixmap, load_icon
@@ -111,7 +112,7 @@ def run():
     logging.info('\n\n-----------------\n\nStarting Mu {}'.format(__version__))
     logging.info(platform.uname())
     logging.info('Python path: {}'.format(sys.path))
-    logging.info('Language code: {}'.format(language_code))
+    logging.info('Language code: {}'.format(QLocale.system().name()))
 
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
