@@ -33,6 +33,7 @@ import shutil
 import appdirs
 import site
 from PyQt5.QtWidgets import QMessageBox
+from PyQt5.Qt import QLocale
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
 from mu.resources import path
@@ -1031,7 +1032,7 @@ class Editor:
         """
         Display browser based help about Mu.
         """
-        language_code = 'en'
+        language_code = QLocale.system().name()[:2]
         major_version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/{}/help/{}'.format(language_code,
                                                       major_version)
