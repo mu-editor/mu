@@ -38,9 +38,8 @@ from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
 from mu.resources import path
 from mu.debugger.utils import is_breakpoint_line
-from mu import __version__, setup_gettext
+from mu import __version__
 
-setup_gettext()
 
 # The user's home directory.
 HOME_DIRECTORY = os.path.expanduser('~')
