@@ -1,6 +1,6 @@
 appdirs
 beautifulsoup4
-black
+black; python_version > '3.5'
 coverage
 gpiozero
 guizero
