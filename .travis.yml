@@ -1,27 +1,25 @@
 # Travis can building for Linux and macOS
 matrix:
   include:
-    # To maximise compatibility pick earliest image, Ubuntu 14.04.5 x64
     - os: linux
-      dist: trusty
+      dist: xenial 
       sudo: required
       language: python
       python: 3.5
     - os: linux
-      dist: trusty
+      dist: xenial 
       sudo: required
       language: python
       python: 3.6
-    # Py 3.7 needs xenial https://github.com/travis-ci/travis-ci/issues/9069
     - os: linux
       dist: xenial
       sudo: required
       language: python
       python: 3.7
 
-    # To maximise compatibility pick earliest image, OS X 10.10 Yosemite
+    # To maximise compatibility pick earliest image, OS X 10.12
     - os: osx
-      osx_image: xcode7.3
+      osx_image: xcode8.3
       sudo: required
       language: generic
       python: 3.6
@@ -30,6 +28,9 @@ before_install:
   # OS and default Python info
   - uname -a
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sw_vers; fi
+  # Linux packages needed for Qt to work.
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libxkbcommon-x11-0; fi
   # Python 3 installation required
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv install 3.6.5; fi

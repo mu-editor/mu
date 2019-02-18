@@ -1,5 +1,6 @@
 appdirs
 beautifulsoup4
+black; python_version > '3.5'
 coverage
 gpiozero
 guizero
@@ -18,7 +19,7 @@ PyQtChart; "arm" not in platform_machine
 pyserial
 pytest
 pytest-cov
-pytest-random-order
+pytest-random-order>=1.0.0
 requests
 semver
 scrapy

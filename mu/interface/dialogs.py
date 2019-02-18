@@ -16,11 +16,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
+import sys
 import logging
-from PyQt5.QtCore import QSize
+import csv
+import shutil
+import platform
+from PyQt5.QtCore import QSize, QProcess, QTimer
 from PyQt5.QtWidgets import (QVBoxLayout, QListWidget, QLabel, QListWidgetItem,
                              QDialog, QDialogButtonBox, QPlainTextEdit,
                              QTabWidget, QWidget, QCheckBox, QLineEdit)
+from PyQt5.QtGui import QTextCursor
 from mu.resources import load_icon
 
 
@@ -161,24 +167,62 @@ class MicrobitSettingsWidget(QWidget):
         widget_layout.addStretch()
 
 
+class PackagesWidget(QWidget):
+    """
+    Used for editing and displaying 3rd party packages installed via pip to be
+    used with Python 3 mode.
+    """
+
+    def setup(self, packages):
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+        self.text_area = QPlainTextEdit()
+        self.text_area.setLineWrapMode(QPlainTextEdit.NoWrap)
+        if 'armv' in platform.platform():
+            # Only allow third party package management if NOT running on a
+            # Raspberry Pi. See:
+            # https://github.com/mu-editor/mu/pull/749#issuecomment-459051823
+            label = QLabel(_('Third party packages are not supported on the '
+                             'Raspberry Pi. Please use the operating '
+                             "system's package manager instead (refer to the "
+                             "operating system's documentation for how to do "
+                             "this)."))
+            label.setWordWrap(True)
+            widget_layout.addWidget(label)
+            self.text_area.setPlainText('')
+        else:
+            label = QLabel(_('The packages shown below will be available to '
+                             'import in Python 3 mode. Delete a package from '
+                             'the list to remove its availability.\n\n'
+                             'Each separate package name should be on a new '
+                             'line. Packages are installed from PyPI '
+                             '(see: https://pypi.org/).'))
+            label.setWordWrap(True)
+            widget_layout.addWidget(label)
+            self.text_area.setPlainText(packages)
+            widget_layout.addWidget(self.text_area)
+
+
 class AdminDialog(QDialog):
     """
     Displays administrative related information and settings (logs, environment
-    variables etc...).
+    variables, third party packages etc...).
     """
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def setup(self, log, settings):
+    def setup(self, log, settings, packages):
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_('Mu Administration'))
         widget_layout = QVBoxLayout()
         self.setLayout(widget_layout)
         self.tabs = QTabWidget()
         widget_layout.addWidget(self.tabs)
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok)
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok |
+                                      QDialogButtonBox.Cancel)
         button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
         widget_layout.addWidget(button_box)
         # Tabs
         self.log_widget = LogWidget()
@@ -192,6 +236,9 @@ class AdminDialog(QDialog):
         self.microbit_widget.setup(settings.get('minify', False),
                                    settings.get('microbit_runtime', ''))
         self.tabs.addTab(self.microbit_widget, _('BBC micro:bit Settings'))
+        self.package_widget = PackagesWidget()
+        self.package_widget.setup(packages)
+        self.tabs.addTab(self.package_widget, _('Third Party Packages'))
 
     def settings(self):
         """
@@ -203,6 +250,7 @@ class AdminDialog(QDialog):
             'envars': self.envar_widget.text_area.toPlainText(),
             'minify': self.microbit_widget.minify.isChecked(),
             'microbit_runtime': self.microbit_widget.runtime_path.text(),
+            'packages': self.package_widget.text_area.toPlainText(),
         }
 
 
@@ -262,3 +310,157 @@ class FindReplaceDialog(QDialog):
         Return the value of the global replace flag.
         """
         return self.replace_all_flag.isChecked()
+
+
+class PackageDialog(QDialog):
+    """
+    Display a dialog to indicate the status of the packaging related changes
+    currently run by pip.
+    """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def setup(self, to_remove, to_add, module_dir):
+        """
+        Create the UI for the dialog.
+        """
+        self.to_remove = to_remove
+        self.to_add = to_add
+        self.module_dir = module_dir
+        self.pkg_dirs = {}  # To hold locations of to-be-removed packages.
+        self.process = None
+        # Basic layout.
+        self.setMinimumSize(600, 400)
+        self.setWindowTitle(_('Third Party Package Status'))
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+        # Text area for pip output.
+        self.text_area = QPlainTextEdit()
+        self.text_area.setReadOnly(True)
+        self.text_area.setLineWrapMode(QPlainTextEdit.NoWrap)
+        widget_layout.addWidget(self.text_area)
+        # Buttons.
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok)
+        self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.button_box.accepted.connect(self.accept)
+        widget_layout.addWidget(self.button_box)
+        # Kick off processing of packages.
+        if self.to_remove:
+            self.remove_packages()
+        if self.to_add:
+            self.run_pip()
+
+    def remove_packages(self):
+        """
+        Work out which packages need to be removed and then kick off their
+        removal.
+        """
+        dirs = [os.path.join(self.module_dir, d)
+                for d in os.listdir(self.module_dir)
+                if d.endswith("dist-info")]
+        self.pkg_dirs = {}
+        for pkg in self.to_remove:
+            for d in dirs:
+                # Assets on the filesystem use a normalised package name.
+                pkg_name = pkg.replace('-', '_').lower()
+                if os.path.basename(d).lower().startswith(pkg_name + '-'):
+                    self.pkg_dirs[pkg] = d
+        if self.pkg_dirs:
+            # If there are packages to remove, schedule removal.
+            QTimer.singleShot(2, self.remove_package)
+
+    def remove_package(self):
+        """
+        Take a package from the pending packages to be removed, delete all its
+        assets and schedule the removal of the remaining packages. If there are
+        no packages to remove, move to the finished state.
+        """
+        if self.pkg_dirs:
+            package, dist = self.pkg_dirs.popitem()
+            record = os.path.join(dist, 'RECORD')
+            with open(record) as f:
+                files = csv.reader(f)
+                for row in files:
+                    to_delete = os.path.join(self.module_dir, row[0])
+                    try:
+                        os.remove(to_delete)
+                    except Exception as ex:
+                        logger.error('Unable to remove: {}'.format(to_delete))
+                        logger.error(ex)
+            shutil.rmtree(dist, ignore_errors=True)
+            # Some modules don't use the module name for the module directory
+            # (they use a lower case variant thereof). E.g. "Fom" vs. "fom".
+            normal_module = os.path.join(self.module_dir, package)
+            lower_module = os.path.join(self.module_dir, package.lower())
+            shutil.rmtree(normal_module, ignore_errors=True)
+            shutil.rmtree(lower_module, ignore_errors=True)
+            self.append_data('Removed {}\n'.format(package))
+            QTimer.singleShot(2, self.remove_package)
+        else:
+            # Clean any directories not containing files.
+            dirs = [os.path.join(self.module_dir, d)
+                    for d in os.listdir(self.module_dir)]
+            for d in dirs:
+                keep = False
+                for entry in os.walk(d):
+                    if entry[2]:
+                        keep = True
+                if not keep:
+                    shutil.rmtree(d, ignore_errors=True)
+            # Check for end state.
+            if not (self.to_add or self.process):
+                self.end_state()
+
+    def end_state(self):
+        """
+        Set the UI to a valid end state.
+        """
+        self.append_data('\nFINISHED')
+        self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
+
+    def run_pip(self):
+        """
+        Run a pip command in a subprocess and pipe the output to the dialog's
+        text area.
+        """
+        package = self.to_add.pop()
+        args = ['-m', 'pip', 'install', package, '--target',
+                self.module_dir]
+        self.process = QProcess(self)
+        self.process.setProcessChannelMode(QProcess.MergedChannels)
+        self.process.readyRead.connect(self.read_process)
+        self.process.finished.connect(self.finished)
+        self.process.start(sys.executable, args)
+
+    def finished(self):
+        """
+        Called when the subprocess that uses pip to install a package is
+        finished.
+        """
+        if self.to_add:
+            self.process = None
+            self.run_pip()
+        else:
+            if not self.pkg_dirs:
+                self.end_state()
+
+    def read_process(self):
+        """
+        Read data from the child process and append it to the text area. Try
+        to keep reading until there's no more data from the process.
+        """
+        data = self.process.readAll()
+        if data:
+            self.append_data(data.data().decode('utf-8'))
+            QTimer.singleShot(2, self.read_process)
+
+    def append_data(self, msg):
+        """
+        Add data to the end of the text area.
+        """
+        cursor = self.text_area.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        cursor.insertText(msg)
+        cursor.movePosition(QTextCursor.End)
+        self.text_area.setTextCursor(cursor)

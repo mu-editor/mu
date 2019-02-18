@@ -134,6 +134,14 @@ class BaseMode(QObject):
             if k in self.view.button_bar.slots:
                 self.view.button_bar.slots[k].setEnabled(bool(v))
 
+    def return_focus_to_current_tab(self):
+        """
+        After, eg, stopping the plotter or closing the REPL return the focus
+        to the currently-active tab is there is one.
+        """
+        if self.view.current_tab:
+            self.view.current_tab.setFocus()
+
     def add_plotter(self):
         """
         Mode specific implementation of adding and connecting a plotter to
@@ -162,6 +170,7 @@ class BaseMode(QObject):
         self.view.remove_plotter()
         self.plotter = None
         logger.info('Removing plotter')
+        self.return_focus_to_current_tab()
 
     def on_data_flood(self):
         """
@@ -210,7 +219,8 @@ class MicroPythonMode(BaseMode):
             pid = port.productIdentifier()
             vid = port.vendorIdentifier()
             # Look for the port VID & PID in the list of know board IDs
-            if (vid, pid) in self.valid_boards:
+            if (vid, pid) in self.valid_boards or \
+               (vid, None) in self.valid_boards:
                 port_name = port.portName()
                 serial_number = port.serialNumber()
                 if with_logging:
@@ -220,10 +230,10 @@ class MicroPythonMode(BaseMode):
         if with_logging:
             logger.warning('Could not find device.')
             logger.debug('Available ports:')
-            logger.debug(['PID:{} VID:{} PORT:{}'.format(p.productIdentifier(),
-                                                         p.vendorIdentifier(),
-                                                         p.portName())
-                         for p in available_ports])
+            logger.debug(['PID:0x{:04x} VID:0x{:04x} PORT:{}'.format(
+                p.productIdentifier(),
+                p.vendorIdentifier(),
+                p.portName()) for p in available_ports])
         return (None, None)
 
     def port_path(self, port_name):
