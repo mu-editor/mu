@@ -1682,10 +1682,10 @@ def test_show_help():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    qlocale_system = mock.MagicMock()
-    qlocale_system.name.return_value = 'en_GB'
+    qlocalesys = mock.MagicMock()
+    qlocalesys.name.return_value = 'en_GB'
     with mock.patch('mu.logic.webbrowser.open_new', return_value=None) as wb, \
-            mock.patch('PyQt5.QtCore.QLocale.system', return_value=qlocale_system):
+            mock.patch('PyQt5.QtCore.QLocale.system', return_value=qlocalesys):
         ed.show_help()
         version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/en/help/{}'.format(version)
