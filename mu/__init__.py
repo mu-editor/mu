@@ -1,7 +1,7 @@
 import gettext
 import os
 
-from PyQt5.Qt import QLocale
+from PyQt5.QtCore import QLocale
 
 # Configure locale and language
 # Define where the translation assets are to be found.
