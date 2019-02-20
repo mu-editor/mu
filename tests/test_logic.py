@@ -1236,7 +1236,7 @@ def test_save_strips_trailing_spaces():
     with generate_python_file(test_text) as filepath:
         mu.logic.save_and_encode(test_text, filepath)
         with open(filepath) as f:
-            assert f.read() == stripped_text
+            assert f.read() == stripped_text + os.linesep
 
 
 def test_load_error():
@@ -2825,7 +2825,7 @@ def test_write_newline_to_unix():
         with open(filepath, newline="") as f:
             text = f.read()
             assert text.count("\r\n") == 0
-            assert text.count("\n") == test_string.count("\r\n")
+            assert text.count("\n") == test_string.count("\r\n") + 1
 
 
 def test_write_newline_to_windows():
@@ -2838,7 +2838,7 @@ def test_write_newline_to_windows():
         with open(filepath, newline="") as f:
             text = f.read()
             assert len(re.findall("[^\r]\n", text)) == 0
-            assert text.count("\r\n") == test_string.count("\n")
+            assert text.count("\r\n") == test_string.count("\n") + 1
 
 
 #
@@ -2954,7 +2954,7 @@ def test_write_encoding_cookie_no_cookie():
         mu.logic.save_and_encode(test_string, filepath)
         with open(filepath, encoding=mu.logic.ENCODING) as f:
             for line in f:
-                assert line == test_string
+                assert line == test_string + os.linesep
                 break
 
 
@@ -2969,7 +2969,7 @@ def test_write_encoding_cookie_existing_cookie():
         mu.logic.save_and_encode(test_string, filepath)
         with open(filepath, encoding=encoding) as f:
             assert next(f) == cookie
-            assert next(f) == UNICODE_TEST_STRING
+            assert next(f) == UNICODE_TEST_STRING + os.linesep
 
 
 def test_write_invalid_codec():
@@ -2983,7 +2983,7 @@ def test_write_invalid_codec():
         mu.logic.save_and_encode(test_string, filepath)
         with open(filepath, encoding=mu.logic.ENCODING) as f:
             assert next(f) == cookie
-            assert next(f) == UNICODE_TEST_STRING
+            assert next(f) == UNICODE_TEST_STRING + os.linesep
 
 
 def test_handle_open_file():
