@@ -1057,6 +1057,46 @@ def test_no_duplicate_load_python_file():
     editor_window.add_tab.assert_not_called()
 
 
+def test_no_duplicate_load_python_file_widget_file_no_longer_exists():
+    """
+    If the user specifies a file already loaded (but which no longer exists),
+    ensure this is detected, logged and Mu doesn't crash..! See:
+
+    https://github.com/mu-editor/mu/issues/774
+
+    for context.
+    """
+    brown_script = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'scripts',
+        'contains_brown.py'
+    )
+
+    editor_window = mock.MagicMock()
+    editor_window.show_message = mock.MagicMock()
+    editor_window.focus_tab = mock.MagicMock()
+    editor_window.add_tab = mock.MagicMock()
+
+    missing_tab = mock.MagicMock()
+    missing_tab.path = 'not_a_file.py'
+
+    editor_window.widgets = [missing_tab, ]
+
+    editor_window.current_tab.path = 'path'
+    # Create the "editor" that'll control the "window".
+    editor = mu.logic.Editor(view=editor_window)
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    editor.modes = {
+        'python': mock_mode,
+    }
+    with mock.patch('mu.logic.logger') as mock_logger:
+        editor._load(brown_script)
+        assert mock_logger.info.call_count == 3
+        log = mock_logger.info.call_args_list[1][0][0]
+        assert log == 'The file not_a_file.py no longer exists.'
+
+
 def test_load_other_file():
     """
     If the user specifies a file supported by a Mu mode (like a .hex file) then

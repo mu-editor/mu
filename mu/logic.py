@@ -750,6 +750,15 @@ class Editor:
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
                 continue
+            # The widget could be for a file on a MicroPython device that
+            # has since been unplugged. We should ignore it and assume that
+            # folks understand this file is no longer available (there's
+            # nothing else we can do).
+            if not os.path.isfile(widget.path):
+                logger.info(
+                    'The file {} no longer exists.'.format(widget.path))
+                continue
+            # Check for duplication of open file.
             if os.path.samefile(path, widget.path):
                 logger.info('Script already open.')
                 msg = _('The file "{}" is already open.')
