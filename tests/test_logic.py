@@ -1276,7 +1276,7 @@ def test_save_strips_trailing_spaces():
     with generate_python_file(test_text) as filepath:
         mu.logic.save_and_encode(test_text, filepath)
         with open(filepath) as f:
-            assert f.read() == stripped_text + os.linesep
+            assert f.read() == stripped_text + '\n'
 
 
 def test_load_error():
@@ -2978,7 +2978,7 @@ def test_write_encoding_cookie_no_cookie():
         mu.logic.save_and_encode(test_string, filepath)
         with open(filepath, encoding=mu.logic.ENCODING) as f:
             for line in f:
-                assert line == test_string + os.linesep
+                assert line == test_string + '\n'
                 break
 
 
@@ -2993,7 +2993,7 @@ def test_write_encoding_cookie_existing_cookie():
         mu.logic.save_and_encode(test_string, filepath)
         with open(filepath, encoding=encoding) as f:
             assert next(f) == cookie
-            assert next(f) == UNICODE_TEST_STRING + os.linesep
+            assert next(f) == UNICODE_TEST_STRING + '\n'
 
 
 def test_write_invalid_codec():
@@ -3007,7 +3007,7 @@ def test_write_invalid_codec():
         mu.logic.save_and_encode(test_string, filepath)
         with open(filepath, encoding=mu.logic.ENCODING) as f:
             assert next(f) == cookie
-            assert next(f) == UNICODE_TEST_STRING + os.linesep
+            assert next(f) == UNICODE_TEST_STRING + '\n'
 
 
 def test_handle_open_file():
