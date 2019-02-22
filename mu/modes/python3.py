@@ -62,13 +62,10 @@ class KernelRunner(QObject):
                     '{}'.format(self.envars))
         for k, v in self.envars.items():
             os.environ[k] = v
-        if sys.platform == 'darwin':
-            parent_dir = os.path.dirname(__file__)
-            if '.app/Contents/Resources/app/mu' in parent_dir:
-                # Mu is running as a macOS app bundle. Ensure the expected
-                # paths are in PYTHONPATH of the subprocess so the kernel can
-                # be found.
-                os.environ['PYTHONPATH'] = ':'.join(sys.path)
+        # Ensure the expected paths are in PYTHONPATH of the subprocess so the
+        # kernel and Mu-installed third party applications can be found.
+        if 'PYTHONPATH' not in os.environ:
+            os.environ['PYTHONPATH'] = os.pathsep.join(sys.path)
         self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.start_kernel()
         self.repl_kernel_client = self.repl_kernel_manager.client()

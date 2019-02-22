@@ -33,9 +33,9 @@ import shutil
 import appdirs
 import site
 from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import QLocale
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
-from . import localedetect
 from mu.resources import path
 from mu.debugger.utils import is_breakpoint_line
 from mu import __version__
@@ -47,6 +47,9 @@ HOME_DIRECTORY = os.path.expanduser('~')
 WORKSPACE_NAME = 'mu_code'
 # The default directory for application data (i.e., configuration).
 DATA_DIR = appdirs.user_data_dir(appname='mu', appauthor='python')
+# The directory containing user installed third party modules.
+MODULE_DIR = os.path.join(DATA_DIR, 'site-packages')
+sys.path.append(MODULE_DIR)
 # The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir(appname='mu', appauthor='python')
 # The path to the log file for the application.
@@ -144,6 +147,22 @@ ENCODING_COOKIE_RE = re.compile(
 logger = logging.getLogger(__name__)
 
 
+def installed_packages():
+    """
+    List all the third party modules installed by the user.
+    """
+    result = []
+    pkg_dirs = [os.path.join(MODULE_DIR, d) for d in os.listdir(MODULE_DIR)
+                if d.endswith("dist-info")]
+    for pkg in pkg_dirs:
+        metadata_file = os.path.join(pkg, 'METADATA')
+        with open(metadata_file, 'rb') as f:
+            lines = f.readlines()
+            name = lines[1].rsplit(b':')[-1].strip()
+            result.append(name.decode('utf-8'))
+    return sorted(result)
+
+
 def write_and_flush(fileobj, content):
     """
     Write content to the fileobj then flush and fsync to ensure the data is,
@@ -179,7 +198,8 @@ def save_and_encode(text, filepath, newline=os.linesep):
         encoding = ENCODING
 
     with open(filepath, "w", encoding=encoding, newline='') as f:
-        text_to_write = newline.join(l.rstrip(" ") for l in text.splitlines())
+        text_to_write = newline.join(l.rstrip(" ") for l in
+                                     text.splitlines()) + newline
         write_and_flush(f, text_to_write)
 
 
@@ -413,8 +433,8 @@ def check_pycodestyle(code):
     os.close(code_fd)
     save_and_encode(code, code_filename)
     # Configure which PEP8 rules to ignore.
-    ignore = ('E121', 'E123', 'E126', 'E226', 'E302', 'E305', 'E24', 'E704',
-              'W291', 'W292', 'W293', 'W391', 'W503', )
+    ignore = ('E121', 'E123', 'E126', 'E226', 'E203', 'E302', 'E305', 'E24',
+              'E704', 'W291', 'W292', 'W293', 'W391', 'W503', )
     style = StyleGuide(parse_argv=False, config_file=False)
     style.options.ignore = ignore
     checker = Checker(code_filename, options=style.options)
@@ -559,6 +579,9 @@ class Editor:
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
+        if not os.path.exists(MODULE_DIR):
+            logger.debug('Creating directory: {}'.format(MODULE_DIR))
+            os.makedirs(MODULE_DIR)
         logger.info('Settings path: {}'.format(get_settings_path()))
         logger.info('Session path: {}'.format(get_session_path()))
         logger.info('Log directory: {}'.format(LOG_DIR))
@@ -727,6 +750,15 @@ class Editor:
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
                 continue
+            # The widget could be for a file on a MicroPython device that
+            # has since been unplugged. We should ignore it and assume that
+            # folks understand this file is no longer available (there's
+            # nothing else we can do).
+            if not os.path.isfile(widget.path):
+                logger.info(
+                    'The file {} no longer exists.'.format(widget.path))
+                continue
+            # Check for duplication of open file.
             if os.path.samefile(path, widget.path):
                 logger.info('Script already open.')
                 msg = _('The file "{}" is already open.')
@@ -1010,7 +1042,7 @@ class Editor:
         """
         Display browser based help about Mu.
         """
-        language_code = localedetect.language_code()[:2]
+        language_code = QLocale.system().name()[:2]
         major_version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/{}/help/{}'.format(language_code,
                                                       major_version)
@@ -1074,7 +1106,7 @@ class Editor:
 
         Ensure any changes to the envars is updated.
         """
-        logger.info('Showing logs from {}'.format(LOG_FILE))
+        logger.info('Showing admin with logs from {}'.format(LOG_FILE))
         envars = '\n'.join(['{}={}'.format(name, value) for name, value in
                             self.envars])
         settings = {
@@ -1082,20 +1114,50 @@ class Editor:
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
         }
+        packages = installed_packages()
         with open(LOG_FILE, 'r', encoding='utf8') as logfile:
-            new_settings = self._view.show_admin(logfile.read(), settings)
+            new_settings = self._view.show_admin(logfile.read(), settings,
+                                                 '\n'.join(packages))
+        if new_settings:
             self.envars = extract_envars(new_settings['envars'])
             self.minify = new_settings['minify']
             runtime = new_settings['microbit_runtime'].strip()
             if runtime and not os.path.isfile(runtime):
                 self.microbit_runtime = ''
                 message = _('Could not find MicroPython runtime.')
-                information = _("The micro:bit runtime you specified ('{}') "
-                                "does not exist. "
+                information = _("The micro:bit runtime you specified "
+                                "('{}') does not exist. "
                                 "Please try again.").format(runtime)
                 self._view.show_message(message, information)
             else:
                 self.microbit_runtime = runtime
+            new_packages = [p for p in
+                            new_settings['packages'].lower().split('\n')
+                            if p.strip()]
+            old_packages = [p.lower() for p in packages]
+            self.sync_package_state(old_packages, new_packages)
+        else:
+            logger.info("No admin settings changed.")
+
+    def sync_package_state(self, old_packages, new_packages):
+        """
+        Given the state of the old third party packages, compared to the new
+        third party packages, ensure that pip uninstalls and installs the
+        packages so the currently available third party packages reflects the
+        new state.
+        """
+        old = set(old_packages)
+        new = set(new_packages)
+        logger.info('Synchronize package states...')
+        logger.info('Old: {}'.format(old))
+        logger.info('New: {}'.format(new))
+        to_remove = old.difference(new)
+        to_add = new.difference(old)
+        if to_remove or to_add:
+            logger.info('To add: {}'.format(to_add))
+            logger.info('To remove: {}'.format(to_remove))
+            logger.info('Site packages: {}'.format(MODULE_DIR))
+            self._view.sync_packages(to_remove, to_add, MODULE_DIR)
 
     def select_mode(self, event=None):
         """
@@ -1142,6 +1204,8 @@ class Editor:
         button_bar.connect("zoom-out", self.zoom_out, "Ctrl+-")
         button_bar.connect("theme", self.toggle_theme, "F1")
         button_bar.connect("check", self.check_code, "F2")
+        if sys.version_info[:2] >= (3, 6):
+            button_bar.connect("tidy", self.tidy_code, "F10")
         button_bar.connect("help", self.show_help, "Ctrl+H")
         button_bar.connect("quit", self.quit, "Ctrl+Q")
         self._view.status_bar.set_mode(mode)
@@ -1349,3 +1413,34 @@ class Editor:
         Ensure all highlighted lines are toggled between comments/uncommented.
         """
         self._view.toggle_comments()
+
+    def tidy_code(self):
+        """
+        Prettify code with Black.
+        """
+        tab = self._view.current_tab
+        if not tab or sys.version_info[:2] < (3, 6):
+            return
+
+        from black import format_str, FileMode
+        try:
+            source_code = tab.text()
+            logger.info('Tidy code.')
+            logger.info(source_code)
+            tidy_code = format_str(source_code, line_length=88,
+                                   mode=FileMode.PYTHON36)
+            # The following bypasses tab.setText which resets the undo history.
+            # Doing it this way means the user can use CTRL-Z to undo the
+            # reformatting from black.
+            tab.SendScintilla(tab.SCI_SETTEXT, tidy_code.encode('utf-8'))
+            self.show_status_message(_("Successfully cleaned the code. "
+                                       "Use CTRL-Z to undo."))
+        except Exception as ex:
+            # The user's code is problematic. Recover with a modal dialog
+            # containing a helpful message.
+            logger.error(ex)
+            message = _('Your code contains problems.')
+            information = _("These must be fixed before tidying will work. "
+                            "Please use the 'Check' button to highlight "
+                            "these problems.")
+            self._view.show_message(message, information)
