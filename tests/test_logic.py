@@ -1057,6 +1057,46 @@ def test_no_duplicate_load_python_file():
     editor_window.add_tab.assert_not_called()
 
 
+def test_no_duplicate_load_python_file_widget_file_no_longer_exists():
+    """
+    If the user specifies a file already loaded (but which no longer exists),
+    ensure this is detected, logged and Mu doesn't crash..! See:
+
+    https://github.com/mu-editor/mu/issues/774
+
+    for context.
+    """
+    brown_script = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'scripts',
+        'contains_brown.py'
+    )
+
+    editor_window = mock.MagicMock()
+    editor_window.show_message = mock.MagicMock()
+    editor_window.focus_tab = mock.MagicMock()
+    editor_window.add_tab = mock.MagicMock()
+
+    missing_tab = mock.MagicMock()
+    missing_tab.path = 'not_a_file.py'
+
+    editor_window.widgets = [missing_tab, ]
+
+    editor_window.current_tab.path = 'path'
+    # Create the "editor" that'll control the "window".
+    editor = mu.logic.Editor(view=editor_window)
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = '/fake/path'
+    editor.modes = {
+        'python': mock_mode,
+    }
+    with mock.patch('mu.logic.logger') as mock_logger:
+        editor._load(brown_script)
+        assert mock_logger.info.call_count == 3
+        log = mock_logger.info.call_args_list[1][0][0]
+        assert log == 'The file not_a_file.py no longer exists.'
+
+
 def test_load_other_file():
     """
     If the user specifies a file supported by a Mu mode (like a .hex file) then
@@ -1236,7 +1276,7 @@ def test_save_strips_trailing_spaces():
     with generate_python_file(test_text) as filepath:
         mu.logic.save_and_encode(test_text, filepath)
         with open(filepath) as f:
-            assert f.read() == stripped_text
+            assert f.read() == stripped_text + '\n'
 
 
 def test_load_error():
@@ -1682,26 +1722,10 @@ def test_show_help():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    qlocalesys = mock.MagicMock()
+    qlocalesys.name.return_value = 'en_GB'
     with mock.patch('mu.logic.webbrowser.open_new', return_value=None) as wb, \
-            mock.patch('mu.logic.locale.getdefaultlocale',
-                       return_value=('en_GB', 'UTF-8')):
-        ed.show_help()
-        version = '.'.join(__version__.split('.')[:2])
-        url = 'https://codewith.mu/en/help/{}'.format(version)
-        wb.assert_called_once_with(url)
-
-
-def test_show_help_exploding_getdefaultlocale():
-    """
-    Sometimes, on OSX the getdefaultlocale method causes a TypeError or
-    ValueError. Ensure when this happens, Mu defaults to 'en' as the language
-    code.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.webbrowser.open_new', return_value=None) as wb, \
-            mock.patch('mu.logic.locale.getdefaultlocale',
-                       side_effect=TypeError('Boom!')):
+            mock.patch('PyQt5.QtCore.QLocale.system', return_value=qlocalesys):
         ed.show_help()
         version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/en/help/{}'.format(version)
@@ -2825,7 +2849,7 @@ def test_write_newline_to_unix():
         with open(filepath, newline="") as f:
             text = f.read()
             assert text.count("\r\n") == 0
-            assert text.count("\n") == test_string.count("\r\n")
+            assert text.count("\n") == test_string.count("\r\n") + 1
 
 
 def test_write_newline_to_windows():
@@ -2838,7 +2862,7 @@ def test_write_newline_to_windows():
         with open(filepath, newline="") as f:
             text = f.read()
             assert len(re.findall("[^\r]\n", text)) == 0
-            assert text.count("\r\n") == test_string.count("\n")
+            assert text.count("\r\n") == test_string.count("\n") + 1
 
 
 #
@@ -2954,7 +2978,7 @@ def test_write_encoding_cookie_no_cookie():
         mu.logic.save_and_encode(test_string, filepath)
         with open(filepath, encoding=mu.logic.ENCODING) as f:
             for line in f:
-                assert line == test_string
+                assert line == test_string + '\n'
                 break
 
 
@@ -2969,7 +2993,7 @@ def test_write_encoding_cookie_existing_cookie():
         mu.logic.save_and_encode(test_string, filepath)
         with open(filepath, encoding=encoding) as f:
             assert next(f) == cookie
-            assert next(f) == UNICODE_TEST_STRING
+            assert next(f) == UNICODE_TEST_STRING + '\n'
 
 
 def test_write_invalid_codec():
@@ -2983,7 +3007,7 @@ def test_write_invalid_codec():
         mu.logic.save_and_encode(test_string, filepath)
         with open(filepath, encoding=mu.logic.ENCODING) as f:
             assert next(f) == cookie
-            assert next(f) == UNICODE_TEST_STRING
+            assert next(f) == UNICODE_TEST_STRING + '\n'
 
 
 def test_handle_open_file():

@@ -9,6 +9,8 @@ import re
 from PyQt5.QtCore import Qt, QMimeData, QUrl, QPointF
 from PyQt5.QtGui import QDropEvent
 
+import pytest
+
 
 def test_pythonlexer_keywords():
     """
@@ -416,7 +418,12 @@ def test_EditorPane_highlight_selected_matches_multi_word():
     assert ep.search_indicators['selection']['positions'] == []
 
 
-def test_EditorPane_highlight_selected_matches_with_match():
+@pytest.mark.parametrize('text, search_for', [
+    ("foo bar foo baz foo", "foo"),
+    ("résumé foo bar foo baz foo", "foo"),
+    ("résumé bar résumé baz résumé", "résumé"),
+])
+def test_EditorPane_highlight_selected_matches_with_match(text, search_for):
     """
     Ensure that if the current selection is a single word then it causes the
     expected search/highlight call.
@@ -424,9 +431,6 @@ def test_EditorPane_highlight_selected_matches_with_match():
     There appears to be no way to iterate over indicators within the editor.
     So we're using the search_indicators structure as a proxy
     """
-    text = "foo bar foo baz foo"
-    search_for = "foo"
-
     ep = mu.interface.editor.EditorPane(None, 'baz')
     ep.setText(text)
 

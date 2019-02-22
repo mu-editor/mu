@@ -33,9 +33,9 @@ import shutil
 import appdirs
 import site
 from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import QLocale
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
-from . import localedetect
 from mu.resources import path
 from mu.debugger.utils import is_breakpoint_line
 from mu import __version__
@@ -198,7 +198,8 @@ def save_and_encode(text, filepath, newline=os.linesep):
         encoding = ENCODING
 
     with open(filepath, "w", encoding=encoding, newline='') as f:
-        text_to_write = newline.join(l.rstrip(" ") for l in text.splitlines())
+        text_to_write = newline.join(l.rstrip(" ") for l in
+                                     text.splitlines()) + newline
         write_and_flush(f, text_to_write)
 
 
@@ -749,6 +750,15 @@ class Editor:
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
                 continue
+            # The widget could be for a file on a MicroPython device that
+            # has since been unplugged. We should ignore it and assume that
+            # folks understand this file is no longer available (there's
+            # nothing else we can do).
+            if not os.path.isfile(widget.path):
+                logger.info(
+                    'The file {} no longer exists.'.format(widget.path))
+                continue
+            # Check for duplication of open file.
             if os.path.samefile(path, widget.path):
                 logger.info('Script already open.')
                 msg = _('The file "{}" is already open.')
@@ -1032,7 +1042,7 @@ class Editor:
         """
         Display browser based help about Mu.
         """
-        language_code = localedetect.language_code()[:2]
+        language_code = QLocale.system().name()[:2]
         major_version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/{}/help/{}'.format(language_code,
                                                       major_version)

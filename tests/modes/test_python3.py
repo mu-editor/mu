@@ -181,16 +181,15 @@ def test_python_run_script():
     editor = mock.MagicMock()
     editor.envars = [['name', 'value']]
     view = mock.MagicMock()
-    view.current_tab.path = '/foo'
+    view.current_tab.path = '/foo/bar'
     view.current_tab.isModified.return_value = True
     view.current_tab.text = mock.MagicMock(return_value="abc")
     mock_runner = mock.MagicMock()
     view.add_python3_runner.return_value = mock_runner
     pm = PythonMode(editor, view)
-    pm.workspace_dir = mock.MagicMock(return_value='/bar')
     pm.run_script()
     editor.save_tab_to_file.assert_called_once_with(view.current_tab)
-    view.add_python3_runner.assert_called_once_with('/foo', '/bar',
+    view.add_python3_runner.assert_called_once_with('/foo/bar', '/foo',
                                                     interactive=True,
                                                     envars=editor.envars)
     mock_runner.process.waitForStarted.assert_called_once_with()

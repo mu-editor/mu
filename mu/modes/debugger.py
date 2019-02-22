@@ -109,8 +109,9 @@ class DebugMode(BaseMode):
             logger.debug(tab.text())
             self.set_buttons(modes=False)
             envars = self.editor.envars
+            cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(tab.path,
-                                                       self.workspace_dir(),
+                                                       cwd,
                                                        debugger=True,
                                                        envars=envars)
             self.runner.process.waitForStarted()
