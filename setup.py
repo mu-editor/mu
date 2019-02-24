@@ -18,20 +18,24 @@ with open(base_dir / 'README.rst') as f:
 with open(base_dir / 'CHANGES.rst') as f:
     changes = f.read()
 
-install_requires = ['pycodestyle==2.4.0', 'pyflakes==2.0.0',
-                    'pyserial==3.4', 'pyqt5==5.11.3', 'qscintilla==2.10.8',
-                    'qtconsole==4.3.1', 'matplotlib==2.2.2',
-                    'pgzero==1.2', 'PyQtChart==5.11.3', 'appdirs>=1.4.3',
-                    'gpiozero>=1.4.1', 'guizero>=0.5.2',
-                    'pigpio>=1.40.post1', 'Pillow>=5.2.0',
-                    'requests>=2.19.1', 'semver>=2.8.0', 'nudatus>=0.0.3',
-                    "black>=18.9b0; python_version > '3.5'"]
 
-# Add environmental marker for packages not available for ARM in PyPI/piwheels
-arm_exclude = ('pyqt5', 'qscintilla', 'PyQtChart')
-install_requires = ['{}; "arm" not in platform_machine'.format(req)
-                    if req.startswith(arm_exclude) else req
-                    for req in install_requires]
+install_requires = [
+    'pyqt5==5.11.3;"arm" not in platform_machine',
+    'qscintilla==2.10.8;"arm" not in platform_machine',
+    'PyQtChart==5.11.3;"arm" not in platform_machine',
+    'pycodestyle==2.4.0',
+    'pyflakes==2.0.0',
+    'pyserial==3.4',
+    'qtconsole==4.3.1',
+    'pgzero==1.2',
+    'appdirs>=1.4.3',
+    'gpiozero>=1.4.1',
+    'guizero>=0.5.2',
+    'pigpio>=1.40.post1',
+    'semver>=2.8.0',
+    'nudatus>=0.0.3',
+    'black>=18.9b0;python_version > "3.5"',
+]
 
 
 setup(
