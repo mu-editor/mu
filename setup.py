@@ -1,13 +1,21 @@
+import pathlib
 from setuptools import setup
-from mu import __version__
 
 
-with open('README.rst') as f:
+base_dir = pathlib.Path(__file__).parent
+
+
+about = {}
+with open(base_dir / 'mu' / '__about__.py') as f:
+    exec(f.read(), about)
+
+with open(base_dir / 'README.rst') as f:
     readme = f.read()
     # Replace the logo URL in the README with something that works in PyPI
     logo_url = 'https://mu.readthedocs.io/en/latest/_images/logo.png'
     readme = readme.replace('docs/logo.png', logo_url)
-with open('CHANGES.rst') as f:
+
+with open(base_dir / 'CHANGES.rst') as f:
     changes = f.read()
 
 install_requires = ['pycodestyle==2.4.0', 'pyflakes==2.0.0',
@@ -27,14 +35,14 @@ install_requires = ['{}; "arm" not in platform_machine'.format(req)
 
 
 setup(
-    name='mu-editor',
-    version=__version__,
-    description='A simple Python editor for beginner programmers.',
+    name=about['__title__'],
+    version=about['__version__'],
+    description=about['__description__'],
     long_description='{}\n\n{}'.format(readme, changes),
-    author='Nicholas H.Tollervey',
-    author_email='ntoll@ntoll.org',
-    url='https://github.com/mu-editor/mu',
-    license='GPL3',
+    author=about['__author__'],
+    author_email=about['__email__'],
+    url=about['__url__'],
+    license=about['__license__'],
     packages=['mu', 'mu.contrib', 'mu.resources', 'mu.modes', 'mu.debugger',
               'mu.interface', 'mu.modes.api', ],
     install_requires=install_requires,
