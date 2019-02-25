@@ -1,21 +1,21 @@
-import pathlib
+import os
 from setuptools import setup
 
 
-base_dir = pathlib.Path(__file__).parent
+base_dir = os.path.dirname(__file__)
 
 
 about = {}
-with open(base_dir / 'mu' / '__about__.py') as f:
+with open(os.path.join(base_dir, 'mu', '__about__.py')) as f:
     exec(f.read(), about)
 
-with open(base_dir / 'README.rst') as f:
+with open(os.path.join(base_dir, 'README.rst')) as f:
     readme = f.read()
     # Replace the logo URL in the README with something that works in PyPI
     logo_url = 'https://mu.readthedocs.io/en/latest/_images/logo.png'
     readme = readme.replace('docs/logo.png', logo_url)
 
-with open(base_dir / 'CHANGES.rst') as f:
+with open(os.path.join(base_dir, 'CHANGES.rst')) as f:
     changes = f.read()
 
 
