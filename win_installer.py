@@ -67,7 +67,7 @@ bitness={bitness}
 format=bundled
 
 [Include]
-pypi_wheels= 
+pypi_wheels=
     {pypi_wheels}
 
 packages=
@@ -120,24 +120,21 @@ def create_packaging_venv(target_directory, name='mu-packaging-venv'):
     return os.path.join(fullpath, 'Scripts', 'python.exe')
 
 
-def install_mu(python_executable, repo_root):
+def install_mu(python, repo_root):
     """
     """
-    print(f'Installing mu with {python_executable}...')
-    subprocess.run([python_executable, '-m', 'pip', 'install', repo_root])
+    print(f'Installing mu with {python}...')
+    subprocess.run([python, '-m', 'pip', 'install', repo_root])
 
 
-def pip_freeze(python_executable, exclude, encoding):
+def pip_freeze(python, encoding):
     """
     Returns the "pip freeze" output as a list of strings.
     """
     print('Getting frozen requirements...')
-    output = subprocess.check_output([python_executable, '-m', 'pip', 'freeze', '--all'])
+    output = subprocess.check_output([python, '-m', 'pip', 'freeze', '--all'])
     text = output.decode(encoding)
-    return [
-        line for line in text.splitlines()
-        if line.partition('==')[0] != exclude
-    ]
+    return text.splitlines()
 
 
 def about_dict(repo_root):
@@ -205,15 +202,18 @@ def run(bitness, repo_root):
         mu_package_name = mu_about['__title__']
         mu_version = mu_about['__version__']
 
-        python_exec = create_packaging_venv(work_dir)
-        install_mu(python_exec, repo_root)
-
-        requirements = pip_freeze(python_exec, exclude=mu_package_name, encoding='latin1')
-        wheels = wheels_in(requirements)
-        packages = packages_from(requirements, wheels)
-
         icon_file = os.path.join(repo_root, 'package', 'icons', 'win_icon.ico')
         license_file = os.path.join(repo_root, 'LICENSE')
+
+        venv_python = create_packaging_venv(work_dir)
+        install_mu(venv_python, repo_root)
+        requirements = [
+            # All in pip freeze except the Mu package itself.
+            line for line in pip_freeze(venv_python, encoding='latin1')
+            if line.partition('==')[0] != mu_package_name
+        ]
+        wheels = wheels_in(requirements)
+        packages = packages_from(requirements, wheels)
 
         installer_name = f'{mu_package_name}_{mu_version}_win{bitness}.exe'
 
@@ -236,10 +236,10 @@ def run(bitness, repo_root):
         unzip_file(filename, work_dir)
 
         print('Installing pynsist.')
-        subprocess.run([python_exec, '-m', 'pip', 'install', 'pynsist'])
+        subprocess.run([venv_python, '-m', 'pip', 'install', 'pynsist'])
 
         print('Running pynsist')
-        subprocess.run([python_exec, '-m', 'nsist', pynsist_cfg_filename])
+        subprocess.run([venv_python, '-m', 'nsist', pynsist_cfg_filename])
 
         print('Copying installer file to the current working directory.')
         shutil.copy(
@@ -253,7 +253,7 @@ def run(bitness, repo_root):
 if __name__ == '__main__':
     if len(sys.argv) != 3:
         sys.exit('Supply bitness (32 or 64) and path to setup.py.')
-        
+
     bitness, setup_py_path = sys.argv[1:]
     if bitness not in ASSETS:
         sys.exit(f'Invalid bitness {bitness}: use 32 or 64.')
