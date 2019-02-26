@@ -38,6 +38,14 @@ install_requires = [
 ]
 
 
+extras_require = {
+    'package': [
+        'requests==2.21.0;platform_system == "Windows"',
+        'yarg==0.1.9;platform_system == "Windows"',
+    ],
+}
+
+
 setup(
     name=about['__title__'],
     version=about['__version__'],
@@ -50,6 +58,7 @@ setup(
     packages=['mu', 'mu.contrib', 'mu.resources', 'mu.modes', 'mu.debugger',
               'mu.interface', 'mu.modes.api', ],
     install_requires=install_requires,
+    extras_require=extras_require,
     include_package_data=True,
     zip_safe=False,
     classifiers=[
