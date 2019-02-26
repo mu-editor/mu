@@ -73,7 +73,11 @@ format=bundled
 pypi_wheels= 
     {pypi_wheels}
 
-{packages_optional}
+packages=
+    tkinter
+    _tkinter
+    turtle
+    {packages}
 
 files=lib
 
@@ -212,12 +216,6 @@ def run(bitness, repo_root):
         wheels = wheels_in(requirements)
         packages = packages_from(requirements, wheels)
 
-        if packages:
-            packages_payload = '\n    '.join(packages)
-            packages_optional = 'packages=\n    {}'.format(packages_payload)
-        else:
-            packages_optional = ''
-
         icon_file = os.path.join(repo_root, 'package', 'icons', 'win_icon.ico')
         license_file = os.path.join(repo_root, 'LICENSE')
 
@@ -225,13 +223,13 @@ def run(bitness, repo_root):
 
         pynsist_cfg_filename = create_pynsist_cfg_file(
             encoding='latin1',
-            installer_name=installer_name,
             version=mu_version,
             icon_file=icon_file,
             license_file=license_file,
             bitness=bitness,
             pypi_wheels='\n    '.join(wheels),
-            packages_optional=packages_optional,
+            packages='\n    '.join(packages),
+            installer_name=installer_name,
         )
 
         print('Downloading tkinter for {}bit platform.'.format(bitness))
