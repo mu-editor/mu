@@ -2,10 +2,21 @@
 A script to coordinate the building of executable Windows installers using
 the pynsist command.
 
-The modus operandi is essentially the following:
+Due to the need of having Mu's setup.py be the authoritative reference for
+its third party package dependencies, the modus operandi is essentially the
+following, all done under a temporary work directory:
 
 * Work out if 32/64 bit build is required.
+* Create an isolated virtual environment.
+* pip install mu into it
+* Capture pip freeze output to identify pinned dependencies.
+* Determine which of those are available as PyPI wheels.
+* Generate a pynsist configuration file based on a builtin template:
+  * Fill in {version} from Mu's __about__.py
+  * Fill in {pypy_wheels} per the previous step list.
+  * Fill in {packages} with the non-available PyPI wheels, if any.
 * Download the necessary tkinter based assets for the build.
+* Install pynsist into the virtual environment.
 * Kick off pynsist.
 
 Copyright (c) 2018 Nicholas H.Tollervey.
@@ -24,6 +35,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import glob
 import os
 import platform
 import shutil
@@ -34,6 +46,7 @@ import textwrap
 import zipfile
 
 import requests
+import yarg
 
 
 PYNSIST_CFG_TEMPLATE = """
@@ -58,9 +71,14 @@ format=bundled
 
 [Include]
 pypi_wheels= 
-{pypi_wheels}
+    {pypi_wheels}
+
+{packages_optional}
 
 files=lib
+
+[Build]
+installer_name={installer_name}
 """
 
 
@@ -92,45 +110,71 @@ def unzip_file(filename):
         z.extractall()
 
 
-def frozen_requirements(repo_root, encoding, venv_name='mu-venv'):
+def create_packaging_venv(name='mu-packaging-venv'):
     """
-    Returns the "pip freeze" output as a string after setting up
-    a temporary virtual environment where the Mu is installed.
     """
-    print(f'Creating {venv_name} virtual environment...')
-    subprocess.run([sys.executable, '-m', 'venv', venv_name])
-    print(f'Installing mu into {venv_name}...')
-    venv_python = os.path.join(venv_name, 'Scripts', 'python.exe')
-    subprocess.run([venv_python, '-m', 'pip', 'install', repo_root])
+    print(f'Creating {name} virtual environment...')
+    subprocess.run([sys.executable, '-m', 'venv', name])
+    return os.path.join(name, 'Scripts', 'python.exe')
+
+
+def install_mu(python_executable, repo_root):
+    """
+    """
+    print(f'Installing mu with {python_executable}...')
+    subprocess.run([python_executable, '-m', 'pip', 'install', repo_root])
+
+
+def pip_freeze(python_executable, exclude, encoding):
+    """
+    Returns the "pip freeze" output as a list of strings.
+    """
     print('Getting frozen requirements...')
-    result = subprocess.check_output([venv_python, '-m', 'pip', 'freeze'])
-    result = result.decode(encoding)
-    print(f'Removing {venv_name} virtual environment...')
-    shutil.rmtree(venv_name, ignore_errors=True)
-    return result
+    output = subprocess.check_output([python_executable, '-m', 'pip', 'freeze', '--all'])
+    text = output.decode(encoding)
+    return [
+        line for line in text.splitlines()
+        if line.partition('==')[0] != exclude
+    ]
 
 
-def platform_bitness():
+def about_dict(repo_root):
     """
-    Returns the Python executable bitness, as a string: '32' or '64'.
-    Raises a RuntimeError if the platform module reports differently.
-    """
-    bitness, _ = platform.architecture()
-    result = bitness[:2]
-    if result not in ('32', '64'):
-        raise RuntimeError(f'Unsupported platform.architecture: {bitness}')
-    print('Python bitness:', result)
-    return result
-
-
-def mu_version(repo_root):
-    """
-    Returns the Mu version string as declared in mu/__about__.py.
+    Returns the Mu about dict with keys from the variables in mu/__about__.py.
     """
     about = {}
     with open(os.path.join(repo_root, 'mu', '__about__.py')) as f:
         exec(f.read(), about)
-    return about['__version__']
+    return about
+
+
+def wheels_in(requirements):
+    """
+    TODO: WRITE ME!
+    """
+    print('Checking for wheel availability at PyPI...')
+    wheels = []
+    for requirement in requirements:
+        name, _, version = requirement.partition('==')
+        print(f'  - {requirement}: ', end='')
+        package = yarg.get(name)
+        releases = package.release(version)
+        if any(r.package_type == 'wheel' for r in releases):
+            wheels.append(requirement)
+            feedback = 'ok'
+        else:
+            feedback = 'missing'
+        print(feedback)
+    return wheels
+
+
+def packages_from(requirements, wheels):
+    """
+    """
+    rset = set(requirements)
+    wset = set(wheels)
+    pset = rset - wset
+    return [p.partition('==')[0] for p in pset]
 
 
 def create_pynsist_cfg_file(encoding, **kw):
@@ -146,7 +190,7 @@ def create_pynsist_cfg_file(encoding, **kw):
     return filename
 
 
-def run(repo_root):
+def run(bitness, repo_root):
     """
     TODO: REVIEW THIS!
     Given a certain bitness, coordinate the downloading and unzipping of the
@@ -154,21 +198,40 @@ def run(repo_root):
     """
     starting_cwd = os.getcwd()
     with tempfile.TemporaryDirectory(suffix='.mu-pynsist') as work_dir:
-        print('Working directory:', work_dir)
+        print('Changing working directory to', work_dir)
         os.chdir(work_dir)
+
+        mu_about = about_dict(repo_root)
+        mu_package_name = mu_about['__title__']
+        mu_version = mu_about['__version__']
+
+        python_exec = create_packaging_venv()
+        install_mu(python_exec, repo_root)
+
+        requirements = pip_freeze(python_exec, exclude=mu_package_name, encoding='latin1')
+        wheels = wheels_in(requirements)
+        packages = packages_from(requirements, wheels)
+
+        if packages:
+            packages_payload = '\n    '.join(packages)
+            packages_optional = 'packages=\n    {}'.format(packages_payload)
+        else:
+            packages_optional = ''
 
         icon_file = os.path.join(repo_root, 'package', 'icons', 'win_icon.ico')
         license_file = os.path.join(repo_root, 'LICENSE')
-        bitness = platform_bitness()
-        requirements = frozen_requirements(repo_root, encoding='latin1')
+
+        installer_name = f'{mu_package_name}_{mu_version}_win{bitness}.exe'
 
         pynsist_cfg_filename = create_pynsist_cfg_file(
             encoding='latin1',
-            version=mu_version(repo_root),
+            installer_name=installer_name,
+            version=mu_version,
             icon_file=icon_file,
             license_file=license_file,
             bitness=bitness,
-            pypi_wheels=textwrap.indent(requirements, ' '*4),
+            pypi_wheels='\n    '.join(wheels),
+            packages_optional=packages_optional,
         )
 
         print('Downloading tkinter for {}bit platform.'.format(bitness))
@@ -177,17 +240,30 @@ def run(repo_root):
         print('Unzipping {}.'.format(filename))
         unzip_file(filename)
 
+        print('Installing pynsist.')
+        subprocess.run([python_exec, '-m', 'pip', 'install', 'pynsist'])
+
         print('Running pynsist')
-        subprocess.call(['pynsist', pynsist_cfg_filename])
+        subprocess.run([python_exec, '-m', 'nsist', pynsist_cfg_filename])
 
-        print('DONE!!!')
-        import time; time.sleep(60)
-
+        shutil.copy(
+            os.path.join('build', 'nsis', installer_name),
+            starting_cwd,
+        )
         os.chdir(starting_cwd)
+
+    print(f'Completed. Installer file is {installer_name}.')
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2 or not sys.argv[1].endswith('setup.py'):
-        sys.exit('Supply the setup.py file as an argument, please.')
-    repo_root = os.path.abspath(os.path.dirname(sys.argv[1]))
-    run(repo_root)
+    if len(sys.argv) != 3:
+        sys.exit('Supply bitness (32 or 64) and path to setup.py.')
+        
+    bitness, setup_py_path = sys.argv[1:]
+    if bitness not in ASSETS:
+        sys.exit(f'Invalid bitness {bitness}: use 32 or 64.')
+    if not setup_py_path.endswith('setup.py'):
+        sys.exit(f'Invalid path to setup.py: {setup_py_path}.')
+
+    repo_root = os.path.abspath(os.path.dirname(setup_py_path))
+    run(bitness, repo_root)
