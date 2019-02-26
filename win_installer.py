@@ -35,14 +35,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import glob
 import os
-import platform
 import shutil
 import subprocess
 import sys
 import tempfile
-import textwrap
 import zipfile
 
 import requests
