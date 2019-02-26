@@ -91,11 +91,11 @@ translateall:
 
 win32: check
 	@echo "\nBuilding 32bit Windows installer."
-	python win_installer.py 32
+	python win_installer.py 32 setup.py
 
 win64: check
 	@echo "\nBuilding 64bit Windows installer."
-	python win_installer.py 64
+	python win_installer.py 64 setup.py
 
 video: clean
 	@echo "\nFetching contributor avatars."
