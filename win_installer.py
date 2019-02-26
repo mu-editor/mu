@@ -8,7 +8,7 @@ following, all done under a temporary work directory:
 
 * Work out if 32/64 bit build is required.
 * Create an isolated virtual environment.
-* pip install mu into it
+* pip install mu into it.
 * Capture pip freeze --all output to identify pinned dependencies.
 * Determine which of those are available as PyPI wheels.
 * Generate a pynsist configuration file based on a builtin template:
@@ -48,7 +48,13 @@ import requests
 import yarg
 
 
-# The pynsist configuration file template that will be used. Of note:
+# The pynsist requirement spec that will be used to install pynsist in
+# the temporary packaging virtual environment.
+
+PYNSIST_REQ = 'pynsist==2.3'
+
+# The pynsist configuration file template that will be used. Of note,
+# with regards to pynsist dependency collection and preparation:
 # - {pypi_wheels} will be downloaded by pynsist from PyPI.
 # - {packages} will be copied by pynsist from the current Python env.
 
@@ -89,11 +95,11 @@ installer_name={installer_name}
 """
 
 
-# URLs for tkinter assets not included in Python's embedable distribution,
-# that we want to bundle with Mu.
+# URLs for tkinter assets, not included in Python's embeddable distribution
+# pynsist fetches and uses, that we want to bundle with Mu.
 
 URL = 'https://github.com/mu-editor/mu_tkinter/releases/download/'
-TKINTER_ASSETS = {
+TKINTER_ASSETS_URLS = {
     '32': URL + '0.3/pynsist_tkinter_3.6_32bit.zip',
     '64': URL + '0.3/pynsist_tkinter_3.6_64bit.zip',
 }
@@ -102,7 +108,7 @@ TKINTER_ASSETS = {
 def create_packaging_venv(target_directory, name='mu-packaging-venv'):
     """
     Creates a Python virtual environment in the target_directry, returning
-    the path to the Python executable.
+    the path to the newly created environment's Python executable.
     """
     fullpath = os.path.join(target_directory, name)
     subprocess.run([sys.executable, '-m', 'venv', fullpath])
@@ -155,7 +161,7 @@ def packages_from(requirements, wheels):
     """
     Returns a list of the entires in requirements that aren't found in
     wheels (both assumed to be lists/iterables of strings formatted like
-    "name==version")
+    "name==version").
     """
     packages = set(requirements) - set(wheels)
     return [p.partition('==')[0] for p in packages]
@@ -163,7 +169,11 @@ def packages_from(requirements, wheels):
 
 def create_pynsist_cfg(python, repo_root, filename, encoding='latin1'):
     """
-    TODO: WRITE ME!
+    Creates a pynsist configuration file from the PYNSIST_CFG_TEMPLATE
+    built-in template. Determines dependencies by running pip freeze,
+    which are then split between those distributed as PyPI wheels and
+    others. Returns the name of the resulting installer executable, as
+    set into the pynsist configuration file.
     """
     mu_about = about_dict(repo_root)
     mu_package_name = mu_about['__title__']
@@ -193,15 +203,16 @@ def create_pynsist_cfg(python, repo_root, filename, encoding='latin1'):
     )
     with open(filename, 'wt', encoding=encoding) as f:
         f.write(pynsist_cfg_payload)
-    print(f'Wrote pynsist configurationg file {filename}:')
+    print(f'Wrote pynsist configuration file {filename}. Contents:')
     print(pynsist_cfg_payload)
+    print('End of pynsist configuration file.')
 
     return installer_exe
 
 
 def download_file(url, target_directory):
     """
-    Download the URL and return the filename.
+    Download the URL to the target_directory and return the filename.
     """
     local_filename = os.path.join(target_directory, url.split('/')[-1])
     r = requests.get(url, stream=True)
@@ -226,37 +237,39 @@ def run(bitness, repo_root):
     a pynsist configuration file (locking the dependencies set in setup.py),
     download and extract the tkinter related assets, and run pynsist.
     """
-    with tempfile.TemporaryDirectory(suffix='.mu-pynsist') as work_dir:
+    with tempfile.TemporaryDirectory(prefix='mu-pynsist-') as work_dir:
         print('Temporary working directory at', work_dir)
 
-        print(f'Creating packaging virtual environment.')
+        print(f'Creating the packaging virtual environment.')
         venv_python = create_packaging_venv(work_dir)
 
         print(f'Installing mu with {venv_python}.')
         subprocess.run([venv_python, '-m', 'pip', 'install', repo_root])
 
         pynsist_cfg = os.path.join(work_dir, 'pynsist.cfg')
+        print(f'Creating pynsist configuration file {pynsist_cfg}.')
         installer_exe = create_pynsist_cfg(venv_python, repo_root, pynsist_cfg)
 
-        print(f'Downloading tkinter for {bitness}bit platform.')
-        filename = download_file(TKINTER_ASSETS[bitness], work_dir)
+        url = TKINTER_ASSETS_URLS[bitness]
+        print(f'Downloading {bitness}bit tkinter assets from {url}.')
+        filename = download_file(url, work_dir)
 
-        print(f'Unzipping {filename} to {work_dir}.')
+        print(f'Unzipping tkinter assets to {work_dir}.')
         unzip_file(filename, work_dir)
 
         print('Installing pynsist.')
-        subprocess.run([venv_python, '-m', 'pip', 'install', 'pynsist'])
+        subprocess.run([venv_python, '-m', 'pip', 'install', PYNSIST_REQ])
 
         print('Running pynsist')
         subprocess.run([venv_python, '-m', 'nsist', pynsist_cfg])
 
-        print('Copying installer file to the current working directory.')
+        destination_dir = os.path.join(repo_root, 'dist')
+        print(f'Copying installer file to {destination_dir}.')
+        os.makedirs(destination_dir, exist_ok=True)
         shutil.copy(
             os.path.join(work_dir, 'build', 'nsis', installer_exe),
-            '.',
+            destination_dir,
         )
-
-    print(f'Completed. Installer file is {installer_exe}.')
 
 
 if __name__ == '__main__':
@@ -264,7 +277,7 @@ if __name__ == '__main__':
         sys.exit('Supply bitness (32 or 64) and path to setup.py.')
 
     bitness, setup_py_path = sys.argv[1:]
-    if bitness not in TKINTER_ASSETS:
+    if bitness not in TKINTER_ASSETS_URLS:
         sys.exit(f'Unsupported bitness {bitness}: use 32 or 64.')
     if not setup_py_path.endswith('setup.py'):
         sys.exit(f'Invalid path to setup.py: {setup_py_path}.')
