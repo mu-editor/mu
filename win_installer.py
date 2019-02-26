@@ -90,11 +90,11 @@ ASSETS = {
 }
 
 
-def download_file(url):
+def download_file(url, target_directory):
     """
     Download the URL and return the filename.
     """
-    local_filename = url.split('/')[-1]
+    local_filename = os.path.join(target_directory, url.split('/')[-1])
     r = requests.get(url, stream=True)
     with open(local_filename, 'wb') as f:
         for chunk in r.iter_content(chunk_size=1024):
@@ -103,20 +103,21 @@ def download_file(url):
     return local_filename
 
 
-def unzip_file(filename):
+def unzip_file(filename, target_directory):
     """
-    Given a filename, unzip it into the current working directory.
+    Given a filename, unzip it into the given target_directory.
     """
     with zipfile.ZipFile(filename) as z:
-        z.extractall()
+        z.extractall(target_directory)
 
 
-def create_packaging_venv(name='mu-packaging-venv'):
+def create_packaging_venv(target_directory, name='mu-packaging-venv'):
     """
     """
     print(f'Creating {name} virtual environment...')
-    subprocess.run([sys.executable, '-m', 'venv', name])
-    return os.path.join(name, 'Scripts', 'python.exe')
+    fullpath = os.path.join(target_directory, name)
+    subprocess.run([sys.executable, '-m', 'venv', fullpath])
+    return os.path.join(fullpath, 'Scripts', 'python.exe')
 
 
 def install_mu(python_executable, repo_root):
@@ -178,11 +179,11 @@ def packages_from(requirements, wheels):
     return [p.partition('==')[0] for p in pset]
 
 
-def create_pynsist_cfg_file(encoding, **kw):
+def create_pynsist_cfg_file(target_directory, encoding, **kw):
     """
     TODO: WRITE ME!
     """
-    filename = 'pynsist.cfg'
+    filename = os.path.join(target_directory, 'pynsist.cfg')
     pynsist_cfg_payload = PYNSIST_CFG_TEMPLATE.format(**kw)
     with open(filename, 'wt', encoding=encoding) as f:
         f.write(pynsist_cfg_payload)
@@ -197,16 +198,14 @@ def run(bitness, repo_root):
     Given a certain bitness, coordinate the downloading and unzipping of the
     appropriate assets.
     """
-    starting_cwd = os.getcwd()
     with tempfile.TemporaryDirectory(suffix='.mu-pynsist') as work_dir:
-        print('Changing working directory to', work_dir)
-        os.chdir(work_dir)
+        print('Temporary working directory at', work_dir)
 
         mu_about = about_dict(repo_root)
         mu_package_name = mu_about['__title__']
         mu_version = mu_about['__version__']
 
-        python_exec = create_packaging_venv()
+        python_exec = create_packaging_venv(work_dir)
         install_mu(python_exec, repo_root)
 
         requirements = pip_freeze(python_exec, exclude=mu_package_name, encoding='latin1')
@@ -219,6 +218,7 @@ def run(bitness, repo_root):
         installer_name = f'{mu_package_name}_{mu_version}_win{bitness}.exe'
 
         pynsist_cfg_filename = create_pynsist_cfg_file(
+            target_directory=work_dir,
             encoding='latin1',
             version=mu_version,
             icon_file=icon_file,
@@ -230,10 +230,10 @@ def run(bitness, repo_root):
         )
 
         print('Downloading tkinter for {}bit platform.'.format(bitness))
-        filename = download_file(ASSETS[bitness])
+        filename = download_file(ASSETS[bitness], work_dir)
 
         print('Unzipping {}.'.format(filename))
-        unzip_file(filename)
+        unzip_file(filename, work_dir)
 
         print('Installing pynsist.')
         subprocess.run([python_exec, '-m', 'pip', 'install', 'pynsist'])
@@ -241,11 +241,11 @@ def run(bitness, repo_root):
         print('Running pynsist')
         subprocess.run([python_exec, '-m', 'nsist', pynsist_cfg_filename])
 
+        print('Copying installer file to the current working directory.')
         shutil.copy(
-            os.path.join('build', 'nsis', installer_name),
-            starting_cwd,
+            os.path.join(work_dir, 'build', 'nsis', installer_name),
+            '.',
         )
-        os.chdir(starting_cwd)
 
     print(f'Completed. Installer file is {installer_name}.')
 
