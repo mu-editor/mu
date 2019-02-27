@@ -39,16 +39,47 @@ install_requires = [
 
 
 extras_require = {
+    'tests': [
+        'pytest',
+        'pytest-cov',
+        'pytest-random-order>=1.0.0',
+        'coverage',
+    ],
+    'docs': [
+        'sphinx',
+    ],
     'package': [
+        # Wheel building and PyPI uploading
+        'wheel',
+        'twine',
+        # Windows native packaging (see win_installer.py).
         'requests==2.21.0;platform_system == "Windows"',
         'yarg==0.1.9;platform_system == "Windows"',
+        # macOS native packaging (see Makefile)
         # TODO: Uncomment and pin once version > 0.2.8 is released to PyPI.
         # 'briefcase==X.X.X;platform_system == "Darwin"',
         # NOTE:
         # Until then macOS packaging needs briefcase from GitHub master:
         # pip install https://github.com/pybee/briefcase/archive/master.tar.gz
     ],
+    'utils': [
+        'scrapy',
+        'beautifulsoup4',
+        'requests',
+    ],
 }
+
+extras_require['dev'] = (
+    extras_require['tests'] +
+    extras_require['docs'] +
+    extras_require['package']
+)
+
+extras_require['all'] = list({
+    req
+    for extra, reqs in extras_require.items()
+    for req in reqs
+})
 
 
 setup(
