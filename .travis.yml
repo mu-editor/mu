@@ -49,14 +49,11 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then source venv/bin/activate; fi
 
 install:
-  # Install Mu dependencies
-  - pip install -r requirements.txt
-  # Install packager for OSX
-  - pip install briefcase
-  # Install disk image maker for OSX
-  - pip install dmgbuild 
-  # Install helpful pytest plug-in
-  - pip install pytest-faulthandler
+  # Install Mu and its dependencies
+  - pip install .[dev]
+  # TODO: Remove this once version > 0.2.8 is released to PyPI.
+  # TODO: Then update setup.py per the matching briefcase comment there.
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pip install https://github.com/pybee/briefcase/archive/master.tar.gz; fi
   # Check everything was correctly installed
   - pip freeze
 
@@ -68,8 +65,6 @@ script:
   - make clean
 
   # Package it for OSX
-  #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then echo "[install]" >> setup.cfg; echo "prefix=" >> setup.cfg; fi
-  #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo mkdir -p /lib/python3.6/site-packages/; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir dist; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then zip -r -X dist/mu-editor.zip macOS/mu-editor.app; fi

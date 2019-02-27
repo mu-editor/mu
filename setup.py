@@ -43,6 +43,7 @@ extras_require = {
         'pytest',
         'pytest-cov',
         'pytest-random-order>=1.0.0',
+        'pytest-faulthandler',
         'coverage',
     ],
     'docs': [
@@ -57,10 +58,8 @@ extras_require = {
         'yarg==0.1.9;platform_system == "Windows"',
         # macOS native packaging (see Makefile)
         # TODO: Uncomment and pin once version > 0.2.8 is released to PyPI.
+        # TODO: Remove the manual briefcase pip install in .travis.yml too.
         # 'briefcase==X.X.X;platform_system == "Darwin"',
-        # NOTE:
-        # Until then macOS packaging needs briefcase from GitHub master:
-        # pip install https://github.com/pybee/briefcase/archive/master.tar.gz
     ],
     'utils': [
         'scrapy',
