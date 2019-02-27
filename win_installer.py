@@ -65,7 +65,7 @@ name=Mu
 version={version}
 entry_point=mu.app:run
 icon={icon_file}
-publisher=Nicholas H.Tollervey
+publisher={publisher}
 license_file={license_file}
 
 [Command mu-debug]
@@ -182,6 +182,7 @@ def create_pynsist_cfg(python, repo_root, filename, encoding='latin1'):
     mu_about = about_dict(repo_root)
     mu_package_name = mu_about['__title__']
     mu_version = mu_about['__version__']
+    mu_author = mu_about['__author__']
 
     icon_file = os.path.join(repo_root, 'package', 'icons', 'win_icon.ico')
     license_file = os.path.join(repo_root, 'LICENSE')
@@ -200,6 +201,7 @@ def create_pynsist_cfg(python, repo_root, filename, encoding='latin1'):
         version=mu_version,
         icon_file=icon_file,
         license_file=license_file,
+        publisher=mu_author,
         bitness=bitness,
         pypi_wheels='\n    '.join(wheels),
         packages='\n    '.join(packages),
