@@ -19,6 +19,7 @@ all:
 	@echo "make translateall - as with translate but for all API strings."
 	@echo "make win32 - create a 32bit Windows installer for Mu."
 	@echo "make win64 - create a 64bit Windows installer for Mu."
+	@echo "make macos - create a macOS native application for Mu."
 	@echo "make video - create an mp4 video representing code commits.\n"
 
 clean:
@@ -96,6 +97,10 @@ win32: check
 win64: check
 	@echo "\nBuilding 64bit Windows installer."
 	python win_installer.py 64 setup.py
+
+macos: check
+	@echo "\nPackaging Mu into a macOS native application."
+	python setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz
 
 video: clean
 	@echo "\nFetching contributor avatars."
