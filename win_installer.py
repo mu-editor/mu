@@ -38,6 +38,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -127,11 +128,14 @@ def pip_freeze(python, encoding):
 
 def about_dict(repo_root):
     """
-    Returns the Mu about dict: keys are the variables in mu/__about__.py.
+    Returns the Mu about dict: keys are the __variables__ in mu/__init__.py.
     """
+    DUNDER_ASSIGN_RE = re.compile(r"""^__\w+__\s*=\s*['"].+['"]$""")
     about = {}
-    with open(os.path.join(repo_root, 'mu', '__about__.py')) as f:
-        exec(f.read(), about)
+    with open(os.path.join(repo_root, 'mu', '__init__.py')) as f:
+        for line in f:
+            if DUNDER_ASSIGN_RE.search(line):
+                exec(line, about)
     return about
 
 

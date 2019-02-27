@@ -1,13 +1,17 @@
 import os
+import re
 from setuptools import setup
 
 
 base_dir = os.path.dirname(__file__)
 
 
+DUNDER_ASSIGN_RE = re.compile(r"""^__\w+__\s*=\s*['"].+['"]$""")
 about = {}
-with open(os.path.join(base_dir, 'mu', '__about__.py')) as f:
-    exec(f.read(), about)
+with open(os.path.join(base_dir, 'mu', '__init__.py')) as f:
+    for line in f:
+        if DUNDER_ASSIGN_RE.search(line):
+            exec(line, about)
 
 with open(os.path.join(base_dir, 'README.rst')) as f:
     readme = f.read()
