@@ -275,7 +275,9 @@ def win32():
     """
     check()
     print("Building 32-bit Windows installer")
-    return subprocess.run(["python", "win_installer.py", "32", "setup.py"]).returncode
+    return subprocess.run([
+        "python", "win_installer.py", "32", "setup.py"
+    ]).returncode
 
 
 @export
@@ -284,7 +286,9 @@ def win64():
     """
     check()
     print("Building 64-bit Windows installer")
-    return subprocess.run(["python", "win_installer.py", "64", "setup.py"]).returncode
+    return subprocess.run([
+        "python", "win_installer.py", "64", "setup.py"
+    ]).returncode
 
 
 @export
