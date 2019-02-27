@@ -190,7 +190,7 @@ def create_pynsist_cfg(python, repo_root, filename, encoding='latin1'):
     wheels = pypi_wheels_in(requirements)
     packages = packages_from(requirements, wheels)
 
-    installer_exe = f'{mu_package_name}_{mu_version}_win{bitness}.exe'
+    installer_exe = f'{mu_package_name}_{bitness}bit.exe'
 
     pynsist_cfg_payload = PYNSIST_CFG_TEMPLATE.format(
         version=mu_version,
