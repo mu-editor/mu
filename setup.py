@@ -42,6 +42,11 @@ extras_require = {
     'package': [
         'requests==2.21.0;platform_system == "Windows"',
         'yarg==0.1.9;platform_system == "Windows"',
+        # TODO: Uncomment and pin once version > 0.2.8 is released to PyPI.
+        # 'briefcase==X.X.X;platform_system == "Darwin"',
+        # NOTE:
+        # Until then macOS packaging needs briefcase from GitHub master:
+        # pip install https://github.com/pybee/briefcase/archive/master.tar.gz
     ],
 }
 
