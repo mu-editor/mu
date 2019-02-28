@@ -149,7 +149,7 @@ def pypi_wheels_in(requirements):
     wheels = []
     for requirement in requirements:
         name, _, version = requirement.partition('==')
-        print(f'- {requirement}: ', end='')
+        print('-', requirement, end=' ')
         package = yarg.get(name)
         releases = package.release(version)
         if any(r.package_type == 'wheel' for r in releases):
@@ -195,7 +195,7 @@ def create_pynsist_cfg(python, repo_root, filename, encoding='latin1'):
     wheels = pypi_wheels_in(requirements)
     packages = packages_from(requirements, wheels)
 
-    installer_exe = f'{mu_package_name}_{bitness}bit.exe'
+    installer_exe = '{}_{}bit.exe'.format(mu_package_name, bitness)
 
     pynsist_cfg_payload = PYNSIST_CFG_TEMPLATE.format(
         version=mu_version,
@@ -209,7 +209,8 @@ def create_pynsist_cfg(python, repo_root, filename, encoding='latin1'):
     )
     with open(filename, 'wt', encoding=encoding) as f:
         f.write(pynsist_cfg_payload)
-    print(f'Wrote pynsist configuration file {filename}. Contents:')
+    print('Wrote pynsist configuration file', filename)
+    print('Contents:')
     print(pynsist_cfg_payload)
     print('End of pynsist configuration file.')
 
@@ -246,21 +247,21 @@ def run(bitness, repo_root):
     with tempfile.TemporaryDirectory(prefix='mu-pynsist-') as work_dir:
         print('Temporary working directory at', work_dir)
 
-        print(f'Creating the packaging virtual environment.')
+        print('Creating the packaging virtual environment.')
         venv_python = create_packaging_venv(work_dir)
 
-        print(f'Installing mu with {venv_python}.')
+        print('Installing mu with', venv_python)
         subprocess.run([venv_python, '-m', 'pip', 'install', repo_root])
 
         pynsist_cfg = os.path.join(work_dir, 'pynsist.cfg')
-        print(f'Creating pynsist configuration file {pynsist_cfg}.')
+        print('Creating pynsist configuration file', pynsist_cfg)
         installer_exe = create_pynsist_cfg(venv_python, repo_root, pynsist_cfg)
 
         url = TKINTER_ASSETS_URLS[bitness]
-        print(f'Downloading {bitness}bit tkinter assets from {url}.')
+        print('Downloading {}bit tkinter assets from {}.'.format(bitness, url))
         filename = download_file(url, work_dir)
 
-        print(f'Unzipping tkinter assets to {work_dir}.')
+        print('Unzipping tkinter assets to', work_dir)
         unzip_file(filename, work_dir)
 
         print('Installing pynsist.')
@@ -270,7 +271,7 @@ def run(bitness, repo_root):
         subprocess.run([venv_python, '-m', 'nsist', pynsist_cfg])
 
         destination_dir = os.path.join(repo_root, 'dist')
-        print(f'Copying installer file to {destination_dir}.')
+        print('Copying installer file to', destination_dir)
         os.makedirs(destination_dir, exist_ok=True)
         shutil.copy(
             os.path.join(work_dir, 'build', 'nsis', installer_exe),
@@ -284,9 +285,9 @@ if __name__ == '__main__':
 
     bitness, setup_py_path = sys.argv[1:]
     if bitness not in TKINTER_ASSETS_URLS:
-        sys.exit(f'Unsupported bitness {bitness}: use 32 or 64.')
+        sys.exit('Unsupported bitness {}: use 32 or 64.'.format(bitness))
     if not setup_py_path.endswith('setup.py'):
-        sys.exit(f'Invalid path to setup.py: {setup_py_path}.')
+        sys.exit('Invalid path to setup.py:', setup_py_path)
 
     repo_root = os.path.abspath(os.path.dirname(setup_py_path))
     run(bitness, repo_root)
