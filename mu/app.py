@@ -76,7 +76,7 @@ def setup_modes(editor, view):
         'python': PythonMode(editor, view),
         'adafruit': AdafruitMode(editor, view),
         'microbit': MicrobitMode(editor, view),
-        'esp8266': ESPMode(editor, view),
+        'esp': ESPMode(editor, view),
         'debugger': DebugMode(editor, view),
     }
 

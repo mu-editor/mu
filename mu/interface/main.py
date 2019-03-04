@@ -389,7 +389,7 @@ class Window(QMainWindow):
             self.serial.close()
             self.serial = None
 
-    def add_filesystem(self, home, file_manager):
+    def add_filesystem(self, home, file_manager, board_name="board"):
         """
         Adds the file system pane to the application.
         """
@@ -400,7 +400,7 @@ class Window(QMainWindow):
             # Bubble the signal up
             self.open_file.emit(file)
 
-        self.fs = QDockWidget(_('Filesystem on micro:bit'))
+        self.fs = QDockWidget(_('Filesystem on ') + board_name)
         self.fs.setWidget(self.fs_pane)
         self.fs.setFeatures(QDockWidget.DockWidgetMovable)
         self.fs.setAllowedAreas(Qt.BottomDockWidgetArea)
