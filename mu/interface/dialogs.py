@@ -21,7 +21,6 @@ import sys
 import logging
 import csv
 import shutil
-import platform
 from PyQt5.QtCore import QSize, QProcess, QTimer
 from PyQt5.QtWidgets import (QVBoxLayout, QListWidget, QLabel, QListWidgetItem,
                              QDialog, QDialogButtonBox, QPlainTextEdit,
