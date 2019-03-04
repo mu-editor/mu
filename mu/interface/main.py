@@ -28,7 +28,8 @@ from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
 from PyQt5.QtGui import QKeySequence, QStandardItemModel
 from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
-from mu.interface.dialogs import ModeSelector, AdminDialog, FindReplaceDialog
+from mu.interface.dialogs import (ModeSelector, AdminDialog, FindReplaceDialog,
+                                  PackageDialog)
 from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
                                  DEFAULT_FONT_SIZE)
 from mu.interface.panes import (DebugInspector, DebugInspectorItem,
@@ -93,8 +94,12 @@ class ButtonBar(QToolBar):
         self.addSeparator()
         self.addAction(name="check", display_name=_('Check'),
                        tool_text=_("Check your code for mistakes."))
+        if sys.version_info[:2] >= (3, 6):
+            self.addAction(name="tidy", display_name=_('Tidy'),
+                           tool_text=_("Tidy up the layout of your code."))
         self.addAction(name="help", display_name=_('Help'),
                        tool_text=_("Show help about Mu in a browser."))
+        self.addSeparator()
         self.addAction(name="quit", display_name=_('Quit'),
                        tool_text=_("Quit Mu."))
 
@@ -182,33 +187,46 @@ class Window(QMainWindow):
     serial = None
     repl = None
     plotter = None
+    zooms = ('xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl')  # levels of zoom.
+    zoom_position = 2  # current level of zoom (as position in zooms tuple).
 
-    _zoom_in = pyqtSignal(int)
-    _zoom_out = pyqtSignal(int)
+    _zoom_in = pyqtSignal(str)
+    _zoom_out = pyqtSignal(str)
     close_serial = pyqtSignal()
     write_to_serial = pyqtSignal(bytes)
     data_received = pyqtSignal(bytes)
     open_file = pyqtSignal(str)
     load_theme = pyqtSignal(str)
+    previous_folder = None
+
+    def set_zoom(self):
+        """
+        Sets the zoom to current zoom_position level.
+        """
+        self._zoom_in.emit(self.zooms[self.zoom_position])
 
     def zoom_in(self):
         """
         Handles zooming in.
         """
-        self._zoom_in.emit(2)
+        self.zoom_position = min(self.zoom_position + 1, len(self.zooms) - 1)
+        self._zoom_in.emit(self.zooms[self.zoom_position])
 
     def zoom_out(self):
         """
         Handles zooming out.
         """
-        self._zoom_out.emit(2)
+        self.zoom_position = max(self.zoom_position - 1, 0)
+        self._zoom_out.emit(self.zooms[self.zoom_position])
 
     def connect_zoom(self, widget):
         """
-        Connects a referenced widget to the zoom related signals.
+        Connects a referenced widget to the zoom related signals and sets
+        the zoom of the widget to the current zoom level.
         """
-        self._zoom_in.connect(widget.zoomIn)
-        self._zoom_out.connect(widget.zoomOut)
+        self._zoom_in.connect(widget.set_zoom)
+        self._zoom_out.connect(widget.set_zoom)
+        widget.set_zoom(self.zooms[self.zoom_position])
 
     @property
     def current_tab(self):
@@ -230,8 +248,11 @@ class Window(QMainWindow):
         Displays a dialog for selecting a file to load. Returns the selected
         path. Defaults to start in the referenced folder.
         """
-        path, _ = QFileDialog.getOpenFileName(self.widget, 'Open file', folder,
-                                              extensions)
+        path, _ = QFileDialog.getOpenFileName(
+            self.widget, 'Open file',
+            folder if self.previous_folder is None else self.previous_folder,
+            extensions)
+        self.previous_folder = os.path.dirname(path)
         logger.debug('Getting load path: {}'.format(path))
         return path
 
@@ -240,7 +261,10 @@ class Window(QMainWindow):
         Displays a dialog for selecting a file to save. Returns the selected
         path. Defaults to start in the referenced folder.
         """
-        path, _ = QFileDialog.getSaveFileName(self.widget, 'Save file', folder)
+        path, _ = QFileDialog.getSaveFileName(
+            self.widget, 'Save file',
+            folder if self.previous_folder is None else self.previous_folder)
+        self.previous_folder = os.path.dirname(path)
         logger.debug('Getting save path: {}'.format(path))
         return path
 
@@ -250,9 +274,11 @@ class Window(QMainWindow):
         host computer's filesystem. Returns the selected path. Defaults to
         start in the referenced folder.
         """
-        path = QFileDialog.getExistingDirectory(self.widget,
-                                                'Locate BBC micro:bit', folder,
-                                                QFileDialog.ShowDirsOnly)
+        path = QFileDialog.getExistingDirectory(
+            self.widget, 'Locate BBC micro:bit',
+            folder if self.previous_folder is None else self.previous_folder,
+            QFileDialog.ShowDirsOnly)
+        self.previous_folder = os.path.dirname(path)
         logger.debug('Getting micro:bit path: {}'.format(path))
         return path
 
@@ -282,6 +308,7 @@ class Window(QMainWindow):
         new_tab.setFocus()
         if self.read_only_tabs:
             new_tab.setReadOnly(self.read_only_tabs)
+        return new_tab
 
     def focus_tab(self, tab):
         index = self.tabs.indexOf(tab)
@@ -338,7 +365,7 @@ class Window(QMainWindow):
         self.serial = QSerialPort()
         self.serial.setPortName(port)
         if self.serial.open(QIODevice.ReadWrite):
-            self.serial.dataTerminalReady = True
+            self.serial.setDataTerminalReady(True)
             if not self.serial.isDataTerminalReady():
                 # Using pyserial as a 'hack' to open the port and set DTR
                 # as QtSerial does not seem to work on some Windows :(
@@ -666,16 +693,28 @@ class Window(QMainWindow):
         if hasattr(self, 'plotter') and self.plotter:
             self.plotter_pane.set_theme(theme)
 
-    def show_admin(self, log, settings):
+    def show_admin(self, log, settings, packages):
         """
         Display the administrative dialog with referenced content of the log
         and settings. Return a dictionary of the settings that may have been
         changed by the admin dialog.
         """
         admin_box = AdminDialog(self)
-        admin_box.setup(log, settings)
-        admin_box.exec()
-        return admin_box.settings()
+        admin_box.setup(log, settings, packages)
+        result = admin_box.exec()
+        if result:
+            return admin_box.settings()
+        else:
+            return {}
+
+    def sync_packages(self, to_remove, to_add, module_dir):
+        """
+        Display a modal dialog that indicates the status of the add/remove
+        package management operation.
+        """
+        package_box = PackageDialog(self)
+        package_box.setup(to_remove, to_add, module_dir)
+        package_box.exec()
 
     def show_message(self, message, information=None, icon=None):
         """

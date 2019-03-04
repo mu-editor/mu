@@ -29,7 +29,7 @@ import sys
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
-from mu import __version__
+from mu import __version__, language_code
 from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface import Window
 from mu.resources import load_pixmap, load_icon
@@ -63,7 +63,6 @@ def setup_logging():
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
     sys.excepthook = excepthook
-    print(_('Logging to {}').format(LOG_FILE))
 
 
 def setup_modes(editor, view):
@@ -112,6 +111,7 @@ def run():
     logging.info('\n\n-----------------\n\nStarting Mu {}'.format(__version__))
     logging.info(platform.uname())
     logging.info('Python path: {}'.format(sys.path))
+    logging.info('Language code: {}'.format(language_code))
 
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
@@ -180,4 +180,5 @@ def debug():
         args = sys.argv[2:]
         run_debugger('localhost', DEBUGGER_PORT, filename, args)
     else:
-        print(_("Debugger requires a Python script filename to run."))
+        # See https://github.com/mu-editor/mu/issues/743
+        print("Debugger requires a Python script filename to run.")

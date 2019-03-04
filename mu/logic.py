@@ -31,7 +31,9 @@ import random
 import locale
 import shutil
 import appdirs
+import site
 from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import QLocale
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
 from mu.resources import path
@@ -45,6 +47,9 @@ HOME_DIRECTORY = os.path.expanduser('~')
 WORKSPACE_NAME = 'mu_code'
 # The default directory for application data (i.e., configuration).
 DATA_DIR = appdirs.user_data_dir(appname='mu', appauthor='python')
+# The directory containing user installed third party modules.
+MODULE_DIR = os.path.join(DATA_DIR, 'site-packages')
+sys.path.append(MODULE_DIR)
 # The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir(appname='mu', appauthor='python')
 # The path to the log file for the application.
@@ -142,6 +147,22 @@ ENCODING_COOKIE_RE = re.compile(
 logger = logging.getLogger(__name__)
 
 
+def installed_packages():
+    """
+    List all the third party modules installed by the user.
+    """
+    result = []
+    pkg_dirs = [os.path.join(MODULE_DIR, d) for d in os.listdir(MODULE_DIR)
+                if d.endswith("dist-info")]
+    for pkg in pkg_dirs:
+        metadata_file = os.path.join(pkg, 'METADATA')
+        with open(metadata_file, 'rb') as f:
+            lines = f.readlines()
+            name = lines[1].rsplit(b':')[-1].strip()
+            result.append(name.decode('utf-8'))
+    return sorted(result)
+
+
 def write_and_flush(fileobj, content):
     """
     Write content to the fileobj then flush and fsync to ensure the data is,
@@ -177,7 +198,9 @@ def save_and_encode(text, filepath, newline=os.linesep):
         encoding = ENCODING
 
     with open(filepath, "w", encoding=encoding, newline='') as f:
-        write_and_flush(f, newline.join(text.splitlines()))
+        text_to_write = newline.join(l.rstrip(" ") for l in
+                                     text.splitlines()) + newline
+        write_and_flush(f, text_to_write)
 
 
 def sniff_encoding(filepath):
@@ -410,8 +433,8 @@ def check_pycodestyle(code):
     os.close(code_fd)
     save_and_encode(code, code_filename)
     # Configure which PEP8 rules to ignore.
-    ignore = ('E121', 'E123', 'E126', 'E226', 'E302', 'E305', 'E24', 'E704',
-              'W291', 'W292', 'W293', 'W391', 'W503', )
+    ignore = ('E121', 'E123', 'E126', 'E226', 'E203', 'E302', 'E305', 'E24',
+              'E704', 'W291', 'W292', 'W293', 'W391', 'W503', )
     style = StyleGuide(parse_argv=False, config_file=False)
     style.options.ignore = ignore
     checker = Checker(code_filename, options=style.options)
@@ -550,11 +573,15 @@ class Editor:
         self.connected_devices = set()
         self.find = ''
         self.replace = ''
+        self.current_path = ''  # Directory of last loaded file.
         self.global_replace = False
         self.selecting_mode = False  # Flag to stop auto-detection of modes.
         if not os.path.exists(DATA_DIR):
             logger.debug('Creating directory: {}'.format(DATA_DIR))
             os.makedirs(DATA_DIR)
+        if not os.path.exists(MODULE_DIR):
+            logger.debug('Creating directory: {}'.format(MODULE_DIR))
+            os.makedirs(MODULE_DIR)
         logger.info('Settings path: {}'.format(get_settings_path()))
         logger.info('Session path: {}'.format(get_session_path()))
         logger.info('Log directory: {}'.format(LOG_DIR))
@@ -661,13 +688,18 @@ class Editor:
                             logger.warning('The specified micro:bit runtime '
                                            'does not exist. Using default '
                                            'runtime instead.')
+                if 'zoom_level' in old_session:
+                    self._view.zoom_position = old_session['zoom_level']
+                    self._view.set_zoom()
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
             self.load_cli(paths)
         if not self._view.tab_count:
-            py = _('# Write your code here :-)')
-            self._view.add_tab(None, py, self.modes[self.mode].api(), NEWLINE)
+            py = _('# Write your code here :-)') + NEWLINE
+            tab = self._view.add_tab(None, py, self.modes[self.mode].api(),
+                                     NEWLINE)
+            tab.setCursorPosition(len(py.split(NEWLINE)), 0)
             logger.info('Starting with blank file.')
         self.change_mode(self.mode)
         self._view.set_theme(self.theme)
@@ -718,6 +750,15 @@ class Editor:
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
                 continue
+            # The widget could be for a file on a MicroPython device that
+            # has since been unplugged. We should ignore it and assume that
+            # folks understand this file is no longer available (there's
+            # nothing else we can do).
+            if not os.path.isfile(widget.path):
+                logger.info(
+                    'The file {} no longer exists.'.format(widget.path))
+                continue
+            # Check for duplication of open file.
             if os.path.samefile(path, widget.path):
                 logger.info('Script already open.')
                 msg = _('The file "{}" is already open.')
@@ -781,6 +822,27 @@ class Editor:
             self._view.add_tab(
                 name, text, self.modes[self.mode].api(), newline)
 
+    def get_dialog_directory(self):
+        """
+        Return the directory folder in which a load/save dialog box should
+        open into. In order of precedence this function will return:
+
+        1) The last location used by a load/save dialog.
+        2) The directory containing the current file.
+        3) The mode's reported workspace directory.
+        """
+        if self.current_path and os.path.isdir(self.current_path):
+            folder = self.current_path
+        else:
+            current_file_path = ''
+            workspace_path = self.modes[self.mode].workspace_dir()
+            tab = self._view.current_tab
+            if tab and tab.path:
+                current_file_path = os.path.dirname(os.path.abspath(tab.path))
+            folder = current_file_path if current_file_path else workspace_path
+        logger.info('Using path for file dialog: {}'.format(folder))
+        return folder
+
     def load(self):
         """
         Loads a Python file from the file system or extracts a Python script
@@ -794,9 +856,10 @@ class Editor:
         extensions = set([e.lower() for e in extensions])
         extensions = '*.{} *.{}'.format(' *.'.join(extensions),
                                         ' *.'.join(extensions).upper())
-        path = self._view.get_load_path(self.modes[self.mode].workspace_dir(),
-                                        extensions)
+        folder = self.get_dialog_directory()
+        path = self._view.get_load_path(folder, extensions)
         if path:
+            self.current_path = os.path.dirname(os.path.abspath(path))
             self._load(path)
 
     def direct_load(self, path):
@@ -885,8 +948,8 @@ class Editor:
             return
         if not tab.path:
             # Unsaved file.
-            workspace = self.modes[self.mode].workspace_dir()
-            path = self._view.get_save_path(workspace)
+            folder = self.get_dialog_directory()
+            path = self._view.get_save_path(folder)
             if path and self.check_for_shadow_module(path):
                 message = _('You cannot use the filename '
                             '"{}"').format(os.path.basename(path))
@@ -979,15 +1042,11 @@ class Editor:
         """
         Display browser based help about Mu.
         """
-        logger.info('Showing help.')
-        try:
-            current_locale, encoding = locale.getdefaultlocale()
-            language_code = current_locale[:2]
-        except (TypeError, ValueError):
-            language_code = 'en'
+        language_code = QLocale.system().name()[:2]
         major_version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/{}/help/{}'.format(language_code,
                                                       major_version)
+        logger.info('Showing help at %r.', url)
         webbrowser.open_new(url)
 
     def quit(self, *args, **kwargs):
@@ -1019,12 +1078,25 @@ class Editor:
             'envars': self.envars,
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
+            'zoom_level': self._view.zoom_position,
         }
         session_path = get_session_path()
         with open(session_path, 'w') as out:
             logger.debug('Session: {}'.format(session))
             logger.debug('Saving session to: {}'.format(session_path))
             json.dump(session, out, indent=2)
+        # Clean up temporary mu.pth file if needed (Windows only).
+        if sys.platform == 'win32' and 'pythonw.exe' in sys.executable:
+            if site.ENABLE_USER_SITE:
+                site_path = site.USER_SITE
+                path_file = os.path.join(site_path, 'mu.pth')
+                if os.path.exists(path_file):
+                    try:
+                        os.remove(path_file)
+                        logger.info('{} removed.'.format(path_file))
+                    except Exception as ex:
+                        logger.error('Unable to delete {}'.format(path_file))
+                        logger.error(ex)
         logger.info('Quitting.\n\n')
         sys.exit(0)
 
@@ -1034,7 +1106,7 @@ class Editor:
 
         Ensure any changes to the envars is updated.
         """
-        logger.info('Showing logs from {}'.format(LOG_FILE))
+        logger.info('Showing admin with logs from {}'.format(LOG_FILE))
         envars = '\n'.join(['{}={}'.format(name, value) for name, value in
                             self.envars])
         settings = {
@@ -1042,20 +1114,50 @@ class Editor:
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
         }
+        packages = installed_packages()
         with open(LOG_FILE, 'r', encoding='utf8') as logfile:
-            new_settings = self._view.show_admin(logfile.read(), settings)
+            new_settings = self._view.show_admin(logfile.read(), settings,
+                                                 '\n'.join(packages))
+        if new_settings:
             self.envars = extract_envars(new_settings['envars'])
             self.minify = new_settings['minify']
             runtime = new_settings['microbit_runtime'].strip()
             if runtime and not os.path.isfile(runtime):
                 self.microbit_runtime = ''
                 message = _('Could not find MicroPython runtime.')
-                information = _("The micro:bit runtime you specified ('{}') "
-                                "does not exist. "
+                information = _("The micro:bit runtime you specified "
+                                "('{}') does not exist. "
                                 "Please try again.").format(runtime)
                 self._view.show_message(message, information)
             else:
                 self.microbit_runtime = runtime
+            new_packages = [p for p in
+                            new_settings['packages'].lower().split('\n')
+                            if p.strip()]
+            old_packages = [p.lower() for p in packages]
+            self.sync_package_state(old_packages, new_packages)
+        else:
+            logger.info("No admin settings changed.")
+
+    def sync_package_state(self, old_packages, new_packages):
+        """
+        Given the state of the old third party packages, compared to the new
+        third party packages, ensure that pip uninstalls and installs the
+        packages so the currently available third party packages reflects the
+        new state.
+        """
+        old = set(old_packages)
+        new = set(new_packages)
+        logger.info('Synchronize package states...')
+        logger.info('Old: {}'.format(old))
+        logger.info('New: {}'.format(new))
+        to_remove = old.difference(new)
+        to_add = new.difference(old)
+        if to_remove or to_add:
+            logger.info('To add: {}'.format(to_add))
+            logger.info('To remove: {}'.format(to_remove))
+            logger.info('Site packages: {}'.format(MODULE_DIR))
+            self._view.sync_packages(to_remove, to_add, MODULE_DIR)
 
     def select_mode(self, event=None):
         """
@@ -1102,12 +1204,16 @@ class Editor:
         button_bar.connect("zoom-out", self.zoom_out, "Ctrl+-")
         button_bar.connect("theme", self.toggle_theme, "F1")
         button_bar.connect("check", self.check_code, "F2")
+        if sys.version_info[:2] >= (3, 6):
+            button_bar.connect("tidy", self.tidy_code, "F10")
         button_bar.connect("help", self.show_help, "Ctrl+H")
         button_bar.connect("quit", self.quit, "Ctrl+Q")
         self._view.status_bar.set_mode(mode)
         # Update references to default file locations.
         logger.info('Workspace directory: {}'.format(
             self.modes[mode].workspace_dir()))
+        # Reset remembered current path for load/save dialogs.
+        self.current_path = ''
         # Ensure auto-save timeouts are set.
         if self.modes[mode].save_timeout > 0:
             # Start the timer
@@ -1169,9 +1275,12 @@ class Editor:
                 self.show_status_message(msg)
                 # Only ask to switch mode if a single device type is connected
                 # and we're not already trying to select a new mode via the
-                # dialog.
+                # dialog. Cannot change mode if a script is already being run
+                # by the current mode.
+                m = self.modes[self.mode]
+                running = hasattr(m, "runner") and m.runner
                 if (len(device_types) == 1 and self.mode != mode_name and not
-                        self.selecting_mode):
+                        self.selecting_mode) and not running:
                     msg_body = _('Would you like to change Mu to the {} '
                                  'mode?').format(device_name)
                     change_confirmation = self._view.show_confirmation(
@@ -1304,3 +1413,34 @@ class Editor:
         Ensure all highlighted lines are toggled between comments/uncommented.
         """
         self._view.toggle_comments()
+
+    def tidy_code(self):
+        """
+        Prettify code with Black.
+        """
+        tab = self._view.current_tab
+        if not tab or sys.version_info[:2] < (3, 6):
+            return
+
+        from black import format_str, FileMode
+        try:
+            source_code = tab.text()
+            logger.info('Tidy code.')
+            logger.info(source_code)
+            tidy_code = format_str(source_code, line_length=88,
+                                   mode=FileMode.PYTHON36)
+            # The following bypasses tab.setText which resets the undo history.
+            # Doing it this way means the user can use CTRL-Z to undo the
+            # reformatting from black.
+            tab.SendScintilla(tab.SCI_SETTEXT, tidy_code.encode('utf-8'))
+            self.show_status_message(_("Successfully cleaned the code. "
+                                       "Use CTRL-Z to undo."))
+        except Exception as ex:
+            # The user's code is problematic. Recover with a modal dialog
+            # containing a helpful message.
+            logger.error(ex)
+            message = _('Your code contains problems.')
+            information = _("These must be fixed before tidying will work. "
+                            "Please use the 'Check' button to highlight "
+                            "these problems.")
+            self._view.show_message(message, information)

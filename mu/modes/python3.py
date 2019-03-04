@@ -21,7 +21,6 @@ import os
 import logging
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
-from mu.logic import write_and_flush
 from mu.resources import load_icon
 from mu.interface.panes import CHARTS
 from qtconsole.manager import QtKernelManager
@@ -63,13 +62,10 @@ class KernelRunner(QObject):
                     '{}'.format(self.envars))
         for k, v in self.envars.items():
             os.environ[k] = v
-        if sys.platform == 'darwin':
-            parent_dir = os.path.dirname(__file__)
-            if '/mu-editor.app/Contents/Resources/app/mu' in parent_dir:
-                # Mu is running as a macOS app bundle. Ensure the expected
-                # paths are in PYTHONPATH of the subprocess so the kernel can
-                # be found.
-                os.environ['PYTHONPATH'] = ':'.join(sys.path)
+        # Ensure the expected paths are in PYTHONPATH of the subprocess so the
+        # kernel and Mu-installed third party applications can be found.
+        if 'PYTHONPATH' not in os.environ:
+            os.environ['PYTHONPATH'] = os.pathsep.join(sys.path)
         self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.start_kernel()
         self.repl_kernel_client = self.repl_kernel_manager.client()
@@ -183,15 +179,11 @@ class PythonMode(BaseMode):
         if tab.path:
             # If needed, save the script.
             if tab.isModified():
-                with open(tab.path, 'w', newline='') as f:
-                    logger.info('Saving script to: {}'.format(tab.path))
-                    logger.debug(tab.text())
-                    write_and_flush(f, tab.text())
-                    tab.setModified(False)
-            logger.debug(tab.text())
+                self.editor.save_tab_to_file(tab)
             envars = self.editor.envars
+            cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(tab.path,
-                                                       self.workspace_dir(),
+                                                       cwd,
                                                        interactive=True,
                                                        envars=envars)
             self.runner.process.waitForStarted()
@@ -211,6 +203,7 @@ class PythonMode(BaseMode):
             self.runner = None
         self.view.remove_python_runner()
         self.set_buttons(plotter=True, repl=True)
+        self.return_focus_to_current_tab()
 
     def debug(self, event):
         """
@@ -260,6 +253,7 @@ class PythonMode(BaseMode):
         self.set_buttons(repl=False)
         # Don't block the GUI
         self.stop_kernel.emit()
+        self.return_focus_to_current_tab()
 
     def toggle_plotter(self):
         """

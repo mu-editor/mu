@@ -1,5 +1,87 @@
 [
   {
+    "name": "draw.circle",
+    "args": [
+      "position",
+      "radius",
+      "(r, g, b)"
+    ],
+    "description": "Draw the outline of a circle."
+  },
+  {
+    "name": "draw.filled_circle",
+    "args": [
+      "position",
+      "radius",
+      "(r, g, b)"
+    ],
+    "description": "Draw a filled circle."
+  },
+  {
+    "name": "draw.filled_rect",
+    "args": [
+      "rect",
+      "(r, g, b)"
+    ],
+    "description": "Draw a filled rectangle. Takes a Rect object. For example, Rect((20, 20), (100, 100))"
+  },
+  {
+    "name": "draw.line",
+    "args": [
+      "start",
+      "end",
+      "(r, g, b)"
+    ],
+    "description": "Draw a line from start to end."
+  },
+  {
+    "name": "draw.rect",
+    "args": [
+      "rect",
+      "(r, g, b)"
+    ],
+    "description": "Draw the outline of a rectangle. Takes a Rect object. For example, Rect((20, 20), (100, 100))"
+  },
+  {
+    "name": "draw.text",
+    "args": [
+      "text",
+      "[pos, ]**kwargs"
+    ],
+    "description": "Draw text. There’s an extremely rich API for positioning and formatting text; see Pygame Zero Text Formatting for full details."
+  },
+  {
+    "name": "draw.textbox",
+    "args": [
+      "text",
+      "rect",
+      "**kwargs"
+    ],
+    "description": "Draw text, sized to fill the given Rect. There’s an extremely rich API for positioning and formatting text; see Pygame Zero Text Formatting for full details."
+  },
+  {
+    "name": "screen.blit",
+    "args": [
+      "image",
+      "(left, top)"
+    ],
+    "description": "Draw the image to the screen at the given position. blit() accepts either a Surface or a string as its image parameter. If image is a str then the named image will be loaded from the images/ directory."
+  },
+  {
+    "name": "screen.clear",
+    "args": [
+      null
+    ],
+    "description": "Reset the screen to black."
+  },
+  {
+    "name": "screen.fill",
+    "args": [
+      "(red, green, blue)"
+    ],
+    "description": "Fill the screen with a solid color."
+  },
+  {
     "name": "screen.Screen",
     "args": [
       "surface"

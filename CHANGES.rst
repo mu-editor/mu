@@ -1,6 +1,69 @@
 Release History
 ---------------
 
+1.0.2
+=====
+
+Another bugfix and translation release. No new features were added. Unless
+there are show-stoppers, the next release will be 1.1 with new features.
+
+* Updated OSX to macOS, as per Apple's usage of the terms. Thanks Craig Steele.
+* Updates and improvements to the Chinese translation. Thank John Guan.
+* Improved locale detection on macOS. Many thanks to Tiago Montes.
+* Cosmetic stripping of trailing spaces on save. Thanks to Tim Golden.
+* Update PyQt version so pip installed Mu works with Python 3.5. Thanks to
+  Carlos Pereira Atencio.
+* Fix incorrect setting of dataTerminalReady flag. Thanks to GitHub user
+  @wu6692776.
+* Spanish language improvements and fixes by Juan Biondi, @yeyeto2788 and
+  Carlos Pereira Atencio.
+* Improvements and fixes to the German translation by Eberhard Fahle.
+* Fix encoding bug on Windows which caused crashes and lost files. Many thanks
+  to Tim Golden for this work.
+* Keyboard focus loss when closing REPL is now fixed. Thanks again Tim Golden.
+* More devices for Adafruit mode along with a capability to work with future
+  devices which have the Adafruit vendor ID. Thanks to Limor Friend for this
+  contribution.
+* Fix a bug introduced in 1.0.1 where output from a child Python process was
+  being truncated.
+* Fix an off-by-one error when reading bytes from UART on MicroPython devices.
+* Ensure zoom is consistent and remembered between panes and sessions.
+* Ensure mu_code and/or current directory of current script are on Python path
+  in Mu installed from the installer on Windows. Thanks to Tim Golden and Tim
+  McCurrach for helping to test the fix.
+* Added Argon, Boron and Xenon boards to Adafruit mode since they're also
+  supported by Adafruit's CircuitPython.
+* The directory used to start a load/save dialog is either what the user last
+  selected, the current directory of the current file or the mode's working
+  directory (in order of precedence). This is reset when the mode is changed.
+* Various minor typo and bug fixes.
+
+1.0.1
+=====
+
+This is a bugfix and new translation release. No new features were added. The
+next release will be 1.1.0 with some new features.
+
+* Added a German translation by René Raab.
+* Added various new Adafruit boards, thanks Limor!
+* Added a Vietnamese translation by GitHub user @doanminhdang.
+* Fix bug in MicroPython REPL when dealing with colour escape sequences, thanks
+  Martin Dybdal of Coding Pirates! Arrr.
+* Ensured anyone trying to setup on an incompatible version of Python is given
+  a friendly message explaining the problem. Thanks to the hugely talented
+  René Dudfield for migrating this helpful function from PyGame!
+* Added a Brasilian translation by Marco A L Barbosa.
+* Added missing API docs for PyGameZero. Thanks to Justin Riley.
+* Added a Swedish translation by Filip Korling.
+* Fixes to various metadata configuration entries by Nick Morrott.
+* Updated to a revised Chinese translation. Thanks to John Guan.
+* Added the Mappa MUndi (roadmap) to the developer documentation.
+* Added a Polish translation by Filip Kłębczyk.
+* Fixes and enhancements to the UI to aid dyslexic users by Tim McCurrach.
+* Updated to version 1.0.0.final for MicroPython on the BBC micro:bit. Many
+  thanks to Damien George of the MicroPython project for his amazing work.
+* Many other minor bugs caught and fixed by the likes of Zander and Carlos!
+
 1.0.0
 =====
 

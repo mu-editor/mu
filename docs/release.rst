@@ -138,6 +138,17 @@ packages for Windows (32bit and 64bit) and OSX have been created and signed
 they should be checked so no warning messages appear about untrusted sources
 during the installation process.
 
+The instructions for signing the Windows installers are explain in
+`this wonderful article on Adafruit's website <https://learn.adafruit.com/how-to-sign-windows-drivers-installer/making-an-installer>_`.
+But the essence is that the command issued should look something like::
+
+    "C:\Program Files (x86)\Windows Kits\10\bin\10.0.17134.0\x86\signtool" sign /v /n "Nicholas H.Tollervey" /tr http://timestamp.globalsign.com/?signature=sha2 /td sha256 mu-editor_1.0.1_win32.exe
+
+Signing the Mac app involves issuing the following two commands::
+
+    codesign --deep --force --verbose --sign "CERT_ID" mu-editor.app
+    dmgbuild -s package/dmg_settings.py "Mu Editor" dist/mu-editor.dmg
+
 The appropriate installer should be checked on the following operating systems:
 
 * Windows 7 (32bit)

@@ -1,0 +1,1130 @@
+# MU MESSAGES TRANSLATION INTO VIETNAMESE
+# Licensed under GPL v3.0 as with Mu
+# Doãn Minh Đăng <minhdang@linux.com>, 2018.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2018-08-03 10:48+CEST\n"
+"PO-Revision-Date: 2018-08-03 15:53+0200\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+"Last-Translator: Minh Dang <minhdang@linux.com>\n"
+"Language-Team: \n"
+"Language: vi\n"
+"X-Generator: Poedit 1.8.7.1\n"
+
+#: mu/app.py:66
+msgid "Logging to {}"
+msgstr "Đang đăng nhập vào {}"
+
+#: mu/app.py:183
+msgid "Debugger requires a Python script filename to run."
+msgstr "Trình gỡ lỗi cần tên tệp lệnh Python để chạy."
+
+#: mu/debugger/client.py:106
+msgid "Connection timed out. Is your machine slow or busy? Free up some of the machine's resources and try again."
+msgstr "Kết nối quá hạn. Máy của bạn có chậm hay bận không? Hãy giải phóng một số tài nguyên của máy và thử lại."
+
+#: mu/debugger/client.py:116
+msgid ""
+"Could not find localhost.\n"
+"Ensure you have '127.0.0.1 localhost' in your /etc/hosts file."
+msgstr ""
+"Không thể tìm thấy localhost.\n"
+"Hãy đảm bảo có '127.0.0.1 localhost' trong tệp /etc/hosts ở máy bạn."
+
+#: mu/interface/dialogs.py:55
+msgid "Select Mode"
+msgstr "Chọn chế độ"
+
+#: mu/interface/dialogs.py:57
+msgid "Please select the desired mode then click \"OK\". Otherwise, click \"Cancel\"."
+msgstr "Vui lòng chọn chế độ mong muốn, sau đó nhấp \"OK\". Nếu không, hãy nhấp \"Cancel\"."
+
+#: mu/interface/dialogs.py:73
+msgid "Change mode at any time by clicking the \"Mode\" button containing Mu's logo."
+msgstr "Thay đổi chế độ bất cứ lúc nào bằng cách nhấp vào nút \"Mode\" có chứa biểu tượng của Mu."
+
+#: mu/interface/dialogs.py:107
+msgid "When reporting a bug, copy and paste the content of the following log file."
+msgstr "Khi báo cáo lỗi, hãy sao chép và dán nội dung của tệp nhật ký đi kèm."
+
+#: mu/interface/dialogs.py:127
+msgid ""
+"The environment variables shown below will be set each time you run a Python 3 script.\n"
+"\n"
+"Each separate enviroment variable should be on a new line and of the form:\n"
+"NAME=VALUE"
+msgstr ""
+"Các biến môi trường được hiển thị bên dưới sẽ được đặt mỗi khi bạn chạy một tệp lệnh Python 3.\n"
+"\n"
+"Mỗi biến môi trường riêng biệt phải nằm trên một dòng mới và theo dạng:\n"
+"NAME=VALUE"
+
+#: mu/interface/dialogs.py:150
+msgid "Minify Python code before flashing?"
+msgstr "Thu gọn mã Python trước khi nạp?"
+
+#: mu/interface/dialogs.py:153
+msgid "Override the built-in MicroPython runtime with the following hex file (empty means use the default):"
+msgstr "Ghi đè mã chạy MicroPython có sẵn với tệp hex sau (để trống có nghĩa là sử dụng cái mặc định):"
+
+#: mu/interface/dialogs.py:175 mu/interface/main.py:977
+msgid "Mu Administration"
+msgstr "Quản trị Mu"
+
+#: mu/interface/dialogs.py:186
+msgid "Current Log"
+msgstr "Nhật ký hiện tại"
+
+#: mu/interface/dialogs.py:189
+msgid "Python3 Environment"
+msgstr "Môi trường Python3"
+
+#: mu/interface/dialogs.py:194
+msgid "BBC micro:bit Settings"
+msgstr "Cài đặt BBC micro:bit"
+
+#: mu/interface/dialogs.py:223
+msgid "Find / Replace"
+msgstr "Tìm / Thay thế"
+
+#: mu/interface/dialogs.py:227
+msgid "Find:"
+msgstr "Tìm:"
+
+#: mu/interface/dialogs.py:233
+msgid "Replace (optional):"
+msgstr "Thay thế (tùy chọn):"
+
+#: mu/interface/dialogs.py:239
+msgid "Replace all?"
+msgstr "Thay thế tất cả?"
+
+#: mu/interface/editor.py:222 mu/logic.py:952
+msgid "untitled"
+msgstr "Chưa có tiêu đề"
+
+#: mu/interface/main.py:69
+msgid "Mode"
+msgstr "Chế độ"
+
+#: mu/interface/main.py:70
+msgid "Change Mu's mode of behaviour."
+msgstr "Thay đổi chế độ hành vi của Mu."
+
+#: mu/interface/main.py:72
+msgid "New"
+msgstr "Mới"
+
+#: mu/interface/main.py:73
+msgid "Create a new Python script."
+msgstr "Tạo một tệp lệnh Python mới."
+
+#: mu/interface/main.py:74
+msgid "Load"
+msgstr "Nạp"
+
+#: mu/interface/main.py:75
+msgid "Load a Python script."
+msgstr "Tải một tệp lệnh Python."
+
+#: mu/interface/main.py:76
+msgid "Save"
+msgstr "Lưu"
+
+#: mu/interface/main.py:77
+msgid "Save the current Python script."
+msgstr "Lưu tệp lệnh Python hiện tại."
+
+#: mu/interface/main.py:86
+msgid "Zoom-in"
+msgstr "Phóng to."
+
+#: mu/interface/main.py:87
+msgid "Zoom in (to make the text bigger)."
+msgstr "Phóng to (để làm cho văn bản lớn hơn)."
+
+#: mu/interface/main.py:88
+msgid "Zoom-out"
+msgstr "Thu nhỏ"
+
+#: mu/interface/main.py:89
+msgid "Zoom out (to make the text smaller)."
+msgstr "Thu nhỏ (để làm cho văn bản nhỏ hơn)."
+
+#: mu/interface/main.py:90
+msgid "Theme"
+msgstr "Chủ đề (giao diện)"
+
+#: mu/interface/main.py:91
+msgid "Toggle theme between day, night or high contrast."
+msgstr "Chuyển đổi chủ đề giữa ngày, đêm hoặc độ tương phản cao."
+
+#: mu/interface/main.py:94
+msgid "Check"
+msgstr "Kiểm tra"
+
+#: mu/interface/main.py:95
+msgid "Check your code for mistakes."
+msgstr "Kiểm tra mã của bạn để tìm lỗi."
+
+#: mu/interface/main.py:96
+msgid "Help"
+msgstr "Trợ giúp"
+
+#: mu/interface/main.py:97
+msgid "Show help about Mu in a browser."
+msgstr "Hiển thị trợ giúp về Mu trong trình duyệt."
+
+#: mu/interface/main.py:98
+msgid "Quit"
+msgstr "Thoát"
+
+#: mu/interface/main.py:99
+msgid "Quit Mu."
+msgstr "Đóng Mu."
+
+#: mu/interface/main.py:178
+msgid "Mu {}"
+msgstr "Mu {}"
+
+#: mu/interface/main.py:354
+msgid "Cannot connect to device on port {}"
+msgstr "Không thể kết nối với thiết bị trên cổng {}"
+
+#: mu/interface/main.py:376
+msgid "Filesystem on micro:bit"
+msgstr "Hệ thống tệp trên micro:bit"
+
+#: mu/interface/main.py:435
+msgid "Python3 data tuple"
+msgstr "Bộ dữ liệu Python3"
+
+#: mu/interface/main.py:447
+msgid "Python3 (Jupyter)"
+msgstr "Python3 (Jupyter)"
+
+#: mu/interface/main.py:454
+msgid "{} REPL"
+msgstr "{} REPL"
+
+#: mu/interface/main.py:470
+msgid "{} Plotter"
+msgstr "{} Máy vẽ"
+
+#: mu/interface/main.py:511
+msgid "Running: {}"
+msgstr "Đang chạy: {}"
+
+#: mu/interface/main.py:534
+msgid "Debug Inspector"
+msgstr "Trình tìm kiếm lỗi"
+
+#: mu/interface/main.py:552
+msgid "Name"
+msgstr "Tên"
+
+#: mu/interface/main.py:552
+msgid "Value"
+msgstr "Giá trị"
+
+#: mu/interface/main.py:569
+msgid "(A list of {} items.)"
+msgstr "(Một danh sách có {} mục.)"
+
+#: mu/interface/main.py:582
+msgid "(A dict of {} items.)"
+msgstr "(Một từ điển có {} mục.)"
+
+#: mu/interface/main.py:720
+msgid "Mu"
+msgstr "Mu"
+
+#: mu/interface/main.py:970
+msgid "Mu's current mode of behaviour."
+msgstr "Chế độ hành vi hiện tại của Mu."
+
+#: mu/interface/panes.py:296
+msgid "File already exists; overwrite it?"
+msgstr "Tệp đã tồn tại; ghi đè lên nó?"
+
+#: mu/interface/panes.py:297
+msgid "File already exists"
+msgstr "Tệp đã tồn tại"
+
+#: mu/interface/panes.py:325
+msgid "Copying '{}' to micro:bit."
+msgstr "Đang sao chép '{}' sang micro:bit."
+
+#: mu/interface/panes.py:334
+msgid "'{}' successfully copied to micro:bit."
+msgstr "Đã sao chép thành công '{}' vào micro:bit."
+
+#: mu/interface/panes.py:340
+msgid "Delete (cannot be undone)"
+msgstr "Xóa (không thể hoàn tác)"
+
+#: mu/interface/panes.py:346
+msgid "Deleting '{}' from micro:bit."
+msgstr "Đang xóa '{}' khỏi micro:bit."
+
+#: mu/interface/panes.py:355
+msgid "'{}' successfully deleted from micro:bit."
+msgstr "Đã xóa thành công '{}' khỏi micro:bit."
+
+#: mu/interface/panes.py:385
+msgid "Getting '{}' from micro:bit. Copying to '{}'."
+msgstr "Đang lấy '{}' từ micro:bit. Đang sao chép sang '{}'."
+
+#: mu/interface/panes.py:396
+msgid "Successfully copied '{}' from the micro:bit to your computer."
+msgstr "Đã sao chép thành công '{}' từ micro:bit vào máy tính của bạn."
+
+#: mu/interface/panes.py:409
+msgid "Open in Mu"
+msgstr "Mở trong Mu"
+
+#: mu/interface/panes.py:411
+msgid "Open"
+msgstr "Mở"
+
+#: mu/interface/panes.py:417
+msgid "Opening '{}'"
+msgstr "Đang mở '{}'"
+
+#: mu/interface/panes.py:457
+msgid "Files on your micro:bit:"
+msgstr "Các tệp trên micro:bit của bạn:"
+
+#: mu/interface/panes.py:459
+msgid "Files on your computer:"
+msgstr "Các tệp trên máy tính của bạn:"
+
+#: mu/interface/panes.py:527
+msgid "There was a problem getting the list of files on the micro:bit. Please check Mu's logs for technical information. Alternatively, try unplugging/plugging-in your micro:bit and/or restarting Mu."
+msgstr "Đã xảy ra sự cố khi lấy danh sách tệp trên micro:bit. Vui lòng kiểm tra nhật ký của Mu để biết thông tin cụ thể. Một cách khác, hãy thử rút ra/cắm vào micro:bit và/hoặc khởi động lại Mu."
+
+#: mu/interface/panes.py:538
+msgid "There was a problem copying the file '{}' onto the micro:bit. Please check Mu's logs for more information."
+msgstr "Đã xảy ra sự cố khi sao chép tệp '{}' vào micro:bit. Vui lòng kiểm tra nhật ký của Mu để biết thêm thông tin."
+
+#: mu/interface/panes.py:546
+msgid "There was a problem deleting '{}' from the micro:bit. Please check Mu's logs for more information."
+msgstr "Đã xảy ra sự cố khi xóa '{}' khỏi micro:bit. Vui lòng kiểm tra nhật ký của Mu để biết thêm thông tin."
+
+#: mu/interface/panes.py:554
+msgid "There was a problem getting '{}' from the micro:bit. Please check Mu's logs for more information."
+msgstr "Đã xảy ra sự cố khi lấy '{}' từ micro:bit. Vui lòng kiểm tra nhật ký của Mu để biết thêm thông tin."
+
+#: mu/logic.py:68
+msgid "Hello, World!"
+msgstr "Hello, World!"
+
+#: mu/logic.py:69
+msgid "This editor is free software written in Python. You can modify it, add features or fix bugs if you like."
+msgstr "Chương trình soạn thảo này là phần mềm miễn phí được viết bằng Python. Bạn có thể sửa đổi nó, thêm các tính năng hoặc sửa lỗi nếu bạn muốn."
+
+#: mu/logic.py:71
+msgid "This editor is called Mu (you say it 'mew' or 'moo')."
+msgstr "Trình soạn thảo này được gọi là Mu (bạn có thể phát âm là 'miu' hoặc 'mu')."
+
+#: mu/logic.py:72
+msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
+msgstr "Google, Facebook, NASA, Pixar, Disney và nhiều hơn nữa sử dụng Python."
+
+#: mu/logic.py:73
+msgid "Programming is a form of magic. Learn to cast the right spells with code and you'll be a wizard."
+msgstr "Lập trình là một dạng phép thuật. Hãy học để tạo phép thuật với các câu lệnh, và bạn sẽ thành một phù thủy."
+
+#: mu/logic.py:75
+msgid "REPL stands for read, evaluate, print, loop. It's a fun way to talk to your computer! :-)"
+msgstr "REPL là viết tắt của read (đọc), evaluate (thực thi), print (in), loop (lặp). Đó là một cách thú vị để nói chuyện với máy tính của bạn! :-)"
+
+#: mu/logic.py:77
+msgid "Be brave, break things, learn and have fun!"
+msgstr "Hãy dũng cảm, dám phá bỏ giới hạn, học hỏi và vui chơi!"
+
+#: mu/logic.py:78
+msgid "Make your software both useful AND fun. Empower your users."
+msgstr "Làm phần mềm của bạn trở nên vừa hữu ích vừa thú vị. Tăng sức mạnh cho người dùng của bạn."
+
+#: mu/logic.py:79
+msgid "For the Zen of Python: import this"
+msgstr "Đối với Zen of Python: import this"
+
+#: mu/logic.py:80
+msgid "Diversity promotes creativity."
+msgstr "Đa dạng thúc đẩy sự sáng tạo."
+
+#: mu/logic.py:81
+msgid "An open mind, spirit of adventure and respect for diversity are key."
+msgstr "Tâm trí cởi mở, tinh thần phiêu lưu và tôn trọng sự đa dạng là chìa khóa."
+
+#: mu/logic.py:82
+msgid "Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
+msgstr "Đừng lo lắng nếu nó không hoạt động. Rút ra bài học, sửa nó và thử lại! :-)"
+
+#: mu/logic.py:84
+msgid "Coding is collaboration."
+msgstr "Lập trình là sự cộng tác."
+
+#: mu/logic.py:85
+msgid "Compliment and amplify the good things with code."
+msgstr "Khen ngợi và nhân rộng những điều tốt đẹp với các dòng mã."
+
+#: mu/logic.py:86
+msgid "In theory, theory and practice are the same. In practice, they're not. ;-)"
+msgstr "Về lý thuyết, lý thuyết và thực hành đều giống nhau. Về thực tế, chúng khác nhau. ;-)"
+
+#: mu/logic.py:88
+msgid "Debugging is twice as hard as writing the code in the first place."
+msgstr "Gỡ lỗi là việc khó gấp đôi viết mã lệnh ban đầu."
+
+#: mu/logic.py:89
+msgid "It's fun to program."
+msgstr "Lập trình thật là thú vị."
+
+#: mu/logic.py:90
+msgid "Programming has more to do with problem solving than writing code."
+msgstr "Lập trình là phải làm nhiều việc để giải quyết vấn đề, chứ không chỉ là viết mã."
+
+#: mu/logic.py:91
+msgid "Start with your users' needs."
+msgstr "Bắt đầu với nhu cầu của người dùng của bạn."
+
+#: mu/logic.py:92
+msgid "Try to see things from your users' point of view."
+msgstr "Hãy thử nhìn mọi thứ từ góc nhìn của người dùng của bạn."
+
+#: mu/logic.py:93
+msgid "Put yourself in your users' shoes."
+msgstr "Đặt mình vào vị trí của người dùng."
+
+#: mu/logic.py:94
+msgid "Explaining a programming problem to a friend often reveals the solution. :-)"
+msgstr "Ta thường tìm thấy giải pháp khi đang giải thích một vấn đề lập trình cho người khác. :-)"
+
+#: mu/logic.py:96
+msgid "If you don't know, ask. Nobody to ask? Just look it up."
+msgstr "Nếu bạn không biết, hãy hỏi. Không có ai để hỏi? Thế thì tìm kiếm trên mạng."
+
+#: mu/logic.py:97
+msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
+msgstr "Sự phức tạp là kẻ thù. KISS - giữ nó đơn giản, ai cũng hiểu!"
+
+#: mu/logic.py:98
+msgid "Beautiful is better than ugly."
+msgstr "Đẹp là tốt hơn xấu xí."
+
+#: mu/logic.py:99
+msgid "Explicit is better than implicit."
+msgstr "Rõ ràng là tốt hơn ngầm ẩn."
+
+#: mu/logic.py:100
+msgid "Simple is better than complex. Complex is better than complicated."
+msgstr "Đơn giản là tốt hơn phức tạp. Phức tạp là tốt hơn rắc rối."
+
+#: mu/logic.py:101
+msgid "Flat is better than nested."
+msgstr "Phẳng là tốt hơn so với lồng nhau."
+
+#: mu/logic.py:102
+msgid "Sparse is better than dense."
+msgstr "Thưa thớt là tốt hơn so với dày đặc."
+
+#: mu/logic.py:103
+msgid "Readability counts."
+msgstr "Tính dễ đọc là điểm cộng."
+
+#: mu/logic.py:104
+msgid "Special cases aren't special enough to break the rules. Although practicality beats purity."
+msgstr "Các trường hợp đặc biệt không đủ đặc biệt để phá vỡ các quy tắc. Mặc dù tính thực tế đánh bại sự tinh khiết."
+
+#: mu/logic.py:106
+msgid "Errors should never pass silently. Unless explicitly silenced."
+msgstr "Lỗi sẽ không bao giờ được đẩy đi lặng lẽ. Trừ khi nó bị tắt một cách rõ ràng."
+
+#: mu/logic.py:107
+msgid "In the face of ambiguity, refuse the temptation to guess."
+msgstr "Khi đối mặt với sự mơ hồ, đừng thử đoán nó."
+
+#: mu/logic.py:108
+msgid "There should be one-- and preferably only one --obvious way to do it."
+msgstr "Nên có một -- và tốt nhất là chỉ có một -- cách rõ ràng để làm điều đó."
+
+#: mu/logic.py:109
+msgid "Now is better than never. Although never is often better than *right* now."
+msgstr "Bây giờ là tốt hơn không bao giờ. Mặc dù không bao giờ thường tốt hơn *ngay* bây giờ."
+
+#: mu/logic.py:111
+msgid "If the implementation is hard to explain, it's a bad idea."
+msgstr "Nếu cách triển khai là khó giải thích, đó là một ý tưởng tồi."
+
+#: mu/logic.py:112
+msgid "If the implementation is easy to explain, it may be a good idea."
+msgstr "Nếu cách triển khai là dễ giải thích, đó có thể là một ý tưởng hay."
+
+#: mu/logic.py:113
+msgid "Namespaces are one honking great idea -- let's do more of those!"
+msgstr "Namespaces là một trong những ý tưởng tuyệt vời - hãy dùng nhiều hơn nữa!"
+
+#: mu/logic.py:114
+msgid "Mu was created by Nicholas H.Tollervey."
+msgstr "Mu được tạo ra bởi Nicholas H.Tollervey."
+
+#: mu/logic.py:115
+msgid "To understand what recursion is, you must first understand recursion."
+msgstr "Để hiểu được đệ quy là gì, trước hết bạn phải hiểu đệ quy."
+
+#: mu/logic.py:116
+msgid "Algorithm: a word used by programmers when they don't want to explain what they did."
+msgstr "Thuật toán: một từ được sử dụng bởi các lập trình viên khi họ không muốn giải thích những gì họ đã làm."
+
+#: mu/logic.py:118
+msgid "Programmers count from zero."
+msgstr "Các lập trình viên đếm số đầu tiên là số không."
+
+#: mu/logic.py:119
+msgid "Simplicity is the ultimate sophistication."
+msgstr "Đơn giản là sự tinh tế cao nhất."
+
+#: mu/logic.py:120
+msgid "A good programmer is humble."
+msgstr "Một lập trình viên giỏi thường khiêm tốn."
+
+#: mu/logic.py:121
+msgid "A good programmer is playful."
+msgstr "Một lập trình viên giỏi thường hài hước."
+
+#: mu/logic.py:122
+msgid "A good programmer learns to learn."
+msgstr "Một lập trình viên giỏi biết học cách học."
+
+#: mu/logic.py:123
+msgid "A good programmer thinks beyond the obvious."
+msgstr "Một lập trình viên giỏi biết nghĩ vượt ra ngoài cái trước mắt."
+
+#: mu/logic.py:124
+msgid "A good programmer promotes simplicity."
+msgstr "Một lập trình viên giỏi cổ xúy sự đơn giản."
+
+#: mu/logic.py:125
+msgid "A good programmer avoids complexity."
+msgstr "Một lập trình viên giỏi tránh sự phức tạp."
+
+#: mu/logic.py:126
+msgid "A good programmer is patient."
+msgstr "Một lập trình viên giỏi biết kiên nhẫn."
+
+#: mu/logic.py:127
+msgid "A good programmer asks questions."
+msgstr "Một lập trình viên giỏi biết đặt câu hỏi."
+
+#: mu/logic.py:128
+msgid "A good programmer is willing to say, 'I don't know'."
+msgstr "Một lập trình viên giỏi sẵn sàng nói, 'Tôi không biết'."
+
+#: mu/logic.py:129
+msgid "Wisest are they that know they know nothing."
+msgstr "Khôn ngoan nhất là họ biết rằng họ không biết gì cả."
+
+#: mu/logic.py:439
+msgid " above this line"
+msgstr "phía trên dòng này"
+
+#: mu/logic.py:484
+msgid "Syntax error. Python cannot understand this line. Check for missing characters!"
+msgstr "Lỗi cú pháp. Python không thể hiểu được dòng này. Kiểm tra các ký tự còn thiếu!"
+
+#: mu/logic.py:669
+msgid "# Write your code here :-)"
+msgstr "# Viết mã của bạn ở đây :-)"
+
+#: mu/logic.py:707
+msgid ""
+"The file contains characters Mu expects to be encoded as {0} or as the computer's default encoding {1}, but which are encoded in some other way.\n"
+"\n"
+"If this file was saved in another application, re-save the file via the 'Save as' option and set the encoding to {0}"
+msgstr ""
+"Tệp chứa các ký tự Mu mong muốn được mã hóa là {0} hoặc dưới dạng mã hóa mặc định của máy tính {1}, nhưng được mã hóa theo một cách khác.\n"
+"\n"
+"Nếu tệp này được lưu trong ứng dụng khác, hãy lưu lại tệp qua tùy chọn 'Lưu dưới dạng' và đặt mã hóa thành {0}"
+
+#: mu/logic.py:723
+msgid "The file \"{}\" is already open."
+msgstr "Tệp \"{}\" đã được mở sẵn."
+
+#: mu/logic.py:735
+msgid "Mu cannot read the characters in {}"
+msgstr "Mu không thể đọc các ký tự trong {}"
+
+#: mu/logic.py:758
+msgid "Mu was not able to open this file"
+msgstr "Mu không thể mở tập tin này"
+
+#: mu/logic.py:759
+msgid "Currently Mu only works with Python source files or hex files created with embedded MicroPython code."
+msgstr "Hiện tại Mu chỉ hoạt động với các tệp nguồn Python hoặc các tệp hex được tạo bằng mã nhúng MicroPython."
+
+#: mu/logic.py:765
+msgid "Could not load {}"
+msgstr "Không thể mở {}"
+
+#: mu/logic.py:767
+msgid ""
+"Does this file exist?\n"
+"If it does, do you have permission to read it?\n"
+"\n"
+"Please check and try again."
+msgstr ""
+"Tệp này có tồn tại không?\n"
+"Nếu có, bạn có quyền đọc nó không?\n"
+"\n"
+"Vui lòng kiểm tra và thử lại."
+
+#: mu/logic.py:773
+msgid "Is this a {} file?"
+msgstr "Đây có phải là tệp {} không?"
+
+#: mu/logic.py:774
+msgid ""
+"It looks like this could be a {} file.\n"
+"\n"
+"Would you like to change Mu to the {}mode?"
+msgstr ""
+"Có vẻ như đây có thể là tệp {}.\n"
+"\n"
+"Bạn có muốn đổi Mu thành chế độ {} không?"
+
+#: mu/logic.py:846
+msgid "Could not save file (disk problem)"
+msgstr "Không thể lưu tệp (sự cố đĩa)"
+
+#: mu/logic.py:847
+msgid "Error saving file to disk. Ensure you have permission to write the file and sufficient disk space."
+msgstr "Lỗi khi lưu tệp vào đĩa. Đảm bảo bạn có quyền ghi tệp và đủ dung lượng đĩa."
+
+#: mu/logic.py:851
+msgid "Could not save file (encoding problem)"
+msgstr "Không thể lưu tệp (sự cố mã hóa)"
+
+#: mu/logic.py:853
+msgid "Unable to convert all the characters. If you have an encoding line at the top of the file, remove it and try again."
+msgstr "Không thể chuyển đổi tất cả các ký tự. Nếu bạn có một dòng mã hóa ở đầu tệp, hãy xóa nó và thử lại."
+
+#: mu/logic.py:862
+msgid "Saved file: {}"
+msgstr "Tệp đã lưu: {}"
+
+#: mu/logic.py:891 mu/logic.py:1229
+msgid "You cannot use the filename \"{}\""
+msgstr "Bạn không thể sử dụng tên tệp \"{}\""
+
+#: mu/logic.py:893
+msgid "This name is already used by another part of Python. If you use this name, things are likely to break. Please try again with a different filename."
+msgstr "Tên này đã được một thành phần khác của Python sử dụng. Nếu bạn sử dụng tên này, mọi thứ có thể sẽ bị hỏng. Vui lòng thử lại với tên tệp khác."
+
+#: mu/logic.py:968
+msgid "Good job! No problems found."
+msgstr "Làm tốt lắm! Không tìm thấy vấn đề gì."
+
+#: mu/logic.py:969
+msgid "Hurrah! Checker turned up no problems."
+msgstr "Hu-ra! Chương trình kiểm tra đã báo là không có vấn đề."
+
+#: mu/logic.py:970
+msgid "Nice one! Zero problems detected."
+msgstr "Tốt rồi! Không tìm thấy lỗi nào."
+
+#: mu/logic.py:971
+msgid "Well done! No problems here."
+msgstr "Khá lắm! Không có vấn đề ở đây."
+
+#: mu/logic.py:972
+msgid "Awesome! Zero problems found."
+msgstr "Tuyệt vời! Không tìm thấy lỗi nào."
+
+#: mu/logic.py:999
+msgid "There is un-saved work, exiting the application will cause you to lose it."
+msgstr "Có công việc chưa lưu, nó sẽ mất nếu bạn thoát khỏi ứng dụng."
+
+#: mu/logic.py:1052
+msgid "Could not find MicroPython runtime."
+msgstr "Không thể tìm thấy trình chạy MicroPython."
+
+#: mu/logic.py:1053
+msgid "The micro:bit runtime you specified ('{}') does not exist. Please try again."
+msgstr "Trình chạy micro:bit mà bạn đã chỉ định ('{}') không tồn tại. Vui lòng thử lại."
+
+#: mu/logic.py:1123
+msgid "Changed to {} mode."
+msgstr "Đã thay đổi thành chế độ {}."
+
+#: mu/logic.py:1168
+msgid "Detected new {} device."
+msgstr "Đã phát hiện thiết bị {} mới."
+
+#: mu/logic.py:1175
+msgid "Would you like to change Mu to the {} mode?"
+msgstr "Bạn có muốn đổi Mu thành chế độ {} không?"
+
+#: mu/logic.py:1210
+msgid "Cannot Set Breakpoint."
+msgstr "Không thể đặt điểm ngắt."
+
+#: mu/logic.py:1211
+msgid "Lines that are comments or some multi-line statements cannot have breakpoints."
+msgstr "Không thể đặt điểm ngắt ở các dòng là các chú thích hoặc một số câu lệnh nhiều dòng."
+
+#: mu/logic.py:1231
+msgid "This name is already used by another part of Python. If you use that name, things are likely to break. Please try again with a different filename."
+msgstr "Tên này đã được một thành phần khác của Python sử dụng. Nếu bạn sử dụng tên đó, mọi thứ có thể sẽ bị phá vỡ. Vui lòng thử lại với tên tệp khác."
+
+#: mu/logic.py:1248
+msgid "Could not rename file."
+msgstr "Không thể đổi tên tệp."
+
+#: mu/logic.py:1249
+msgid "A file of that name is already open in Mu."
+msgstr "Một tệp có tên đó đã được mở sẵn trong Mu."
+
+#: mu/logic.py:1278
+msgid "Replaced \"{}\" with \"{}\"."
+msgstr "Thay thế \"{}\" bằng \"{}\"."
+
+#: mu/logic.py:1282
+msgid "Replaced {} matches of \"{}\" with \"{}\"."
+msgstr "Đã thay thế {} kết quả phù hợp của \"{}\" bằng \"{}\"."
+
+#: mu/logic.py:1287 mu/logic.py:1294
+msgid "Could not find \"{}\"."
+msgstr "Không thể tìm thấy \"{}\"."
+
+#: mu/logic.py:1292
+msgid "Highlighting matches for \"{}\"."
+msgstr "Làm nổi bật các kết quả phù hợp cho \"{}\"."
+
+#: mu/logic.py:1297
+msgid "You must provide something to find."
+msgstr "Bạn phải cung cấp một cái gì đó để tìm."
+
+#: mu/logic.py:1298
+msgid "Please try again, this time with something in the find box."
+msgstr "Vui lòng thử lại, lần này với nội dung nào đó trong hộp tìm kiếm."
+
+#: mu/modes/adafruit.py:32
+msgid "Adafruit CircuitPython"
+msgstr "Adafruit CircuitPython"
+
+#: mu/modes/adafruit.py:33
+msgid "Use CircuitPython on Adafruit's line of boards."
+msgstr "Sử dụng CircuitPython trên dòng bo mạch của Adafruit."
+
+#: mu/modes/adafruit.py:71
+msgid "Serial"
+msgstr "Serial"
+
+#: mu/modes/adafruit.py:72
+msgid "Open a serial connection to your device."
+msgstr "Mở kết nối nối tiếp với thiết bị của bạn."
+
+#: mu/modes/adafruit.py:79 mu/modes/microbit.py:215 mu/modes/python3.py:136
+msgid "Plotter"
+msgstr "Máy vẽ"
+
+#: mu/modes/adafruit.py:80 mu/modes/microbit.py:216
+msgid "Plot incoming REPL data."
+msgstr "Vẽ dữ liệu REPL gửi đến."
+
+#: mu/modes/adafruit.py:150
+msgid "Could not find an attached Adafruit CircuitPython device."
+msgstr "Không tìm thấy thiết bị Adafruit CircuitPython được gắn vào."
+
+#: mu/modes/adafruit.py:152
+msgid ""
+"Python files for Adafruit CircuitPython devices are stored on the device. Therefore, to edit these files you need to have the device plugged in. Until you plug in a device, Mu will use the directory found here:\n"
+"\n"
+" {}\n"
+"\n"
+"...to store your code."
+msgstr ""
+"Các tệp Python cho các thiết bị Adafruit CircuitPython được lưu trữ trên thiết bị. Do đó, để chỉnh sửa các tệp này, bạn cần phải cắm thiết bị vào. Cho đến khi bạn cắm thiết bị, Mu sẽ sử dụng thư mục được tìm thấy ở đây:\n"
+"\n"
+"{}\n"
+"\n"
+"... để lưu trữ chương trình của bạn."
+
+#: mu/modes/base.py:177
+msgid "Data Flood Detected!"
+msgstr "Phát hiện tràn dữ liệu!"
+
+#: mu/modes/base.py:178
+msgid ""
+"The plotter is flooded with data which will make Mu unresponsive and freeze. As a safeguard, the plotter has been stopped.\n"
+"\n"
+"Flooding is when chunks of data of more than 1024 bytes are repeatedly sent to the plotter.\n"
+"\n"
+"To fix this, make sure your code prints small tuples of data between calls to 'sleep' for a very short period of time."
+msgstr ""
+"Máy vẽ bị tràn ngập với dữ liệu mà sẽ làm cho Mu không phản hồi và đóng băng. Như một biện pháp bảo vệ, máy vẽ đã được dừng lại.\n"
+"\n"
+"Việc tràn xảy ra khi các khối dữ liệu có dung lượng lớn hơn 1024 byte được gửi nhiều lần tới máy vẽ.\n"
+"\n"
+"Để khắc phục điều này, hãy đảm bảo mã của bạn in các dữ liệu nhỏ giữa các cuộc gọi đến 'ngủ' trong một khoảng thời gian rất ngắn."
+
+#: mu/modes/base.py:273 mu/modes/base.py:312
+msgid "Click on the device's reset button, wait a few seconds and then try again."
+msgstr "Nhấp vào nút reset của thiết bị, đợi một vài giây và sau đó thử lại."
+
+#: mu/modes/base.py:279 mu/modes/base.py:318
+msgid "Could not find an attached device."
+msgstr "Không thể tìm thấy thiết bị được gắn vào."
+
+#: mu/modes/base.py:280
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it before the REPL will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before trying again."
+msgstr ""
+"Hãy đảm bảo rằng thiết bị được cắm vào máy tính này.\n"
+"\n"
+"Nó phải được nạp sẵn một trình chạy MicroPython (hoặc CircuitPython) trước khi REPL hoạt động.\n"
+"\n"
+"Cuối cùng, nhấn nút reset thiết bị và đợi vài giây trước khi thử lại."
+
+#: mu/modes/base.py:319
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it before the Plotter will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before trying again."
+msgstr ""
+"Hãy đảm bảo rằng thiết bị được cắm vào máy tính này.\n"
+"\n"
+"Nó phải được nạp sẵn một trình chạy MicroPython (hoặc CircuitPython) trước khi Máy vẽ hoạt động.\n"
+"\n"
+"Cuối cùng, nhấn nút reset thiết bị và đợi vài giây trước khi thử lại."
+
+#: mu/modes/debugger.py:35
+msgid "Graphical Debugger"
+msgstr "Trình gỡ lỗi đồ họa"
+
+#: mu/modes/debugger.py:36
+msgid "Debug your Python 3 code."
+msgstr "Gỡ lỗi mã Python 3 của bạn."
+
+#: mu/modes/debugger.py:50 mu/modes/pygamezero.py:109 mu/modes/python3.py:166
+msgid "Stop"
+msgstr "Dừng"
+
+#: mu/modes/debugger.py:51
+msgid "Stop the running code."
+msgstr "Dừng mã đang chạy."
+
+#: mu/modes/debugger.py:57
+msgid "Continue"
+msgstr "Tiếp tục"
+
+#: mu/modes/debugger.py:58
+msgid "Continue to run your Python script."
+msgstr "Tiếp tục chạy tệp lệnh Python của bạn."
+
+#: mu/modes/debugger.py:64
+msgid "Step Over"
+msgstr "Bước qua"
+
+#: mu/modes/debugger.py:65
+msgid "Step over a line of code."
+msgstr "Bước qua một dòng mã."
+
+#: mu/modes/debugger.py:71
+msgid "Step In"
+msgstr "Bước vào"
+
+#: mu/modes/debugger.py:72
+msgid "Step into a function."
+msgstr "Bước vào một hàm."
+
+#: mu/modes/debugger.py:78
+msgid "Step Out"
+msgstr "Bước ra"
+
+#: mu/modes/debugger.py:79
+msgid "Step out of a function."
+msgstr "Bước ra khỏi một hàm."
+
+#: mu/modes/debugger.py:156
+msgid "Your script has finished running."
+msgstr "Tệp lệnh của bạn đã chạy xong."
+
+#: mu/modes/debugger.py:224
+msgid ""
+"Unable to connect to the Python debugger.\n"
+"\n"
+msgstr ""
+"Không thể kết nối với trình gỡ lỗi Python.\n"
+"\n"
+
+#: mu/modes/debugger.py:308
+msgid "Debugger info: {}"
+msgstr "Thông tin trình gỡ lỗi: {}"
+
+#: mu/modes/debugger.py:314
+msgid "Debugger warning: {}"
+msgstr "Cảnh báo trình gỡ lỗi: {}"
+
+#: mu/modes/debugger.py:321
+msgid "Debugger error: {}"
+msgstr "Lỗi trình gỡ lỗi: {}"
+
+#: mu/modes/microbit.py:168
+msgid "BBC micro:bit"
+msgstr "BBC micro:bit"
+
+#: mu/modes/microbit.py:169
+msgid "Write MicroPython for the BBC micro:bit."
+msgstr "Viết MicroPython cho BBC micro:bit."
+
+#: mu/modes/microbit.py:192
+msgid "Flash"
+msgstr "Nạp"
+
+#: mu/modes/microbit.py:193
+msgid "Flash your code onto the micro:bit."
+msgstr "Nạp mã của bạn lên micro:bit."
+
+#: mu/modes/microbit.py:199
+msgid "Files"
+msgstr "Tệp"
+
+#: mu/modes/microbit.py:200
+msgid "Access the file system on the micro:bit."
+msgstr "Truy cập hệ thống tệp trên micro:bit."
+
+#: mu/modes/microbit.py:206 mu/modes/python3.py:127
+msgid "REPL"
+msgstr "REPL"
+
+#: mu/modes/microbit.py:207
+msgid "Use the REPL to live-code on the micro:bit."
+msgstr "Sử dụng REPL để chạy lệnh tức thời trên micro:bit."
+
+#: mu/modes/microbit.py:257
+msgid "Unable to flash \"{}\""
+msgstr "Không thể nạp \"{}\""
+
+#: mu/modes/microbit.py:267
+msgid "Problem with script"
+msgstr "Có sự cố với tệp lệnh"
+
+#: mu/modes/microbit.py:268
+msgid "{} [{}:{}]"
+msgstr "{} [{}:{}]"
+
+#: mu/modes/microbit.py:278
+msgid "Our minifier tried but your script is too long!"
+msgstr "Trình thu gọn mã đã thử, nhưng tệp lệnh của bạn quá dài!"
+
+#: mu/modes/microbit.py:283
+msgid "Your script is too long and the minifier isn't available"
+msgstr "Tệp lệnh của bạn quá dài và bộ thu gọn mã không khả dụng"
+
+#: mu/modes/microbit.py:288
+msgid "Your script is too long!"
+msgstr "Tệp lệnh của bạn quá dài!"
+
+#: mu/modes/microbit.py:368
+msgid "Flashing \"{}\" onto the micro:bit."
+msgstr "Nạp \"{}\" lên micro:bit."
+
+#: mu/modes/microbit.py:370
+msgid " Runtime: {}"
+msgstr "Bộ thực thi: {}"
+
+#: mu/modes/microbit.py:416
+msgid "Unsupported BBC micro:bit."
+msgstr "BBC micro:bit không được hỗ trợ."
+
+#: mu/modes/microbit.py:417
+msgid ""
+"Your device is newer than this version of Mu. Please update Mu to the latest version to support this device.\n"
+"\n"
+"https://codewith.mu/"
+msgstr ""
+"Thiết bị của bạn mới hơn phiên bản Mu này. Vui lòng cập nhật Mu lên phiên bản mới nhất để hỗ trợ thiết bị này.\n"
+"\n"
+"https://codewith.mu/"
+
+#: mu/modes/microbit.py:474 mu/modes/microbit.py:611
+msgid "Could not find an attached BBC micro:bit."
+msgstr "Không thể tìm thấy BBC micro:bit được gắn vào."
+
+#: mu/modes/microbit.py:475
+msgid "Please ensure you leave enough time for the BBC micro:bit to be attached and configured correctly by your computer. This may take several seconds. Alternatively, try removing and re-attaching the device or saving your work and restarting Mu if the device remains unfound."
+msgstr ""
+"Hãy đảm bảo bạn đợi đủ thời gian cho BBC micro:bit để kết nối vào định cấu hình chính xác bằng máy tính của bạn. Điều này có thể mất vài giây. Ngoài ra, hãy thử gỡ ra và gắn lại thiết bị, hoặc lưu công việc của bạn và khởi động lại Mu nếu thiết bị vẫn không được nhận ra."
+
+#: mu/modes/microbit.py:489
+msgid "Finished flashing."
+msgstr "Đã nạp xong."
+
+#: mu/modes/microbit.py:524
+msgid "Copied code onto micro:bit."
+msgstr "Đã sao chép mã vào micro:bit."
+
+#: mu/modes/microbit.py:533
+msgid "There was a problem flashing the micro:bit."
+msgstr "Đã xảy ra sự cố khi nạp micro:bit."
+
+#: mu/modes/microbit.py:534
+msgid "Please do not disconnect the device until flashing has completed. Please check the logs for more information."
+msgstr "Vui lòng không ngắt kết nối thiết bị cho đến khi việc nạp hoàn tất. Vui lòng kiểm tra nhật ký để biết thêm thông tin."
+
+#: mu/modes/microbit.py:555
+msgid "REPL and file system cannot work at the same time."
+msgstr "REPL và hệ thống tập tin không thể làm việc cùng một lúc."
+
+#: mu/modes/microbit.py:556
+msgid "The REPL and file system both use the same USB serial connection. Only one can be active at any time. Toggle the file system off and try again."
+msgstr "REPL và hệ thống tệp đều sử dụng cùng một kết nối nối tiếp USB. Vào mỗi thời điểm, chỉ một cái có thể hoạt động. Tắt hệ thống tệp và thử lại."
+
+#: mu/modes/microbit.py:573
+msgid "The plotter and file system cannot work at the same time."
+msgstr "Hệ thống tệp và máy vẽ không thể hoạt động cùng một lúc."
+
+#: mu/modes/microbit.py:575
+msgid "The plotter and file system both use the same USB serial connection. Only one can be active at any time. Toggle the file system off and try again."
+msgstr "Máy vẽ và hệ thống tệp đều sử dụng cùng một kết nối nối tiếp USB. Vào mỗi thời điểm, chỉ một cái có thể hoạt động. Tắt hệ thống tệp và thử lại."
+
+#: mu/modes/microbit.py:587
+msgid "File system cannot work at the same time as the REPL or plotter."
+msgstr "Hệ thống tệp không thể hoạt động cùng lúc với REPL hoặc bản vẽ."
+
+#: mu/modes/microbit.py:589
+msgid "The file system and the REPL and plotter use the same USB serial connection. Toggle the REPL and plotter off and try again."
+msgstr "Hệ thống tệp, REPL và máy vẽ sử dụng cùng một kết nối nối tiếp USB. Hãy tắt REPL và máy vẽ rồi thử lại."
+
+#: mu/modes/microbit.py:612
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"The device must have MicroPython flashed onto it before the file system will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before trying again."
+msgstr ""
+"Hãy đảm bảo rằng thiết bị được cắm vào máy tính này.\n"
+"\n"
+"Thiết bị phải được nạp sẵn MicroPython trước khi hệ thống tệp hoạt động.\n"
+"\n"
+"Cuối cùng, nhấn nút reset thiết bị và đợi vài giây trước khi thử lại."
+
+#: mu/modes/pygamezero.py:35
+msgid "Pygame Zero"
+msgstr "Pygame Zero"
+
+#: mu/modes/pygamezero.py:36
+msgid "Make games with Pygame Zero."
+msgstr "Tạo trò chơi với Pygame Zero."
+
+#: mu/modes/pygamezero.py:51 mu/modes/pygamezero.py:101
+msgid "Play"
+msgstr "Chơi"
+
+#: mu/modes/pygamezero.py:52 mu/modes/pygamezero.py:102
+msgid "Play your Pygame Zero game."
+msgstr "Chơi trò chơi Pygame Zero của bạn."
+
+#: mu/modes/pygamezero.py:58
+msgid "Images"
+msgstr "Ảnh"
+
+#: mu/modes/pygamezero.py:59
+msgid "Show the images used by Pygame Zero."
+msgstr "Hiển thị hình ảnh được sử dụng bởi Pygame Zero."
+
+#: mu/modes/pygamezero.py:65
+msgid "Fonts"
+msgstr "Fonts"
+
+#: mu/modes/pygamezero.py:66
+msgid "Show the fonts used by Pygame Zero."
+msgstr "Hiển thị các phông chữ được sử dụng bởi Pygame Zero."
+
+#: mu/modes/pygamezero.py:72
+msgid "Sounds"
+msgstr "Âm thanh"
+
+#: mu/modes/pygamezero.py:73
+msgid "Show the sounds used by Pygame Zero."
+msgstr "Hiển thị các âm thanh được sử dụng bởi Pygame Zero."
+
+#: mu/modes/pygamezero.py:79
+msgid "Music"
+msgstr "Âm nhạc"
+
+#: mu/modes/pygamezero.py:80
+msgid "Show the music used by Pygame Zero."
+msgstr "Hiển thị nhạc được sử dụng bởi Pygame Zero."
+
+#: mu/modes/pygamezero.py:110
+msgid "Stop your Pygame Zero game."
+msgstr "Dừng trò chơi Pygame Zero của bạn."
+
+#: mu/modes/python3.py:97
+msgid "Python 3"
+msgstr "Python 3"
+
+#: mu/modes/python3.py:98
+msgid "Create code using standard Python 3."
+msgstr "Tạo mã bằng Python 3 chuẩn."
+
+#: mu/modes/python3.py:113 mu/modes/python3.py:158
+msgid "Run"
+msgstr "Chạy"
+
+#: mu/modes/python3.py:114 mu/modes/python3.py:159
+msgid "Run your Python script."
+msgstr "Chạy tệp lệnh Python của bạn."
+
+#: mu/modes/python3.py:120
+msgid "Debug"
+msgstr "Gỡ lỗi"
+
+#: mu/modes/python3.py:121
+msgid "Debug your Python script."
+msgstr "Gỡ lỗi tệp lệnh Python của bạn."
+
+#: mu/modes/python3.py:128
+msgid "Use the REPL for live coding."
+msgstr "Sử dụng REPL để chạy mã trực tiếp."
+
+#: mu/modes/python3.py:137
+msgid "Plot data from your script or the REPL."
+msgstr "Vẽ dữ liệu từ tệp lệnh của bạn hoặc REPL."
+
+#: mu/modes/python3.py:167
+msgid "Stop your Python script."
+msgstr "Dừng tệp lệnh Python của bạn."
+
+#: mu/modes/python3.py:230
+msgid "Starting iPython REPL."
+msgstr "Đang khởi động iPython REPL."
+
+#: mu/modes/python3.py:234
+msgid "Stopping iPython REPL (this may take a short amount of time)."
+msgstr "Đang đóng iPython REPL (việc này có thể cần một chút thời gian)."
+
+#: mu/modes/python3.py:319
+msgid "REPL started."
+msgstr "REPL đã bắt đầu."
+
+#: mu/modes/python3.py:328
+msgid "REPL stopped."
+msgstr "REPL đã dừng lại."

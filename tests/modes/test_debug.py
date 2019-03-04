@@ -45,20 +45,17 @@ def test_debug_start():
     editor = mock.MagicMock()
     editor.envars = [['name', 'value'], ]
     view = mock.MagicMock()
-    view.current_tab.path = '/foo'
+    view.current_tab.path = '/foo/bar'
     view.current_tab.isModified.return_value = True
     mock_runner = mock.MagicMock()
     view.add_python3_runner.return_value = mock_runner
     mock_debugger = mock.MagicMock()
     mock_debugger_class = mock.MagicMock(return_value=mock_debugger)
     dm = DebugMode(editor, view)
-    dm.workspace_dir = mock.MagicMock(return_value='/bar')
-    with mock.patch('builtins.open') as oa, \
-            mock.patch('mu.modes.debugger.Debugger', mock_debugger_class), \
-            mock.patch('mu.modes.debugger.write_and_flush'):
+    with mock.patch('mu.modes.debugger.Debugger', mock_debugger_class):
         dm.start()
-        oa.assert_called_once_with('/foo', 'w', newline='')
-    view.add_python3_runner.assert_called_once_with('/foo', '/bar',
+    editor.save_tab_to_file.called_once_with(view.current_tab)
+    view.add_python3_runner.assert_called_once_with('/foo/bar', '/foo',
                                                     debugger=True,
                                                     envars=[['name', 'value']])
     mock_runner.process.waitForStarted.assert_called_once_with()

@@ -1,4 +1,3 @@
-import platform
 from setuptools import setup
 from mu import __version__
 
@@ -12,23 +11,19 @@ with open('CHANGES.rst') as f:
     changes = f.read()
 
 install_requires = ['pycodestyle==2.4.0', 'pyflakes==2.0.0',
-                    'pyserial==3.4', 'pyqt5==5.11.2', 'qscintilla==2.10.7',
+                    'pyserial==3.4', 'pyqt5==5.11.3', 'qscintilla==2.10.8',
                     'qtconsole==4.3.1', 'matplotlib==2.2.2',
-                    'pgzero==1.2', 'PyQtChart==5.11.2', 'appdirs>=1.4.3',
+                    'pgzero==1.2', 'PyQtChart==5.11.3', 'appdirs>=1.4.3',
                     'gpiozero>=1.4.1', 'guizero>=0.5.2',
                     'pigpio>=1.40.post1', 'Pillow>=5.2.0',
-                    'requests>=2.19.1', 'semver>=2.8.0', ]
+                    'requests>=2.19.1', 'semver>=2.8.0', 'nudatus>=0.0.3',
+                    "black>=18.9b0; python_version > '3.5'"]
 
-# Exclude packages not available for ARM in PyPI/piwheels (Raspberry Pi)
-try:
-    machine = platform.machine()
-    if machine.lower().startswith('arm'):
-        exclude = ('pyqt5', 'qscintilla', 'qtconsole', 'PyQtChart')
-        install_requires = [requirement for requirement in install_requires
-                            if not requirement.startswith(exclude)]
-except Exception:
-    # Something unexpected happened, so simply keep all requires
-    pass
+# Add environmental marker for packages not available for ARM in PyPI/piwheels
+arm_exclude = ('pyqt5', 'qscintilla', 'PyQtChart')
+install_requires = ['{}; "arm" not in platform_machine'.format(req)
+                    if req.startswith(arm_exclude) else req
+                    for req in install_requires]
 
 
 setup(

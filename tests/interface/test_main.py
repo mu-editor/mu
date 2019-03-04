@@ -11,6 +11,7 @@ import mu.interface.main
 import mu.interface.themes
 import mu.interface.editor
 import pytest
+import sys
 
 
 def test_ButtonBar_init():
@@ -83,8 +84,11 @@ def test_ButtonBar_change_mode():
         mock_reset.reset_mock()
         b.change_mode(mock_mode)
         mock_reset.assert_called_once_with()
-        assert mock_add_action.call_count == 11
-        assert mock_add_separator.call_count == 4
+        if sys.version_info < (3, 6):
+            assert mock_add_action.call_count == 11
+        else:
+            assert mock_add_action.call_count == 12
+        assert mock_add_separator.call_count == 5
 
 
 def test_ButtonBar_set_responsive_mode():
@@ -235,6 +239,8 @@ def test_Window_attributes():
     w = mu.interface.main.Window()
     assert w.title == "Mu {}".format(__version__)
     assert w.icon == "icon"
+    assert w.zoom_position == 2
+    assert w.zooms == ('xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl')
 
 
 def test_Window_resizeEvent():
@@ -306,15 +312,24 @@ def test_Window_change_mode():
     tab2.set_api.assert_called_once_with(api)
 
 
+def test_Window_set_zoom():
+    """
+    Ensure the correct signal is emitted.
+    """
+    w = mu.interface.main.Window()
+    w._zoom_in = mock.MagicMock()
+    w.set_zoom()
+    w._zoom_in.emit.assert_called_once_with('m')
+
+
 def test_Window_zoom_in():
     """
     Ensure the correct signal is emitted.
     """
     w = mu.interface.main.Window()
     w._zoom_in = mock.MagicMock()
-    w._zoom_in.emit = mock.MagicMock()
     w.zoom_in()
-    w._zoom_in.emit.assert_called_once_with(2)
+    w._zoom_in.emit.assert_called_once_with('l')
 
 
 def test_Window_zoom_out():
@@ -323,9 +338,8 @@ def test_Window_zoom_out():
     """
     w = mu.interface.main.Window()
     w._zoom_out = mock.MagicMock()
-    w._zoom_out.emit = mock.MagicMock()
     w.zoom_out()
-    w._zoom_out.emit.assert_called_once_with(2)
+    w._zoom_out.emit.assert_called_once_with('s')
 
 
 def test_Window_connect_zoom():
@@ -386,6 +400,7 @@ def test_Window_get_load_path():
     with mock.patch('mu.interface.main.QFileDialog', mock_fd):
         returned_path = w.get_load_path('micropython', '*.py *.hex *.PY *.HEX')
     assert returned_path == path
+    assert w.previous_folder == '/foo'  # Note lack of filename.
     mock_fd.getOpenFileName.assert_called_once_with(
         w.widget, 'Open file', 'micropython', '*.py *.hex *.PY *.HEX')
 
@@ -401,9 +416,11 @@ def test_Window_get_save_path():
     w = mu.interface.main.Window()
     w.widget = mock.MagicMock()
     with mock.patch('mu.interface.main.QFileDialog', mock_fd):
-        assert w.get_save_path('micropython') == path
+        returned_path = w.get_save_path('micropython')
     mock_fd.getSaveFileName.assert_called_once_with(w.widget, 'Save file',
                                                     'micropython')
+    assert w.previous_folder == '/foo'  # Note lack of filename.
+    assert returned_path == path
 
 
 def test_Window_get_microbit_path():
@@ -1139,11 +1156,48 @@ def test_Window_show_admin():
     mock_admin_display.return_value = mock_admin_box
     with mock.patch('mu.interface.main.AdminDialog', mock_admin_display):
         w = mu.interface.main.Window()
-        result = w.show_admin('log', 'envars')
+        result = w.show_admin('log', 'envars', 'packages')
         mock_admin_display.assert_called_once_with(w)
-        mock_admin_box.setup.assert_called_once_with('log', 'envars')
+        mock_admin_box.setup.assert_called_once_with('log', 'envars',
+                                                     'packages')
         mock_admin_box.exec.assert_called_once_with()
         assert result == 'this is the expected result'
+
+
+def test_Window_show_admin_cancelled():
+    """
+    If the modal dialog for the admin functions is cancelled, ensure an
+    empty dictionary (indicating a "falsey" no change) is returned.
+    """
+    mock_admin_display = mock.MagicMock()
+    mock_admin_box = mock.MagicMock()
+    mock_admin_box.exec.return_value = False
+    mock_admin_display.return_value = mock_admin_box
+    with mock.patch('mu.interface.main.AdminDialog', mock_admin_display):
+        w = mu.interface.main.Window()
+        result = w.show_admin('log', 'envars', 'packages')
+        mock_admin_display.assert_called_once_with(w)
+        mock_admin_box.setup.assert_called_once_with('log', 'envars',
+                                                     'packages')
+        mock_admin_box.exec.assert_called_once_with()
+        assert result == {}
+
+
+def test_Window_sync_packages():
+    """
+    Ensure the expected modal dialog indicating progress of third party package
+    add/removal is displayed with the expected settings.
+    """
+    mock_package_dialog = mock.MagicMock()
+    with mock.patch('mu.interface.main.PackageDialog', mock_package_dialog):
+        w = mu.interface.main.Window()
+        to_remove = {'foo'}
+        to_add = {'bar'}
+        module_dir = 'baz'
+        w.sync_packages(to_remove, to_add, module_dir)
+        dialog = mock_package_dialog()
+        dialog.setup.assert_called_once_with(to_remove, to_add, module_dir)
+        dialog.exec.assert_called_once_with()
 
 
 def test_Window_show_message():

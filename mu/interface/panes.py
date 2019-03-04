@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
+import site
 import os
 import re
 import platform
@@ -50,6 +51,17 @@ except ImportError:  # pragma: no cover
     CHARTS = False
 
 
+PANE_ZOOM_SIZES = {
+    'xs': 8,
+    's': 10,
+    'm': 14,
+    'l': 16,
+    'xl': 18,
+    'xxl': 24,
+    'xxxl': 28,
+}
+
+
 class JupyterREPLPane(RichJupyterWidget):
     """
     REPL = Read, Evaluate, Print, Loop.
@@ -65,6 +77,9 @@ class JupyterREPLPane(RichJupyterWidget):
         self.console_height = 10
 
     def _append_plain_text(self, text, *args, **kwargs):
+        """
+        Ensures appended text is emitted as a signal with associated bytes.
+        """
         super()._append_plain_text(text, *args, **kwargs)
         self.on_append_text.emit(text.encode('utf-8'))
 
@@ -72,27 +87,15 @@ class JupyterREPLPane(RichJupyterWidget):
         """
         Sets the font size for all the textual elements in this pane.
         """
-        stylesheet = ("QWidget{font-size: " + str(new_size) +
-                      "pt; font-family: Monospace;}")
-        self.setStyleSheet(stylesheet)
+        font = self.font
+        font.setPointSize(new_size)
+        self._set_font(font)
 
-    def zoomIn(self, delta=2):
+    def set_zoom(self, size):
         """
-        Zoom in (increase) the size of the font by delta amount difference in
-        point size upto 34 points.
+        Set the current zoom level given the "t-shirt" size.
         """
-        old_size = self.font.pointSize()
-        new_size = min(old_size + delta, 34)
-        self.set_font_size(new_size)
-
-    def zoomOut(self, delta=2):
-        """
-        Zoom out (decrease) the size of the font by delta amount difference in
-        point size down to 4 points.
-        """
-        old_size = self.font.pointSize()
-        new_size = max(old_size - delta, 4)
-        self.set_font_size(new_size)
+        self.set_font_size(PANE_ZOOM_SIZES[size])
 
     def set_theme(self, theme):
         """
@@ -228,37 +231,39 @@ class MicroPythonREPLPane(QTextEdit):
                 self.setTextCursor(tc)
             elif data[i] == 13:  # \r
                 pass
-            elif data[i] == 27 and data[i + 1] == 91:  # VT100 cursor: <Esc>[
+            elif len(data) > i + 1 and data[i] == 27 and data[i + 1] == 91:
+                # VT100 cursor detected: <Esc>[
                 i += 2  # move index to after the [
-                m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])',
-                              data[i:].decode('utf-8'))
+                regex = r'(?P<count>[\d]*)(;?[\d]*)*(?P<action>[ABCDKm])'
+                m = re.search(regex, data[i:].decode('utf-8'))
+                if m:
+                    # move to (almost) after control seq
+                    # (will ++ at end of loop)
+                    i += m.end() - 1
 
-                # move to (almost) after control seq (will ++ at end of loop)
-                i += m.end() - 1
+                    if m.group("count") == '':
+                        count = 1
+                    else:
+                        count = int(m.group("count"))
 
-                if m.group("count") == '':
-                    count = 1
-                else:
-                    count = int(m.group("count"))
-
-                if m.group("action") == "A":  # up
-                    tc.movePosition(QTextCursor.Up, n=count)
-                    self.setTextCursor(tc)
-                elif m.group("action") == "B":  # down
-                    tc.movePosition(QTextCursor.Down, n=count)
-                    self.setTextCursor(tc)
-                elif m.group("action") == "C":  # right
-                    tc.movePosition(QTextCursor.Right, n=count)
-                    self.setTextCursor(tc)
-                elif m.group("action") == "D":  # left
-                    tc.movePosition(QTextCursor.Left, n=count)
-                    self.setTextCursor(tc)
-                elif m.group("action") == "K":  # delete things
-                    if m.group("count") == "":  # delete to end of line
-                        tc.movePosition(QTextCursor.EndOfLine,
-                                        mode=QTextCursor.KeepAnchor)
-                        tc.removeSelectedText()
+                    if m.group("action") == "A":  # up
+                        tc.movePosition(QTextCursor.Up, n=count)
                         self.setTextCursor(tc)
+                    elif m.group("action") == "B":  # down
+                        tc.movePosition(QTextCursor.Down, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "C":  # right
+                        tc.movePosition(QTextCursor.Right, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "D":  # left
+                        tc.movePosition(QTextCursor.Left, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "K":  # delete things
+                        if m.group("count") == "":  # delete to end of line
+                            tc.movePosition(QTextCursor.EndOfLine,
+                                            mode=QTextCursor.KeepAnchor)
+                            tc.removeSelectedText()
+                            self.setTextCursor(tc)
             elif data[i] == 10:  # \n
                 tc.movePosition(QTextCursor.End)
                 self.setTextCursor(tc)
@@ -275,6 +280,20 @@ class MicroPythonREPLPane(QTextEdit):
         Clears the text of the REPL.
         """
         self.setText('')
+
+    def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
+        """
+        Sets the font size for all the textual elements in this pane.
+        """
+        font = self.font()
+        font.setPointSize(new_size)
+        self.setFont(font)
+
+    def set_zoom(self, size):
+        """
+        Set the current zoom level given the "t-shirt" size.
+        """
+        self.set_font_size(PANE_ZOOM_SIZES[size])
 
 
 class MuFileList(QListWidget):
@@ -568,23 +587,11 @@ class FileSystemPane(QFrame):
         self.microbit_fs.setFont(self.font)
         self.local_fs.setFont(self.font)
 
-    def zoomIn(self, delta=2):
+    def set_zoom(self, size):
         """
-        Zoom in (increase) the size of the font by delta amount difference in
-        point size upto 34 points.
+        Set the current zoom level given the "t-shirt" size.
         """
-        old_size = self.font.pointSize()
-        new_size = min(old_size + delta, 34)
-        self.set_font_size(new_size)
-
-    def zoomOut(self, delta=2):
-        """
-        Zoom out (decrease) the size of the font by delta amount difference in
-        point size down to 4 points.
-        """
-        old_size = self.font.pointSize()
-        new_size = max(old_size - delta, 4)
-        self.set_font_size(new_size)
+        self.set_font_size(PANE_ZOOM_SIZES[size])
 
 
 class PythonProcessPane(QTextEdit):
@@ -609,6 +616,8 @@ class PythonProcessPane(QTextEdit):
         self.input_history = []  # history of inputs entered in this session.
         self.start_of_current_line = 0  # start position of the input line.
         self.history_position = 0  # current position when navigation history.
+        self.stdout_buffer = b''  # contains non-decoded bytes from stdout.
+        self.reading_stdout = False  # flag showing if already reading stdout.
 
     def start_process(self, script_name, working_directory, interactive=True,
                       debugger=False, command_args=None, envars=None,
@@ -638,6 +647,8 @@ class PythonProcessPane(QTextEdit):
         If python_args is given, these are passed as arguments to the Python
         runtime used to launch the child process.
         """
+        if not envars:  # Envars must be a list if not passed a value.
+            envars = []
         self.script = os.path.abspath(os.path.normcase(script_name))
         logger.info('Running script: {}'.format(self.script))
         if interactive:
@@ -651,12 +662,48 @@ class PythonProcessPane(QTextEdit):
         env = QProcessEnvironment.systemEnvironment()
         env.insert('PYTHONUNBUFFERED', '1')
         env.insert('PYTHONIOENCODING', 'utf-8')
-        if sys.platform == 'darwin':
-            parent_dir = os.path.dirname(__file__)
-            if '/mu-editor.app/Contents/Resources/app/mu' in parent_dir:
-                # Mu is running as a macOS app bundle. Ensure the expected
-                # paths are in PYTHONPATH of the subprocess.
-                env.insert('PYTHONPATH', ':'.join(sys.path))
+        if sys.platform == 'win32' and 'pythonw.exe' in sys.executable:
+            # On Windows, if installed via NSIS then Python is always run in
+            # isolated mode via pythonw.exe so none of the expected directories
+            # are on sys.path. To mitigate, Mu attempts to drop a mu.pth file
+            # in a location taken from Windows based settings. This file will
+            # contain the "other" directories to include on the Python path,
+            # such as the working_directory and, if different from the
+            # working_directory, the directory containing the script to run.
+            try:
+                if site.ENABLE_USER_SITE:
+                    # Ensure the USER_SITE directory exists.
+                    os.makedirs(site.getusersitepackages(), exist_ok=True)
+                    site_path = site.USER_SITE
+                    path_file = os.path.join(site_path, 'mu.pth')
+                    logger.info('Python paths set via {}'.format(path_file))
+                    # Copy current Python paths. Use a set to avoid
+                    # duplications.
+                    paths_to_use = set([os.path.normcase(p) for p in sys.path])
+                    # Add Mu's working directory.
+                    paths_to_use.add(os.path.normcase(working_directory))
+                    # Add the directory containing the script.
+                    paths_to_use.add(os.path.normcase(
+                        os.path.dirname(self.script)))
+                    # Dropping a mu.pth file containing the paths_to_use
+                    # into USER_SITE will add such paths to sys.path in the
+                    # child process.
+                    with open(path_file, 'w') as mu_pth:
+                        for p in paths_to_use:
+                            mu_pth.write(p + '\n')
+                else:
+                    logger.info("Unable to set Python paths."
+                                " Python's USER_SITE not enabled."
+                                " Check configuration with administrator.")
+            except Exception as ex:
+                # Log all possible errors and allow Mu to continue. This is a
+                # "best effort" attempt to add the correct paths to the child
+                # process, but sometimes configuration by sys-admins may cause
+                # this to fail.
+                logger.error('Could not set Python paths with mu.pth file.')
+                logger.error(ex)
+        if 'PYTHONPATH' not in envars:
+            envars.append(('PYTHONPATH', os.pathsep.join(sys.path)))
         if envars:
             logger.info('Running with environment variables: '
                         '{}'.format(envars))
@@ -665,7 +712,7 @@ class PythonProcessPane(QTextEdit):
         logger.info('Working directory: {}'.format(working_directory))
         self.process.setWorkingDirectory(working_directory)
         self.process.setProcessEnvironment(env)
-        self.process.readyRead.connect(self.read_from_stdout)
+        self.process.readyRead.connect(self.try_read_from_stdout)
         self.process.finished.connect(self.finished)
         logger.info('Python path: {}'.format(sys.path))
         if debugger:
@@ -769,6 +816,29 @@ class PythonProcessPane(QTextEdit):
         modifiers = data.modifiers()
         self.parse_input(key, text, modifiers)
 
+    def on_process_halt(self):
+        """
+        Called when the the user has manually halted a running process. Ensures
+        that the remaining data from the halted process's stdout is handled
+        properly.
+
+        When the process is halted the user is dropped into the Python prompt
+        and this method ensures the UI is updated in a clean, non-blocking
+        way.
+        """
+        data = self.process.readAll().data()
+        if data:
+            while True:
+                try:
+                    self.append(data)
+                    self.on_append_text.emit(data)
+                    self.set_start_of_current_line()
+                    break
+                except UnicodeDecodeError:
+                    # Discard problematic start byte and try again.
+                    # (This may be caused by a split in multi-byte characters).
+                    data = data[1:]
+
     def parse_input(self, key, text, modifiers):
         """
         Correctly encodes user input and sends it to the connected process.
@@ -789,11 +859,21 @@ class PythonProcessPane(QTextEdit):
                 pid = self.process.processId()
                 # NOTE: Windows related constraints don't allow us to send a
                 # CTRL-C, rather, the process will just terminate.
+                halt_flag = False
                 if key == Qt.Key_C:
+                    halt_flag = True
                     os.kill(pid, signal.SIGINT)
                 if key == Qt.Key_D:
+                    halt_flag = True
                     self.process.kill()
-            return
+                if halt_flag:
+                    # Clean up from kill signal.
+                    self.process.readAll()  # Discard queued output.
+                    self.stdout_buffer = b''
+                    # Schedule update of the UI after the process halts (in
+                    # next iteration of the event loop).
+                    QTimer.singleShot(1, self.on_process_halt)
+                    return
         elif key == Qt.Key_Up:
             self.history_back()
         elif key == Qt.Key_Down:
@@ -834,16 +914,35 @@ class PythonProcessPane(QTextEdit):
             self.backspace()
         if key == Qt.Key_Delete:
             self.delete()
-        if not self.isReadOnly() and msg:
-            self.insert(msg)
         if key == Qt.Key_Enter or key == Qt.Key_Return:
+            # First move cursor to the end of the line and insert newline in
+            # case return/enter is pressed while the cursor is in the
+            # middle of the line
+            cursor = self.textCursor()
+            cursor.movePosition(QTextCursor.End)
+            self.setTextCursor(cursor)
+            self.insert(msg)
+            # Then write line to std_in and add to history
             content = self.toPlainText()
             line = content[self.start_of_current_line:].encode('utf-8')
             self.write_to_stdin(line)
             if line.strip():
                 self.input_history.append(line.replace(b'\n', b''))
             self.history_position = 0
-            self.start_of_current_line = self.textCursor().position()
+            self.set_start_of_current_line()
+        elif not self.isReadOnly() and msg:
+            self.insert(msg)
+
+    def set_start_of_current_line(self):
+        """
+        Set the flag to indicate the start of the current line (used before
+        waiting for input).
+
+        This flag is used to discard the preceeding text in the text entry
+        field when Mu parses new input from the user (i.e. any text beyond the
+        self.start_of_current_line).
+        """
+        self.start_of_current_line = len(self.toPlainText())
 
     def history_back(self):
         """
@@ -875,16 +974,32 @@ class PythonProcessPane(QTextEdit):
             history_item = self.input_history[history_pos]
             self.replace_input_line(history_item)
 
+    def try_read_from_stdout(self):
+        """
+        Ensure reading from stdout only happens if there is NOT already current
+        attempts to read from stdout.
+        """
+        if not self.reading_stdout:
+            self.reading_stdout = True
+            self.read_from_stdout()
+
     def read_from_stdout(self):
         """
         Process incoming data from the process's stdout.
         """
-        data = self.process.readAll().data()
+        data = self.process.read(256)
         if data:
-            self.append(data)
-            self.on_append_text.emit(data)
-            cursor = self.textCursor()
-            self.start_of_current_line = cursor.position()
+            data = self.stdout_buffer + data
+            try:
+                self.append(data)
+                self.on_append_text.emit(data)
+                self.set_start_of_current_line()
+                self.stdout_buffer = b''
+            except UnicodeDecodeError:
+                self.stdout_buffer = data
+            QTimer.singleShot(2, self.read_from_stdout)
+        else:
+            self.reading_stdout = False
 
     def write_to_stdin(self, data):
         """
@@ -950,25 +1065,19 @@ class PythonProcessPane(QTextEdit):
         self.clear_input_line()
         self.append(text)
 
-    def zoomIn(self, delta=2):
+    def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
         """
-        Zoom in (increase) the size of the font by delta amount difference in
-        point size upto 34 points.
+        Sets the font size for all the textual elements in this pane.
         """
-        old_size = self.font().pointSize()
-        new_size = old_size + delta
-        if new_size <= 34:
-            super().zoomIn(delta)
+        f = self.font()
+        f.setPointSize(new_size)
+        self.setFont(f)
 
-    def zoomOut(self, delta=2):
+    def set_zoom(self, size):
         """
-        Zoom out (decrease) the size of the font by delta amount difference in
-        point size down to 4 points.
+        Set the current zoom level given the "t-shirt" size.
         """
-        old_size = self.font().pointSize()
-        new_size = old_size - delta
-        if new_size >= 4:
-            super().zoomOut(delta)
+        self.set_font_size(PANE_ZOOM_SIZES[size])
 
     def set_theme(self, theme):
         pass
@@ -999,23 +1108,11 @@ class DebugInspector(QTreeView):
                       "pt; font-family: Monospace;}")
         self.setStyleSheet(stylesheet)
 
-    def zoomIn(self, delta=2):
+    def set_zoom(self, size):
         """
-        Zoom in (increase) the size of the font by delta amount difference in
-        point size upto 34 points.
+        Set the current zoom level given the "t-shirt" size.
         """
-        old_size = self.font().pointSize()
-        new_size = min(old_size + delta, 34)
-        self.set_font_size(new_size)
-
-    def zoomOut(self, delta=2):
-        """
-        Zoom out (decrease) the size of the font by delta amount difference in
-        point size down to 4 points.
-        """
-        old_size = self.font().pointSize()
-        new_size = max(old_size - delta, 4)
-        self.set_font_size(new_size)
+        self.set_font_size(PANE_ZOOM_SIZES[size])
 
     def set_theme(self, theme):
         pass

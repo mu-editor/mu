@@ -29,7 +29,7 @@ from mu.logic import NEWLINE
 
 
 # Regular Expression for valid individual code 'words'
-RE_VALID_WORD = re.compile('^[A-Za-z0-9_-]*$')
+RE_VALID_WORD = re.compile(r'^\w+$')
 
 
 logger = logging.getLogger(__name__)
@@ -162,6 +162,7 @@ class EditorPane(QsciScintilla):
         self.indicatorDefine(self.FullBoxIndicator, self.DEBUG_INDICATOR)
         self.setAnnotationDisplay(self.AnnotationBoxed)
         self.selectionChanged.connect(self.selection_change_listener)
+        self.set_zoom()
 
     def connect_margin(self, func):
         """
@@ -206,6 +207,22 @@ class EditorPane(QsciScintilla):
         for entry in api_definitions:
             self.api.add(entry)
         self.api.prepare()
+
+    def set_zoom(self, size='m'):
+        """
+        Sets the font zoom to the specified base point size for all fonts given
+        a t-shirt size.
+        """
+        sizes = {
+            'xs': -4,
+            's': -2,
+            'm': 1,
+            'l': 4,
+            'xl': 8,
+            'xxl': 16,
+            'xxxl': 48,
+        }
+        self.zoomTo(sizes[size])
 
     @property
     def label(self):
@@ -345,8 +362,7 @@ class EditorPane(QsciScintilla):
         return the corresponding Scintilla line-offset pairs which are
         used for searches, indicators etc.
 
-        FIXME: Not clear whether the Scintilla conversions are expecting
-        bytes or characters (ie codepoints)
+        NOTE: Arguments must be byte offsets into the underlying text bytes.
         """
         start_line, start_offset = self.lineIndexFromPosition(start_position)
         end_line, end_offset = self.lineIndexFromPosition(end_position)
@@ -412,8 +428,10 @@ class EditorPane(QsciScintilla):
         # to the current theme.
         #
         indicators = self.search_indicators['selection']
-        text = self.text()
-        for match in re.finditer(selected_text, text):
+        encoding = 'utf8' if self.isUtf8() else 'latin1'
+        text_bytes = self.text().encode(encoding)
+        selected_text_bytes = selected_text.encode(encoding)
+        for match in re.finditer(selected_text_bytes, text_bytes):
             range = self.range_from_positions(*match.span())
             #
             # Don't highlight the text we've selected

@@ -4,6 +4,22 @@ QToolBar, QToolButton {
     padding: 0;
 }
 
+QToolBar::separator {
+    background: #6b6b6b; /* Border */
+    width: 1px;
+    margin: 6px 3px;
+}
+
+QToolButton#qt_toolbar_ext_button {
+    qproperty-icon: none;
+    margin: 6px 1px;
+    background: #eee;
+}
+
+QToolButton#qt_toolbar_ext_button:hover {
+    background: white;
+}
+
 QToolButton {
     padding: 4px 2px;
 }
@@ -63,7 +79,8 @@ QTabBar::tab::selected {
 QTabBar::close-button {
     image: url(images:close-tab.png);
     padding: 3px;
-    subcontrol-position: right;
+    /* See https://github.com/mu-editor/mu/issues/594 */
+    /* subcontrol-position: right; */
 }
 
 QTabBar::close-button:hover {

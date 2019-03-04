@@ -9,6 +9,8 @@ import re
 from PyQt5.QtCore import Qt, QMimeData, QUrl, QPointF
 from PyQt5.QtGui import QDropEvent
 
+import pytest
+
 
 def test_pythonlexer_keywords():
     """
@@ -76,6 +78,7 @@ def test_EditorPane_configure():
     ep.setAnnotationDisplay = mock.MagicMock()
     ep.selectionChanged = mock.MagicMock()
     ep.selectionChanged.connect = mock.MagicMock()
+    ep.set_zoom = mock.MagicMock()
     ep.configure()
     assert ep.api is None
     assert ep.setFont.call_count == 1
@@ -103,6 +106,7 @@ def test_EditorPane_configure():
          mock.call(ep.StraightBoxIndicator,
                    ep.search_indicators['selection']['id'])],
         any_order=True)
+    assert ep.set_zoom.call_count == 1
 
 
 def test_Editor_connect_margin():
@@ -131,6 +135,16 @@ def test_EditorPane_set_theme():
         mapi.assert_called_once_with(ep.lexer)
         mock_api.add.assert_called_once_with('api help text')
         mock_api.prepare.assert_called_once_with()
+
+
+def test_EditorPane_set_zoom():
+    """
+    Ensure the t-shirt size is turned into a call to parent's zoomTo.
+    """
+    ep = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
+    ep.zoomTo = mock.MagicMock()
+    ep.set_zoom('xl')
+    ep.zoomTo.assert_called_once_with(8)
 
 
 def test_EditorPane_label():
@@ -404,7 +418,12 @@ def test_EditorPane_highlight_selected_matches_multi_word():
     assert ep.search_indicators['selection']['positions'] == []
 
 
-def test_EditorPane_highlight_selected_matches_with_match():
+@pytest.mark.parametrize('text, search_for', [
+    ("foo bar foo baz foo", "foo"),
+    ("résumé foo bar foo baz foo", "foo"),
+    ("résumé bar résumé baz résumé", "résumé"),
+])
+def test_EditorPane_highlight_selected_matches_with_match(text, search_for):
     """
     Ensure that if the current selection is a single word then it causes the
     expected search/highlight call.
@@ -412,9 +431,6 @@ def test_EditorPane_highlight_selected_matches_with_match():
     There appears to be no way to iterate over indicators within the editor.
     So we're using the search_indicators structure as a proxy
     """
-    text = "foo bar foo baz foo"
-    search_for = "foo"
-
     ep = mu.interface.editor.EditorPane(None, 'baz')
     ep.setText(text)
 
