@@ -146,23 +146,6 @@ def test_PackagesWidget_setup():
     assert pw.text_area.toPlainText() == packages
 
 
-def test_PackagesWidget_setup_raspberry_pi():
-    """
-    The package related widget must be disabled in some way if Mu is running
-    on a Raspberry Pi. See:
-    https://github.com/mu-editor/mu/pull/749#issuecomment-459031400
-    for further context.
-    """
-    packages = 'foo\nbar\nbaz'
-    pw = mu.interface.dialogs.PackagesWidget()
-    mock_platform = mock.MagicMock()
-    platform = "Linux-4.14.79-v7+-armv7l-with-debian-9.6"
-    mock_platform.platform.return_value = platform
-    with mock.patch('mu.interface.dialogs.platform', mock_platform):
-        pw.setup(packages)
-    assert pw.text_area.toPlainText() == ''  # No packages
-
-
 def test_AdminDialog_setup():
     """
     Ensure the admin dialog is setup properly given the content of a log
