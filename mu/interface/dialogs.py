@@ -178,11 +178,11 @@ class PackagesWidget(QWidget):
         self.text_area = QPlainTextEdit()
         self.text_area.setLineWrapMode(QPlainTextEdit.NoWrap)
         label = QLabel(_('The packages shown below will be available to '
-                            'import in Python 3 mode. Delete a package from '
-                            'the list to remove its availability.\n\n'
-                            'Each separate package name should be on a new '
-                            'line. Packages are installed from PyPI '
-                            '(see: https://pypi.org/).'))
+                         'import in Python 3 mode. Delete a package from '
+                         'the list to remove its availability.\n\n'
+                         'Each separate package name should be on a new '
+                         'line. Packages are installed from PyPI '
+                         '(see: https://pypi.org/).'))
         label.setWordWrap(True)
         widget_layout.addWidget(label)
         self.text_area.setPlainText(packages)
