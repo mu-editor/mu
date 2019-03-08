@@ -117,7 +117,7 @@ def test_Editor_connect_margin():
     ep = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
     ep.marginClicked = mock.MagicMock()
     ep.connect_margin(mock_fn)
-    ep.marginClicked.connect.assert_called_once()
+    assert ep.marginClicked.connect.call_count == 1
 
 
 def test_Editor_connect_margin_ignores_margin_4():
