@@ -70,7 +70,7 @@ def test_add_fs_no_device(esp_mode):
     """
     esp_mode.find_device = mock.MagicMock(return_value=(None, None))
     esp_mode.add_fs()
-    esp_mode.view.show_message.assert_called_once()
+    assert esp_mode.view.show_message.call_count == 1
 
 
 def test_remove_fs(esp_mode):
@@ -79,7 +79,7 @@ def test_remove_fs(esp_mode):
     """
     esp_mode.fs = True
     esp_mode.remove_fs()
-    esp_mode.view.remove_filesystem.assert_called_once()
+    assert esp_mode.view.remove_filesystem.call_count == 1
     assert esp_mode.fs is None
 
 
@@ -147,7 +147,7 @@ def test_toggle_repl_with_fs(esp_mode):
     esp_mode.repl = None
     esp_mode.fs = True
     esp_mode.toggle_repl(None)
-    esp_mode.view.show_message.assert_called_once()
+    assert esp_mode.view.show_message.call_count == 1
 
 
 def test_toggle_files_on(esp_mode):
@@ -163,7 +163,7 @@ def test_toggle_files_on(esp_mode):
     esp_mode.fs = None
     event = mock.Mock()
     esp_mode.toggle_files(event)
-    esp_mode.add_fs.assert_called_once()
+    assert esp_mode.add_fs.call_count == 1
     esp_mode.set_buttons.assert_called_once_with(run=False,
                                                  repl=False,
                                                  plotter=False)
@@ -178,7 +178,7 @@ def test_toggle_files_off(esp_mode):
     esp_mode.fs = True
     event = mock.Mock()
     esp_mode.toggle_files(event)
-    esp_mode.remove_fs.assert_called_once()
+    assert esp_mode.remove_fs.call_count == 1
 
 
 def test_toggle_files_with_repl(esp_mode):
@@ -190,7 +190,7 @@ def test_toggle_files_with_repl(esp_mode):
     esp_mode.fs = None
     event = mock.Mock()
     esp_mode.toggle_files(event)
-    esp_mode.view.show_message.assert_called_once()
+    assert esp_mode.view.show_message.call_count == 1
 
 
 def test_run_no_editor(esp_mode):
@@ -200,7 +200,7 @@ def test_run_no_editor(esp_mode):
     """
     esp_mode.view.current_tab = None
     esp_mode.run()
-    esp_mode.view.show_message.assert_called_once()
+    assert esp_mode.view.show_message.call_count == 1
 
 
 def test_run_no_device(esp_mode):
@@ -210,7 +210,7 @@ def test_run_no_device(esp_mode):
     """
     esp_mode.find_device = mock.MagicMock(return_value=(None, None))
     esp_mode.run()
-    esp_mode.view.show_message.assert_called_once()
+    assert esp_mode.view.show_message.call_count == 1
 
 
 def test_run(esp_mode):
