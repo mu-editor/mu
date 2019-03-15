@@ -1422,13 +1422,13 @@ class Editor:
         if not tab or sys.version_info[:2] < (3, 6):
             return
 
-        from black import format_str, FileMode
+        from black import format_str, FileMode, PY36_VERSIONS
         try:
             source_code = tab.text()
             logger.info('Tidy code.')
             logger.info(source_code)
-            tidy_code = format_str(source_code, line_length=88,
-                                   mode=FileMode.PYTHON36)
+            filemode = FileMode(target_versions=PY36_VERSIONS, line_length=88)
+            tidy_code = format_str(source_code, mode=filemode)
             # The following bypasses tab.setText which resets the undo history.
             # Doing it this way means the user can use CTRL-Z to undo the
             # reformatting from black.
