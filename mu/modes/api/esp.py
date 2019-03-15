@@ -35,9 +35,9 @@ ESP_APIS = [
     _("os.uname() \nReturn information about MicroPython and the device."),
     _("os.getcwd() \nReturn current working directory"),
     _("os.chdir(path) \nChange current working directory"),
-    _("os.mkdir(path) \Make new directory"),
-    _("os.rmdir(path) \Remove directory"),
-    _("os.listdir(path='.') \Return list of directory. Defaults to current working directory."),
+    _("os.mkdir(path) \nMake new directory"),
+    _("os.rmdir(path) \nRemove directory"),
+    _("os.listdir(path='.') \nReturn list of directory. Defaults to current working directory."),
     # SYS
     _("sys.version \nReturn Python version as a string "),
     _("sys.version_info \nReturn Python version as a tuple"),
