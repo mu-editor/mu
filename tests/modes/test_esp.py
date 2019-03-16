@@ -99,7 +99,7 @@ def test_toggle_repl_on(esp_mode):
                     side_effect=side_effect) as super_toggle_repl:
         esp_mode.toggle_repl(event)
     super_toggle_repl.assert_called_once_with(event)
-    esp_mode.set_buttons.assert_called_once_with(run=False, files=False)
+    esp_mode.set_buttons.assert_called_once_with(files=False)
     assert esp_mode.repl
 
 
@@ -136,7 +136,7 @@ def test_toggle_repl_off(esp_mode):
                     side_effect=side_effect) as super_toggle_repl:
         esp_mode.toggle_repl(event)
     super_toggle_repl.assert_called_once_with(event)
-    esp_mode.set_buttons.assert_called_once_with(run=True, files=True)
+    esp_mode.set_buttons.assert_called_once_with(files=True)
 
 
 def test_toggle_repl_with_fs(esp_mode):
@@ -220,8 +220,7 @@ def test_run(esp_mode):
     esp_mode.set_buttons = mock.MagicMock()
     esp_mode.find_device = mock.MagicMock(return_value=('COM0', '12345'))
     esp_mode.run()
-    esp_mode.set_buttons.assert_called_once_with(files=False,
-                                                 run=False)
+    esp_mode.set_buttons.assert_called_once_with(files=False)
 
 
 def test_on_data_flood(esp_mode):

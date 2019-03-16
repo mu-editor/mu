@@ -468,6 +468,7 @@ def test_MicroPythonREPLPane_send_commands():
         b'\r\x03',
         b'\r\x03',
         b'\r\x01',
+        b'print("\\n")\r',  # Ensure a newline at the start of output.
         b'import os\r',  # The commands to run.
         b'print(os.listdir())\r',
         b'\r',  # Ensure newline after commands.

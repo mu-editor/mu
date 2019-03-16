@@ -92,12 +92,12 @@ class ESPMode(MicroPythonMode):
             if self.repl:
                 # Remove REPL
                 super().toggle_repl(event)
-                self.set_buttons(files=True, run=True)
+                self.set_buttons(files=True)
             elif not (self.repl or self.plotter):
                 # Add REPL
                 super().toggle_repl(event)
                 if self.repl:
-                    self.set_buttons(files=False, run=False)
+                    self.set_buttons(files=False)
         else:
             message = _("REPL and file system cannot work at the same time.")
             information = _("The REPL and file system both use the same USB "

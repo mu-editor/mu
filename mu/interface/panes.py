@@ -306,13 +306,14 @@ class MicroPythonREPLPane(QTextEdit):
             b'\r\x03',
             b'\r\x01',
         ]
+        newline = [b'print("\\n")\r', ]
         commands = [c.encode('utf-8') + b'\r' for c in commands]
         commands.append(b'\r')
         commands.append(b'\x04')
         raw_off = [
             b'\x02',
         ]
-        command_sequence = raw_on + commands + raw_off
+        command_sequence = raw_on + newline + commands + raw_off
         logger.info(command_sequence)
         self.execute(command_sequence)
 
