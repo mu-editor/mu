@@ -35,10 +35,14 @@ class ESPMode(MicroPythonMode):
     icon = 'esp'
     fs = None
 
+    # There are many boards which use ESP microcontrollers but they often use
+    # the same USB / serial chips (which actually define the Vendor ID and
+    # Product ID for the connected devices.
     valid_boards = [
-        (0x1A86, 0x7523),  # Wemos D1 Mini USB VID, PID
-        (0x10C4, 0xEA60),  # Wemos D1 Mini Pro USB VID, PID
-        (0x0403, 0x6015),   # Sparkfun ESP32 Thing VID, PID
+        # VID  , PID
+        (0x1A86, 0x7523),  # HL-340
+        (0x10C4, 0xEA60),  # CP210x
+        (0x0403, 0x6015),   # Sparkfun ESP32 VID, PID
     ]
 
     def actions(self):
@@ -93,7 +97,7 @@ class ESPMode(MicroPythonMode):
                 # Remove REPL
                 super().toggle_repl(event)
                 self.set_buttons(files=True)
-            elif not (self.repl or self.plotter):
+            elif not (self.repl):
                 # Add REPL
                 super().toggle_repl(event)
                 if self.repl:
@@ -113,9 +117,9 @@ class ESPMode(MicroPythonMode):
         if self.fs is None:
             super().toggle_plotter(event)
             if self.plotter:
-                self.set_buttons(run=False, files=False)
+                self.set_buttons(files=False)
             elif not (self.repl or self.plotter):
-                self.set_buttons(run=True, files=True)
+                self.set_buttons(files=True)
         else:
             message = _("The plotter and file system cannot work at the same "
                         "time.")

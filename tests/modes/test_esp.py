@@ -249,7 +249,7 @@ def test_toggle_plotter(esp_mode):
         esp_mode.plotter = None
         esp_mode.toggle_plotter(None)
         tp.assert_called_once_with(None)
-        esp_mode.set_buttons.assert_called_once_with(files=False, run=False)
+        esp_mode.set_buttons.assert_called_once_with(files=False)
 
 
 def test_toggle_plotter_no_repl_or_plotter(esp_mode):
@@ -269,7 +269,7 @@ def test_toggle_plotter_no_repl_or_plotter(esp_mode):
         esp_mode.plotter = None
         esp_mode.toggle_plotter(None)
         tp.assert_called_once_with(None)
-        esp_mode.set_buttons.assert_called_once_with(files=True, run=True)
+        esp_mode.set_buttons.assert_called_once_with(files=True)
 
 
 def test_toggle_plotter_with_fs(esp_mode):
