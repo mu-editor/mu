@@ -89,12 +89,12 @@ def test_EditorPane_configure():
     assert ep.setTabWidth.call_count == 1
     assert ep.setEdgeColumn.call_count == 1
     assert ep.setMarginLineNumbers.call_count == 1
-    assert ep.setMarginWidth.call_count == 1
+    assert ep.setMarginWidth.call_count == 2
     assert ep.setBraceMatching.call_count == 1
     assert ep.SendScintilla.call_count == 1
     assert ep.set_theme.call_count == 1
     assert ep.markerDefine.call_count == 1
-    assert ep.setMarginSensitivity.call_count == 2
+    assert ep.setMarginSensitivity.call_count == 3
     assert ep.setIndicatorDrawUnder.call_count == 1
     assert ep.setAnnotationDisplay.call_count == 1
     assert ep.selectionChanged.connect.call_count == 1
@@ -117,7 +117,35 @@ def test_Editor_connect_margin():
     ep = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
     ep.marginClicked = mock.MagicMock()
     ep.connect_margin(mock_fn)
-    ep.marginClicked.connect.assert_called_once_with(mock_fn)
+    assert ep.marginClicked.connect.call_count == 1
+
+
+def test_Editor_connect_margin_ignores_margin_4():
+    """
+    Ensure that the margin click handler is not called if margin 4 is clicked.
+    """
+    mock_fn = mock.MagicMock()
+    ep = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
+    ep.connect_margin(mock_fn)
+    margin = 4
+    line = 0
+    modifiers = Qt.KeyboardModifiers()
+    ep.marginClicked.emit(margin, line, modifiers)
+    assert mock_fn.call_count == 0
+
+
+def test_Editor_connect_margin_1_works():
+    """
+    Ensure that the margin click handler is called if margin 1 is clicked.
+    """
+    mock_fn = mock.MagicMock()
+    ep = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
+    ep.connect_margin(mock_fn)
+    margin = 1
+    line = 0
+    modifiers = Qt.KeyboardModifiers()
+    ep.marginClicked.emit(margin, line, modifiers)
+    mock_fn.assert_called_once_with(margin, line, modifiers)
 
 
 def test_EditorPane_set_theme():
