@@ -52,7 +52,7 @@ install:
   # Install Mu dependencies
   - pip install -r requirements.txt
   # Install packager for OSX
-  - pip install briefcase
+  - pip install git+https://github.com/pybee/briefcase.git
   # Install disk image maker for OSX
   - pip install dmgbuild 
   # Install helpful pytest plug-in
