@@ -12,4 +12,4 @@ language_code = QLocale.system().name()
 gettext.translation('mu', localedir=localedir,
                     languages=[language_code], fallback=True).install()
 
-__version__ = '1.0.2'
+__version__ = '1.1.0.alpha.1'

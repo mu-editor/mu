@@ -1,6 +1,46 @@
 Release History
 ---------------
 
+1.1.0-alpha.1
+=============
+
+The first alpha release of 1.1. This version may contain bugs and is unfinished
+(more new features will be added in later alpha releases or, depending on
+feedback, we may change the behaviour of existing features). Please provide bug
+reports or feedback via: https://github.com/mu-editor/mu/issues/new
+
+* **NEW FEATURE** Installation of third party packages from PyPI. Click on the
+  cog icon to open the admin dialog and select the "Third Party Packages" tab.
+* **NEW FEATURE** Code tidy via the wonderful code formatter
+  `Black <https://black.readthedocs.io/en/stable/>`_. Click the new "Tidy"
+  button to reformat and tidy your code so it looks more readable. If your code
+  has errors, these will be pointed out. Many thanks to Black's creator and
+  maintainer, Łukasz Langa, for this contribution.
+* **NEW FEATURE** A new ESP8266 / ESP32 mode for working with these WiFi
+  enabled cheap IoT boards. Many thanks to Martin Dybdal for driving this
+  work forward and doing the heavy lifting. Thanks also to Murilo Polese for
+  testing and very constructive input in the review stage of this feature.
+* **OS CHANGE** Due to Qt's and Travis's lack of support, Mu will only run on
+  Mac OS 10.12 and above.
+* Ensure line-number margin is not too sensitive to inaccurate clicking from
+  young coders trying to position the cursor at the beginning of the line.
+  Thanks to Tiago Montes for this enhancement.
+* Fix some typos in the French translation. Thank you to GitHub user
+  @camillem.
+* Fix a bug relating to Adafruit boards when a file on a board which is then
+  unplugged is saved, Mu used to crash. Thanks to Melissa LeBlanc-Williams for
+  the report of this problem.
+* Fix problem with a missing newline at the end of a file. Thanks to Melissa
+  LeBlanc-Williams for the eagle-eyes and fix.
+* Fix for PYTHONPATH related problems on Windows (the current directory is now
+  on the path when a script is run). Thanks to Tim Golden for this fix.
+* Update to locale detection (use Qt's QLocale class). Thanks to Tiago Montes
+  for making this happen.
+* Fix bug relating to match selection of non-ASCII characters. Thank you to
+  Tiago Montes for this work.
+* Fixed various encoding related issues on OSX.
+* Various minor / trivial bug fixes and tidy ups.
+
 1.0.2
 =====
 
