@@ -417,6 +417,7 @@ class PackageDialog(QDialog):
         self.process.setProcessChannelMode(QProcess.MergedChannels)
         self.process.readyRead.connect(self.read_process)
         self.process.finished.connect(self.finished)
+        logger.info('{} {}'.format(sys.executable, ' '.join(args)))
         self.process.start(sys.executable, args)
 
     def finished(self):
