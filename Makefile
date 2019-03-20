@@ -25,7 +25,6 @@ all:
 clean:
 	rm -rf build
 	rm -rf dist
-	rm -rf mu_editor.egg-info
 	rm -rf .coverage
 	rm -rf .eggs
 	rm -rf docs/_build

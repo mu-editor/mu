@@ -186,7 +186,6 @@ def clean():
     print("\nClean")
     _rmtree("build")
     _rmtree("dist")
-    _rmtree("mu.egg-info")
     _rmtree("coverage")
     _rmtree("docs/build")
     _rmtree("lib")
