@@ -13,7 +13,7 @@ with open(os.path.join(base_dir, 'mu', '__init__.py'), encoding='utf8') as f:
         if DUNDER_ASSIGN_RE.search(line):
             exec(line, about)
 
-with open(os.path.join(base_dir, 'README.rst', encoding='utf8')) as f:
+with open(os.path.join(base_dir, 'README.rst'), encoding='utf8') as f:
     readme = f.read()
     # Replace the logo URL in the README with something that works in PyPI
     logo_url = 'https://mu.readthedocs.io/en/latest/_images/logo.png'
