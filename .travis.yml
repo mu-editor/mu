@@ -55,13 +55,11 @@ install:
   - pip freeze
 
 script:
-  # Run the tests
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make check; fi
-  # PyQt crashes without a frame buffer, so Linux needs "X Virtual Framebuffer"
+  # Run the tests on the Linux platform: needs "X Virtual Framebuffer".
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run make check; fi
   - make clean
 
-  # Package it for OSX
+  # Run the tests on macOS and package it: "make macos" runs checks+tests first.
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make macos; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir dist; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then zip -r -X dist/mu-editor.zip macOS/mu-editor.app; fi
