@@ -24,13 +24,13 @@ with open(os.path.join(base_dir, 'CHANGES.rst'), encoding='utf8') as f:
 
 
 install_requires = [
-    'pyqt5==5.11.3;"arm" not in platform_machine',
-    'qscintilla==2.10.8;"arm" not in platform_machine',
-    'PyQtChart==5.11.3;"arm" not in platform_machine',
+    'PyQt5==5.12.1;"arm" not in platform_machine',
+    'QScintilla==2.11.1;"arm" not in platform_machine',
+    'PyQtChart==5.12;"arm" not in platform_machine',
     'pycodestyle==2.4.0',
     'pyflakes==2.0.0',
     'pyserial==3.4',
-    'qtconsole==4.3.1',
+    'qtconsole==4.4.3',
     'pgzero==1.2',
     'appdirs>=1.4.3',
     'gpiozero>=1.4.1',
