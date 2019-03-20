@@ -21,7 +21,6 @@ import sys
 import logging
 import csv
 import shutil
-import platform
 from PyQt5.QtCore import QSize, QProcess, QTimer
 from PyQt5.QtWidgets import (QVBoxLayout, QListWidget, QLabel, QListWidgetItem,
                              QDialog, QDialogButtonBox, QPlainTextEdit,
@@ -178,29 +177,16 @@ class PackagesWidget(QWidget):
         self.setLayout(widget_layout)
         self.text_area = QPlainTextEdit()
         self.text_area.setLineWrapMode(QPlainTextEdit.NoWrap)
-        if 'armv' in platform.platform():
-            # Only allow third party package management if NOT running on a
-            # Raspberry Pi. See:
-            # https://github.com/mu-editor/mu/pull/749#issuecomment-459051823
-            label = QLabel(_('Third party packages are not supported on the '
-                             'Raspberry Pi. Please use the operating '
-                             "system's package manager instead (refer to the "
-                             "operating system's documentation for how to do "
-                             "this)."))
-            label.setWordWrap(True)
-            widget_layout.addWidget(label)
-            self.text_area.setPlainText('')
-        else:
-            label = QLabel(_('The packages shown below will be available to '
-                             'import in Python 3 mode. Delete a package from '
-                             'the list to remove its availability.\n\n'
-                             'Each separate package name should be on a new '
-                             'line. Packages are installed from PyPI '
-                             '(see: https://pypi.org/).'))
-            label.setWordWrap(True)
-            widget_layout.addWidget(label)
-            self.text_area.setPlainText(packages)
-            widget_layout.addWidget(self.text_area)
+        label = QLabel(_('The packages shown below will be available to '
+                         'import in Python 3 mode. Delete a package from '
+                         'the list to remove its availability.\n\n'
+                         'Each separate package name should be on a new '
+                         'line. Packages are installed from PyPI '
+                         '(see: https://pypi.org/).'))
+        label.setWordWrap(True)
+        widget_layout.addWidget(label)
+        self.text_area.setPlainText(packages)
+        widget_layout.addWidget(self.text_area)
 
 
 class AdminDialog(QDialog):
@@ -431,6 +417,7 @@ class PackageDialog(QDialog):
         self.process.setProcessChannelMode(QProcess.MergedChannels)
         self.process.readyRead.connect(self.read_process)
         self.process.finished.connect(self.finished)
+        logger.info('{} {}'.format(sys.executable, ' '.join(args)))
         self.process.start(sys.executable, args)
 
     def finished(self):

@@ -152,6 +152,15 @@ class EditorPane(QsciScintilla):
         self.setMarginSensitivity(0, True)
         self.markerDefine(self.Circle, self.BREAKPOINT_MARKER)
         self.setMarginSensitivity(1, True)
+        # Additional dummy margin to prevent accidental breakpoint toggles when
+        # trying to position the edit cursor to the left of the first column,
+        # using the mouse and not being 100% accurate. This margin needs to be
+        # set with "sensitivity on": otherwise clicking it would select the
+        # whole text line, per QsciScintilla's behaviour. It is up to the
+        # click handler to ignore clicks on this margin: self.connect_margin.
+        self.setMarginWidth(4, 8)
+        self.setMarginSensitivity(4, True)
+        # Indicators
         self.setIndicatorDrawUnder(True)
         for type_ in self.check_indicators:
             self.indicatorDefine(
@@ -166,9 +175,14 @@ class EditorPane(QsciScintilla):
 
     def connect_margin(self, func):
         """
-        Connect clicking the margin to the passed in handler function.
+        Connect clicking the margin to the passed in handler function, via a
+        filtering handler that ignores clicks on margin 4.
         """
-        self.marginClicked.connect(func)
+        # Margin 4 motivation in self.configure comments.
+        def func_ignoring_margin_4(margin, line, modifiers):
+            if margin != 4:
+                func(margin, line, modifiers)
+        self.marginClicked.connect(func_ignoring_margin_4)
 
     def set_theme(self, theme=DayTheme):
         """

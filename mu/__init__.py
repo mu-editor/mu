@@ -13,7 +13,6 @@ language_code = QLocale.system().name()
 gettext.translation('mu', localedir=localedir,
                     languages=[language_code], fallback=True).install()
 
-
 # IMPORTANT
 # ---------
 # Keep these metadata assignments simple and single-line. They are parsed
@@ -22,7 +21,7 @@ gettext.translation('mu', localedir=localedir,
 __title__ = 'mu-editor'
 __description__ = 'A simple Python editor for beginner programmers.'
 
-__version__ = '1.0.2'
+__version__ = '1.1.0.alpha.1'
 
 __license__ = 'GPL3'
 __url__ = 'https://github.com/mu-editor/mu'
