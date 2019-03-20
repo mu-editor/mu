@@ -51,9 +51,6 @@ before_install:
 install:
   # Install Mu and its dependencies
   - pip install .[dev]
-  # TODO: Remove this once version > 0.2.8 is released to PyPI.
-  # TODO: Then update setup.py per the matching briefcase comment there.
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pip install https://github.com/pybee/briefcase/archive/master.tar.gz; fi
   # Check everything was correctly installed
   - pip freeze
 

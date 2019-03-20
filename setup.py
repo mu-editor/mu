@@ -61,9 +61,7 @@ extras_require = {
         'requests==2.21.0;platform_system == "Windows"',
         'yarg==0.1.9;platform_system == "Windows"',
         # macOS native packaging (see Makefile)
-        # TODO: Uncomment and pin once version > 0.2.8 is released to PyPI.
-        # TODO: Remove the manual briefcase pip install in .travis.yml too.
-        # 'briefcase==X.X.X;platform_system == "Darwin"',
+        'briefcase==0.2.9;platform_system == "Darwin"',
     ],
     'utils': [
         'scrapy',
