@@ -37,7 +37,7 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv versions; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv global 3.6.5; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then eval "$(pyenv init -)"; fi
-  - pip install --upgrade pip
+  - pip install --upgrade pip setuptools
   # Check everything was correctly installed
   - echo $PATH
   - python --version
