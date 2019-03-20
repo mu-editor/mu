@@ -62,7 +62,7 @@ script:
   - make clean
 
   # Package it for OSX
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make macos; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir dist; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then zip -r -X dist/mu-editor.zip macOS/mu-editor.app; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then du -sk dist/; fi
