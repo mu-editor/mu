@@ -30,6 +30,7 @@ clean:
 	rm -rf docs/_build
 	rm -rf .pytest_cache
 	rm -rf lib
+	rm -rf pynsist.log
 	rm -rf pynsist_pkgs
 	rm -rf pynsist_tkinter*
 	rm -rf macOS
@@ -48,10 +49,10 @@ else
 endif
 
 pyflakes:
-	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils -o -path ./venv \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
+	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils -o -path ./venv -o -path ./package \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
 
 pycodestyle:
-	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pycodestyle --repeat --exclude=build/*,docs/*,mu/contrib*,mu/modes/api/*,utils/*,venv/*,.vscode/* --ignore=E731,E402,W504
+	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pycodestyle --repeat --exclude=package/*,build/*,docs/*,mu/contrib*,mu/modes/api/*,utils/*,venv/*,.vscode/* --ignore=E731,E402,W504
 
 test: clean
 	pytest --random-order

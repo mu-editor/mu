@@ -108,7 +108,7 @@ class ButtonBar(QToolBar):
         Compact button bar for when window is very small.
         """
         font_size = DEFAULT_FONT_SIZE
-        if width < 940 and height > 600:
+        if width < 1124 and height > 600:
             self.setIconSize(QSize(48, 48))
         elif height < 600 and width < 940:
             font_size = 10
@@ -825,7 +825,7 @@ class Window(QMainWindow):
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
         self.read_only_tabs = False
-        self.setMinimumSize(820, 400)
+        self.setMinimumSize(920, 400)
         self.setTabPosition(Qt.AllDockWidgetAreas, QTabWidget.North)
 
         self.widget = QWidget()

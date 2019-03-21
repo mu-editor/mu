@@ -6,6 +6,7 @@ import sys
 import os
 from mu.modes.python3 import PythonMode, KernelRunner
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
+from mu.logic import MODULE_DIR
 from unittest import mock
 
 
@@ -35,7 +36,42 @@ def test_kernel_runner_start_kernel():
         kr.start_kernel()
     mock_os.chdir.assert_called_once_with('/a/path/to/mu_code')
     assert mock_os.environ['name'] == 'value'
-    assert mock_os.environ['PYTHONPATH'] == os.pathsep.join(sys.path)
+    expected_paths = sys.path + [MODULE_DIR, ]
+    assert mock_os.environ['PYTHONPATH'] == os.pathsep.join(expected_paths)
+    assert kr.repl_kernel_manager == mock_kernel_manager
+    mock_kernel_manager_class.assert_called_once_with()
+    mock_kernel_manager.start_kernel.assert_called_once_with()
+    assert kr.repl_kernel_client == mock_client
+    kr.kernel_started.emit.assert_called_once_with(mock_kernel_manager,
+                                                   mock_client)
+
+
+def test_kernel_runner_start_kernel_pythonpath_exists():
+    """
+    Ensure  that MODULE_DIR is added to the existing PYTHONPATH
+    """
+    mock_kernel_manager = mock.MagicMock()
+    mock_client = mock.MagicMock()
+    mock_kernel_manager.client.return_value = mock_client
+    envars = [['name', 'value'], ]
+    kr = KernelRunner(cwd='/a/path/to/mu_code', envars=envars)
+    kr.kernel_started = mock.MagicMock()
+    mock_os = mock.MagicMock()
+    mock_os.environ = {'PYTHONPATH': 'foo'}
+    mock_os.pathsep = os.pathsep
+    mock_os.path.dirname.return_value = ('/Applications/mu-editor.app'
+                                         '/Contents/Resources/app/mu')
+    mock_kernel_manager_class = mock.MagicMock()
+    mock_kernel_manager_class.return_value = mock_kernel_manager
+    with mock.patch('mu.modes.python3.os', mock_os), \
+            mock.patch('mu.modes.python3.QtKernelManager',
+                       mock_kernel_manager_class), \
+            mock.patch('sys.platform', 'darwin'):
+        kr.start_kernel()
+    mock_os.chdir.assert_called_once_with('/a/path/to/mu_code')
+    assert mock_os.environ['name'] == 'value'
+    expected_paths = ['foo', ] + [MODULE_DIR, ]
+    assert mock_os.environ['PYTHONPATH'] == os.pathsep.join(expected_paths)
     assert kr.repl_kernel_manager == mock_kernel_manager
     mock_kernel_manager_class.assert_called_once_with()
     mock_kernel_manager.start_kernel.assert_called_once_with()
