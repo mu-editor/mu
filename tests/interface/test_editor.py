@@ -129,7 +129,7 @@ def test_Editor_connect_margin_ignores_margin_4():
     ep.connect_margin(mock_fn)
     margin = 4
     line = 0
-    modifiers = Qt.KeyboardModifiers()
+    modifiers = Qt.NoModifier
     ep.marginClicked.emit(margin, line, modifiers)
     assert mock_fn.call_count == 0
 
@@ -143,9 +143,16 @@ def test_Editor_connect_margin_1_works():
     ep.connect_margin(mock_fn)
     margin = 1
     line = 0
-    modifiers = Qt.KeyboardModifiers()
+    modifiers = Qt.NoModifier
     ep.marginClicked.emit(margin, line, modifiers)
-    mock_fn.assert_called_once_with(margin, line, modifiers)
+
+    mock_fn.assert_called_once()
+    args, _kwargs = mock_fn.call_args
+    call_margin, call_line, _call_modifiers = args
+    assert margin == call_margin
+    assert line == call_line
+    # Don't assert _call_modifiers value: not used in implementation and seems
+    # to fail intermittently on macOS.
 
 
 def test_EditorPane_set_theme():
