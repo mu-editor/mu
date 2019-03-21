@@ -68,7 +68,9 @@ def run(bitness):
     print('Unzipping {}.'.format(filename))
     unzip_file(filename)
     print('Running pynsist')
-    subprocess.call(['pynsist', 'win_installer{}.cfg'.format(bitness)])
+    subprocess.call(['python', '-m', 'package.mu_nsist',
+                     'win_installer{}.cfg'.format(bitness)])
+    print('Finished! The installer can be found in the build/nsis directory.')
 
 
 if __name__ == '__main__':
