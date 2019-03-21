@@ -146,7 +146,7 @@ def test_Editor_connect_margin_1_works():
     modifiers = Qt.NoModifier
     ep.marginClicked.emit(margin, line, modifiers)
 
-    mock_fn.assert_called_once()
+    assert mock_fn.call_count == 1
     args, _kwargs = mock_fn.call_args
     call_margin, call_line, _call_modifiers = args
     assert margin == call_margin
