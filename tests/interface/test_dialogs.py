@@ -397,8 +397,8 @@ def test_PackageDialog_remove_package_end_state():
         pd.remove_package()
         assert mock_shutil.rmtree.call_count == 2
         call_args = mock_shutil.rmtree.call_args_list
-        assert call_args[0][0][0] == 'foo/bar'
-        assert call_args[1][0][0] == 'foo/bin'
+        assert call_args[0][0][0] == os.path.join('foo', 'bar')
+        assert call_args[1][0][0] == os.path.join('foo', 'bin')
     pd.end_state.assert_called_once_with()
 
 
