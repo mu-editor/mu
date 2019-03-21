@@ -392,7 +392,7 @@ class PackageDialog(QDialog):
                     with open(record) as f:
                         files = f.readlines()
                         for row in files:
-                            to_delete = os.path.join(info, row)
+                            to_delete = os.path.join(info, row.strip())
                             try:
                                 os.remove(to_delete)
                             except Exception as ex:
