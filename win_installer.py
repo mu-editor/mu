@@ -268,7 +268,11 @@ def run(bitness, repo_root):
         subprocess.run([venv_python, '-m', 'pip', 'install', PYNSIST_REQ])
 
         print('Running pynsist')
-        subprocess.run([venv_python, '-m', 'nsist', pynsist_cfg])
+        subprocess.run([
+            venv_python,
+            os.path.join(repo_root, 'package', 'mu_nsist.py'),
+            pynsist_cfg,
+        ])
 
         destination_dir = os.path.join(repo_root, 'dist')
         print('Copying installer file to', destination_dir)
