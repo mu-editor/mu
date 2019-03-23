@@ -30,7 +30,6 @@ clean:
 	rm -rf docs/_build
 	rm -rf .pytest_cache
 	rm -rf lib
-	rm -rf pynsist.log
 	rm -rf pynsist_pkgs
 	rm -rf pynsist_tkinter*
 	rm -rf macOS

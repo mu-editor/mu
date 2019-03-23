@@ -30,7 +30,7 @@ from nsist.configreader import get_installer_builder_args
 from nsist.util import download, get_cache_dir
 
 pjoin = os.path.join
-logging.basicConfig(filename='pynsist.log', level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def find_makensis_win():
