@@ -431,7 +431,7 @@ def check_flake(filename, code, builtins=None):
     return feedback
 
 
-def check_pycodestyle(code):
+def check_pycodestyle(code, config_file=False):
     """
     Given some code, uses the PyCodeStyle module (was PEP8) to return a list
     of items describing issues of coding style. See:
@@ -446,8 +446,15 @@ def check_pycodestyle(code):
     # Configure which PEP8 rules to ignore.
     ignore = ('E121', 'E123', 'E126', 'E226', 'E203', 'E302', 'E305', 'E24',
               'E704', 'W291', 'W292', 'W293', 'W391', 'W503', )
-    style = StyleGuide(parse_argv=False, config_file=False)
-    style.options.ignore = ignore
+    style = StyleGuide(parse_argv=False, config_file=config_file)
+
+    # StyleGuide() returns pycodestyle module's own ignore list. That list may
+    # be a default list or a custom list provided by the user
+    # merge the above ignore list with StyleGuide() returned list, then
+    # remove duplicates with set(), convert back to tuple()
+    ignore = style.options.ignore + ignore
+    style.options.ignore = tuple(set(ignore))
+
     checker = Checker(code_filename, options=style.options)
     # Re-route stdout to a temporary buffer to be parsed below.
     temp_out = io.StringIO()
