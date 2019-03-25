@@ -563,6 +563,29 @@ def test_check_flake_with_builtins():
         mock_check.assert_called_once_with('some code', 'foo.py', mock_r)
 
 
+def test_check_pycodestyle_E121():
+    """
+    Ensure the expected result is generated from the PEP8 style validator.
+    Should ensure we honor a mu internal override of E123 error
+    """
+    code = "mylist = [\n 1, 2,\n 3, 4,\n ]"   # would have Generated E123
+    result = mu.logic.check_pycodestyle(code)
+    assert len(result) == 0
+
+
+def test_check_pycodestyle_custom_override():
+    """
+    Ensure the expected result if generated from the PEP8 style validator.
+    For this test we have overridden the E265 error check via a custom
+    override "pycodestyle" file in a directory pointed to by the content of
+    scripts/codecheck.ini. We should "not" get and E265 error due to the
+    lack of space after the #
+    """
+    code = "# OK\n#this is ok if we override the E265 check\n"
+    result = mu.logic.check_pycodestyle(code)
+    assert len(result) == 0
+
+
 def test_check_pycodestyle():
     """
     Ensure the expected result if generated from the PEP8 style validator.

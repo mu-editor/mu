@@ -55,10 +55,10 @@ pycodestyle:
 	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pycodestyle --repeat --exclude=package/*,build/*,docs/*,mu/contrib*,mu/modes/api/*,utils/*,venv/*,.vscode/* --ignore=E731,E402,W504
 
 test: clean
-	pytest --random-order
+	pytest -c tests/scripts/codestyle.ini  --random-order
 
 coverage: clean
-	pytest --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
+	pytest -c tests/scripts/codestyle.ini  --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
 check: clean pycodestyle pyflakes coverage
 
