@@ -1590,18 +1590,6 @@ def test_save_python_file():
     view.current_tab.setModified.assert_called_once_with(False)
 
 
-def test_save_with_no_file_extension():
-    """
-    If the path doesn't end in *.py then append it to the filename.
-    """
-    text, path, newline = "foo", "foo", "\n"
-    ed = mocked_editor(text=text, path=path, newline=newline)
-    with mock.patch('mu.logic.save_and_encode') as mock_save:
-        ed.save()
-    mock_save.assert_called_once_with(text, path + ".py", newline)
-    ed._view.get_save_path.call_count == 0
-
-
 def test_save_with_non_py_file_extension():
     """
     If the path ends in an extension, save it using the extension
