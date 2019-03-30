@@ -263,7 +263,8 @@ class Window(QMainWindow):
         """
         path, _ = QFileDialog.getSaveFileName(
             self.widget, 'Save file',
-            folder if self.previous_folder is None else self.previous_folder)
+            folder if self.previous_folder is None else self.previous_folder,
+            'Python (*.py);;Other (*.*)', 'Python (*.py)')
         self.previous_folder = os.path.dirname(path)
         logger.debug('Getting save path: {}'.format(path))
         return path
