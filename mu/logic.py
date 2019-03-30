@@ -897,12 +897,15 @@ class Editor:
         Safely convert an arrary of paths to their absolute forms and remove
         duplicate items.
         """
-        result = set()
+        result = []
         for p in paths:
             try:
-                result.add(os.path.abspath(p))
+                abspath = os.path.abspath(p)
             except Exception as ex:
                 logger.error('Could not get path for {}: {}'.format(p, ex))
+            else:
+                if abspath not in result:
+                    result.append(abspath)
         return result
 
     def save_tab_to_file(self, tab):
