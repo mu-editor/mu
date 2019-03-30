@@ -868,6 +868,37 @@ def test_editor_restore_session_invalid_file():
     ed._view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
 
 
+def test_restore_session_open_tabs_in_the_same_order():
+    """
+    Editor.restore_session() loads editor tabs in the same order as the 'paths'
+    array in the session.json file.
+    """
+    mocked_view = mock.MagicMock()
+    mocked_view.tab_count = 0
+    ed = mu.logic.Editor(mocked_view)
+
+    mocked_mode = mock.MagicMock()
+    mocked_mode.save_timeout = 5
+    ed.modes = {
+        'python': mocked_mode,
+    }
+
+    ed.direct_load = mock.MagicMock()
+
+    settings_paths = ['a.py', 'b.py', 'c.py', 'd.py']
+    settings_json_payload = json.dumps({'paths': settings_paths})
+
+    mock_open = mock.mock_open(read_data=settings_json_payload)
+    with mock.patch('builtins.open', mock_open):
+        ed.restore_session()
+
+    direct_load_calls_args = [
+        os.path.basename(args[0])
+        for args, _kwargs in ed.direct_load.call_args_list
+    ]
+    assert direct_load_calls_args == settings_paths
+
+
 def test_editor_open_focus_passed_file():
     """
     A file passed in by the OS is opened
