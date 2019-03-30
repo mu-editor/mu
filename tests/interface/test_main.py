@@ -417,8 +417,9 @@ def test_Window_get_save_path():
     w.widget = mock.MagicMock()
     with mock.patch('mu.interface.main.QFileDialog', mock_fd):
         returned_path = w.get_save_path('micropython')
-    mock_fd.getSaveFileName.assert_called_once_with(w.widget, 'Save file',
-                                                    'micropython')
+    mock_fd.getSaveFileName.assert_called_once_with(
+        w.widget, 'Save file', 'micropython',
+        'Python (*.py);;Other (*.*)', 'Python (*.py)')
     assert w.previous_folder == '/foo'  # Note lack of filename.
     assert returned_path == path
 
