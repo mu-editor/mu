@@ -1,5 +1,5 @@
 """
-A mode for working with Adafuit's line of Circuit Python boards.
+A mode for working with Makeblock's HaloCode, Codey Rocky and MakeX devices.
 
 Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
 
@@ -76,7 +76,6 @@ class FileTransferFSM(object):
         self.__state = FTP_FSM_HEAD_S
         self.__buf = []
         self.__data_len = 0
-        self.__cur_data_len = 0
         self.__checksum = 0x00
         self.__headchecksum = 0x00
         self.__recv_head_checksum = 0x00
@@ -204,7 +203,6 @@ def send_file_content(ser, input_file_data, target_file_path):
             ser.write(bytes.fromhex(send_head_str))
             if retransmission_count >= 5:
                 print("Send header time out!")
-                os._exit(1)
                 return
             current_timeCount = time.time() * 10
 
@@ -261,7 +259,9 @@ def receive_task():
     global command_result
     while True:
         try:
-           if(serial_fd.readable()):
+            if not serial_fd.is_open:
+                break
+            if(serial_fd.readable()):
                 receive_buffer = serial_fd.read(serial_fd.inWaiting())
                 for c in receive_buffer:
                     buf_list = ftp_process.push_char(c)
@@ -372,11 +372,8 @@ class MakeblockMode(MicroPythonMode):
             if tab is None:
                 # There is no active text editor. Exit.
                 return
-            # Check the script's contents.
             python_script = tab.text().encode('utf-8')
-            print(python_script)
             flash_task(port, python_script)
-        # self.editor.show_status_message(_('Trying to update status bar.'))
 
 
     def api(self):
