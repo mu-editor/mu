@@ -153,13 +153,24 @@ def installed_packages():
     """
     result = []
     pkg_dirs = [os.path.join(MODULE_DIR, d) for d in os.listdir(MODULE_DIR)
-                if d.endswith("dist-info")]
+                if d.endswith("dist-info") or d.endswith("egg-info")]
+    logger.info("Packages found: {}".format(pkg_dirs))
     for pkg in pkg_dirs:
-        metadata_file = os.path.join(pkg, 'METADATA')
-        with open(metadata_file, 'rb') as f:
-            lines = f.readlines()
-            name = lines[1].rsplit(b':')[-1].strip()
-            result.append(name.decode('utf-8'))
+        if pkg.endswith("dist-info"):
+            # Modern.
+            metadata_file = os.path.join(pkg, 'METADATA')
+        else:
+            # Legacy (eggs).
+            metadata_file = os.path.join(pkg, 'PKG-INFO')
+        try:
+            with open(metadata_file, 'rb') as f:
+                lines = f.readlines()
+                name = lines[1].rsplit(b':')[-1].strip()
+                result.append(name.decode('utf-8'))
+        except Exception as ex:
+            # Just log any errors.
+            logger.error("Unable to get metadata for package: " + pkg)
+            logger.error(ex)
     return sorted(result)
 
 
@@ -1422,13 +1433,13 @@ class Editor:
         if not tab or sys.version_info[:2] < (3, 6):
             return
 
-        from black import format_str, FileMode
+        from black import format_str, FileMode, PY36_VERSIONS
         try:
             source_code = tab.text()
             logger.info('Tidy code.')
             logger.info(source_code)
-            tidy_code = format_str(source_code, line_length=88,
-                                   mode=FileMode.PYTHON36)
+            filemode = FileMode(target_versions=PY36_VERSIONS, line_length=88)
+            tidy_code = format_str(source_code, mode=filemode)
             # The following bypasses tab.setText which resets the undo history.
             # Doing it this way means the user can use CTRL-Z to undo the
             # reformatting from black.

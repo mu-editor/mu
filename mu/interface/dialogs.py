@@ -344,7 +344,7 @@ class PackageDialog(QDialog):
         """
         dirs = [os.path.join(self.module_dir, d)
                 for d in os.listdir(self.module_dir)
-                if d.endswith("dist-info")]
+                if d.endswith("dist-info") or d.endswith("egg-info")]
         self.pkg_dirs = {}
         for pkg in self.to_remove:
             for d in dirs:
@@ -363,25 +363,57 @@ class PackageDialog(QDialog):
         no packages to remove, move to the finished state.
         """
         if self.pkg_dirs:
-            package, dist = self.pkg_dirs.popitem()
-            record = os.path.join(dist, 'RECORD')
-            with open(record) as f:
-                files = csv.reader(f)
-                for row in files:
-                    to_delete = os.path.join(self.module_dir, row[0])
-                    try:
-                        os.remove(to_delete)
-                    except Exception as ex:
-                        logger.error('Unable to remove: {}'.format(to_delete))
-                        logger.error(ex)
-            shutil.rmtree(dist, ignore_errors=True)
-            # Some modules don't use the module name for the module directory
-            # (they use a lower case variant thereof). E.g. "Fom" vs. "fom".
-            normal_module = os.path.join(self.module_dir, package)
-            lower_module = os.path.join(self.module_dir, package.lower())
-            shutil.rmtree(normal_module, ignore_errors=True)
-            shutil.rmtree(lower_module, ignore_errors=True)
-            self.append_data('Removed {}\n'.format(package))
+            package, info = self.pkg_dirs.popitem()
+            if info.endswith("dist-info"):
+                # Modern
+                record = os.path.join(info, 'RECORD')
+                with open(record) as f:
+                    files = csv.reader(f)
+                    for row in files:
+                        to_delete = os.path.join(self.module_dir, row[0])
+                        try:
+                            os.remove(to_delete)
+                        except Exception as ex:
+                            logger.error('Unable to remove: ' + to_delete)
+                            logger.error(ex)
+                shutil.rmtree(info, ignore_errors=True)
+                # Some modules don't use the module name for the module
+                # directory (they use a lower case variant thereof). E.g.
+                # "Fom" vs. "fom".
+                normal_module = os.path.join(self.module_dir, package)
+                lower_module = os.path.join(self.module_dir, package.lower())
+                shutil.rmtree(normal_module, ignore_errors=True)
+                shutil.rmtree(lower_module, ignore_errors=True)
+                self.append_data('Removed {}\n'.format(package))
+            else:
+                # Egg
+                try:
+                    record = os.path.join(info, 'installed-files.txt')
+                    with open(record) as f:
+                        files = f.readlines()
+                        for row in files:
+                            to_delete = os.path.join(info, row.strip())
+                            try:
+                                os.remove(to_delete)
+                            except Exception as ex:
+                                logger.error("Unable to remove: " + to_delete)
+                                logger.error(ex)
+                    shutil.rmtree(info, ignore_errors=True)
+                    # Some modules don't use the module name for the module
+                    # directory (they use a lower case variant thereof). E.g.
+                    # "Fom" vs. "fom".
+                    normal_module = os.path.join(self.module_dir, package)
+                    lower_module = os.path.join(self.module_dir,
+                                                package.lower())
+                    shutil.rmtree(normal_module, ignore_errors=True)
+                    shutil.rmtree(lower_module, ignore_errors=True)
+                    self.append_data('Removed {}\n'.format(package))
+                except Exception as ex:
+                    msg = ("UNABLE TO REMOVE PACKAGE: {} (check the logs for"
+                           " more information.)").format(package)
+                    self.append_data(msg)
+                    logger.error("Unable to remove package: " + package)
+                    logger.error(ex)
             QTimer.singleShot(2, self.remove_package)
         else:
             # Clean any directories not containing files.
@@ -394,6 +426,10 @@ class PackageDialog(QDialog):
                         keep = True
                 if not keep:
                     shutil.rmtree(d, ignore_errors=True)
+            # Remove the bin directory (and anything in it) since we don't
+            # use these assets.
+            shutil.rmtree(os.path.join(self.module_dir, "bin"),
+                          ignore_errors=True)
             # Check for end state.
             if not (self.to_add or self.process):
                 self.end_state()
@@ -417,6 +453,7 @@ class PackageDialog(QDialog):
         self.process.setProcessChannelMode(QProcess.MergedChannels)
         self.process.readyRead.connect(self.read_process)
         self.process.finished.connect(self.finished)
+        logger.info('{} {}'.format(sys.executable, ' '.join(args)))
         self.process.start(sys.executable, args)
 
     def finished(self):

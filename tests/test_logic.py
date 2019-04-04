@@ -191,7 +191,7 @@ def test_CONSTANTS():
     assert mu.logic.WORKSPACE_NAME
 
 
-def test_installed_packages():
+def test_installed_packages_dist_info():
     """
     Ensure module meta-data is processed properly to give a return value of a
     list containing all the installed modules currently in the MODULE_DIR.
@@ -209,8 +209,53 @@ def test_installed_packages():
                                                       bar_metadata])
     with mock.patch('builtins.open', mock_open), \
             mock.patch('mu.logic.os.listdir', mock_listdir):
+        mock_open.reset_mock()
         result = mu.logic.installed_packages()
+        assert mock_open.call_args_list[0][0][0].endswith('METADATA')
+        assert mock_open.call_args_list[1][0][0].endswith('METADATA')
         assert result == ['bar', 'foo', ]  # ordered result.
+
+
+def test_installed_packages_egg_info():
+    """
+    Ensure module meta-data is processed properly to give a return value of a
+    list containing all the installed modules currently in the MODULE_DIR.
+    """
+    mock_listdir = mock.MagicMock(return_value=['foo-1.0.0.egg-info',
+                                                'bar-2.0.0.egg-info', 'baz'])
+    mock_open = mock.MagicMock()
+    mock_file = mock.MagicMock()
+    mock_open().__enter__ = mock.MagicMock(return_value=mock_file)
+    foo_metadata = [b"Metadata-Version: 2.1", b"Name: foo",
+                    b"test: \xe6\x88\x91"]
+    bar_metadata = [b"Metadata-Version: 2.1", b"Name: bar",
+                    b"test: \xe6\x88\x91"]
+    mock_file.readlines = mock.MagicMock(side_effect=[foo_metadata,
+                                                      bar_metadata])
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.logic.os.listdir', mock_listdir):
+        mock_open.reset_mock()
+        result = mu.logic.installed_packages()
+        assert mock_open.call_args_list[0][0][0].endswith('PKG-INFO')
+        assert mock_open.call_args_list[1][0][0].endswith('PKG-INFO')
+        assert result == ['bar', 'foo', ]  # ordered result.
+
+
+def test_installed_packages_errors():
+    """
+    If there's an error opening the expected metadata file, then just ignore
+    and log.
+    """
+    mock_listdir = mock.MagicMock(return_value=['foo-1.0.0.egg-info',
+                                                'bar-2.0.0.egg-info', 'baz'])
+    mock_open = mock.MagicMock(side_effect=Exception("Boom"))
+    with mock.patch('builtins.open', mock_open), \
+            mock.patch('mu.logic.os.listdir', mock_listdir), \
+            mock.patch('mu.logic.logger.error') as mock_log:
+        mock_open.reset_mock()
+        result = mu.logic.installed_packages()
+        assert result == []
+        assert mock_log.call_count == 4
 
 
 def test_write_and_flush():

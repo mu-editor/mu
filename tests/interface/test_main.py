@@ -99,7 +99,7 @@ def test_ButtonBar_set_responsive_mode():
     with mock.patch('mu.interface.main.ButtonBar.setIconSize', mock_icon_size):
         bb = mu.interface.main.ButtonBar(None)
         bb.setStyleSheet = mock.MagicMock()
-        bb.set_responsive_mode(1024, 800)
+        bb.set_responsive_mode(1124, 800)
         mock_icon_size.assert_called_with(QSize(64, 64))
         default_font = str(mu.interface.themes.DEFAULT_FONT_SIZE)
         style = "QWidget{font-size: " + default_font + "px;}"
@@ -1428,7 +1428,7 @@ def test_Window_setup():
     assert w.setWindowIcon.call_count == 1
     assert isinstance(w.setWindowIcon.call_args[0][0], QIcon)
     w.update_title.assert_called_once_with()
-    w.setMinimumSize.assert_called_once_with(820, 400)
+    w.setMinimumSize.assert_called_once_with(920, 400)
     assert w.widget == mock_widget
     assert w.button_bar == mock_button_bar
     assert w.tabs == mock_qtw
