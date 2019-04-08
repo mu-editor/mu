@@ -34,7 +34,6 @@ init:
 
 install:
   # Install Mu Python dependencies
-  - cmd: pip install simplegeneric 
   - cmd: pip install -r requirements.txt
   
   # Install helpful pytest plug-in
