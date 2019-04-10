@@ -86,7 +86,7 @@ working development environment:
    Raspberry Pi via the ``requirements.txt`` file::
 
     (mu-venv) $ cd ~/mu-source
-    (mu-venv) $ pip install -r requirements_pi.txt
+    (mu-venv) $ pip install -r requirements.txt
 
 7. Use ``pip`` to install mu without installing the dependencies again::
 
