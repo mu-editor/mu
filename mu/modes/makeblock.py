@@ -29,7 +29,7 @@ import random
 import codecs, binascii
 from subprocess import check_output
 from mu.modes.base import MicroPythonMode
-from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
+from mu.modes.api import MAKEBLOCK_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
 from mu import logic
 
@@ -304,7 +304,6 @@ class MakeblockMode(MicroPythonMode):
     connected = True  #: is the Makeblock board connected.
     force_interrupt = False  #: NO keyboard interrupt on serial connection.
     valid_boards = [
-        (6790, 29987),  # Makeblock Device Vid/Pid
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
@@ -321,27 +320,12 @@ class MakeblockMode(MicroPythonMode):
         """
         buttons = [
             {
-                'name': 'serial',
-                'display_name': _('Serial'),
-                'description': _('Open a serial connection to your device.'),
-                'handler': self.toggle_repl,
-                'shortcut': 'CTRL+Shift+U',
-            },
-            {
                 'name': 'flash_py',
                 'display_name': _('Flash'),
                 'description': _('Flash your code onto the Makeblock devices.'),
                 'handler': self.flash,
                 'shortcut': 'F3',
             }, ]
-        if CHARTS:
-            buttons.append({
-                'name': 'plotter',
-                'display_name': _('Plotter'),
-                'description': _('Plot incoming REPL data.'),
-                'handler': self.toggle_plotter,
-                'shortcut': 'CTRL+Shift+P',
-            })
         return buttons
 
     def find_port(self, vid=6790, pid=29987):
@@ -381,5 +365,5 @@ class MakeblockMode(MicroPythonMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return SHARED_APIS + ADAFRUIT_APIS
+        return SHARED_APIS + MAKEBLOCK_APIS
 

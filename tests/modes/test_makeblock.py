@@ -6,7 +6,7 @@ import pytest
 import ctypes
 import mu.modes.makeblock as makeblock
 from mu.modes.makeblock import MakeblockMode, FileTransferFSM, bytes_to_hex_str, calc_add_checksum, calc_32bit_xor, send_file, send_file_content
-from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
+from mu.modes.api import MAKEBLOCK_APIS, SHARED_APIS
 from unittest import mock
 from unittest.mock import patch, mock_open
 
@@ -25,13 +25,9 @@ def test_makeblock_mode():
     assert am.view == view
 
     actions = am.actions()
-    assert len(actions) == 3
-    assert actions[0]['name'] == 'serial'
-    assert actions[0]['handler'] == am.toggle_repl
-    assert actions[1]['name'] == 'flash_py'
-    assert actions[1]['handler'] == am.flash
-    assert actions[2]['name'] == 'plotter'
-    assert actions[2]['handler'] == am.toggle_plotter
+    assert len(actions) == 1
+    assert actions[0]['name'] == 'flash_py'
+    assert actions[0]['handler'] == am.flash
     assert 'code' not in am.module_names
 
 @patch('serial.tools.list_ports', comports=lambda :[mock.Mock(vid=6790, pid=29987, device='test')])
@@ -99,7 +95,7 @@ def test_api():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     mm = MakeblockMode(editor, view)
-    assert mm.api() == SHARED_APIS + ADAFRUIT_APIS
+    assert mm.api() == SHARED_APIS + MAKEBLOCK_APIS
 
 
 
