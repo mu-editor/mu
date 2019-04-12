@@ -2,8 +2,7 @@
 """
 Tests for the Makeblock mode.
 """
-import pytest
-import ctypes
+import serial
 import mu.modes.makeblock as makeblock
 from mu.modes.makeblock import MakeblockMode, FileTransferFSM, bytes_to_hex_str, calc_add_checksum, calc_32bit_xor, send_file, send_file_content
 from mu.modes.api import MAKEBLOCK_APIS, SHARED_APIS
@@ -274,7 +273,7 @@ def test_receive_task_exception(patch1):
         readable=lambda _:True
         inWaiting=lambda _:True
         def read(self, param):
-            raise Exception('Test')
+            raise serial.SerialException('Test')
 
         @property
         def is_open(self):

@@ -263,8 +263,6 @@ def receive_task():
                         ftp_process.clear_buf()
         except serial.SerialException:
             pass
-        except serial.SerialTimeoutException:
-            pass
 
 def flash_task(serial_name, py_file_content, target_file_path_temp='/flash/main.py'):
     global serial_fd
