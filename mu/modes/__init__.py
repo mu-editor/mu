@@ -7,4 +7,4 @@ from .esp import ESPMode
 from .makeblock import MakeblockMode
 
 __all__ = ['PythonMode', 'AdafruitMode', 'MicrobitMode', 'DebugMode',
-           'PyGameZeroMode', 'ESPMode', 'MakeblockMode',]
+           'PyGameZeroMode', 'ESPMode', 'MakeblockMode', ]

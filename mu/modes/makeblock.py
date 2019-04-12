@@ -23,43 +23,44 @@ import serial.tools.list_ports
 from mu.modes.base import MicroPythonMode
 from mu.modes.api import MAKEBLOCK_APIS, SHARED_APIS
 
-COMMAND_MAX_TIME_OUT     = 20
+COMMAND_MAX_TIME_OUT = 20
 
-serial_fd                = None
+serial_fd = None
 
-input_file_content       = None
-target_file_path         = None
-FILE_BLOCK_SIZE          = 240
+input_file_content = None
+target_file_path = None
+FILE_BLOCK_SIZE = 240
 
-command_result           = False
-retransmission_count     = 0
+command_result = False
+retransmission_count = 0
 
-frame_header_str         = "F3"
-frame_end_str            = "F4"
-protocol_id_str          = "01"
-dev_id_str               = "00"
-srv_id_str               = "5E"
-file_header_cmd_id_str   = "01"
-file_block_cmd_id_str    = "02"
-file_delete_str          = "03"
-file_state_cmd_id_str    = "F0"
-file_type_str            = "00"
+frame_header_str = "F3"
+frame_end_str = "F4"
+protocol_id_str = "01"
+dev_id_str = "00"
+srv_id_str = "5E"
+file_header_cmd_id_str = "01"
+file_block_cmd_id_str = "02"
+file_delete_str = "03"
+file_state_cmd_id_str = "F0"
+file_type_str = "00"
 
-FRAME_HEAD               = int(frame_header_str, 16) 
-FRAME_END                = int(frame_end_str, 16)
-DEV_ID                   = int(dev_id_str, 16)
-SRV_ID                   = int(srv_id_str, 16)
-CMD_STATE_ID             = int(file_state_cmd_id_str, 16)
+FRAME_HEAD = int(frame_header_str, 16)
+FRAME_END = int(frame_end_str, 16)
+DEV_ID = int(dev_id_str, 16)
+SRV_ID = int(srv_id_str, 16)
+CMD_STATE_ID = int(file_state_cmd_id_str, 16)
 
-FTP_FSM_HEAD_S           = 0
-FTP_FSM_HEAD_CHECK_S     = 1
-FTP_FSM_LEN1_S           = 2
-FTP_FSM_LEN2_S           = 3
-FTP_FSM_DATA_S           = 4
-FTP_FSM_CHECK_S          = 5
-FTP_FSM_END_S            = 6
+FTP_FSM_HEAD_S = 0
+FTP_FSM_HEAD_CHECK_S = 1
+FTP_FSM_LEN1_S = 2
+FTP_FSM_LEN2_S = 3
+FTP_FSM_DATA_S = 4
+FTP_FSM_CHECK_S = 5
+FTP_FSM_END_S = 6
 
-show_status_message      = None
+show_status_message = None
+
 
 class FileTransferFSM(object):
     def __init__(self):
@@ -95,7 +96,7 @@ class FileTransferFSM(object):
 
         elif(FTP_FSM_LEN2_S == self.__state):
             self.__headchecksum += c
-            if ( self.__headchecksum == self.__recv_head_checksum ):
+            if (self.__headchecksum == self.__recv_head_checksum):
                 self.__data_len += c * 256
                 self.__state = FTP_FSM_DATA_S
             else:
@@ -112,13 +113,13 @@ class FileTransferFSM(object):
                 self.__state = FTP_FSM_END_S
             else:
                 self.__state = FTP_FSM_HEAD_S
-                
+
         elif(FTP_FSM_END_S == self.__state):
             if (FRAME_END == c):
                 self.__state = FTP_FSM_HEAD_S
                 return self.__buf
             else:
-                self.__state = FTP_FSM_HEAD_S 
+                self.__state = FTP_FSM_HEAD_S
 
     def clear_buf(self):
         self.__buf.clear()
@@ -129,14 +130,17 @@ class FileTransferFSM(object):
 
 ftp_process = FileTransferFSM()
 
+
 def bytes_to_hex_str(bytes_data):
     return " ".join("{:02x}".format(c) for c in bytes_data)
+
 
 def calc_add_checksum(data):
     ret = 0
     for c in data:
         ret = ret + c
     return ret & 0xFF
+
 
 def calc_32bit_xor(data):
     bytes_len = len(data)
@@ -150,14 +154,16 @@ def calc_32bit_xor(data):
 
     if (bytes_len % 4):
         for i in range(bytes_len % 4):
-            checksum[0 + i] = checksum[0 + i] ^ data_bytes[4 * int(bytes_len / 4) + i]
+            checksum[0 + i] = checksum[0 + i] ^ \
+                data_bytes[4 * int(bytes_len / 4) + i]
     return checksum
+
 
 def send_file(ser, input_file_path, target_file_path):
     with open(input_file_path, 'rb') as input_file:
         input_file_data = input_file.read()
         send_file_content(ser, input_file_data, target_file_path)
-    
+
 
 def send_file_content(ser, input_file_data, target_file_path):
     global command_result
@@ -167,26 +173,36 @@ def send_file_content(ser, input_file_data, target_file_path):
 
     # Send file header
     # 1(file_type) + 4(file_size) + 4(file_check_sum) = 0x09
-    cmd_len_str = bytes_to_hex_str((0x09 + len(target_file_path)).to_bytes(2, byteorder = 'little'))
-    input_file_size_str = bytes_to_hex_str(input_file_len.to_bytes(4, byteorder = 'little'))
+    cmd_len_str = bytes_to_hex_str(
+        (0x09 + len(target_file_path)).to_bytes(2, byteorder='little'))
+    input_file_size_str = bytes_to_hex_str(
+        input_file_len.to_bytes(4, byteorder='little'))
     input_file_checksum_str = bytes_to_hex_str(calc_32bit_xor(input_file_data))
-    input_file_name_str = bytes_to_hex_str(bytes(target_file_path, encoding = 'utf-8'))
-    frame_data_str = protocol_id_str + " " + dev_id_str + " " + srv_id_str + " " + \
-                     file_header_cmd_id_str + " " + cmd_len_str + " " + file_type_str + " " + \
-                     input_file_size_str + " " + input_file_checksum_str + " " + input_file_name_str
+    input_file_name_str = bytes_to_hex_str(
+        bytes(target_file_path, encoding='utf-8'))
+    frame_data_str = protocol_id_str + " " + dev_id_str + " " + \
+        srv_id_str + " " + file_header_cmd_id_str + " " + cmd_len_str + \
+        " " + file_type_str + " " + \
+        input_file_size_str + " " + input_file_checksum_str + " " + \
+        input_file_name_str
     frame_data_len = len(bytes.fromhex(frame_data_str))
-    frame_data_len_str = bytes_to_hex_str((frame_data_len).to_bytes(2, byteorder='little'))
-    frame_head_checkusum_str = bytes_to_hex_str(calc_add_checksum(bytes.fromhex(frame_header_str + frame_data_len_str)).to_bytes(1, byteorder = 'little'))
-    frame_checksum_str = bytes_to_hex_str(calc_add_checksum(bytes.fromhex(frame_data_str)).to_bytes(1, byteorder = 'little'))
-    
-    send_head_str = frame_header_str + " " + frame_head_checkusum_str + " " + frame_data_len_str + " " + \
-                    frame_data_str + " " + frame_checksum_str + " " + frame_end_str
+    frame_data_len_str = bytes_to_hex_str(
+        (frame_data_len).to_bytes(2, byteorder='little'))
+    frame_head_checkusum_str = bytes_to_hex_str(calc_add_checksum(
+        bytes.fromhex(frame_header_str + frame_data_len_str))
+        .to_bytes(1, byteorder='little'))
+    frame_checksum_str = bytes_to_hex_str(calc_add_checksum(
+        bytes.fromhex(frame_data_str)).to_bytes(1, byteorder='little'))
+
+    send_head_str = frame_header_str + " " + frame_head_checkusum_str + " " + \
+        frame_data_len_str + " " + \
+        frame_data_str + " " + frame_checksum_str + " " + frame_end_str
 
     command_result = False
     ser.write(bytes.fromhex(send_head_str))
     current_timeCount = time.time() * 10
     retransmission_count = 0
-    while command_result != True:
+    while command_result is not True:
         if((time.time() * 10 - current_timeCount) > COMMAND_MAX_TIME_OUT):
             retransmission_count = retransmission_count + 1
             print("resend the file header[" + str(retransmission_count) + "]")
@@ -204,28 +220,38 @@ def send_file_content(ser, input_file_data, target_file_path):
         else:
             send_file_size = input_file_len - file_offset
 
-        file_offset_str = bytes_to_hex_str(file_offset.to_bytes(4, byteorder = 'little'))
-        cmd_len_str = bytes_to_hex_str((0x04 + send_file_size).to_bytes(2, byteorder = 'little'))
-        file_block_str = bytes_to_hex_str(bytes(input_file_data[file_offset:file_offset + send_file_size]))
-        frame_data_str = protocol_id_str + " " + dev_id_str + " " + srv_id_str + " " + file_block_cmd_id_str + \
-                         " " + cmd_len_str + " " + file_offset_str + " " + file_block_str
+        file_offset_str = bytes_to_hex_str(
+            file_offset.to_bytes(4, byteorder='little'))
+        cmd_len_str = bytes_to_hex_str(
+            (0x04 + send_file_size).to_bytes(2, byteorder='little'))
+        file_block_str = bytes_to_hex_str(
+            bytes(input_file_data[file_offset:file_offset + send_file_size]))
+        frame_data_str = protocol_id_str + " " + dev_id_str + " " + \
+            srv_id_str + " " + file_block_cmd_id_str + " " + cmd_len_str + \
+            " " + file_offset_str + " " + file_block_str
         frame_data_len = len(bytes.fromhex(frame_data_str))
-        frame_data_len_str = bytes_to_hex_str((frame_data_len).to_bytes(2, byteorder = 'little'))
-        frame_head_checkusum_str = bytes_to_hex_str(calc_add_checksum(bytes.fromhex(frame_header_str + frame_data_len_str)).to_bytes(1, byteorder = 'little'))
-        frame_checksum_str = bytes_to_hex_str(calc_add_checksum(bytes.fromhex(frame_data_str)).to_bytes(1, byteorder = 'little'))
+        frame_data_len_str = bytes_to_hex_str(
+            (frame_data_len).to_bytes(2, byteorder='little'))
+        frame_head_checkusum_str = bytes_to_hex_str(calc_add_checksum(
+            bytes.fromhex(frame_header_str + frame_data_len_str)).to_bytes(
+            1, byteorder='little'))
+        frame_checksum_str = bytes_to_hex_str(calc_add_checksum(
+            bytes.fromhex(frame_data_str)).to_bytes(1, byteorder='little'))
 
-        send_block_str = frame_header_str + " " + frame_head_checkusum_str + " " + frame_data_len_str + \
-                         " " + frame_data_str + " " + frame_checksum_str + " " + frame_end_str
+        send_block_str = frame_header_str + " " + frame_head_checkusum_str + \
+            " " + frame_data_len_str + " " + frame_data_str + " " + \
+            frame_checksum_str + " " + frame_end_str
 
         send_block_bytes = bytearray.fromhex(send_block_str)
         command_result = False
         ser.write(send_block_bytes)
         current_timeCount = time.time() * 10
         retransmission_count = 0
-        while command_result != True:
+        while command_result is not True:
             if((time.time() * 10 - current_timeCount) > COMMAND_MAX_TIME_OUT):
                 retransmission_count = retransmission_count + 1
-                print("resend the file block[" + str(retransmission_count) + "]")
+                print("resend the file block[" +
+                      str(retransmission_count) + "]")
                 ser.write(send_block_bytes)
                 if retransmission_count >= 3:
                     show_status_message(_("Send file block time out!"))
@@ -243,6 +269,7 @@ def firmware_update_task():
     global input_file_content
     global target_file_path
     send_file_content(serial_fd, input_file_content, target_file_path)
+
 
 def receive_task():
     global serial_fd
@@ -264,7 +291,9 @@ def receive_task():
         except serial.SerialException:
             pass
 
-def flash_task(serial_name, py_file_content, target_file_path_temp='/flash/main.py'):
+
+def flash_task(serial_name, py_file_content,
+               target_file_path_temp='/flash/main.py'):
     global serial_fd
     global input_file_content
     global target_file_path
@@ -272,14 +301,13 @@ def flash_task(serial_name, py_file_content, target_file_path_temp='/flash/main.
     input_file_content = py_file_content
     target_file_path = target_file_path_temp
 
-    if serial_fd!=None and serial_fd.is_open:
+    if serial_fd is not None and serial_fd.is_open:
         serial_fd.close()
-    serial_fd = serial.Serial(serial_name, 115200, timeout = 0.1)
-    firmware_update_thread = threading.Thread(target = firmware_update_task)
+    serial_fd = serial.Serial(serial_name, 115200, timeout=0.1)
+    firmware_update_thread = threading.Thread(target=firmware_update_task)
     firmware_update_thread.start()
-    receive_thread = threading.Thread(target = receive_task)
+    receive_thread = threading.Thread(target=receive_task)
     receive_thread.start()
-
 
 
 class MakeblockMode(MicroPythonMode):
@@ -288,7 +316,8 @@ class MakeblockMode(MicroPythonMode):
     """
 
     name = _('Makeblock MicroPython')
-    description = _("Use MicroPython on Makeblock's HaloCode, Codey Rocky and more.")
+    description = _(
+        "Use MicroPython on Makeblock's HaloCode, Codey Rocky and more.")
     icon = 'makeblock'
     save_timeout = 0  #: Don't autosave on Makeblock boards. Casues a restart.
     connected = True  #: is the Makeblock board connected.
@@ -302,20 +331,18 @@ class MakeblockMode(MicroPythonMode):
                     'pulseio', 'usb_hid', 'analogio', 'time', 'busio',
                     'random', 'audioio', 'sys', 'math', 'builtins'}
 
-
     def actions(self):
         """
         Return an ordered list of actions provided by this module. An action
         is a name (also used to identify the icon) , description, and handler.
         """
-        buttons = [
-            {
-                'name': 'flash_py',
-                'display_name': _('Flash'),
-                'description': _('Flash your code onto the Makeblock devices.'),
-                'handler': self.flash,
-                'shortcut': 'F3',
-            }, ]
+        buttons = [{
+            'name': 'flash_py',
+            'display_name': _('Flash'),
+            'description': _('Flash your code onto the Makeblock devices.'),
+            'handler': self.flash,
+            'shortcut': 'F3',
+        }]
         return buttons
 
     def find_port(self, vid=6790, pid=29987):
@@ -328,7 +355,6 @@ class MakeblockMode(MicroPythonMode):
                 return port.device
         return None
 
-
     def flash(self):
         """
         Upload Code to Makeblock Devices
@@ -337,8 +363,8 @@ class MakeblockMode(MicroPythonMode):
         port = self.find_port()
         if port is None:
             m = _('Could not find an attached Makeblock Device')
-            info = _("Please attach your Makeblock device (Codey Rocky or HaloCode)"
-                        " with USB Cable")
+            info = _("Please attach your Makeblock device "
+                     "(Codey Rocky or HaloCode) with USB Cable")
             self.view.show_message(m, info)
         else:
             show_status_message = self.editor.show_status_message
@@ -349,11 +375,9 @@ class MakeblockMode(MicroPythonMode):
             python_script = tab.text().encode('utf-8')
             flash_task(port, python_script)
 
-
     def api(self):
         """
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
         return SHARED_APIS + MAKEBLOCK_APIS
-
