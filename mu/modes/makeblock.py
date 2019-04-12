@@ -16,22 +16,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os
-import ctypes
 import time
 import threading
-import sys
 import serial
 import serial.tools.list_ports
-import getopt
-import re
-import random
-import codecs, binascii
-from subprocess import check_output
 from mu.modes.base import MicroPythonMode
 from mu.modes.api import MAKEBLOCK_APIS, SHARED_APIS
-from mu.interface.panes import CHARTS
-from mu import logic
 
 COMMAND_MAX_TIME_OUT     = 20
 
@@ -271,7 +261,9 @@ def receive_task():
                         else:
                             command_result = False
                         ftp_process.clear_buf()
-        except:
+        except serial.SerialException:
+            pass
+        except serial.SerialTimeoutException:
             pass
 
 def flash_task(serial_name, py_file_content, target_file_path_temp='/flash/main.py'):
@@ -345,7 +337,7 @@ class MakeblockMode(MicroPythonMode):
         """
         global show_status_message
         port = self.find_port()
-        if port == None:
+        if port is None:
             m = _('Could not find an attached Makeblock Device')
             info = _("Please attach your Makeblock device (Codey Rocky or HaloCode)"
                         " with USB Cable")
