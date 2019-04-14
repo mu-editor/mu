@@ -29,7 +29,7 @@ from mu.logic import NEWLINE
 
 
 # Regular Expression for valid individual code 'words'
-RE_VALID_WORD = re.compile('^[A-Za-z0-9_-]*$')
+RE_VALID_WORD = re.compile(r'^\w+$')
 
 
 logger = logging.getLogger(__name__)
@@ -152,6 +152,15 @@ class EditorPane(QsciScintilla):
         self.setMarginSensitivity(0, True)
         self.markerDefine(self.Circle, self.BREAKPOINT_MARKER)
         self.setMarginSensitivity(1, True)
+        # Additional dummy margin to prevent accidental breakpoint toggles when
+        # trying to position the edit cursor to the left of the first column,
+        # using the mouse and not being 100% accurate. This margin needs to be
+        # set with "sensitivity on": otherwise clicking it would select the
+        # whole text line, per QsciScintilla's behaviour. It is up to the
+        # click handler to ignore clicks on this margin: self.connect_margin.
+        self.setMarginWidth(4, 8)
+        self.setMarginSensitivity(4, True)
+        # Indicators
         self.setIndicatorDrawUnder(True)
         for type_ in self.check_indicators:
             self.indicatorDefine(
@@ -166,9 +175,14 @@ class EditorPane(QsciScintilla):
 
     def connect_margin(self, func):
         """
-        Connect clicking the margin to the passed in handler function.
+        Connect clicking the margin to the passed in handler function, via a
+        filtering handler that ignores clicks on margin 4.
         """
-        self.marginClicked.connect(func)
+        # Margin 4 motivation in self.configure comments.
+        def func_ignoring_margin_4(margin, line, modifiers):
+            if margin != 4:
+                func(margin, line, modifiers)
+        self.marginClicked.connect(func_ignoring_margin_4)
 
     def set_theme(self, theme=DayTheme):
         """
@@ -362,8 +376,7 @@ class EditorPane(QsciScintilla):
         return the corresponding Scintilla line-offset pairs which are
         used for searches, indicators etc.
 
-        FIXME: Not clear whether the Scintilla conversions are expecting
-        bytes or characters (ie codepoints)
+        NOTE: Arguments must be byte offsets into the underlying text bytes.
         """
         start_line, start_offset = self.lineIndexFromPosition(start_position)
         end_line, end_offset = self.lineIndexFromPosition(end_position)
@@ -429,8 +442,10 @@ class EditorPane(QsciScintilla):
         # to the current theme.
         #
         indicators = self.search_indicators['selection']
-        text = self.text()
-        for match in re.finditer(selected_text, text):
+        encoding = 'utf8' if self.isUtf8() else 'latin1'
+        text_bytes = self.text().encode(encoding)
+        selected_text_bytes = selected_text.encode(encoding)
+        for match in re.finditer(selected_text_bytes, text_bytes):
             range = self.range_from_positions(*match.span())
             #
             # Don't highlight the text we've selected

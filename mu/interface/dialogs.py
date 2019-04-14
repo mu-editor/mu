@@ -21,7 +21,6 @@ import sys
 import logging
 import csv
 import shutil
-import platform
 from PyQt5.QtCore import QSize, QProcess, QTimer
 from PyQt5.QtWidgets import (QVBoxLayout, QListWidget, QLabel, QListWidgetItem,
                              QDialog, QDialogButtonBox, QPlainTextEdit,
@@ -178,29 +177,16 @@ class PackagesWidget(QWidget):
         self.setLayout(widget_layout)
         self.text_area = QPlainTextEdit()
         self.text_area.setLineWrapMode(QPlainTextEdit.NoWrap)
-        if 'armv' in platform.platform():
-            # Only allow third party package management if NOT running on a
-            # Raspberry Pi. See:
-            # https://github.com/mu-editor/mu/pull/749#issuecomment-459051823
-            label = QLabel(_('Third party packages are not supported on the '
-                             'Raspberry Pi. Please use the operating '
-                             "system's package manager instead (refer to the "
-                             "operating system's documentation for how to do "
-                             "this)."))
-            label.setWordWrap(True)
-            widget_layout.addWidget(label)
-            self.text_area.setPlainText('')
-        else:
-            label = QLabel(_('The packages shown below will be available to '
-                             'import in Python 3 mode. Delete a package from '
-                             'the list to remove its availability.\n\n'
-                             'Each separate package name should be on a new '
-                             'line. Packages are installed from PyPI '
-                             '(see: https://pypi.org/).'))
-            label.setWordWrap(True)
-            widget_layout.addWidget(label)
-            self.text_area.setPlainText(packages)
-            widget_layout.addWidget(self.text_area)
+        label = QLabel(_('The packages shown below will be available to '
+                         'import in Python 3 mode. Delete a package from '
+                         'the list to remove its availability.\n\n'
+                         'Each separate package name should be on a new '
+                         'line. Packages are installed from PyPI '
+                         '(see: https://pypi.org/).'))
+        label.setWordWrap(True)
+        widget_layout.addWidget(label)
+        self.text_area.setPlainText(packages)
+        widget_layout.addWidget(self.text_area)
 
 
 class AdminDialog(QDialog):
@@ -358,7 +344,7 @@ class PackageDialog(QDialog):
         """
         dirs = [os.path.join(self.module_dir, d)
                 for d in os.listdir(self.module_dir)
-                if d.endswith("dist-info")]
+                if d.endswith("dist-info") or d.endswith("egg-info")]
         self.pkg_dirs = {}
         for pkg in self.to_remove:
             for d in dirs:
@@ -377,25 +363,57 @@ class PackageDialog(QDialog):
         no packages to remove, move to the finished state.
         """
         if self.pkg_dirs:
-            package, dist = self.pkg_dirs.popitem()
-            record = os.path.join(dist, 'RECORD')
-            with open(record) as f:
-                files = csv.reader(f)
-                for row in files:
-                    to_delete = os.path.join(self.module_dir, row[0])
-                    try:
-                        os.remove(to_delete)
-                    except Exception as ex:
-                        logger.error('Unable to remove: {}'.format(to_delete))
-                        logger.error(ex)
-            shutil.rmtree(dist, ignore_errors=True)
-            # Some modules don't use the module name for the module directory
-            # (they use a lower case variant thereof). E.g. "Fom" vs. "fom".
-            normal_module = os.path.join(self.module_dir, package)
-            lower_module = os.path.join(self.module_dir, package.lower())
-            shutil.rmtree(normal_module, ignore_errors=True)
-            shutil.rmtree(lower_module, ignore_errors=True)
-            self.append_data('Removed {}\n'.format(package))
+            package, info = self.pkg_dirs.popitem()
+            if info.endswith("dist-info"):
+                # Modern
+                record = os.path.join(info, 'RECORD')
+                with open(record) as f:
+                    files = csv.reader(f)
+                    for row in files:
+                        to_delete = os.path.join(self.module_dir, row[0])
+                        try:
+                            os.remove(to_delete)
+                        except Exception as ex:
+                            logger.error('Unable to remove: ' + to_delete)
+                            logger.error(ex)
+                shutil.rmtree(info, ignore_errors=True)
+                # Some modules don't use the module name for the module
+                # directory (they use a lower case variant thereof). E.g.
+                # "Fom" vs. "fom".
+                normal_module = os.path.join(self.module_dir, package)
+                lower_module = os.path.join(self.module_dir, package.lower())
+                shutil.rmtree(normal_module, ignore_errors=True)
+                shutil.rmtree(lower_module, ignore_errors=True)
+                self.append_data('Removed {}\n'.format(package))
+            else:
+                # Egg
+                try:
+                    record = os.path.join(info, 'installed-files.txt')
+                    with open(record) as f:
+                        files = f.readlines()
+                        for row in files:
+                            to_delete = os.path.join(info, row.strip())
+                            try:
+                                os.remove(to_delete)
+                            except Exception as ex:
+                                logger.error("Unable to remove: " + to_delete)
+                                logger.error(ex)
+                    shutil.rmtree(info, ignore_errors=True)
+                    # Some modules don't use the module name for the module
+                    # directory (they use a lower case variant thereof). E.g.
+                    # "Fom" vs. "fom".
+                    normal_module = os.path.join(self.module_dir, package)
+                    lower_module = os.path.join(self.module_dir,
+                                                package.lower())
+                    shutil.rmtree(normal_module, ignore_errors=True)
+                    shutil.rmtree(lower_module, ignore_errors=True)
+                    self.append_data('Removed {}\n'.format(package))
+                except Exception as ex:
+                    msg = ("UNABLE TO REMOVE PACKAGE: {} (check the logs for"
+                           " more information.)").format(package)
+                    self.append_data(msg)
+                    logger.error("Unable to remove package: " + package)
+                    logger.error(ex)
             QTimer.singleShot(2, self.remove_package)
         else:
             # Clean any directories not containing files.
@@ -408,6 +426,10 @@ class PackageDialog(QDialog):
                         keep = True
                 if not keep:
                     shutil.rmtree(d, ignore_errors=True)
+            # Remove the bin directory (and anything in it) since we don't
+            # use these assets.
+            shutil.rmtree(os.path.join(self.module_dir, "bin"),
+                          ignore_errors=True)
             # Check for end state.
             if not (self.to_add or self.process):
                 self.end_state()
@@ -431,6 +453,7 @@ class PackageDialog(QDialog):
         self.process.setProcessChannelMode(QProcess.MergedChannels)
         self.process.readyRead.connect(self.read_process)
         self.process.finished.connect(self.finished)
+        logger.info('{} {}'.format(sys.executable, ' '.join(args)))
         self.process.start(sys.executable, args)
 
     def finished(self):

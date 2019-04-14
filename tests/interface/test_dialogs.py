@@ -146,23 +146,6 @@ def test_PackagesWidget_setup():
     assert pw.text_area.toPlainText() == packages
 
 
-def test_PackagesWidget_setup_raspberry_pi():
-    """
-    The package related widget must be disabled in some way if Mu is running
-    on a Raspberry Pi. See:
-    https://github.com/mu-editor/mu/pull/749#issuecomment-459031400
-    for further context.
-    """
-    packages = 'foo\nbar\nbaz'
-    pw = mu.interface.dialogs.PackagesWidget()
-    mock_platform = mock.MagicMock()
-    platform = "Linux-4.14.79-v7+-armv7l-with-debian-9.6"
-    mock_platform.platform.return_value = platform
-    with mock.patch('mu.interface.dialogs.platform', mock_platform):
-        pw.setup(packages)
-    assert pw.text_area.toPlainText() == ''  # No packages
-
-
 def test_AdminDialog_setup():
     """
     Ensure the admin dialog is setup properly given the content of a log
@@ -251,7 +234,7 @@ def test_PackageDialog_remove_packages():
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-def test_PackageDialog_remove_package():
+def test_PackageDialog_remove_package_dist_info():
     """
     Ensures that if there are packages remaining to be deleted, then the next
     one is deleted as expected.
@@ -282,7 +265,7 @@ def test_PackageDialog_remove_package():
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-def test_PackageDialog_remove_package_cannot_delete():
+def test_PackageDialog_remove_package_dist_info_cannot_delete():
     """
     Ensures that if there are packages remaining to be deleted, then the next
     one is deleted and any failures are logged.
@@ -316,6 +299,83 @@ def test_PackageDialog_remove_package_cannot_delete():
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
+def test_PackageDialog_remove_package_egg_info():
+    """
+    Ensures that if there are packages remaining to be deleted, then the next
+    one is deleted as expected.
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.append_data = mock.MagicMock()
+    pd.pkg_dirs = {'foo': os.path.join('bar', 'foo-1.0.0.egg-info')}
+    pd.module_dir = 'baz'
+    files = ''.join(["filename1\n", "filename2\n", "filename3\n", ])
+    mock_remove = mock.MagicMock()
+    mock_shutil = mock.MagicMock()
+    mock_qtimer = mock.MagicMock()
+    with mock.patch('builtins.open', mock.mock_open(read_data=files)), \
+            mock.patch('mu.interface.dialogs.os.remove', mock_remove), \
+            mock.patch('mu.interface.dialogs.shutil', mock_shutil), \
+            mock.patch('mu.interface.dialogs.QTimer', mock_qtimer):
+        pd.remove_package()
+        assert pd.pkg_dirs == {}
+        assert mock_remove.call_count == 3
+        assert mock_shutil.rmtree.call_count == 3
+        pd.append_data.assert_called_once_with('Removed foo\n')
+        mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
+
+
+def test_PackageDialog_remove_package_egg_info_cannot_delete():
+    """
+    Ensures that if there are packages remaining to be deleted, then the next
+    one is deleted and any failures are logged.
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.append_data = mock.MagicMock()
+    pd.pkg_dirs = {'foo': os.path.join('bar', 'foo-1.0.0.egg-info')}
+    pd.module_dir = 'baz'
+    files = ''.join(["filename1\n", "filename2\n", "filename3\n", ])
+    mock_remove = mock.MagicMock(side_effect=Exception('Bang'))
+    mock_shutil = mock.MagicMock()
+    mock_qtimer = mock.MagicMock()
+    mock_log = mock.MagicMock()
+    with mock.patch('builtins.open', mock.mock_open(read_data=files)), \
+            mock.patch('mu.interface.dialogs.os.remove', mock_remove), \
+            mock.patch('mu.interface.dialogs.logger.error', mock_log), \
+            mock.patch('mu.interface.dialogs.shutil', mock_shutil), \
+            mock.patch('mu.interface.dialogs.QTimer', mock_qtimer):
+        pd.remove_package()
+        assert pd.pkg_dirs == {}
+        assert mock_remove.call_count == 3
+        assert mock_log.call_count == 6
+        assert mock_shutil.rmtree.call_count == 3
+        pd.append_data.assert_called_once_with('Removed foo\n')
+        mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
+
+
+def test_PackageDialog_remove_package_egg_info_cannot_open_record():
+    """
+    If the installed-files.txt file is not available (sometimes the case), then
+    simply raise an exception and communicate this to the user.
+    """
+    pd = mu.interface.dialogs.PackageDialog()
+    pd.append_data = mock.MagicMock()
+    pd.pkg_dirs = {'foo': os.path.join('bar', 'foo-1.0.0.egg-info')}
+    pd.module_dir = 'baz'
+    mock_qtimer = mock.MagicMock()
+    mock_log = mock.MagicMock()
+    with mock.patch('builtins.open',
+                    mock.MagicMock(side_effect=Exception("boom"))), \
+            mock.patch('mu.interface.dialogs.logger.error', mock_log), \
+            mock.patch('mu.interface.dialogs.QTimer', mock_qtimer):
+        pd.remove_package()
+        assert pd.pkg_dirs == {}
+        assert mock_log.call_count == 2
+        msg = ("UNABLE TO REMOVE PACKAGE: foo (check the logs for "
+               "more information.)")
+        pd.append_data.assert_called_once_with(msg)
+        mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
+
+
 def test_PackageDialog_remove_package_end_state():
     """
     If there are no more packages to remove and there's nothing to be done for
@@ -335,9 +395,10 @@ def test_PackageDialog_remove_package_end_state():
                                     [('baz', [], ['x'])]]), \
             mock.patch('mu.interface.dialogs.shutil') as mock_shutil:
         pd.remove_package()
-        expected_path = os.path.join(pd.module_dir, 'bar')
-        mock_shutil.rmtree.assert_called_once_with(expected_path,
-                                                   ignore_errors=True)
+        assert mock_shutil.rmtree.call_count == 2
+        call_args = mock_shutil.rmtree.call_args_list
+        assert call_args[0][0][0] == os.path.join('foo', 'bar')
+        assert call_args[1][0][0] == os.path.join('foo', 'bin')
     pd.end_state.assert_called_once_with()
 
 

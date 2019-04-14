@@ -83,10 +83,10 @@ working development environment:
     (mu-venv) $ git clone https://github.com/mu-editor/mu.git ~/mu-source
 
 5. With the virtualenv enabled, pip install the Python packages for the
-   Raspberry Pi via the ``requirements_pi.txt`` file::
+   Raspberry Pi via the ``requirements.txt`` file::
 
     (mu-venv) $ cd ~/mu-source
-    (mu-venv) $ pip install -r requirements_pi.txt
+    (mu-venv) $ pip install -r requirements.txt
 
 7. Use ``pip`` to install mu without installing the dependencies again::
 
@@ -104,6 +104,11 @@ working development environment:
 
     These instructions for Raspberry Pi only work with Raspbian version
     "Stretch".
+
+    If you use ``pip`` to install Mu on a Raspberry Pi, then the PyQt related
+    packages will not be automatically installed from PyPI. This is why you
+    need to use ``apt-get`` to install them instead, as described in step 1,
+    above.
 
 Using ``make``
 ++++++++++++++

@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import os
 import logging
+from mu.logic import MODULE_DIR
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from mu.resources import load_icon
@@ -65,7 +66,14 @@ class KernelRunner(QObject):
         # Ensure the expected paths are in PYTHONPATH of the subprocess so the
         # kernel and Mu-installed third party applications can be found.
         if 'PYTHONPATH' not in os.environ:
-            os.environ['PYTHONPATH'] = os.pathsep.join(sys.path)
+            paths = sys.path + [MODULE_DIR, ]
+            os.environ['PYTHONPATH'] = os.pathsep.join(paths)
+        if MODULE_DIR not in os.environ['PYTHONPATH']:
+            # This is needed on Windows to ensure user installed third party
+            # packages are available in the REPL.
+            new_path = os.pathsep.join([os.environ['PYTHONPATH'], MODULE_DIR])
+            os.environ['PYTHONPATH'] = new_path
+        logger.info("REPL PYTHONPATH: {}".format(os.environ['PYTHONPATH']))
         self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.start_kernel()
         self.repl_kernel_client = self.repl_kernel_manager.client()
@@ -181,8 +189,9 @@ class PythonMode(BaseMode):
             if tab.isModified():
                 self.editor.save_tab_to_file(tab)
             envars = self.editor.envars
+            cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(tab.path,
-                                                       self.workspace_dir(),
+                                                       cwd,
                                                        interactive=True,
                                                        envars=envars)
             self.runner.process.waitForStarted()

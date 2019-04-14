@@ -94,8 +94,12 @@ class ButtonBar(QToolBar):
         self.addSeparator()
         self.addAction(name="check", display_name=_('Check'),
                        tool_text=_("Check your code for mistakes."))
+        if sys.version_info[:2] >= (3, 6):
+            self.addAction(name="tidy", display_name=_('Tidy'),
+                           tool_text=_("Tidy up the layout of your code."))
         self.addAction(name="help", display_name=_('Help'),
                        tool_text=_("Show help about Mu in a browser."))
+        self.addSeparator()
         self.addAction(name="quit", display_name=_('Quit'),
                        tool_text=_("Quit Mu."))
 
@@ -104,7 +108,7 @@ class ButtonBar(QToolBar):
         Compact button bar for when window is very small.
         """
         font_size = DEFAULT_FONT_SIZE
-        if width < 940 and height > 600:
+        if width < 1124 and height > 600:
             self.setIconSize(QSize(48, 48))
         elif height < 600 and width < 940:
             font_size = 10
@@ -385,7 +389,7 @@ class Window(QMainWindow):
             self.serial.close()
             self.serial = None
 
-    def add_filesystem(self, home, file_manager):
+    def add_filesystem(self, home, file_manager, board_name="board"):
         """
         Adds the file system pane to the application.
         """
@@ -396,7 +400,7 @@ class Window(QMainWindow):
             # Bubble the signal up
             self.open_file.emit(file)
 
-        self.fs = QDockWidget(_('Filesystem on micro:bit'))
+        self.fs = QDockWidget(_('Filesystem on ') + board_name)
         self.fs.setWidget(self.fs_pane)
         self.fs.setFeatures(QDockWidget.DockWidgetMovable)
         self.fs.setAllowedAreas(Qt.BottomDockWidgetArea)

@@ -11,6 +11,7 @@ import mu.interface.main
 import mu.interface.themes
 import mu.interface.editor
 import pytest
+import sys
 
 
 def test_ButtonBar_init():
@@ -83,8 +84,11 @@ def test_ButtonBar_change_mode():
         mock_reset.reset_mock()
         b.change_mode(mock_mode)
         mock_reset.assert_called_once_with()
-        assert mock_add_action.call_count == 11
-        assert mock_add_separator.call_count == 4
+        if sys.version_info < (3, 6):
+            assert mock_add_action.call_count == 11
+        else:
+            assert mock_add_action.call_count == 12
+        assert mock_add_separator.call_count == 5
 
 
 def test_ButtonBar_set_responsive_mode():
@@ -95,7 +99,7 @@ def test_ButtonBar_set_responsive_mode():
     with mock.patch('mu.interface.main.ButtonBar.setIconSize', mock_icon_size):
         bb = mu.interface.main.ButtonBar(None)
         bb.setStyleSheet = mock.MagicMock()
-        bb.set_responsive_mode(1024, 800)
+        bb.set_responsive_mode(1124, 800)
         mock_icon_size.assert_called_with(QSize(64, 64))
         default_font = str(mu.interface.themes.DEFAULT_FONT_SIZE)
         style = "QWidget{font-size: " + default_font + "px;}"
