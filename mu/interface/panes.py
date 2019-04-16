@@ -271,7 +271,25 @@ class MicroPythonREPLPane(QTextEdit):
             else:
                 tc.deleteChar()
                 self.setTextCursor(tc)
-                self.insertPlainText(chr(data[i]))
+                # Received data is UTF-8 encoded, with up to 4 bytes per char
+                utf8_extra_bytes = 0
+                while utf8_extra_bytes <= 3:
+                    if len(data) > i + utf8_extra_bytes:
+                        utf8_bytes = bytes(data[i:i + 1 + utf8_extra_bytes])
+                        try:
+                            decoded_data = utf8_bytes.decode('utf-8')
+                        except UnicodeDecodeError:
+                            # Probably don't have all the character bytes yet
+                            utf8_extra_bytes += 1
+                        else:
+                            self.insertPlainText(decoded_data)
+                            i += utf8_extra_bytes
+                            break
+                else:
+                    # As a fallback we can decode this byte using chr(), but
+                    # in the meantime, to easily spot issues, throw exception
+                    # self.insertPlainText(chr(data[i]))
+                    raise Exception("CARLOS CAN'T UTF-8")
             i += 1
         self.ensureCursorVisible()
 
