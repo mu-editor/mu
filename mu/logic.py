@@ -905,7 +905,7 @@ class Editor:
                 logger.error('Could not get path for {}: {}'.format(p, ex))
         return result
 
-    def save_tab_to_file(self, tab):
+    def save_tab_to_file(self, tab, show_error_messages=True):
         """
         Given a tab, will attempt to save the script in the tab to the path
         associated with the tab. If there's a problem this will be logged and
@@ -929,7 +929,7 @@ class Editor:
                             "remove it and try again.")
         else:
             error_message = information = None
-        if error_message:
+        if error_message and show_error_messages:
             self._view.show_message(error_message, information)
         else:
             tab.setModified(False)
@@ -1248,7 +1248,8 @@ class Editor:
             # Something has changed, so save it!
             for tab in self._view.widgets:
                 if tab.path and tab.isModified():
-                    self.save_tab_to_file(tab)
+                    # Suppress error message on autosave attempts
+                    self.save_tab_to_file(tab, show_error_messages=False)
                     logger.info('Autosave detected and saved '
                                 'changes in {}.'.format(tab.path))
 
