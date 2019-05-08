@@ -66,7 +66,7 @@ class AdafruitMode(MicroPythonMode):
         (0x239A, 0x803A),  # future board
         (0x239A, 0x803C),  # future board
         (0x239A, 0x803E),  # future board
-        (0x239A, None),    # Any Adafruit Boards
+        (0x239A, None),   # Any Adafruit Boards
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
