@@ -61,7 +61,6 @@ class AdafruitMode(MicroPythonMode):
         (0xBAB2, 0x1209),  # Electronic Cats CatWAN USBStick
         (0xBAB3, 0x1209),  # Electronic Cats Bast Pro Mini M0
         (0x239A, 0x8034),  # future board
-        (0x239A, 0x8034),  # future board
         (0x239A, 0x8036),  # future board
         (0x239A, 0x8038),  # future board
         (0x239A, 0x803A),  # future board
