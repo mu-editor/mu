@@ -59,7 +59,7 @@ class AdafruitMode(MicroPythonMode):
         (0x2B04, 0xC00E),  # Particle Xenon
         (0x1209, 0xBAB1),  # Electronic Cats Meow Meow
         (0x1209, 0xBAB2),  # Electronic Cats CatWAN USBStick
-        (0x1209, 0xBAB3),  # Electronic Cats Bast Pro Mini M0        
+        (0x1209, 0xBAB3),  # Electronic Cats Bast Pro Mini M0
         (0x239A, 0x8034),  # future board
         (0x239A, 0x8036),  # future board
         (0x239A, 0x8038),  # future board
