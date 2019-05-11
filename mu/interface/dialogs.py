@@ -447,7 +447,7 @@ class PackageDialog(QDialog):
         text area.
         """
         package = self.to_add.pop()
-        args = ['-m', 'pip', 'install', package, '--target',
+        args = ['-m', 'pip', 'install', package, '--system', '--target',
                 self.module_dir]
         self.process = QProcess(self)
         self.process.setProcessChannelMode(QProcess.MergedChannels)
