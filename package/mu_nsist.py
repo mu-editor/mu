@@ -19,44 +19,19 @@ be from an existing installed "system" Python.
 import io
 import logging
 import ntpath
-import operator
 import os
-from pathlib import Path
-import re
 import shutil
-from subprocess import call
 import sys
-import fnmatch
+import winreg
 import zipfile
-
-if os.name == 'nt':
-    import winreg
-else:
-    winreg = None
-
 
 from nsist import InstallerBuilder
 from nsist.configreader import get_installer_builder_args
-from nsist.commands import prepare_bin_directory
-from nsist.copymodules import copy_modules
-from nsist.nsiswriter import NSISFileWriter
-from nsist.wheels import WheelGetter
-from nsist.util import download, get_cache_dir, normalize_path
-
-__version__ = '2.3'
+from nsist.util import download, get_cache_dir
 
 pjoin = os.path.join
-logging.basicConfig(filename='pynsist.log', level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-_PKGDIR = os.path.abspath(os.path.dirname(__file__))
-DEFAULT_PY_VERSION = '3.6.3'
-DEFAULT_BUILD_DIR = pjoin('build', 'nsis')
-DEFAULT_ICON = pjoin(_PKGDIR, 'glossyorb.ico')
-if os.name == 'nt' and sys.maxsize == (2**63)-1:
-    DEFAULT_BITNESS = 64
-else:
-    DEFAULT_BITNESS = 32
 
 def find_makensis_win():
     """Locate makensis.exe on Windows by querying the registry"""

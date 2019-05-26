@@ -12,11 +12,36 @@ command::
 Windows, OSX, Linux
 +++++++++++++++++++
 
-On all platforms except the Raspberry Pi, to create a working development
-environment install all the dependencies into your virtualenv via the
-``requirements.txt`` file::
+Create a working development environment by installing all the dependencies
+into your virtualenv with::
 
-    pip install -r requirements.txt
+    pip install -e .[dev]
+
+.. note::
+
+    The Mu package distribution, as specified in ``setup.py``, declares
+    both runtime and extra dependencies.
+
+    The above mentioned ``pip install -e .[dev]`` installs all runtime
+    dependencies and most development ones: it should serve nearly everyone.
+
+    For the sake of completeness, however, here are a few additional details.
+    The ``[dev]`` extra is actually the aggregation of the following extras:
+
+    * ``[tests]`` specifies the testing dependencies, needed by ``make test``.
+    * ``[docs]`` specifies the doc building dependencies, needed by ``make docs``.
+    * ``[package]`` specifies the packaging dependencies needed by ``make win32``,
+      ``make win64``, ``make macos``, or ``make dist``.
+
+    Addionionally, the following extras are defined:
+
+    * ``[utils]`` specifies the dependencies needed to run the utilities
+      under the ``utils`` directory. It has been specifically excluded from
+      the ``[dev]`` extra for two reasons: i) on the Windows platform, it
+      requires a C compiler to be installed (as of this writing), and
+      ii) running such utilities is seldom needed in Mu's development process.
+    * ``[all]`` includes all the dependencies in all extras.
+
 
 .. warning::
 
@@ -28,7 +53,7 @@ environment install all the dependencies into your virtualenv via the
     isolated from such problematic version conflicts.
 
     If in doubt, throw away your virtualenv and start again with a fresh
-    install from ``requirements.txt`` as per the instructions above.
+    install as per the instructions above.
 
     On Windows, use the venv module from the standard library to avoid an
     issue with the Qt modules missing a DLL::
@@ -41,21 +66,17 @@ Running Development Mu
 .. note:: From this point onwards, instructions assume that you're using
    a virtual environment.
 
-For the debug runner to work, the ``mu-debug`` command must be available (it's
-used to launch user's Python script with the debugging scaffolding in place to
-communicate with Mu, acting as the debug client). As a result, it's essential
-to run the following to ensure this command is available in your virtualenv::
-
-  pip install --editable .
-
-To run the local development version of Mu, in the root of
-the repository type::
+To run the local development version of Mu, in the root of the repository type::
 
   python run.py
 
 An alternative form is to type::
 
   python -m mu
+
+Yet another one is typing::
+
+  mu-editor
 
 Raspberry Pi
 ++++++++++++
@@ -83,22 +104,22 @@ working development environment:
     (mu-venv) $ git clone https://github.com/mu-editor/mu.git ~/mu-source
 
 5. With the virtualenv enabled, pip install the Python packages for the
-   Raspberry Pi via the ``requirements.txt`` file::
+   Raspberry Pi with::
 
     (mu-venv) $ cd ~/mu-source
-    (mu-venv) $ pip install -r requirements.txt
+    (mu-venv) $ pip install -e .[dev]
 
-7. Use ``pip`` to install mu without installing the dependencies again::
-
-     (mu-venv) $ pip install --editable .
-
-8. Run mu::
+7. Run mu::
 
      python run.py
 
    An alternative form is to type::
 
      python -m mu
+
+   Or even::
+
+     mu-editor
 
 .. warning::
 
@@ -133,6 +154,10 @@ with development. Typing ``make`` on its own will list the options thus::
     make docs - run sphinx to create project documentation.
     make translate - create a messages.pot file for translations.
     make translateall - as with translate but for all API strings.
+    make win32 - create a 32bit Windows installer for Mu.
+    make win64 - create a 64bit Windows installer for Mu.
+    make macos - create a macOS native application for Mu.
+    make video - create an mp4 video representing code commits.
 
 Everything should be working if you can successfully run::
 
