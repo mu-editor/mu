@@ -31,7 +31,7 @@ Clone the repository::
 
 Make a virtualenv, then install the requirements::
 
-    pip install -r requirements.txt
+    pip install -e .[dev]
 
 Start Mu::
 
