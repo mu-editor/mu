@@ -243,6 +243,38 @@ def test_Window_attributes():
     assert w.zooms == ('xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl')
 
 
+def test_Window_wheelEvent_zoom_in():
+    """
+    If the CTRL+scroll in a positive direction, zoom in.
+    """
+    w = mu.interface.main.Window()
+    w.zoom_in = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    mock_event.angleDelta().y.return_value = 1
+    modifiers = Qt.ControlModifier
+    with mock.patch('mu.interface.main.QApplication.keyboardModifiers',
+                    return_value=modifiers):
+        w.wheelEvent(mock_event)
+        w.zoom_in.assert_called_once_with()
+        mock_event.ignore.assert_called_once_with()
+
+
+def test_Window_wheelEvent_zoom_out():
+    """
+    If the CTRL+scroll in a negative direction, zoom out.
+    """
+    w = mu.interface.main.Window()
+    w.zoom_out = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    mock_event.angleDelta().y.return_value = -1
+    modifiers = Qt.ControlModifier
+    with mock.patch('mu.interface.main.QApplication.keyboardModifiers',
+                    return_value=modifiers):
+        w.wheelEvent(mock_event)
+        w.zoom_out.assert_called_once_with()
+        mock_event.ignore.assert_called_once_with()
+
+
 def test_Window_resizeEvent():
     """
     Ensure resize events are passed along to the button bar.
