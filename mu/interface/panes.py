@@ -425,6 +425,30 @@ class LocalFileList(MuFileList):
         self.home = home
         self.list_files = list_files
         self.setDragDropMode(QListWidget.DragDrop)
+        self.itemDoubleClicked.connect(self.doubleClickEvent)
+
+    def doubleClickEvent(self, item):
+        # TODO: Deduplicate with right click menu
+        local_filename = item.text()
+        self.do_internal_action(local_filename)
+
+    def do_internal_action(self, local_filename):
+        if local_filename == self.UP_DIRECTORY:
+            path = os.path.join(os.path.split(self.home)[0])
+        else:
+            path = os.path.join(self.home, local_filename)
+        ext = os.path.splitext(local_filename)[1].lower()
+
+        if os.path.isdir(path):
+            self.home = str(path)
+            logger.info("Changed home to {}".format(self.home))
+            self.list_files.emit()            
+        elif ext == '.py' or ext == '.hex':
+            logger.info("Open {} internally".format(local_filename))
+            # Send the signal bubbling up the tree
+            self.open_file.emit(path)
+        else:
+            logger.info("Unable to open {}".format(local_filename))
 
     def dropEvent(self, event):
         source = event.source()
@@ -494,16 +518,7 @@ class LocalFileList(MuFileList):
             # Let Qt work out how to open it
             QDesktopServices.openUrl(QUrl.fromLocalFile(path))
         elif action == open_internal_action:
-            if local_filename == self.UP_DIRECTORY:
-                self.home = os.path.split(self.home)[0]
-                logger.info("Changed home to {}".format(self.home))
-                self.list_files.emit()
-            else:
-                logger.info("Open {} internally".format(local_filename))
-                # Get the file's path
-                path = os.path.join(self.home, local_filename)
-                # Send the signal bubbling up the tree
-                self.open_file.emit(path)
+            self.do_internal_action(local_filename)
 
 
 class FileSystemPane(QFrame):
