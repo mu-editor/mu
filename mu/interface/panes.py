@@ -361,9 +361,8 @@ class MicroPythonDeviceFileList(MuFileList):
     put = pyqtSignal(str)
     delete = pyqtSignal(str)
 
-    def __init__(self, home):
+    def __init__(self):
         super().__init__()
-        self.home = home
         self.setDragDropMode(QListWidget.DragDrop)
 
     def dropEvent(self, event):
@@ -374,7 +373,7 @@ class MicroPythonDeviceFileList(MuFileList):
             if not file_exists or \
                     file_exists and self.show_confirm_overwrite_dialog():
                 self.disable.emit()
-                local_filename = os.path.join(self.home,
+                local_filename = os.path.join(source.home,
                                               source.currentItem().text())
                 msg = _("Copying '{}' to micro:bit.").format(local_filename)
                 logger.info(msg)
@@ -420,9 +419,10 @@ class LocalFileList(MuFileList):
     get = pyqtSignal(str, str)
     open_file = pyqtSignal(str)
 
-    def __init__(self, home):
+    def __init__(self, home, list_files):
         super().__init__()
         self.home = home
+        self.list_files = list_files
         self.setDragDropMode(QListWidget.DragDrop)
 
     def dropEvent(self, event):
@@ -452,6 +452,22 @@ class LocalFileList(MuFileList):
         self.set_message.emit(msg)
         self.list_files.emit()
 
+    def on_ls(self):
+        """Populates the list with data from the local filesystem"""
+        local_files = [f for f in os.listdir(self.home)
+                       if os.path.isfile(os.path.join(self.home, f))]
+        local_files.sort()
+
+        local_dirs = [f for f in os.listdir(self.home)
+                       if os.path.isdir(os.path.join(self.home, f))]
+        local_dirs.sort()
+
+        self.addItem(os.path.split(self.home)[0])
+        for d in local_dirs:
+            self.addItem(d + os.path.sep)
+        for f in local_files:
+            self.addItem(f)
+
     def contextMenuEvent(self, event):
         menu = QMenu(self)
         local_filename = self.currentItem().text()
@@ -459,7 +475,9 @@ class LocalFileList(MuFileList):
         ext = os.path.splitext(local_filename)[1].lower()
         open_internal_action = None
         # Mu micro:bit mode only handles .py & .hex
-        if ext == '.py' or ext == '.hex':
+        if os.path.isdir(os.path.join(self.home, local_filename)):
+            open_internal_action = menu.addAction(_("Navigate to Directory"))
+        elif ext == '.py' or ext == '.hex':
             open_internal_action = menu.addAction(_("Open in Mu"))
         # Open outside Mu (things get meta if Mu is the default application)
         open_action = menu.addAction(_("Open"))
@@ -474,11 +492,16 @@ class LocalFileList(MuFileList):
             # Let Qt work out how to open it
             QDesktopServices.openUrl(QUrl.fromLocalFile(path))
         elif action == open_internal_action:
-            logger.info("Open {} internally".format(local_filename))
-            # Get the file's path
-            path = os.path.join(self.home, local_filename)
-            # Send the signal bubbling up the tree
-            self.open_file.emit(path)
+            if os.path.isdir(os.path.join(self.home, local_filename)):
+                self.home = os.path.join(self.home, local_filename)
+                logger.info("Changed home to {}".format(self.home))
+                self.list_files.emit()
+            else:
+                logger.info("Open {} internally".format(local_filename))
+                # Get the file's path
+                path = os.path.join(self.home, local_filename)
+                # Send the signal bubbling up the tree
+                self.open_file.emit(path)
 
 
 class FileSystemPane(QFrame):
@@ -495,10 +518,9 @@ class FileSystemPane(QFrame):
 
     def __init__(self, home):
         super().__init__()
-        self.home = home
         self.font = Font().load()
-        microbit_fs = MicroPythonDeviceFileList(home)
-        local_fs = LocalFileList(home)
+        microbit_fs = MicroPythonDeviceFileList()
+        local_fs = LocalFileList(home, self.list_files)
 
         @local_fs.open_file.connect
         def on_open_file(file):
@@ -567,11 +589,7 @@ class FileSystemPane(QFrame):
         self.local_fs.clear()
         for f in microbit_files:
             self.microbit_fs.addItem(f)
-        local_files = [f for f in os.listdir(self.home)
-                       if os.path.isfile(os.path.join(self.home, f))]
-        local_files.sort()
-        for f in local_files:
-            self.local_fs.addItem(f)
+        self.local_fs.on_ls()
         self.enable()
 
     def on_ls_fail(self):
