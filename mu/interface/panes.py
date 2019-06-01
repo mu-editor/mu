@@ -418,6 +418,7 @@ class LocalFileList(MuFileList):
 
     get = pyqtSignal(str, str)
     open_file = pyqtSignal(str)
+    UP_DIRECTORY = "Parent Directory"
 
     def __init__(self, home, list_files):
         super().__init__()
@@ -462,7 +463,7 @@ class LocalFileList(MuFileList):
                        if os.path.isdir(os.path.join(self.home, f))]
         local_dirs.sort()
 
-        self.addItem(os.path.split(self.home)[0])
+        self.addItem(self.UP_DIRECTORY)
         for d in local_dirs:
             self.addItem(d + os.path.sep)
         for f in local_files:
@@ -474,9 +475,10 @@ class LocalFileList(MuFileList):
         # Get the file extension
         ext = os.path.splitext(local_filename)[1].lower()
         open_internal_action = None
-        # Mu micro:bit mode only handles .py & .hex
-        if os.path.isdir(os.path.join(self.home, local_filename)):
+
+        if local_filename == self.UP_DIRECTORY:
             open_internal_action = menu.addAction(_("Navigate to Directory"))
+        # Mu micro:bit mode only handles .py & .hex
         elif ext == '.py' or ext == '.hex':
             open_internal_action = menu.addAction(_("Open in Mu"))
         # Open outside Mu (things get meta if Mu is the default application)
@@ -492,8 +494,8 @@ class LocalFileList(MuFileList):
             # Let Qt work out how to open it
             QDesktopServices.openUrl(QUrl.fromLocalFile(path))
         elif action == open_internal_action:
-            if os.path.isdir(os.path.join(self.home, local_filename)):
-                self.home = os.path.join(self.home, local_filename)
+            if local_filename == self.UP_DIRECTORY:
+                self.home = os.path.split(self.home)[0]
                 logger.info("Changed home to {}".format(self.home))
                 self.list_files.emit()
             else:
@@ -590,6 +592,7 @@ class FileSystemPane(QFrame):
         for f in microbit_files:
             self.microbit_fs.addItem(f)
         self.local_fs.on_ls()
+        self.local_label.setText(_('Files in "{}":'.format(self.local_fs.home)))
         self.enable()
 
     def on_ls_fail(self):
