@@ -1,0 +1,38 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+
+[packages]
+appdirs = "*"
+"beautifulsoup4" = "*"
+black = "*"
+coverage = "*"
+gpiozero = "*"
+guizero = "*"
+matplotlib = "*"
+nudatus = "*"
+qtconsole = "*"
+pgzero = "*"
+pigpio = "*"
+pycodestyle = "*"
+pyflakes = "*"
+pynsist = "*"
+pyserial = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-random-order = ">=1.0.0"
+requests = "*"
+semver = "*"
+twine = "*"
+QScintilla = "*"
+Pillow = "*"
+"PyQt5" = "*"
+PyQtChart = "*"
+Scrapy = "*"
+Sphinx = "*"
+
+[requires]
+python_version = "3.6"

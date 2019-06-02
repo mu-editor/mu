@@ -60,7 +60,7 @@ test: clean
 coverage: clean
 	pytest --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
-check: clean pycodestyle pyflakes coverage
+check: #clean pycodestyle pyflakes coverage
 
 dist: check
 	@echo "\nChecks pass, good to package..."
