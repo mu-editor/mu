@@ -42,6 +42,7 @@ For example, 'ufs ls' will list the files on a connected BBC micro:bit.
 
 
 COMMAND_LINE_FLAG = False  # Indicates running from the command line.
+SERIAL_BAUD_RATE = 115200
 
 
 def find_microbit():
@@ -61,37 +62,43 @@ def raw_on(serial):
     """
     Puts the device into raw mode.
     """
+
+    def flush_to_msg(serial, msg):
+        """Read the rx serial data until we reach an expected message."""
+        data = serial.read_until(msg)
+        if not data.endswith(msg):
+            if COMMAND_LINE_FLAG:
+                print(data)
+            raise IOError('Could not enter raw REPL.')
+
+    def flush(serial):
+        """Flush all rx input without relying on serial.flushInput()."""
+        n = serial.inWaiting()
+        while n > 0:
+            serial.read(n)
+            n = serial.inWaiting()
+
+    raw_repl_msg = b'raw REPL; CTRL-B to exit\r\n>'
     # Send CTRL-B to end raw mode if required.
     serial.write(b'\x02')
     # Send CTRL-C three times between pauses to break out of loop.
     for i in range(3):
         serial.write(b'\r\x03')
         time.sleep(0.01)
-    # Flush input (without relying on serial.flushInput())
-    n = serial.inWaiting()
-    while n > 0:
-        serial.read(n)
-        n = serial.inWaiting()
+    flush(serial)
     # Go into raw mode with CTRL-A.
     serial.write(b'\r\x01')
-    # Flush
-    data = serial.read_until(b'raw REPL; CTRL-B to exit\r\n>')
-    if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
-        if COMMAND_LINE_FLAG:
-            print(data)
-        raise IOError('Could not enter raw REPL.')
+    flush_to_msg(serial, raw_repl_msg)
     # Soft Reset with CTRL-D
     serial.write(b'\x04')
-    data = serial.read_until(b'soft reboot\r\n')
-    if not data.endswith(b'soft reboot\r\n'):
-        if COMMAND_LINE_FLAG:
-            print(data)
-        raise IOError('Could not enter raw REPL.')
-    data = serial.read_until(b'raw REPL; CTRL-B to exit\r\n>')
-    if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
-        if COMMAND_LINE_FLAG:
-            print(data)
-        raise IOError('Could not enter raw REPL.')
+    flush_to_msg(serial, b'soft reboot\r\n')
+    # Some MicroPython versions/ports/forks provide a different message after
+    # a Soft Reset, check if we are in raw REPL, if not send a CTRL-A again
+    data = serial.read_until(raw_repl_msg)
+    if not data.endswith(raw_repl_msg):
+        serial.write(b'\r\x01')
+        flush_to_msg(serial, raw_repl_msg)
+    flush(serial)
 
 
 def raw_off(serial):
@@ -109,7 +116,7 @@ def get_serial():
     port, serial_number = find_microbit()
     if port is None:
         raise IOError('Could not find micro:bit.')
-    return Serial(port, 115200, timeout=1, parity='N')
+    return Serial(port, SERIAL_BAUD_RATE, timeout=1, parity='N')
 
 
 def execute(commands, serial=None):
@@ -251,11 +258,22 @@ def get(filename, target=None, serial=None):
     if target is None:
         target = filename
     commands = [
-        "from microbit import uart",
+        "\n".join([
+            "try:",
+            " from microbit import uart as u",
+            "except ImportError:",
+            " try:",
+            "  from machine import UART",
+            "  u = UART(0, {})".format(SERIAL_BAUD_RATE),
+            " except Exception:",
+            "  try:",
+            "   from sys import stdout as u",
+            "  except Exception:",
+            "   raise Exception('Could not find UART module in device.')"]),
         "f = open('{}', 'rb')".format(filename),
         "r = f.read",
         "result = True",
-        "while result:\n result = r(32)\n if result:\n  uart.write(result)\n",
+        "while result:\n result = r(32)\n if result:\n  u.write(result)\n",
         "f.close()",
     ]
     out, err = execute(commands, serial)
