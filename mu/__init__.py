@@ -21,7 +21,7 @@ gettext.translation('mu', localedir=localedir,
 __title__ = 'mu-editor'
 __description__ = 'A simple Python editor for beginner programmers.'
 
-__version__ = '1.1.0.alpha.1'
+__version__ = '1.1.0.alpha.1.grd'
 
 __license__ = 'GPL3'
 __url__ = 'https://github.com/mu-editor/mu'
