@@ -63,10 +63,17 @@ def raw_on(serial):
     """
     # Send CTRL-B to end raw mode if required.
     serial.write(b'\x02')
-    # Send CTRL-C three times between pauses to break out of loop.
-    for i in range(3):
-        serial.write(b'\r\x03')
-        time.sleep(0.01)
+    # Send CTRL-C repeatedly until the Python prompt is available.
+    start = time.time()
+    while True:
+        for _ in range(3):
+            serial.write(b'\r\x03')
+            time.sleep(0.01)
+        data = serial.read_until(b'>>> ')
+        if data.endswith(b'>>> '):
+            break
+        if time.time() - start > 5.0:
+            raise IOError('Unable to get to Python prompt')
     # Flush input (without relying on serial.flushInput())
     n = serial.inWaiting()
     while n > 0:
@@ -76,6 +83,7 @@ def raw_on(serial):
     serial.write(b'\r\x01')
     # Flush
     data = serial.read_until(b'raw REPL; CTRL-B to exit\r\n>')
+    print(data)
     if not data.endswith(b'raw REPL; CTRL-B to exit\r\n>'):
         if COMMAND_LINE_FLAG:
             print(data)
