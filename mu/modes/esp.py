@@ -37,12 +37,13 @@ class ESPMode(MicroPythonMode):
 
     # There are many boards which use ESP microcontrollers but they often use
     # the same USB / serial chips (which actually define the Vendor ID and
-    # Product ID for the connected devices.
+    # Product ID for the connected devices).
     valid_boards = [
         # VID  , PID
         (0x1A86, 0x7523),  # HL-340
         (0x10C4, 0xEA60),  # CP210x
-        (0x0403, 0x6015),   # Sparkfun ESP32 VID, PID
+        (0x0403, 0x6010),  # FT2232C/D/L/HL/Q (ESP-WROVER-KIT, ESP32DemoBoard)
+        (0x0403, 0x6015),  # FT X-Series (Sparkfun ESP32)
     ]
 
     def actions(self):
