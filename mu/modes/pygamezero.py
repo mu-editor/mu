@@ -155,7 +155,7 @@ class PyGameZeroMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        image_dir = os.path.join(self.workspace_dir(), 'images')
+        image_dir = os.path.join(os.path.dirname(self.view.current_tab.path), 'images')
         self.view.open_directory_from_os(image_dir)
 
     def show_fonts(self, event):
@@ -175,7 +175,7 @@ class PyGameZeroMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        sound_dir = os.path.join(self.workspace_dir(), 'sounds')
+        sound_dir = os.path.join(os.path.dirname(self.view.current_tab.path), 'sounds')
         self.view.open_directory_from_os(sound_dir)
 
     def show_music(self, event):

@@ -194,9 +194,10 @@ def test_pgzero_show_images():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.current_tab.path = os.path.join(tempfile.gettempdir(), "abc.py")
     pm = PyGameZeroMode(editor, view)
     pm.show_images(None)
-    image_dir = os.path.join(pm.workspace_dir(), 'images')
+    image_dir = os.path.join(os.path.dirname(view.current_tab.path), 'images')
     view.open_directory_from_os.assert_called_once_with(image_dir)
 
 
@@ -219,9 +220,10 @@ def test_pgzero_show_sounds():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.current_tab.path = os.path.join(tempfile.gettempdir(), "abc.py")
     pm = PyGameZeroMode(editor, view)
     pm.show_sounds(None)
-    sounds_dir = os.path.join(pm.workspace_dir(), 'sounds')
+    sounds_dir = os.path.join(os.path.dirname(view.current_tab.path), 'sounds')
     view.open_directory_from_os.assert_called_once_with(sounds_dir)
 
 
