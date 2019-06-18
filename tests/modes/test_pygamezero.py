@@ -8,6 +8,7 @@ from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS, PYGAMEZERO_APIS
 from unittest import mock
 import tempfile
 
+
 def test_pgzero_mode():
     """
     Sanity check for setting up of the mode.
