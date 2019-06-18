@@ -233,7 +233,8 @@ def test_pgzero_show_music():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.current_tab.path = os.path.join(tempfile.gettempdir(), "abc.py")
     pm = PyGameZeroMode(editor, view)
     pm.show_music(None)
-    music_dir = os.path.join(pm.workspace_dir(), 'music')
+    music_dir = os.path.join(os.path.dirname(view.current_tab.path), 'music')
     view.open_directory_from_os.assert_called_once_with(music_dir)
