@@ -243,17 +243,23 @@ class Window(QMainWindow):
         for tab in self.widgets:
             tab.setReadOnly(is_readonly)
 
-    def get_load_path(self, folder, extensions='*'):
+    def get_load_path(self, folder, extensions='*', allow_previous=True):
         """
         Displays a dialog for selecting a file to load. Returns the selected
-        path. Defaults to start in the referenced folder.
+        path. Defaults to start in the referenced folder unless a previous
+        folder has been used and the allow_previous flag is True (the default
+        behaviour)
         """
+        if allow_previous:
+            open_in = folder if self.previous_folder is None\
+                else self.previous_folder
+        else:
+            open_in = folder
         path, _ = QFileDialog.getOpenFileName(
-            self.widget, 'Open file',
-            folder if self.previous_folder is None else self.previous_folder,
-            extensions)
-        self.previous_folder = os.path.dirname(path)
+            self.widget, 'Open file', open_in, extensions)
         logger.debug('Getting load path: {}'.format(path))
+        if allow_previous:
+            self.previous_folder = os.path.dirname(path)
         return path
 
     def get_save_path(self, folder):
@@ -311,6 +317,9 @@ class Window(QMainWindow):
         return new_tab
 
     def focus_tab(self, tab):
+        """
+        Force focus on the referenced tab.
+        """
         index = self.tabs.indexOf(tab)
         self.tabs.setCurrentIndex(index)
         tab.setFocus()

@@ -2,6 +2,7 @@ appdirs
 beautifulsoup4
 black; python_version > '3.5'
 coverage
+flask
 gpiozero
 guizero
 matplotlib

@@ -129,11 +129,12 @@ class Theme:
         for name, font in cls.__dict__.items():
             if not isinstance(font, Font):
                 continue
-            style_num = getattr(lexer, name)
-            lexer.setColor(QColor(font.color), style_num)
-            lexer.setEolFill(True, style_num)
-            lexer.setPaper(QColor(font.paper), style_num)
-            lexer.setFont(font.load(), style_num)
+            if hasattr(lexer, name):
+                style_num = getattr(lexer, name)
+                lexer.setColor(QColor(font.color), style_num)
+                lexer.setEolFill(True, style_num)
+                lexer.setPaper(QColor(font.paper), style_num)
+                lexer.setFont(font.load(), style_num)
 
 
 class DayTheme(Theme):
@@ -176,10 +177,10 @@ class NightTheme(Theme):
 
     This is the dark theme.
     """
-
+    # Python / General
     FunctionMethodName = ClassName = Font(color='#81a2be', paper='#222')
     UnclosedString = Font(paper='#c93827')
-    Comment = CommentBlock = Font(color='#969896', paper='#222')
+    Comment = CommentBlock = CommentLine = Font(color='#969896', paper='#222')
     Keyword = Font(color='#73a46a', bold=True, paper='#222')
     SingleQuotedString = DoubleQuotedString = Font(color='#f0c674',
                                                    paper='#222')
@@ -202,6 +203,36 @@ class NightTheme(Theme):
     UnmatchedBraceBackground = QColor('#c93827')
     UnmatchedBraceForeground = QColor('#222')
     BreakpointMarker = QColor('#c93827')
+    # HTML
+    Tag = Font(color='#73a46a', bold=True, paper='#222')
+    UnknownTag = Font(color='#73a46a', bold=True, paper='#222')
+    XMLTagEnd = Font(color='#73a46a', bold=True, paper='#222')
+    XMLStart = Font(color='#73a46a', bold=True, paper='#222')
+    XMLEnd = Font(color='#73a46a', bold=True, paper='#222')
+    Attribute = Font(color='#81a2be', paper='#222')
+    UnknownAttribute = Font(color='#81a2be', paper='#222')
+    HTMLNumber = Font(color='#b5bd68', paper='#222')
+    HTMLDoubleQuotedString = Font(color='#f0c674', paper='#222')
+    HTMLSingleQuotedString = Font(color='#f0c674', paper='#222')
+    OtherInTag = Font(color='#DDD', paper='#222')
+    HTMLComment = Font(color='#969896', paper='#222')
+    Entity = Font(color='#b294bb', paper='#222')
+    CDATA = Font(color='#cc6666', paper='#222')
+    # CSS
+    Comments = Font(color='#81a2be', paper='#222')
+    ClassSelector = Font(color='#81a2be', paper='#222')
+    PseudoClass = Font(color='#81a2be', paper='#222')
+    UnknownPseudoClass = Font(color='#81a2be', paper='#222')
+    CSS1Property = Font(color='#f0c674', paper='#222')
+    CSS2Property = Font(color='#f0c674', paper='#222')
+    CSS3Property = Font(color='#f0c674', paper='#222')
+    UnknownProperty = Font(color='#f0c674', paper='#222')
+    Value = Font(color='#b5bd68', paper='#222')
+    IDSelector = Font(color='#81a2be', paper='#222')
+    Important = QColor('#c93827')
+    AtRule = Font(color='#cc6666', paper='#222')
+    MediaRule = Font(color='#cc6666', paper='#222')
+    Variable = Font(color='#de935f', paper='#222')
 
 
 class ContrastTheme(Theme):

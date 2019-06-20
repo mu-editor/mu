@@ -22,7 +22,8 @@ import re
 import logging
 import os.path
 from collections import defaultdict
-from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
+from PyQt5.Qsci import (QsciScintilla, QsciLexerPython, QsciLexerHTML,
+                        QsciAPIs, QsciLexerCSS)
 from PyQt5.QtCore import Qt, pyqtSignal
 from mu.interface.themes import Font, DayTheme
 from mu.logic import NEWLINE
@@ -58,6 +59,16 @@ class PythonLexer(QsciLexerPython):
         return ' '.join(kws)
 
 
+class CssLexer(QsciLexerCSS):
+    
+    def defaultFont(self, style):
+        if style == self.Comment:
+            return super().defaultFont(0)
+        else:
+            return super().defaultFont(style)
+    
+
+
 class EditorPane(QsciScintilla):
     """
     Represents the text editor.
@@ -84,7 +95,16 @@ class EditorPane(QsciScintilla):
         self.previous_selection = {
             'line_start': 0, 'col_start': 0, 'line_end': 0, 'col_end': 0
         }
-        self.lexer = PythonLexer()
+        if self.path:
+            if self.path.endswith(".css"):
+                self.lexer = CssLexer() # QsciLexerCSS()
+            elif self.path.endswith(".html") or self.path.endswith(".htm"):
+                self.lexer = QsciLexerHTML()
+                self.lexer.setDjangoTemplates(True)
+            else:
+                self.lexer = PythonLexer()
+        else:
+            self.lexer = PythonLexer()
         self.api = None
         self.has_annotations = False
         self.setModified(False)

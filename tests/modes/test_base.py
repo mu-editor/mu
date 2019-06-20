@@ -22,6 +22,7 @@ def test_base_mode():
     assert bm.is_debugger is False
     assert bm.editor == editor
     assert bm.view == view
+    assert bm.stop() is None
     assert bm.actions() == NotImplemented
     assert bm.workspace_dir()
     assert bm.api() == NotImplemented

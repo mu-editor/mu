@@ -387,7 +387,7 @@ def test_Window_set_read_only():
     tab2.setReadOnly.assert_called_once_with(True)
 
 
-def test_Window_get_load_path():
+def test_Window_get_load_path_no_previous():
     """
     Ensure the QFileDialog is called with the expected arguments and the
     resulting path is returned.
@@ -398,9 +398,50 @@ def test_Window_get_load_path():
     w = mu.interface.main.Window()
     w.widget = mock.MagicMock()
     with mock.patch('mu.interface.main.QFileDialog', mock_fd):
-        returned_path = w.get_load_path('micropython', '*.py *.hex *.PY *.HEX')
+        returned_path = w.get_load_path('micropython', '*.py *.hex *.PY *.HEX',
+                                        allow_previous=True)
     assert returned_path == path
     assert w.previous_folder == '/foo'  # Note lack of filename.
+    mock_fd.getOpenFileName.assert_called_once_with(
+        w.widget, 'Open file', 'micropython', '*.py *.hex *.PY *.HEX')
+
+
+def test_Window_get_load_path_with_previous():
+    """
+    Ensure the QFileDialog is called with the expected arguments and the
+    resulting path is returned.
+    """
+    mock_fd = mock.MagicMock()
+    path = '/foo/bar.py'
+    mock_fd.getOpenFileName = mock.MagicMock(return_value=(path, True))
+    w = mu.interface.main.Window()
+    w.previous_folder = '/previous'
+    w.widget = mock.MagicMock()
+    with mock.patch('mu.interface.main.QFileDialog', mock_fd):
+        returned_path = w.get_load_path('micropython', '*.py *.hex *.PY *.HEX',
+                                        allow_previous=True)
+    assert returned_path == path
+    assert w.previous_folder == '/foo'  # Note lack of filename.
+    mock_fd.getOpenFileName.assert_called_once_with(
+        w.widget, 'Open file', '/previous', '*.py *.hex *.PY *.HEX')
+
+
+def test_Window_get_load_path_force_path():
+    """
+    Ensure the QFileDialog is called with the expected arguments and the
+    resulting path is returned.
+    """
+    mock_fd = mock.MagicMock()
+    path = '/foo/bar.py'
+    mock_fd.getOpenFileName = mock.MagicMock(return_value=(path, True))
+    w = mu.interface.main.Window()
+    w.previous_folder = '/previous'
+    w.widget = mock.MagicMock()
+    with mock.patch('mu.interface.main.QFileDialog', mock_fd):
+        returned_path = w.get_load_path('micropython', '*.py *.hex *.PY *.HEX',
+                                        allow_previous=False)
+    assert returned_path == path
+    assert w.previous_folder == '/previous'  # Note lack of filename.
     mock_fd.getOpenFileName.assert_called_once_with(
         w.widget, 'Open file', 'micropython', '*.py *.hex *.PY *.HEX')
 

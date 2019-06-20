@@ -97,11 +97,19 @@ class BaseMode(QObject):
     builtins = None  #: Symbols to assume as builtins when checking code style.
     file_extensions = []
     module_names = MODULE_NAMES
+    code_template = _('# Write your code here :-)')
 
     def __init__(self, editor, view):
         self.editor = editor
         self.view = view
         super().__init__()
+
+    def stop(self):
+        """
+        Called if/when the editor quits when in this mode. Override in child
+        classes to clean up state, stop child processes etc.
+        """
+        pass  # Default is to do nothing
 
     def actions(self):
         """
