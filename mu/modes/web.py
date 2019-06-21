@@ -234,7 +234,7 @@ class WebMode(BaseMode):
 
     def browse(self, event):
         """
-        Open the default browser to http://localhost:8080/
+        Open the default browser to http://127.0.0.1:5080/
         """
         url = "http://127.0.0.1:5000/"
         logger.info("Opening local website at: {}".format(url))
