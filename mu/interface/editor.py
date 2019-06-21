@@ -59,16 +59,6 @@ class PythonLexer(QsciLexerPython):
         return ' '.join(kws)
 
 
-class CssLexer(QsciLexerCSS):
-    
-    def defaultFont(self, style):
-        if style == self.Comment:
-            return super().defaultFont(0)
-        else:
-            return super().defaultFont(style)
-    
-
-
 class EditorPane(QsciScintilla):
     """
     Represents the text editor.
@@ -97,7 +87,7 @@ class EditorPane(QsciScintilla):
         }
         if self.path:
             if self.path.endswith(".css"):
-                self.lexer = CssLexer() # QsciLexerCSS()
+                self.lexer = QsciLexerCSS()
             elif self.path.endswith(".html") or self.path.endswith(".htm"):
                 self.lexer = QsciLexerHTML()
                 self.lexer.setDjangoTemplates(True)

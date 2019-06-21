@@ -21,7 +21,7 @@ import logging
 import webbrowser
 import signal
 from mu.modes.base import BaseMode
-from mu.modes.api import PYTHON3_APIS, SHARED_APIS, BOTTLE_APIS
+from mu.modes.api import PYTHON3_APIS, SHARED_APIS, FLASK_APIS
 from mu.resources import load_icon
 
 
@@ -55,11 +55,11 @@ class WebMode(BaseMode):
     """
 
     name = _('Web')
-    description = _('Build simple websites with the "bottle" web framework.')
+    description = _('Build simple websites with the "Flask" web framework.')
     icon = 'web'
     runner = None
     save_timeout = 0  # User has to explicitly save web application.
-    file_extensions = ["css", "tpl", "html", "js"]
+    file_extensions = ["css", "html"]
     code_template = CODE_TEMPLATE
 
     def actions(self):
@@ -111,7 +111,7 @@ class WebMode(BaseMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return SHARED_APIS + PYTHON3_APIS + BOTTLE_APIS
+        return SHARED_APIS + PYTHON3_APIS + FLASK_APIS
 
     def run_toggle(self, event):
         """
@@ -147,6 +147,16 @@ class WebMode(BaseMode):
             # Unsaved file.
             self.editor.save()
         if tab.path:
+            # Check it's a Python file.
+            if not tab.path.lower().endswith(".py"):
+                # Oops... show a helpful message and stop.
+                msg = _('This is not a Python file!')
+                info = _("Mu is only able to serve a Python file. Please make "
+                         "sure the current tab in Mu is the one for your web "
+                         "application and then try again.")
+                self.view.show_message(msg, info)
+                self.stop_server()
+                return
             # If needed, save the script.
             if tab.isModified():
                 self.editor.save_tab_to_file(tab)
@@ -161,13 +171,14 @@ class WebMode(BaseMode):
                                                        interactive=False,
                                                        envars=envars,
                                                        python_args=args)
+            logger.debug('Starting Flask app.')
             self.runner.process.waitForStarted()
 
     def stop_server(self):
         """
         Stop the currently running web server.
         """
-        logger.debug('Stopping bottle app.')
+        logger.debug('Stopping Flask app.')
         if self.runner:
             pid = self.runner.process.processId()
             os.kill(pid, signal.SIGINT)
@@ -183,24 +194,25 @@ class WebMode(BaseMode):
 
     def open_file(self, path):
         """
-        Open the referenced file.
+        Open the referenced file (html / css).
         """
         with open(path) as f:
             return f.read()
 
     def load_views(self, event):
         """
-        Open the directory containing the HTML template views used by bottle.
+        Open the directory containing the HTML template views used by Flask.
 
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
         views_dir = os.path.join(self.workspace_dir(), 'templates')
+        logger.info(views_dir)
         self.editor.load(default_path=views_dir)
 
     def load_css(self, event):
         """
-        Open the directory containing the HTML template views used by bottle.
+        Open the directory containing the HTML template views used by Flask.
 
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
@@ -211,13 +223,14 @@ class WebMode(BaseMode):
 
     def show_images(self, event):
         """
-        Open the directory containing the static image assets used by bottle.
+        Open the directory containing the static image assets used by Flask.
 
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        static_dir = os.path.join(self.workspace_dir(), 'static', 'img')
-        self.view.open_directory_from_os(static_dir)
+        img_dir = os.path.join(self.workspace_dir(), 'static', 'img')
+        logger.info(img_dir)
+        self.view.open_directory_from_os(img_dir)
 
     def browse(self, event):
         """

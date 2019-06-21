@@ -1,16 +1,16 @@
 """
-The scrapy package must be installed.
+The scrapy and beautifulsoup4 packages must be installed.
 
 Usage:
 
-scrapy runspider bottle_api.py -o bottle.json
+scrapy runspider flask_api.py -o flask.json
 
 """
 import scrapy
 from bs4 import BeautifulSoup
 
 
-URL = 'https://bottlepy.org/docs/dev/api.html'
+URL = 'http://flask.pocoo.org/docs/1.0/api/'
 
 
 class BottleSpider(scrapy.Spider):
@@ -23,7 +23,6 @@ class BottleSpider(scrapy.Spider):
         scrapy to follow the links to the module docs and uses a different
         parser to extract the API information contained therein.
         """
-        import pdb; pdb.set_trace()
         # Find all the function definitions on the page:
         for func in response.css('dl.function'):
             # Class details are always first items in dl.

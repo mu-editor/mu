@@ -1036,7 +1036,7 @@ class Editor:
         if tab is None:
             # There is no active text editor so abort.
             return
-        if not tab.path.endswith(".py"):
+        if tab.path and not tab.path.endswith(".py"):
             # Only works on Python files, so abort.
             return
         tab.has_annotations = not tab.has_annotations
@@ -1452,7 +1452,7 @@ class Editor:
         if not tab or sys.version_info[:2] < (3, 6):
             return
         # Only works on Python, so abort.
-        if not tab.path.endswith(".py"):
+        if tab.path and not tab.path.endswith(".py"):
             return
         from black import format_str, FileMode, PY36_VERSIONS
         try:

@@ -168,6 +168,33 @@ class DayTheme(Theme):
     UnmatchedBraceBackground = QColor('#FFDDDD')
     UnmatchedBraceForeground = QColor('black')
     BreakpointMarker = QColor('#D80000')
+    # HTML
+    Tag = Keyword
+    UnknownTag = Tag
+    XMLTagEnd = Tag
+    XMLStart = Tag
+    XMLEnd = Tag
+    Attribute = ClassName
+    UnknownAttribute = Attribute
+    HTMLNumber = Number
+    HTMLDoubleQuotedString = DoubleQuotedString
+    HTMLSingleQuotedString = SingleQuotedString
+    OtherInTag = Default
+    HTMLComment = Comment
+    Entity = Operator
+    CDATA = Decorator
+    # CSS
+    ClassSelector = Tag
+    PseudoClass = ClassSelector
+    UnknownPseudoClass = ClassSelector
+    CSS1Property = CSS2Property = CSS3Property = UnknownProperty = \
+        SingleQuotedString
+    Value = Number
+    IDSelector = Tag
+    Important = UnmatchedBraceBackground
+    AtRule = Decorator
+    MediaRule = Decorator
+    Variable = HighlightedIdentifier
 
 
 class NightTheme(Theme):
@@ -204,35 +231,32 @@ class NightTheme(Theme):
     UnmatchedBraceForeground = QColor('#222')
     BreakpointMarker = QColor('#c93827')
     # HTML
-    Tag = Font(color='#73a46a', bold=True, paper='#222')
-    UnknownTag = Font(color='#73a46a', bold=True, paper='#222')
-    XMLTagEnd = Font(color='#73a46a', bold=True, paper='#222')
-    XMLStart = Font(color='#73a46a', bold=True, paper='#222')
-    XMLEnd = Font(color='#73a46a', bold=True, paper='#222')
-    Attribute = Font(color='#81a2be', paper='#222')
-    UnknownAttribute = Font(color='#81a2be', paper='#222')
-    HTMLNumber = Font(color='#b5bd68', paper='#222')
-    HTMLDoubleQuotedString = Font(color='#f0c674', paper='#222')
-    HTMLSingleQuotedString = Font(color='#f0c674', paper='#222')
-    OtherInTag = Font(color='#DDD', paper='#222')
-    HTMLComment = Font(color='#969896', paper='#222')
-    Entity = Font(color='#b294bb', paper='#222')
-    CDATA = Font(color='#cc6666', paper='#222')
+    Tag = Keyword
+    UnknownTag = Tag
+    XMLTagEnd = Tag
+    XMLStart = Tag
+    XMLEnd = Tag
+    Attribute = ClassName
+    UnknownAttribute = Attribute
+    HTMLNumber = Number
+    HTMLDoubleQuotedString = DoubleQuotedString
+    HTMLSingleQuotedString = SingleQuotedString
+    OtherInTag = Default
+    HTMLComment = Comment
+    Entity = Operator
+    CDATA = Decorator
     # CSS
-    Comments = Font(color='#81a2be', paper='#222')
-    ClassSelector = Font(color='#81a2be', paper='#222')
-    PseudoClass = Font(color='#81a2be', paper='#222')
-    UnknownPseudoClass = Font(color='#81a2be', paper='#222')
-    CSS1Property = Font(color='#f0c674', paper='#222')
-    CSS2Property = Font(color='#f0c674', paper='#222')
-    CSS3Property = Font(color='#f0c674', paper='#222')
-    UnknownProperty = Font(color='#f0c674', paper='#222')
-    Value = Font(color='#b5bd68', paper='#222')
-    IDSelector = Font(color='#81a2be', paper='#222')
-    Important = QColor('#c93827')
-    AtRule = Font(color='#cc6666', paper='#222')
-    MediaRule = Font(color='#cc6666', paper='#222')
-    Variable = Font(color='#de935f', paper='#222')
+    ClassSelector = Tag
+    PseudoClass = ClassSelector
+    UnknownPseudoClass = ClassSelector
+    CSS1Property = CSS2Property = CSS3Property = UnknownProperty = \
+        SingleQuotedString
+    Value = Number
+    IDSelector = Tag
+    Important = UnmatchedBraceBackground
+    AtRule = Decorator
+    MediaRule = Decorator
+    Variable = HighlightedIdentifier
 
 
 class ContrastTheme(Theme):
@@ -267,3 +291,30 @@ class ContrastTheme(Theme):
     UnmatchedBraceBackground = QColor('#666')
     UnmatchedBraceForeground = QColor('black')
     BreakpointMarker = QColor('lightGrey')
+    # HTML
+    Tag = Keyword
+    UnknownTag = Tag
+    XMLTagEnd = Tag
+    XMLStart = Tag
+    XMLEnd = Tag
+    Attribute = ClassName
+    UnknownAttribute = Attribute
+    HTMLNumber = Number
+    HTMLDoubleQuotedString = DoubleQuotedString
+    HTMLSingleQuotedString = SingleQuotedString
+    OtherInTag = Default
+    HTMLComment = Comment
+    Entity = Operator
+    CDATA = Decorator
+    # CSS
+    ClassSelector = Tag
+    PseudoClass = ClassSelector
+    UnknownPseudoClass = ClassSelector
+    CSS1Property = CSS2Property = CSS3Property = UnknownProperty = \
+        SingleQuotedString
+    Value = Number
+    IDSelector = Tag
+    Important = UnmatchedBraceBackground
+    AtRule = Decorator
+    MediaRule = Decorator
+    Variable = HighlightedIdentifier
