@@ -983,12 +983,14 @@ def test_new():
     mock_mode = mock.MagicMock()
     api = ['API specification', ]
     mock_mode.api.return_value = api
+    mock_mode.code_template = "new code template" + mu.logic.NEWLINE
     ed = mu.logic.Editor(view)
     ed.modes = {
         'python': mock_mode,
     }
     ed.new()
-    view.add_tab.assert_called_once_with(None, '', api, mu.logic.NEWLINE)
+    py = mock_mode.code_template + mu.logic.NEWLINE
+    view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
 
 
 def test_load_checks_file_exists():

@@ -744,7 +744,9 @@ class Editor:
         Adds a new tab to the editor.
         """
         logger.info('Added a new tab.')
-        self._view.add_tab(None, '', self.modes[self.mode].api(), NEWLINE)
+        default_text = self.modes[self.mode].code_template + NEWLINE
+        self._view.add_tab(None, default_text, self.modes[self.mode].api(),
+                           NEWLINE)
 
     def _load(self, path):
         """
