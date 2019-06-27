@@ -1,9 +1,9 @@
 from .python3 import PythonMode
-from .adafruit import AdafruitMode
+from .circuitpython import CircuitPythonMode
 from .microbit import MicrobitMode
 from .debugger import DebugMode
 from .pygamezero import PyGameZeroMode
 from .esp import ESPMode
 
-__all__ = ['PythonMode', 'AdafruitMode', 'MicrobitMode', 'DebugMode',
+__all__ = ['PythonMode', 'CircuitPythonMode', 'MicrobitMode', 'DebugMode',
            'PyGameZeroMode', 'ESPMode', ]
