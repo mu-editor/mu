@@ -32,7 +32,7 @@ class CircuitPythonMode(MicroPythonMode):
     name = _('CircuitPython')
     description = _("Boards running Circuit Python.")
     icon = 'circuitpython'
-    save_timeout = 0  #: Don't autosave on CircuitPython boards. Casues a restart.
+    save_timeout = 0  #: Noautosave on CP boards. Will restart.
     connected = True  #: is the board connected.
     force_interrupt = False  #: NO keyboard interrupt on serial connection.
     valid_boards = [
