@@ -43,6 +43,7 @@ class ESPMode(MicroPythonMode):
         (0x1A86, 0x7523),  # HL-340
         (0x10C4, 0xEA60),  # CP210x
         (0x0403, 0x6015),   # Sparkfun ESP32 VID, PID
+        (0x20A0, 0x4269),   # Studuion:bit VID, PID
     ]
 
     def actions(self):
