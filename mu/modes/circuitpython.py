@@ -30,7 +30,7 @@ class CircuitPythonMode(MicroPythonMode):
     """
 
     name = _('CircuitPython')
-    description = _("Use CircuitPython on Adafruit, MeowCat, Particle, Mini SAM, and other CircuitPython boards.")
+    description = _("Boards running Circuit Python.")
     icon = 'circuitpython'
     save_timeout = 0  #: Don't autosave on CircuitPython boards. Casues a restart.
     connected = True  #: is the board connected.
@@ -137,8 +137,8 @@ class CircuitPythonMode(MicroPythonMode):
             # after warning the user.
             wd = super().workspace_dir()
             if self.connected:
-                m = _('Could not find an attached CircuitPython device.')
-                info = _("Python files for CircuitPython devices"
+                m = _('Could not find an attached Circuit Python device.')
+                info = _("Python files for Circuit Python devices"
                          " are stored on the device. Therefore, to edit"
                          " these files you need to have the device plugged in."
                          " Until you plug in a device, Mu will use the"
