@@ -52,6 +52,7 @@ def test_ModeSelector_setup():
     view = mock.MagicMock()
     modes = {
         'python': PythonMode(editor, view),
+        'circuitpython': CircuitPythonMonde(editor, view),
         'microbit': MicrobitMode(editor, view),
         'debugger': DebugMode(editor, view),
     }
