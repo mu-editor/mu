@@ -1167,7 +1167,7 @@ def test_load_other_file():
     mock_mb = mock.MagicMock()
     mock_mb.api.return_value = api
     mock_mb.workspace_dir.return_value = '/fake/path'
-    mock_mb.open_file.return_value = (file_content, "\n")
+    mock_mb.open_file.return_value = (file_content, os.linesep)
     mock_mb.file_extensions = ['hex']
     ed.modes = {
         'python': mock_py,
@@ -1205,7 +1205,7 @@ def test_load_other_file_change_mode():
     mock_mb = mock.MagicMock()
     mock_mb.api.return_value = api
     mock_mb.workspace_dir.return_value = '/fake/path'
-    mock_mb.open_file.return_value = (file_content, "\n")
+    mock_mb.open_file.return_value = (file_content, os.linesep)
     mock_mb.file_extensions = ['hex']
     ed.modes = {
         'python': mock_py,
