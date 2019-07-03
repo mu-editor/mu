@@ -23,6 +23,7 @@ import signal
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, FLASK_APIS
 from mu.resources import load_icon
+from mu.logic import read_and_decode
 
 
 logger = logging.getLogger(__name__)
@@ -196,8 +197,7 @@ class WebMode(BaseMode):
         """
         Open the referenced file (html / css).
         """
-        with open(path) as f:
-            return f.read()
+        return read_and_decode(path)
 
     def load_views(self, event):
         """

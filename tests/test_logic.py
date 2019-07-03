@@ -1162,11 +1162,12 @@ def test_load_other_file():
     api = ['API specification', ]
     file_content = 'PYTHON CODE'
     mock_py = mock.MagicMock()
+    mock_py.file_extensions = None
     mock_py.open_file.return_value = None
     mock_mb = mock.MagicMock()
     mock_mb.api.return_value = api
     mock_mb.workspace_dir.return_value = '/fake/path'
-    mock_mb.open_file.return_value = file_content
+    mock_mb.open_file.return_value = (file_content, "\n")
     mock_mb.file_extensions = ['hex']
     ed.modes = {
         'python': mock_py,
@@ -1204,7 +1205,7 @@ def test_load_other_file_change_mode():
     mock_mb = mock.MagicMock()
     mock_mb.api.return_value = api
     mock_mb.workspace_dir.return_value = '/fake/path'
-    mock_mb.open_file.return_value = file_content
+    mock_mb.open_file.return_value = (file_content, "\n")
     mock_mb.file_extensions = ['hex']
     ed.modes = {
         'python': mock_py,

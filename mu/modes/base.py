@@ -207,8 +207,11 @@ class BaseMode(QObject):
     def open_file(self, path):
         """
         Some files are not plain text and each mode can attempt to decode them.
+
+        When overridden, should return the text and newline convention for the
+        file.
         """
-        return None
+        return None, None
 
 
 class MicroPythonMode(BaseMode):

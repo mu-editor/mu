@@ -187,7 +187,9 @@ def test_base_mode_open_file():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     bm = BaseMode(editor, view)
-    assert bm.open_file('unused/path') is None
+    text, newline = bm.open_file('unused/path')
+    assert text is None
+    assert newline is None
 
 
 def test_micropython_mode_find_device():

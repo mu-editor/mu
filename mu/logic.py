@@ -803,11 +803,11 @@ class Editor:
                 name = path
             else:
                 # Delegate the open operation to the Mu modes. Leave the name
-                # as None, thus forcing the user to work out what to name the
-                # recovered script.
+                # as None if handling a hex file, thus forcing the user to work
+                # out what to name the recovered script.
                 for mode_name, mode in self.modes.items():
                     try:
-                        text = mode.open_file(path)
+                        text, newline = mode.open_file(path)
                         if not path.endswith(".hex"):
                             name = path
                     except Exception as exc:
@@ -817,7 +817,6 @@ class Editor:
                                        exc_info=exc)
                     else:
                         if text:
-                            newline = sniff_newline_convention(text)
                             file_mode = mode_name
                             break
                 else:

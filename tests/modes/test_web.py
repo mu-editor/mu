@@ -193,10 +193,12 @@ def test_open_file():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     wm = WebMode(editor, view)
-    with mock.patch('builtins.open', mock.mock_open(read_data='foo')) as m:
-        result = wm.open_file("file.html")
+    with mock.patch("mu.modes.web.read_and_decode",
+                    return_value=("foo", "\n")) as m:
+        text, newline = wm.open_file("file.html")
         m.assert_called_once_with("file.html")
-        assert result == "foo"
+        assert text == "foo"
+        assert newline == "\n"
 
 
 def test_load_views():
