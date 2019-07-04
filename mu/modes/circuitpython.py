@@ -40,9 +40,12 @@ class CircuitPythonMode(MicroPythonMode):
         (0x2B04, 0xC00D),  # Particle Boron
         (0x2B04, 0xC00E),  # Particle Xenon
         (0x239A, None),    # Any Adafruit Boards
+        # Non-Adafruit boards
         (0x1209, 0xBAB1),  # Electronic Cats Meow Meow
         (0x1209, 0xBAB2),  # Electronic Cats CatWAN USBStick
         (0x1209, 0xBAB3),  # Electronic Cats Bast Pro Mini M0
+        (0x1B4F, 0x8D22),  # SparkFun SAMD21 Mini Breakout
+        (0x1B4F, 0x8D23),  # SparkFun SAMD21 Dev Breakout
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
