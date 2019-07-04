@@ -39,10 +39,7 @@ The Adafruit mode
 inherits from a base MicroPython mode that provides USB/serial connectivity to
 the board. Because source code is stored directly on the Adafruit boards,
 this mode ensures that filesystem based operations actually happen on the
-connected device. If no such device is found, the mode will warn you. If the
-mode detects a device in "bootloader mode" (tap the reset button three times
-to enable this), then Mu can also flash the latest version of CircuitPython
-onto your device.
+connected device. If no such device is found, the mode will warn you.
 
 BBC micro:bit Mode
 ++++++++++++++++++
