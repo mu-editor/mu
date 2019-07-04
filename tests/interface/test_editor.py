@@ -713,3 +713,27 @@ def test_EditorPane_toggle_comments_selected_hash_space_comment_lines():
     ep.toggle_comments()
     ep.replaceSelectedText.assert_called_once_with('foo\nbar\nbaz')
     ep.setSelection.assert_called_once_with(0, 0, 2, 2)
+
+
+def test_EditorPane_wheelEvent():
+    """
+    """
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    mock_app = mock.MagicMock()
+    mock_app.keyboardModifiers.return_value = []
+    with mock.patch("mu.interface.editor.QApplication", mock_app), \
+            mock.patch("mu.interface.editor.QsciScintilla.wheelEvent") as mw:
+        ep.wheelEvent(None)
+        mw.assert_called_once_with(None)
+
+
+def test_EditorPane_wheelEvent_with_modifier_ignored():
+    """
+    """
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    mock_app = mock.MagicMock()
+    mock_app.keyboardModifiers.return_value = ["CTRL", ]
+    with mock.patch("mu.interface.editor.QApplication", mock_app), \
+            mock.patch("mu.interface.editor.QsciScintilla.wheelEvent") as mw:
+        ep.wheelEvent(None)
+        assert mw.call_count == 0

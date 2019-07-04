@@ -24,6 +24,7 @@ import os.path
 from collections import defaultdict
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
 from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import QApplication
 from mu.interface.themes import Font, DayTheme
 from mu.logic import NEWLINE
 
@@ -90,6 +91,13 @@ class EditorPane(QsciScintilla):
         self.setModified(False)
         self.breakpoint_handles = set()
         self.configure()
+
+    def wheelEvent(self, event):
+        """
+        Stops QScintilla from doing the wrong sort of zoom handling.
+        """
+        if not QApplication.keyboardModifiers():
+            super().wheelEvent(event)
 
     def dropEvent(self, event):
         """
