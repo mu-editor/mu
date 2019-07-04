@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import pytest
 from unittest import mock
 from mu.modes.esp import ESPMode
@@ -55,9 +56,26 @@ def test_add_fs(fm, qthread, esp_mode):
     """
     It's possible to add the file system pane if the REPL is inactive.
     """
+    esp_mode.view.current_tab = None
     esp_mode.find_device = mock.MagicMock(return_value=('COM0', '12345'))
     esp_mode.add_fs()
     workspace = esp_mode.workspace_dir()
+    esp_mode.view.add_filesystem.assert_called_once_with(workspace,
+                                                         esp_mode.file_manager,
+                                                         "ESP board")
+    assert esp_mode.fs
+
+
+@mock.patch("mu.modes.esp.QThread")
+@mock.patch("mu.modes.esp.FileManager")
+def test_add_fs_project_path(fm, qthread, esp_mode):
+    """
+    It's possible to add the file system pane if the REPL is inactive.
+    """
+    esp_mode.view.current_tab.path = "foo"
+    esp_mode.find_device = mock.MagicMock(return_value=('COM0', '12345'))
+    esp_mode.add_fs()
+    workspace = os.path.dirname(os.path.abspath("foo"))
     esp_mode.view.add_filesystem.assert_called_once_with(workspace,
                                                          esp_mode.file_manager,
                                                          "ESP board")
