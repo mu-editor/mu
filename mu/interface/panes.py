@@ -137,6 +137,7 @@ class MicroPythonREPLPane(QTextEdit):
         self.customContextMenuRequested.connect(self.context_menu)
         self.setObjectName('replpane')
         self.set_theme(theme)
+        self.prev_data = []
 
     def paste(self):
         """
@@ -219,6 +220,13 @@ class MicroPythonREPLPane(QTextEdit):
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
         """
+
+        # If data is included ESC or CSI
+        if len(self.prev_data) != 0:
+            self.prev_data += data
+            data = self.prev_data
+            self.prev_data = []
+
         tc = self.textCursor()
         # The text cursor must be on the last line of the document. If it isn't
         # then move it there.
@@ -231,39 +239,50 @@ class MicroPythonREPLPane(QTextEdit):
                 self.setTextCursor(tc)
             elif data[i] == 13:  # \r
                 pass
-            elif len(data) > i + 1 and data[i] == 27 and data[i + 1] == 91:
-                # VT100 cursor detected: <Esc>[
-                i += 2  # move index to after the [
-                regex = r'(?P<count>[\d]*)(;?[\d]*)*(?P<action>[ABCDKm])'
-                m = re.search(regex, data[i:].decode('utf-8'))
-                if m:
-                    # move to (almost) after control seq
-                    # (will ++ at end of loop)
-                    i += m.end() - 1
+            elif data[i] == 27: # ESC
+                # If data is less ESC data
+                if (len(data) == i + 1):
+                    self.prev_data = data[i:]
+                    return
 
-                    if m.group("count") == '':
-                        count = 1
-                    else:
-                        count = int(m.group("count"))
+                if len(data) > i + 1 and data[i] == 27 and data[i + 1] == 91:   # CSI
+                    # If data is less CSI
+                    if (len(data) == i + 2):
+                        self.prev_data = data[i:]
+                        return
 
-                    if m.group("action") == "A":  # up
-                        tc.movePosition(QTextCursor.Up, n=count)
-                        self.setTextCursor(tc)
-                    elif m.group("action") == "B":  # down
-                        tc.movePosition(QTextCursor.Down, n=count)
-                        self.setTextCursor(tc)
-                    elif m.group("action") == "C":  # right
-                        tc.movePosition(QTextCursor.Right, n=count)
-                        self.setTextCursor(tc)
-                    elif m.group("action") == "D":  # left
-                        tc.movePosition(QTextCursor.Left, n=count)
-                        self.setTextCursor(tc)
-                    elif m.group("action") == "K":  # delete things
-                        if m.group("count") == "":  # delete to end of line
-                            tc.movePosition(QTextCursor.EndOfLine,
-                                            mode=QTextCursor.KeepAnchor)
-                            tc.removeSelectedText()
+                    # VT100 cursor detected: <Esc>[
+                    i += 2  # move index to after the [
+                    regex = r'(?P<count>[\d]*)(;?[\d]*)*(?P<action>[ABCDKm])'
+                    m = re.search(regex, data[i:].decode('utf-8'))
+                    if m:
+                        # move to (almost) after control seq
+                        # (will ++ at end of loop)
+                        i += m.end() - 1
+
+                        if m.group("count") == '':
+                            count = 1
+                        else:
+                            count = int(m.group("count"))
+
+                        if m.group("action") == "A":  # up
+                            tc.movePosition(QTextCursor.Up, n=count)
                             self.setTextCursor(tc)
+                        elif m.group("action") == "B":  # down
+                            tc.movePosition(QTextCursor.Down, n=count)
+                            self.setTextCursor(tc)
+                        elif m.group("action") == "C":  # right
+                            tc.movePosition(QTextCursor.Right, n=count)
+                            self.setTextCursor(tc)
+                        elif m.group("action") == "D":  # left
+                            tc.movePosition(QTextCursor.Left, n=count)
+                            self.setTextCursor(tc)
+                        elif m.group("action") == "K":  # delete things
+                            if m.group("count") == "":  # delete to end of line
+                                tc.movePosition(QTextCursor.EndOfLine,
+                                                mode=QTextCursor.KeepAnchor)
+                                tc.removeSelectedText()
+                                self.setTextCursor(tc)
             elif data[i] == 10:  # \n
                 tc.movePosition(QTextCursor.End)
                 self.setTextCursor(tc)
