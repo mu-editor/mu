@@ -234,8 +234,17 @@ class WebMode(BaseMode):
 
     def browse(self, event):
         """
-        Open the default browser to http://127.0.0.1:5080/
+        Open the default browser to http://127.0.0.1:5080/ if the local web
+        server is running, otherwise display a helpful message.
         """
-        url = "http://127.0.0.1:5000/"
-        logger.info("Opening local website at: {}".format(url))
-        webbrowser.open(url)
+        if self.runner:
+            url = "http://127.0.0.1:5000/"
+            logger.info("Opening local website at: {}".format(url))
+            webbrowser.open(url)
+        else:
+            logger.info("Attempted to load website, but server not running.")
+            msg = _('Cannot Open Website - Server not Running.')
+            info = _("You must have the local web server running in order to "
+                     "view your website in a browser. Click on the 'Run' "
+                     "button to start the server and then try again.")
+            self.view.show_message(msg, info)

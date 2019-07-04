@@ -54,7 +54,7 @@ else:  # pragma: no cover
 
 FONT_FILENAME_PATTERN = "SourceCodePro-{variant}.otf"
 FONT_VARIANTS = ("Bold", "BoldIt", "It", "Regular", "Semibold", "SemiboldIt")
-# Load the two themes from resources/css/[night|day].css
+# Load the three themes from resources/css/[night|day|contrast].css
 # NIGHT_STYLE is a dark theme.
 NIGHT_STYLE = load_stylesheet('night.css')
 # DAY_STYLE is a light conventional theme.

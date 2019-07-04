@@ -1208,7 +1208,7 @@ def test_open_hex():
                        return_value=hex_extracted) as extract_script:
         text, newline = mm.open_file('path_to_file.hex')
     assert text == hex_extracted
-    assert newline == '\n'
+    assert newline == os.linesep
     assert extract_script.call_count == 1
     assert mock_open.call_count == 1
 

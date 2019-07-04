@@ -248,7 +248,23 @@ def test_browse():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     wm = WebMode(editor, view)
+    wm.runner = True
     with mock.patch("mu.modes.web.webbrowser") as mock_browser:
         wm.browse(None)
         expected = "http://127.0.0.1:5000/"
         mock_browser.open.assert_called_once_with(expected)
+
+
+def test_browse_not_serving():
+    """
+    If the user attempts to open their browser at their website, but the local
+    web server isn't running, then display a friendly message explaining so.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    wm = WebMode(editor, view)
+    wm.runner = None
+    with mock.patch("mu.modes.web.webbrowser") as mock_browser:
+        wm.browse(None)
+        assert mock_browser.open.call_count == 0
+        assert view.show_message.call_count == 1
