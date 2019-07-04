@@ -253,6 +253,10 @@ def run(bitness, repo_root):
         print('Installing mu with', venv_python)
         subprocess.run([venv_python, '-m', 'pip', 'install', repo_root])
 
+        print('Updating pip in the virtual environment', venv_python)
+        subprocess.run(
+            [venv_python, '-m', 'pip', 'install', '--upgrade', 'pip'])
+
         pynsist_cfg = os.path.join(work_dir, 'pynsist.cfg')
         print('Creating pynsist configuration file', pynsist_cfg)
         installer_exe = create_pynsist_cfg(venv_python, repo_root, pynsist_cfg)
