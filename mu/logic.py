@@ -1000,9 +1000,6 @@ class Editor:
             tab.path = path
         if tab.path:
             # The user specified a path to a file.
-            if os.path.splitext(tab.path)[1] == '':
-                # the user didn't specify an extension, default to .py
-                tab.path += '.py'
             self.save_tab_to_file(tab)
         else:
             # The user cancelled the filename selection.
