@@ -250,12 +250,13 @@ def run(bitness, repo_root):
         print('Creating the packaging virtual environment.')
         venv_python = create_packaging_venv(work_dir)
 
-        print('Installing mu with', venv_python)
-        subprocess.run([venv_python, '-m', 'pip', 'install', repo_root])
-
         print('Updating pip in the virtual environment', venv_python)
         subprocess.run(
-            [venv_python, '-m', 'pip', 'install', '--upgrade', 'pip'])
+            [venv_python, '-m', 'pip', 'install', '--upgrade', 'pip']
+        )
+
+        print('Installing mu with', venv_python)
+        subprocess.run([venv_python, '-m', 'pip', 'install', repo_root])
 
         pynsist_cfg = os.path.join(work_dir, 'pynsist.cfg')
         print('Creating pynsist configuration file', pynsist_cfg)
