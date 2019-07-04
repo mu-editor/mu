@@ -69,6 +69,12 @@ EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
                    "pin12, pin11, pin10, compass")
 # Port number for debugger.
 DEBUGGER_PORT = 31415
+# Default images to copy over for use in PyGameZero demo apps.
+DEFAULT_IMAGES = ['alien.png', 'alien_hurt.png', 'cat1.png', 'cat2.png',
+                  'cat3.png', 'cat4.png', 'splat.png']
+# Default sound effects to copy over for use in PyGameZero demo apps.
+DEFAULT_SOUNDS = ['eep.wav', 'meow1.wav', 'meow2.wav', 'meow3.wav',
+                  'meow4.wav', 'splat.wav', ]
 MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _('Hello, World!'),
     _("This editor is free software written in Python. You can modify it, "
@@ -431,7 +437,7 @@ def check_flake(filename, code, builtins=None):
     return feedback
 
 
-def check_pycodestyle(code):
+def check_pycodestyle(code, config_file=False):
     """
     Given some code, uses the PyCodeStyle module (was PEP8) to return a list
     of items describing issues of coding style. See:
@@ -446,8 +452,15 @@ def check_pycodestyle(code):
     # Configure which PEP8 rules to ignore.
     ignore = ('E121', 'E123', 'E126', 'E226', 'E203', 'E302', 'E305', 'E24',
               'E704', 'W291', 'W292', 'W293', 'W391', 'W503', )
-    style = StyleGuide(parse_argv=False, config_file=False)
-    style.options.ignore = ignore
+    style = StyleGuide(parse_argv=False, config_file=config_file)
+
+    # StyleGuide() returns pycodestyle module's own ignore list. That list may
+    # be a default list or a custom list provided by the user
+    # merge the above ignore list with StyleGuide() returned list, then
+    # remove duplicates with set(), convert back to tuple()
+    ignore = style.options.ignore + ignore
+    style.options.ignore = tuple(set(ignore))
+
     checker = Checker(code_filename, options=style.options)
     # Re-route stdout to a temporary buffer to be parsed below.
     temp_out = io.StringIO()
@@ -623,21 +636,31 @@ class Editor:
         if not os.path.exists(images_path):
             logger.debug('Creating directory: {}'.format(images_path))
             os.makedirs(images_path)
-            shutil.copy(path('alien.png', 'pygamezero/'),
-                        os.path.join(images_path, 'alien.png'))
-            shutil.copy(path('alien_hurt.png', 'pygamezero/'),
-                        os.path.join(images_path, 'alien_hurt.png'))
+            for img in DEFAULT_IMAGES:
+                shutil.copy(path(img, 'pygamezero/'),
+                            os.path.join(images_path, img))
         if not os.path.exists(fonts_path):
             logger.debug('Creating directory: {}'.format(fonts_path))
             os.makedirs(fonts_path)
         if not os.path.exists(sounds_path):
             logger.debug('Creating directory: {}'.format(sounds_path))
             os.makedirs(sounds_path)
-            shutil.copy(path('eep.wav', 'pygamezero/'),
-                        os.path.join(sounds_path, 'eep.wav'))
+            for sfx in DEFAULT_SOUNDS:
+                shutil.copy(path(sfx, 'pygamezero/'),
+                            os.path.join(sounds_path, sfx))
         if not os.path.exists(music_path):
             logger.debug('Creating directory: {}'.format(music_path))
             os.makedirs(music_path)
+        # Ensure Web based assets are copied over.
+        template_path = os.path.join(wd, "templates")
+        static_path = os.path.join(wd, "static")
+        if not os.path.exists(template_path):
+            logger.debug('Creating directory: {}'.format(template_path))
+            shutil.copytree(path('templates', 'web/'), template_path)
+        if not os.path.exists(static_path):
+            logger.debug('Creating directory: {}'.format(static_path))
+            shutil.copytree(path('static', 'web/'), static_path)
+            # Copy all the static directories.
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
@@ -702,19 +725,21 @@ class Editor:
                 if 'zoom_level' in old_session:
                     self._view.zoom_position = old_session['zoom_level']
                     self._view.set_zoom()
+                old_window = old_session.get('window', {})
+                self._view.size_window(**old_window)
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
             self.load_cli(paths)
+        self.change_mode(self.mode)
+        self._view.set_theme(self.theme)
+        self.show_status_message(random.choice(MOTD), 10)
         if not self._view.tab_count:
-            py = _('# Write your code here :-)') + NEWLINE
+            py = self.modes[self.mode].code_template + NEWLINE
             tab = self._view.add_tab(None, py, self.modes[self.mode].api(),
                                      NEWLINE)
             tab.setCursorPosition(len(py.split(NEWLINE)), 0)
             logger.info('Starting with blank file.')
-        self.change_mode(self.mode)
-        self._view.set_theme(self.theme)
-        self.show_status_message(random.choice(MOTD), 10)
 
     def toggle_theme(self):
         """
@@ -734,7 +759,9 @@ class Editor:
         Adds a new tab to the editor.
         """
         logger.info('Added a new tab.')
-        self._view.add_tab(None, '', self.modes[self.mode].api(), NEWLINE)
+        default_text = self.modes[self.mode].code_template + NEWLINE
+        self._view.add_tab(None, default_text, self.modes[self.mode].api(),
+                           NEWLINE)
 
     def _load(self, path):
         """
@@ -791,11 +818,13 @@ class Editor:
                 name = path
             else:
                 # Delegate the open operation to the Mu modes. Leave the name
-                # as None, thus forcing the user to work out what to name the
-                # recovered script.
+                # as None if handling a hex file, thus forcing the user to work
+                # out what to name the recovered script.
                 for mode_name, mode in self.modes.items():
                     try:
-                        text = mode.open_file(path)
+                        text, newline = mode.open_file(path)
+                        if not path.endswith(".hex"):
+                            name = path
                     except Exception as exc:
                         # No worries, log it and try the next mode
                         logger.warning('Error when mode {} try to open the '
@@ -803,7 +832,6 @@ class Editor:
                                        exc_info=exc)
                     else:
                         if text:
-                            newline = sniff_newline_convention(text)
                             file_mode = mode_name
                             break
                 else:
@@ -833,16 +861,19 @@ class Editor:
             self._view.add_tab(
                 name, text, self.modes[self.mode].api(), newline)
 
-    def get_dialog_directory(self):
+    def get_dialog_directory(self, default=None):
         """
         Return the directory folder in which a load/save dialog box should
         open into. In order of precedence this function will return:
 
+        0) If not None, the value of default.
         1) The last location used by a load/save dialog.
         2) The directory containing the current file.
         3) The mode's reported workspace directory.
         """
-        if self.current_path and os.path.isdir(self.current_path):
+        if default is not None:
+            folder = default
+        elif self.current_path and os.path.isdir(self.current_path):
             folder = self.current_path
         else:
             current_file_path = ''
@@ -854,10 +885,10 @@ class Editor:
         logger.info('Using path for file dialog: {}'.format(folder))
         return folder
 
-    def load(self):
+    def load(self, *args, default_path=None):
         """
-        Loads a Python file from the file system or extracts a Python script
-        from a hex file.
+        Loads a Python (or other supported) file from the file system or
+        extracts a Python script from a hex file.
         """
         # Get all supported extensions from the different modes
         extensions = ['py']
@@ -867,8 +898,10 @@ class Editor:
         extensions = set([e.lower() for e in extensions])
         extensions = '*.{} *.{}'.format(' *.'.join(extensions),
                                         ' *.'.join(extensions).upper())
-        folder = self.get_dialog_directory()
-        path = self._view.get_load_path(folder, extensions)
+        folder = self.get_dialog_directory(default_path)
+        allow_previous = not bool(default_path)
+        path = self._view.get_load_path(folder, extensions,
+                                        allow_previous=allow_previous)
         if path:
             self.current_path = os.path.dirname(os.path.abspath(path))
             self._load(path)
@@ -897,15 +930,18 @@ class Editor:
         Safely convert an arrary of paths to their absolute forms and remove
         duplicate items.
         """
-        result = set()
+        result = []
         for p in paths:
             try:
-                result.add(os.path.abspath(p))
+                abspath = os.path.abspath(p)
             except Exception as ex:
                 logger.error('Could not get path for {}: {}'.format(p, ex))
+            else:
+                if abspath not in result:
+                    result.append(abspath)
         return result
 
-    def save_tab_to_file(self, tab):
+    def save_tab_to_file(self, tab, show_error_messages=True):
         """
         Given a tab, will attempt to save the script in the tab to the path
         associated with the tab. If there's a problem this will be logged and
@@ -929,7 +965,7 @@ class Editor:
                             "remove it and try again.")
         else:
             error_message = information = None
-        if error_message:
+        if error_message and show_error_messages:
             self._view.show_message(error_message, information)
         else:
             tab.setModified(False)
@@ -949,7 +985,7 @@ class Editor:
         filename = os.path.basename(path).replace('.py', '')
         return filename in self.modes[self.mode].module_names
 
-    def save(self):
+    def save(self, *args, default=None):
         """
         Save the content of the currently active editor tab.
         """
@@ -959,7 +995,7 @@ class Editor:
             return
         if not tab.path:
             # Unsaved file.
-            folder = self.get_dialog_directory()
+            folder = self.get_dialog_directory(default)
             path = self._view.get_save_path(folder)
             if path and self.check_for_shadow_module(path):
                 message = _('You cannot use the filename '
@@ -973,9 +1009,6 @@ class Editor:
             tab.path = path
         if tab.path:
             # The user specified a path to a file.
-            if os.path.splitext(tab.path)[1] == '':
-                # the user didn't specify an extension, default to .py
-                tab.path += '.py'
             self.save_tab_to_file(tab)
         else:
             # The user cancelled the filename selection.
@@ -1018,6 +1051,9 @@ class Editor:
         tab = self._view.current_tab
         if tab is None:
             # There is no active text editor so abort.
+            return
+        if tab.path and not tab.path.endswith(".py"):
+            # Only works on Python files, so abort.
             return
         tab.has_annotations = not tab.has_annotations
         if tab.has_annotations:
@@ -1078,10 +1114,9 @@ class Editor:
         for widget in self._view.widgets:
             if widget.path:
                 paths.append(os.path.abspath(widget.path))
-        if self.modes[self.mode].is_debugger:
-            # If quitting while debugging, make sure everything is cleaned
-            # up.
-            self.modes[self.mode].stop()
+        # Make sure the mode's stop method is called so
+        # everything is cleaned up.
+        self.modes[self.mode].stop()
         session = {
             'theme': self.theme,
             'mode': self.mode,
@@ -1090,6 +1125,12 @@ class Editor:
             'minify': self.minify,
             'microbit_runtime': self.microbit_runtime,
             'zoom_level': self._view.zoom_position,
+            'window': {
+                'x': self._view.x(),
+                'y': self._view.y(),
+                'w': self._view.width(),
+                'h': self._view.height(),
+            }
         }
         session_path = get_session_path()
         with open(session_path, 'w') as out:
@@ -1248,7 +1289,8 @@ class Editor:
             # Something has changed, so save it!
             for tab in self._view.widgets:
                 if tab.path and tab.isModified():
-                    self.save_tab_to_file(tab)
+                    # Suppress error message on autosave attempts
+                    self.save_tab_to_file(tab, show_error_messages=False)
                     logger.info('Autosave detected and saved '
                                 'changes in {}.'.format(tab.path))
 
@@ -1432,7 +1474,9 @@ class Editor:
         tab = self._view.current_tab
         if not tab or sys.version_info[:2] < (3, 6):
             return
-
+        # Only works on Python, so abort.
+        if tab.path and not tab.path.endswith(".py"):
+            return
         from black import format_str, FileMode, PY36_VERSIONS
         try:
             source_code = tab.text()

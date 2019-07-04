@@ -8,7 +8,7 @@ import pytest
 import mu.interface.dialogs
 from PyQt5.QtWidgets import QApplication, QDialog, QWidget, QDialogButtonBox
 from unittest import mock
-from mu.modes import PythonMode, AdafruitMode, MicrobitMode, DebugMode
+from mu.modes import PythonMode, CircuitPythonMode, MicrobitMode, DebugMode
 
 
 # Required so the QWidget tests don't abort with the message:
@@ -52,7 +52,7 @@ def test_ModeSelector_setup():
     view = mock.MagicMock()
     modes = {
         'python': PythonMode(editor, view),
-        'adafruit': AdafruitMode(editor, view),
+        'circuitpython': CircuitPythonMode(editor, view),
         'microbit': MicrobitMode(editor, view),
         'debugger': DebugMode(editor, view),
     }

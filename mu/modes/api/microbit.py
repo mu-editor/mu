@@ -42,7 +42,7 @@ MICROBIT_APIS = [
     _("sys.print_exception(ex) \nPrint to the REPL information about the exception 'ex'."),
     # System state objects.
     _("microbit.panic() \nPut micro:bit in panic() mode and display an unhappy face.\nPress the reset button to exit panic() mode."),
-    _("microbit.sleep(time) \nPut micro:bit to sleep for some milliseconds (1 second = 1000 ms) of time.\nsleep(2000) gives micro:bit a 2 second nap."),
+    _("microbit.sleep(time) \nPut micro:bit to sleep for some milliseconds (1 second = 1000 ms) of time.\nsleep(2000) gives micro:bit a 2 second nap.\nNB: If you use time.sleep(), times are in whole seconds not milliseconds,\nuse time.sleep(2) to nap for 2 seconds, in that case."),
     _("microbit.running_time() \nReturn running_time() in milliseconds since micro:bit's last reset."),
     _("microbit.temperature() \nReturn micro:bit's temperature in degrees Celcius."),
     # Accelerometer 3D orientation

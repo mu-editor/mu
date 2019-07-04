@@ -15,14 +15,14 @@ Windows, OSX, Linux
 Create a working development environment by installing all the dependencies
 into your virtualenv with::
 
-    pip install -e .[dev]
+    pip install -e ".[dev]"
 
 .. note::
 
     The Mu package distribution, as specified in ``setup.py``, declares
     both runtime and extra dependencies.
 
-    The above mentioned ``pip install -e .[dev]`` installs all runtime
+    The above mentioned ``pip install -e ".[dev]"`` installs all runtime
     dependencies and most development ones: it should serve nearly everyone.
 
     For the sake of completeness, however, here are a few additional details.
@@ -107,7 +107,7 @@ working development environment:
    Raspberry Pi with::
 
     (mu-venv) $ cd ~/mu-source
-    (mu-venv) $ pip install -e .[dev]
+    (mu-venv) $ pip install -e ".[dev]"
 
 7. Run mu::
 
