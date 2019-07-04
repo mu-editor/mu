@@ -489,6 +489,9 @@ def run(hostname, port, filename, *args):
     debugger = Debugger(s, hostname, port)
     debugger.reset()
 
+    print("Running in debug mode. Use the Stop, Continue, and Step toolbar"
+          " buttons to debug the script", file=sys.stderr)
+
     while True:
         try:
             debugger._runscript(filename)
