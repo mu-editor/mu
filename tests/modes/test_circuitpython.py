@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 """
-Tests for the Adafruit mode.
+Tests for the CircuitPython mode.
 """
 import pytest
 import ctypes
-from mu.modes.adafruit import AdafruitMode
+from mu.modes.circuitpython import CircuitPythonMode
 from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
 from unittest import mock
 
 
-def test_adafruit_mode():
+def test_circuitpython_mode():
     """
     Sanity check for setting up the mode.
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    am = AdafruitMode(editor, view)
-    assert am.name == 'Adafruit CircuitPython'
+    am = CircuitPythonMode(editor, view)
+    assert am.name == 'CircuitPython'
     assert am.description is not None
-    assert am.icon == 'adafruit'
+    assert am.icon == 'circuitpython'
     assert am.editor == editor
     assert am.view == view
 
@@ -31,14 +31,14 @@ def test_adafruit_mode():
     assert 'code' not in am.module_names
 
 
-def test_adafruit_mode_no_charts():
+def test_circuitpython_mode_no_charts():
     """
     If QCharts is not available, ensure the plotter feature is not available.
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    am = AdafruitMode(editor, view)
-    with mock.patch('mu.modes.adafruit.CHARTS', False):
+    am = CircuitPythonMode(editor, view)
+    with mock.patch('mu.modes.circuitpython.CHARTS', False):
         actions = am.actions()
         assert len(actions) == 1
         assert actions[0]['name'] == 'serial'
@@ -52,11 +52,11 @@ def test_workspace_dir_posix_exists():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    am = AdafruitMode(editor, view)
+    am = CircuitPythonMode(editor, view)
     with open('tests/modes/mount_exists.txt', 'rb') as fixture_file:
         fixture = fixture_file.read()
         with mock.patch('os.name', 'posix'):
-            with mock.patch('mu.modes.adafruit.check_output',
+            with mock.patch('mu.modes.circuitpython.check_output',
                             return_value=fixture):
                 assert am.workspace_dir() == '/media/ntoll/CIRCUITPY'
 
@@ -69,12 +69,12 @@ def test_workspace_dir_posix_no_mount_command():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    am = AdafruitMode(editor, view)
+    am = CircuitPythonMode(editor, view)
     with open('tests/modes/mount_exists.txt', 'rb') as fixture_file:
         fixture = fixture_file.read()
     mock_check = mock.MagicMock(side_effect=[FileNotFoundError, fixture])
     with mock.patch('os.name', 'posix'), \
-            mock.patch('mu.modes.adafruit.check_output', mock_check):
+            mock.patch('mu.modes.circuitpython.check_output', mock_check):
         assert am.workspace_dir() == '/media/ntoll/CIRCUITPY'
         assert mock_check.call_count == 2
         assert mock_check.call_args_list[0][0][0] == 'mount'
@@ -88,13 +88,13 @@ def test_workspace_dir_posix_missing():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    am = AdafruitMode(editor, view)
+    am = CircuitPythonMode(editor, view)
     with open('tests/modes/mount_missing.txt', 'rb') as fixture_file:
         fixture = fixture_file.read()
         with mock.patch('os.name', 'posix'):
-            with mock.patch('mu.modes.adafruit.check_output',
+            with mock.patch('mu.modes.circuitpython.check_output',
                             return_value=fixture),\
-                    mock.patch('mu.modes.adafruit.'
+                    mock.patch('mu.modes.circuitpython.'
                                'MicroPythonMode.workspace_dir') as mpm:
                 mpm.return_value = 'foo'
                 assert am.workspace_dir() == 'foo'
@@ -111,7 +111,7 @@ def test_workspace_dir_nt_exists():
     mock_windll.kernel32.GetVolumeInformationW.return_value = None
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    am = AdafruitMode(editor, view)
+    am = CircuitPythonMode(editor, view)
     with mock.patch('os.name', 'nt'):
         with mock.patch('os.path.exists', return_value=True):
             return_value = ctypes.create_unicode_buffer('CIRCUITPY')
@@ -132,13 +132,13 @@ def test_workspace_dir_nt_missing():
     mock_windll.kernel32.GetVolumeInformationW.return_value = None
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    am = AdafruitMode(editor, view)
+    am = CircuitPythonMode(editor, view)
     with mock.patch('os.name', 'nt'):
         with mock.patch('os.path.exists', return_value=True):
             return_value = ctypes.create_unicode_buffer(1024)
             with mock.patch('ctypes.create_unicode_buffer',
                             return_value=return_value), \
-                    mock.patch('mu.modes.adafruit.'
+                    mock.patch('mu.modes.circuitpython.'
                                'MicroPythonMode.workspace_dir') as mpm:
                 mpm.return_value = 'foo'
                 ctypes.windll = mock_windll
@@ -151,7 +151,7 @@ def test_workspace_dir_unknown_os():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    am = AdafruitMode(editor, view)
+    am = CircuitPythonMode(editor, view)
     with mock.patch('os.name', 'foo'):
         with pytest.raises(NotImplementedError) as ex:
             am.workspace_dir()
@@ -164,5 +164,5 @@ def test_api():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    am = AdafruitMode(editor, view)
+    am = CircuitPythonMode(editor, view)
     assert am.api() == SHARED_APIS + ADAFRUIT_APIS
