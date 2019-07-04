@@ -69,6 +69,12 @@ EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
                    "pin12, pin11, pin10, compass")
 # Port number for debugger.
 DEBUGGER_PORT = 31415
+# Default images to copy over for use in PyGameZero demo apps.
+DEFAULT_IMAGES = ['alien.png', 'alien_hurt.png', 'cat1.png', 'cat2.png',
+                  'cat3.png', 'cat4.png', 'splat.png']
+# Default sound effects to copy over for use in PyGameZero demo apps.
+DEFAULT_SOUNDS = ['eep.wav', 'meow1.wav', 'meow2.wav', 'meow3.wav',
+                  'meow4.wav', 'splat.wav', ]
 MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _('Hello, World!'),
     _("This editor is free software written in Python. You can modify it, "
@@ -623,18 +629,18 @@ class Editor:
         if not os.path.exists(images_path):
             logger.debug('Creating directory: {}'.format(images_path))
             os.makedirs(images_path)
-            shutil.copy(path('alien.png', 'pygamezero/'),
-                        os.path.join(images_path, 'alien.png'))
-            shutil.copy(path('alien_hurt.png', 'pygamezero/'),
-                        os.path.join(images_path, 'alien_hurt.png'))
+            for img in DEFAULT_IMAGES:
+                shutil.copy(path(img, 'pygamezero/'),
+                            os.path.join(images_path, img))
         if not os.path.exists(fonts_path):
             logger.debug('Creating directory: {}'.format(fonts_path))
             os.makedirs(fonts_path)
         if not os.path.exists(sounds_path):
             logger.debug('Creating directory: {}'.format(sounds_path))
             os.makedirs(sounds_path)
-            shutil.copy(path('eep.wav', 'pygamezero/'),
-                        os.path.join(sounds_path, 'eep.wav'))
+            for sfx in DEFAULT_SOUNDS:
+                shutil.copy(path(sfx, 'pygamezero/'),
+                            os.path.join(sounds_path, sfx))
         if not os.path.exists(music_path):
             logger.debug('Creating directory: {}'.format(music_path))
             os.makedirs(music_path)

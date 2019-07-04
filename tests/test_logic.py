@@ -729,7 +729,8 @@ def test_editor_setup():
         e.setup(mock_modes)
         assert mkd.call_count == 5
         assert mkd.call_args_list[0][0][0] == 'foo'
-        assert mock_shutil_copy.call_count == 3
+        asset_len = len(mu.logic.DEFAULT_IMAGES) + len(mu.logic.DEFAULT_SOUNDS)
+        assert mock_shutil_copy.call_count == asset_len
         assert mock_shutil_copytree.call_count == 2
     assert e.modes == mock_modes
     view.set_usb_checker.assert_called_once_with(1, e.check_usb)
