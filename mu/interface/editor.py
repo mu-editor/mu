@@ -60,6 +60,21 @@ class PythonLexer(QsciLexerPython):
         return ' '.join(kws)
 
 
+class CssLexer(QsciLexerCSS):
+    """
+    Fixes problems with comments in CSS.
+    """
+
+    def description(self, style):
+        """
+        Ensures "Comment" is returned when the lexer encounters a comment (this
+        is due to a bug in the base class, for which this is a work around).
+        """
+        if style == QsciLexerCSS.Comment:
+            return "Comment"
+        return super().description(style)
+
+
 class EditorPane(QsciScintilla):
     """
     Represents the text editor.
@@ -88,7 +103,7 @@ class EditorPane(QsciScintilla):
         }
         if self.path:
             if self.path.endswith(".css"):
-                self.lexer = QsciLexerCSS()
+                self.lexer = CssLexer()
             elif self.path.endswith(".html") or self.path.endswith(".htm"):
                 self.lexer = QsciLexerHTML()
                 self.lexer.setDjangoTemplates(True)

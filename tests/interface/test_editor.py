@@ -26,6 +26,26 @@ def test_pythonlexer_keywords():
     assert lexer.keywords(3) is None
 
 
+def test_csslexer_description_comments():
+    """
+    Ensure that if a Comment enum is passed in, the string "Comment" is
+    returned. This is due to a bug in the base QsciLexerCSS class.
+    """
+    lexer = mu.interface.editor.CssLexer()
+    assert "Comment" == lexer.description(lexer.Comment)
+
+
+def test_csslexer_description_other():
+    """
+    Ensure that if a Comment enum is passed in, the string "Comment" is
+    returned. This is due to a bug in the base QsciLexerCSS class.
+    """
+    lexer = mu.interface.editor.CssLexer()
+    with mock.patch("mu.interface.editor.QsciLexerCSS.description",
+                    return_value="foo"):
+        assert "foo" == lexer.description(lexer.Value)
+
+
 def test_EditorPane_init_python():
     """
     Ensure everything is set and configured given a path and text passed into
