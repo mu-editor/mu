@@ -2490,10 +2490,10 @@ def test_autosave():
     mock_tab.isModified.return_value = True
     view.widgets = [mock_tab, ]
     ed = mu.logic.Editor(view)
-    with mock.patch('mu.logic.save_and_encode') as mock_save:
-        ed.autosave()
-    assert mock_save.call_count == 1
-    mock_tab.setModified.assert_called_once_with(False)
+    ed.save_tab_to_file = mock.MagicMock()
+    ed.autosave()
+    ed.save_tab_to_file.assert_called_once_with(mock_tab,
+                                                show_error_messages=False)
 
 
 def test_check_usb():
