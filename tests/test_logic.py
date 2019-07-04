@@ -724,11 +724,14 @@ def test_editor_setup():
     }
     with mock.patch('os.path.exists', return_value=False), \
             mock.patch('os.makedirs', return_value=None) as mkd, \
-            mock.patch('shutil.copy') as mock_shutil:
+            mock.patch('shutil.copy') as mock_shutil_copy, \
+            mock.patch('shutil.copytree') as mock_shutil_copytree:
         e.setup(mock_modes)
         assert mkd.call_count == 5
         assert mkd.call_args_list[0][0][0] == 'foo'
-        assert mock_shutil.call_count == 3
+        asset_len = len(mu.logic.DEFAULT_IMAGES) + len(mu.logic.DEFAULT_SOUNDS)
+        assert mock_shutil_copy.call_count == asset_len
+        assert mock_shutil_copytree.call_count == 2
     assert e.modes == mock_modes
     view.set_usb_checker.assert_called_once_with(1, e.check_usb)
 
@@ -827,6 +830,7 @@ def test_editor_restore_session_no_session_file():
     mock_mode.api.return_value = api
     mock_mode.workspace_dir.return_value = '/fake/path'
     mock_mode.save_timeout = 5
+    mock_mode.code_template = "Hello"
     ed.modes = {
         'python': mock_mode,
     }
@@ -834,8 +838,7 @@ def test_editor_restore_session_no_session_file():
     mock_gettext.return_value = '# Write your code here :-)'
     with mock.patch('os.path.exists', return_value=False):
         ed.restore_session()
-    py = '# Write your code here :-)'.format(
-        os.linesep, os.linesep) + mu.logic.NEWLINE
+    py = mock_mode.code_template + mu.logic.NEWLINE
     ed._view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
     ed.select_mode.assert_called_once_with(None)
 
@@ -854,6 +857,7 @@ def test_editor_restore_session_invalid_file():
     mock_mode.api.return_value = api
     mock_mode.workspace_dir.return_value = '/fake/path'
     mock_mode.save_timeout = 5
+    mock_mode.code_template = 'template code'
     ed.modes = {
         'python': mock_mode,
     }
@@ -864,7 +868,7 @@ def test_editor_restore_session_invalid_file():
     with mock.patch('builtins.open', mock_open), \
             mock.patch('os.path.exists', return_value=True):
         ed.restore_session()
-    py = '# Write your code here :-)' + mu.logic.NEWLINE
+    py = 'template code' + mu.logic.NEWLINE
     ed._view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
 
 
@@ -980,12 +984,14 @@ def test_new():
     mock_mode = mock.MagicMock()
     api = ['API specification', ]
     mock_mode.api.return_value = api
+    mock_mode.code_template = "new code template" + mu.logic.NEWLINE
     ed = mu.logic.Editor(view)
     ed.modes = {
         'python': mock_mode,
     }
     ed.new()
-    view.add_tab.assert_called_once_with(None, '', api, mu.logic.NEWLINE)
+    py = mock_mode.code_template + mu.logic.NEWLINE
+    view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
 
 
 def test_load_checks_file_exists():
@@ -1157,11 +1163,12 @@ def test_load_other_file():
     api = ['API specification', ]
     file_content = 'PYTHON CODE'
     mock_py = mock.MagicMock()
+    mock_py.file_extensions = None
     mock_py.open_file.return_value = None
     mock_mb = mock.MagicMock()
     mock_mb.api.return_value = api
     mock_mb.workspace_dir.return_value = '/fake/path'
-    mock_mb.open_file.return_value = file_content
+    mock_mb.open_file.return_value = (file_content, os.linesep)
     mock_mb.file_extensions = ['hex']
     ed.modes = {
         'python': mock_py,
@@ -1179,19 +1186,19 @@ def test_load_other_file():
 
 def test_load_other_file_change_mode():
     """
-    If the user specifies a file supported by a Mu mode (like a .hex file) that
-    is not currently active, then ensure it's loaded, added as a tab, and it
-    asks the user to change mode.
+    If the user specifies a file supported by a Mu mode (like a .html file)
+    that is not currently active, then ensure it's loaded, added as a tab, andi
+    it asks the user to change mode.
     """
     view = mock.MagicMock()
-    view.get_load_path = mock.MagicMock(return_value='foo.hex')
+    view.get_load_path = mock.MagicMock(return_value='foo.html')
     view.add_tab = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
     view.current_tab.path = 'path'
     ed = mu.logic.Editor(view)
     ed.change_mode = mock.MagicMock()
     api = ['API specification', ]
-    file_content = 'PYTHON CODE'
+    file_content = '<html></html>'
     mock_py = mock.MagicMock()
     mock_py.open_file.return_value = None
     mock_py.api.return_value = api
@@ -1199,7 +1206,7 @@ def test_load_other_file_change_mode():
     mock_mb = mock.MagicMock()
     mock_mb.api.return_value = api
     mock_mb.workspace_dir.return_value = '/fake/path'
-    mock_mb.open_file.return_value = file_content
+    mock_mb.open_file.return_value = (file_content, os.linesep)
     mock_mb.file_extensions = ['hex']
     ed.modes = {
         'python': mock_py,
@@ -1212,7 +1219,8 @@ def test_load_other_file_change_mode():
     assert view.get_load_path.call_count == 1
     assert view.show_confirmation.call_count == 1
     assert ed.change_mode.call_count == 1
-    view.add_tab.assert_called_once_with(None, file_content, api, os.linesep)
+    view.add_tab.assert_called_once_with("foo.html", file_content, api,
+                                         os.linesep)
 
 
 def test_load_other_file_with_exception():
@@ -1386,7 +1394,8 @@ def test_load_no_current_path():
     }
     ed.load()
     expected = os.path.abspath('old_path')
-    view.get_load_path.assert_called_once_with(expected, '*.py *.PY')
+    view.get_load_path.assert_called_once_with(expected, '*.py *.PY',
+                                               allow_previous=True)
 
 
 def test_load_no_current_path_no_current_tab():
@@ -1410,7 +1419,8 @@ def test_load_no_current_path_no_current_tab():
     }
     ed.load()
     expected = mock_mode.workspace_dir()
-    view.get_load_path.assert_called_once_with(expected, '*.py *.PY')
+    view.get_load_path.assert_called_once_with(expected, '*.py *.PY',
+                                               allow_previous=True)
 
 
 def test_load_has_current_path_does_not_exist():
@@ -1433,7 +1443,8 @@ def test_load_has_current_path_does_not_exist():
     }
     ed.load()
     expected = mock_mode.workspace_dir()
-    view.get_load_path.assert_called_once_with(expected, '*.py *.PY')
+    view.get_load_path.assert_called_once_with(expected, '*.py *.PY',
+                                               allow_previous=True)
 
 
 def test_load_has_current_path():
@@ -1456,7 +1467,31 @@ def test_load_has_current_path():
     }
     with mock.patch('os.path.isdir', return_value=True):
         ed.load()
-    view.get_load_path.assert_called_once_with('foo', '*.py *.PY')
+    view.get_load_path.assert_called_once_with('foo', '*.py *.PY',
+                                               allow_previous=True)
+
+
+def test_load_has_default_path():
+    """
+    If there is a default_path argument then use this as the location to look
+    for a file to load.
+    """
+    view = mock.MagicMock()
+    view.get_load_path = mock.MagicMock(return_value=os.path.join('path',
+                                                                  'foo.py'))
+    view.current_tab = None
+    ed = mu.logic.Editor(view)
+    ed._load = mock.MagicMock()
+    mock_mode = mock.MagicMock()
+    mock_mode.workspace_dir.return_value = os.path.join('fake', 'path')
+    mock_mode.file_extensions = []
+    ed.modes = {
+        'python': mock_mode,
+    }
+    with mock.patch('os.path.isdir', return_value=True):
+        ed.load(default_path="foo")
+    view.get_load_path.assert_called_once_with('foo', '*.py *.PY',
+                                               allow_previous=False)
 
 
 def test_check_for_shadow_module_with_match():
@@ -1743,6 +1778,18 @@ def test_check_code_no_tab():
     """
     view = mock.MagicMock()
     view.current_tab = None
+    ed = mu.logic.Editor(view)
+    ed.check_code()
+    assert view.annotate_code.call_count == 0
+
+
+def test_check_code_not_python():
+    """
+    Checking code when the tab does not contain Python code aborts the process.
+    """
+    view = mock.MagicMock()
+    view.current_tab = mock.MagicMock()
+    view.current_tab.path = "foo.html"
     ed = mu.logic.Editor(view)
     ed.check_code()
     assert view.annotate_code.call_count == 0
@@ -2103,6 +2150,35 @@ def test_quit_unable_to_clean_temporary_pth_file_on_windows():
     expected_path = os.path.join(mock_site.USER_SITE, 'mu.pth')
     expected = 'Unable to delete {}'.format(expected_path)
     assert expected in logs
+
+
+def test_quit_calls_mode_stop():
+    """
+    Ensure that the current mode's stop method is called.
+    """
+    view = mock.MagicMock()
+    view.modified = True
+    view.show_confirmation = mock.MagicMock(return_value=True)
+    w1 = mock.MagicMock()
+    w1.path = 'foo.py'
+    view.widgets = [w1, ]
+    ed = mu.logic.Editor(view)
+    ed.theme = 'night'
+    ed.modes = {
+        'python': mock.MagicMock(),
+        'microbit': mock.MagicMock(),
+    }
+    ed.mode = 'python'
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__ = lambda s: s
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_open.return_value.write = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    mock_event.ignore = mock.MagicMock(return_value=None)
+    with mock.patch('sys.exit', return_value=None), \
+            mock.patch('builtins.open', mock_open):
+        ed.quit(mock_event)
+    ed.modes[ed.mode].stop.assert_called_once_with()
 
 
 def test_quit_calls_sys_exit():
@@ -3240,6 +3316,20 @@ def test_tidy_code_no_tab():
     """
     mock_view = mock.MagicMock()
     mock_view.current_tab = None
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.tidy_code()
+    assert ed.show_status_message.call_count == 0
+
+
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="Requires Python3.6")
+def test_tidy_code_not_python():
+    """
+    If the current tab doesn't contain Python, abort.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.current_tab = mock.MagicMock()
+    mock_view.current_tab.path = "foo.html"
     ed = mu.logic.Editor(mock_view)
     ed.show_status_message = mock.MagicMock()
     ed.tidy_code()

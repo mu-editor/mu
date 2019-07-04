@@ -23,7 +23,7 @@ import os.path
 import logging
 import semver
 from tokenize import TokenError
-from mu.logic import HOME_DIRECTORY
+from mu.logic import HOME_DIRECTORY, sniff_newline_convention
 from mu.contrib import uflash, microfs
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from mu.modes.base import MicroPythonMode, FileManager
@@ -565,6 +565,8 @@ class MicrobitMode(MicroPythonMode):
     def open_file(self, path):
         """
         Tries to open a MicroPython hex file with an embedded Python script.
+
+        Returns the embedded Python script and newline convention.
         """
         text = None
         if path.lower().endswith('.hex'):
@@ -573,5 +575,7 @@ class MicrobitMode(MicroPythonMode):
                 with open(path, newline='') as f:
                     text = uflash.extract_script(f.read())
             except Exception:
-                return None
-        return text
+                return None, None
+            return text, sniff_newline_convention(text)
+        else:
+            return None, None
