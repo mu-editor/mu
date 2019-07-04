@@ -24,7 +24,7 @@ from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog, QMessageBox,
                              QLabel, QMainWindow, QStatusBar, QDockWidget,
-                             QShortcut)
+                             QShortcut, QApplication)
 from PyQt5.QtGui import QKeySequence, QStandardItemModel
 from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
@@ -198,6 +198,19 @@ class Window(QMainWindow):
     open_file = pyqtSignal(str)
     load_theme = pyqtSignal(str)
     previous_folder = None
+
+    def wheelEvent(self, event):
+        """
+        Trap a CTRL-scroll event so the user is able to zoom in and out.
+        """
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.ControlModifier:
+            zoom = event.angleDelta().y() > 0
+            if zoom:
+                self.zoom_in()
+            else:
+                self.zoom_out()
+            event.ignore()
 
     def set_zoom(self):
         """
