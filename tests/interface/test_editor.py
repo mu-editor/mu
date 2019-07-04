@@ -26,10 +26,10 @@ def test_pythonlexer_keywords():
     assert lexer.keywords(3) is None
 
 
-def test_EditorPane_init():
+def test_EditorPane_init_python():
     """
     Ensure everything is set and configured given a path and text passed into
-    a new instance of the EditorPane.
+    a new instance of the EditorPane. Python file.
     """
     mock_text = mock.MagicMock(return_value=None)
     mock_modified = mock.MagicMock(return_value=None)
@@ -47,6 +47,55 @@ def test_EditorPane_init():
         mock_configure.assert_called_once_with()
         assert editor.isUtf8()
         assert editor.newline == '\r\n'
+        assert isinstance(editor.lexer, mu.interface.editor.PythonLexer)
+
+
+def test_EditorPane_init_html():
+    """
+    Ensure everything is set and configured given a path and text passed into
+    a new instance of the EditorPane. HTML file.
+    """
+    mock_text = mock.MagicMock(return_value=None)
+    mock_modified = mock.MagicMock(return_value=None)
+    mock_configure = mock.MagicMock(return_value=None)
+    with mock.patch('mu.interface.editor.EditorPane.setText', mock_text), \
+            mock.patch('mu.interface.editor.EditorPane.setModified',
+                       mock_modified), \
+            mock.patch('mu.interface.editor.EditorPane.configure',
+                       mock_configure):
+        path = '/foo/bar.html'
+        text = '<html></html>'
+        editor = mu.interface.editor.EditorPane(path, text, '\r\n')
+        mock_text.assert_called_once_with(text)
+        mock_modified.assert_called_once_with(False)
+        mock_configure.assert_called_once_with()
+        assert editor.isUtf8()
+        assert editor.newline == '\r\n'
+        assert isinstance(editor.lexer, mu.interface.editor.QsciLexerHTML)
+
+
+def test_EditorPane_init_css():
+    """
+    Ensure everything is set and configured given a path and text passed into
+    a new instance of the EditorPane. CSS file.
+    """
+    mock_text = mock.MagicMock(return_value=None)
+    mock_modified = mock.MagicMock(return_value=None)
+    mock_configure = mock.MagicMock(return_value=None)
+    with mock.patch('mu.interface.editor.EditorPane.setText', mock_text), \
+            mock.patch('mu.interface.editor.EditorPane.setModified',
+                       mock_modified), \
+            mock.patch('mu.interface.editor.EditorPane.configure',
+                       mock_configure):
+        path = '/foo/bar.css'
+        text = 'h1 { color: red; }'
+        editor = mu.interface.editor.EditorPane(path, text, '\r\n')
+        mock_text.assert_called_once_with(text)
+        mock_modified.assert_called_once_with(False)
+        mock_configure.assert_called_once_with()
+        assert editor.isUtf8()
+        assert editor.newline == '\r\n'
+        assert isinstance(editor.lexer, mu.interface.editor.QsciLexerCSS)
 
 
 def test_EditorPane_configure():

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="two columns"><img src="/static/img/logo.png" alt="logo"/></div>
+    <div class="ten columns"><h1>Hello from Mu!</h1></div>
+</div>
+<div class="row">
+    <p>This is a very simple dynamic web application built using Python and
+    the
+    <a href="http://flask.pocoo.org/" target="_new">Flask web framework</a>.</p>
+
+    <p>Why not try adding the following route to your Python code?</p>
+
+    <pre><code>
+@app.route('/hello/&lt;name&gt;')
+def greet(name='Stranger'):
+    return render_template("greeting.html", name=name)
+    </code></pre>
+
+    <p>Now add the following template with the filename, "greeting.html".</p>
+    <pre><code>
+&#123;% extends "base.html" %&#125;
+&#123;% block content %&#125;
+&lt;p&gt;Hello &#123;&#123;name&#125;&#125;, how are you?&lt;/p&gt;
+&#123;% endblock %&#125;
+    </code></pre>
+
+    <p>Once you've done that, go visit
+    <a href="/hello/yourname">/hello/yourname</a> (but replace "yourname" in
+    the address bar with, you know, your actual name). :-)</p>
+</div>
+{% endblock %}

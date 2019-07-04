@@ -684,7 +684,9 @@ class PythonProcessPane(QTextEdit):
         """
         if not envars:  # Envars must be a list if not passed a value.
             envars = []
-        self.script = os.path.abspath(os.path.normcase(script_name))
+        self.script = ""
+        if script_name:
+            self.script = os.path.abspath(os.path.normcase(script_name))
         logger.info('Running script: {}'.format(self.script))
         if interactive:
             logger.info('Running with interactive mode.')
@@ -765,14 +767,18 @@ class PythonProcessPane(QTextEdit):
             else:
                 # Use the current system Python to run the script.
                 python_exec = sys.executable
-            if interactive:
-                # Start the script in interactive Python mode.
-                args = ['-i', self.script, ] + command_args
-            else:
-                # Just run the command with no additional flags.
-                args = [self.script, ] + command_args
+            args = []
+            if self.script:
+                if interactive:
+                    # Start the script in interactive Python mode.
+                    args = ['-i', self.script, ] + command_args
+                else:
+                    # Just run the command with no additional flags.
+                    args = [self.script, ] + command_args
             if python_args:
                 args = python_args + args
+            logger.info("Runner: {}".format(python_exec))
+            logger.info("Args: {}".format(args))
             self.process.start(python_exec, args)
             self.running = True
 

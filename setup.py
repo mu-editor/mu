@@ -15,9 +15,6 @@ with open(os.path.join(base_dir, 'mu', '__init__.py'), encoding='utf8') as f:
 
 with open(os.path.join(base_dir, 'README.rst'), encoding='utf8') as f:
     readme = f.read()
-    # Replace the logo URL in the README with something that works in PyPI
-    logo_url = 'https://mu.readthedocs.io/en/latest/_images/logo.png'
-    readme = readme.replace('docs/logo.png', logo_url)
 
 with open(os.path.join(base_dir, 'CHANGES.rst'), encoding='utf8') as f:
     changes = f.read()
@@ -33,12 +30,10 @@ install_requires = [
     'qtconsole==4.4.3',
     'pgzero==1.2',
     'appdirs>=1.4.3',
-    'gpiozero>=1.4.1',
-    'guizero>=0.5.2',
-    'pigpio>=1.40.post1',
     'semver>=2.8.0',
     'nudatus>=0.0.3',
     'black>=18.9b0;python_version > "3.5"',
+    'Flask==1.0.2',
 ]
 
 

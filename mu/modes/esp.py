@@ -21,6 +21,7 @@ from mu.modes.base import MicroPythonMode, FileManager
 from mu.modes.api import ESP_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QThread
+import os
 
 
 logger = logging.getLogger(__name__)
@@ -209,7 +210,14 @@ class ESPMode(MicroPythonMode):
         self.file_manager.moveToThread(self.file_manager_thread)
         self.file_manager_thread.started.\
             connect(self.file_manager.on_start)
-        self.fs = self.view.add_filesystem(self.workspace_dir(),
+
+        # Show directory of the current file in the left pane, if any,
+        # otherwise show the default workspace_dir
+        if self.view.current_tab and self.view.current_tab.path:
+            path = os.path.dirname(os.path.abspath(self.view.current_tab.path))
+        else:
+            path = self.workspace_dir()
+        self.fs = self.view.add_filesystem(path,
                                            self.file_manager,
                                            _("ESP board"))
         self.fs.set_message.connect(self.editor.show_status_message)
