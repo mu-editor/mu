@@ -34,7 +34,7 @@ from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface import Window
 from mu.resources import load_pixmap, load_icon
 from mu.modes import (PythonMode, AdafruitMode, MicrobitMode, DebugMode,
-                      PyGameZeroMode, ESPMode)
+                      PyGameZeroMode, ESPMode, WebMode)
 from mu.debugger.runner import run as run_debugger
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
@@ -77,6 +77,7 @@ def setup_modes(editor, view):
         'adafruit': AdafruitMode(editor, view),
         'microbit': MicrobitMode(editor, view),
         'esp': ESPMode(editor, view),
+        'web': WebMode(editor, view),
         'debugger': DebugMode(editor, view),
     }
 

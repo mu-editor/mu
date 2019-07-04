@@ -1206,17 +1206,9 @@ def test_open_hex():
     with mock.patch('builtins.open', mock_open), \
             mock.patch('mu.contrib.uflash.extract_script',
                        return_value=hex_extracted) as extract_script:
-        text = mm.open_file('path_to_file.hex')
+        text, newline = mm.open_file('path_to_file.hex')
     assert text == hex_extracted
-    assert extract_script.call_count == 1
-    assert mock_open.call_count == 1
-
-    mock_open.reset_mock()
-    with mock.patch('builtins.open', mock_open), \
-            mock.patch('mu.contrib.uflash.extract_script',
-                       return_value=hex_extracted) as extract_script:
-        text = mm.open_file('path_to_file.HEX')
-    assert text == hex_extracted
+    assert newline == os.linesep
     assert extract_script.call_count == 1
     assert mock_open.call_count == 1
 
@@ -1232,8 +1224,9 @@ def test_open_ignore_non_hex():
     with mock.patch('builtins.open', mock_open), \
             mock.patch('mu.contrib.uflash.extract_script',
                        return_value='Should not be called') as extract_script:
-        text = mm.open_file('path_to_file.py')
+        text, newline = mm.open_file('path_to_file.py')
     assert text is None
+    assert newline is None
     assert extract_script.call_count == 0
     assert mock_open.call_count == 0
 
@@ -1241,8 +1234,9 @@ def test_open_ignore_non_hex():
     with mock.patch('builtins.open', mock_open), \
             mock.patch('mu.contrib.uflash.extract_script',
                        return_value='Should not be called') as extract_script:
-        text = mm.open_file('file_no_extension')
+        text, newline = mm.open_file('file_no_extension')
     assert text is None
+    assert newline is None
     assert extract_script.call_count == 0
     assert mock_open.call_count == 0
 
@@ -1259,7 +1253,8 @@ def test_open_hex_with_exception():
     mock_extract = mock.MagicMock(side_effect=Exception(':('))
     with mock.patch('builtins.open', mock_open), \
             mock.patch('mu.contrib.uflash.extract_script', mock_extract):
-        text = mm.open_file('path_to_file.hex')
+        text, newline = mm.open_file('path_to_file.hex')
     assert text is None
+    assert newline is None
     assert mock_extract.call_count == 1
     assert mock_open.call_count == 1

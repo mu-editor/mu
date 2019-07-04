@@ -39,6 +39,7 @@ install_requires = [
     'semver>=2.8.0',
     'nudatus>=0.0.3',
     'black>=18.9b0;python_version > "3.5"',
+    'Flask==1.0.2',
 ]
 
 
