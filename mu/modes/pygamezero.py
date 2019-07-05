@@ -155,7 +155,7 @@ class PyGameZeroMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        if self.view.current_tab.path:
+        if self.view.current_tab and self.view.current_tab.path:
             base_dir = os.path.dirname(self.view.current_tab.path)
         else:
             base_dir = self.workspace_dir()
@@ -169,7 +169,7 @@ class PyGameZeroMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        if self.view.current_tab.path:
+        if self.view.current_tab and self.view.current_tab.path:
             base_dir = os.path.dirname(self.view.current_tab.path)
         else:
             base_dir = self.workspace_dir()
@@ -183,7 +183,7 @@ class PyGameZeroMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        if self.view.current_tab.path:
+        if self.view.current_tab and self.view.current_tab.path:
             base_dir = os.path.dirname(self.view.current_tab.path)
         else:
             base_dir = self.workspace_dir()
@@ -197,7 +197,7 @@ class PyGameZeroMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        if self.view.current_tab.path:
+        if self.view.current_tab and self.view.current_tab.path:
             base_dir = os.path.dirname(self.view.current_tab.path)
         else:
             base_dir = self.workspace_dir()

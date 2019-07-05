@@ -208,7 +208,7 @@ def test_pgzero_show_images_no_file():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    view.current_tab.path = None
+    view.current_tab = None
     pm = PyGameZeroMode(editor, view)
     pm.show_images(None)
     image_dir = os.path.join(pm.workspace_dir(), 'images')
@@ -234,7 +234,7 @@ def test_pgzero_show_fonts_no_file():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    view.current_tab.path = None
+    view.current_tab = None
     pm = PyGameZeroMode(editor, view)
     pm.show_fonts(None)
     font_dir = os.path.join(pm.workspace_dir(), 'fonts')
@@ -260,7 +260,7 @@ def test_pgzero_show_sounds_no_file():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    view.current_tab.path = None
+    view.current_tab = None
     pm = PyGameZeroMode(editor, view)
     pm.show_sounds(None)
     sound_dir = os.path.join(pm.workspace_dir(), 'sounds')
@@ -286,7 +286,7 @@ def test_pgzero_show_music_no_file():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    view.current_tab.path = None
+    view.current_tab = None
     pm = PyGameZeroMode(editor, view)
     pm.show_music(None)
     music_dir = os.path.join(pm.workspace_dir(), 'music')
