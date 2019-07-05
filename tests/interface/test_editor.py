@@ -803,6 +803,40 @@ def test_EditorPane_toggle_comments_selected_hash_space_comment_lines():
     ep.setSelection.assert_called_once_with(0, 0, 2, 2)
 
 
+def test_EditorPane_toggle_comments_selected_spaces_before_comment_mark():
+    """
+    Check commented lines starting with "# " are now uncommented and on the
+    last line selection ends at "baz" when there are spaces before the comment
+    mark.
+    """
+    ep = mu.interface.editor.EditorPane(None, '# foo\n# bar\n    # baz')
+    ep.hasSelectedText = mock.MagicMock(return_value=True)
+    ep.getSelection = mock.MagicMock(return_value=(0, 0, 2, 6))
+    ep.selectedText = mock.MagicMock(return_value='# foo\n# bar\n    # baz')
+    ep.replaceSelectedText = mock.MagicMock()
+    ep.setSelection = mock.MagicMock()
+    ep.toggle_comments()
+    ep.replaceSelectedText.assert_called_once_with('foo\nbar\n    baz')
+    ep.setSelection.assert_called_once_with(0, 0, 2, 4)
+
+
+def test_EditorPane_toggle_comments_selected_spaces_after_comment_mark():
+    """
+    Check commented lines starting with "# " are now uncommented and on the
+    last line selection ends at "baz" when there are spaces between the comment
+    mark and the text.
+    """
+    ep = mu.interface.editor.EditorPane(None, '# foo\n# bar\n#     baz')
+    ep.hasSelectedText = mock.MagicMock(return_value=True)
+    ep.getSelection = mock.MagicMock(return_value=(0, 0, 2, 6))
+    ep.selectedText = mock.MagicMock(return_value='# foo\n# bar\n#     baz')
+    ep.replaceSelectedText = mock.MagicMock()
+    ep.setSelection = mock.MagicMock()
+    ep.toggle_comments()
+    ep.replaceSelectedText.assert_called_once_with('foo\nbar\n    baz')
+    ep.setSelection.assert_called_once_with(0, 0, 2, 4)
+
+
 def test_EditorPane_toggle_comments_selection_follows_len_change():
     """
     Check commented lines starting with "# " are now uncommented one level and

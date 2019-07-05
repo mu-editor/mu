@@ -553,7 +553,7 @@ class EditorPane(QsciScintilla):
             self.replaceSelectedText(new_text)
             # Ensure the new text is also selected.
             last_newline = toggled_lines[-1]
-            last_oldline = lines[-1].strip()
+            last_oldline = lines[-1]
 
             # Adjust the selection based on whether the last line got
             # longer, shorter, or stayed the same
