@@ -1190,6 +1190,10 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
     """
     Ensure that if environment variables are set, they are set in the context
     of the new child Python process.
+
+    If running on Darwin, ensure that the correct encoding for the Python
+    environment is used (Flask stop and complain about a misconfigured
+    Python 3 using an ASCII encoding).
     """
     mock_process = mock.MagicMock()
     mock_process_class = mock.MagicMock(return_value=mock_process)
@@ -1198,21 +1202,30 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
     mock_environment = mock.MagicMock()
     mock_environment_class = mock.MagicMock()
     mock_environment_class.systemEnvironment.return_value = mock_environment
+    pypath = sys.path
     with mock.patch('mu.interface.panes.QProcess', mock_process_class), \
+            mock.patch('mu.interface.panes.sys') as mock_sys, \
             mock.patch('mu.interface.panes.QProcessEnvironment',
                        mock_environment_class):
+        mock_sys.platform = "darwin"
+        mock_sys.path = pypath
         ppp = mu.interface.panes.PythonProcessPane()
         envars = [['name', 'value'], ]
         ppp.start_process('script.py', 'workspace', interactive=False,
                           envars=envars, runner='foo')
-    assert mock_environment.insert.call_count == 4
+    expected_encoding = "{}.utf-8".format(mu.language_code)
+    assert mock_environment.insert.call_count == 6
     assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
                                                             '1')
     assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
                                                             'utf-8')
-    assert mock_environment.insert.call_args_list[2][0] == ('name', 'value')
-    expected_path = os.pathsep.join(sys.path)
-    assert mock_environment.insert.call_args_list[3][0] == ('PYTHONPATH',
+    assert mock_environment.insert.call_args_list[2][0] == ('LC_ALL',
+                                                            expected_encoding)
+    assert mock_environment.insert.call_args_list[3][0] == ('LANG',
+                                                            expected_encoding)
+    assert mock_environment.insert.call_args_list[4][0] == ('name', 'value')
+    expected_path = os.pathsep.join(pypath)
+    assert mock_environment.insert.call_args_list[5][0] == ('PYTHONPATH',
                                                             expected_path)
 
 
