@@ -29,8 +29,8 @@ def test_init():
     assert actions[0]['handler'] == wm.run_toggle
     assert actions[1]['name'] == 'browse'
     assert actions[1]['handler'] == wm.browse
-    assert actions[2]['name'] == 'views'
-    assert actions[2]['handler'] == wm.load_views
+    assert actions[2]['name'] == 'templates'
+    assert actions[2]['handler'] == wm.load_templates
     assert actions[3]['name'] == 'css'
     assert actions[3]['handler'] == wm.load_css
     assert actions[4]['name'] == 'static'
@@ -222,7 +222,7 @@ def test_open_file():
         assert newline == "\n"
 
 
-def test_load_views():
+def test_load_templates():
     """
     The OS's file system explorer is opened in the correct location for the
     templates / views used by the web application.
@@ -230,7 +230,22 @@ def test_load_views():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     wm = WebMode(editor, view)
-    wm.load_views(None)
+    view.current_tab.path = os.path.join(wm.workspace_dir(), 'foo.py')
+    wm.load_templates(None)
+    expected_path = os.path.join(wm.workspace_dir(), 'templates')
+    editor.load.assert_called_once_with(default_path=expected_path)
+
+
+def test_load_templates_no_file():
+    """
+    The OS's file system explorer is opened in the correct location for the
+    templates / views used by the web application.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
+    wm = WebMode(editor, view)
+    wm.load_templates(None)
     expected_path = os.path.join(wm.workspace_dir(), 'templates')
     editor.load.assert_called_once_with(default_path=expected_path)
 
@@ -242,6 +257,21 @@ def test_load_css():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    wm = WebMode(editor, view)
+    view.current_tab.path = os.path.join(wm.workspace_dir(), 'foo.py')
+    wm.load_css(None)
+    expected_path = os.path.join(wm.workspace_dir(), 'static', 'css')
+    editor.load.assert_called_once_with(default_path=expected_path)
+
+
+def test_load_css_no_file():
+    """
+    The OS's file system explorer is opened in the correct location for the
+    web application's CSS files.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
     wm = WebMode(editor, view)
     wm.load_css(None)
     expected_path = os.path.join(wm.workspace_dir(), 'static', 'css')
@@ -255,6 +285,21 @@ def test_show_images():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    wm = WebMode(editor, view)
+    view.current_tab.path = os.path.join(wm.workspace_dir(), 'foo.py')
+    wm.show_images(None)
+    expected_path = os.path.join(wm.workspace_dir(), 'static', 'img')
+    view.open_directory_from_os.assert_called_once_with(expected_path)
+
+
+def test_show_images_no_file():
+    """
+    The OS's file system explorer is opened in the correct location for the
+    web application's CSS files.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
     wm = WebMode(editor, view)
     wm.show_images(None)
     expected_path = os.path.join(wm.workspace_dir(), 'static', 'img')

@@ -128,6 +128,27 @@ class BaseMode(QObject):
         """
         return get_default_workspace()
 
+    def assets_dir(self, asset_type):
+        """
+        Determine (and create) the directory for a set of assets
+
+        This supports the [Images] and [Sounds] &c. buttons in pygamezero
+        mode and possibly other modes, too.
+
+        If a tab is current and has an active file, the assets directory
+        is looked for under that path; otherwise the workspace directory
+        is used.
+
+        If the assets directory does not exist it is created
+        """
+        if self.view.current_tab and self.view.current_tab.path:
+            base_dir = os.path.dirname(self.view.current_tab.path)
+        else:
+            base_dir = self.workspace_dir()
+        assets_dir = os.path.join(base_dir, asset_type)
+        os.makedirs(assets_dir, exist_ok=True)
+        return assets_dir
+
     def api(self):
         """
         Return a list of API specifications to be used by auto-suggest and call

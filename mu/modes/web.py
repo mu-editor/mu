@@ -84,11 +84,11 @@ class WebMode(BaseMode):
                 'shortcut': 'Ctrl+Shift+B',
             },
             {
-                'name': 'views',
+                'name': 'templates',
                 'display_name': _('Templates'),
                 'description': _('Load HTML templates used by your website.'),
-                'handler': self.load_views,
-                'shortcut': 'Ctrl+Shift+V',
+                'handler': self.load_templates,
+                'shortcut': 'Ctrl+Shift+T',
             },
             {
                 'name': 'css',
@@ -206,16 +206,16 @@ class WebMode(BaseMode):
         """
         return read_and_decode(path)
 
-    def load_views(self, event):
+    def load_templates(self, event):
         """
         Open the directory containing the HTML template views used by Flask.
 
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        views_dir = os.path.join(self.workspace_dir(), 'templates')
-        logger.info(views_dir)
-        self.editor.load(default_path=views_dir)
+        templates_dir = self.assets_dir("templates")
+        logger.info(templates_dir)
+        self.editor.load(default_path=templates_dir)
 
     def load_css(self, event):
         """
@@ -224,7 +224,8 @@ class WebMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        css_dir = os.path.join(self.workspace_dir(), 'static', 'css')
+        css_path = os.path.join('static', 'css')
+        css_dir = self.assets_dir(css_path)
         logger.info(css_dir)
         self.editor.load(default_path=css_dir)
 
@@ -235,7 +236,8 @@ class WebMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        img_dir = os.path.join(self.workspace_dir(), 'static', 'img')
+        img_path = os.path.join('static', 'img')
+        img_dir = self.assets_dir(img_path)
         logger.info(img_dir)
         self.view.open_directory_from_os(img_dir)
 
