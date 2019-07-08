@@ -1057,8 +1057,8 @@ msgstr "Mu a été créé par Nicholas H. Tollervey"
 #: mu/logic.py:116
 msgid "To understand what recursion is, you must first understand recursion."
 msgstr ""
-"Pour comprendre ce qu'est la récursivité. Tu dois d'abord comprend ce qu'est "
-"la récursivité."
+"Pour comprendre ce qu'est la récursivité. Tu dois d'abord comprendre ce "
+"qu'est la récursivité."
 
 #: mu/logic.py:117
 msgid ""
@@ -1509,7 +1509,7 @@ msgstr "BBC micro:bit"
 
 #: mu/modes/microbit.py:169
 msgid "Write MicroPython for the BBC micro:bit."
-msgstr "Ecrit un programme MicroPython pour la micro:bit"
+msgstr "Ecris un programme MicroPython pour la micro:bit"
 
 #: mu/modes/microbit.py:190
 msgid "Flash"

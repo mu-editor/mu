@@ -47,14 +47,14 @@ def should_patch_osx_mojave_font():
 DEFAULT_FONT_SIZE = 14
 # All editor windows use the same font
 if should_patch_osx_mojave_font():  # pragma: no cover
-    logger.warn("Overriding built-in editor font due to Issue #552")
+    logger.warning("Overriding built-in editor font due to Issue #552")
     FONT_NAME = "Monaco"
 else:  # pragma: no cover
     FONT_NAME = "Source Code Pro"
 
 FONT_FILENAME_PATTERN = "SourceCodePro-{variant}.otf"
 FONT_VARIANTS = ("Bold", "BoldIt", "It", "Regular", "Semibold", "SemiboldIt")
-# Load the two themes from resources/css/[night|day].css
+# Load the three themes from resources/css/[night|day|contrast].css
 # NIGHT_STYLE is a dark theme.
 NIGHT_STYLE = load_stylesheet('night.css')
 # DAY_STYLE is a light conventional theme.
@@ -129,11 +129,12 @@ class Theme:
         for name, font in cls.__dict__.items():
             if not isinstance(font, Font):
                 continue
-            style_num = getattr(lexer, name)
-            lexer.setColor(QColor(font.color), style_num)
-            lexer.setEolFill(True, style_num)
-            lexer.setPaper(QColor(font.paper), style_num)
-            lexer.setFont(font.load(), style_num)
+            if hasattr(lexer, name):
+                style_num = getattr(lexer, name)
+                lexer.setColor(QColor(font.color), style_num)
+                lexer.setEolFill(True, style_num)
+                lexer.setPaper(QColor(font.paper), style_num)
+                lexer.setFont(font.load(), style_num)
 
 
 class DayTheme(Theme):
@@ -167,6 +168,33 @@ class DayTheme(Theme):
     UnmatchedBraceBackground = QColor('#FFDDDD')
     UnmatchedBraceForeground = QColor('black')
     BreakpointMarker = QColor('#D80000')
+    # HTML
+    Tag = Keyword
+    UnknownTag = Tag
+    XMLTagEnd = Tag
+    XMLStart = Tag
+    XMLEnd = Tag
+    Attribute = ClassName
+    UnknownAttribute = Attribute
+    HTMLNumber = Number
+    HTMLDoubleQuotedString = DoubleQuotedString
+    HTMLSingleQuotedString = SingleQuotedString
+    OtherInTag = Default
+    HTMLComment = Comment
+    Entity = Operator
+    CDATA = Decorator
+    # CSS
+    ClassSelector = Tag
+    PseudoClass = ClassSelector
+    UnknownPseudoClass = ClassSelector
+    CSS1Property = CSS2Property = CSS3Property = UnknownProperty = \
+        SingleQuotedString
+    Value = Number
+    IDSelector = Tag
+    Important = UnmatchedBraceBackground
+    AtRule = Decorator
+    MediaRule = Decorator
+    Variable = HighlightedIdentifier
 
 
 class NightTheme(Theme):
@@ -176,10 +204,10 @@ class NightTheme(Theme):
 
     This is the dark theme.
     """
-
+    # Python / General
     FunctionMethodName = ClassName = Font(color='#81a2be', paper='#222')
     UnclosedString = Font(paper='#c93827')
-    Comment = CommentBlock = Font(color='#969896', paper='#222')
+    Comment = CommentBlock = CommentLine = Font(color='#969896', paper='#222')
     Keyword = Font(color='#73a46a', bold=True, paper='#222')
     SingleQuotedString = DoubleQuotedString = Font(color='#f0c674',
                                                    paper='#222')
@@ -202,6 +230,33 @@ class NightTheme(Theme):
     UnmatchedBraceBackground = QColor('#c93827')
     UnmatchedBraceForeground = QColor('#222')
     BreakpointMarker = QColor('#c93827')
+    # HTML
+    Tag = Keyword
+    UnknownTag = Tag
+    XMLTagEnd = Tag
+    XMLStart = Tag
+    XMLEnd = Tag
+    Attribute = ClassName
+    UnknownAttribute = Attribute
+    HTMLNumber = Number
+    HTMLDoubleQuotedString = DoubleQuotedString
+    HTMLSingleQuotedString = SingleQuotedString
+    OtherInTag = Default
+    HTMLComment = Comment
+    Entity = Operator
+    CDATA = Decorator
+    # CSS
+    ClassSelector = Tag
+    PseudoClass = ClassSelector
+    UnknownPseudoClass = ClassSelector
+    CSS1Property = CSS2Property = CSS3Property = UnknownProperty = \
+        SingleQuotedString
+    Value = Number
+    IDSelector = Tag
+    Important = UnmatchedBraceBackground
+    AtRule = Decorator
+    MediaRule = Decorator
+    Variable = HighlightedIdentifier
 
 
 class ContrastTheme(Theme):
@@ -236,3 +291,30 @@ class ContrastTheme(Theme):
     UnmatchedBraceBackground = QColor('#666')
     UnmatchedBraceForeground = QColor('black')
     BreakpointMarker = QColor('lightGrey')
+    # HTML
+    Tag = Keyword
+    UnknownTag = Tag
+    XMLTagEnd = Tag
+    XMLStart = Tag
+    XMLEnd = Tag
+    Attribute = ClassName
+    UnknownAttribute = Attribute
+    HTMLNumber = Number
+    HTMLDoubleQuotedString = DoubleQuotedString
+    HTMLSingleQuotedString = SingleQuotedString
+    OtherInTag = Default
+    HTMLComment = Comment
+    Entity = Operator
+    CDATA = Decorator
+    # CSS
+    ClassSelector = Tag
+    PseudoClass = ClassSelector
+    UnknownPseudoClass = ClassSelector
+    CSS1Property = CSS2Property = CSS3Property = UnknownProperty = \
+        SingleQuotedString
+    Value = Number
+    IDSelector = Tag
+    Important = UnmatchedBraceBackground
+    AtRule = Decorator
+    MediaRule = Decorator
+    Variable = HighlightedIdentifier

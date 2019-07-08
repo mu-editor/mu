@@ -22,8 +22,10 @@ import re
 import logging
 import os.path
 from collections import defaultdict
-from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciAPIs
+from PyQt5.Qsci import (QsciScintilla, QsciLexerPython, QsciLexerHTML,
+                        QsciAPIs, QsciLexerCSS)
 from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import QApplication
 from mu.interface.themes import Font, DayTheme
 from mu.logic import NEWLINE
 
@@ -58,6 +60,21 @@ class PythonLexer(QsciLexerPython):
         return ' '.join(kws)
 
 
+class CssLexer(QsciLexerCSS):
+    """
+    Fixes problems with comments in CSS.
+    """
+
+    def description(self, style):
+        """
+        Ensures "Comment" is returned when the lexer encounters a comment (this
+        is due to a bug in the base class, for which this is a work around).
+        """
+        if style == QsciLexerCSS.Comment:
+            return "Comment"
+        return super().description(style)
+
+
 class EditorPane(QsciScintilla):
     """
     Represents the text editor.
@@ -84,12 +101,28 @@ class EditorPane(QsciScintilla):
         self.previous_selection = {
             'line_start': 0, 'col_start': 0, 'line_end': 0, 'col_end': 0
         }
-        self.lexer = PythonLexer()
+        if self.path:
+            if self.path.endswith(".css"):
+                self.lexer = CssLexer()
+            elif self.path.endswith(".html") or self.path.endswith(".htm"):
+                self.lexer = QsciLexerHTML()
+                self.lexer.setDjangoTemplates(True)
+            else:
+                self.lexer = PythonLexer()
+        else:
+            self.lexer = PythonLexer()
         self.api = None
         self.has_annotations = False
         self.setModified(False)
         self.breakpoint_handles = set()
         self.configure()
+
+    def wheelEvent(self, event):
+        """
+        Stops QScintilla from doing the wrong sort of zoom handling.
+        """
+        if not QApplication.keyboardModifiers():
+            super().wheelEvent(event)
 
     def dropEvent(self, event):
         """

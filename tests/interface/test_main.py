@@ -243,6 +243,38 @@ def test_Window_attributes():
     assert w.zooms == ('xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl')
 
 
+def test_Window_wheelEvent_zoom_in():
+    """
+    If the CTRL+scroll in a positive direction, zoom in.
+    """
+    w = mu.interface.main.Window()
+    w.zoom_in = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    mock_event.angleDelta().y.return_value = 1
+    modifiers = Qt.ControlModifier
+    with mock.patch('mu.interface.main.QApplication.keyboardModifiers',
+                    return_value=modifiers):
+        w.wheelEvent(mock_event)
+        w.zoom_in.assert_called_once_with()
+        mock_event.ignore.assert_called_once_with()
+
+
+def test_Window_wheelEvent_zoom_out():
+    """
+    If the CTRL+scroll in a negative direction, zoom out.
+    """
+    w = mu.interface.main.Window()
+    w.zoom_out = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    mock_event.angleDelta().y.return_value = -1
+    modifiers = Qt.ControlModifier
+    with mock.patch('mu.interface.main.QApplication.keyboardModifiers',
+                    return_value=modifiers):
+        w.wheelEvent(mock_event)
+        w.zoom_out.assert_called_once_with()
+        mock_event.ignore.assert_called_once_with()
+
+
 def test_Window_resizeEvent():
     """
     Ensure resize events are passed along to the button bar.
@@ -387,7 +419,7 @@ def test_Window_set_read_only():
     tab2.setReadOnly.assert_called_once_with(True)
 
 
-def test_Window_get_load_path():
+def test_Window_get_load_path_no_previous():
     """
     Ensure the QFileDialog is called with the expected arguments and the
     resulting path is returned.
@@ -398,9 +430,50 @@ def test_Window_get_load_path():
     w = mu.interface.main.Window()
     w.widget = mock.MagicMock()
     with mock.patch('mu.interface.main.QFileDialog', mock_fd):
-        returned_path = w.get_load_path('micropython', '*.py *.hex *.PY *.HEX')
+        returned_path = w.get_load_path('micropython', '*.py *.hex *.PY *.HEX',
+                                        allow_previous=True)
     assert returned_path == path
     assert w.previous_folder == '/foo'  # Note lack of filename.
+    mock_fd.getOpenFileName.assert_called_once_with(
+        w.widget, 'Open file', 'micropython', '*.py *.hex *.PY *.HEX')
+
+
+def test_Window_get_load_path_with_previous():
+    """
+    Ensure the QFileDialog is called with the expected arguments and the
+    resulting path is returned.
+    """
+    mock_fd = mock.MagicMock()
+    path = '/foo/bar.py'
+    mock_fd.getOpenFileName = mock.MagicMock(return_value=(path, True))
+    w = mu.interface.main.Window()
+    w.previous_folder = '/previous'
+    w.widget = mock.MagicMock()
+    with mock.patch('mu.interface.main.QFileDialog', mock_fd):
+        returned_path = w.get_load_path('micropython', '*.py *.hex *.PY *.HEX',
+                                        allow_previous=True)
+    assert returned_path == path
+    assert w.previous_folder == '/foo'  # Note lack of filename.
+    mock_fd.getOpenFileName.assert_called_once_with(
+        w.widget, 'Open file', '/previous', '*.py *.hex *.PY *.HEX')
+
+
+def test_Window_get_load_path_force_path():
+    """
+    Ensure the QFileDialog is called with the expected arguments and the
+    resulting path is returned.
+    """
+    mock_fd = mock.MagicMock()
+    path = '/foo/bar.py'
+    mock_fd.getOpenFileName = mock.MagicMock(return_value=(path, True))
+    w = mu.interface.main.Window()
+    w.previous_folder = '/previous'
+    w.widget = mock.MagicMock()
+    with mock.patch('mu.interface.main.QFileDialog', mock_fd):
+        returned_path = w.get_load_path('micropython', '*.py *.hex *.PY *.HEX',
+                                        allow_previous=False)
+    assert returned_path == path
+    assert w.previous_folder == '/previous'  # Note lack of filename.
     mock_fd.getOpenFileName.assert_called_once_with(
         w.widget, 'Open file', 'micropython', '*.py *.hex *.PY *.HEX')
 
@@ -417,8 +490,9 @@ def test_Window_get_save_path():
     w.widget = mock.MagicMock()
     with mock.patch('mu.interface.main.QFileDialog', mock_fd):
         returned_path = w.get_save_path('micropython')
-    mock_fd.getSaveFileName.assert_called_once_with(w.widget, 'Save file',
-                                                    'micropython')
+    mock_fd.getSaveFileName.assert_called_once_with(
+        w.widget, 'Save file', 'micropython',
+        'Python (*.py);;Other (*.*)', 'Python (*.py)')
     assert w.previous_folder == '/foo'  # Note lack of filename.
     assert returned_path == path
 
@@ -1325,17 +1399,26 @@ def test_Window_update_title():
     w.setWindowTitle.assert_called_once_with('Mu - foo.py')
 
 
+def _qdesktopwidget_mock(width, height):
+    """
+    Create and return a usable mock for QDesktopWidget that supports the
+    QDesktopWidget().screenGeometry() use case: it returns a mocked QRect
+    responding to .width() and .height() per the passed in arguments.
+    """
+    mock_sg = mock.MagicMock()
+    mock_screen = mock.MagicMock()
+    mock_screen.width = mock.MagicMock(return_value=width)
+    mock_screen.height = mock.MagicMock(return_value=height)
+    mock_sg.screenGeometry = mock.MagicMock(return_value=mock_screen)
+    return mock.MagicMock(return_value=mock_sg)
+
+
 def test_Window_autosize_window():
     """
     Check the correct calculations take place and methods are called so the
     window is resized and positioned correctly.
     """
-    mock_sg = mock.MagicMock()
-    mock_screen = mock.MagicMock()
-    mock_screen.width = mock.MagicMock(return_value=1024)
-    mock_screen.height = mock.MagicMock(return_value=768)
-    mock_sg.screenGeometry = mock.MagicMock(return_value=mock_screen)
-    mock_qdw = mock.MagicMock(return_value=mock_sg)
+    mock_qdw = _qdesktopwidget_mock(1024, 768)
     w = mu.interface.main.Window()
     w.resize = mock.MagicMock(return_value=None)
     mock_size = mock.MagicMock()
@@ -1344,7 +1427,7 @@ def test_Window_autosize_window():
     w.geometry = mock.MagicMock(return_value=mock_size)
     w.move = mock.MagicMock(return_value=None)
     with mock.patch('mu.interface.main.QDesktopWidget', mock_qdw):
-        w.autosize_window()
+        w.size_window()
     mock_qdw.assert_called_once_with()
     w.resize.assert_called_once_with(int(1024 * 0.8), int(768 * 0.8))
     w.geometry.assert_called_once_with()
@@ -1405,7 +1488,7 @@ def test_Window_setup():
     w.show = mock.MagicMock(return_value=None)
     w.setCentralWidget = mock.MagicMock(return_value=None)
     w.addToolBar = mock.MagicMock(return_value=None)
-    w.autosize_window = mock.MagicMock(return_value=None)
+    w.size_window = mock.MagicMock(return_value=None)
     mock_widget = mock.MagicMock()
     mock_widget.setLayout = mock.MagicMock(return_value=None)
     mock_widget_class = mock.MagicMock(return_value=mock_widget)
@@ -1419,23 +1502,25 @@ def test_Window_setup():
     mock_qtw_class = mock.MagicMock(return_value=mock_qtw)
     theme = 'night'
     breakpoint_toggle = mock.MagicMock()
+    mock_qdw = _qdesktopwidget_mock(1000, 600)
     with mock.patch('mu.interface.main.QWidget', mock_widget_class), \
             mock.patch('mu.interface.main.ButtonBar', mock_button_bar_class), \
-            mock.patch('mu.interface.main.FileTabs', mock_qtw_class):
+            mock.patch('mu.interface.main.FileTabs', mock_qtw_class), \
+            mock.patch('mu.interface.main.QDesktopWidget', mock_qdw):
         w.setup(breakpoint_toggle, theme)
     assert w.breakpoint_toggle == breakpoint_toggle
     assert w.theme == theme
     assert w.setWindowIcon.call_count == 1
     assert isinstance(w.setWindowIcon.call_args[0][0], QIcon)
     w.update_title.assert_called_once_with()
-    w.setMinimumSize.assert_called_once_with(920, 400)
+    w.setMinimumSize.assert_called_once_with(500, 300)
     assert w.widget == mock_widget
     assert w.button_bar == mock_button_bar
     assert w.tabs == mock_qtw
     w.show.assert_called_once_with()
     w.setCentralWidget.call_count == 1
     w.addToolBar.call_count == 1
-    w.autosize_window.assert_called_once_with()
+    assert w.size_window.call_count == 0
 
 
 def test_Window_set_usb_checker():

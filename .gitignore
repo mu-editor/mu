@@ -77,3 +77,6 @@ target/
 
 # Movie
 *.mp4
+
+# Virtual Environment
+.venv/

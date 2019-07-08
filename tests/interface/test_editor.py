@@ -26,10 +26,30 @@ def test_pythonlexer_keywords():
     assert lexer.keywords(3) is None
 
 
-def test_EditorPane_init():
+def test_csslexer_description_comments():
+    """
+    Ensure that if a Comment enum is passed in, the string "Comment" is
+    returned. This is due to a bug in the base QsciLexerCSS class.
+    """
+    lexer = mu.interface.editor.CssLexer()
+    assert "Comment" == lexer.description(lexer.Comment)
+
+
+def test_csslexer_description_other():
+    """
+    Ensure that if a Comment enum is passed in, the string "Comment" is
+    returned. This is due to a bug in the base QsciLexerCSS class.
+    """
+    lexer = mu.interface.editor.CssLexer()
+    with mock.patch("mu.interface.editor.QsciLexerCSS.description",
+                    return_value="foo"):
+        assert "foo" == lexer.description(lexer.Value)
+
+
+def test_EditorPane_init_python():
     """
     Ensure everything is set and configured given a path and text passed into
-    a new instance of the EditorPane.
+    a new instance of the EditorPane. Python file.
     """
     mock_text = mock.MagicMock(return_value=None)
     mock_modified = mock.MagicMock(return_value=None)
@@ -47,6 +67,55 @@ def test_EditorPane_init():
         mock_configure.assert_called_once_with()
         assert editor.isUtf8()
         assert editor.newline == '\r\n'
+        assert isinstance(editor.lexer, mu.interface.editor.PythonLexer)
+
+
+def test_EditorPane_init_html():
+    """
+    Ensure everything is set and configured given a path and text passed into
+    a new instance of the EditorPane. HTML file.
+    """
+    mock_text = mock.MagicMock(return_value=None)
+    mock_modified = mock.MagicMock(return_value=None)
+    mock_configure = mock.MagicMock(return_value=None)
+    with mock.patch('mu.interface.editor.EditorPane.setText', mock_text), \
+            mock.patch('mu.interface.editor.EditorPane.setModified',
+                       mock_modified), \
+            mock.patch('mu.interface.editor.EditorPane.configure',
+                       mock_configure):
+        path = '/foo/bar.html'
+        text = '<html></html>'
+        editor = mu.interface.editor.EditorPane(path, text, '\r\n')
+        mock_text.assert_called_once_with(text)
+        mock_modified.assert_called_once_with(False)
+        mock_configure.assert_called_once_with()
+        assert editor.isUtf8()
+        assert editor.newline == '\r\n'
+        assert isinstance(editor.lexer, mu.interface.editor.QsciLexerHTML)
+
+
+def test_EditorPane_init_css():
+    """
+    Ensure everything is set and configured given a path and text passed into
+    a new instance of the EditorPane. CSS file.
+    """
+    mock_text = mock.MagicMock(return_value=None)
+    mock_modified = mock.MagicMock(return_value=None)
+    mock_configure = mock.MagicMock(return_value=None)
+    with mock.patch('mu.interface.editor.EditorPane.setText', mock_text), \
+            mock.patch('mu.interface.editor.EditorPane.setModified',
+                       mock_modified), \
+            mock.patch('mu.interface.editor.EditorPane.configure',
+                       mock_configure):
+        path = '/foo/bar.css'
+        text = 'h1 { color: red; }'
+        editor = mu.interface.editor.EditorPane(path, text, '\r\n')
+        mock_text.assert_called_once_with(text)
+        mock_modified.assert_called_once_with(False)
+        mock_configure.assert_called_once_with()
+        assert editor.isUtf8()
+        assert editor.newline == '\r\n'
+        assert isinstance(editor.lexer, mu.interface.editor.QsciLexerCSS)
 
 
 def test_EditorPane_configure():
@@ -713,3 +782,27 @@ def test_EditorPane_toggle_comments_selected_hash_space_comment_lines():
     ep.toggle_comments()
     ep.replaceSelectedText.assert_called_once_with('foo\nbar\nbaz')
     ep.setSelection.assert_called_once_with(0, 0, 2, 2)
+
+
+def test_EditorPane_wheelEvent():
+    """
+    """
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    mock_app = mock.MagicMock()
+    mock_app.keyboardModifiers.return_value = []
+    with mock.patch("mu.interface.editor.QApplication", mock_app), \
+            mock.patch("mu.interface.editor.QsciScintilla.wheelEvent") as mw:
+        ep.wheelEvent(None)
+        mw.assert_called_once_with(None)
+
+
+def test_EditorPane_wheelEvent_with_modifier_ignored():
+    """
+    """
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    mock_app = mock.MagicMock()
+    mock_app.keyboardModifiers.return_value = ["CTRL", ]
+    with mock.patch("mu.interface.editor.QApplication", mock_app), \
+            mock.patch("mu.interface.editor.QsciScintilla.wheelEvent") as mw:
+        ep.wheelEvent(None)
+        assert mw.call_count == 0

@@ -35,6 +35,7 @@ from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
 from PyQt5.QtGui import (QKeySequence, QTextCursor, QCursor, QPainter,
                          QDesktopServices, QStandardItem)
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
+from mu import language_code
 from mu.interface.themes import Font
 from mu.interface.themes import DEFAULT_FONT_SIZE
 
@@ -703,7 +704,9 @@ class PythonProcessPane(QTextEdit):
         """
         if not envars:  # Envars must be a list if not passed a value.
             envars = []
-        self.script = os.path.abspath(os.path.normcase(script_name))
+        self.script = ""
+        if script_name:
+            self.script = os.path.abspath(os.path.normcase(script_name))
         logger.info('Running script: {}'.format(self.script))
         if interactive:
             logger.info('Running with interactive mode.')
@@ -716,6 +719,14 @@ class PythonProcessPane(QTextEdit):
         env = QProcessEnvironment.systemEnvironment()
         env.insert('PYTHONUNBUFFERED', '1')
         env.insert('PYTHONIOENCODING', 'utf-8')
+        if sys.platform == 'darwin':
+            # Ensure the correct encoding is set for the environment. If the
+            # following two lines are not set, then Flask will complain about
+            # Python 3 being misconfigured to use ASCII encoding.
+            # See: https://click.palletsprojects.com/en/7.x/python3/
+            encoding = "{}.utf-8".format(language_code)
+            env.insert('LC_ALL', encoding)
+            env.insert('LANG', encoding)
         if sys.platform == 'win32' and 'pythonw.exe' in sys.executable:
             # On Windows, if installed via NSIS then Python is always run in
             # isolated mode via pythonw.exe so none of the expected directories
@@ -784,14 +795,18 @@ class PythonProcessPane(QTextEdit):
             else:
                 # Use the current system Python to run the script.
                 python_exec = sys.executable
-            if interactive:
-                # Start the script in interactive Python mode.
-                args = ['-i', self.script, ] + command_args
-            else:
-                # Just run the command with no additional flags.
-                args = [self.script, ] + command_args
+            args = []
+            if self.script:
+                if interactive:
+                    # Start the script in interactive Python mode.
+                    args = ['-i', self.script, ] + command_args
+                else:
+                    # Just run the command with no additional flags.
+                    args = [self.script, ] + command_args
             if python_args:
                 args = python_args + args
+            logger.info("Runner: {}".format(python_exec))
+            logger.info("Args: {}".format(args))
             self.process.start(python_exec, args)
             self.running = True
 

@@ -97,11 +97,19 @@ class BaseMode(QObject):
     builtins = None  #: Symbols to assume as builtins when checking code style.
     file_extensions = []
     module_names = MODULE_NAMES
+    code_template = _('# Write your code here :-)')
 
     def __init__(self, editor, view):
         self.editor = editor
         self.view = view
         super().__init__()
+
+    def stop(self):
+        """
+        Called if/when the editor quits when in this mode. Override in child
+        classes to clean up state, stop child processes etc.
+        """
+        pass  # Default is to do nothing
 
     def actions(self):
         """
@@ -119,6 +127,27 @@ class BaseMode(QObject):
         settings file to be used to set a custom path.
         """
         return get_default_workspace()
+
+    def assets_dir(self, asset_type):
+        """
+        Determine (and create) the directory for a set of assets
+
+        This supports the [Images] and [Sounds] &c. buttons in pygamezero
+        mode and possibly other modes, too.
+
+        If a tab is current and has an active file, the assets directory
+        is looked for under that path; otherwise the workspace directory
+        is used.
+
+        If the assets directory does not exist it is created
+        """
+        if self.view.current_tab and self.view.current_tab.path:
+            base_dir = os.path.dirname(self.view.current_tab.path)
+        else:
+            base_dir = self.workspace_dir()
+        assets_dir = os.path.join(base_dir, asset_type)
+        os.makedirs(assets_dir, exist_ok=True)
+        return assets_dir
 
     def api(self):
         """
@@ -199,8 +228,11 @@ class BaseMode(QObject):
     def open_file(self, path):
         """
         Some files are not plain text and each mode can attempt to decode them.
+
+        When overridden, should return the text and newline convention for the
+        file.
         """
-        return None
+        return None, None
 
 
 class MicroPythonMode(BaseMode):

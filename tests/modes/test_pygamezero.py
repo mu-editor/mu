@@ -6,6 +6,7 @@ import os.path
 from mu.modes.pygamezero import PyGameZeroMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS, PYGAMEZERO_APIS
 from unittest import mock
+import tempfile
 
 
 def test_pgzero_mode():
@@ -194,6 +195,20 @@ def test_pgzero_show_images():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.current_tab.path = os.path.join(tempfile.gettempdir(), "abc.py")
+    pm = PyGameZeroMode(editor, view)
+    pm.show_images(None)
+    image_dir = os.path.join(os.path.dirname(view.current_tab.path), 'images')
+    view.open_directory_from_os.assert_called_once_with(image_dir)
+
+
+def test_pgzero_show_images_no_file():
+    """
+    Run the OS file explorer for the workspace if no file is current.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
     pm = PyGameZeroMode(editor, view)
     pm.show_images(None)
     image_dir = os.path.join(pm.workspace_dir(), 'images')
@@ -206,10 +221,24 @@ def test_pgzero_show_fonts():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.current_tab.path = os.path.join(tempfile.gettempdir(), "abc.py")
     pm = PyGameZeroMode(editor, view)
     pm.show_fonts(None)
-    fonts_dir = os.path.join(pm.workspace_dir(), 'fonts')
+    fonts_dir = os.path.join(os.path.dirname(view.current_tab.path), 'fonts')
     view.open_directory_from_os.assert_called_once_with(fonts_dir)
+
+
+def test_pgzero_show_fonts_no_file():
+    """
+    Run the OS file explorer for the workspace if no file is current.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
+    pm = PyGameZeroMode(editor, view)
+    pm.show_fonts(None)
+    font_dir = os.path.join(pm.workspace_dir(), 'fonts')
+    view.open_directory_from_os.assert_called_once_with(font_dir)
 
 
 def test_pgzero_show_sounds():
@@ -218,10 +247,24 @@ def test_pgzero_show_sounds():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.current_tab.path = os.path.join(tempfile.gettempdir(), "abc.py")
     pm = PyGameZeroMode(editor, view)
     pm.show_sounds(None)
-    sounds_dir = os.path.join(pm.workspace_dir(), 'sounds')
+    sounds_dir = os.path.join(os.path.dirname(view.current_tab.path), 'sounds')
     view.open_directory_from_os.assert_called_once_with(sounds_dir)
+
+
+def test_pgzero_show_sounds_no_file():
+    """
+    Run the OS file explorer for the workspace if no file is current.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
+    pm = PyGameZeroMode(editor, view)
+    pm.show_sounds(None)
+    sound_dir = os.path.join(pm.workspace_dir(), 'sounds')
+    view.open_directory_from_os.assert_called_once_with(sound_dir)
 
 
 def test_pgzero_show_music():
@@ -230,6 +273,20 @@ def test_pgzero_show_music():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.current_tab.path = os.path.join(tempfile.gettempdir(), "abc.py")
+    pm = PyGameZeroMode(editor, view)
+    pm.show_music(None)
+    music_dir = os.path.join(os.path.dirname(view.current_tab.path), 'music')
+    view.open_directory_from_os.assert_called_once_with(music_dir)
+
+
+def test_pgzero_show_music_no_file():
+    """
+    Run the OS file explorer for the workspace if no file is current.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
     pm = PyGameZeroMode(editor, view)
     pm.show_music(None)
     music_dir = os.path.join(pm.workspace_dir(), 'music')
