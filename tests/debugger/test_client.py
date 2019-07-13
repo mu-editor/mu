@@ -576,7 +576,7 @@ def test_Debugger_on_breakpoint_ignore():
     db.view.reset_mock()
     db.on_breakpoint_ignore(1, 5)
     bp = db.bp_index[os.path.normcase(os.path.abspath('file.py'))][10]
-    assert bp.ignore is 5
+    assert bp.ignore == 5
     db.view.debug_on_breakpoint_ignore.assert_called_once_with(bp, 5)
 
 

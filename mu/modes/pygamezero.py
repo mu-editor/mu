@@ -129,8 +129,9 @@ class PyGameZeroMode(BaseMode):
             logger.debug(tab.text())
             envars = self.editor.envars
             args = ['-m', 'pgzero']
+            cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(tab.path,
-                                                       self.workspace_dir(),
+                                                       cwd,
                                                        interactive=False,
                                                        envars=envars,
                                                        python_args=args)
@@ -154,8 +155,7 @@ class PyGameZeroMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        image_dir = os.path.join(self.workspace_dir(), 'images')
-        self.view.open_directory_from_os(image_dir)
+        self.view.open_directory_from_os(self.assets_dir("images"))
 
     def show_fonts(self, event):
         """
@@ -164,8 +164,7 @@ class PyGameZeroMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        image_dir = os.path.join(self.workspace_dir(), 'fonts')
-        self.view.open_directory_from_os(image_dir)
+        self.view.open_directory_from_os(self.assets_dir("fonts"))
 
     def show_sounds(self, event):
         """
@@ -174,8 +173,7 @@ class PyGameZeroMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        sound_dir = os.path.join(self.workspace_dir(), 'sounds')
-        self.view.open_directory_from_os(sound_dir)
+        self.view.open_directory_from_os(self.assets_dir("sounds"))
 
     def show_music(self, event):
         """
@@ -184,5 +182,4 @@ class PyGameZeroMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        sound_dir = os.path.join(self.workspace_dir(), 'music')
-        self.view.open_directory_from_os(sound_dir)
+        self.view.open_directory_from_os(self.assets_dir("music"))

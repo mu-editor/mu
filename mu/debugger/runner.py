@@ -139,9 +139,9 @@ class Debugger(bdb.Bdb):
         str_index = 0
         sl = len(self.stack)  # Bound check for stack length.
         if sl > 1 and self.stack[1][0].f_code.co_filename == '<string>':
-                str_index = 2
+            str_index = 2
         elif sl > 3 and self.stack[3][0].f_code.co_filename == '<string>':
-                str_index = 4
+            str_index = 4
         stack_data = []
         if str_index > 0:
             for frame, line_no in self.stack[str_index:]:
@@ -488,6 +488,9 @@ def run(hostname, port, filename, *args):
 
     debugger = Debugger(s, hostname, port)
     debugger.reset()
+
+    print("Running in debug mode. Use the Stop, Continue, and Step toolbar"
+          " buttons to debug the script", file=sys.stderr)
 
     while True:
         try:

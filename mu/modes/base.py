@@ -23,9 +23,11 @@ import csv
 import time
 import logging
 import pkgutil
+from serial import Serial
 from PyQt5.QtSerialPort import QSerialPortInfo
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QObject, pyqtSignal
 from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path
+from mu.contrib import microfs
 
 
 logger = logging.getLogger(__name__)
@@ -95,11 +97,19 @@ class BaseMode(QObject):
     builtins = None  #: Symbols to assume as builtins when checking code style.
     file_extensions = []
     module_names = MODULE_NAMES
+    code_template = _('# Write your code here :-)')
 
     def __init__(self, editor, view):
         self.editor = editor
         self.view = view
         super().__init__()
+
+    def stop(self):
+        """
+        Called if/when the editor quits when in this mode. Override in child
+        classes to clean up state, stop child processes etc.
+        """
+        pass  # Default is to do nothing
 
     def actions(self):
         """
@@ -117,6 +127,27 @@ class BaseMode(QObject):
         settings file to be used to set a custom path.
         """
         return get_default_workspace()
+
+    def assets_dir(self, asset_type):
+        """
+        Determine (and create) the directory for a set of assets
+
+        This supports the [Images] and [Sounds] &c. buttons in pygamezero
+        mode and possibly other modes, too.
+
+        If a tab is current and has an active file, the assets directory
+        is looked for under that path; otherwise the workspace directory
+        is used.
+
+        If the assets directory does not exist it is created
+        """
+        if self.view.current_tab and self.view.current_tab.path:
+            base_dir = os.path.dirname(self.view.current_tab.path)
+        else:
+            base_dir = self.workspace_dir()
+        assets_dir = os.path.join(base_dir, asset_type)
+        os.makedirs(assets_dir, exist_ok=True)
+        return assets_dir
 
     def api(self):
         """
@@ -197,8 +228,11 @@ class BaseMode(QObject):
     def open_file(self, path):
         """
         Some files are not plain text and each mode can attempt to decode them.
+
+        When overridden, should return the text and newline convention for the
+        file.
         """
-        return None
+        return None, None
 
 
 class MicroPythonMode(BaseMode):
@@ -218,7 +252,7 @@ class MicroPythonMode(BaseMode):
         for port in available_ports:
             pid = port.productIdentifier()
             vid = port.vendorIdentifier()
-            # Look for the port VID & PID in the list of know board IDs
+            # Look for the port VID & PID in the list of known board IDs
             if (vid, pid) in self.valid_boards or \
                (vid, None) in self.valid_boards:
                 port_name = port.portName()
@@ -340,3 +374,101 @@ class MicroPythonMode(BaseMode):
         """
         self.remove_repl()
         super().on_data_flood()
+
+
+class FileManager(QObject):
+    """
+    Used to manage filesystem operations on connected MicroPython devices in a
+    manner such that the UI remains responsive.
+
+    Provides an FTP-ish API. Emits signals on success or failure of different
+    operations.
+    """
+
+    # Emitted when the tuple of files on the device is known.
+    on_list_files = pyqtSignal(tuple)
+    # Emitted when the file with referenced filename is got from the device.
+    on_get_file = pyqtSignal(str)
+    # Emitted when the file with referenced filename is put onto the device.
+    on_put_file = pyqtSignal(str)
+    # Emitted when the file with referenced filename is deleted from the
+    # device.
+    on_delete_file = pyqtSignal(str)
+    # Emitted when Mu is unable to list the files on the device.
+    on_list_fail = pyqtSignal()
+    # Emitted when the referenced file fails to be got from the device.
+    on_get_fail = pyqtSignal(str)
+    # Emitted when the referenced file fails to be put onto the device.
+    on_put_fail = pyqtSignal(str)
+    # Emitted when the referenced file fails to be deleted from the device.
+    on_delete_fail = pyqtSignal(str)
+
+    def __init__(self, port):
+        """
+        Initialise with a port.
+        """
+        super().__init__()
+        self.port = port
+
+    def on_start(self):
+        """
+        Run when the thread containing this object's instance is started so
+        it can emit the list of files found on the connected device.
+        """
+        # Create a new serial connection.
+        try:
+            self.serial = Serial(self.port, 115200, timeout=1, parity='N')
+            self.ls()
+        except Exception as ex:
+            logger.exception(ex)
+            self.on_list_fail.emit()
+
+    def ls(self):
+        """
+        List the files on the micro:bit. Emit the resulting tuple of filenames
+        or emit a failure signal.
+        """
+        try:
+            result = tuple(microfs.ls(self.serial))
+            self.on_list_files.emit(result)
+        except Exception as ex:
+            logger.exception(ex)
+            self.on_list_fail.emit()
+
+    def get(self, device_filename, local_filename):
+        """
+        Get the referenced device filename and save it to the local
+        filename. Emit the name of the filename when complete or emit a
+        failure signal.
+        """
+        try:
+            microfs.get(device_filename, local_filename, serial=self.serial)
+            self.on_get_file.emit(device_filename)
+        except Exception as ex:
+            logger.error(ex)
+            self.on_get_fail.emit(device_filename)
+
+    def put(self, local_filename):
+        """
+        Put the referenced local file onto the filesystem on the micro:bit.
+        Emit the name of the file on the micro:bit when complete, or emit
+        a failure signal.
+        """
+        try:
+            microfs.put(local_filename, target=None, serial=self.serial)
+            self.on_put_file.emit(os.path.basename(local_filename))
+        except Exception as ex:
+            logger.error(ex)
+            self.on_put_fail.emit(local_filename)
+
+    def delete(self, device_filename):
+        """
+        Delete the referenced file on the device's filesystem. Emit the name
+        of the file when complete, or emit a failure signal.
+        """
+        try:
+            microfs.rm(device_filename, serial=self.serial)
+            self.on_delete_file.emit(device_filename)
+        except Exception as ex:
+            logger.error(ex)
+            self.on_delete_fail.emit(device_filename)

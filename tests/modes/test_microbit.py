@@ -6,7 +6,7 @@ import os
 import os.path
 import pytest
 from mu.logic import HOME_DIRECTORY
-from mu.modes.microbit import MicrobitMode, FileManager, DeviceFlasher
+from mu.modes.microbit import MicrobitMode, DeviceFlasher
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from mu.contrib import uflash
 from unittest import mock
@@ -50,120 +50,6 @@ def test_DeviceFlasher_run_fail():
     with mock.patch('mu.modes.microbit.uflash', mock_flash):
         df.run()
     df.on_flash_fail.emit.assert_called_once_with(str(Exception('Boom')))
-
-
-def test_FileManager_on_start():
-    """
-    When a thread signals it has started, list the files.
-    """
-    fm = FileManager()
-    fm.ls = mock.MagicMock()
-    fm.on_start()
-    fm.ls.assert_called_once_with()
-
-
-def test_FileManager_ls():
-    """
-    The on_list_files signal is emitted with a tuple of files when microfs.ls
-    completes successfully.
-    """
-    fm = FileManager()
-    fm.on_list_files = mock.MagicMock()
-    mock_ls = mock.MagicMock(return_value=['foo.py', 'bar.py', ])
-    with mock.patch('mu.modes.microbit.microfs.ls', mock_ls):
-        fm.ls()
-    fm.on_list_files.emit.assert_called_once_with(('foo.py', 'bar.py'))
-
-
-def test_FileManager_ls_fail():
-    """
-    The on_list_fail signal is emitted when a problem is encountered.
-    """
-    fm = FileManager()
-    fm.on_list_fail = mock.MagicMock()
-    with mock.patch('mu.modes.microbit.microfs.ls',
-                    side_effect=Exception('boom')):
-        fm.ls()
-    fm.on_list_fail.emit.assert_called_once_with()
-
-
-def test_fileManager_get():
-    """
-    The on_get_file signal is emitted with the name of the effected file when
-    microfs.get completes successfully.
-    """
-    fm = FileManager()
-    fm.on_get_file = mock.MagicMock()
-    mock_get = mock.MagicMock()
-    with mock.patch('mu.modes.microbit.microfs.get', mock_get):
-        fm.get('foo.py', 'bar.py')
-    mock_get.assert_called_once_with('foo.py', 'bar.py')
-    fm.on_get_file.emit.assert_called_once_with('foo.py')
-
-
-def test_FileManager_get_fail():
-    """
-    The on_get_fail signal is emitted when a problem is encountered.
-    """
-    fm = FileManager()
-    fm.on_get_fail = mock.MagicMock()
-    with mock.patch('mu.modes.microbit.microfs.get',
-                    side_effect=Exception('boom')):
-        fm.get('foo.py', 'bar.py')
-    fm.on_get_fail.emit.assert_called_once_with('foo.py')
-
-
-def test_FileManager_put():
-    """
-    The on_put_file signal is emitted with the name of the effected file when
-    microfs.put completes successfully.
-    """
-    fm = FileManager()
-    fm.on_put_file = mock.MagicMock()
-    mock_put = mock.MagicMock()
-    path = os.path.join('directory', 'foo.py')
-    with mock.patch('mu.modes.microbit.microfs.put', mock_put):
-        fm.put(path)
-    mock_put.assert_called_once_with(path, target=None)
-    fm.on_put_file.emit.assert_called_once_with('foo.py')
-
-
-def test_FileManager_put_fail():
-    """
-    The on_put_fail signal is emitted when a problem is encountered.
-    """
-    fm = FileManager()
-    fm.on_put_fail = mock.MagicMock()
-    with mock.patch('mu.modes.microbit.microfs.put',
-                    side_effect=Exception('boom')):
-        fm.put('foo.py')
-    fm.on_put_fail.emit.assert_called_once_with('foo.py')
-
-
-def test_FileManager_delete():
-    """
-    The on_delete_file signal is emitted with the name of the effected file
-    when microfs.rm completes successfully.
-    """
-    fm = FileManager()
-    fm.on_delete_file = mock.MagicMock()
-    mock_rm = mock.MagicMock()
-    with mock.patch('mu.modes.microbit.microfs.rm', mock_rm):
-        fm.delete('foo.py')
-    mock_rm.assert_called_once_with('foo.py')
-    fm.on_delete_file.emit.assert_called_once_with('foo.py')
-
-
-def test_FileManager_delete_fail():
-    """
-    The on_delete_fail signal is emitted when a problem is encountered.
-    """
-    fm = FileManager()
-    fm.on_delete_fail = mock.MagicMock()
-    with mock.patch('mu.modes.microbit.microfs.rm',
-                    side_effect=Exception('boom')):
-        fm.delete('foo.py')
-    fm.on_delete_fail.emit.assert_called_once_with('foo.py')
 
 
 def test_microbit_mode():
@@ -1066,7 +952,8 @@ def test_add_fs():
         mm.find_device = mock.MagicMock(return_value=('COM0', '12345'))
         mm.add_fs()
         workspace = mm.workspace_dir()
-        view.add_filesystem.assert_called_once_with(workspace, mock_fm())
+        view.add_filesystem.assert_called_once_with(workspace, mock_fm(),
+                                                    'micro:bit')
         assert mm.fs
 
 
@@ -1319,17 +1206,9 @@ def test_open_hex():
     with mock.patch('builtins.open', mock_open), \
             mock.patch('mu.contrib.uflash.extract_script',
                        return_value=hex_extracted) as extract_script:
-        text = mm.open_file('path_to_file.hex')
+        text, newline = mm.open_file('path_to_file.hex')
     assert text == hex_extracted
-    assert extract_script.call_count == 1
-    assert mock_open.call_count == 1
-
-    mock_open.reset_mock()
-    with mock.patch('builtins.open', mock_open), \
-            mock.patch('mu.contrib.uflash.extract_script',
-                       return_value=hex_extracted) as extract_script:
-        text = mm.open_file('path_to_file.HEX')
-    assert text == hex_extracted
+    assert newline == os.linesep
     assert extract_script.call_count == 1
     assert mock_open.call_count == 1
 
@@ -1345,8 +1224,9 @@ def test_open_ignore_non_hex():
     with mock.patch('builtins.open', mock_open), \
             mock.patch('mu.contrib.uflash.extract_script',
                        return_value='Should not be called') as extract_script:
-        text = mm.open_file('path_to_file.py')
+        text, newline = mm.open_file('path_to_file.py')
     assert text is None
+    assert newline is None
     assert extract_script.call_count == 0
     assert mock_open.call_count == 0
 
@@ -1354,8 +1234,9 @@ def test_open_ignore_non_hex():
     with mock.patch('builtins.open', mock_open), \
             mock.patch('mu.contrib.uflash.extract_script',
                        return_value='Should not be called') as extract_script:
-        text = mm.open_file('file_no_extension')
+        text, newline = mm.open_file('file_no_extension')
     assert text is None
+    assert newline is None
     assert extract_script.call_count == 0
     assert mock_open.call_count == 0
 
@@ -1372,7 +1253,8 @@ def test_open_hex_with_exception():
     mock_extract = mock.MagicMock(side_effect=Exception(':('))
     with mock.patch('builtins.open', mock_open), \
             mock.patch('mu.contrib.uflash.extract_script', mock_extract):
-        text = mm.open_file('path_to_file.hex')
+        text, newline = mm.open_file('path_to_file.hex')
     assert text is None
+    assert newline is None
     assert mock_extract.call_count == 1
     assert mock_open.call_count == 1

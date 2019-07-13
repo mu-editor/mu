@@ -24,11 +24,12 @@ from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog, QMessageBox,
                              QLabel, QMainWindow, QStatusBar, QDockWidget,
-                             QShortcut)
+                             QShortcut, QApplication)
 from PyQt5.QtGui import QKeySequence, QStandardItemModel
 from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
-from mu.interface.dialogs import ModeSelector, AdminDialog, FindReplaceDialog
+from mu.interface.dialogs import (ModeSelector, AdminDialog, FindReplaceDialog,
+                                  PackageDialog)
 from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
                                  DEFAULT_FONT_SIZE)
 from mu.interface.panes import (DebugInspector, DebugInspectorItem,
@@ -93,8 +94,12 @@ class ButtonBar(QToolBar):
         self.addSeparator()
         self.addAction(name="check", display_name=_('Check'),
                        tool_text=_("Check your code for mistakes."))
+        if sys.version_info[:2] >= (3, 6):
+            self.addAction(name="tidy", display_name=_('Tidy'),
+                           tool_text=_("Tidy up the layout of your code."))
         self.addAction(name="help", display_name=_('Help'),
                        tool_text=_("Show help about Mu in a browser."))
+        self.addSeparator()
         self.addAction(name="quit", display_name=_('Quit'),
                        tool_text=_("Quit Mu."))
 
@@ -196,6 +201,19 @@ class Window(QMainWindow):
     load_theme = pyqtSignal(str)
     previous_folder = None
 
+    def wheelEvent(self, event):
+        """
+        Trap a CTRL-scroll event so the user is able to zoom in and out.
+        """
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.ControlModifier:
+            zoom = event.angleDelta().y() > 0
+            if zoom:
+                self.zoom_in()
+            else:
+                self.zoom_out()
+            event.ignore()
+
     def set_zoom(self):
         """
         Sets the zoom to current zoom_position level.
@@ -240,17 +258,23 @@ class Window(QMainWindow):
         for tab in self.widgets:
             tab.setReadOnly(is_readonly)
 
-    def get_load_path(self, folder, extensions='*'):
+    def get_load_path(self, folder, extensions='*', allow_previous=True):
         """
         Displays a dialog for selecting a file to load. Returns the selected
-        path. Defaults to start in the referenced folder.
+        path. Defaults to start in the referenced folder unless a previous
+        folder has been used and the allow_previous flag is True (the default
+        behaviour)
         """
+        if allow_previous:
+            open_in = folder if self.previous_folder is None\
+                else self.previous_folder
+        else:
+            open_in = folder
         path, _ = QFileDialog.getOpenFileName(
-            self.widget, 'Open file',
-            folder if self.previous_folder is None else self.previous_folder,
-            extensions)
-        self.previous_folder = os.path.dirname(path)
+            self.widget, 'Open file', open_in, extensions)
         logger.debug('Getting load path: {}'.format(path))
+        if allow_previous:
+            self.previous_folder = os.path.dirname(path)
         return path
 
     def get_save_path(self, folder):
@@ -260,7 +284,8 @@ class Window(QMainWindow):
         """
         path, _ = QFileDialog.getSaveFileName(
             self.widget, 'Save file',
-            folder if self.previous_folder is None else self.previous_folder)
+            folder if self.previous_folder is None else self.previous_folder,
+            'Python (*.py);;Other (*.*)', 'Python (*.py)')
         self.previous_folder = os.path.dirname(path)
         logger.debug('Getting save path: {}'.format(path))
         return path
@@ -308,6 +333,9 @@ class Window(QMainWindow):
         return new_tab
 
     def focus_tab(self, tab):
+        """
+        Force focus on the referenced tab.
+        """
         index = self.tabs.indexOf(tab)
         self.tabs.setCurrentIndex(index)
         tab.setFocus()
@@ -386,7 +414,7 @@ class Window(QMainWindow):
             self.serial.close()
             self.serial = None
 
-    def add_filesystem(self, home, file_manager):
+    def add_filesystem(self, home, file_manager, board_name="board"):
         """
         Adds the file system pane to the application.
         """
@@ -397,7 +425,7 @@ class Window(QMainWindow):
             # Bubble the signal up
             self.open_file.emit(file)
 
-        self.fs = QDockWidget(_('Filesystem on micro:bit'))
+        self.fs = QDockWidget(_('Filesystem on ') + board_name)
         self.fs.setWidget(self.fs_pane)
         self.fs.setFeatures(QDockWidget.DockWidgetMovable)
         self.fs.setAllowedAreas(Qt.BottomDockWidgetArea)
@@ -690,16 +718,28 @@ class Window(QMainWindow):
         if hasattr(self, 'plotter') and self.plotter:
             self.plotter_pane.set_theme(theme)
 
-    def show_admin(self, log, settings):
+    def show_admin(self, log, settings, packages):
         """
         Display the administrative dialog with referenced content of the log
         and settings. Return a dictionary of the settings that may have been
         changed by the admin dialog.
         """
         admin_box = AdminDialog(self)
-        admin_box.setup(log, settings)
-        admin_box.exec()
-        return admin_box.settings()
+        admin_box.setup(log, settings, packages)
+        result = admin_box.exec()
+        if result:
+            return admin_box.settings()
+        else:
+            return {}
+
+    def sync_packages(self, to_remove, to_add, module_dir):
+        """
+        Display a modal dialog that indicates the status of the add/remove
+        package management operation.
+        """
+        package_box = PackageDialog(self)
+        package_box.setup(to_remove, to_add, module_dir)
+        package_box.exec()
 
     def show_message(self, message, information=None, icon=None):
         """
@@ -765,17 +805,27 @@ class Window(QMainWindow):
             title += ' - ' + filename
         self.setWindowTitle(title)
 
-    def autosize_window(self):
+    def screen_size(self):
         """
-        Makes the editor 80% of the width*height of the screen and centres it.
+        Returns an (width, height) tuple with the screen geometry.
         """
         screen = QDesktopWidget().screenGeometry()
-        w = int(screen.width() * 0.8)
-        h = int(screen.height() * 0.8)
+        return screen.width(), screen.height()
+
+    def size_window(self, x=None, y=None, w=None, h=None):
+        """
+        Makes the editor 80% of the width*height of the screen and centres it
+        when none of x, y, w and h is passed in; otherwise uses the passed in
+        values to position and size the editor window.
+        """
+        screen_width, screen_height = self.screen_size()
+        w = int(screen_width * 0.8) if w is None else w
+        h = int(screen_height * 0.8) if h is None else h
         self.resize(w, h)
         size = self.geometry()
-        self.move((screen.width() - size.width()) / 2,
-                  (screen.height() - size.height()) / 2)
+        x = (screen_width - size.width()) / 2 if x is None else x
+        y = (screen_height - size.height()) / 2 if y is None else y
+        self.move(x, y)
 
     def reset_annotations(self):
         """
@@ -810,11 +860,10 @@ class Window(QMainWindow):
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
         self.read_only_tabs = False
-        self.setMinimumSize(820, 400)
+        screen_width, screen_height = self.screen_size()
+        self.setMinimumSize(screen_width // 2, screen_height // 2)
         self.setTabPosition(Qt.AllDockWidgetAreas, QTabWidget.North)
-
         self.widget = QWidget()
-
         widget_layout = QVBoxLayout()
         self.widget.setLayout(widget_layout)
         self.button_bar = ButtonBar(self.widget)
@@ -825,7 +874,6 @@ class Window(QMainWindow):
         self.setStatusBar(self.status_bar)
         self.addToolBar(self.button_bar)
         self.show()
-        self.autosize_window()
 
     def resizeEvent(self, resizeEvent):
         """

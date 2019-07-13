@@ -23,12 +23,12 @@ import os.path
 import logging
 import semver
 from tokenize import TokenError
-from mu.logic import HOME_DIRECTORY
+from mu.logic import HOME_DIRECTORY, sniff_newline_convention
 from mu.contrib import uflash, microfs
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
-from mu.modes.base import MicroPythonMode
+from mu.modes.base import MicroPythonMode, FileManager
 from mu.interface.panes import CHARTS
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 
 # We can run without nudatus
 can_minify = True
@@ -74,91 +74,6 @@ class DeviceFlasher(QThread):
             # of possible exceptions that could happen at this point.
             logger.error(ex)
             self.on_flash_fail.emit(str(ex))
-
-
-class FileManager(QObject):
-    """
-    Used to manage micro:bit filesystem operations in a manner such that the
-    UI remains responsive.
-
-    Provides an FTP-ish API. Emits signals on success or failure of different
-    operations.
-    """
-
-    # Emitted when the tuple of files on the micro:bit is known.
-    on_list_files = pyqtSignal(tuple)
-    # Emitted when the file with referenced filename is got from the micro:bit.
-    on_get_file = pyqtSignal(str)
-    # Emitted when the file with referenced filename is put onto the micro:bit.
-    on_put_file = pyqtSignal(str)
-    # Emitted when the file with referenced filename is deleted from the
-    # micro:bit.
-    on_delete_file = pyqtSignal(str)
-    # Emitted when Mu is unable to list the files on the micro:bit.
-    on_list_fail = pyqtSignal()
-    # Emitted when the referenced file fails to be got from the micro:bit.
-    on_get_fail = pyqtSignal(str)
-    # Emitted when the referenced file fails to be put onto the micro:bit.
-    on_put_fail = pyqtSignal(str)
-    # Emitted when the referenced file fails to be deleted from the micro:bit.
-    on_delete_fail = pyqtSignal(str)
-
-    def on_start(self):
-        """
-        Run when the thread containing this object's instance is started so
-        it can emit the list of files found on the connected micro:bit.
-        """
-        self.ls()
-
-    def ls(self):
-        """
-        List the files on the micro:bit. Emit the resulting tuple of filenames
-        or emit a failure signal.
-        """
-        try:
-            result = tuple(microfs.ls())
-            self.on_list_files.emit(result)
-        except Exception as ex:
-            logger.exception(ex)
-            self.on_list_fail.emit()
-
-    def get(self, microbit_filename, local_filename):
-        """
-        Get the referenced micro:bit filename and save it to the local
-        filename. Emit the name of the filename when complete or emit a
-        failure signal.
-        """
-        try:
-            microfs.get(microbit_filename, local_filename)
-            self.on_get_file.emit(microbit_filename)
-        except Exception as ex:
-            logger.error(ex)
-            self.on_get_fail.emit(microbit_filename)
-
-    def put(self, local_filename):
-        """
-        Put the referenced local file onto the filesystem on the micro:bit.
-        Emit the name of the file on the micro:bit when complete, or emit
-        a failure signal.
-        """
-        try:
-            microfs.put(local_filename, target=None)
-            self.on_put_file.emit(os.path.basename(local_filename))
-        except Exception as ex:
-            logger.error(ex)
-            self.on_put_fail.emit(local_filename)
-
-    def delete(self, microbit_filename):
-        """
-        Delete the referenced file on the micro:bit's filesystem. Emit the name
-        of the file when complete, or emit a failure signal.
-        """
-        try:
-            microfs.rm(microbit_filename)
-            self.on_delete_file.emit(microbit_filename)
-        except Exception as ex:
-            logger.error(ex)
-            self.on_delete_fail.emit(microbit_filename)
 
 
 class MicrobitMode(MicroPythonMode):
@@ -619,12 +534,13 @@ class MicrobitMode(MicroPythonMode):
             self.view.show_message(message, information)
             return
         self.file_manager_thread = QThread(self)
-        self.file_manager = FileManager()
+        self.file_manager = FileManager(port)
         self.file_manager.moveToThread(self.file_manager_thread)
         self.file_manager_thread.started.\
             connect(self.file_manager.on_start)
         self.fs = self.view.add_filesystem(self.workspace_dir(),
-                                           self.file_manager)
+                                           self.file_manager,
+                                           _("micro:bit"))
         self.fs.set_message.connect(self.editor.show_status_message)
         self.fs.set_warning.connect(self.view.show_message)
         self.file_manager_thread.start()
@@ -649,6 +565,8 @@ class MicrobitMode(MicroPythonMode):
     def open_file(self, path):
         """
         Tries to open a MicroPython hex file with an embedded Python script.
+
+        Returns the embedded Python script and newline convention.
         """
         text = None
         if path.lower().endswith('.hex'):
@@ -657,5 +575,7 @@ class MicrobitMode(MicroPythonMode):
                 with open(path, newline='') as f:
                     text = uflash.extract_script(f.read())
             except Exception:
-                return None
-        return text
+                return None, None
+            return text, sniff_newline_convention(text)
+        else:
+            return None, None

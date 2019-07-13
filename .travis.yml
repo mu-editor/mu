@@ -1,27 +1,25 @@
 # Travis can building for Linux and macOS
 matrix:
   include:
-    # To maximise compatibility pick earliest image, Ubuntu 14.04.5 x64
     - os: linux
-      dist: trusty
+      dist: xenial 
       sudo: required
       language: python
       python: 3.5
     - os: linux
-      dist: trusty
+      dist: xenial 
       sudo: required
       language: python
       python: 3.6
-    # Py 3.7 needs xenial https://github.com/travis-ci/travis-ci/issues/9069
     - os: linux
       dist: xenial
       sudo: required
       language: python
       python: 3.7
 
-    # To maximise compatibility pick earliest image, OS X 10.10 Yosemite
+    # To maximise compatibility pick earliest image, OS X 10.12
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode8.3
       sudo: required
       language: generic
       python: 3.6
@@ -30,13 +28,16 @@ before_install:
   # OS and default Python info
   - uname -a
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sw_vers; fi
+  # Linux packages needed for Qt to work.
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libxkbcommon-x11-0; fi
   # Python 3 installation required
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then bash package/install_osx.sh; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv install 3.6.5; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv versions; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv global 3.6.5; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then eval "$(pyenv init -)"; fi
-  - pip install --upgrade pip
+  - pip install --upgrade pip setuptools
   # Check everything was correctly installed
   - echo $PATH
   - python --version
@@ -48,28 +49,18 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then source venv/bin/activate; fi
 
 install:
-  # Install Mu dependencies
-  - pip install -r requirements.txt
-  # Install packager for OSX
-  - pip install briefcase
-  # Install disk image maker for OSX
-  - pip install dmgbuild 
-  # Install helpful pytest plug-in
-  - pip install pytest-faulthandler
+  # Install Mu and its dependencies
+  - pip install .[dev]
   # Check everything was correctly installed
   - pip freeze
 
 script:
-  # Run the tests
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make check; fi
-  # PyQt crashes without a frame buffer, so Linux needs "X Virtual Framebuffer"
+  # Run the tests on the Linux platform: needs "X Virtual Framebuffer".
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run make check; fi
   - make clean
 
-  # Package it for OSX
-  #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then echo "[install]" >> setup.cfg; echo "prefix=" >> setup.cfg; fi
-  #- if [ "$TRAVIS_OS_NAME" = "osx" ]; then sudo mkdir -p /lib/python3.6/site-packages/; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz; fi
+  # Run the tests on macOS and package it: "make macos" runs checks+tests first.
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make macos; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir dist; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then zip -r -X dist/mu-editor.zip macOS/mu-editor.app; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then du -sk dist/; fi

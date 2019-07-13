@@ -1,5 +1,5 @@
 """
-A mode for working with Adafuit's line of Circuit Python boards.
+A mode for working with Circuit Python boards.
 
 Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
 
@@ -24,46 +24,30 @@ from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
 
 
-class AdafruitMode(MicroPythonMode):
+class CircuitPythonMode(MicroPythonMode):
     """
-    Represents the functionality required by the Adafruit mode.
+    Represents the functionality required by the CircuitPython mode.
     """
 
-    name = _('Adafruit CircuitPython')
-    description = _("Use CircuitPython on Adafruit's line of boards.")
-    icon = 'adafruit'
-    save_timeout = 0  #: Don't autosave on Adafruit boards. Casues a restart.
-    connected = True  #: is the Adafruit board connected.
+    name = _('CircuitPython')
+    description = _("Write code for boards running CircuitPython.")
+    icon = 'circuitpython'
+    save_timeout = 0  #: No auto-save on CP boards. Will restart.
+    connected = True  #: is the board connected.
     force_interrupt = False  #: NO keyboard interrupt on serial connection.
     valid_boards = [
-        (0x239A, 0x8015),  # Adafruit Feather M0 CircuitPython
-        (0x239A, 0x8023),  # Adafruit Feather M0 Express CircuitPython
-        (0x239A, 0x801B),  # Adafruit Feather M0 Express CircuitPython
-        (0x239A, 0x8014),  # Adafruit Metro M0 CircuitPython
-        (0x239A, 0x8019),  # Adafruit CircuitPlayground Express CircuitPython
-        (0x239A, 0x801D),  # Adafruit Gemma M0
-        (0x239A, 0x801F),  # Adafruit Trinket M0
-        (0x239A, 0x8012),  # Adafruit ItsyBitsy M0
-        (0x239A, 0x8021),  # Adafruit Metro M4
-        (0x239A, 0x8025),  # Adafruit Feather RadioFruit
-        (0x239A, 0x8026),  # Adafruit Feather M4
-        (0x239A, 0x8028),  # Adafruit pIRKey M0
-        (0x239A, 0x802A),  # Adafruit Feather 52840
-        (0x239A, 0x802C),  # Adafruit Itsy M4
-        (0x239A, 0x802E),  # Adafruit CRICKit M0
-        (0x239A, 0xD1ED),  # Adafruit HalloWing M0
-        (0x239A, 0x8030),  # Adafruit NeoTrellis M4
-        (0x239A, 0x8032),  # Grand Central
         (0x2B04, 0xC00C),  # Particle Argon
         (0x2B04, 0xC00D),  # Particle Boron
         (0x2B04, 0xC00E),  # Particle Xenon
-        (0x239A, 0x8034),  # future board
-        (0x239A, 0x8036),  # future board
-        (0x239A, 0x8038),  # future board
-        (0x239A, 0x803A),  # future board
-        (0x239A, 0x803C),  # future board
-        (0x239A, 0x803E),  # future board
         (0x239A, None),    # Any Adafruit Boards
+        # Non-Adafruit boards
+        (0x1209, 0xBAB1),  # Electronic Cats Meow Meow
+        (0x1209, 0xBAB2),  # Electronic Cats CatWAN USBStick
+        (0x1209, 0xBAB3),  # Electronic Cats Bast Pro Mini M0
+        (0x1B4F, 0x8D22),  # SparkFun SAMD21 Mini Breakout
+        (0x1B4F, 0x8D23),  # SparkFun SAMD21 Dev Breakout
+        (0x1209, 0x2017),  # Mini SAM M4
+        (0x1209, 0x7102),  # Mini SAM M0
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
@@ -159,9 +143,8 @@ class AdafruitMode(MicroPythonMode):
             # after warning the user.
             wd = super().workspace_dir()
             if self.connected:
-                m = _('Could not find an attached Adafruit CircuitPython'
-                      ' device.')
-                info = _("Python files for Adafruit CircuitPython devices"
+                m = _('Could not find an attached CircuitPython device.')
+                info = _("Python files for CircuitPython devices"
                          " are stored on the device. Therefore, to edit"
                          " these files you need to have the device plugged in."
                          " Until you plug in a device, Mu will use the"

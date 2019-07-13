@@ -449,6 +449,49 @@ def test_MicroPythonREPLPane_set_zoom():
     rp.set_font_size.assert_called_once_with(expected)
 
 
+def test_MicroPythonREPLPane_send_commands():
+    """
+    Ensure the list of commands is correctly encoded and bound by control
+    commands to put the board into and out of raw mode.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    rp.execute = mock.MagicMock()
+    commands = [
+        "import os",
+        "print(os.listdir())",
+    ]
+    rp.send_commands(commands)
+    expected = [
+        b'\x02',  # Put the board into raw mode.
+        b'\r\x03',
+        b'\r\x03',
+        b'\r\x03',
+        b'\r\x01',
+        b'print("\\n")\r',  # Ensure a newline at the start of output.
+        b'import os\r',  # The commands to run.
+        b'print(os.listdir())\r',
+        b'\r',  # Ensure newline after commands.
+        b'\x04',  # Evaluate the commands.
+        b'\x02',  # Leave raw mode.
+    ]
+    rp.execute.assert_called_once_with(expected)
+
+
+def test_MicroPythonREPLPane_execute():
+    """
+    Ensure the first command is sent via serial to the connected device, and
+    further commands are scheduled for the future.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    commands = [b'A', b'B', ]
+    with mock.patch('mu.interface.panes.QTimer') as mock_timer:
+        rp.execute(commands)
+        mock_serial.write.assert_called_once_with(b'A')
+        assert mock_timer.singleShot.call_count == 1
+
+
 def test_MuFileList_show_confirm_overwrite_dialog():
     """
     Ensure the user is notified of an existing file.
@@ -470,16 +513,16 @@ def test_MuFileList_show_confirm_overwrite_dialog():
     mock_qmb.setIcon.assert_called_once_with(QMessageBox.Information)
 
 
-def test_MicrobitFileList_init():
+def test_MicroPythonDeviceFileList_init():
     """
     Check the widget references the user's home and allows drag and drop.
     """
-    mfs = mu.interface.panes.MicrobitFileList('home/path')
+    mfs = mu.interface.panes.MicroPythonDeviceFileList('home/path')
     assert mfs.home == 'home/path'
     assert mfs.dragDropMode() == mfs.DragDrop
 
 
-def test_MicrobitFileList_dropEvent():
+def test_MicroPythonDeviceFileList_dropEvent():
     """
     Ensure a valid drop event is handled as expected.
     """
@@ -489,7 +532,7 @@ def test_MicrobitFileList_dropEvent():
     mock_item.text.return_value = 'foo.py'
     source.currentItem = mock.MagicMock(return_value=mock_item)
     mock_event.source.return_value = source
-    mfs = mu.interface.panes.MicrobitFileList('homepath')
+    mfs = mu.interface.panes.MicroPythonDeviceFileList('homepath')
     mfs.disable = mock.MagicMock()
     mfs.set_message = mock.MagicMock()
     mfs.put = mock.MagicMock()
@@ -500,7 +543,7 @@ def test_MicrobitFileList_dropEvent():
     mfs.put.emit.assert_called_once_with(fn)
 
 
-def test_MicrobitFileList_dropEvent_wrong_source():
+def test_MicroPythonDeviceFileList_dropEvent_wrong_source():
     """
     Ensure that only drop events whose origins are LocalFileList objects are
     handled.
@@ -508,17 +551,17 @@ def test_MicrobitFileList_dropEvent_wrong_source():
     mock_event = mock.MagicMock()
     source = mock.MagicMock()
     mock_event.source.return_value = source
-    mfs = mu.interface.panes.MicrobitFileList('homepath')
+    mfs = mu.interface.panes.MicroPythonDeviceFileList('homepath')
     mfs.findItems = mock.MagicMock()
     mfs.dropEvent(mock_event)
     assert mfs.findItems.call_count == 0
 
 
-def test_MicrobitFileList_on_put():
+def test_MicroPythonDeviceFileList_on_put():
     """
     A message and list_files signal should be emitted.
     """
-    mfs = mu.interface.panes.MicrobitFileList('homepath')
+    mfs = mu.interface.panes.MicroPythonDeviceFileList('homepath')
     mfs.set_message = mock.MagicMock()
     mfs.list_files = mock.MagicMock()
     mfs.on_put('my_file.py')
@@ -527,7 +570,7 @@ def test_MicrobitFileList_on_put():
     mfs.list_files.emit.assert_called_once_with()
 
 
-def test_MicrobitFileList_contextMenuEvent():
+def test_MicroPythonDeviceFileList_contextMenuEvent():
     """
     Ensure that the menu displayed when a file on the micro:bit is
     right-clicked works as expected when activated.
@@ -536,7 +579,7 @@ def test_MicrobitFileList_contextMenuEvent():
     mock_action = mock.MagicMock()
     mock_menu.addAction.return_value = mock_action
     mock_menu.exec_.return_value = mock_action
-    mfs = mu.interface.panes.MicrobitFileList('homepath')
+    mfs = mu.interface.panes.MicroPythonDeviceFileList('homepath')
     mock_current = mock.MagicMock()
     mock_current.text.return_value = 'foo.py'
     mfs.currentItem = mock.MagicMock(return_value=mock_current)
@@ -552,11 +595,11 @@ def test_MicrobitFileList_contextMenuEvent():
     mfs.delete.emit.assert_called_once_with('foo.py')
 
 
-def test_MicrobitFileList_on_delete():
+def test_MicroPythonFileList_on_delete():
     """
     On delete should emit a message and list_files signal.
     """
-    mfs = mu.interface.panes.MicrobitFileList('homepath')
+    mfs = mu.interface.panes.MicroPythonDeviceFileList('homepath')
     mfs.set_message = mock.MagicMock()
     mfs.list_files = mock.MagicMock()
     mfs.on_delete('my_file.py')
@@ -579,7 +622,7 @@ def test_LocalFileList_dropEvent():
     Ensure a valid drop event is handled as expected.
     """
     mock_event = mock.MagicMock()
-    source = mu.interface.panes.MicrobitFileList('homepath')
+    source = mu.interface.panes.MicroPythonDeviceFileList('homepath')
     mock_item = mock.MagicMock()
     mock_item.text.return_value = 'foo.py'
     source.currentItem = mock.MagicMock(return_value=mock_item)
@@ -681,7 +724,7 @@ def test_FileSystemPane_init():
     Check things are set up as expected.
     """
     home = 'homepath'
-    test_microbit_fs = mu.interface.panes.MicrobitFileList(home)
+    test_microbit_fs = mu.interface.panes.MicroPythonDeviceFileList(home)
     test_microbit_fs.disable = mock.MagicMock()
     test_microbit_fs.set_message = mock.MagicMock()
     test_local_fs = mu.interface.panes.LocalFileList(home)
@@ -689,7 +732,8 @@ def test_FileSystemPane_init():
     test_local_fs.set_message = mock.MagicMock()
     mock_mfl = mock.MagicMock(return_value=test_microbit_fs)
     mock_lfl = mock.MagicMock(return_value=test_local_fs)
-    with mock.patch('mu.interface.panes.MicrobitFileList', mock_mfl), \
+    with mock.patch('mu.interface.panes.MicroPythonDeviceFileList',
+                    mock_mfl), \
             mock.patch('mu.interface.panes.LocalFileList', mock_lfl):
         fsp = mu.interface.panes.FileSystemPane('homepath')
         assert isinstance(fsp.microbit_label, QLabel)
@@ -1146,6 +1190,10 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
     """
     Ensure that if environment variables are set, they are set in the context
     of the new child Python process.
+
+    If running on Darwin, ensure that the correct encoding for the Python
+    environment is used (Flask stop and complain about a misconfigured
+    Python 3 using an ASCII encoding).
     """
     mock_process = mock.MagicMock()
     mock_process_class = mock.MagicMock(return_value=mock_process)
@@ -1154,54 +1202,31 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
     mock_environment = mock.MagicMock()
     mock_environment_class = mock.MagicMock()
     mock_environment_class.systemEnvironment.return_value = mock_environment
+    pypath = sys.path
     with mock.patch('mu.interface.panes.QProcess', mock_process_class), \
+            mock.patch('mu.interface.panes.sys') as mock_sys, \
             mock.patch('mu.interface.panes.QProcessEnvironment',
                        mock_environment_class):
+        mock_sys.platform = "darwin"
+        mock_sys.path = pypath
         ppp = mu.interface.panes.PythonProcessPane()
         envars = [['name', 'value'], ]
         ppp.start_process('script.py', 'workspace', interactive=False,
                           envars=envars, runner='foo')
-    assert mock_environment.insert.call_count == 3
+    expected_encoding = "{}.utf-8".format(mu.language_code)
+    assert mock_environment.insert.call_count == 6
     assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
                                                             '1')
     assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
                                                             'utf-8')
-    assert mock_environment.insert.call_args_list[2][0] == ('name', 'value')
-
-
-def test_PythonProcessPane_start_process_darwin_app_pythonpath():
-    """
-    When running on OSX as a packaged mu-editor.app, the PYTHONPATH needs to
-    be set so the child processes have access to the packaged libraries and
-    modules.
-    """
-    mock_process = mock.MagicMock()
-    mock_process_class = mock.MagicMock(return_value=mock_process)
-    mock_merge_chans = mock.MagicMock()
-    mock_process_class.MergedChannels = mock_merge_chans
-    mock_environment = mock.MagicMock()
-    mock_environment_class = mock.MagicMock()
-    mock_environment_class.systemEnvironment.return_value = mock_environment
-    mock_path = mock.MagicMock()
-    mock_path.return_value = ('/Applications/mu-editor.app/'
-                              'Contents/Resources/app/mu')
-    with mock.patch('mu.interface.panes.QProcess', mock_process_class), \
-            mock.patch('mu.interface.panes.QProcessEnvironment',
-                       mock_environment_class), \
-            mock.patch('os.path.dirname', mock_path), \
-            mock.patch('sys.platform', 'darwin'):
-        ppp = mu.interface.panes.PythonProcessPane()
-        envars = [['name', 'value'], ]
-        ppp.start_process('script.py', 'workspace', interactive=False,
-                          envars=envars, runner='foo')
-    assert mock_environment.insert.call_count == 4
-    assert mock_environment.insert.call_args_list[0][0] == ('PYTHONUNBUFFERED',
-                                                            '1')
-    assert mock_environment.insert.call_args_list[1][0] == ('PYTHONIOENCODING',
-                                                            'utf-8')
-    assert mock_environment.insert.call_args_list[2][0] == ('PYTHONPATH',
-                                                            ':'.join(sys.path))
-    assert mock_environment.insert.call_args_list[3][0] == ('name', 'value')
+    assert mock_environment.insert.call_args_list[2][0] == ('LC_ALL',
+                                                            expected_encoding)
+    assert mock_environment.insert.call_args_list[3][0] == ('LANG',
+                                                            expected_encoding)
+    assert mock_environment.insert.call_args_list[4][0] == ('name', 'value')
+    expected_path = os.pathsep.join(pypath)
+    assert mock_environment.insert.call_args_list[5][0] == ('PYTHONPATH',
+                                                            expected_path)
 
 
 def test_PythonProcessPane_start_process_custom_runner():

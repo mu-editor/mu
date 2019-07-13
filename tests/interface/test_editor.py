@@ -9,6 +9,8 @@ import re
 from PyQt5.QtCore import Qt, QMimeData, QUrl, QPointF
 from PyQt5.QtGui import QDropEvent
 
+import pytest
+
 
 def test_pythonlexer_keywords():
     """
@@ -24,10 +26,30 @@ def test_pythonlexer_keywords():
     assert lexer.keywords(3) is None
 
 
-def test_EditorPane_init():
+def test_csslexer_description_comments():
+    """
+    Ensure that if a Comment enum is passed in, the string "Comment" is
+    returned. This is due to a bug in the base QsciLexerCSS class.
+    """
+    lexer = mu.interface.editor.CssLexer()
+    assert "Comment" == lexer.description(lexer.Comment)
+
+
+def test_csslexer_description_other():
+    """
+    Ensure that if a Comment enum is passed in, the string "Comment" is
+    returned. This is due to a bug in the base QsciLexerCSS class.
+    """
+    lexer = mu.interface.editor.CssLexer()
+    with mock.patch("mu.interface.editor.QsciLexerCSS.description",
+                    return_value="foo"):
+        assert "foo" == lexer.description(lexer.Value)
+
+
+def test_EditorPane_init_python():
     """
     Ensure everything is set and configured given a path and text passed into
-    a new instance of the EditorPane.
+    a new instance of the EditorPane. Python file.
     """
     mock_text = mock.MagicMock(return_value=None)
     mock_modified = mock.MagicMock(return_value=None)
@@ -45,6 +67,55 @@ def test_EditorPane_init():
         mock_configure.assert_called_once_with()
         assert editor.isUtf8()
         assert editor.newline == '\r\n'
+        assert isinstance(editor.lexer, mu.interface.editor.PythonLexer)
+
+
+def test_EditorPane_init_html():
+    """
+    Ensure everything is set and configured given a path and text passed into
+    a new instance of the EditorPane. HTML file.
+    """
+    mock_text = mock.MagicMock(return_value=None)
+    mock_modified = mock.MagicMock(return_value=None)
+    mock_configure = mock.MagicMock(return_value=None)
+    with mock.patch('mu.interface.editor.EditorPane.setText', mock_text), \
+            mock.patch('mu.interface.editor.EditorPane.setModified',
+                       mock_modified), \
+            mock.patch('mu.interface.editor.EditorPane.configure',
+                       mock_configure):
+        path = '/foo/bar.html'
+        text = '<html></html>'
+        editor = mu.interface.editor.EditorPane(path, text, '\r\n')
+        mock_text.assert_called_once_with(text)
+        mock_modified.assert_called_once_with(False)
+        mock_configure.assert_called_once_with()
+        assert editor.isUtf8()
+        assert editor.newline == '\r\n'
+        assert isinstance(editor.lexer, mu.interface.editor.QsciLexerHTML)
+
+
+def test_EditorPane_init_css():
+    """
+    Ensure everything is set and configured given a path and text passed into
+    a new instance of the EditorPane. CSS file.
+    """
+    mock_text = mock.MagicMock(return_value=None)
+    mock_modified = mock.MagicMock(return_value=None)
+    mock_configure = mock.MagicMock(return_value=None)
+    with mock.patch('mu.interface.editor.EditorPane.setText', mock_text), \
+            mock.patch('mu.interface.editor.EditorPane.setModified',
+                       mock_modified), \
+            mock.patch('mu.interface.editor.EditorPane.configure',
+                       mock_configure):
+        path = '/foo/bar.css'
+        text = 'h1 { color: red; }'
+        editor = mu.interface.editor.EditorPane(path, text, '\r\n')
+        mock_text.assert_called_once_with(text)
+        mock_modified.assert_called_once_with(False)
+        mock_configure.assert_called_once_with()
+        assert editor.isUtf8()
+        assert editor.newline == '\r\n'
+        assert isinstance(editor.lexer, mu.interface.editor.QsciLexerCSS)
 
 
 def test_EditorPane_configure():
@@ -87,12 +158,12 @@ def test_EditorPane_configure():
     assert ep.setTabWidth.call_count == 1
     assert ep.setEdgeColumn.call_count == 1
     assert ep.setMarginLineNumbers.call_count == 1
-    assert ep.setMarginWidth.call_count == 1
+    assert ep.setMarginWidth.call_count == 2
     assert ep.setBraceMatching.call_count == 1
     assert ep.SendScintilla.call_count == 1
     assert ep.set_theme.call_count == 1
     assert ep.markerDefine.call_count == 1
-    assert ep.setMarginSensitivity.call_count == 2
+    assert ep.setMarginSensitivity.call_count == 3
     assert ep.setIndicatorDrawUnder.call_count == 1
     assert ep.setAnnotationDisplay.call_count == 1
     assert ep.selectionChanged.connect.call_count == 1
@@ -115,7 +186,42 @@ def test_Editor_connect_margin():
     ep = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
     ep.marginClicked = mock.MagicMock()
     ep.connect_margin(mock_fn)
-    ep.marginClicked.connect.assert_called_once_with(mock_fn)
+    assert ep.marginClicked.connect.call_count == 1
+
+
+def test_Editor_connect_margin_ignores_margin_4():
+    """
+    Ensure that the margin click handler is not called if margin 4 is clicked.
+    """
+    mock_fn = mock.MagicMock()
+    ep = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
+    ep.connect_margin(mock_fn)
+    margin = 4
+    line = 0
+    modifiers = Qt.NoModifier
+    ep.marginClicked.emit(margin, line, modifiers)
+    assert mock_fn.call_count == 0
+
+
+def test_Editor_connect_margin_1_works():
+    """
+    Ensure that the margin click handler is called if margin 1 is clicked.
+    """
+    mock_fn = mock.MagicMock()
+    ep = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
+    ep.connect_margin(mock_fn)
+    margin = 1
+    line = 0
+    modifiers = Qt.NoModifier
+    ep.marginClicked.emit(margin, line, modifiers)
+
+    assert mock_fn.call_count == 1
+    args, _kwargs = mock_fn.call_args
+    call_margin, call_line, _call_modifiers = args
+    assert margin == call_margin
+    assert line == call_line
+    # Don't assert _call_modifiers value: not used in implementation and seems
+    # to fail intermittently on macOS.
 
 
 def test_EditorPane_set_theme():
@@ -416,7 +522,12 @@ def test_EditorPane_highlight_selected_matches_multi_word():
     assert ep.search_indicators['selection']['positions'] == []
 
 
-def test_EditorPane_highlight_selected_matches_with_match():
+@pytest.mark.parametrize('text, search_for', [
+    ("foo bar foo baz foo", "foo"),
+    ("résumé foo bar foo baz foo", "foo"),
+    ("résumé bar résumé baz résumé", "résumé"),
+])
+def test_EditorPane_highlight_selected_matches_with_match(text, search_for):
     """
     Ensure that if the current selection is a single word then it causes the
     expected search/highlight call.
@@ -424,9 +535,6 @@ def test_EditorPane_highlight_selected_matches_with_match():
     There appears to be no way to iterate over indicators within the editor.
     So we're using the search_indicators structure as a proxy
     """
-    text = "foo bar foo baz foo"
-    search_for = "foo"
-
     ep = mu.interface.editor.EditorPane(None, 'baz')
     ep.setText(text)
 
@@ -674,3 +782,27 @@ def test_EditorPane_toggle_comments_selected_hash_space_comment_lines():
     ep.toggle_comments()
     ep.replaceSelectedText.assert_called_once_with('foo\nbar\nbaz')
     ep.setSelection.assert_called_once_with(0, 0, 2, 2)
+
+
+def test_EditorPane_wheelEvent():
+    """
+    """
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    mock_app = mock.MagicMock()
+    mock_app.keyboardModifiers.return_value = []
+    with mock.patch("mu.interface.editor.QApplication", mock_app), \
+            mock.patch("mu.interface.editor.QsciScintilla.wheelEvent") as mw:
+        ep.wheelEvent(None)
+        mw.assert_called_once_with(None)
+
+
+def test_EditorPane_wheelEvent_with_modifier_ignored():
+    """
+    """
+    ep = mu.interface.editor.EditorPane(None, 'baz')
+    mock_app = mock.MagicMock()
+    mock_app.keyboardModifiers.return_value = ["CTRL", ]
+    with mock.patch("mu.interface.editor.QApplication", mock_app), \
+            mock.patch("mu.interface.editor.QsciScintilla.wheelEvent") as mw:
+        ep.wheelEvent(None)
+        assert mw.call_count == 0

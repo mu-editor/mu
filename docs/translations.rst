@@ -27,24 +27,49 @@ translators, such as `poedit <https://poedit.net/>`_.
     For example, to install ``pygettext.py`` on Fedora you must make
     sure the ``python3-tools`` package is installed.
 
-To manually change the locale Mu uses for translation strings, look in
-``mu/__init__.py`` for the following lines of code at the start of the file::
+There are currently two possible ways to
+manually change the locale Mu uses for translation strings:
+
+* Setting the ``LANG`` the environment variable.
+* Temporarily editing ``mu/__init__.py``.
+
+The first one is recommended: when using Linux, Raspbian, or macOS, launch Mu with::
+
+    $ LANG=<language> mu-editor
+
+When using Windows, two steps are needed::
+
+    $ set LANG=<language>
+    $ mu-editor
+
+The alternative is editing ``mu/__init__.py`` and forcing a specific locale. Look for the following lines of code around the top of the file::
 
     # Configure locale and language
     # Define where the translation assets are to be found.
-    localedir = os.path.join('mu', 'locale')
-    # Use the operating system's locale.
-    current_locale, encoding = locale.getdefaultlocale()
-    # Get the language code.
-    language_code = current_locale[:2]
-    # DEBUG/TRANSLATE: override the language code here (e.g. to Spanish).
-    # language_code = 'es'
+    localedir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'locale'))
+    language_code = QLocale.system().name()
+    # DEBUG/TRANSLATE: override the language code here (e.g. to Chinese).
+    # language_code = 'zh'
     gettext.translation('mu', localedir=localedir,
                         languages=[language_code], fallback=True).install()
 
-As the comment suggests, temporarily update the ``language_code`` to the target
-language for translation, make your changes, as explained below, and re-run
+
+As the comment suggests, temporarily uncomment and set ``language_code`` to the target
+``<language>`` for translation, make your changes, as explained below, and re-run
 Mu to check your updates are correct and appropriate for your target locale.
+
+
+.. note::
+
+    In either case, ``<language>`` should be one of the supported locales,
+    including the ones in development, per the directory names found under
+    ``mu/locale`` (examples: ``de_DE``, ``es``, ``fr``, ``ja``, etc.).
+
+    When an unknown value is set, Mu falls back to its native British English UI.
+
+    A language-only specification, like ``de`` or ``pt``,
+    uses one of the more specific language / country code locales,
+    like ``de_DE`` for ``de``, or one of ``pt_BR`` / ``pt_PT`` for ``pt``.
 
 
 Improve an Existing Translation

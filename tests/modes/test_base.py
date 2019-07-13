@@ -5,7 +5,7 @@ Tests for the BaseMode class.
 import os
 import mu
 import pytest
-from mu.modes.base import BaseMode, MicroPythonMode
+from mu.modes.base import BaseMode, MicroPythonMode, FileManager
 from unittest import mock
 
 
@@ -22,6 +22,7 @@ def test_base_mode():
     assert bm.is_debugger is False
     assert bm.editor == editor
     assert bm.view == view
+    assert bm.stop() is None
     assert bm.actions() == NotImplemented
     assert bm.workspace_dir()
     assert bm.api() == NotImplemented
@@ -186,7 +187,9 @@ def test_base_mode_open_file():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     bm = BaseMode(editor, view)
-    assert bm.open_file('unused/path') is None
+    text, newline = bm.open_file('unused/path')
+    assert text is None
+    assert newline is None
 
 
 def test_micropython_mode_find_device():
@@ -508,3 +511,142 @@ def test_micropython_on_data_flood():
         mm.on_data_flood()
         mm.remove_repl.assert_called_once_with()
         mock_super().on_data_flood.assert_called_once_with()
+
+
+def test_FileManager_on_start():
+    """
+    When a thread signals it has started, create a serial connection and then
+    list the files.
+    """
+    fm = FileManager("/dev/ttyUSB0")
+    fm.ls = mock.MagicMock()
+    with mock.patch('mu.modes.base.Serial') as mock_serial:
+        fm.on_start()
+        mock_serial.assert_called_once_with("/dev/ttyUSB0", 115200,
+                                            timeout=1, parity='N')
+    fm.ls.assert_called_once_with()
+
+
+def test_FileManager_on_start_fails():
+    """
+    When a thread signals it has started, but the serial connection cannot be
+    established, ensure that the on_list_fail is emitted to signal Mu can't get
+    the list of files from the board (because a connection cannot be
+    established).
+    """
+    fm = FileManager("/dev/ttyUSB0")
+    fm.on_list_fail = mock.MagicMock()
+    mock_serial = mock.MagicMock(side_effect=Exception('BOOM!'))
+    with mock.patch('mu.modes.base.Serial', mock_serial):
+        fm.on_start()
+        mock_serial.assert_called_once_with("/dev/ttyUSB0", 115200,
+                                            timeout=1, parity='N')
+    fm.on_list_fail.emit.assert_called_once_with()
+
+
+def test_FileManager_ls():
+    """
+    The on_list_files signal is emitted with a tuple of files when microfs.ls
+    completes successfully.
+    """
+    fm = FileManager("/dev/ttyUSB0")
+    fm.serial = mock.MagicMock()
+    fm.on_list_files = mock.MagicMock()
+    mock_ls = mock.MagicMock(return_value=['foo.py', 'bar.py', ])
+    with mock.patch('mu.modes.base.microfs.ls', mock_ls):
+        fm.ls()
+    fm.on_list_files.emit.assert_called_once_with(('foo.py', 'bar.py'))
+
+
+def test_FileManager_ls_fail():
+    """
+    The on_list_fail signal is emitted when a problem is encountered.
+    """
+    fm = FileManager("/dev/ttyUSB0")
+    fm.on_list_fail = mock.MagicMock()
+    with mock.patch('mu.modes.base.microfs.ls',
+                    side_effect=Exception('boom')):
+        fm.ls()
+    fm.on_list_fail.emit.assert_called_once_with()
+
+
+def test_fileManager_get():
+    """
+    The on_get_file signal is emitted with the name of the effected file when
+    microfs.get completes successfully.
+    """
+    fm = FileManager("/dev/ttyUSB0")
+    fm.serial = mock.MagicMock()
+    fm.on_get_file = mock.MagicMock()
+    mock_get = mock.MagicMock()
+    with mock.patch('mu.modes.base.microfs.get', mock_get):
+        fm.get('foo.py', 'bar.py')
+    mock_get.assert_called_once_with('foo.py', 'bar.py', serial=fm.serial)
+    fm.on_get_file.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_get_fail():
+    """
+    The on_get_fail signal is emitted when a problem is encountered.
+    """
+    fm = FileManager("/dev/ttyUSB0")
+    fm.on_get_fail = mock.MagicMock()
+    with mock.patch('mu.modes.base.microfs.get',
+                    side_effect=Exception('boom')):
+        fm.get('foo.py', 'bar.py')
+    fm.on_get_fail.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_put():
+    """
+    The on_put_file signal is emitted with the name of the effected file when
+    microfs.put completes successfully.
+    """
+    fm = FileManager("/dev/ttyUSB0")
+    fm.serial = mock.MagicMock()
+    fm.on_put_file = mock.MagicMock()
+    mock_put = mock.MagicMock()
+    path = os.path.join('directory', 'foo.py')
+    with mock.patch('mu.modes.base.microfs.put', mock_put):
+        fm.put(path)
+    mock_put.assert_called_once_with(path, target=None, serial=fm.serial)
+    fm.on_put_file.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_put_fail():
+    """
+    The on_put_fail signal is emitted when a problem is encountered.
+    """
+    fm = FileManager("/dev/ttyUSB0")
+    fm.on_put_fail = mock.MagicMock()
+    with mock.patch('mu.modes.base.microfs.put',
+                    side_effect=Exception('boom')):
+        fm.put('foo.py')
+    fm.on_put_fail.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_delete():
+    """
+    The on_delete_file signal is emitted with the name of the effected file
+    when microfs.rm completes successfully.
+    """
+    fm = FileManager("/dev/ttyUSB0")
+    fm.serial = mock.MagicMock()
+    fm.on_delete_file = mock.MagicMock()
+    mock_rm = mock.MagicMock()
+    with mock.patch('mu.modes.base.microfs.rm', mock_rm):
+        fm.delete('foo.py')
+    mock_rm.assert_called_once_with('foo.py', serial=fm.serial)
+    fm.on_delete_file.emit.assert_called_once_with('foo.py')
+
+
+def test_FileManager_delete_fail():
+    """
+    The on_delete_fail signal is emitted when a problem is encountered.
+    """
+    fm = FileManager("/dev/ttyUSB0")
+    fm.on_delete_fail = mock.MagicMock()
+    with mock.patch('mu.modes.base.microfs.rm',
+                    side_effect=Exception('boom')):
+        fm.delete('foo.py')
+    fm.on_delete_fail.emit.assert_called_once_with('foo.py')

@@ -35,6 +35,7 @@ from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
 from PyQt5.QtGui import (QKeySequence, QTextCursor, QCursor, QPainter,
                          QDesktopServices, QStandardItem)
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
+from mu import language_code
 from mu.interface.themes import Font
 from mu.interface.themes import DEFAULT_FONT_SIZE
 
@@ -120,7 +121,7 @@ class MicroPythonREPLPane(QTextEdit):
     """
     REPL = Read, Evaluate, Print, Loop.
 
-    This widget represents a REPL client connected to a BBC micro:bit running
+    This widget represents a REPL client connected to a device running
     MicroPython.
 
     The device MUST be flashed with MicroPython for this to work.
@@ -295,6 +296,41 @@ class MicroPythonREPLPane(QTextEdit):
         """
         self.set_font_size(PANE_ZOOM_SIZES[size])
 
+    def send_commands(self, commands):
+        """
+        Send commands to the REPL via raw mode.
+        """
+        raw_on = [  # Sequence of commands to get into raw mode.
+            b'\x02',
+            b'\r\x03',
+            b'\r\x03',
+            b'\r\x03',
+            b'\r\x01',
+        ]
+        newline = [b'print("\\n")\r', ]
+        commands = [c.encode('utf-8') + b'\r' for c in commands]
+        commands.append(b'\r')
+        commands.append(b'\x04')
+        raw_off = [
+            b'\x02',
+        ]
+        command_sequence = raw_on + newline + commands + raw_off
+        logger.info(command_sequence)
+        self.execute(command_sequence)
+
+    def execute(self, commands):
+        """
+        Execute a series of commands over a period of time (scheduling
+        remaining commands to be run in the next iteration of the event loop).
+        """
+        if commands:
+            command = commands[0]
+            logger.info('Sending command {}'.format(command))
+            self.serial.write(command)
+            remainder = commands[1:]
+            remaining_task = lambda commands=remainder: self.execute(commands)
+            QTimer.singleShot(2, remaining_task)
+
 
 class MuFileList(QListWidget):
     """
@@ -318,9 +354,9 @@ class MuFileList(QListWidget):
         return msg.exec_() == QMessageBox.Ok
 
 
-class MicrobitFileList(MuFileList):
+class MicroPythonDeviceFileList(MuFileList):
     """
-    Represents a list of files on the micro:bit.
+    Represents a list of files on a MicroPython device.
     """
 
     put = pyqtSignal(str)
@@ -392,7 +428,7 @@ class LocalFileList(MuFileList):
 
     def dropEvent(self, event):
         source = event.source()
-        if isinstance(source, MicrobitFileList):
+        if isinstance(source, MicroPythonDeviceFileList):
             file_exists = self.findItems(source.currentItem().text(),
                                          Qt.MatchExactly)
             if not file_exists or \
@@ -462,7 +498,7 @@ class FileSystemPane(QFrame):
         super().__init__()
         self.home = home
         self.font = Font().load()
-        microbit_fs = MicrobitFileList(home)
+        microbit_fs = MicroPythonDeviceFileList(home)
         local_fs = LocalFileList(home)
 
         @local_fs.open_file.connect
@@ -473,7 +509,7 @@ class FileSystemPane(QFrame):
         layout = QGridLayout()
         self.setLayout(layout)
         microbit_label = QLabel()
-        microbit_label.setText(_('Files on your micro:bit:'))
+        microbit_label.setText(_('Files on your device:'))
         local_label = QLabel()
         local_label.setText(_('Files on your computer:'))
         self.microbit_label = microbit_label
@@ -544,34 +580,34 @@ class FileSystemPane(QFrame):
         Fired when listing files fails.
         """
         self.show_warning(_("There was a problem getting the list of files on "
-                            "the micro:bit. Please check Mu's logs for "
+                            "the device. Please check Mu's logs for "
                             "technical information. Alternatively, try "
-                            "unplugging/plugging-in your micro:bit and/or "
+                            "unplugging/plugging-in your device and/or "
                             "restarting Mu."))
         self.disable()
 
     def on_put_fail(self, filename):
         """
-        Fired when the referenced file cannot be copied onto the micro:bit.
+        Fired when the referenced file cannot be copied onto the device.
         """
         self.show_warning(_("There was a problem copying the file '{}' onto "
-                            "the micro:bit. Please check Mu's logs for "
+                            "the device. Please check Mu's logs for "
                             "more information.").format(filename))
 
     def on_delete_fail(self, filename):
         """
-        Fired when a deletion on the micro:bit for the given file failed.
+        Fired when a deletion on the device for the given file failed.
         """
         self.show_warning(_("There was a problem deleting '{}' from the "
-                            "micro:bit. Please check Mu's logs for "
+                            "device. Please check Mu's logs for "
                             "more information.").format(filename))
 
     def on_get_fail(self, filename):
         """
-        Fired when getting the referenced file on the micro:bit failed.
+        Fired when getting the referenced file on the device failed.
         """
         self.show_warning(_("There was a problem getting '{}' from the "
-                            "micro:bit. Please check Mu's logs for "
+                            "device. Please check Mu's logs for "
                             "more information.").format(filename))
 
     def set_theme(self, theme):
@@ -647,7 +683,11 @@ class PythonProcessPane(QTextEdit):
         If python_args is given, these are passed as arguments to the Python
         runtime used to launch the child process.
         """
-        self.script = os.path.abspath(os.path.normcase(script_name))
+        if not envars:  # Envars must be a list if not passed a value.
+            envars = []
+        self.script = ""
+        if script_name:
+            self.script = os.path.abspath(os.path.normcase(script_name))
         logger.info('Running script: {}'.format(self.script))
         if interactive:
             logger.info('Running with interactive mode.')
@@ -661,11 +701,13 @@ class PythonProcessPane(QTextEdit):
         env.insert('PYTHONUNBUFFERED', '1')
         env.insert('PYTHONIOENCODING', 'utf-8')
         if sys.platform == 'darwin':
-            parent_dir = os.path.dirname(__file__)
-            if '.app/Contents/Resources/app/mu' in parent_dir:
-                # Mu is running as a macOS app bundle. Ensure the expected
-                # paths are in PYTHONPATH of the subprocess.
-                env.insert('PYTHONPATH', ':'.join(sys.path))
+            # Ensure the correct encoding is set for the environment. If the
+            # following two lines are not set, then Flask will complain about
+            # Python 3 being misconfigured to use ASCII encoding.
+            # See: https://click.palletsprojects.com/en/7.x/python3/
+            encoding = "{}.utf-8".format(language_code)
+            env.insert('LC_ALL', encoding)
+            env.insert('LANG', encoding)
         if sys.platform == 'win32' and 'pythonw.exe' in sys.executable:
             # On Windows, if installed via NSIS then Python is always run in
             # isolated mode via pythonw.exe so none of the expected directories
@@ -706,6 +748,8 @@ class PythonProcessPane(QTextEdit):
                 # this to fail.
                 logger.error('Could not set Python paths with mu.pth file.')
                 logger.error(ex)
+        if 'PYTHONPATH' not in envars:
+            envars.append(('PYTHONPATH', os.pathsep.join(sys.path)))
         if envars:
             logger.info('Running with environment variables: '
                         '{}'.format(envars))
@@ -732,14 +776,18 @@ class PythonProcessPane(QTextEdit):
             else:
                 # Use the current system Python to run the script.
                 python_exec = sys.executable
-            if interactive:
-                # Start the script in interactive Python mode.
-                args = ['-i', self.script, ] + command_args
-            else:
-                # Just run the command with no additional flags.
-                args = [self.script, ] + command_args
+            args = []
+            if self.script:
+                if interactive:
+                    # Start the script in interactive Python mode.
+                    args = ['-i', self.script, ] + command_args
+                else:
+                    # Just run the command with no additional flags.
+                    args = [self.script, ] + command_args
             if python_args:
                 args = python_args + args
+            logger.info("Runner: {}".format(python_exec))
+            logger.info("Args: {}".format(args))
             self.process.start(python_exec, args)
             self.running = True
 
