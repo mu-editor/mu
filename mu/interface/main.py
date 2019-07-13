@@ -107,9 +107,9 @@ class ButtonBar(QToolBar):
         """
         Compact button bar for when window is very small.
         """
-        if width < 880:
-            icon_size, icon_spacing, font_size = 32, 2, 10
-        elif width < 1105:
+        if width < 1020:
+            icon_size, icon_spacing, font_size = 32, 1, 10
+        elif width < 1240:
             icon_size, icon_spacing, font_size = 48, 3, 12
         else:
             icon_size, icon_spacing, font_size = 64, 4, DEFAULT_FONT_SIZE

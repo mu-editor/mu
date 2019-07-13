@@ -11,6 +11,7 @@ import mu.interface.main
 import mu.interface.themes
 import mu.interface.editor
 import pytest
+import re
 import sys
 
 
@@ -91,6 +92,15 @@ def test_ButtonBar_change_mode():
         assert mock_add_separator.call_count == 5
 
 
+def _assert_called_with_single_regex(mock_obj, regex):
+    """
+    Asserts mock_obj was called, with a single argument, matching regex.
+    """
+    mock_obj.assert_called()
+    (single_argument, *_), _kwargs  = mock_obj.call_args
+    assert re.search(regex, single_argument)
+
+
 def test_ButtonBar_set_responsive_mode():
     """
     Does the button bar shrink in compact mode and grow out of it?
@@ -99,18 +109,20 @@ def test_ButtonBar_set_responsive_mode():
     with mock.patch('mu.interface.main.ButtonBar.setIconSize', mock_icon_size):
         bb = mu.interface.main.ButtonBar(None)
         bb.setStyleSheet = mock.MagicMock()
-        bb.set_responsive_mode(1124, 800)
+        # 1440 px wide should result in large icons and font.
+        bb.set_responsive_mode(1440, 800)
         mock_icon_size.assert_called_with(QSize(64, 64))
         default_font = str(mu.interface.themes.DEFAULT_FONT_SIZE)
-        style = "QWidget{font-size: " + default_font + "px;}"
-        bb.setStyleSheet.assert_called_with(style)
-        bb.set_responsive_mode(939, 800)
+        regex = r".*QWidget\s*{\s*font-size:\s*" + default_font + "\s*px;.*}.*"
+        _assert_called_with_single_regex(bb.setStyleSheet, regex)
+        # 1200 px wide should result in medium icons and font.
+        bb.set_responsive_mode(1200, 800)
         mock_icon_size.assert_called_with(QSize(48, 48))
-        bb.setStyleSheet.assert_called_with(style)
-        bb.set_responsive_mode(939, 599)
+        _assert_called_with_single_regex(bb.setStyleSheet, r"font-size:\s*12")
+        # 800 px wide should result in small icons and font.
+        bb.set_responsive_mode(800, 800)
         mock_icon_size.assert_called_with(QSize(32, 32))
-        style = "QWidget{font-size: " + str(10) + "px;}"
-        bb.setStyleSheet.assert_called_with(style)
+        _assert_called_with_single_regex(bb.setStyleSheet, r"font-size:\s*10")
 
 
 def test_ButtonBar_add_action():
