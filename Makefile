@@ -49,10 +49,10 @@ else
 endif
 
 pyflakes:
-	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils -o -path ./venv -o -path ./package \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
+	pyflakes make.py ./mu/ ./package/ run.py setup.py ./tests/ ./utils/ win_installer.py
 
 pycodestyle:
-	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pycodestyle --repeat --exclude=package/*,build/*,docs/*,mu/contrib*,mu/modes/api/*,utils/*,venv/*,.vscode/* --ignore=E731,E402,W504
+	pycodestyle --ignore=E731,E402,W504 --exclude=./mu/contrib/,./mu/modes/api make.py ./mu/ run.py setup.py ./tests/ win_installer.py
 
 test: clean
 	pytest --random-order
