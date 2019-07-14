@@ -49,7 +49,7 @@ else
 endif
 
 pyflakes:
-	pyflakes make.py ./mu/ ./package/ run.py setup.py ./tests/ ./utils/ win_installer.py
+	pyflakes make.py ./mu/ ./package/ run.py setup.py ./tests/ win_installer.py
 
 pycodestyle:
 	pycodestyle --ignore=E731,E402,W504 --exclude=./mu/contrib/,./mu/modes/api make.py ./mu/ run.py setup.py ./tests/ win_installer.py
