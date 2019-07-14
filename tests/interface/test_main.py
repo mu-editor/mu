@@ -97,7 +97,7 @@ def _assert_called_with_single_regex(mock_obj, regex):
     Asserts mock_obj was called, with a single argument, matching regex.
     """
     mock_obj.assert_called()
-    (single_argument, *_), _kwargs  = mock_obj.call_args
+    (single_argument, *_), _kwargs = mock_obj.call_args
     assert re.search(regex, single_argument)
 
 
@@ -113,7 +113,7 @@ def test_ButtonBar_set_responsive_mode():
         bb.set_responsive_mode(1440, 800)
         mock_icon_size.assert_called_with(QSize(64, 64))
         default_font = str(mu.interface.themes.DEFAULT_FONT_SIZE)
-        regex = r".*QWidget\s*{\s*font-size:\s*" + default_font + "\s*px;.*}.*"
+        regex = r"QWidget\s*{\s*font-size:\s*" + default_font + r"\s*px;.*}"
         _assert_called_with_single_regex(bb.setStyleSheet, regex)
         # 1200 px wide should result in medium icons and font.
         bb.set_responsive_mode(1200, 800)
