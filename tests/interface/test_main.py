@@ -96,7 +96,9 @@ def _assert_called_with_single_regex(mock_obj, regex):
     """
     Asserts mock_obj was called, with a single argument, matching regex.
     """
-    mock_obj.assert_called()
+    with pytest.raises(AssertionError):
+        # Must use .assert_not_called(): .assert_called() is new in Python 3.6
+        mock_obj.assert_not_called()
     (single_argument, *_), _kwargs = mock_obj.call_args
     assert re.search(regex, single_argument)
 
