@@ -52,7 +52,7 @@ pyflakes:
 	pyflakes make.py ./mu/ ./package/ run.py setup.py ./tests/ win_installer.py
 
 pycodestyle:
-	pycodestyle make.py ./mu/ run.py setup.py ./tests/ win_installer.py
+	pycodestyle
 
 test: clean
 	pytest --random-order
