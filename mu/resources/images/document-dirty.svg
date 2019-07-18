@@ -60,17 +60,11 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-292.76665)">
-    <path
-       style="fill:#fffdfd;fill-opacity:1;stroke:#333333;stroke-width:0.5291667;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 0.52916667,293.29582 H 2.1166667 l 0.79375,0.52916 v 2.64584 H 0.52916667 Z"
-       id="path817"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccccc" />
     <circle
        style="opacity:1;fill:#fb4000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.29104164;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
        id="path863"
-       cx="2.5135417"
-       cy="294.75104"
+       cx="2.1166666"
+       cy="294.88333"
        r="1.3096875" />
   </g>
 </svg>
