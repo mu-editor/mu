@@ -138,6 +138,7 @@ class MicroPythonREPLPane(QTextEdit):
         self.customContextMenuRequested.connect(self.context_menu)
         self.setObjectName('replpane')
         self.set_theme(theme)
+        self.prev_data = []
 
     def paste(self):
         """
@@ -220,6 +221,12 @@ class MicroPythonREPLPane(QTextEdit):
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
         """
+        # If data is included ESC or CSI
+        if len(self.prev_data) != 0:
+            self.prev_data += data
+            data = self.prev_data
+            self.prev_data = []
+
         tc = self.textCursor()
         # The text cursor must be on the last line of the document. If it isn't
         # then move it there.
@@ -232,7 +239,14 @@ class MicroPythonREPLPane(QTextEdit):
                 self.setTextCursor(tc)
             elif data[i] == 13:  # \r
                 pass
-            elif len(data) > i + 1 and data[i] == 27 and data[i + 1] == 91:
+            elif len(data) == i + 1 and data[i] == 27:  # ESC
+                # If data is less ESC data
+                self.prev_data = data[i:]
+                return
+
+            elif len(data) > i + 1 and \
+                    data[i] == 27 and data[i + 1] == 91:   # CSI
+                csi_top = i
                 # VT100 cursor detected: <Esc>[
                 i += 2  # move index to after the [
                 regex = r'(?P<count>[\d]*)(;?[\d]*)*(?P<action>[ABCDKm])'
@@ -265,6 +279,12 @@ class MicroPythonREPLPane(QTextEdit):
                                             mode=QTextCursor.KeepAnchor)
                             tc.removeSelectedText()
                             self.setTextCursor(tc)
+                    else:
+                        self.prev_data = data[csi_top:]
+                        return
+                else:
+                    self.prev_data = data[csi_top:]
+                    return
             elif data[i] == 10:  # \n
                 tc.movePosition(QTextCursor.End)
                 self.setTextCursor(tc)
