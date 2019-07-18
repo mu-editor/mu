@@ -24,7 +24,7 @@ from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog, QMessageBox,
                              QLabel, QMainWindow, QStatusBar, QDockWidget,
-                             QShortcut, QApplication)
+                             QShortcut, QApplication, QTabBar, QPushButton)
 from PyQt5.QtGui import QKeySequence, QStandardItemModel
 from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
@@ -145,7 +145,8 @@ class FileTabs(QTabWidget):
 
     def __init__(self):
         super(FileTabs, self).__init__()
-        self.setTabsClosable(True)
+        self.setTabsClosable(False)
+        self.setMovable(True)
         self.tabCloseRequested.connect(self.removeTab)
         self.currentChanged.connect(self.change_tab)
 
@@ -161,6 +162,18 @@ class FileTabs(QTabWidget):
             if window.show_confirmation(msg) == QMessageBox.Cancel:
                 return
         super(FileTabs, self).removeTab(tab_id)
+
+    def addTab(self, widget, icon, title):
+        index = super(FileTabs, self).addTab(widget, icon, title)
+        close_btn = QPushButton()
+        close_btn.setFlat(True)
+        close_btn.setIconSize(QSize(10, 10))
+        close_btn.setIcon(load_icon("close-tab.svg"))
+        @close_btn.clicked.connect
+        def close():
+            self.removeTab(index)
+        self.tabBar().setTabButton(index, QTabBar.RightSide, close_btn)
+        return index
 
     def change_tab(self, tab_id):
         """
@@ -874,7 +887,6 @@ class Window(QMainWindow):
         self.widget.setLayout(widget_layout)
         self.button_bar = ButtonBar(self.widget)
         self.tabs = FileTabs()
-        self.tabs.setMovable(True)
         self.setCentralWidget(self.tabs)
         self.status_bar = StatusBar(parent=self)
         self.setStatusBar(self.status_bar)
