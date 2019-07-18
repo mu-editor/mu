@@ -276,19 +276,25 @@ class EditorPane(QsciScintilla):
         """
         The label associated with this editor widget (usually the filename of
         the script we're editing).
-
-        If the script has been modified since it was last saved, the label will
-        end with an asterisk.
         """
         if self.path:
             label = os.path.basename(self.path)
         else:
             label = _('untitled')
-        # Add an asterisk to indicate that the file remains unsaved.
+        return label
+
+    @property
+    def title(self):
+        """
+        The title associated with this editor widget (usually the filename of
+        the script we're editing).
+
+        If the script has been modified since it was last saved, the label will
+        end with an asterisk.
+        """
         if self.isModified():
-            return label + ' *'
-        else:
-            return label
+            return self.label + ' •'
+        return self.label
 
     def reset_annotations(self):
         """

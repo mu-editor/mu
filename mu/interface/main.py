@@ -170,7 +170,7 @@ class FileTabs(QTabWidget):
         current_tab = self.widget(tab_id)
         window = self.nativeParentWidget()
         if current_tab:
-            window.update_title(current_tab.label)
+            window.update_title(current_tab.title)
         else:
             window.update_title(None)
 
@@ -308,14 +308,22 @@ class Window(QMainWindow):
         """
         new_tab = EditorPane(path, text, newline)
         new_tab.connect_margin(self.breakpoint_toggle)
-        new_tab_index = self.tabs.addTab(new_tab, new_tab.label)
+        new_tab_index = self.tabs.addTab(new_tab,
+                                         load_icon('document.svg'),
+                                         new_tab.label)
         new_tab.set_api(api)
 
         @new_tab.modificationChanged.connect
         def on_modified():
             modified_tab_index = self.tabs.currentIndex()
             self.tabs.setTabText(modified_tab_index, new_tab.label)
-            self.update_title(new_tab.label)
+            self.update_title(new_tab.title)
+            if new_tab.isModified():
+                self.tabs.setTabIcon(modified_tab_index,
+                                     load_icon('document-dirty.svg'))
+            else:
+                self.tabs.setTabIcon(modified_tab_index,
+                                     load_icon('document.svg'))
 
         @new_tab.open_file.connect
         def on_open_file(file):

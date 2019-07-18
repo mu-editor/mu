@@ -264,8 +264,10 @@ def test_EditorPane_label():
     assert ep.label == 'untitled'
     ep = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
     assert ep.label == 'bar.py'
+    assert ep.title == 'bar.py'
     ep.isModified = mock.MagicMock(return_value=True)
-    assert ep.label == 'bar.py *'
+    assert ep.label == 'bar.py'
+    assert ep.title == 'bar.py •'
 
 
 def test_EditorPane_reset_annotations():

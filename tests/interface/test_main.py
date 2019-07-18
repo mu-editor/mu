@@ -210,13 +210,13 @@ def test_FileTabs_change_tab():
     """
     qtw = mu.interface.main.FileTabs()
     mock_tab = mock.MagicMock()
-    mock_tab.label = "foo"
+    mock_tab.title = "foo"
     qtw.widget = mock.MagicMock(return_value=mock_tab)
     mock_window = mock.MagicMock()
     qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
     tab_id = 1
     qtw.change_tab(tab_id)
-    mock_window.update_title.assert_called_once_with(mock_tab.label)
+    mock_window.update_title.assert_called_once_with(mock_tab.title)
 
 
 def test_FileTabs_change_tab_no_tabs():
@@ -546,10 +546,16 @@ def test_Window_add_tab():
     text = 'print("Hello, World!")'
     api = ['API definition', ]
     w.breakpoint_toggle = mock.MagicMock()
-    with mock.patch('mu.interface.main.EditorPane', mock_ed):
-        w.add_tab(path, text, api, '\n')
+    mock_clean_icon = mock.MagicMock()
+    mock_dirty_icon = mock.MagicMock()
+    mock_load_icon = mock.MagicMock(side_effect=[mock_clean_icon,
+                                                 mock_dirty_icon,
+                                                 mock_clean_icon])
+    with mock.patch('mu.interface.main.load_icon', mock_load_icon):
+        with mock.patch('mu.interface.main.EditorPane', mock_ed):
+            w.add_tab(path, text, api, '\n')
     mock_ed.assert_called_once_with(path, text, '\n')
-    w.tabs.addTab.assert_called_once_with(ep, ep.label)
+    w.tabs.addTab.assert_called_once_with(ep, mock_clean_icon, ep.label)
     w.tabs.setCurrentIndex.assert_called_once_with(new_tab_index)
     w.connect_zoom.assert_called_once_with(ep)
     w.set_theme.assert_called_once_with(w.theme)
@@ -557,9 +563,22 @@ def test_Window_add_tab():
     ep.set_api.assert_called_once_with(api)
     ep.setFocus.assert_called_once_with()
     ep.setReadOnly.assert_called_once_with(w.read_only_tabs)
-    on_modified = ep.modificationChanged.connect.call_args[0][0]
-    on_modified()
+    ep.isModified = mock.MagicMock(side_effect=[True, True, False, False])
+    with mock.patch('mu.interface.main.load_icon', mock_load_icon):
+        on_modified = ep.modificationChanged.connect.call_args[0][0]
+        on_modified()
     w.tabs.setTabText.assert_called_once_with(new_tab_index, ep.label)
+    w.tabs.setTabIcon.assert_called_once_with(new_tab_index, mock_dirty_icon)
+    w.tabs.setTabIcon.reset_mock()
+    with mock.patch('mu.interface.main.load_icon', mock_load_icon):
+        on_modified = ep.modificationChanged.connect.call_args[0][0]
+        on_modified()
+    w.tabs.setTabIcon.assert_called_once_with(new_tab_index, mock_clean_icon)
+    mock_load_icon.assert_has_calls([
+        mock.call('document.svg'),
+        mock.call('document-dirty.svg'),
+        mock.call('document.svg'),
+    ])
 
 
 def test_Window_focus_tab():
