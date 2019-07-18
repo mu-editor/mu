@@ -45,8 +45,8 @@ before_install:
   - python -c "import sys; print(sys.executable)"
   - python -m pip --version
   - pip --version
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then virtualenv /tmp/venv --python=python3; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then source /tmp/venv/bin/activate; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then virtualenv venv --python=python3; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then source venv/bin/activate; fi
 
 install:
   # Install Mu and its dependencies
