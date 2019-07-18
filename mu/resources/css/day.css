@@ -75,6 +75,10 @@ QTabBar::tab::selected {
     background: #e0e0e0;
 }
 
+QTabBar::tab QLabel {
+    background: transparent;
+}
+
 QTabBar::tab QPushButton {
     padding: 3px;
     margin: 0;

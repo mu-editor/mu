@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="16"
-   height="16"
-   viewBox="0 0 4.2333332 4.2333335"
+   width="10"
+   height="10"
+   viewBox="0 0 2.6458332 2.6458334"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 5da689c313, 2019-01-14"
@@ -27,7 +27,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="31.1875"
      inkscape:cx="8.1923848"
-     inkscape:cy="8.4153721"
+     inkscape:cy="4.5676767"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -59,12 +59,12 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-292.76665)">
+     transform="translate(0,-294.35415)">
     <circle
-       style="opacity:1;fill:#fb4000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.29104164;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
+       style="opacity:1;fill:#fb4000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.21166666;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke fill markers"
        id="path863"
-       cx="2.1166666"
-       cy="294.88333"
-       r="1.3096875" />
+       cx="1.3229166"
+       cy="295.67706"
+       r="0.95249999" />
   </g>
 </svg>
