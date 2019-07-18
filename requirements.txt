@@ -1,14 +1,3 @@
-# QUICK INSTALLATION
-# ------------------
-#
-# To install, run `pip install .` including the trailing dot.
-# This installs Mu and all its runtime dependencies.
-#
-# To setup a development environment, run `pip install -e ".[dev]"`, instead.
-# This installs Mu and its runtime dependencies, as above, along with all the
-# development ones.
-#
-# In either case, the `mu-editor` command should launch Mu.
-#
-# For more details, including platform specific notes on the Raspberry Pi,
-# please refer to https://mu.readthedocs.io/.
+# Mu doesn't use requirements.txt:
+# - To install please refer to https://codewith.mu/.
+# - To setup a development environment see https://mu.readthedocs.io/.
