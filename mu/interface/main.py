@@ -206,6 +206,9 @@ class FileTabs(QTabWidget):
         # Handle 'clicked' events
         @close_btn.clicked.connect
         def close():
+            # The tab_id isn't constant and may have changed, lookup the
+            # current id of the EditorPane
+            tab_id = self.indexOf(widget)
             # Close the tab
             self.removeTab(tab_id)
 
