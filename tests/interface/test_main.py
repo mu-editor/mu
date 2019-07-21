@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt, QSize, QIODevice
 from PyQt5.QtGui import QIcon, QKeySequence
 from unittest import mock
 from mu import __version__
+from tests.test_app import DumSig
 import mu.interface.main
 import mu.interface.themes
 import mu.interface.editor
@@ -1217,6 +1218,34 @@ def test_Window_set_theme():
                       QIcon)
     w.repl_pane.set_theme.assert_called_once_with('day')
     w.plotter_pane.set_theme.assert_called_once_with('day')
+
+
+def test_Window_set_checker_icon():
+    w = mu.interface.main.Window()
+    w.button_bar = mock.MagicMock()
+    w.button_bar.slots = {
+        'check': mock.MagicMock()
+    }
+    w.button_bar.slots['check'].setIcon = mock.MagicMock()
+    mock_timer = mock.MagicMock()
+    mock_timer.start = mock.MagicMock()
+    mock_timer.stop = mock.MagicMock()
+    mock_timer.timeout = DumSig()
+    mock_timer_class = mock.MagicMock(return_value=mock_timer)
+    mock_load_icon = mock.MagicMock()
+    with mock.patch('mu.interface.main.QTimer', mock_timer_class), \
+            mock.patch('mu.interface.main.load_icon', mock_load_icon):
+        w.set_checker_icon('check-good.png')
+        # Fake a timeout
+        mock_timer.timeout.emit()
+    mock_timer_class.assert_called_once_with()
+    mock_timer.start.assert_called_once_with(500)
+    mock_timer.stop.assert_called_once_with()
+    mock_load_icon.assert_has_calls([
+        mock.call('check-good.png'),
+        mock.call('check.png')
+    ])
+    assert w.button_bar.slots['check'].setIcon.call_count == 2
 
 
 def test_Window_show_admin():
