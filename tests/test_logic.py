@@ -2504,6 +2504,7 @@ def test_change_mode():
     ]
     mode = mock.MagicMock()
     mode.save_timeout = 5
+    mode.name = 'Python'
     mode.actions.return_value = [
         {
             'name': 'name',
@@ -2528,7 +2529,7 @@ def test_change_mode():
         assert mock_button_bar.connect.call_count == 11
     else:
         assert mock_button_bar.connect.call_count == 12
-    view.status_bar.set_mode.assert_called_once_with('python')
+    view.status_bar.set_mode.assert_called_once_with('Python')
     view.set_timer.assert_called_once_with(5, ed.autosave)
 
 
@@ -2544,6 +2545,7 @@ def test_change_mode_no_timer():
     ed = mu.logic.Editor(view)
     mode = mock.MagicMock()
     mode.save_timeout = 0
+    mode.name = 'Python'
     mode.actions.return_value = [
         {
             'name': 'name',
@@ -2561,7 +2563,7 @@ def test_change_mode_no_timer():
         assert mock_button_bar.connect.call_count == 11
     else:
         assert mock_button_bar.connect.call_count == 12
-    view.status_bar.set_mode.assert_called_once_with('python')
+    view.status_bar.set_mode.assert_called_once_with('Python')
     view.stop_timer.assert_called_once_with()
 
 

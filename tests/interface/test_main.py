@@ -1889,4 +1889,4 @@ def test_StatusBar_set_mode():
     sb = mu.interface.main.StatusBar()
     sb.mode_label.setText = mock.MagicMock()
     sb.set_mode(mode)
-    sb.mode_label.setText.assert_called_once_with(mode.capitalize())
+    sb.mode_label.setText.assert_called_once_with(mode)

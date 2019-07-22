@@ -1077,4 +1077,4 @@ class StatusBar(QStatusBar):
         """
         Updates the mode label to the new mode.
         """
-        self.mode_label.setText(mode.capitalize())
+        self.mode_label.setText(mode)
