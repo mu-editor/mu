@@ -6,6 +6,8 @@ from .shared import SHARED_APIS
 from .pygamezero import PYGAMEZERO_APIS
 from .esp import ESP_APIS
 from .flask import FLASK_APIS
+from .lego import LEGO_APIS
 
 __all__ = ['ADAFRUIT_APIS', 'MICROBIT_APIS', 'PYTHON3_APIS', 'PI_APIS',
-           'SHARED_APIS', 'PYGAMEZERO_APIS', 'ESP_APIS', 'FLASK_APIS' ]
+           'SHARED_APIS', 'PYGAMEZERO_APIS', 'ESP_APIS', 'FLASK_APIS',
+           'LEGO_APIS', ]

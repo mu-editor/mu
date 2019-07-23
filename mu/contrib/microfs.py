@@ -88,16 +88,19 @@ def raw_on(serial):
     flush(serial)
     # Go into raw mode with CTRL-A.
     serial.write(b'\r\x01')
-    flush_to_msg(serial, raw_repl_msg)
+    time.sleep(0.01)
+    #flush_to_msg(serial, raw_repl_msg)
     # Soft Reset with CTRL-D
     serial.write(b'\x04')
+    time.sleep(0.01)
     flush_to_msg(serial, b'soft reboot\r\n')
     # Some MicroPython versions/ports/forks provide a different message after
     # a Soft Reset, check if we are in raw REPL, if not send a CTRL-A again
     data = serial.read_until(raw_repl_msg)
     if not data.endswith(raw_repl_msg):
         serial.write(b'\r\x01')
-        flush_to_msg(serial, raw_repl_msg)
+        time.sleep(0.01)
+        #flush_to_msg(serial, raw_repl_msg)
     flush(serial)
 
 

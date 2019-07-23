@@ -1,5 +1,5 @@
 """
-A mode for working with ESP8266 and ESP32 boards running MicroPython.
+A mode for working with Lego Spike boards running MicroPython.
 
 Copyright (c) 2015-2019 Nicholas H.Tollervey and others (see the AUTHORS file).
 
@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
 from mu.modes.base import MicroPythonMode, FileManager
-from mu.modes.api import ESP_APIS, SHARED_APIS
+from mu.modes.api import LEGO_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QThread
 import os
@@ -27,23 +27,19 @@ import os
 logger = logging.getLogger(__name__)
 
 
-class ESPMode(MicroPythonMode):
+class LegoMode(MicroPythonMode):
     """
-    Represents the functionality required for running MicroPython on ESP8266
+    Represents the functionality required for running MicroPython on Lego Spike
+    boards.
     """
-    name = _('ESP MicroPython')
-    description = _("Write MicroPython on ESP8266/ESP32 boards.")
-    icon = 'esp'
+    name = _('Lego MicroPython')
+    description = _("Use MicroPython with a Lego Spike device.")
+    icon = 'lego'
     fs = None
 
-    # There are many boards which use ESP microcontrollers but they often use
-    # the same USB / serial chips (which actually define the Vendor ID and
-    # Product ID for the connected devices.
     valid_boards = [
         # VID  , PID
-        (0x1A86, 0x7523),  # HL-340
-        (0x10C4, 0xEA60),  # CP210x
-        (0x0403, 0x6015),  # Sparkfun ESP32 VID, PID
+        (0x0694, 0x0009),  # Lego Spike board only.
     ]
 
     def actions(self):
@@ -55,7 +51,7 @@ class ESPMode(MicroPythonMode):
             {
                 'name': 'run',
                 'display_name': _('Run'),
-                'description': _('Run your code directly on the ESP8266/ESP32'
+                'description': _('Run your code directly on the Lego Spike'
                                  ' via the REPL.'),
                 'handler': self.run,
                 'shortcut': 'F5',
@@ -63,7 +59,7 @@ class ESPMode(MicroPythonMode):
             {
                 'name': 'files',
                 'display_name': _('Files'),
-                'description': _('Access the file system on ESP8266/ESP32.'),
+                'description': _('Access the file system on the Lego Spike.'),
                 'handler': self.toggle_files,
                 'shortcut': 'F4',
             },
@@ -71,7 +67,7 @@ class ESPMode(MicroPythonMode):
                 'name': 'repl',
                 'display_name': _('REPL'),
                 'description': _('Use the REPL to live-code on the '
-                                 'ESP8266/ESP32.'),
+                                 'Lego Spike.'),
                 'handler': self.toggle_repl,
                 'shortcut': 'Ctrl+Shift+I',
             }, ]
@@ -90,7 +86,7 @@ class ESPMode(MicroPythonMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return SHARED_APIS + ESP_APIS
+        return SHARED_APIS + LEGO_APIS
 
     def toggle_repl(self, event):
         if self.fs is None:
@@ -190,17 +186,17 @@ class ESPMode(MicroPythonMode):
         Add the file system navigator to the UI.
         """
 
-        # Find serial port the ESP8266/ESP32 is connected to
+        # Find serial port to which the Lego Spike is connected.
         device_port, serial_number = self.find_device()
 
         # Check for MicroPython device
         if not device_port:
-            message = _('Could not find an attached ESP8266/ESP32.')
+            message = _('Could not find an attached Lego Spike.')
             information = _("Please make sure the device is plugged "
                             "into this computer.\n\nThe device must "
                             "have MicroPython flashed onto it before "
                             "the file system will work.\n\n"
-                            "Finally, press the device's reset button "
+                            "Finally, reset the device "
                             "and wait a few seconds before trying "
                             "again.")
             self.view.show_message(message, information)
@@ -219,7 +215,7 @@ class ESPMode(MicroPythonMode):
             path = self.workspace_dir()
         self.fs = self.view.add_filesystem(path,
                                            self.file_manager,
-                                           _("ESP board"))
+                                           _("Lego Spike board"))
         self.fs.set_message.connect(self.editor.show_status_message)
         self.fs.set_warning.connect(self.view.show_message)
         self.file_manager_thread.start()
