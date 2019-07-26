@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-from mu.modes.base import MicroPythonMode, FileManager
+from mu.modes.base import MicroPythonMode, StuduinoBitFileManager
 from mu.modes.api import SB_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QThread
@@ -192,7 +192,7 @@ class SBMode(MicroPythonMode):
 
         # Check for MicroPython device
         if not device_port:
-            message = _('Could not find an attached ESP8266/ESP32.')
+            message = _('Could not find an attached Studuino:bit.')
             information = _("Please make sure the device is plugged "
                             "into this computer.\n\nThe device must "
                             "have MicroPython flashed onto it before "
@@ -202,14 +202,14 @@ class SBMode(MicroPythonMode):
                             "again.")
             self.view.show_message(message, information)
             return
+
         self.file_manager_thread = QThread(self)
-        self.file_manager = FileManager(device_port)
+        self.file_manager = StuduinoBitFileManager(device_port)
         self.file_manager.moveToThread(self.file_manager_thread)
         self.file_manager_thread.started.\
             connect(self.file_manager.on_start)
-        self.fs = self.view.add_filesystem(self.workspace_dir(),
-                                           self.file_manager,
-                                           _("ESP board"))
+        self.fs = self.view.add_studuinobit_filesystem(self.workspace_dir(),
+                                                       self.file_manager)
         self.fs.set_message.connect(self.editor.show_status_message)
         self.fs.set_warning.connect(self.view.show_message)
         self.file_manager_thread.start()

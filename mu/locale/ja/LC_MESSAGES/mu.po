@@ -284,6 +284,18 @@ msgstr "micro:bit から '{}' を取得中。{} にコピー中。"
 msgid "Successfully copied '{}' from the micro:bit to your computer."
 msgstr "micro:bit からコンピュータへの '{}' のコピーが成功しました。"
 
+msgid "Deleting '{}' from device."
+msgstr "デバイスから '{}' を削除中。"
+
+msgid "'{}' successfully deleted from device."
+msgstr "'{}' デバイスから '{}' の削除が成功しました。"
+
+msgid "Getting '{}' from device. Copying to '{}'."
+msgstr "デバイスから '{}' を取得中。{} にコピー中。"
+
+msgid "Successfully copied '{}' from the device to your computer."
+msgstr "デバイスからコンピュータへの '{}' のコピーが成功しました。"
+
 #: ./mu/interface/panes.py:409
 msgid "Open in Mu"
 msgstr "Mu で開く"
@@ -327,6 +339,24 @@ msgstr ""
 msgid "There was a problem getting '{}' from the micro:bit. Please check Mu's logs for more information."
 msgstr ""
 "micro:bit 内のファイル '{}' を取得している際に問題が発生しました。"
+"詳しくは Mu のログを確認してください。"
+
+msgid "There was a problem getting the list of files on the device. Please check Mu's logs for technical information. Alternatively, try unplugging/plugging-in your device and/or restarting Mu."
+msgstr "デバイス内のファイルのリストを取得する際に問題が発生しました。技術的な情報は Mu のログを確認してください。またはデバイスのプラグを抜き差しするか、Muを再起動してみてください。"
+
+msgid "There was a problem copying the file '{}' onto the device. Please check Mu's logs for more information."
+msgstr ""
+"デバイスにファイル '{}' をコピーしている際に問題が発生しました。"
+"詳しくは Mu のログを確認してください。"
+
+msgid "There was a problem deleting '{}' from the device. Please check Mu's logs for more information."
+msgstr ""
+"デバイス内のファイル '{}' を削除している際にに問題が発生しました。"
+"詳しくは Mu のログを確認してください。"
+
+msgid "There was a problem getting '{}' from the device. Please check Mu's logs for more information."
+msgstr ""
+"デバイス内のファイル '{}' を取得している際に問題が発生しました。"
 "詳しくは Mu のログを確認してください。"
 
 #: ./mu/logic.py:69
@@ -1157,3 +1187,749 @@ msgstr "REPL が始動しました。"
 msgid "REPL stopped."
 msgstr "REPL が停止しました。"
 
+#: ./mu/modes/python3.py:328
+msgid "REPL stopped."
+msgstr "REPL が停止しました。"
+
+#: ./mu/interface/panes.py:457
+msgid "Files on your device:"
+msgstr "デバイス のファイル:"
+
+#: ./mu/modes/api/studuinobit.py
+msgid "pystubit.board.button_a.is_pressed() \nIf button A is pressed down, is_pressed() is True, else False."
+msgstr "pystubit.board.button_a.is_pressed() \nボタンAが押されている場合はTrue、そうでない場合はFalseを返します。"
+
+msgid "pystubit.board.button_a.was_pressed() \nUse was_pressed() to learn if button A was pressed since the last time\nwas_pressed() was called. Returns True or False, then resets the record."
+msgstr "pystubit.board.button_a.was_pressed() \nボタンAが過去に押されたかどうかを調べるのに使用します。\nボタンが押された場合はTrue、そうでない場合はFalseを返します。\n本関数コール後、ボタンが押されたかどうかの情報はリセットされます。"
+
+msgid "pystubit.board.button_a.get_presses() \nUse get_presses() to get the running total of button presses, and also\nreset this counter to zero."
+msgstr "pystubit.board.button_a.get_presses() \nボタンAが過去に押された回数を調べるのに使用します。\n本関数コール後、カウンタはリセットされます。"
+
+msgid "pystubit.board.button_a.get_value() \nIf button A is pressed down, get_value() is 0, else 1."
+msgstr "pystubit.board.button_a.get_value() \nボタンAが押されている場合は0、そうでない場合は1を返します。"
+
+msgid "pystubit.board.button_b.is_pressed() \nIf button B is pressed down, is_pressed() is True, else False."
+msgstr "pystubit.board.button_b.is_pressed() \nボタンBが押されている場合はTrue、そうでない場合はFalseを返します。"
+
+msgid "pystubit.board.button_b.was_pressed() \nUse was_pressed() to learn if button B was pressed since the last time\nwas_pressed() was called. Returns True or False, then resets the record."
+msgstr "pystubit.board.button_b.was_pressed() \nボタンBが過去に押されたかどうかを調べるのに使用します。\nボタンが押された場合はTrue、そうでない場合はFalseを返します。\n本関数コール後、ボタンが押されたかどうかの情報はリセットされます。"
+
+msgid "pystubit.board.button_b.get_presses() \nUse get_presses() to get the running total of button presses, and also\nreset this counter to zero."
+msgstr "pystubit.board.button_b.get_presses() \nボタンBが過去に押された回数を調べるのに使用します。\n本関数コール後、カウンタはリセットされます。"
+
+msgid "pystubit.board.button_b.get_value() \nIf button B is pressed down, get_value() is 0, else 1."
+msgstr "pystubit.board.button_b.get_value() \nボタンBが押されている場合は0、そうでない場合は1を返します。"
+
+msgid "pystubit.board.display.get_pixel(x, y)\nUse get_pixel(x, y) to return the display's color at LED pixel (x,y) in an (R, G, B) tuple.\nReturns values from (0, 0, 0) to (31, 31, 31)."
+msgstr "pystubit.board.display.get_pixel(x, y) \nLEDディスプレイの(x, y)にあるLEDの色を(R, G, B)のタプルで返します。\n戻り値の型は(0, 0, 0)～(31, 31, 31)です。"
+
+msgid "pystubit.board.display.set_pixel(x, y, color)\nUse set_pixel(x, y, color) to set the display color at LED pixel (x,y).\nUse a tuple (R,G,B), list [R,G,B] or integer #RGB in 'color' to set the LED's color. "
+msgstr "pystubit.board.display.set_pixel(x, y, color) \nLEDディスプレイの(x, y)にあるLEDの色を'color'で設定します。\n'color'は、タプル(R,G,B), リスト[R,G,B], 整数#RGBで指定できます。"
+
+msgid "pystubit.board.display.clear()\nUse clear() to clear the display."
+msgstr "pystubit.board.display.clear() \nすべての LED の明るさを 0 (オフ)に設定します。"
+
+msgid "pystubit.board.display.show(x, delay=400, wait=True, loop=False, clear=False, color=None)\nUse show(x) to print a string or image to the display. If 'x' is a list\nof images they will be animated together.\nUse 'delay' to specify the speed of frame changes in milliseconds.\nIf wait is False animation will happen in the background while the program continues.\nIf loop is True the animation will repeat forever.\nIf clear is True the display will clear at the end of the animation.\nUse a tuple (R,G,B), list [R,G,B] or integer #RGB in 'color' to set the image's color. "
+msgstr "pystubit.board.display.show(x, delay=400, wait=True, loop=False, clear=False, color=None) \n"
+" 文字列またはイメージ'x'をLEDディスプレイに表示する場合、show(x)と記述します。\n"
+" 'x'がイメージのリストの場合、イメージの表示が切り替わります（アニメーション）。\n"
+" 'delay'には、ミリ秒単位でフレームの表示時間の長さを設定します。\n"
+" 'wait'にFalseを設定した場合、バックグラウンドでアニメーション処理されます。\n"
+" 'loop'にTrueを設定した場合、アニメーションが無限に繰り返されます。\n"
+" 'clear'にTrueを設定した場合、アニメーション終了時にディスプレイをクリアします。\n"
+" 'color'には、ディスプレイに表示する色を設定します。タプル(R, G, B)、リスト[R, G, B]、整数#RGBのいずれかで設定します。"
+
+msgid "pystubit.board.display.scroll(string, delay=150, wait=True, loop=False, color=None)\nUse scroll(string) to scroll the string across the display.\nUse delay to control how fast the text scrolls.\nIf wait is False the text will scroll in the background while the program continues.\nIf loop is True the text will repeat forever.\nUse a tuple (R,G,B), list [R,G,B] or integer #RGB in 'color' to set the image's color. "
+msgstr "pystubit.board.display.scroll(string, delay=150, wait=True, loop=False, color=None) \n"
+" 文字列'string'をLEDディスプレイにスクロール表示する場合、scroll(string)と記述します。\n"
+" 'delay'には、文字のスクロールする速さを定義します。\n"
+" 'wait'にFalseを設定した場合、バックグラウンドでスクロール表示処理されます。\n"
+" 'loop'にTrueを設定した場合、スクロール表示が無限に繰り返されます。\n"
+" 'color'には、ディスプレイに表示する色を設定します。タプル(R, G, B)、リスト[R, G, B]、整数#RGBのいずれかで設定します。"
+
+msgid "pystubit.board.display.on()\nTurn on the display."
+msgstr "pystubit.board.display.on() \nディスプレイを有効にします。"
+
+msgid "pystubit.board.display.off()\nTurn off the display. (This allows GPIO used by the display to be used for other purposes.)"
+msgstr "pystubit.board.display.off() \nディスプレイを無効にします。(ディスプレイに関連づけられた GPIO 端子を他の目的に再利用できるようになります)。"
+
+msgid "pystubit.board.display.is_on()\nQuery if the display is on (True) or off (False)."
+msgstr "pystubit.board.display.is_on() \nディスプレイが有効であれば True 、無効であれば False を返します。"
+
+msgid "pystubit.board.Image(string, color)\nCreate and use built-in IMAGES to show on the display. Use:\n Image(\n    '01100:'\n    '10010:'\n    '11110:'\n    '10010:'\n    '10010:',\n    color=(0,10,0))\n...to make a new green heart image.\nUse 1s (ON) and 0s (OFF) in 'string' to set a pattern.\nUse a tuple (R,G,B), list [R,G,B] or integer #RGB in 'color' to set the image's color. "
+msgstr "pystubit.board.Image(string, color) \n"
+" LEDディスプレイで表示するイメージの作成や組み込みイメージを使用します。\n"
+" Image('01100:10010:11110:10010:10010:', color=(0,10,0))\n"
+" と記述することで緑色のハートのイメージを作成できます。\n"
+" 'string'には、'0':OFF, '1':ONでパターンを設定します。\n"
+" 'color'には、イメージの色を設定します。タプル(R, G, B)、リスト[R, G, B]、整数#RGBのいずれかで設定します。"
+
+msgid "pystubit.board.Image.width()\nReturn the width of the image in pixels."
+msgstr "pystubit.board.Image.width() \nイメージの幅をピクセルで返します。"
+
+msgid "pystubit.board.Image.height()\nReturn the height of the image in pixels."
+msgstr "pystubit.board.Image.height() \nイメージの高さをピクセルで返します。"
+
+msgid "pystubit.board.Image.set_pixel(x, y, value)\nUse set_pixel(x, y, value) to set the value of an LED pixel (x,y) in the image.\nIt can be set to 0 (off) or 1 (on)."
+msgstr "pystubit.board.Image.set_pixel(x, y, value) \nイメージ(x,y)のピクセルを'value'で設定します。value引数は 0(OFF) / 1(ON)で指定します。"
+
+msgid "pystubit.board.Image.set_pixel_color(x, y, color)\nUse set_pixel_color(x, y, color) to set the LED pixel (x,y) \nin the image to a color which can be set\nusing a tuple (R,G,B), list [R,G,B] or integer #RGB. "
+msgstr "pystubit.board.Image.set_pixel_color(x, y, color) \nイメージ(x,y)のピクセルの色を'color'で設定します。タプル(R, G, B)、リスト[R, G, B]、整数#RGBのいずれかで設定します。"
+
+msgid "pystubit.board.Image.get_pixel(x, y)\nReturn 1 (on) or 0 (off) according to\nthe state of the LED pixel (x,y) in the image."
+msgstr "pystubit.board.Image.get_pixel(x, y) \nイメージ(x, y)のピクセルのON(1)/OFF(0)を返します。"
+
+msgid "pystubit.board.Image.get_pixel_color(x, y, hex=False)\nUse get_pixel_color(x, y, hex=False) to find the color of the LED pixel (x,y) in the image.\nReturns a color as a tuple (R,G,B) if hex is False,\nand as an integer #RGB if hex is True."
+msgstr "pystubit.board.Image.get_pixel_color(x, y, hex=False) \nイメージ(x, y)のピクセルの色を返します。\n'hex'にFalseを指定した場合タプル(R,G,B)を、Trueを指定した場合整数 #RGBを返します。"
+
+msgid "pystubit.board.Image.set_base_color(color)\nUse set_base_color(color) to set all LED pixels in the image\nto a color which can be set using a tuple (R,G,B), list [R,G,B] or integer #RGB."
+msgstr "pystubit.board.Image.set_base_color(color) \nイメージの全ピクセルに設定する色を'color'で設定します。タプル(R, G, B)、リスト[R, G, B]、整数#RGBのいずれかで設定します。"
+
+msgid "pystubit.board.Image.shift_left(n)\nUse shift_left(n) to make a copy of the image\nbut moved 'n' pixels to the left."
+msgstr "pystubit.board.Image.shift_left(n) \nイメージをn列だけ左にシフトした新しいイメージを返します。"
+
+msgid "pystubit.board.Image.shift_right(n)\nUse shift_right(n) to make a copy of the image\nbut moved 'n' pixels to the right."
+msgstr "pystubit.board.Image.shift_right(n) \nイメージをn列だけ右にシフトした新しいイメージを返します。"
+
+msgid "pystubit.board.Image.shift_up(n)\nUse shift_up(n) to make a copy of the image\nbut moved 'n' pixels up."
+msgstr "pystubit.board.Image.shift_up(n) \nイメージをn行だけ上にシフトした新しいイメージを返します。"
+
+msgid "pystubit.board.Image.shift_down(n)\nUse shift_down(n) to make a copy of the\nimage but moved 'n' pixels down."
+msgstr "pystubit.board.Image.shift_down(n) \nイメージをn行だけ下にシフトした新しいイメージを返します。"
+
+msgid "pystubit.board.Image.copy()\nUse copy() to make a new exact copy of the image."
+msgstr "pystubit.board.Image.copy() \nイメージのコピーを返します。"
+
+# buzzer
+msgid "pystubit.board.buzzer.on(sound, duration=-1)\nPlay sound from the Buzzer at a pitch specified in 'sound'.\n'sound' can be set using strings ('C3'-'G9'), \nMIDI note numbers ('48'-'127') or frequencies (in integers).\nUse 'duration' to set the duration of the sound in milliseconds."
+msgstr "pystubit.board.buzzer.on(sound, duration=-1) \n"
+" ブザーから'sound'で指定された高さの音を出力します。\n"
+" 'sound'には、文字列で'C3'～'G9'のコード、'48'～'127'のMIDIノートナンバー、整数で周波数を設定します。\n"
+" 'duration'には、音を出力する時間をミリ秒単位で設定します。"
+
+msgid "pystubit.board.buzzer.off()\nStop any current sound output."
+msgstr "pystubit.board.buzzer.off() \n音が出力されている場合、停止します。"
+
+# temperature
+msgid "pystubit.board.temperature.get_value()\nReturn Studuino:bit's temperature value(0-4095) in degrees Linear."
+msgstr "pystubit.board.temperature.get_value() \n基板上の温度センサーの値（0-4095）を返します。"
+
+msgid "pystubit.board.temperature.get_celsius()\nReturn Studuino:bit's temperature in degrees Celcius."
+msgstr "pystubit.board.temperature.get_celsius() \n基板上の温度センサーの値を温度（セ氏）を返します。"
+
+# lightsensor
+msgid "pystubit.board.lightsensor.get_value()\nReturn Studuino:bit's light sensor's  value(0-4095) in linear."
+msgstr "pystubit.board.lightsensor.get_value() \n 基板上の光センサーの値（0-4095）を返します。"
+
+# accelerometer
+msgid "pystubit.board.accelerometer.get_x()\nReturn Studuino:bit's tilt (X acceleration) in m/s/s's."
+msgstr "pystubit.board.accelerometer.get_x() \n 基板の傾き（X軸の加速度）を返します。戻り値の型は符号付小数点、デフォルトの単位はメートル/秒/秒です。"
+
+msgid "pystubit.board.accelerometer.get_y()\nReturn Studuino:bit's tilt (Y acceleration) in m/s/s's."
+msgstr "pystubit.board.accelerometer.get_y() \n 基板の傾き（Y軸の加速度）を返します。戻り値の型は符号付小数点、デフォルトの単位はメートル/秒/秒です。"
+
+msgid "pystubit.board.accelerometer.get_z()\nReturn Studuino:bit's tilt (Z acceleration) in m/s/s's."
+msgstr "pystubit.board.accelerometer.get_z() \n 基板の傾き（Z軸の加速度）を返します。戻り値の型は符号付小数点、デフォルトの単位はメートル/秒/秒です。"
+
+msgid "pystubit.board.accelerometer.get_values()\nGet the acceleration measurements in all axes at once, \nas a three-element tuple of integers (ordered as X, Y, Z)."
+msgstr "pystubit.board.accelerometer.get_values() \n X,Y,Z軸の加速度をタプルで返します。(get_x(), get_y(), get_z())。"
+
+msgid "pystubit.board.accelerometer.set_fs(value)\nSet the sensor's maximum measurement.\nUse the string '2g', '4g', '8g', or '16g' to set the maximum\nvalue between 2G and 16G."
+msgstr "pystubit.board.accelerometer.set_fs(value) \n センサーのフルスケールを設定します。\n2G～16Gまで計測可能で、value引数には、文字列で'2g'/'4g'/'8g'/'16g'を設定します。"
+
+msgid "pystubit.board.accelerometer.set_sf(value)\nSet the sensor's units of measurement.\nIt can be set to 'mg' (mg units) or 'ms2' (m/s/s units)."
+msgstr "pystubit.board.accelerometer.set_sf(value) \n センサーのスケールファクタを設定します。\nミリGまたはメートル/秒/秒の単位が指定できます。value引数には、文字列で'mg'/'ms2'を設定します。"
+
+# gyro
+msgid "pystubit.board.gyro.get_x()\nReturn Studuino:bit's angular velocity on the X-axis in m/s/s's."
+msgstr "pystubit.board.gyro.get_x() \n X軸の角速度を返します。戻り値の型は符号付小数点、デフォルトの単位は角度/秒です。"
+
+msgid "pystubit.board.gyro.get_y()\nReturn Studuino:bit's angular velocity on the Y-axis in m/s/s's."
+msgstr "pystubit.board.gyro.get_y() \n Y軸の角速度を返します。戻り値の型は符号付小数点、デフォルトの単位は角度/秒です。"
+
+msgid "pystubit.board.gyro.get_z()\nReturn Studuino:bit's angular velocity on the Z-axis in m/s/s's."
+msgstr "pystubit.board.gyro.get_z() \n Z軸の角速度を返します。戻り値の型は符号付小数点、デフォルトの単位は角度/秒です。"
+
+msgid "pystubit.board.gyro.get_values()\nGet the angular velocity in all axes at once,\nas a three-element tuple of integers (ordered as X, Y, Z)."
+msgstr "pystubit.board.gyro.get_values() \n X,Y,Z軸の角速度をタプルで返します。(get_x(), get_y(), get_z())。"
+
+msgid "pystubit.board.gyro.set_fs(value)\nSet the sensor's maximum measurement.\nUse the string '250dps', '500dps', '1000dps', or '2000dps'\nto set the maximum value between 250 and 2000 degrees per second."
+msgstr "pystubit.board.gyro.set_fs(value) \n センサーのフルスケールを設定します。\n250度/秒～2000度/秒まで計測可能で、value引数には、文字列で'250dps'/'500dps'/'1000dps'/'2000dps'を設定します。"
+
+msgid "pystubit.board.gyro.set_sf(value)\nSet the sensor's units of measurement.\nIt can be set to 'dps' (degrees per second) or 'rps' (radians per second). "
+msgstr "pystubit.board.gyro.set_sf(value) \n センサーのスケールファクタを設定します。\n角度/秒またはラジアン/秒の単位が指定できます。value引数には、文字列で'dps'/'rps'を設定します。"
+
+# compass
+msgid "pystubit.board.compass.get_x()\nReturn magnetic field detected along Studuino:bit's X axis.\nThe compass returns the earth's magnetic field in micro-Tesla units.\nThe value will be higher facing magnetic north,\nand lower facing magnetic south."
+msgstr "pystubit.board.compass.get_x() \n X軸の磁場を返します。戻り値の型は符号付小数点、デフォルトの単位はマイクロ・テスラです。\nN極が近づくと+, S極が近づくと-になります。"
+
+msgid "pystubit.board.compass.get_y()\nReturn magnetic field detected along Studuino:bit's Y axis.\nThe compass returns the earth's magnetic field in micro-Tesla units.\nThe value will be higher facing magnetic north,\nand lower facing magnetic south."
+msgstr "pystubit.board.compass.get_y() \n Y軸の磁場を返します。戻り値の型は符号付小数点、デフォルトの単位はマイクロ・テスラです。\nN極が近づくと+, S極が近づくと-になります。"
+
+msgid "pystubit.board.compass.get_z()\nReturn magnetic field detected along Studuino:bit's Z axis.\nThe compass returns the earth's magnetic field in micro-Tesla units.\nThe value will be higher facing magnetic north,\nand lower facing magnetic south."
+msgstr "pystubit.board.compass.get_z() \n Z軸の磁場を返します。戻り値の型は符号付小数点、デフォルトの単位はマイクロ・テスラです。\nN極が近づくと+, S極が近づくと-になります。"
+
+msgid "pystubit.board.compass.get_values()\nGet the magnetic field measurements from all axes at once,\nas a three-element tuple of integers (ordered as X, Y, Z)."
+msgstr "pystubit.board.compass.get_values() \n X,Y,Z軸の磁場をタプルで返します。(get_x(), get_y(), get_z())。"
+
+msgid "pystubit.board.compass.calibrate()\nIf Studuino:bit's compass is confused, calibrate() it to adjust the its accuracy.\nCalibration will ask you to rotate the device to draw a circle on the display.\nAfterwards, Studuino:bit will know which way is north."
+msgstr "pystubit.board.compass.calibrate() \n "基板の地磁気センサーが正しい値を示さない場合、実行してください。磁気センサーのキャリブレーションを開始します。LEDディスプレイ上に円を描くようデバイスを回転させます。"
+
+msgid "pystubit.board.compass.is_calibrated()\nIf Studuino:bit's compass is_calibrated() and adjusted for accuracy, return True.\nIf the compass hasn't been adjusted for accuracy, return False."
+msgstr "pystubit.board.compass.is_calibrated() \n キャリブレーションが成功したかどうかにより True または False を返します。"
+
+msgid "pystubit.board.compass.clear_calibration()\nReset Studuino:bit's compass using clear_calibration() command."
+msgstr "pystubit.board.compass.clear_calibration() \n キャリブレーションを取り消します。"
+
+msgid "pystubit.board.compass.heading()\nReturn a number between 0-360 indicating the device's heading. 180 is north."
+msgstr "pystubit.board.compass.heading() \n 磁針の向きを返します。0～360°の整数で、時計回りで北が180°になります。"
+
+# p0
+msgid "pystubit.board.p0.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p0.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p0.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p0.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p0.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p0.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p0.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p0.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p0.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p0.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p0.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p0.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p0.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p0.status() \n PWMの使用状況をREPLに表示します。"
+
+msgid "pystubit.board.p0.read_analog(mv=False)\nRead the voltage applied to pin. If mv=False, return the reading\nas a number between 0 (meaning 0v) and 4095. \nIf mv=True, return the reading in millivolts."
+msgstr "pystubit.board.p0.read_analog(mv=False) \n 端子からアナログ信号をリードします。\n mv=Falseの場合、0～4095の整数を返します。mv=Trueの場合、電圧をmV（ミリ・ボルト）で返します。"
+
+# p1
+msgid "pystubit.board.p1.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p1.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p1.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p1.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p1.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p1.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p1.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p1.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p1.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p1.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p1.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p1.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p1.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p1.status() \n PWMの使用状況をREPLに表示します。"
+
+msgid "pystubit.board.p1.read_analog(mv=False)\nRead the voltage applied to pin. If mv=False, return the reading\nas a number between 0 (meaning 0v) and 4095. \nIf mv=True, return the reading in millivolts."
+msgstr "pystubit.board.p1.read_analog(mv=False) \n 端子からアナログ信号をリードします。\n mv=Falseの場合、0～4095の整数を返します。mv=Trueの場合、電圧をmV（ミリ・ボルト）で返します。"
+
+# p2
+msgid "pystubit.board.p2.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p2.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p2.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p2.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p2.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p2.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p2.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p2.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p2.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p2.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p2.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p2.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p2.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p2.status() \n PWMの使用状況をREPLに表示します。"
+
+msgid "pystubit.board.p2.read_analog(mv=False)\nRead the voltage applied to pin. If mv=False, return the reading\nas a number between 0 (meaning 0v) and 4095. \nIf mv=True, return the reading in millivolts."
+msgstr "pystubit.board.p2.read_analog(mv=False) \n 端子からアナログ信号をリードします。\n mv=Falseの場合、0～4095の整数を返します。mv=Trueの場合、電圧をmV（ミリ・ボルト）で返します。"
+
+# p3
+msgid "pystubit.board.p3.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p3.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p3.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p3.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p3.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p3.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p3.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p3.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p3.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p3.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p3.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p3.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p3.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p3.status() \n PWMの使用状況をREPLに表示します。"
+
+msgid "pystubit.board.p3.read_analog(mv=False)\nRead the voltage applied to pin. If mv=False, return the reading\nas a number between 0 (meaning 0v) and 4095. \nIf mv=True, return the reading in millivolts."
+msgstr "pystubit.board.p3.read_analog(mv=False) \n 端子からアナログ信号をリードします。\n mv=Falseの場合、0～4095の整数を返します。mv=Trueの場合、電圧をmV（ミリ・ボルト）で返します。"
+
+# p4
+msgid "pystubit.board.p4.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p4.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p4.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p4.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p4.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p4.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p4.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p4.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p4.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p4.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p4.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p4.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p4.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p4.status() \n PWMの使用状況をREPLに表示します。"
+
+# p5
+msgid "pystubit.board.p5.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p5.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p5.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p5.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p5.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p5.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p5.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p5.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p5.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p5.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p5.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p5.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p5.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p5.status() \n PWMの使用状況をREPLに表示します。"
+
+msgid "pystubit.board.p5.read_analog(mv=False)\nRead the voltage applied to pin. If mv=False, return the reading\nas a number between 0 (meaning 0v) and 4095. \nIf mv=True, return the reading in millivolts."
+msgstr "pystubit.board.p5.read_analog(mv=False) \n 端子からアナログ信号をリードします。\n mv=Falseの場合、0～4095の整数を返します。mv=Trueの場合、電圧をmV（ミリ・ボルト）で返します。"
+
+# p6
+msgid "pystubit.board.p6.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p6.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p6.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p6.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p6.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p6.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p6.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p6.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p6.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p6.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p6.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p6.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p6.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p6.status() \n PWMの使用状況をREPLに表示します。"
+
+# p7
+msgid "pystubit.board.p7.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p7.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p7.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p7.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p7.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p7.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p7.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p7.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p7.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p7.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p7.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p7.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p7.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p7.status() \n PWMの使用状況をREPLに表示します。"
+
+# p8
+msgid "pystubit.board.p8.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p8.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p8.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p8.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p8.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p8.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p8.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p8.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p8.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p8.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p8.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p8.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p8.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p8.status() \n PWMの使用状況をREPLに表示します。"
+
+msgid "pystubit.board.p8.read_analog(mv=False)\nRead the voltage applied to pin. If mv=False, return the reading\nas a number between 0 (meaning 0v) and 4095. \nIf mv=True, return the reading in millivolts."
+msgstr "pystubit.board.p8.read_analog(mv=False) \n 端子からアナログ信号をリードします。\n mv=Falseの場合、0～4095の整数を返します。mv=Trueの場合、電圧をmV（ミリ・ボルト）で返します。"
+
+# p9
+msgid "pystubit.board.p9.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p9.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p9.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p9.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p9.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p9.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p9.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p9.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p9.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p9.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p9.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p9.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p9.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p9.status() \n PWMの使用状況をREPLに表示します。"
+
+msgid "pystubit.board.p9.read_analog(mv=False)\nRead the voltage applied to pin. If mv=False, return the reading\nas a number between 0 (meaning 0v) and 4095. \nIf mv=True, return the reading in millivolts."
+msgstr "pystubit.board.p9.read_analog(mv=False) \n 端子からアナログ信号をリードします。\n mv=Falseの場合、0～4095の整数を返します。mv=Trueの場合、電圧をmV（ミリ・ボルト）で返します。"
+
+# p10
+msgid "pystubit.board.p10.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p10.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p10.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p10.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p10.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p10.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p10.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p10.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p10.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p10.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p10.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p10.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p10.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p10.status() \n PWMの使用状況をREPLに表示します。"
+
+# p11
+msgid "pystubit.board.p11.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p11.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p11.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p11.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p11.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p11.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p11.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p11.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p11.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p11.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p11.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p11.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p11.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p11.status() \n PWMの使用状況をREPLに表示します。"
+
+# p12
+msgid "pystubit.board.p12.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p12.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p12.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p12.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p12.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p12.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p12.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p12.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p12.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p12.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p12.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p12.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p12.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p12.status() \n PWMの使用状況をREPLに表示します。"
+
+# p13
+msgid "pystubit.board.p13.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p13.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p13.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p13.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p13.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p13.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p13.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p13.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p13.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p13.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p13.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p13.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p13.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p13.status() \n PWMの使用状況をREPLに表示します。"
+
+# p14
+msgid "pystubit.board.p14.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p14.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p14.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p14.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p14.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p14.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p14.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p14.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p14.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p14.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p14.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p14.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p14.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p14.status() \n PWMの使用状況をREPLに表示します。"
+
+# p15
+msgid "pystubit.board.p15.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p15.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p15.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p15.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p15.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p15.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p15.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p15.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p15.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p15.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p15.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p15.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p15.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p15.status() \n PWMの使用状況をREPLに表示します。"
+
+# p16
+msgid "pystubit.board.p16.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p16.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p16.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p16.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p16.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p16.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p16.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p16.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p16.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p16.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p16.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p16.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p16.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p16.status() \n PWMの使用状況をREPLに表示します。"
+
+msgid "pystubit.board.p16.read_analog(mv=False)\nRead the voltage applied to pin. If mv=False, return the reading\nas a number between 0 (meaning 0v) and 4095. \nIf mv=True, return the reading in millivolts."
+msgstr "pystubit.board.p16.read_analog(mv=False) \n 端子からアナログ信号をリードします。\n mv=Falseの場合、0～4095の整数を返します。mv=Trueの場合、電圧をmV（ミリ・ボルト）で返します。"
+
+# p19
+msgid "pystubit.board.p19.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p19.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p19.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p19.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p19.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p19.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p19.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p19.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p19.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p19.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p19.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p19.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p19.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p19.status() \n PWMの使用状況をREPLに表示します。"
+
+# p20
+msgid "pystubit.board.p20.write_digital(value)\nWrite digital output to a pin. Set pin to output high if value is 1, or to low, if it is 0."
+msgstr "pystubit.board.p20.write_digital(value) \n 端子からデジタル出力します。\n value引数が1の場合はハイに設定し、0の場合はローに設定します。"
+
+msgid "pystubit.board.p20.read_digital()\nRead digital value from pin. The reading will be either 0 (low) or 1 (high)."
+msgstr "pystubit.board.p20.read_digital() \n 端子からデジタル信号をリードします。\n 戻り値は、ハイの場合は1、ローの場合は0を返します。"
+
+msgid "pystubit.board.p20.write_analog(value)\nOutput PWM signal. Set the output from 0 (0%) to 100 (100%)."
+msgstr "pystubit.board.p20.write_analog(value) \n PWM信号を端子に出力します。\n value引数は、浮動小数点数で、0(0%)～100(100%)を設定します。"
+
+msgid "pystubit.board.p20.set_analog_period(period, timer=-1)\nSet the period of the PWM signal output to period milliseconds.\nThe minimum period is 1ms.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p20.set_analog_period(period, timer=-1) \n PWM 信号の周期を period にミリ秒単位で設定します。有効な最小値は 1ms です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p20.set_analog_period_microseconds(period, timer=-1)\nSet the period of the PWM signal output to period microseconds.\nThe minimum period is 256us.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p20.set_analog_period_microseconds(period, timer=-1) \n PWM 信号の周期を period にマイクロ秒単位で設定します。有効な最小値は 256μs です。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p20.set_analog_hz(hz, timer=-1)\nSet the period of the PWM signal output to period frequency.\nYou can set the PWM's timer by picking a timer ID 0-3."
+msgstr "pystubit.board.p20.set_analog_hz(hz, timer=-1) \n PWM 信号の周期を周波数で設定します。\n timer引数でPWMに使用するタイマーのIDを0～3で設定できます。"
+
+msgid "pystubit.board.p20.status()\nDisplay current PWM usage on REPL."
+msgstr "pystubit.board.p20.status() \n PWMの使用状況をREPLに表示します。"
+
+# DCMotor
+msgid "pyatcrobo2.parts.DCMotor(pin)\nCreate a DC Motor instance. The pin parameter can be set\nto either 'M1' or 'M2' to specify a pin with a DC Motor connected to it."
+msgstr "pyatcrobo2.parts.DCMotor(pin) \n DCモーターのインスタンスを生成します。\n pin引数にDCモーターを接続しているピンを文字列（'M1'/ 'M2'）で指定します。"
+
+msgid "pyatcrobo2.parts.DCMotor.cw()\nSpin a DC Motor clockwise."
+msgstr "pyatcrobo2.parts.DCMotor.cw() \n DCモーターを正転で回転します。"
+
+msgid "pyatcrobo2.parts.DCMotor.ccw()\nSpin a DC Motor counter-clockwise."
+msgstr "pyatcrobo2.parts.DCMotor.ccw() \n DCモーターを逆転で回転します。"
+
+msgid "pyatcrobo2.parts.DCMotor.stop()\nStop powering a DC Motor, allowing it to coast to a stop."
+msgstr "pyatcrobo2.parts.DCMotor.stop() \n DCモーターの回転を脱力で停止します。"
+
+msgid "pyatcrobo2.parts.DCMotor.brake()\nStop a DC Motor's rotation."
+msgstr "pyatcrobo2.parts.DCMotor.brake() \n DCモーターを回転を停止します。"
+
+msgid "pyatcrobo2.parts.DCMotor.power(power)\nSet a DC Motor's speed.\nThe speed can be set from 0 (slowest) to 255 (fastest)."
+msgstr "pyatcrobo2.parts.DCMotor.power(power) \n DCモーターのパワーを設定します。\n power引数には、0～255の整数を設定します。"
+
+# Servomotor
+msgid "pyatcrobo2.parts.Servomotor(pin)\nCreate a Servomotor instance.\nThe pin parameter can be set to 'P13', 'P14', 'P15', or 'P16'\nto specify a pin with a Servomotor connected to it. "
+msgstr "pyatcrobo2.parts.Servomotor(pin) \n サーボモーターのインスタンスを生成します。\n pin引数にサーボモーターを接続しているピンを文字列（'P13'/'P14'/ 'P15'/ 'P16'）で指定します。"
+
+msgid "pyatcrobo2.parts.Servomotor.set_angle(degree)\nSet a Servomotor's angle.\nThe angle can be sety in degrees 0-180."
+msgstr "pyatcrobo2.parts.Servomotor.set_angle(degree) \n サーボモーターの角度を制御します。\n degree引数に角度(0～180)を整数で設定します。"
+
+# Buzzer
+msgid "pyatcrobo2.parts.Buzzer(pin)\nCreate a Buzzer instance.\nThe pin parameter can be set to 'P13', 'P14', 'P15', or 'P16'\nto specify a pin with a Buzzer connected to it. "
+msgstr "pyatcrobo2.parts.Buzzer(pin) \nブザーのインスタンスを生成します。\n pin引数にブザーを接続しているピンを文字列（'P13'/'P14'/ 'P15'/ 'P16'）で指定します。"
+
+msgid "pyatcrobo2.parts.Buzzer.on(sound, volume=-1, duration=-1)\nSet a specific note for the Buzzer to play.\nThe note can be set using strings ('C3'-'G9'),\nMIDI note numbers ('48'-'127') or frequencies (in integers).\nThe volume can be set by percentage (0-99).\nDuration can be set in milliseconds to make the sound\nplay for a pre-set length of time."
+msgstr "pyatcrobo2.parts.Buzzer.on(sound, volume=-1, duration=-1) \n ブザーから指定された高さの音を出力します。\n"
+" sound引数には、文字列で'C3'～'G9'のコード、'48'～'127'のMIDIノートナンバー、整数で周波数を設定します。\n"
+" volume引数には、ボリュームを百分率（整数（0～99））で設定します。\n"
+" duration引数に正の整数を設定した場合、設定した値（ミリ秒単位）の間、音を出力します。"
+
+msgid "pyatcrobo2.parts.Buzzer.off()\nStop any current sound output."
+msgstr "pyatcrobo2.parts.Buzzer.off() \n 音が出力されている場合、停止します。"
+
+# LED
+msgid "pyatcrobo2.parts.LED(pin)\nCreate an LED instance.\nThe pin parameter can be set to 'P13', 'P14', 'P15', or 'P16'\nto specify a pin with an LED connected to it. "
+msgstr "pyatcrobo2.parts.LED(pin)\n LEDのインスタンスを生成します。\n pin引数にLEDを接続しているピンを文字列（'P13'/'P14'/'P15'/'P16'）で指定します。"
+
+msgid "pyatcrobo2.parts.LED.on()\nTurn on an LED."
+msgstr "pyatcrobo2.parts.LED.on() \n LEDを点灯します。"
+
+msgid "pyatcrobo2.parts.LED.off()\nTurn off an LED."
+msgstr "pyatcrobo2.parts.LED.off() \n LEDを消灯します。"
+
+# IRPhotoReflector
+msgid "pyatcrobo2.parts.IRPhotoReflector(pin)\nCreate an IR Photoreflector instance.\nThe pin parameter can be set to 'P0', 'P1', or 'P2'\nto specify a pin with an IR Photoreflector connected to it. "
+msgstr "pyatcrobo2.parts.IRPhotoReflector(pin) \n 赤外線フォトリフレクタのインスタンスを生成します。\n pin引数に赤外線フォトリフレクタを接続しているピンを文字列（'P0'/'P1'/'P2'）で指定します。"
+
+msgid "pyatcrobo2.parts.IRPhotoReflector.get_value()\nRetrieve current sensor value (0-4095)."
+msgstr "pyatcrobo2.parts.IRPhotoReflector.get_value() \n センサーの値(0～4095)を取得します。"
+
+# LightSensor
+msgid "pyatcrobo2.parts.LightSensor(pin)\nCreate a Light Sensor instance.\nThe pin parameter can be set to 'P0', 'P1', or 'P2'\nto specify a pin with a Light Sensor connected to it. "
+msgstr "pyatcrobo2.parts.LightSensor(pin) \n 光センサーのインスタンスを生成します。\n pin引数に光センサーを接続しているピンを文字列（'P0'/'P1'/'P2'）で指定します。"
+
+msgid "pyatcrobo2.parts.LightSensor.get_value()\nRetrieve current sensor value (0-4095)."
+msgstr "pyatcrobo2.parts.LightSensor.get_value() \n センサーの値(0～4095)を取得します。"
+
+# Temperature
+msgid "pyatcrobo2.parts.Temperature(pin)\nCreate a Temperature Sensor instance.\nThe pin parameter can be set to 'P0', 'P1', or 'P2'\nto specify a pin with a Temperature Sensor connected to it. "
+msgstr "pyatcrobo2.parts.Temperature(pin)\n 温度センサーのインスタンスを生成します。\n pin引数に温度センサーを接続しているピンを文字列（'P0'/'P1'/'P2'）で指定します。"
+
+msgid "pyatcrobo2.parts.Temperature.get_value()\nRetrieve current sensor value (0-4095)."
+msgstr "pyatcrobo2.parts.Temperature.get_value() \n センサーの値(0～4095)を取得します。"
+
+msgid "pyatcrobo2.parts.Temperature.get_celsius()\nRetrieve current sensor value in degrees Celsius."
+msgstr "pyatcrobo2.parts.Temperature.get_celsius() \n センサーの値を温度（セ氏）で取得します。"
+
+# SoundSensor
+msgid "pyatcrobo2.parts.SoundSensor(pin)\nCreate a Sound Sensor instance.\nThe pin parameter can be set to 'P0', 'P1', or 'P2'\nto specify a pin with a Sound Sensor connected to it. "
+msgstr "pyatcrobo2.parts.SoundSensor(pin) \n 音センサーのインスタンスを生成します。\n pin引数に音センサーを接続しているピンを文字列（'P0'/'P1'/'P2'）で指定します。"
+
+msgid "pyatcrobo2.parts.SoundSensor.get_value()\nRetrieve current sensor value (0-4095)."
+msgstr "pyatcrobo2.parts.SoundSensor.get_value() \n センサーの値(0～4095)を取得します。"
+
+# TouchSensor
+msgid "pyatcrobo2.parts.TouchSensor(pin)\nCreate a Touch Sensor instance.\nThe pin parameter can be set to 'P0', 'P1', or 'P2'\nto specify a pin with a Touch Sensor connected to it. "
+msgstr "pyatcrobo2.parts.TouchSensor(pin) \n タッチセンサーのインスタンスを生成します。\n pin引数にタッチセンサーを接続しているピンを文字列（'P0'/'P1'/'P2'）で指定します。"
+
+msgid "pyatcrobo2.parts.TouchSensor.get_value()\nRetrieve current sensor value (0/1)."
+msgstr "pyatcrobo2.parts.TouchSensor.get_value() \n センサーの値(0/1)を取得します。"
+
+# Accelerometer
+msgid "pyatcrobo2.parts.Accelerometer(pin)\nCreate an Accelerometer instance.\nUse 'I2C' to set the Accelerometer's pin."
+msgstr "pyatcrobo2.parts.Accelerometer(pin) \n 加速度センサーのインスタンスを生成します。\n pin引数に加速度センサーを接続しているピンを文字列（'I2C'）で指定します。"
+
+msgid "pyatcrobo2.parts.Accelerometer.configuration(highres, scale)\nChange the Accelerometer's settings.\nHigh res can be set to True (16-bit resolution) or False (8-bit resolution).\nThe Accelerometer's maximum measurable acceleration\ncan be set to 2, 4, or 8 (from 2G to 8G)."
+msgstr "pyatcrobo2.parts.Accelerometer.configuration(highres, scale) \n 加速度センサーを設定します。\n"
+" highres引数には、高解像度指定をTrue/Falseで設定します。Trueを指定した場合、解像度は16bit、Falseを指定した場合、解像度は8bitになります。\n"
+" scale引数には、加速度の測定範囲(2G～8G)を指定します。整数で2,4,8をのいずれかを設定します。"
+
+msgid "pyatcrobo2.parts.Accelerometer.get_x()\nReturn tilt (X acceleration) in m/s/s's."
+msgstr "pyatcrobo2.parts.Accelerometer.get_x() \n X軸の加速度を返します。戻り値の型は符号付整数、デフォルトの単位はメートル/秒/秒です。"
+
+msgid "pyatcrobo2.parts.Accelerometer.get_y()\nReturn tilt (Y acceleration) in m/s/s's."
+msgstr "pyatcrobo2.parts.Accelerometer.get_y() \n Y軸の加速度を返します。戻り値の型は符号付整数、デフォルトの単位はメートル/秒/秒です。"
+
+msgid "pyatcrobo2.parts.Accelerometer.get_z()\nReturn tilt (Z acceleration) in m/s/s's."
+msgstr "pyatcrobo2.parts.Accelerometer.get_z() \n Z軸の加速度を返します。戻り値の型は符号付整数、デフォルトの単位はメートル/秒/秒です。"
+
+msgid "pyatcrobo2.parts.Accelerometer.get_values()\nGet the acceleration measurements in all axes at once, \nas a three-element tuple of integers (ordered as X, Y, Z)."
+msgstr "pyatcrobo2.parts.Accelerometer.get_values() \n X,Y,Z軸の加速度をタプルで返します。(get_x(), get_y(), get_z())。"

@@ -31,7 +31,7 @@ from PyQt5.QtCore import (Qt, QProcess, QProcessEnvironment, pyqtSignal,
 from collections import deque
 from PyQt5.QtWidgets import (QMessageBox, QTextEdit, QFrame, QListWidget,
                              QGridLayout, QLabel, QMenu, QApplication,
-                             QTreeView)
+                             QTreeView, QTreeWidget, QTreeWidgetItem)
 from PyQt5.QtGui import (QKeySequence, QTextCursor, QCursor, QPainter,
                          QDesktopServices, QStandardItem)
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
@@ -221,7 +221,6 @@ class MicroPythonREPLPane(QTextEdit):
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
         """
-
         # If data is included ESC or CSI
         if len(self.prev_data) != 0:
             self.prev_data += data
@@ -240,50 +239,54 @@ class MicroPythonREPLPane(QTextEdit):
                 self.setTextCursor(tc)
             elif data[i] == 13:  # \r
                 pass
-            elif data[i] == 27: # ESC
+            elif len(data) == i + 1 and data[i] == 27:  # ESC
                 # If data is less ESC data
-                if (len(data) == i + 1):
-                    self.prev_data = data[i:]
-                    return
+                self.prev_data = data[i:]
+                return
 
-                if len(data) > i + 1 and data[i] == 27 and data[i + 1] == 91:   # CSI
-                    # If data is less CSI
-                    if (len(data) == i + 2):
-                        self.prev_data = data[i:]
+            elif len(data) > i + 1 and \
+                    data[i] == 27 and data[i + 1] == 91:   # CSI
+                csi_top = i
+                # VT100 cursor detected: <Esc>[
+                i += 2  # move index to after the [
+                regex = r'(?P<count>[\d]*)(;?[\d]*)*(?P<action>[ABCDKm])'
+                m = re.search(regex, data[i:].decode('utf-8'))
+                if m:
+                    # move to (almost) after control seq
+                    # (will ++ at end of loop)
+                    i += m.end() - 1
+
+                    if m.group("count") == '':
+                        count = 1
+                    else:
+                        count = int(m.group("count"))
+
+                    if m.group("action") == "A":  # up
+                        tc.movePosition(QTextCursor.Up, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "B":  # down
+                        tc.movePosition(QTextCursor.Down, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "C":  # right
+                        tc.movePosition(QTextCursor.Right, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "D":  # left
+                        tc.movePosition(QTextCursor.Left, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "K":  # delete things
+                        if m.group("count") == "":  # delete to end of line
+                            tc.movePosition(QTextCursor.EndOfLine,
+                                            mode=QTextCursor.KeepAnchor)
+                            tc.removeSelectedText()
+                            self.setTextCursor(tc)
+                    elif m.group("action") == "m":  # SGR
+                        pass
+                    else:
+                        self.prev_data = data[csi_top:]
                         return
-
-                    # VT100 cursor detected: <Esc>[
-                    i += 2  # move index to after the [
-                    regex = r'(?P<count>[\d]*)(;?[\d]*)*(?P<action>[ABCDKm])'
-                    m = re.search(regex, data[i:].decode('utf-8'))
-                    if m:
-                        # move to (almost) after control seq
-                        # (will ++ at end of loop)
-                        i += m.end() - 1
-
-                        if m.group("count") == '':
-                            count = 1
-                        else:
-                            count = int(m.group("count"))
-
-                        if m.group("action") == "A":  # up
-                            tc.movePosition(QTextCursor.Up, n=count)
-                            self.setTextCursor(tc)
-                        elif m.group("action") == "B":  # down
-                            tc.movePosition(QTextCursor.Down, n=count)
-                            self.setTextCursor(tc)
-                        elif m.group("action") == "C":  # right
-                            tc.movePosition(QTextCursor.Right, n=count)
-                            self.setTextCursor(tc)
-                        elif m.group("action") == "D":  # left
-                            tc.movePosition(QTextCursor.Left, n=count)
-                            self.setTextCursor(tc)
-                        elif m.group("action") == "K":  # delete things
-                            if m.group("count") == "":  # delete to end of line
-                                tc.movePosition(QTextCursor.EndOfLine,
-                                                mode=QTextCursor.KeepAnchor)
-                                tc.removeSelectedText()
-                                self.setTextCursor(tc)
+                else:
+                    self.prev_data = data[csi_top:]
+                    return
             elif data[i] == 10:  # \n
                 tc.movePosition(QTextCursor.End)
                 self.setTextCursor(tc)
@@ -463,6 +466,22 @@ class LocalFileList(MuFileList):
                 self.set_message.emit(msg)
                 self.get.emit(microbit_filename, local_filename)
 
+        if isinstance(source, MicroPythonDeviceFileTree):
+            file_exists = self.findItems(source.currentItem().text(0),
+                                         Qt.MatchExactly)
+            if not file_exists or \
+                    file_exists and self.show_confirm_overwrite_dialog():
+                self.disable.emit()
+                microbit_filename = source.currentItem().text(0)
+                local_filename = os.path.join(self.home,
+                                              microbit_filename)
+                msg = _("Getting '{}' from micro:bit. "
+                        "Copying to '{}'.").format(microbit_filename,
+                                                   local_filename)
+                logger.info(msg)
+                self.set_message.emit(msg)
+                self.get.emit(microbit_filename, local_filename)
+
     def on_get(self, microbit_file):
         """
         Fired when the get event is completed for the given filename.
@@ -499,6 +518,132 @@ class LocalFileList(MuFileList):
             path = os.path.join(self.home, local_filename)
             # Send the signal bubbling up the tree
             self.open_file.emit(path)
+
+
+class MuFileTree(QTreeWidget):
+    """
+    Contains shared methods for the two types of file listing used in Mu.
+    """
+    disable = pyqtSignal()
+    list_files = pyqtSignal()
+    set_message = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setHeaderHidden(True)
+
+    def show_confirm_overwrite_dialog(self):
+        """
+        Display a dialog to check if an existing file should be overwritten.
+
+        Returns a boolean indication of the user's decision.
+        """
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Information)
+        msg.setText(_("File already exists; overwrite it?"))
+        msg.setWindowTitle(_("File already exists"))
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        return msg.exec_() == QMessageBox.Ok
+
+
+class MicroPythonDeviceFileTree(MuFileTree):
+    """
+    Represents a tree of files on a MicroPython device.
+    """
+
+    put = pyqtSignal(str, str)
+    delete = pyqtSignal(str)
+
+    def __init__(self, home):
+        super().__init__()
+        self.home = home
+        self.setDragDropMode(QListWidget.DragDrop)
+
+    def dropEvent(self, event):
+        source = event.source()
+        if isinstance(source, LocalFileList):
+
+            # Make drop path
+            drop_path = []
+            target = self.itemAt(event.pos())
+            target_item = None
+            if target is not None:
+                if target.childCount() != 0:
+                    drop_path.insert(0, target.text(0))
+                    if target_item is None:
+                        target_item = target
+                while target.parent() is not None:
+                    target = target.parent()
+                    drop_path.insert(0, target.text(0))
+                    if target_item is None:
+                        target_item = target
+
+            target_path = '/'.join(drop_path)
+
+            # Check file exist
+            file_exists = False
+            if target_item is None:
+                file_exists = self.findItems(source.currentItem().text(),
+                                             Qt.MatchExactly)
+            else:
+                for i in range(target_item.childCount()):
+                    if source.currentItem().text() == \
+                       target_item.child(i).text(0):
+                        file_exists = True
+
+            # Copy file
+            if not file_exists or \
+                    file_exists and self.show_confirm_overwrite_dialog():
+                self.disable.emit()
+                local_filename = os.path.join(self.home,
+                                              source.currentItem().text())
+
+                msg = _("Copying '{}' to device.").format(local_filename)
+                logger.info(msg)
+                self.set_message.emit(msg)
+                self.put.emit(local_filename, target_path)
+
+    def on_put(self, device_file):
+        """
+        Fired when the put event is completed for the given filename.
+        """
+        self.list_files.emit()
+        # msg = _("'{}' successfully copied to device.").format(device_file)
+        # self.set_message.emit(msg)
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        delete_action = menu.addAction(_("Delete (cannot be undone)"))
+        action = menu.exec_(self.mapToGlobal(event.pos()))
+        if action == delete_action:
+            self.disable.emit()
+
+            # device_filename = self.currentItem().text(0)
+            # Make drop path
+            drop_path = []
+            target = self.currentItem()
+            filename = target.text(0)
+            if target.childCount() != 0:
+                drop_path.insert(0, target.text(0))
+            while target.parent() is not None:
+                target = target.parent()
+                drop_path.insert(0, target.text(0))
+            target_path = '/'.join(drop_path)
+            device_filename = target_path + '/' + filename
+
+            logger.info("Deleting {}".format(device_filename))
+            msg = _("Deleting '{}' from device.").format(device_filename)
+            logger.info(msg)
+            self.set_message.emit(msg)
+            self.delete.emit(device_filename)
+
+    def on_delete(self, device_file):
+        """
+        Fired when the delete event is completed for the given filename.
+        """
+        self.list_files.emit()
+        # msg = _("'{}' successfully deleted from device.").format(device_file)
+        # self.set_message.emit(msg)
 
 
 class FileSystemPane(QFrame):
@@ -595,6 +740,183 @@ class FileSystemPane(QFrame):
         self.enable()
 
     def on_ls_fail(self):
+        """
+        Fired when listing files fails.
+        """
+        self.show_warning(_("There was a problem getting the list of files on "
+                            "the device. Please check Mu's logs for "
+                            "technical information. Alternatively, try "
+                            "unplugging/plugging-in your device and/or "
+                            "restarting Mu."))
+        self.disable()
+
+    def on_put_fail(self, filename):
+        """
+        Fired when the referenced file cannot be copied onto the device.
+        """
+        self.show_warning(_("There was a problem copying the file '{}' onto "
+                            "the device. Please check Mu's logs for "
+                            "more information.").format(filename))
+
+    def on_delete_fail(self, filename):
+        """
+        Fired when a deletion on the device for the given file failed.
+        """
+        self.show_warning(_("There was a problem deleting '{}' from the "
+                            "device. Please check Mu's logs for "
+                            "more information.").format(filename))
+
+    def on_get_fail(self, filename):
+        """
+        Fired when getting the referenced file on the device failed.
+        """
+        self.show_warning(_("There was a problem getting '{}' from the "
+                            "device. Please check Mu's logs for "
+                            "more information.").format(filename))
+
+    def set_theme(self, theme):
+        pass
+
+    def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
+        """
+        Sets the font size for all the textual elements in this pane.
+        """
+        self.font.setPointSize(new_size)
+        self.microbit_label.setFont(self.font)
+        self.local_label.setFont(self.font)
+        self.microbit_fs.setFont(self.font)
+        self.local_fs.setFont(self.font)
+
+    def set_zoom(self, size):
+        """
+        Set the current zoom level given the "t-shirt" size.
+        """
+        self.set_font_size(PANE_ZOOM_SIZES[size])
+
+
+class StuduinoBitFileSystemPane(QFrame):
+    """
+    Contains two QListWidgets representing the micro:bit and the user's code
+    directory. Users transfer files by dragging and dropping. Highlighted files
+    can be selected for deletion.
+    """
+
+    set_message = pyqtSignal(str)
+    set_warning = pyqtSignal(str)
+    list_files = pyqtSignal()
+    open_file = pyqtSignal(str)
+
+    def __init__(self, home):
+        super().__init__()
+        self.home = home
+        self.font = Font().load()
+        microbit_fs = MicroPythonDeviceFileTree(home)
+        local_fs = LocalFileList(home)
+
+        @local_fs.open_file.connect
+        def on_open_file(file):
+            # Bubble the signal up
+            self.open_file.emit(file)
+
+        layout = QGridLayout()
+        self.setLayout(layout)
+        microbit_label = QLabel()
+        microbit_label.setText(_('Files on your device:'))
+        local_label = QLabel()
+        local_label.setText(_('Files on your computer:'))
+        self.microbit_label = microbit_label
+        self.local_label = local_label
+        self.microbit_fs = microbit_fs
+        self.local_fs = local_fs
+        self.set_font_size()
+        layout.addWidget(microbit_label, 0, 0)
+        layout.addWidget(local_label, 0, 1)
+        layout.addWidget(microbit_fs, 1, 0)
+        layout.addWidget(local_fs, 1, 1)
+        self.microbit_fs.disable.connect(self.disable)
+        self.microbit_fs.set_message.connect(self.show_message)
+        self.local_fs.disable.connect(self.disable)
+        self.local_fs.set_message.connect(self.show_message)
+
+    def disable(self):
+        """
+        Stops interaction with the list widgets.
+        """
+        self.microbit_fs.setDisabled(True)
+        self.local_fs.setDisabled(True)
+        self.microbit_fs.setAcceptDrops(False)
+        self.local_fs.setAcceptDrops(False)
+
+    def enable(self):
+        """
+        Allows interaction with the list widgets.
+        """
+        self.microbit_fs.setDisabled(False)
+        self.local_fs.setDisabled(False)
+        self.microbit_fs.setAcceptDrops(True)
+        self.local_fs.setAcceptDrops(True)
+
+    def show_message(self, message):
+        """
+        Emits the set_message signal.
+        """
+        self.set_message.emit(message)
+
+    def show_warning(self, message):
+        """
+        Emits the set_warning signal.
+        """
+        self.set_warning.emit(message)
+
+    def on_tree(self, microbit_files):
+        """
+        Displays a list of the files on the micro:bit.
+
+        Since listing files is always the final event in any interaction
+        between Mu and the micro:bit, this enables the controls again for
+        further interactions to take place.
+        """
+        self.microbit_fs.clear()
+        self.local_fs.clear()
+
+        items = []
+        for item in microbit_files:
+            item_parts = item.split('/')
+            item_parts.pop(0)
+
+            entry = QTreeWidgetItem(None, [item_parts[0]])
+            items_text = [i.text(0) for i in items]
+            if entry.text(0) not in items_text:
+                parent_item = entry
+            else:
+                parent_index = items_text.index(entry.text(0))
+                parent_item = items[parent_index]
+
+            if (len(item_parts) > 1):
+                for i in item_parts[1:]:
+                    child_item = QTreeWidgetItem(None, [i])
+                    child_list_text = [parent_item.child(i).text(0) for i in
+                                       range(parent_item.childCount())]
+
+                    if child_item.text(0) in child_list_text:
+                        child_index = child_list_text.index(child_item.text(0))
+                        parent_item = parent_item.child(child_index)
+                    else:
+                        parent_item.addChild(child_item)
+                        parent_item = child_item
+
+            items.append(entry) if entry.text(0) not in items_text else None
+
+        self.microbit_fs.addTopLevelItems(items)
+
+        local_files = [f for f in os.listdir(self.home)
+                       if os.path.isfile(os.path.join(self.home, f))]
+        local_files.sort()
+        for f in local_files:
+            self.local_fs.addItem(f)
+        self.enable()
+
+    def on_tree_fail(self):
         """
         Fired when listing files fails.
         """
