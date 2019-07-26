@@ -82,6 +82,7 @@ class EditorPane(QsciScintilla):
 
     # Signal fired when a script or hex is droped on this editor
     open_file = pyqtSignal(str)
+    code_selected = pyqtSignal(int, int)
 
     def __init__(self, path, text, newline=NEWLINE):
         super().__init__()
@@ -515,6 +516,7 @@ class EditorPane(QsciScintilla):
             # Highlight matches
             self.reset_search_indicators()
             self.highlight_selected_matches()
+            self.code_selected.emit(line_from, line_to)
 
     def toggle_line(self, raw_line):
         """

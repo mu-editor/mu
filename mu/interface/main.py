@@ -24,7 +24,7 @@ from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog, QMessageBox,
                              QLabel, QMainWindow, QStatusBar, QDockWidget,
-                             QShortcut, QApplication)
+                             QShortcut, QApplication, QHBoxLayout, QPushButton)
 from PyQt5.QtGui import QKeySequence, QStandardItemModel
 from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
@@ -307,6 +307,7 @@ class Window(QMainWindow):
         Adds a tab with the referenced path and text to the editor.
         """
         new_tab = EditorPane(path, text, newline)
+        new_tab.code_selected.connect(self.repl_run_code)
         new_tab.connect_margin(self.breakpoint_toggle)
         new_tab_index = self.tabs.addTab(new_tab, new_tab.label)
         new_tab.set_api(api)
@@ -501,7 +502,21 @@ class Window(QMainWindow):
         Adds the referenced REPL pane to the application.
         """
         self.repl_pane = repl_pane
-        self.repl = QDockWidget(_('{} REPL').format(name))
+        title_widget = QWidget()
+        self.repl = QDockWidget()
+        repl_title = QHBoxLayout()
+        label = QLabel()
+        label.setText(_("{} REPL").format(name))
+        repl_title.addWidget(label)
+        self.repl.run_select = QPushButton("RunMe")
+        self.repl.run_select.setEnabled(bool(self.current_tab.getSelection()))
+        self.repl.run_select.clicked.connect(self.repl_run_click)
+        repl_title.addWidget(self.repl.run_select)
+        repl_title.addStretch()
+        repl_title.setSpacing(0)
+        repl_title.setContentsMargins(4, 4, 4, 4)
+        title_widget.setLayout(repl_title)
+        self.repl.setTitleBarWidget(title_widget)
         self.repl.setWidget(repl_pane)
         self.repl.setFeatures(QDockWidget.DockWidgetMovable)
         self.repl.setAllowedAreas(Qt.BottomDockWidgetArea |
@@ -511,6 +526,20 @@ class Window(QMainWindow):
         self.connect_zoom(self.repl_pane)
         self.repl_pane.set_theme(self.theme)
         self.repl_pane.setFocus()
+
+    def repl_run_code(self, start_line, end_line):
+        if self.repl:
+            self.repl.run_select.setEnabled(start_line > 0)
+
+    def repl_run_click(self):
+        if self.current_tab:
+            line_from, _, line_to, _ = self.current_tab.getSelection()
+            lines = self.current_tab.text().split('\n')
+            selected = lines[line_from:line_to]
+            # TODO: tidy code (indentation, end with \n etc...)
+            clipboard = QApplication.clipboard()
+            clipboard.setText('\n'.join(selected))
+            self.repl_pane.paste()
 
     def add_plotter(self, plotter_pane, name):
         """
