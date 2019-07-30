@@ -475,6 +475,168 @@ class MicroPythonREPLPane(QTextEdit):
         self.set_font_size(PANE_ZOOM_SIZES[size])
 
 
+class SnekREPLPane(MicroPythonREPLPane):
+    """
+    REPL = Read, Evaluate, Print, Loop.
+
+    This widget represents a REPL client connected to a device running
+    Snek.
+
+    The device MUST be flashed with Snek for this to work.
+    """
+
+    def __init__(self, connection, theme="day", parent=None):
+        super().__init__(connection, theme, parent)
+        self.getting_text = False
+        self.text = b""
+        self.text_recv = None
+
+    def keyPressEvent(self, data):
+        """
+        Called when the user types something in the REPL.
+
+        Correctly encodes it and sends it to the connected device.
+        """
+        tc = self.textCursor()
+        key = data.key()
+        mod = data.modifiers()
+        if not mod:
+            mod = 0
+        ctrl_only = mod == Qt.ControlModifier
+        meta_only = mod == Qt.MetaModifier
+        ctrl_shift_only = mod == Qt.ControlModifier | Qt.ShiftModifier
+        shift_down = mod & Qt.ShiftModifier
+        on_osx = platform.system() == "Darwin"
+
+        if key == Qt.Key_Return:
+            # Move cursor to the end of document before sending carriage return
+            tc.movePosition(QTextCursor.End, mode=QTextCursor.MoveAnchor)
+            self.device_cursor_position = tc.position()
+            self.send(VT100_RETURN)
+        elif key == Qt.Key_Backspace:
+            if not self.delete_selection():
+                self.send(VT100_BACKSPACE)
+        elif key == Qt.Key_Delete:
+            if not self.delete_selection():
+                self.send(VT100_DELETE)
+        elif key == Qt.Key_Right:
+            if shift_down:
+                # Text selection - pass down
+                super().keyPressEvent(data)
+            elif tc.hasSelection():
+                self.move_cursor_to(tc.selectionEnd())
+        elif key == Qt.Key_Left:
+            if shift_down:
+                # Text selection - pass down
+                super().keyPressEvent(data)
+            elif tc.hasSelection():
+                self.move_cursor_to(tc.selectionStart())
+        elif (on_osx and meta_only) or (not on_osx and ctrl_only):
+            # Handle the Control key. On OSX/macOS/Darwin (python calls this
+            # platform Darwin), this is handled by Qt.MetaModifier. Other
+            # platforms (Linux, Windows) call this Qt.ControlModifier. Go
+            # figure. See http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
+            if Qt.Key_A <= key <= Qt.Key_Z:
+                # The microbit treats an input of \x01 as Ctrl+A, etc.
+                self.send(bytes([1 + key - Qt.Key_A]))
+        elif ctrl_shift_only or (on_osx and ctrl_only):
+            # Command-key on Mac, Ctrl-Shift on Win/Lin
+            if key == Qt.Key_C:
+                self.copy()
+            elif key == Qt.Key_V:
+                self.delete_selection()
+                self.paste()
+        else:
+            self.delete_selection()
+            self.send(bytes(data.text(), "utf8"))
+
+    def insertFromMimeData(self, source):
+        """
+        Insert mime data by sending it to the REPL
+        """
+        if source and source.text():
+            text = source.text().replace("\r\n", "\n").replace("\r", "\n")
+            self.connection.write(bytes(text, "utf8"))
+
+    def set_devicecursor_to_qtcursor(self):
+        # Move cursor to the end of document
+        tc = self.textCursor()
+        tc.movePosition(QTextCursor.End, mode=QTextCursor.MoveAnchor)
+        self.device_cursor_position = tc.position()
+
+    def send_commands(self, commands):
+        """
+        Send commands to the REPL via raw mode.
+        """
+        raw_on = [  # Sequence of commands to get into raw mode.
+            b"\x0e\x03",
+        ]
+        commands = [c.encode("utf-8") for c in commands]
+        raw_off = [
+            b"\x0f",
+        ]
+        command_sequence = raw_on + commands + raw_off
+        logger.info(command_sequence)
+        self.execute(command_sequence)
+
+    def execute(self, commands):
+        """
+        Execute a series of commands over a period of time (scheduling
+        remaining commands to be run in the next iteration of the event loop).
+        """
+        if commands:
+            command = commands[0]
+            logger.info("Sending command {}".format(command))
+            self.connection.write(command)
+            remainder = commands[1:]
+            remaining_task = lambda commands=remainder: self.execute(commands)
+            QTimer.singleShot(1000, remaining_task)
+
+    def process_bytes(self, data):
+        """
+        Given some incoming bytes of data, work out how to handle / display
+        them in the REPL widget.
+        """
+        tc = self.textCursor()
+        # The text cursor must be on the last line of the document. If it isn't
+        # then move it there.
+        while tc.movePosition(QTextCursor.Down):
+            pass
+        i = 0
+        while i < len(data):
+            if data[i] == 2:  # ctrl-b
+                self.getting_text = True
+                self.text = b""
+            elif data[i] == 3:  # ctrl-c
+                if self.text_recv:
+                    s = self.text.decode("utf-8", "replace")
+                    self.text_recv.recv_text(s)
+                    self.text = b""
+                self.getting_text = False
+            elif data[i] == 17 or data[i] == 19:  # XON/XOFF
+                pass
+            else:
+                if self.getting_text:
+                    if data[i] != 13:
+                        self.text += bytes([data[i]])
+                else:
+                    if data[i] == 8:  # \b
+                        tc.movePosition(QTextCursor.Left)
+                        self.setTextCursor(tc)
+                    elif data[i] == 13:  # \r
+                        pass
+                    elif data[i] == 10:  # \n
+                        tc.movePosition(QTextCursor.End)
+                        self.setTextCursor(tc)
+                        self.insertPlainText(chr(data[i]))
+                    else:
+                        tc.deleteChar()
+                        self.setTextCursor(tc)
+                        self.insertPlainText(chr(data[i]))
+            i += 1
+        self.ensureCursorVisible()
+
+
 class MuFileList(QListWidget):
     """
     Contains shared methods for the two types of file listing used in Mu.
