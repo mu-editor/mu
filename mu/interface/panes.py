@@ -293,12 +293,14 @@ class MicroPythonREPLPane(QTextEdit):
                 self.setTextCursor(tc)
                 self.insertPlainText(chr(data[i]))
             else:
-                if ((data[i] >= 0xe0 and data[i] <= 0xef) or self.utf8data != []):
+                if ((data[i] >= 0xe0 and data[i] <= 0xef) or
+                        self.utf8data != []):
                     self.utf8data.append(data[i])
-                    if len(self.utf8data) == 3 :
+                    if len(self.utf8data) == 3:
                         tc.deleteChar()
                         self.setTextCursor(tc)
-                        self.insertPlainText(bytes(self.utf8data).decode("utf-8"))
+                        self.insertPlainText(
+                            bytes(self.utf8data).decode("utf-8"))
                         self.utf8data = []
                 else:
                     tc.deleteChar()
