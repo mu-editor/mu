@@ -10,8 +10,8 @@ dist/mu-editor_64bit.exe‚Édev/sign.bat‚ğÀs
 
 # for Mac
 uname -a
-then sw_vers
-bash package/install_osx.sh
+sw_vers
+sudo bash package/install_osx.sh
 pyenv install 3.6.5
 pyenv versions
 pyenv global 3.6.5
@@ -25,12 +25,13 @@ python -c "import sys; print(sys.executable)"
 python -m pip --version
 pip --version
 
-pip install .[dev]
+sudo pip install .[dev]
 pip freeze
 
-make clean
+sudo make clean
 
-make macos
+# Makefile‚Ìcheck‚Ìˆ—‚ğC³‚·‚é
+sudo make macos
 mkdir dist
 zip -r -X dist/mu-editor.zip macOS/mu-editor.app
 du -sk dist/

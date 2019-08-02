@@ -139,6 +139,7 @@ class MicroPythonREPLPane(QTextEdit):
         self.setObjectName('replpane')
         self.set_theme(theme)
         self.prev_data = []
+        self.utf8data = []
 
     def paste(self):
         """
@@ -292,9 +293,17 @@ class MicroPythonREPLPane(QTextEdit):
                 self.setTextCursor(tc)
                 self.insertPlainText(chr(data[i]))
             else:
-                tc.deleteChar()
-                self.setTextCursor(tc)
-                self.insertPlainText(chr(data[i]))
+                if ((data[i] >= 0xe0 and data[i] <= 0xef) or self.utf8data != []):
+                    self.utf8data.append(data[i])
+                    if len(self.utf8data) == 3 :
+                        tc.deleteChar()
+                        self.setTextCursor(tc)
+                        self.insertPlainText(bytes(self.utf8data).decode("utf-8"))
+                        self.utf8data = []
+                else:
+                    tc.deleteChar()
+                    self.setTextCursor(tc)
+                    self.insertPlainText(chr(data[i]))
             i += 1
         self.ensureCursorVisible()
 
