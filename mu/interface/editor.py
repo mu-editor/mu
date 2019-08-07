@@ -521,18 +521,19 @@ class EditorPane(QsciScintilla):
         Given a raw_line, will return the toggled version of it.
         """
         clean_line = raw_line.strip()
+        if not clean_line or clean_line.startswith('##'):
+            # Ignore whitespace-only lines and compact multi-commented lines
+            return raw_line
+
         if clean_line.startswith('#'):
-            # It's a comment line, so handle "# " & "#..." as fallback:
+            # It's a comment line, so replace only the first "# " or "#":
             if clean_line.startswith('# '):
-                return raw_line.replace('# ', '')
+                return raw_line.replace('# ', '', 1)
             else:
-                return raw_line.replace('#', '')
-        elif clean_line:
+                return raw_line.replace('#', '', 1)
+        else:
             # It's a normal line of code.
             return '# ' + raw_line
-        else:
-            # It's a whitespace line, so just return it.
-            return raw_line
 
     def toggle_comments(self):
         """
@@ -552,15 +553,12 @@ class EditorPane(QsciScintilla):
             self.replaceSelectedText(new_text)
             # Ensure the new text is also selected.
             last_newline = toggled_lines[-1]
-            last_oldline = lines[-1].strip()
-            if last_newline.startswith('#'):
-                index_to += 2  # A newly commented line starts... "# "
-            elif last_oldline.startswith('#'):
-                # Check the original line to see what has been uncommented.
-                if last_oldline.startswith('# '):
-                    index_to -= 2  # It was "# ".
-                else:
-                    index_to -= 1  # It was "#".
+            last_oldline = lines[-1]
+
+            # Adjust the selection based on whether the last line got
+            # longer, shorter, or stayed the same
+            delta = len(last_newline) - len(last_oldline)
+            index_to += delta
             self.setSelection(line_from, index_from, line_to, index_to)
         else:
             # Toggle the line currently containing the cursor.
