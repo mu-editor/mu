@@ -299,8 +299,12 @@ class MicroPythonREPLPane(QTextEdit):
                     if len(self.utf8data) == 3:
                         tc.deleteChar()
                         self.setTextCursor(tc)
-                        self.insertPlainText(
-                            bytes(self.utf8data).decode("utf-8"))
+                        try:
+                            self.insertPlainText(
+                                bytes(self.utf8data).decode("utf-8"))
+                        except UnicodeDecodeError as e:
+                            print('Intercept occored in process_bytes')
+                            print(e)
                         self.utf8data = []
                 else:
                     tc.deleteChar()
@@ -483,15 +487,35 @@ class LocalFileList(MuFileList):
             if not file_exists or \
                     file_exists and self.show_confirm_overwrite_dialog():
                 self.disable.emit()
+
+                # Make source path
+                src_path = []
+                src_item = None
+                src = source.currentItem()
+                if src is not None:
+                    if src.childCount() != 0:
+                        src_path.insert(0, src.text(0))
+                        if src_item is None:
+                            src_item = src
+                    while src.parent() is not None:
+                        src = src.parent()
+                        src_path.insert(0, src.text(0))
+                        if src_item is None:
+                            src_item = src
+
+                src_path = '/'.join(src_path)
+
+                microbit_path_filename = src_path + '/' + \
+                    source.currentItem().text(0)
                 microbit_filename = source.currentItem().text(0)
                 local_filename = os.path.join(self.home,
                                               microbit_filename)
-                msg = _("Getting '{}' from micro:bit. "
-                        "Copying to '{}'.").format(microbit_filename,
+                msg = _("Getting '{}' from studuino:bit. "
+                        "Copying to '{}'.").format(microbit_path_filename,
                                                    local_filename)
                 logger.info(msg)
                 self.set_message.emit(msg)
-                self.get.emit(microbit_filename, local_filename)
+                self.get.emit(microbit_path_filename, local_filename)
 
     def on_get(self, microbit_file):
         """

@@ -661,6 +661,11 @@ class Editor:
             logger.debug('Creating directory: {}'.format(static_path))
             shutil.copytree(path('static', 'web/'), static_path)
             # Copy all the static directories.
+        # Ensure Studuino:bit based assets are copied over.
+        studuinobit_path = os.path.join(wd, "studuinobit")
+        if not os.path.exists(studuinobit_path):
+            logger.debug('Creating directory: {}'.format(studuinobit_path))
+            os.makedirs(studuinobit_path)
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)

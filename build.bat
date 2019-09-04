@@ -2,8 +2,12 @@ python -m pip install --upgrade pip
 python -m pip install -e .
 python run.py
 
-#python -m pip install pynsist
+python -m pip install pynsist
 python -m pip install pytest
+
+make check
+make win64
+make win32
 
 dist/mu-editor_64bit.exe‚Édev/sign.bat‚ğÀs
 

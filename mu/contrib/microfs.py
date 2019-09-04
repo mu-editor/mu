@@ -69,6 +69,7 @@ def raw_on(serial):
         if not data.endswith(msg):
             if COMMAND_LINE_FLAG:
                 print(data)
+            serial.dtr = True
             raise IOError('Could not enter raw REPL.')
 
     def flush(serial):
