@@ -776,6 +776,20 @@ class Window(QMainWindow):
         if hasattr(self, 'plotter') and self.plotter:
             self.plotter_pane.set_theme(theme)
 
+    def set_checker_icon(self, icon):
+        """
+        Set the status icon to use on the check button
+        """
+        self.button_bar.slots['check'].setIcon(load_icon(icon))
+        timer = QTimer()
+
+        @timer.timeout.connect
+        def reset():
+            self.button_bar.slots['check'].setIcon(load_icon('check.png'))
+            timer.stop()
+
+        timer.start(500)
+
     def show_admin(self, log, settings, packages):
         """
         Display the administrative dialog with referenced content of the log
