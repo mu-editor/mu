@@ -48,6 +48,7 @@ class CircuitPythonMode(MicroPythonMode):
         (0x1B4F, 0x8D23),  # SparkFun SAMD21 Dev Breakout
         (0x1209, 0x2017),  # Mini SAM M4
         (0x1209, 0x7102),  # Mini SAM M0
+        (0x1D50, 0x60E8),  # PewPew Boards
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
