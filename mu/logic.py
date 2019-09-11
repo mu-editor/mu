@@ -1082,6 +1082,9 @@ class Editor:
                     _('Awesome! Zero problems found.'),
                 ]
                 self.show_status_message(random.choice(ok_messages))
+                self._view.set_checker_icon('check-good.png')
+            else:
+                self._view.set_checker_icon('check-bad.png')
         else:
             self._view.reset_annotations()
 
