@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt, QSize, QIODevice
 from PyQt5.QtGui import QIcon, QKeySequence
 from unittest import mock
 from mu import __version__
+from tests.test_app import DumSig
 import mu.interface.main
 import mu.interface.themes
 import mu.interface.editor
@@ -147,11 +148,11 @@ def test_FileTabs_init():
     Ensure a FileTabs instance is initialised as expected.
     """
     with mock.patch('mu.interface.main.FileTabs.setTabsClosable') as mstc, \
-            mock.patch('mu.interface.main.FileTabs.tabCloseRequested') as cr, \
+            mock.patch('mu.interface.main.FileTabs.setMovable') as mstm, \
             mock.patch('mu.interface.main.FileTabs.currentChanged') as mcc:
         qtw = mu.interface.main.FileTabs()
-        mstc.assert_called_once_with(True)
-        cr.connect.assert_called_once_with(qtw.removeTab)
+        mstc.assert_called_once_with(False)
+        mstm.assert_called_once_with(True)
         mcc.connect.assert_called_once_with(qtw.change_tab)
 
 
@@ -210,13 +211,13 @@ def test_FileTabs_change_tab():
     """
     qtw = mu.interface.main.FileTabs()
     mock_tab = mock.MagicMock()
-    mock_tab.label = "foo"
+    mock_tab.title = "foo"
     qtw.widget = mock.MagicMock(return_value=mock_tab)
     mock_window = mock.MagicMock()
     qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
     tab_id = 1
     qtw.change_tab(tab_id)
-    mock_window.update_title.assert_called_once_with(mock_tab.label)
+    mock_window.update_title.assert_called_once_with(mock_tab.title)
 
 
 def test_FileTabs_change_tab_no_tabs():
@@ -230,6 +231,78 @@ def test_FileTabs_change_tab_no_tabs():
     qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
     qtw.change_tab(0)
     mock_window.update_title.assert_called_once_with(None)
+
+
+def test_FileTabs_addTab():
+    """
+    Expect tabs to be added with the right label and a button
+    """
+    qtw = mu.interface.main.FileTabs()
+    mock_tabbar = mock.MagicMock()
+    mock_tabbar.setTabButton = mock.MagicMock()
+    qtw.removeTab = mock.MagicMock()
+    qtw.tabBar = mock.MagicMock(return_value=mock_tabbar)
+    qtw.widget = mock.MagicMock(return_value=None)
+    mock_window = mock.MagicMock()
+    qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
+    ep = mu.interface.editor.EditorPane('/foo/bar.py', 'baz')
+    ep.modificationChanged = DumSig()
+    # Mocks for various classes
+    mock_widget = mock.MagicMock()
+    mock_widget_class = mock.MagicMock(return_value=mock_widget)
+    mock_label = mock.MagicMock()
+    mock_label.setPixmap = mock.MagicMock()
+    mock_label_class = mock.MagicMock(return_value=mock_label)
+    mock_button = mock.MagicMock()
+    mock_button.clicked = DumSig()
+    mock_button_class = mock.MagicMock(return_value=mock_button)
+    mock_layout = mock.MagicMock()
+    mock_layout.addWidget = mock.MagicMock()
+    mock_layout.setContentsMargins = mock.MagicMock()
+    mock_layout.setSpacing = mock.MagicMock()
+    mock_layout_class = mock.MagicMock(return_value=mock_layout)
+    mock_load_icon = mock.MagicMock()
+    mock_load_pixmap = mock.MagicMock()
+    # Patch half the world to check it was used
+    with mock.patch('mu.interface.main.QWidget', mock_widget_class), \
+            mock.patch('mu.interface.main.QLabel', mock_label_class), \
+            mock.patch('mu.interface.main.QPushButton', mock_button_class), \
+            mock.patch('mu.interface.main.QHBoxLayout', mock_layout_class), \
+            mock.patch('mu.interface.main.load_icon', mock_load_icon), \
+            mock.patch('mu.interface.main.load_pixmap', mock_load_pixmap):
+        qtw.addTab(ep, ep.label)
+    # Various widgets were created
+    mock_widget_class.assert_called_once_with()
+    mock_label_class.assert_called_once_with(mock_widget)
+    mock_button_class.assert_called_once_with(mock_widget)
+    mock_layout_class.assert_called_once_with(mock_widget)
+    # Widgets added to layout
+    mock_layout.addWidget.assert_has_calls([
+        mock.call(mock_label),
+        mock.call(mock_button),
+    ])
+    # Layout configured
+    mock_layout.setContentsMargins.assert_called_once_with(0, 0, 0, 0)
+    mock_layout.setSpacing.assert_called_once_with(6)
+    # Check the icons were loaded
+    mock_load_icon.assert_called_once_with('close-tab.svg')
+    mock_load_pixmap.assert_called_once_with('document.svg')
+    # We assume the tab id is 0 based on looking at Qt's source
+    # and the fact the bar was previously empty
+    right = mu.interface.main.QTabBar.RightSide
+    mock_tabbar.setTabButton.assert_called_once_with(0, right, mock_widget)
+    # Check the page is removed when the button is clicked
+    mock_button.clicked.emit()
+    qtw.removeTab.assert_called_once_with(0)
+    # Check icon is updated when modified
+    ep.isModified = mock.MagicMock(side_effect=[True, False])
+    with mock.patch('mu.interface.main.load_pixmap', mock_load_pixmap):
+        ep.modificationChanged.emit()
+        ep.modificationChanged.emit()
+    assert ep.isModified.call_count == 2
+    # Initial setup + two emits
+    assert mock_load_pixmap.call_count == 3
+    assert mock_label.setPixmap.call_count == 3
 
 
 def test_Window_attributes():
@@ -557,6 +630,7 @@ def test_Window_add_tab():
     ep.set_api.assert_called_once_with(api)
     ep.setFocus.assert_called_once_with()
     ep.setReadOnly.assert_called_once_with(w.read_only_tabs)
+    ep.isModified = mock.MagicMock(side_effect=[True, True, False, False])
     on_modified = ep.modificationChanged.connect.call_args[0][0]
     on_modified()
     w.tabs.setTabText.assert_called_once_with(new_tab_index, ep.label)
