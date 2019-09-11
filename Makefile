@@ -34,7 +34,6 @@ clean:
 	rm -rf macOS
 	rm -rf *.mp4
 	rm -rf .git/avatar/*
-	rm -rf mu_editor.egg-info
 	find . \( -name '*.py[co]' -o -name dropin.cache \) -delete
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
