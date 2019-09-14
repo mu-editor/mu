@@ -56,14 +56,6 @@ class SBMode(MicroPythonMode):
         """
         buttons = [
             {
-                'name': 'repl',
-                'display_name': _('REPL'),
-                'description': _('Use the REPL to live-code on the '
-                                 'Studuino:bit.'),
-                'handler': self.toggle_repl,
-                'shortcut': 'Ctrl+Shift+I',
-            },
-            {
                 'name': 'run',
                 'display_name': _('Run'),
                 'description': _('Run your code directly on the Studuino:bit'
@@ -84,6 +76,14 @@ class SBMode(MicroPythonMode):
                 'description': _('Access the file system on Studuino:bit.'),
                 'handler': self.toggle_files,
                 'shortcut': 'F4',
+            },
+            {
+                'name': 'repl',
+                'display_name': _('REPL'),
+                'description': _('Use the REPL to live-code on the '
+                                 'Studuino:bit.'),
+                'handler': self.toggle_repl,
+                'shortcut': 'Ctrl+Shift+I',
             }, ]
         if CHARTS:
             buttons.append({

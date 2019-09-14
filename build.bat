@@ -11,8 +11,12 @@ make win32
 
 dist/mu-editor_64bit.exe‚Édev/sign.bat‚ğÀs
 
-
+##################################################
 # for Mac
+
+# Makefile‚Ìcheck‚ğ‰º‹L‚É‚·‚é
+#check: clean
+
 uname -a
 sw_vers
 sudo bash package/install_osx.sh
