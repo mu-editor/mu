@@ -1087,6 +1087,9 @@ class Editor:
                     _('Awesome! Zero problems found.'),
                 ]
                 self.show_status_message(random.choice(ok_messages))
+                self._view.set_checker_icon('check-good.png')
+            else:
+                self._view.set_checker_icon('check-bad.png')
         else:
             self._view.reset_annotations()
 
@@ -1265,7 +1268,7 @@ class Editor:
             button_bar.connect("tidy", self.tidy_code, "F10")
         button_bar.connect("help", self.show_help, "Ctrl+H")
         button_bar.connect("quit", self.quit, "Ctrl+Q")
-        self._view.status_bar.set_mode(mode)
+        self._view.status_bar.set_mode(self.modes[mode].name)
         # Update references to default file locations.
         logger.info('Workspace directory: {}'.format(
             self.modes[mode].workspace_dir()))
@@ -1284,7 +1287,7 @@ class Editor:
                 tab.breakpoint_handles = set()
                 tab.reset_annotations()
         self.show_status_message(_('Changed to {} mode.').format(
-            mode.capitalize()))
+            self.modes[mode].name))
 
     def autosave(self):
         """

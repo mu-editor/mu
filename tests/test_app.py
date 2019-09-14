@@ -10,6 +10,37 @@ from mu.logic import LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
 
+class DumSig:
+    """
+    Fake signal for mocking purposes
+
+    Only supports a signal callback
+    """
+    def __init__(self):
+        """
+        Setup the signal
+        """
+
+        # Setup a fallback handled
+        @self.connect
+        def default(*args):
+            # ... and throw an exception because it still exists
+            raise Exception('No signal handler connected')
+
+    def connect(self, func):
+        """
+        Set the callback function
+        """
+        self.func = func
+        return func
+
+    def emit(self, *args):
+        """
+        Proxy the callback function
+        """
+        self.func(*args)
+
+
 def test_setup_logging():
     """
     Ensure that logging is set up in some way.
@@ -62,18 +93,6 @@ def test_run():
     Testing the call_count and mock_calls allows us to measure the expected
     number of instantiations and method calls.
     """
-    class DumSig:
-        def __init__(self):
-            @self.connect
-            def default(*args):
-                raise Exception('No signal handler connected')
-
-        def connect(self, func):
-            self.func = func
-            return func
-
-        def emit(self, *args):
-            self.func(*args)
 
     class Win(mock.MagicMock):
         load_theme = DumSig()
