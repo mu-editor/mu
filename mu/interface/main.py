@@ -24,7 +24,8 @@ from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QIODevice
 from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
                              QVBoxLayout, QTabWidget, QFileDialog, QMessageBox,
                              QLabel, QMainWindow, QStatusBar, QDockWidget,
-                             QShortcut, QApplication)
+                             QShortcut, QApplication, QTabBar, QPushButton,
+                             QHBoxLayout)
 from PyQt5.QtGui import QKeySequence, QStandardItemModel
 from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
@@ -147,8 +148,9 @@ class FileTabs(QTabWidget):
 
     def __init__(self):
         super(FileTabs, self).__init__()
-        self.setTabsClosable(True)
-        self.tabCloseRequested.connect(self.removeTab)
+        # We are implementing closable tabs manually
+        self.setTabsClosable(False)
+        self.setMovable(True)
         self.currentChanged.connect(self.change_tab)
 
     def removeTab(self, tab_id):
@@ -164,6 +166,62 @@ class FileTabs(QTabWidget):
                 return
         super(FileTabs, self).removeTab(tab_id)
 
+    def addTab(self, widget, title):
+        """
+        Add a new tab to the switcher
+        """
+        # Proxy up to the real addTab
+        tab_id = super(FileTabs, self).addTab(widget, title)
+        # A widget to put the indicator and close button in
+        container = QWidget()
+        box = QHBoxLayout(container)
+        # We don't want any margins on the layout, that would expand the tab
+        box.setContentsMargins(0, 0, 0, 0)
+        # Ensure some space between image and button
+        box.setSpacing(6)
+        # Counterintuitively QImage doesn't show an image, QLabel does
+        state_lbl = QLabel(container)
+        box.addWidget(state_lbl)
+        state_lbl.setPixmap(load_pixmap('document.svg'))
+
+        # Watch for status change to update the dirty indicator
+        # We watch here as it's far easier to keep track of state_lbl
+        # It does mean we assume all tabs are EditorPane
+        @widget.modificationChanged.connect
+        def on_modified():
+            if widget.isModified():
+                state_lbl.setPixmap(load_pixmap('document-dirty.svg'))
+            else:
+                # This icon is actually empty
+                state_lbl.setPixmap(load_pixmap('document.svg'))
+
+        # Setup our own close button since we are overriding the built in one
+        close_btn = QPushButton(container)
+        box.addWidget(close_btn)
+        close_btn.setToolTip(_('Close file'))
+        close_btn.setFlat(True)
+        # Bit of a weird size but we want to avoid giant tabs
+        close_btn.setIconSize(QSize(10, 10))
+        close_btn.setIcon(load_icon('close-tab.svg'))
+        close_btn.show()
+
+        # Handle 'clicked' events
+        @close_btn.clicked.connect
+        def close():
+            # The tab_id isn't constant and may have changed, lookup the
+            # current id of the EditorPane
+            tab_id = self.indexOf(widget)
+            # Close the tab
+            self.removeTab(tab_id)
+
+        container.setLayout(box)
+        # Add the box, clearly it isn't a button but QTabBar actually takes
+        # any QWidget not just buttons
+        self.tabBar().setTabButton(tab_id, QTabBar.RightSide, container)
+
+        # Return the index of the new page just like the reall addTab
+        return tab_id
+
     def change_tab(self, tab_id):
         """
         Update the application title to reflect the name of the file in the
@@ -172,7 +230,7 @@ class FileTabs(QTabWidget):
         current_tab = self.widget(tab_id)
         window = self.nativeParentWidget()
         if current_tab:
-            window.update_title(current_tab.label)
+            window.update_title(current_tab.title)
         else:
             window.update_title(None)
 
@@ -316,8 +374,10 @@ class Window(QMainWindow):
         @new_tab.modificationChanged.connect
         def on_modified():
             modified_tab_index = self.tabs.currentIndex()
+            # Update tab label & window title
+            # Tab dirty indicator is managed in FileTabs.addTab
             self.tabs.setTabText(modified_tab_index, new_tab.label)
-            self.update_title(new_tab.label)
+            self.update_title(new_tab.title)
 
         @new_tab.open_file.connect
         def on_open_file(file):
@@ -718,6 +778,20 @@ class Window(QMainWindow):
         if hasattr(self, 'plotter') and self.plotter:
             self.plotter_pane.set_theme(theme)
 
+    def set_checker_icon(self, icon):
+        """
+        Set the status icon to use on the check button
+        """
+        self.button_bar.slots['check'].setIcon(load_icon(icon))
+        timer = QTimer()
+
+        @timer.timeout.connect
+        def reset():
+            self.button_bar.slots['check'].setIcon(load_icon('check.png'))
+            timer.stop()
+
+        timer.start(500)
+
     def show_admin(self, log, settings, packages):
         """
         Display the administrative dialog with referenced content of the log
@@ -868,7 +942,6 @@ class Window(QMainWindow):
         self.widget.setLayout(widget_layout)
         self.button_bar = ButtonBar(self.widget)
         self.tabs = FileTabs()
-        self.tabs.setMovable(True)
         self.setCentralWidget(self.tabs)
         self.status_bar = StatusBar(parent=self)
         self.setStatusBar(self.status_bar)
@@ -1079,4 +1152,4 @@ class StatusBar(QStatusBar):
         """
         Updates the mode label to the new mode.
         """
-        self.mode_label.setText(mode.capitalize())
+        self.mode_label.setText(mode)

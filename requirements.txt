@@ -1,0 +1,3 @@
+# Mu doesn't use requirements.txt:
+# - To install please refer to https://codewith.mu/.
+# - To setup a development environment see https://mu.readthedocs.io/.

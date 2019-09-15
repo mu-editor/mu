@@ -6,8 +6,7 @@ all:
 	@echo "\nThere is no default Makefile target right now. Try:\n"
 	@echo "make run - run the local development version of Mu."
 	@echo "make clean - reset the project and remove auto-generated assets."
-	@echo "make pyflakes - run the PyFlakes code checker."
-	@echo "make pycodestyle - run the PEP8 style checker."
+	@echo "make flake8 - run the flake8 code checker."
 	@echo "make test - run the test suite."
 	@echo "make coverage - view a report on test coverage."
 	@echo "make check - run all the checkers and tests."
@@ -35,7 +34,6 @@ clean:
 	rm -rf macOS
 	rm -rf *.mp4
 	rm -rf .git/avatar/*
-	rm -rf mu_editor.egg-info
 	find . \( -name '*.py[co]' -o -name dropin.cache \) -delete
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
@@ -48,11 +46,8 @@ else
 	python run.py
 endif
 
-pyflakes:
-	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils -o -path ./venv -o -path ./package \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
-
-pycodestyle:
-	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pycodestyle --repeat --exclude=package/*,build/*,docs/*,mu/contrib*,mu/modes/api/*,utils/*,venv/*,.vscode/* --ignore=E731,E402,W504
+flake8:
+	flake8
 
 test: clean
 	pytest --random-order
@@ -60,7 +55,7 @@ test: clean
 coverage: clean
 	pytest --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
-check: clean pycodestyle pyflakes coverage
+check: clean flake8 coverage
 
 dist: check
 	@echo "\nChecks pass, good to package..."

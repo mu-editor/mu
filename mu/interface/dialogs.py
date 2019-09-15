@@ -261,6 +261,7 @@ class FindReplaceDialog(QDialog):
         find_label = QLabel(_('Find:'))
         self.find_term = QLineEdit()
         self.find_term.setText(find)
+        self.find_term.selectAll()
         widget_layout.addWidget(find_label)
         widget_layout.addWidget(self.find_term)
         # Replace

@@ -24,8 +24,14 @@ install_requires = [
     'PyQt5==5.12.1;"arm" not in platform_machine',
     'QScintilla==2.11.1;"arm" not in platform_machine',
     'PyQtChart==5.12;"arm" not in platform_machine',
-    'pycodestyle==2.4.0',
-    'pyflakes==2.0.0',
+    # `flake8` is actually a testing/packaging dependency that, among other
+    # packages, brings in `pycodestyle` and `pyflakes` which are runtime
+    # dependencies. For the sake of "locality", it is being declared here,
+    # though. Regarding these packages' versions, please refer to:
+    # http://flake8.pycqa.org/en/latest/faq.html#why-does-flake8-use-ranges-for-its-dependencies
+    'flake8 >= 3.7.8',
+    'pycodestyle >= 2.5.0, < 2.6.0',
+    'pyflakes >= 2.1.0, < 2.2.0',
     'pyserial==3.4',
     'qtconsole==4.4.3',
     'pgzero==1.2',
