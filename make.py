@@ -6,8 +6,7 @@ import shutil
 import subprocess
 
 PYTEST = "pytest"
-PYFLAKES = "pyflakes"
-PYCODESTYLE = "pycodestyle"
+FLAKE8 = "flake8"
 PYGETTEXT = os.path.join(sys.base_prefix, "tools", "i18n", "pygettext.py")
 
 INCLUDE_PATTERNS = {
@@ -135,31 +134,14 @@ def coverage():
 
 
 @export
-def pyflakes(*pyflakes_args):
-    """Run the PyFlakes code checker
+def flake8(*flake8_args):
+    """Run the flake8 code checker
 
-    Call pyflakes on all .py files outside the docs and contrib directories
+    Call flake8 on all files as specified by setup.cfg
     """
-    print("\npyflakes")
+    print("\nflake8")
     os.environ["PYFLAKES_BUILTINS"] = "_"
-    return _process_code(PYFLAKES, False, *pyflakes_args)
-
-
-@export
-def pycodestyle(*pycodestyle_args):
-    """Run the PEP8 style checker
-    """
-    print("\nPEP8")
-    args = ("--ignore=E731,E402,W504",) + pycodestyle_args
-    return _process_code(PYCODESTYLE, False, *args)
-
-
-@export
-def pep8(*pep8_args):
-    """Run the PEP8 style checker
-    """
-    return pycodestyle(*pep8_args)
-
+    return subprocess.run([FLAKE8]).returncode
 
 @export
 def check():
@@ -168,8 +150,7 @@ def check():
     print("\nCheck")
     funcs = [
         clean,
-        pyflakes,
-        pycodestyle,
+        flake8,
         coverage
     ]
     for func in funcs:
