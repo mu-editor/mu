@@ -9,6 +9,7 @@ You may:
 * rm - remove a named file on the device. Based on the Unix command.
 * put - copy a named local file onto the device a la equivalent FTP command.
 * get - copy a named file from the device to the local file system a la FTP.
+* tree - get the device folder structure.
 """
 from __future__ import print_function
 import ast
@@ -36,6 +37,7 @@ You may use the following commands:
 'rm' - remove a named file on the device (based on the Unix command);
 'put' - copy a named local file onto the device just like the FTP command; and,
 'get' - copy a named file from the device to the local file system a la FTP.
+'tree' - get the device folder structure.
 
 For example, 'ufs ls' will list the files on a connected BBC micro:bit.
 """
@@ -69,7 +71,6 @@ def raw_on(serial):
         if not data.endswith(msg):
             if COMMAND_LINE_FLAG:
                 print(data)
-            serial.dtr = True
             raise IOError('Could not enter raw REPL.')
 
     def flush(serial):
@@ -121,13 +122,8 @@ def get_serial():
 
 def send_cmd(commands, serial):
     """
-    Sends the command to the connected micropython via serial and returns the
-    result.
-
-    For this to work correctly, a particular sequence of commands needs to be
-    sent to put the device into a good state to process the incoming command.
-
-    Returns the stdout and stderr output from the micropython.
+    Separated RAW REPL ON / OFF processing from execute function to trace device
+    directory hierarchy.   
     """
     result = b''
     for command in commands:
@@ -198,6 +194,9 @@ def clean_error(err):
 
 
 def seek(dirs, path, serial, flist):
+    """
+    Get device directory hierarchy.
+    """
     dirs = (ast.literal_eval(dirs.decode('utf-8')))
     for f in dirs:
         # kind = os.stat(path+'/'+f)[0]
@@ -225,6 +224,9 @@ def seek(dirs, path, serial, flist):
 
 
 def tree(serial=None):
+    """
+    Get device directory tree hierarchy.
+    """
     raw_on(serial)
 
     # Get root files
@@ -241,7 +243,7 @@ def tree(serial=None):
 
     return flist
 
-def ls(serial=None, root='.'):
+def ls(serial=None):
     """
     List the files on the micro:bit.
 

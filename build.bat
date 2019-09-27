@@ -1,3 +1,9 @@
+
+【カバレッジの個別チェックコマンド例】
+pytest tests\interface\test_panes.py
+
+
+
 python -m pip install --upgrade pip
 python -m pip install -e .
 python run.py

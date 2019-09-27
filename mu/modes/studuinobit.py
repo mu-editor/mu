@@ -20,25 +20,26 @@ import logging
 import os
 import time
 from mu.modes.base import MicroPythonMode, StuduinoBitFileManager
-from mu.modes.api import SB_APIS, SHARED_APIS
+from mu.modes.api import STUDUINOBIT_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import (QDialog, QGridLayout, QPushButton,
                              QHBoxLayout, QGroupBox, QLabel)
 from mu.contrib import microfs
-from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, write_and_flush
+from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, save_and_encode
 from serial import Serial
 
 logger = logging.getLogger(__name__)
 
 
-class SBMode(MicroPythonMode):
+class StuduinoBitMode(MicroPythonMode):
     """
-    Represents the functionality required for running MicroPython on ESP8266
+    Represents the functionality required for running
+    MicroPython on Studuino:bit
     """
     name = _('Artec Studuino:Bit MicroPython')
     description = _("Write MicroPython on Studuino:bit.")
-    icon = 'sb'
+    icon = 'studuinobit'
     fs = None
 
     # There are many boards which use ESP microcontrollers but they often use
@@ -48,6 +49,9 @@ class SBMode(MicroPythonMode):
         # VID  , PID
         (0x20A0, 0x4269),   # Studuion:bit VID, PID
     ]
+
+    def __init__(self, editor, view):
+        super().__init__(editor, view)
 
     def actions(self):
         """
@@ -71,7 +75,7 @@ class SBMode(MicroPythonMode):
                 'shortcut': 'F3',
             },
             {
-                'name': 'files',
+                'name': 'files_sb',
                 'display_name': _('Files'),
                 'description': _('Access the file system on Studuino:bit.'),
                 'handler': self.toggle_files,
@@ -100,20 +104,20 @@ class SBMode(MicroPythonMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return SHARED_APIS + SB_APIS
+        return SHARED_APIS + STUDUINOBIT_APIS
 
     def toggle_repl(self, event):
         if self.fs is None:
             if self.repl:
                 # Remove REPL
                 super().toggle_repl(event)
-                self.set_buttons(files=True, flash_sb=True)
+                self.set_buttons(files_sb=True, flash_sb=True)
             elif not (self.repl):
                 # Add REPL
                 time.sleep(1)
                 super().toggle_repl(event)
                 if self.repl:
-                    self.set_buttons(files=False, flash_sb=False)
+                    self.set_buttons(files_sb=False, flash_sb=False)
         else:
             message = _("REPL and file system cannot work at the same time.")
             information = _("The REPL and file system both use the same USB "
@@ -133,44 +137,16 @@ class SBMode(MicroPythonMode):
             return
 
         # Display sending message
-        '''
-        label1 = QLabel("Please wait...")
-        layout = QVBoxLayout()
-        layout.addWidget(label1)
-
-        dlg_msg = QDialog()
-        dlg_msg.setWindowTitle(_("Updating..."))
-        dlg_msg.setLayout(layout)
-        dlg_msg.resize(200, 0)
-        dlg_msg.setFixedHeight(10)
-        dlg_msg.setModal(False)
-        dlg_msg.show()
-        dlg_msg.activateWindow()
-        dlg_msg.raise_()
-        dlg_msg.setFocus()
-        '''
         self.editor.show_status_message(_("Updating..."))
 
         # Display sending message
         reg_info = regist_box.get_register_info()
         reg_num = reg_info[0]
-        # fname = reg_info[1]
-
-        # Find serial port the ESP8266/ESP32 is connected to
-        # device_port, serial_number = self.find_device()
-        # file_manager = StuduinoBitFileManager(device_port)
-        # file_manager.on_start()
 
         tab = self.view.current_tab
         usr_file = HOME_DIRECTORY + '\\' + WORKSPACE_NAME + \
             '\\studuinobit\\usr' + reg_num + '.py'
-
-        text = tab.text()
-        newline = os.linesep
-        with open(usr_file, "w", encoding="utf-8", newline='') as f:
-            text_to_write = newline.join(l.rstrip(" ") for l in
-                                         text.splitlines()) + newline
-            write_and_flush(f, text_to_write)
+        save_and_encode(tab.text(), usr_file, tab.newline)
 
         # Send script
         device_port, serial_number = self.find_device()
@@ -185,18 +161,12 @@ class SBMode(MicroPythonMode):
             ], serial)
             time.sleep(0.1)
             serial.write(b'\x04')
-        except IOError as e:
-            if e is 'Could not enter raw REPL.':
-                print('111111111111111111')
         except Exception as e:
-            print(e)
+            logger.error(e)
         finally:
             if serial is not None:
                 serial.dtr = True
                 serial.close()
-
-        # self.view.open_serial_link(device_port)
-        # self.view.close_serial_link()
 
         self.toggle_repl(None)
         self.toggle_repl(None)
@@ -212,9 +182,9 @@ class SBMode(MicroPythonMode):
         if self.fs is None:
             super().toggle_plotter(event)
             if self.plotter:
-                self.set_buttons(files=False, flash_sb=False)
+                self.set_buttons(files_sb=False, flash_sb=False)
             elif not (self.repl or self.plotter):
-                self.set_buttons(files=True, flash_sb=True)
+                self.set_buttons(files_sb=True, flash_sb=True)
         else:
             message = _("The plotter and file system cannot work at the same "
                         "time.")
@@ -235,7 +205,8 @@ class SBMode(MicroPythonMode):
             try:
                 serial = Serial(device_port, 115200, timeout=1, parity='N')
             except Exception as e:
-                print(e)
+                logger.error(e)
+                return
 
             try:
                 out, err = microfs.execute([
@@ -243,8 +214,9 @@ class SBMode(MicroPythonMode):
                     'machine.nvs_setint("lastSelected", 99)',
                 ], serial)
             except IOError as e:
-                print('Please REST Button')
-                print(e)
+                self.editor.\
+                    show_status_message(_('Please REST Button'))
+                logger.error(e)
                 serial.close()
                 return
 
@@ -339,8 +311,38 @@ class SBMode(MicroPythonMode):
         Ensure the Files button is active before the REPL is killed off when
         a data flood of the plotter is detected.
         """
-        self.set_buttons(files=True)
+        self.set_buttons(files_sb=True)
         super().on_data_flood()
+
+    def add_repl(self):
+        """
+        Detect a connected MicroPython based device and, if found, connect to
+        the REPL and display it to the user.
+        """
+        device_port, serial_number = self.find_device()
+        if device_port:
+            try:
+                self.view.add_studuionbit_repl(device_port, self.name,
+                                               self.force_interrupt)
+                logger.info('Started REPL on port: {}'.format(device_port))
+                self.repl = True
+            except IOError as ex:
+                logger.error(ex)
+                self.repl = False
+                info = _("Click on the device's reset button, wait a few"
+                         " seconds and then try again.")
+                self.view.show_message(str(ex), info)
+            except Exception as ex:
+                logger.error(ex)
+        else:
+            message = _('Could not find an attached device.')
+            information = _('Please make sure the device is plugged into this'
+                            ' computer.\n\nIt must have a version of'
+                            ' MicroPython (or CircuitPython) flashed onto it'
+                            ' before the REPL will work.\n\nFinally, press the'
+                            " device's reset button and wait a few seconds"
+                            ' before trying again.')
+            self.view.show_message(message, information)
 
 
 class RegisterWindow(QDialog):
@@ -379,17 +381,11 @@ class RegisterWindow(QDialog):
     def on_click(self):
         sender = self.sender()
         reg_number = sender.parent().title()
-        # for child in (sender.parent().children()):
-        #     if type(child) is QLineEdit:
-        #         self.register_info.append(reg_number)
-        #         self.register_info.append(child.text())
         self.register_info.append(reg_number)
         self.accept()
 
     def get_register_info(self):
         """
-        Return a dictionary representation of the raw settings information
-        generated by this dialog. Such settings will need to be processed /
-        checked in the "logic" layer of Mu.
+        Return a selected slot number
         """
         return self.register_info

@@ -34,7 +34,7 @@ from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface import Window
 from mu.resources import load_pixmap, load_icon
 from mu.modes import (PythonMode, CircuitPythonMode, MicrobitMode, DebugMode,
-                      PyGameZeroMode, ESPMode, WebMode, SBMode)
+                      PyGameZeroMode, ESPMode, WebMode, StuduinoBitMode)
 from mu.debugger.runner import run as run_debugger
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
@@ -73,7 +73,7 @@ def setup_modes(editor, view):
     splitting things out here to contain the mess. ;-)
     """
     modes = {
-        'sb': SBMode(editor, view),
+        'studuinobit': StuduinoBitMode(editor, view),
         'python': PythonMode(editor, view),
         'circuitpython': CircuitPythonMode(editor, view),
         'microbit': MicrobitMode(editor, view),

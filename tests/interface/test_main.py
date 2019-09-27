@@ -848,6 +848,70 @@ def test_Window_add_filesystem_open_signal():
     mock_open_emit.assert_called_once_with('test')
 
 
+def test_Window_add_studuinobit_filesystem():
+    """
+    Ensure the expected settings are updated when adding a file system pane.
+    """
+    w = mu.interface.main.Window()
+    w.theme = mock.MagicMock()
+    w.splitter = mock.MagicMock()
+    w.addDockWidget = mock.MagicMock(return_value=None)
+    w.connect_zoom = mock.MagicMock(return_value=None)
+    mock_fs = mock.MagicMock()
+    mock_fs.setFocus = mock.MagicMock(return_value=None)
+    mock_fs_class = mock.MagicMock(return_value=mock_fs)
+    mock_dock = mock.MagicMock()
+    mock_dock_class = mock.MagicMock(return_value=mock_dock)
+    mock_file_manager = mock.MagicMock()
+    with mock.patch('mu.interface.main.StuduinoBitFileSystemPane',
+                    mock_fs_class), \
+            mock.patch('mu.interface.main.QDockWidget', mock_dock_class):
+        result = w.add_studuinobit_filesystem('path/to/home',
+                                              mock_file_manager)
+    mock_fs_class.assert_called_once_with('path/to/home')
+    assert result == mock_fs
+    assert w.fs_pane == mock_fs
+    w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
+    mock_fs.setFocus.assert_called_once_with()
+    mock_file_manager.on_list_files.connect.\
+        assert_called_once_with(mock_fs.on_tree)
+    mock_fs.list_files.connect.assert_called_once_with(mock_file_manager.tree)
+    mock_fs.studuinobit_fs.put.connect.\
+        assert_called_once_with(mock_file_manager.put)
+    mock_fs.studuinobit_fs.delete.connect.\
+        assert_called_once_with(mock_file_manager.delete)
+    mock_fs.studuinobit_fs.list_files.connect.\
+        assert_called_once_with(mock_file_manager.tree)
+    mock_fs.local_fs.get.connect.assert_called_once_with(mock_file_manager.get)
+    mock_fs.local_fs.list_files.connect.\
+        assert_called_once_with(mock_file_manager.tree)
+    mock_file_manager.on_put_file.connect.\
+        assert_called_once_with(mock_fs.studuinobit_fs.on_put)
+    mock_file_manager.on_delete_file.connect.\
+        assert_called_once_with(mock_fs.studuinobit_fs.on_delete)
+    mock_file_manager.on_get_file.connect.\
+        assert_called_once_with(mock_fs.local_fs.on_get)
+    mock_file_manager.on_list_fail.connect.\
+        assert_called_once_with(mock_fs.on_tree_fail)
+    mock_file_manager.on_put_fail.connect.\
+        assert_called_once_with(mock_fs.on_put_fail)
+    mock_file_manager.on_delete_fail.connect.\
+        assert_called_once_with(mock_fs.on_delete_fail)
+    mock_file_manager.on_get_fail.connect.\
+        assert_called_once_with(mock_fs.on_get_fail)
+    w.connect_zoom.assert_called_once_with(mock_fs)
+
+
+def test_Window_add_studuinobit_filesystem_open_signal():
+    w = mu.interface.main.Window()
+    w.open_file = mock.MagicMock()
+    mock_open_emit = mock.MagicMock()
+    w.open_file.emit = mock_open_emit
+    pane = w.add_studuinobit_filesystem('homepath', mock.MagicMock())
+    pane.open_file.emit('test')
+    mock_open_emit.assert_called_once_with('test')
+
+
 def test_Window_add_micropython_repl():
     """
     Ensure the expected object is instantiated and add_repl is called for a
@@ -893,6 +957,58 @@ def test_Window_add_micropython_repl_no_interrupt():
     mock_repl_class = mock.MagicMock(return_value=mock_repl)
     with mock.patch('mu.interface.main.MicroPythonREPLPane', mock_repl_class):
         w.add_micropython_repl('COM0', 'Test REPL', False)
+    mock_repl_class.assert_called_once_with(serial=w.serial)
+    w.open_serial_link.assert_called_once_with('COM0')
+    assert w.serial.write.call_count == 0
+    w.data_received.connect.assert_called_once_with(mock_repl.process_bytes)
+    w.add_repl.assert_called_once_with(mock_repl, 'Test REPL')
+
+
+def test_Window_add_studuionbit_repl():
+    """
+    Ensure the expected object is instantiated and add_repl is called for a
+    MicroPython based REPL.
+    """
+    w = mu.interface.main.Window()
+    w.theme = mock.MagicMock()
+    w.add_repl = mock.MagicMock()
+
+    def side_effect(self, w=w):
+        w.serial = mock.MagicMock()
+
+    w.open_serial_link = mock.MagicMock(side_effect=side_effect)
+    w.data_received = mock.MagicMock()
+    mock_repl = mock.MagicMock()
+    mock_repl_class = mock.MagicMock(return_value=mock_repl)
+    with mock.patch('mu.interface.main.StuduinoBitREPLPane', mock_repl_class):
+        w.add_studuionbit_repl('COM0', 'Test REPL')
+    mock_repl_class.assert_called_once_with(serial=w.serial)
+    w.open_serial_link.assert_called_once_with('COM0')
+    assert w.serial.write.call_count == 2
+    assert w.serial.write.call_args_list[0][0][0] == b'\x02'
+    assert w.serial.write.call_args_list[1][0][0] == b'\x03'
+    w.data_received.connect.assert_called_once_with(mock_repl.process_bytes)
+    w.add_repl.assert_called_once_with(mock_repl, 'Test REPL')
+
+
+def test_Window_add_studuionbit_repl_no_interrupt():
+    """
+    Ensure the expected object is instantiated and add_repl is called for a
+    MicroPython based REPL.
+    """
+    w = mu.interface.main.Window()
+    w.theme = mock.MagicMock()
+    w.add_repl = mock.MagicMock()
+
+    def side_effect(self, w=w):
+        w.serial = mock.MagicMock()
+
+    w.open_serial_link = mock.MagicMock(side_effect=side_effect)
+    w.data_received = mock.MagicMock()
+    mock_repl = mock.MagicMock()
+    mock_repl_class = mock.MagicMock(return_value=mock_repl)
+    with mock.patch('mu.interface.main.StuduinoBitREPLPane', mock_repl_class):
+        w.add_studuionbit_repl('COM0', 'Test REPL', False)
     mock_repl_class.assert_called_once_with(serial=w.serial)
     w.open_serial_link.assert_called_once_with('COM0')
     assert w.serial.write.call_count == 0

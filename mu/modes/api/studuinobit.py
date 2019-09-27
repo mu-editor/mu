@@ -1,5 +1,5 @@
 """
-Contains definitions for the MicroPython micro:bit related APIs so they can be
+Contains definitions for the MicroPython Studuino:bit related APIs so they can be
 used in the editor for autocomplete and call tips.
 
 Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-SB_APIS = [
+STUDUINOBIT_APIS = [
     # Pushbutton
     _("pystubit.board.button_a.is_pressed() \nIf button A is pressed down, is_pressed() is True, else False."),
     _("pystubit.board.button_a.was_pressed() \nUse was_pressed() to learn if button A was pressed since the last time\nwas_pressed() was called. Returns True or False, then resets the record."),

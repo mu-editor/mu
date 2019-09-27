@@ -138,8 +138,6 @@ class MicroPythonREPLPane(QTextEdit):
         self.customContextMenuRequested.connect(self.context_menu)
         self.setObjectName('replpane')
         self.set_theme(theme)
-        self.prev_data = []
-        self.utf8data = []
 
     def paste(self):
         """
@@ -222,12 +220,6 @@ class MicroPythonREPLPane(QTextEdit):
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
         """
-        # If data is included ESC or CSI
-        if len(self.prev_data) != 0:
-            self.prev_data += data
-            data = self.prev_data
-            self.prev_data = []
-
         tc = self.textCursor()
         # The text cursor must be on the last line of the document. If it isn't
         # then move it there.
@@ -240,14 +232,7 @@ class MicroPythonREPLPane(QTextEdit):
                 self.setTextCursor(tc)
             elif data[i] == 13:  # \r
                 pass
-            elif len(data) == i + 1 and data[i] == 27:  # ESC
-                # If data is less ESC data
-                self.prev_data = data[i:]
-                return
-
-            elif len(data) > i + 1 and \
-                    data[i] == 27 and data[i + 1] == 91:   # CSI
-                csi_top = i
+            elif len(data) > i + 1 and data[i] == 27 and data[i + 1] == 91:
                 # VT100 cursor detected: <Esc>[
                 i += 2  # move index to after the [
                 regex = r'(?P<count>[\d]*)(;?[\d]*)*(?P<action>[ABCDKm])'
@@ -280,36 +265,14 @@ class MicroPythonREPLPane(QTextEdit):
                                             mode=QTextCursor.KeepAnchor)
                             tc.removeSelectedText()
                             self.setTextCursor(tc)
-                    elif m.group("action") == "m":  # SGR
-                        pass
-                    else:
-                        self.prev_data = data[csi_top:]
-                        return
-                else:
-                    self.prev_data = data[csi_top:]
-                    return
             elif data[i] == 10:  # \n
                 tc.movePosition(QTextCursor.End)
                 self.setTextCursor(tc)
                 self.insertPlainText(chr(data[i]))
             else:
-                if ((data[i] >= 0xe0 and data[i] <= 0xef) or
-                        self.utf8data != []):
-                    self.utf8data.append(data[i])
-                    if len(self.utf8data) == 3:
-                        tc.deleteChar()
-                        self.setTextCursor(tc)
-                        try:
-                            self.insertPlainText(
-                                bytes(self.utf8data).decode("utf-8"))
-                        except UnicodeDecodeError as e:
-                            print('Intercept occored in process_bytes')
-                            print(e)
-                        self.utf8data = []
-                else:
-                    tc.deleteChar()
-                    self.setTextCursor(tc)
-                    self.insertPlainText(chr(data[i]))
+                tc.deleteChar()
+                self.setTextCursor(tc)
+                self.insertPlainText(chr(data[i]))
             i += 1
         self.ensureCursorVisible()
 
@@ -481,42 +444,6 @@ class LocalFileList(MuFileList):
                 self.set_message.emit(msg)
                 self.get.emit(microbit_filename, local_filename)
 
-        if isinstance(source, MicroPythonDeviceFileTree):
-            file_exists = self.findItems(source.currentItem().text(0),
-                                         Qt.MatchExactly)
-            if not file_exists or \
-                    file_exists and self.show_confirm_overwrite_dialog():
-                self.disable.emit()
-
-                # Make source path
-                src_path = []
-                src_item = None
-                src = source.currentItem()
-                if src is not None:
-                    if src.childCount() != 0:
-                        src_path.insert(0, src.text(0))
-                        if src_item is None:
-                            src_item = src
-                    while src.parent() is not None:
-                        src = src.parent()
-                        src_path.insert(0, src.text(0))
-                        if src_item is None:
-                            src_item = src
-
-                src_path = '/'.join(src_path)
-
-                microbit_path_filename = src_path + '/' + \
-                    source.currentItem().text(0)
-                microbit_filename = source.currentItem().text(0)
-                local_filename = os.path.join(self.home,
-                                              microbit_filename)
-                msg = _("Getting '{}' from studuino:bit. "
-                        "Copying to '{}'.").format(microbit_path_filename,
-                                                   local_filename)
-                logger.info(msg)
-                self.set_message.emit(msg)
-                self.get.emit(microbit_path_filename, local_filename)
-
     def on_get(self, microbit_file):
         """
         Fired when the get event is completed for the given filename.
@@ -597,10 +524,11 @@ class MicroPythonDeviceFileTree(MuFileTree):
     def dropEvent(self, event):
         source = event.source()
         if isinstance(source, LocalFileList):
-
             # Make drop path
             drop_path = []
+
             target = self.itemAt(event.pos())
+
             target_item = None
             if target is not None:
                 if target.childCount() != 0:
@@ -627,8 +555,8 @@ class MicroPythonDeviceFileTree(MuFileTree):
                         file_exists = True
 
             # Copy file
-            if not file_exists or \
-                    file_exists and self.show_confirm_overwrite_dialog():
+            if (not file_exists) or \
+                    (file_exists and self.show_confirm_overwrite_dialog()):
                 self.disable.emit()
                 local_filename = os.path.join(self.home,
                                               source.currentItem().text())
@@ -651,7 +579,6 @@ class MicroPythonDeviceFileTree(MuFileTree):
         delete_action = menu.addAction(_("Delete (cannot be undone)"))
         action = menu.exec_(self.mapToGlobal(event.pos()))
         if action == delete_action:
-            self.disable.emit()
 
             # device_filename = self.currentItem().text(0)
             # Make drop path
@@ -659,7 +586,10 @@ class MicroPythonDeviceFileTree(MuFileTree):
             target = self.currentItem()
             filename = target.text(0)
             if target.childCount() != 0:
-                drop_path.insert(0, target.text(0))
+                self.set_message.emit(_("Can't delete folder."))
+                return
+
+            self.disable.emit()
             while target.parent() is not None:
                 target = target.parent()
                 drop_path.insert(0, target.text(0))
@@ -831,9 +761,9 @@ class FileSystemPane(QFrame):
 
 class StuduinoBitFileSystemPane(QFrame):
     """
-    Contains two QListWidgets representing the micro:bit and the user's code
-    directory. Users transfer files by dragging and dropping. Highlighted files
-    can be selected for deletion.
+    Contains two QListWidgets representing the Studuino:bit and the user's
+    code directory. Users transfer files by dragging and dropping.
+    Highlighted files can be selected for deletion.
     """
 
     set_message = pyqtSignal(str)
@@ -845,8 +775,8 @@ class StuduinoBitFileSystemPane(QFrame):
         super().__init__()
         self.home = home
         self.font = Font().load()
-        microbit_fs = MicroPythonDeviceFileTree(home)
-        local_fs = LocalFileList(home)
+        studuinobit_fs = MicroPythonDeviceFileTree(home)
+        local_fs = StuduinoBitLocalFileList(home)
 
         @local_fs.open_file.connect
         def on_open_file(file):
@@ -855,21 +785,21 @@ class StuduinoBitFileSystemPane(QFrame):
 
         layout = QGridLayout()
         self.setLayout(layout)
-        microbit_label = QLabel()
-        microbit_label.setText(_('Files on your device:'))
+        studuinobit_label = QLabel()
+        studuinobit_label.setText(_('Files on your device:'))
         local_label = QLabel()
         local_label.setText(_('Files on your computer:'))
-        self.microbit_label = microbit_label
+        self.studuinobit_label = studuinobit_label
         self.local_label = local_label
-        self.microbit_fs = microbit_fs
+        self.studuinobit_fs = studuinobit_fs
         self.local_fs = local_fs
         self.set_font_size()
-        layout.addWidget(microbit_label, 0, 0)
+        layout.addWidget(studuinobit_label, 0, 0)
         layout.addWidget(local_label, 0, 1)
-        layout.addWidget(microbit_fs, 1, 0)
+        layout.addWidget(studuinobit_fs, 1, 0)
         layout.addWidget(local_fs, 1, 1)
-        self.microbit_fs.disable.connect(self.disable)
-        self.microbit_fs.set_message.connect(self.show_message)
+        self.studuinobit_fs.disable.connect(self.disable)
+        self.studuinobit_fs.set_message.connect(self.show_message)
         self.local_fs.disable.connect(self.disable)
         self.local_fs.set_message.connect(self.show_message)
 
@@ -877,18 +807,18 @@ class StuduinoBitFileSystemPane(QFrame):
         """
         Stops interaction with the list widgets.
         """
-        self.microbit_fs.setDisabled(True)
+        self.studuinobit_fs.setDisabled(True)
         self.local_fs.setDisabled(True)
-        self.microbit_fs.setAcceptDrops(False)
+        self.studuinobit_fs.setAcceptDrops(False)
         self.local_fs.setAcceptDrops(False)
 
     def enable(self):
         """
         Allows interaction with the list widgets.
         """
-        self.microbit_fs.setDisabled(False)
+        self.studuinobit_fs.setDisabled(False)
         self.local_fs.setDisabled(False)
-        self.microbit_fs.setAcceptDrops(True)
+        self.studuinobit_fs.setAcceptDrops(True)
         self.local_fs.setAcceptDrops(True)
 
     def show_message(self, message):
@@ -903,19 +833,19 @@ class StuduinoBitFileSystemPane(QFrame):
         """
         self.set_warning.emit(message)
 
-    def on_tree(self, microbit_files):
+    def on_tree(self, studuinobit_files):
         """
-        Displays a list of the files on the micro:bit.
+        Displays a tree of the files on the Studuino:bit.
 
-        Since listing files is always the final event in any interaction
-        between Mu and the micro:bit, this enables the controls again for
-        further interactions to take place.
+        Since tree of files is always the final event in any interaction
+        between Mu and the Studuino:bit, this enables the controls again
+        for further interactions to take place.
         """
-        self.microbit_fs.clear()
+        self.studuinobit_fs.clear()
         self.local_fs.clear()
 
         items = []
-        for item in microbit_files:
+        for item in studuinobit_files:
             item_parts = item.split('/')
             item_parts.pop(0)
 
@@ -942,7 +872,7 @@ class StuduinoBitFileSystemPane(QFrame):
 
             items.append(entry) if entry.text(0) not in items_text else None
 
-        self.microbit_fs.addTopLevelItems(items)
+        self.studuinobit_fs.addTopLevelItems(items)
 
         local_files = [f for f in os.listdir(self.home)
                        if os.path.isfile(os.path.join(self.home, f))]
@@ -953,7 +883,7 @@ class StuduinoBitFileSystemPane(QFrame):
 
     def on_tree_fail(self):
         """
-        Fired when listing files fails.
+        Fired when tree of  files fails.
         """
         self.show_warning(_("There was a problem getting the list of files on "
                             "the device. Please check Mu's logs for "
@@ -994,9 +924,9 @@ class StuduinoBitFileSystemPane(QFrame):
         Sets the font size for all the textual elements in this pane.
         """
         self.font.setPointSize(new_size)
-        self.microbit_label.setFont(self.font)
+        self.studuinobit_label.setFont(self.font)
         self.local_label.setFont(self.font)
-        self.microbit_fs.setFont(self.font)
+        self.studuinobit_fs.setFont(self.font)
         self.local_fs.setFont(self.font)
 
     def set_zoom(self, size):
@@ -1715,3 +1645,152 @@ class PlotterPane(QChartView):
             self.chart.setTheme(QChart.ChartThemeDark)
         else:
             self.chart.setTheme(QChart.ChartThemeHighContrast)
+
+
+class StuduinoBitLocalFileList(LocalFileList):
+    """
+    Override dropEvent method for drag and drop between QListWidget
+    and QTreeWidget.
+    """
+
+    def dropEvent(self, event):
+        source = event.source()
+
+        if source.currentItem().childCount() != 0:
+            self.set_message.emit(_('File only'))
+            return
+
+        if isinstance(source, MicroPythonDeviceFileTree):
+            file_exists = self.findItems(source.currentItem().text(0),
+                                         Qt.MatchExactly)
+            if not file_exists or \
+                    file_exists and self.show_confirm_overwrite_dialog():
+                self.disable.emit()
+
+                # Make source path
+                src_path = []
+                src = source.currentItem()
+                while src.parent() is not None:
+                    src = src.parent()
+                    src_path.insert(0, src.text(0))
+
+                src_path = '/'.join(src_path)
+
+                studuinobit_path_filename = src_path + '/' + \
+                    source.currentItem().text(0)
+                studuinobit_filename = source.currentItem().text(0)
+                local_filename = os.path.join(self.home,
+                                              studuinobit_filename)
+                msg = _("Getting '{}' from studuino:bit. "
+                        "Copying to '{}'.").format(studuinobit_path_filename,
+                                                   local_filename)
+                logger.info(msg)
+                self.set_message.emit(msg)
+                self.get.emit(studuinobit_path_filename, local_filename)
+
+
+class StuduinoBitREPLPane(MicroPythonREPLPane):
+    """
+    Override 'process_bytes' method to make countermeasure utf-8 and
+    Studuino:bit's serial transfer feature (divided transfer of ESC, CSI)
+    """
+
+    def __init__(self, serial, theme='day', parent=None):
+        super().__init__(serial, theme, parent)
+        self.prev_data = []
+        self.utf8data = []
+
+    def process_bytes(self, data):
+        """
+        Given some incoming bytes of data, work out how to handle / display
+        them in the REPL widget.
+        """
+        # If data is included ESC or CSI
+        if len(self.prev_data) != 0:
+            self.prev_data += data
+            data = self.prev_data
+            self.prev_data = []
+
+        tc = self.textCursor()
+        # The text cursor must be on the last line of the document. If it isn't
+        # then move it there.
+        while tc.movePosition(QTextCursor.Down):
+            pass
+        i = 0
+        while i < len(data):
+            if data[i] == 8:  # \b
+                tc.movePosition(QTextCursor.Left)
+                self.setTextCursor(tc)
+            elif data[i] == 13:  # \r
+                pass
+            elif len(data) == i + 1 and data[i] == 27:  # ESC
+                # If data is less ESC data
+                self.prev_data = data[i:]
+                return
+
+            elif len(data) > i + 1 and \
+                    data[i] == 27 and data[i + 1] == 91:   # CSI
+                csi_top = i
+                # VT100 cursor detected: <Esc>[
+                i += 2  # move index to after the [
+                regex = r'(?P<count>[\d]*)(;?[\d]*)*(?P<action>[ABCDKm])'
+                m = re.search(regex, data[i:].decode('utf-8'))
+                if m:
+                    # move to (almost) after control seq
+                    # (will ++ at end of loop)
+                    i += m.end() - 1
+
+                    if m.group("count") == '':
+                        count = 1
+                    else:
+                        count = int(m.group("count"))
+
+                    if m.group("action") == "A":  # up
+                        tc.movePosition(QTextCursor.Up, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "B":  # down
+                        tc.movePosition(QTextCursor.Down, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "C":  # right
+                        tc.movePosition(QTextCursor.Right, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "D":  # left
+                        tc.movePosition(QTextCursor.Left, n=count)
+                        self.setTextCursor(tc)
+                    elif m.group("action") == "K":  # delete things
+                        if m.group("count") == "":  # delete to end of line
+                            tc.movePosition(QTextCursor.EndOfLine,
+                                            mode=QTextCursor.KeepAnchor)
+                            tc.removeSelectedText()
+                            self.setTextCursor(tc)
+                    elif m.group("action") == "m":  # SGR
+                        pass
+                    # else:
+                    #     self.prev_data = data[csi_top:]
+                    #     return
+                else:
+                    self.prev_data = data[csi_top:]
+                    return
+            elif data[i] == 10:  # \n
+                tc.movePosition(QTextCursor.End)
+                self.setTextCursor(tc)
+                self.insertPlainText(chr(data[i]))
+            else:
+                if ((data[i] >= 0xe0 and data[i] <= 0xef) or
+                        self.utf8data != []):
+                    self.utf8data.append(data[i])
+                    if len(self.utf8data) == 3:
+                        tc.deleteChar()
+                        self.setTextCursor(tc)
+                        try:
+                            self.insertPlainText(
+                                bytes(self.utf8data).decode("utf-8"))
+                        except UnicodeDecodeError as e:
+                            logger.info('Unicode Decode error:', e)
+                        self.utf8data = []
+                else:
+                    tc.deleteChar()
+                    self.setTextCursor(tc)
+                    self.insertPlainText(chr(data[i]))
+            i += 1
+        self.ensureCursorVisible()
