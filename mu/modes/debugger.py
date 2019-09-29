@@ -45,6 +45,7 @@ class DebugMode(BaseMode):
         super().__init__(editor, view)
         self._button_disable_timer = QTimer()
         self._button_disable_timer.setSingleShot(True)
+        self._button_disable_timer.timeout.connect(self.disable_buttons)
 
     def actions(self):
         """
@@ -180,7 +181,6 @@ class DebugMode(BaseMode):
         """
         Set a timer to disable all debug control buttons except 'stop'.
         """
-        self._button_disable_timer.timeout.connect(self.disable_buttons)
         self._button_disable_timer.start(milliseconds)
 
     def enable_buttons(self):
