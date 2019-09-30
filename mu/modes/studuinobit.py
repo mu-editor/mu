@@ -151,6 +151,7 @@ class StuduinoBitMode(MicroPythonMode):
         # Send script
         device_port, serial_number = self.find_device()
         serial = None
+        exp_flag = False
         try:
             serial = Serial(device_port, 115200, timeout=1, parity='N')
             filename = os.path.basename(usr_file)
@@ -163,6 +164,7 @@ class StuduinoBitMode(MicroPythonMode):
             serial.write(b'\x04')
         except Exception as e:
             logger.error(e)
+            exp_flag = True
         finally:
             if serial is not None:
                 serial.dtr = True
@@ -172,8 +174,11 @@ class StuduinoBitMode(MicroPythonMode):
         self.toggle_repl(None)
 
         # dlg_msg.close()
-        self.editor.show_status_message(_("Finished transfer. \
-            Press the reset button on the Studuino:bit"))
+        if not exp_flag:
+            self.editor.show_status_message(_("Finished transfer. \
+                Press the reset button on the Studuino:bit"))
+        else:
+            self.editor.show_status_message(_("Can't transfer."))
 
     def toggle_plotter(self, event):
         """

@@ -398,31 +398,29 @@ def test_toggle_flash_on(studuinobit_mode):
     studuinobit_mode.view.current_tab.text.return_value = "bar"
     studuinobit_mode.view.current_tab.newline = "\n"
 
-    with mock.patch('mu.modes.studuinobit.RegisterWindow') as m:
-        with mock.patch('mu.modes.studuinobit.microfs') as mock_microfs:
-            with mock.patch("mu.modes.studuinobit.save_and_encode",
-                            return_value=None) as mock_save:
+    with mock.patch('mu.modes.studuinobit.RegisterWindow') as m,\
+            mock.patch('mu.modes.studuinobit.microfs') as mock_microfs,\
+            mock.patch('mu.modes.studuinobit.Serial') as mock_serial:
 
-                studuinobit_mode.regist_box = m.return_value
-                studuinobit_mode.regist_box.exec.return_value = 1
-                studuinobit_mode.regist_box.get_register_info.\
-                    return_value = ['1', ]
+        mock_serial = mock.MagicMock(return_value=mock.MagicMock())
+        mock_serial.write = mock.MagicMock(return_value=True)
 
-                mock_microfs.put.return_value = None
-                mock_microfs.execute.return_value = ('', '')
+        studuinobit_mode.regist_box = m.return_value
+        studuinobit_mode.regist_box.exec.return_value = 1
+        studuinobit_mode.regist_box.get_register_info.\
+            return_value = ['1', ]
 
-                event = mock.Mock()
-                studuinobit_mode.toggle_flash(event)
+        mock_microfs.put.return_value = None
+        mock_microfs.execute.return_value = ('', '')
 
-                studuinobit_mode.editor.\
-                    show_status_message(_("Updating..."))
-                assert mock_microfs.put.call_count == 1
-                assert mock_microfs.execute.call_count == 1
-                assert mock_save.call_count == 1
-                studuinobit_mode.editor.\
-                    show_status_message(_("Finished transfer. \
-                                        Press the reset button \
-                                        on the Studuino:bit"))
+        event = mock.Mock()
+        studuinobit_mode.toggle_flash(event)
+
+        assert mock_microfs.put.call_count == 1
+        assert mock_microfs.execute.call_count == 1
+        studuinobit_mode.editor.show_status_message.\
+            assert_called_with(_("Finished transfer. \
+                Press the reset button on the Studuino:bit"))
 
 
 def test_toggle_flash_on_cancel(studuinobit_mode):
@@ -449,18 +447,26 @@ def test_toggle_flash_on_exception(studuinobit_mode):
 
     with mock.patch('mu.modes.studuinobit.RegisterWindow') as m:
         with mock.patch('mu.modes.studuinobit.microfs') as mock_microfs:
+            with mock.patch("mu.modes.studuinobit.save_and_encode",
+                            return_value=None) as mock_save:
 
-            studuinobit_mode.regist_box = m.return_value
-            studuinobit_mode.regist_box.exec.return_value = 1
-            studuinobit_mode.regist_box.get_register_info.\
-                return_value = ['1', ]
+                studuinobit_mode.regist_box = m.return_value
+                studuinobit_mode.regist_box.exec.return_value = 1
+                studuinobit_mode.regist_box.get_register_info.\
+                    return_value = ['1', ]
 
-            mock_microfs.put.return_value = None
-            mock_microfs.execute.side_effect = Exception()
-            mock_microfs.execute.return_value = ('', 'BANG!')
+                mock_microfs.put.return_value = None
+                mock_microfs.execute.side_effect = Exception()
+                mock_microfs.execute.return_value = ('', 'BANG!')
 
-            event = mock.Mock()
-            studuinobit_mode.toggle_flash(event)
+                event = mock.Mock()
+                studuinobit_mode.toggle_flash(event)
+
+                studuinobit_mode.editor.\
+                    show_status_message(_("Updating..."))
+                assert mock_save.call_count == 1
+                studuinobit_mode.editor.\
+                    show_status_message(_("Can't transfer."))
 
 
 def test_studuinobit_mode_add_repl_no_port():

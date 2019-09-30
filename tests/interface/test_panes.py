@@ -2473,11 +2473,12 @@ def test_MicroPythonDeviceFileTree_dropEvent_no_target(drop_event):
     # go
     mfs.dropEvent(drop_event)
     # check result
-    msg = _("Copying 'pc_home_path\\pc_foo.py' to device.")
+    fn = os.path.join('pc_home_path', 'pc_foo.py')
+    msg = _("Copying '" + fn + "' to device.")
     assert mfs.findItems.call_count == 1
     assert mfs.show_confirm_overwrite_dialog.call_count == 0
     mfs.set_message.emit.assert_called_once_with(msg)
-    mfs.put.emit.assert_called_once_with('pc_home_path\\pc_foo.py', '')
+    mfs.put.emit.assert_called_once_with(fn, '')
 
 
 def test_MicroPythonDeviceFileTree_dropEvent_target_has_child(drop_event):
@@ -2501,11 +2502,12 @@ def test_MicroPythonDeviceFileTree_dropEvent_target_has_child(drop_event):
     # go
     mfs.dropEvent(drop_event)
     # check result
-    msg = _("Copying 'pc_home_path\\pc_foo.py' to device.")
+    fn = os.path.join('pc_home_path', 'pc_foo.py')
+    msg = _("Copying '" + fn + "' to device.")
     assert mfs.findItems.call_count == 0
     assert mfs.show_confirm_overwrite_dialog.call_count == 0
     mfs.set_message.emit.assert_called_once_with(msg)
-    mfs.put.emit.assert_called_once_with('pc_home_path\\pc_foo.py', 'bar')
+    mfs.put.emit.assert_called_once_with(fn, 'bar')
 
 
 def test_MicroPythonDeviceFileTree_dropEvent_target_has_paraent(drop_event):
@@ -2529,11 +2531,12 @@ def test_MicroPythonDeviceFileTree_dropEvent_target_has_paraent(drop_event):
     # go
     mfs.dropEvent(drop_event)
     # check result
-    msg = _("Copying 'pc_home_path\\pc_foo.py' to device.")
+    fn = os.path.join('pc_home_path', 'pc_foo.py')
+    msg = _("Copying '" + fn + "' to device.")
     assert mfs.findItems.call_count == 0
     assert mfs.show_confirm_overwrite_dialog.call_count == 0
     mfs.set_message.emit.assert_called_once_with(msg)
-    mfs.put.emit.assert_called_once_with('pc_home_path\\pc_foo.py', 'bar')
+    mfs.put.emit.assert_called_once_with(fn, 'bar')
 
 
 def test_MicroPythonDeviceFileTree_dropEvent_rewrite(drop_event):
@@ -2559,9 +2562,10 @@ def test_MicroPythonDeviceFileTree_dropEvent_rewrite(drop_event):
     # check result
     assert mfs.findItems.call_count == 0
     assert mfs.show_confirm_overwrite_dialog.call_count == 1
-    msg = _("Copying 'pc_home_path\\pc_foo.py' to device.")
+    fn = os.path.join('pc_home_path', 'pc_foo.py')
+    msg = _("Copying '" + fn + "' to device.")
     mfs.set_message.emit.assert_called_once_with(msg)
-    mfs.put.emit.assert_called_once_with('pc_home_path\\pc_foo.py', 'bar')
+    mfs.put.emit.assert_called_once_with(fn, 'bar')
 
 
 def test_MicroPythonDeviceFileTree_dropEvent_cancel(drop_event):
