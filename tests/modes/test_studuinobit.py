@@ -400,7 +400,9 @@ def test_toggle_flash_on(studuinobit_mode):
 
     with mock.patch('mu.modes.studuinobit.RegisterWindow') as m,\
             mock.patch('mu.modes.studuinobit.microfs') as mock_microfs,\
-            mock.patch('mu.modes.studuinobit.Serial') as mock_serial:
+            mock.patch('mu.modes.studuinobit.Serial') as mock_serial,\
+            mock.patch("mu.modes.studuinobit.save_and_encode",
+                       return_value=None) as mock_save:
 
         mock_serial = mock.MagicMock(return_value=mock.MagicMock())
         mock_serial.write = mock.MagicMock(return_value=True)
@@ -416,6 +418,7 @@ def test_toggle_flash_on(studuinobit_mode):
         event = mock.Mock()
         studuinobit_mode.toggle_flash(event)
 
+        assert mock_save.call_count == 1
         assert mock_microfs.put.call_count == 1
         assert mock_microfs.execute.call_count == 1
         studuinobit_mode.editor.show_status_message.\
