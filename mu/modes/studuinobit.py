@@ -155,7 +155,7 @@ class StuduinoBitMode(MicroPythonMode):
             serial = Serial(device_port, 115200, timeout=1, parity='N')
             filename = os.path.basename(usr_file)
             microfs.put(usr_file, 'usr/' + filename, serial)
-            out, err = microfs.execute([
+            microfs.execute([
                 'import machine',
                 'machine.nvs_setint("lastSelected", {0})'.format(reg_num),
             ], serial)
@@ -209,7 +209,7 @@ class StuduinoBitMode(MicroPythonMode):
                 return
 
             try:
-                out, err = microfs.execute([
+                microfs.execute([
                     'import machine',
                     'machine.nvs_setint("lastSelected", 99)',
                 ], serial)
