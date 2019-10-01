@@ -144,8 +144,8 @@ class StuduinoBitMode(MicroPythonMode):
         reg_num = reg_info[0]
 
         tab = self.view.current_tab
-        usr_file = HOME_DIRECTORY + '\\' + WORKSPACE_NAME + \
-            '\\studuinobit\\usr' + reg_num + '.py'
+        usr_file = os.path.join(HOME_DIRECTORY, WORKSPACE_NAME,
+                                'studuinobit', 'usr' + reg_num + '.py')
         save_and_encode(tab.text(), usr_file, tab.newline)
 
         # Send script
