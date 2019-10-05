@@ -29,17 +29,17 @@ Clone the repository::
 
     git clone https://github.com/mu-editor/mu.git
 
-(Recommended) Upgrade local pip::
+Create a virtualenv and activate it. Then, upgrade ``pip``::
 
-    pip install --upgrade pip
+    python -m pip install --upgrade pip
 
-Make a virtualenv, then install the requirements::
+Install Mu and its development dependencies::
 
     pip install -e ".[dev]"
 
 Start Mu::
 
-    python run.py
+    mu-editor
 
 Run the test suite::
 
