@@ -9,6 +9,7 @@ all:
 	@echo "make flake8 - run the flake8 code checker."
 	@echo "make test - run the test suite."
 	@echo "make coverage - view a report on test coverage."
+	@echo "make tidy - tidy code with the 'black' formatter."
 	@echo "make check - run all the checkers and tests."
 	@echo "make dist - make a dist/wheel for the project."
 	@echo "make publish-test - publish the project to PyPI test instance."
@@ -47,7 +48,7 @@ else
 endif
 
 flake8:
-	flake8
+	flake8 --ignore=E203,E731,E402,W503,W504
 
 test: clean
 	pytest --random-order
@@ -55,7 +56,13 @@ test: clean
 coverage: clean
 	pytest --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
-check: clean flake8 coverage
+tidy: clean
+	@echo "\nTidying code with black..."
+	black -l 79 . 
+	black -l 79 mu 
+	black -l 79 tests
+
+check: clean tidy flake8 coverage
 
 dist: check
 	@echo "\nChecks pass, good to package..."

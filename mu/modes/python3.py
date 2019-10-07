@@ -37,6 +37,7 @@ class KernelRunner(QObject):
     Used to control the iPython kernel in a non-blocking manner so the UI
     remains responsive.
     """
+
     kernel_started = pyqtSignal(QtKernelManager, QtKernelClient)
     kernel_finished = pyqtSignal()
     # Used to build context with user defined envars when running the REPL.
@@ -59,26 +60,29 @@ class KernelRunner(QObject):
         os.chdir(self.cwd)  # Ensure the kernel runs with the expected CWD.
         # Add user defined envars to os.environ so they can be picked up by
         # the child process running the kernel.
-        logger.info('Starting iPython kernel with user defined envars: '
-                    '{}'.format(self.envars))
+        logger.info(
+            "Starting iPython kernel with user defined envars: "
+            "{}".format(self.envars)
+        )
         for k, v in self.envars.items():
             os.environ[k] = v
         # Ensure the expected paths are in PYTHONPATH of the subprocess so the
         # kernel and Mu-installed third party applications can be found.
-        if 'PYTHONPATH' not in os.environ:
-            paths = sys.path + [MODULE_DIR, ]
-            os.environ['PYTHONPATH'] = os.pathsep.join(paths)
-        if MODULE_DIR not in os.environ['PYTHONPATH']:
+        if "PYTHONPATH" not in os.environ:
+            paths = sys.path + [MODULE_DIR]
+            os.environ["PYTHONPATH"] = os.pathsep.join(paths)
+        if MODULE_DIR not in os.environ["PYTHONPATH"]:
             # This is needed on Windows to ensure user installed third party
             # packages are available in the REPL.
-            new_path = os.pathsep.join([os.environ['PYTHONPATH'], MODULE_DIR])
-            os.environ['PYTHONPATH'] = new_path
-        logger.info("REPL PYTHONPATH: {}".format(os.environ['PYTHONPATH']))
+            new_path = os.pathsep.join([os.environ["PYTHONPATH"], MODULE_DIR])
+            os.environ["PYTHONPATH"] = new_path
+        logger.info("REPL PYTHONPATH: {}".format(os.environ["PYTHONPATH"]))
         self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.start_kernel()
         self.repl_kernel_client = self.repl_kernel_manager.client()
-        self.kernel_started.emit(self.repl_kernel_manager,
-                                 self.repl_kernel_client)
+        self.kernel_started.emit(
+            self.repl_kernel_manager, self.repl_kernel_client
+        )
 
     def stop_kernel(self):
         """
@@ -98,9 +102,9 @@ class PythonMode(BaseMode):
     Represents the functionality required by the Python 3 mode.
     """
 
-    name = _('Python 3')
-    description = _('Create code using standard Python 3.')
-    icon = 'python'
+    name = _("Python 3")
+    description = _("Create code using standard Python 3.")
+    icon = "python"
     runner = None
     has_debugger = True
     kernel_runner = None
@@ -113,35 +117,39 @@ class PythonMode(BaseMode):
         """
         buttons = [
             {
-                'name': 'run',
-                'display_name': _('Run'),
-                'description': _('Run your Python script.'),
-                'handler': self.run_toggle,
-                'shortcut': 'F5',
+                "name": "run",
+                "display_name": _("Run"),
+                "description": _("Run your Python script."),
+                "handler": self.run_toggle,
+                "shortcut": "F5",
             },
             {
-                'name': 'debug',
-                'display_name': _('Debug'),
-                'description': _('Debug your Python script.'),
-                'handler': self.debug,
-                'shortcut': 'F6',
+                "name": "debug",
+                "display_name": _("Debug"),
+                "description": _("Debug your Python script."),
+                "handler": self.debug,
+                "shortcut": "F6",
             },
             {
-                'name': 'repl',
-                'display_name': _('REPL'),
-                'description': _('Use the REPL for live coding.'),
-                'handler': self.toggle_repl,
-                'shortcut': 'Ctrl+Shift+I',
+                "name": "repl",
+                "display_name": _("REPL"),
+                "description": _("Use the REPL for live coding."),
+                "handler": self.toggle_repl,
+                "shortcut": "Ctrl+Shift+I",
             },
         ]
         if CHARTS:
-            buttons.append({
-                'name': 'plotter',
-                'display_name': _('Plotter'),
-                'description': _('Plot data from your script or the REPL.'),
-                'handler': self.toggle_plotter,
-                'shortcut': 'CTRL+Shift+P',
-            })
+            buttons.append(
+                {
+                    "name": "plotter",
+                    "display_name": _("Plotter"),
+                    "description": _(
+                        "Plot data from your script or the REPL."
+                    ),
+                    "handler": self.toggle_plotter,
+                    "shortcut": "CTRL+Shift+P",
+                }
+            )
         return buttons
 
     def api(self):
@@ -155,20 +163,20 @@ class PythonMode(BaseMode):
         """
         Handles the toggling of the run button to start/stop a script.
         """
-        run_slot = self.view.button_bar.slots['run']
+        run_slot = self.view.button_bar.slots["run"]
         if self.runner:
             self.stop_script()
-            run_slot.setIcon(load_icon('run'))
-            run_slot.setText(_('Run'))
-            run_slot.setToolTip(_('Run your Python script.'))
+            run_slot.setIcon(load_icon("run"))
+            run_slot.setText(_("Run"))
+            run_slot.setToolTip(_("Run your Python script."))
             self.set_buttons(debug=True, modes=True)
         else:
             self.run_script()
             if self.runner:
                 # If the script started, toggle the button state. See #338.
-                run_slot.setIcon(load_icon('stop'))
-                run_slot.setText(_('Stop'))
-                run_slot.setToolTip(_('Stop your Python script.'))
+                run_slot.setIcon(load_icon("stop"))
+                run_slot.setText(_("Stop"))
+                run_slot.setToolTip(_("Stop your Python script."))
                 self.set_buttons(debug=False, modes=False)
 
     def run_script(self):
@@ -178,7 +186,7 @@ class PythonMode(BaseMode):
         # Grab the Python file.
         tab = self.view.current_tab
         if tab is None:
-            logger.debug('There is no active text editor.')
+            logger.debug("There is no active text editor.")
             self.stop_script()
             return
         if tab.path is None:
@@ -190,10 +198,9 @@ class PythonMode(BaseMode):
                 self.editor.save_tab_to_file(tab)
             envars = self.editor.envars
             cwd = os.path.dirname(tab.path)
-            self.runner = self.view.add_python3_runner(tab.path,
-                                                       cwd,
-                                                       interactive=True,
-                                                       envars=envars)
+            self.runner = self.view.add_python3_runner(
+                tab.path, cwd, interactive=True, envars=envars
+            )
             self.runner.process.waitForStarted()
             if self.kernel_runner:
                 self.set_buttons(plotter=False)
@@ -204,7 +211,7 @@ class PythonMode(BaseMode):
         """
         Stop the currently running script.
         """
-        logger.debug('Stopping script.')
+        logger.debug("Stopping script.")
         if self.runner:
             self.runner.process.kill()
             self.runner.process.waitForFinished()
@@ -218,23 +225,27 @@ class PythonMode(BaseMode):
         Debug the script using the debug mode.
         """
         logger.info("Starting debug mode.")
-        self.editor.change_mode('debugger')
-        self.editor.mode = 'debugger'
-        self.editor.modes['debugger'].start()
+        self.editor.change_mode("debugger")
+        self.editor.mode = "debugger"
+        self.editor.modes["debugger"].start()
 
     def toggle_repl(self, event):
         """
         Toggles the REPL on and off
         """
         if self.kernel_runner is None:
-            logger.info('Toggle REPL on.')
+            logger.info("Toggle REPL on.")
             self.editor.show_status_message(_("Starting iPython REPL."))
             self.add_repl()
         else:
-            logger.info('Toggle REPL off.')
-            self.editor.show_status_message(_("Stopping iPython REPL "
-                                              "(this may take a short amount "
-                                              "of time)."))
+            logger.info("Toggle REPL off.")
+            self.editor.show_status_message(
+                _(
+                    "Stopping iPython REPL "
+                    "(this may take a short amount "
+                    "of time)."
+                )
+            )
             self.remove_repl()
 
     def add_repl(self):
@@ -243,8 +254,9 @@ class PythonMode(BaseMode):
         """
         self.set_buttons(repl=False)
         self.kernel_thread = QThread()
-        self.kernel_runner = KernelRunner(cwd=self.workspace_dir(),
-                                          envars=self.editor.envars)
+        self.kernel_runner = KernelRunner(
+            cwd=self.workspace_dir(), envars=self.editor.envars
+        )
         self.kernel_runner.moveToThread(self.kernel_thread)
         self.kernel_runner.kernel_started.connect(self.on_kernel_start)
         self.kernel_runner.kernel_finished.connect(self.kernel_thread.quit)
@@ -268,10 +280,10 @@ class PythonMode(BaseMode):
         Toggles the plotter on and off.
         """
         if self.plotter is None:
-            logger.info('Toggle plotter on.')
+            logger.info("Toggle plotter on.")
             self.add_plotter()
         else:
-            logger.info('Toggle plotter off.')
+            logger.info("Toggle plotter off.")
             self.remove_plotter()
 
     def add_plotter(self):
@@ -279,7 +291,7 @@ class PythonMode(BaseMode):
         Add a plotter pane.
         """
         self.view.add_python3_plotter(self)
-        logger.info('Started plotter')
+        logger.info("Started plotter")
         self.plotter = True
         self.set_buttons(debug=False)
         if self.repl:
