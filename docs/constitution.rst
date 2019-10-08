@@ -19,6 +19,9 @@ We believe anyone involved in Mu's community has a right to:
 * enjoy an environment free from unwelcome behaviour, inappropriate language
   and unsuitable imagery.
 
+To this end, we hope participants in our community abide by the spirit of our
+:doc:`code_of_conduct`.
+
 The Role of Administrators
 --------------------------
 
