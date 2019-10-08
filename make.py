@@ -143,9 +143,7 @@ def flake8(*flake8_args):
     """
     print("\nflake8")
     os.environ["PYFLAKES_BUILTINS"] = "_"
-    return subprocess.run(
-        [FLAKE8, "--ignore=E203,E731,E402,W503,W504"]
-    ).returncode
+    return subprocess.run([FLAKE8]).returncode
 
 
 @export

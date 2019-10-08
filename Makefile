@@ -48,7 +48,7 @@ else
 endif
 
 flake8:
-	flake8 --ignore=E203,E731,E402,W503,W504
+	flake8
 
 test: clean
 	pytest --random-order
