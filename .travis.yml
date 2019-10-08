@@ -5,18 +5,12 @@ matrix:
       dist: xenial 
       sudo: required
       language: python
-      python: 3.5
-    - os: linux
-      dist: xenial 
-      sudo: required
-      language: python
       python: 3.6
     - os: linux
       dist: xenial
       sudo: required
       language: python
       python: 3.7
-
     # To maximise compatibility pick earliest image, OS X 10.12
     - os: osx
       osx_image: xcode8.3
