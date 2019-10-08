@@ -30,12 +30,12 @@ def is_breakpoint_line(code):
         return False
     # Can't set breakpoints on blank lines or comments.
     # TODO: Make this more robust.
-    if code[0] == '#' or code[:3] == '"""' or code[:3] == "'''":
+    if code[0] == "#" or code[:3] == '"""' or code[:3] == "'''":
         return False
     # Can't set breakpoints on lines that end with opening (, { or [
-    if code[-1] in ('(', '{', '['):
+    if code[-1] in ("(", "{", "["):
         return False
     # Can't set breakpoints on lines that contain only closing ), } or ]
-    if len(code) == 1 and code in (')', '}', ']'):
+    if len(code) == 1 and code in (")", "}", "]"):
         return False
     return True

@@ -8,37 +8,41 @@ import inspect
 import importlib
 
 
-modules = ['screen', 'music', 'keyboard', 'clock', 'animation', 'actor', ]
+modules = ["screen", "music", "keyboard", "clock", "animation", "actor"]
 
 api = []
 
 for module in modules:
-    m = importlib.import_module('pgzero.{}'.format(module))
-    content = [attr for attr in dir(m) if not attr.startswith('_')]
+    m = importlib.import_module("pgzero.{}".format(module))
+    content = [attr for attr in dir(m) if not attr.startswith("_")]
     # Work out what each member of the module is.
     for attr in content:
         obj = getattr(m, attr)
-        name = ''
+        name = ""
         try:
             name = obj.__name__
         except Exception as ex:
             print(obj)
             print(ex)
         try:
-            args = [a.replace('(', '').replace(')', '') for a in
-                    str(inspect.signature(obj)).split(', ')]
+            args = [
+                a.replace("(", "").replace(")", "")
+                for a in str(inspect.signature(obj)).split(", ")
+            ]
         except Exception as ex:
             print(obj)
             print(ex)
             args = None
         description = inspect.getdoc(obj)
         if name and description:
-            api.append({
-                'name': module + '.' + name,
-                'args': args,
-                'description': description,
-            })
+            api.append(
+                {
+                    "name": module + "." + name,
+                    "args": args,
+                    "description": description,
+                }
+            )
 
 
-with open('pgzero_api.json', 'w') as output:
+with open("pgzero_api.json", "w") as output:
     json.dump(api, output, indent=2)

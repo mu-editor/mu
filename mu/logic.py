@@ -42,68 +42,95 @@ from mu import __version__
 
 
 # The user's home directory.
-HOME_DIRECTORY = os.path.expanduser('~')
+HOME_DIRECTORY = os.path.expanduser("~")
 # Name of the directory within the home folder to use by default
-WORKSPACE_NAME = 'mu_code'
+WORKSPACE_NAME = "mu_code"
 # The default directory for application data (i.e., configuration).
-DATA_DIR = appdirs.user_data_dir(appname='mu', appauthor='python')
+DATA_DIR = appdirs.user_data_dir(appname="mu", appauthor="python")
 # The directory containing user installed third party modules.
-MODULE_DIR = os.path.join(DATA_DIR, 'site-packages')
+MODULE_DIR = os.path.join(DATA_DIR, "site-packages")
 sys.path.append(MODULE_DIR)
 # The default directory for application logs.
-LOG_DIR = appdirs.user_log_dir(appname='mu', appauthor='python')
+LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.
-LOG_FILE = os.path.join(LOG_DIR, 'mu.log')
+LOG_FILE = os.path.join(LOG_DIR, "mu.log")
 # Regex to match pycodestyle (PEP8) output.
-STYLE_REGEX = re.compile(r'.*:(\d+):(\d+):\s+(.*)')
+STYLE_REGEX = re.compile(r".*:(\d+):(\d+):\s+(.*)")
 # Regex to match flake8 output.
-FLAKE_REGEX = re.compile(r'.*:(\d+):\s+(.*)')
+FLAKE_REGEX = re.compile(r".*:(\d+):\s+(.*)")
 # Regex to match false positive flake errors if microbit.* is expanded.
 EXPAND_FALSE_POSITIVE = re.compile(r"^'microbit\.(\w+)' imported but unused$")
 # The text to which "from microbit import \*" should be expanded.
-EXPANDED_IMPORT = ("from microbit import pin15, pin2, pin0, pin1, "
-                   " pin3, pin6, pin4, i2c, pin5, pin7, pin8, Image, "
-                   "pin9, pin14, pin16, reset, pin19, temperature, "
-                   "sleep, pin20, button_a, button_b, running_time, "
-                   "accelerometer, display, uart, spi, panic, pin13, "
-                   "pin12, pin11, pin10, compass")
+EXPANDED_IMPORT = (
+    "from microbit import pin15, pin2, pin0, pin1, "
+    " pin3, pin6, pin4, i2c, pin5, pin7, pin8, Image, "
+    "pin9, pin14, pin16, reset, pin19, temperature, "
+    "sleep, pin20, button_a, button_b, running_time, "
+    "accelerometer, display, uart, spi, panic, pin13, "
+    "pin12, pin11, pin10, compass"
+)
 # Port number for debugger.
 DEBUGGER_PORT = 31415
 # Default images to copy over for use in PyGameZero demo apps.
-DEFAULT_IMAGES = ['alien.png', 'alien_hurt.png', 'cat1.png', 'cat2.png',
-                  'cat3.png', 'cat4.png', 'splat.png']
+DEFAULT_IMAGES = [
+    "alien.png",
+    "alien_hurt.png",
+    "cat1.png",
+    "cat2.png",
+    "cat3.png",
+    "cat4.png",
+    "splat.png",
+]
 # Default sound effects to copy over for use in PyGameZero demo apps.
-DEFAULT_SOUNDS = ['eep.wav', 'meow1.wav', 'meow2.wav', 'meow3.wav',
-                  'meow4.wav', 'splat.wav', ]
+DEFAULT_SOUNDS = [
+    "eep.wav",
+    "meow1.wav",
+    "meow2.wav",
+    "meow3.wav",
+    "meow4.wav",
+    "splat.wav",
+]
 MOTD = [  # Candidate phrases for the message of the day (MOTD).
-    _('Hello, World!'),
-    _("This editor is free software written in Python. You can modify it, "
-      "add features or fix bugs if you like."),
+    _("Hello, World!"),
+    _(
+        "This editor is free software written in Python. You can modify it, "
+        "add features or fix bugs if you like."
+    ),
     _("This editor is called Mu (you say it 'mew' or 'moo')."),
     _("Google, Facebook, NASA, Pixar, Disney and many more use Python."),
-    _("Programming is a form of magic. Learn to cast the right spells with "
-      "code and you'll be a wizard."),
-    _("REPL stands for read, evaluate, print, loop. It's a fun way to talk to "
-      "your computer! :-)"),
-    _('Be brave, break things, learn and have fun!'),
+    _(
+        "Programming is a form of magic. Learn to cast the right spells with "
+        "code and you'll be a wizard."
+    ),
+    _(
+        "REPL stands for read, evaluate, print, loop. It's a fun way to talk "
+        "to your computer! :-)"
+    ),
+    _("Be brave, break things, learn and have fun!"),
     _("Make your software both useful AND fun. Empower your users."),
-    _('For the Zen of Python: import this'),
-    _('Diversity promotes creativity.'),
+    _("For the Zen of Python: import this"),
+    _("Diversity promotes creativity."),
     _("An open mind, spirit of adventure and respect for diversity are key."),
-    _("Don't worry if it doesn't work. Learn the lesson, fix it and try "
-      "again! :-)"),
+    _(
+        "Don't worry if it doesn't work. Learn the lesson, fix it and try "
+        "again! :-)"
+    ),
     _("Coding is collaboration."),
     _("Compliment and amplify the good things with code."),
-    _("In theory, theory and practice are the same. In practice, they're "
-      "not. ;-)"),
+    _(
+        "In theory, theory and practice are the same. In practice, they're "
+        "not. ;-)"
+    ),
     _("Debugging is twice as hard as writing the code in the first place."),
     _("It's fun to program."),
     _("Programming has more to do with problem solving than writing code."),
     _("Start with your users' needs."),
     _("Try to see things from your users' point of view."),
     _("Put yourself in your users' shoes."),
-    _("Explaining a programming problem to a friend often reveals the "
-      "solution. :-)"),
+    _(
+        "Explaining a programming problem to a friend often reveals the "
+        "solution. :-)"
+    ),
     _("If you don't know, ask. Nobody to ask? Just look it up."),
     _("Complexity is the enemy. KISS - keep it simple, stupid!"),
     _("Beautiful is better than ugly."),
@@ -112,20 +139,26 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Flat is better than nested."),
     _("Sparse is better than dense."),
     _("Readability counts."),
-    _("Special cases aren't special enough to break the rules. "
-      "Although practicality beats purity."),
+    _(
+        "Special cases aren't special enough to break the rules. "
+        "Although practicality beats purity."
+    ),
     _("Errors should never pass silently. Unless explicitly silenced."),
     _("In the face of ambiguity, refuse the temptation to guess."),
     _("There should be one-- and preferably only one --obvious way to do it."),
-    _("Now is better than never. Although never is often better than "
-      "*right* now."),
+    _(
+        "Now is better than never. Although never is often better than "
+        "*right* now."
+    ),
     _("If the implementation is hard to explain, it's a bad idea."),
     _("If the implementation is easy to explain, it may be a good idea."),
     _("Namespaces are one honking great idea -- let's do more of those!"),
     _("Mu was created by Nicholas H.Tollervey."),
     _("To understand what recursion is, you must first understand recursion."),
-    _("Algorithm: a word used by programmers when they don't want to explain "
-      "what they did."),
+    _(
+        "Algorithm: a word used by programmers when they don't want to "
+        "explain what they did."
+    ),
     _("Programmers count from zero."),
     _("Simplicity is the ultimate sophistication."),
     _("A good programmer is humble."),
@@ -148,7 +181,8 @@ NEWLINE = "\n"
 #
 ENCODING = "utf-8"
 ENCODING_COOKIE_RE = re.compile(
-    "^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)")
+    "^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
+)
 
 logger = logging.getLogger(__name__)
 
@@ -158,21 +192,24 @@ def installed_packages():
     List all the third party modules installed by the user.
     """
     result = []
-    pkg_dirs = [os.path.join(MODULE_DIR, d) for d in os.listdir(MODULE_DIR)
-                if d.endswith("dist-info") or d.endswith("egg-info")]
+    pkg_dirs = [
+        os.path.join(MODULE_DIR, d)
+        for d in os.listdir(MODULE_DIR)
+        if d.endswith("dist-info") or d.endswith("egg-info")
+    ]
     logger.info("Packages found: {}".format(pkg_dirs))
     for pkg in pkg_dirs:
         if pkg.endswith("dist-info"):
             # Modern.
-            metadata_file = os.path.join(pkg, 'METADATA')
+            metadata_file = os.path.join(pkg, "METADATA")
         else:
             # Legacy (eggs).
-            metadata_file = os.path.join(pkg, 'PKG-INFO')
+            metadata_file = os.path.join(pkg, "PKG-INFO")
         try:
-            with open(metadata_file, 'rb') as f:
+            with open(metadata_file, "rb") as f:
                 lines = f.readlines()
-                name = lines[1].rsplit(b':')[-1].strip()
-                result.append(name.decode('utf-8'))
+                name = lines[1].rsplit(b":")[-1].strip()
+                result.append(name.decode("utf-8"))
         except Exception as ex:
             # Just log any errors.
             logger.error("Unable to get metadata for package: " + pkg)
@@ -214,9 +251,10 @@ def save_and_encode(text, filepath, newline=os.linesep):
     else:
         encoding = ENCODING
 
-    with open(filepath, "w", encoding=encoding, newline='') as f:
-        text_to_write = newline.join(l.rstrip(" ") for l in
-                                     text.splitlines()) + newline
+    with open(filepath, "w", encoding=encoding, newline="") as f:
+        text_to_write = (
+            newline.join(l.rstrip(" ") for l in text.splitlines()) + newline
+        )
         write_and_flush(f, text_to_write)
 
 
@@ -275,7 +313,7 @@ def sniff_newline_convention(text):
         ("\r\n", "\r\n"),
         # Match \n at the start of the string
         # or \n preceded by any character other than \r
-        ("\n", "^\n|[^\r]\n")
+        ("\n", "^\n|[^\r]\n"),
     ]
     #
     # If no lines are present, default to the platform newline
@@ -338,23 +376,23 @@ def get_admin_file_path(filename):
     empty one is created in the default location.
     """
     # App location depends on being interpreted by normal Python or bundled
-    app_path = sys.executable if getattr(sys, 'frozen', False) else sys.argv[0]
+    app_path = sys.executable if getattr(sys, "frozen", False) else sys.argv[0]
     app_dir = os.path.dirname(os.path.abspath(app_path))
     # The os x bundled application is placed 3 levels deep in the .app folder
-    if platform.system() == 'Darwin' and getattr(sys, 'frozen', False):
+    if platform.system() == "Darwin" and getattr(sys, "frozen", False):
         app_dir = os.path.dirname(os.path.dirname(os.path.dirname(app_dir)))
     file_path = os.path.join(app_dir, filename)
     if not os.path.exists(file_path):
         file_path = os.path.join(DATA_DIR, filename)
         if not os.path.exists(file_path):
             try:
-                with open(file_path, 'w') as f:
-                    logger.debug('Creating admin file: {}'.format(
-                                 file_path))
+                with open(file_path, "w") as f:
+                    logger.debug("Creating admin file: {}".format(file_path))
                     json.dump({}, f)
             except FileNotFoundError:
-                logger.error('Unable to create admin file: {}'.format(
-                             file_path))
+                logger.error(
+                    "Unable to create admin file: {}".format(file_path)
+                )
     return file_path
 
 
@@ -370,7 +408,7 @@ def get_session_path():
     If no session file is detected a blank one in the default location is
     automatically created.
     """
-    return get_admin_file_path('session.json')
+    return get_admin_file_path("session.json")
 
 
 def get_settings_path():
@@ -385,7 +423,7 @@ def get_settings_path():
     If no settings file is detected a blank one in the default location is
     automatically created.
     """
-    return get_admin_file_path('settings.json')
+    return get_admin_file_path("settings.json")
 
 
 def extract_envars(raw):
@@ -394,8 +432,8 @@ def extract_envars(raw):
     NAME=VALUE definitions on separate lines.
     """
     result = []
-    for line in raw.split('\n'):
-        definition = line.split('=', 1)
+    for line in raw.split("\n"):
+        definition = line.split("=", 1)
         if len(definition) == 2:
             result.append([definition[0].strip(), definition[1].strip()])
     return result
@@ -419,21 +457,22 @@ def check_flake(filename, code, builtins=None):
     reporter = MuFlakeCodeReporter()
     check(code, filename, reporter)
     if builtins:
-        builtins_regex = re.compile(r"^undefined name '(" +
-                                    '|'.join(builtins) + r")'")
+        builtins_regex = re.compile(
+            r"^undefined name '(" + "|".join(builtins) + r")'"
+        )
     feedback = {}
     for log in reporter.log:
         if import_all:
             # Guard to stop unwanted "microbit.* imported but unused" messages.
-            message = log['message']
+            message = log["message"]
             if EXPAND_FALSE_POSITIVE.match(message):
                 continue
         if builtins:
-            if builtins_regex.match(log['message']):
+            if builtins_regex.match(log["message"]):
                 continue
-        if log['line_no'] not in feedback:
-            feedback[log['line_no']] = []
-        feedback[log['line_no']].append(log)
+        if log["line_no"] not in feedback:
+            feedback[log["line_no"]] = []
+        feedback[log["line_no"]].append(log)
     return feedback
 
 
@@ -450,8 +489,22 @@ def check_pycodestyle(code, config_file=False):
     os.close(code_fd)
     save_and_encode(code, code_filename)
     # Configure which PEP8 rules to ignore.
-    ignore = ('E121', 'E123', 'E126', 'E226', 'E203', 'E302', 'E305', 'E24',
-              'E704', 'W291', 'W292', 'W293', 'W391', 'W503', )
+    ignore = (
+        "E121",
+        "E123",
+        "E126",
+        "E226",
+        "E203",
+        "E302",
+        "E305",
+        "E24",
+        "E704",
+        "W291",
+        "W292",
+        "W293",
+        "W391",
+        "W503",
+    )
     style = StyleGuide(parse_argv=False, config_file=config_file)
 
     # StyleGuide() returns pycodestyle module's own ignore list. That list may
@@ -476,22 +529,24 @@ def check_pycodestyle(code, config_file=False):
     os.remove(code_filename)
     # Parse the output from the tool into a dictionary of structured data.
     style_feedback = {}
-    for result in results.split('\n'):
+    for result in results.split("\n"):
         matcher = STYLE_REGEX.match(result)
         if matcher:
             line_no, col, msg = matcher.groups()
             line_no = int(line_no) - 1
-            code, description = msg.split(' ', 1)
-            if code == 'E303':
-                description += _(' above this line')
+            code, description = msg.split(" ", 1)
+            if code == "E303":
+                description += _(" above this line")
             if line_no not in style_feedback:
                 style_feedback[line_no] = []
-            style_feedback[line_no].append({
-                'line_no': line_no,
-                'column': int(col) - 1,
-                'message': description.capitalize(),
-                'code': code,
-            })
+            style_feedback[line_no].append(
+                {
+                    "line_no": line_no,
+                    "column": int(col) - 1,
+                    "message": description.capitalize(),
+                    "code": code,
+                }
+            )
     return style_feedback
 
 
@@ -513,11 +568,9 @@ class MuFlakeCodeReporter:
         called filename. The message parameter contains a description of the
         problem.
         """
-        self.log.append({
-            'line_no': 0,
-            'filename': filename,
-            'message': str(message)
-        })
+        self.log.append(
+            {"line_no": 0, "filename": filename, "message": str(message)}
+        )
 
     def syntaxError(self, filename, message, line_no, column, source):
         """
@@ -528,14 +581,18 @@ class MuFlakeCodeReporter:
         indicates the column on which the error occurred and source is the
         source code containing the syntax error.
         """
-        msg = _('Syntax error. Python cannot understand this line. Check for '
-                'missing characters!')
-        self.log.append({
-            'message': msg,
-            'line_no': int(line_no) - 1,  # Zero based counting in Mu.
-            'column': column - 1,
-            'source': source
-        })
+        msg = _(
+            "Syntax error. Python cannot understand this line. Check for "
+            "missing characters!"
+        )
+        self.log.append(
+            {
+                "message": msg,
+                "line_no": int(line_no) - 1,  # Zero based counting in Mu.
+                "column": column - 1,
+                "source": source,
+            }
+        )
 
     def flake(self, message):
         """
@@ -544,17 +601,17 @@ class MuFlakeCodeReporter:
         matcher = FLAKE_REGEX.match(str(message))
         if matcher:
             line_no, msg = matcher.groups()
-            self.log.append({
-                'line_no': int(line_no) - 1,  # Zero based counting in Mu.
-                'column': 0,
-                'message': msg,
-            })
+            self.log.append(
+                {
+                    "line_no": int(line_no) - 1,  # Zero based counting in Mu.
+                    "column": 0,
+                    "message": msg,
+                }
+            )
         else:
-            self.log.append({
-                'line_no': 0,
-                'column': 0,
-                'message': str(message),
-            })
+            self.log.append(
+                {"line_no": 0, "column": 0, "message": str(message)}
+            )
 
 
 class REPL:
@@ -566,16 +623,16 @@ class REPL:
     """
 
     def __init__(self, port):
-        if os.name == 'posix':
+        if os.name == "posix":
             # If we're on Linux or OSX reference the port is like this...
             self.port = "/dev/{}".format(port)
-        elif os.name == 'nt':
+        elif os.name == "nt":
             # On Windows simply return the port (e.g. COM0).
             self.port = port
         else:
             # No idea how to deal with other OS's so fail.
-            raise NotImplementedError('OS not supported.')
-        logger.info('Created new REPL object with port: {}'.format(self.port))
+            raise NotImplementedError("OS not supported.")
+        logger.info("Created new REPL object with port: {}".format(self.port))
 
 
 class Editor:
@@ -584,32 +641,32 @@ class Editor:
     """
 
     def __init__(self, view, status_bar=None):
-        logger.info('Setting up editor.')
+        logger.info("Setting up editor.")
         self._view = view
         self._status_bar = status_bar
         self.fs = None
-        self.theme = 'day'
-        self.mode = 'python'
+        self.theme = "day"
+        self.mode = "python"
         self.modes = {}  # See set_modes.
         self.envars = []  # See restore session and show_admin
         self.minify = False
-        self.microbit_runtime = ''
+        self.microbit_runtime = ""
         self.connected_devices = set()
-        self.find = ''
-        self.replace = ''
-        self.current_path = ''  # Directory of last loaded file.
+        self.find = ""
+        self.replace = ""
+        self.current_path = ""  # Directory of last loaded file.
         self.global_replace = False
         self.selecting_mode = False  # Flag to stop auto-detection of modes.
         if not os.path.exists(DATA_DIR):
-            logger.debug('Creating directory: {}'.format(DATA_DIR))
+            logger.debug("Creating directory: {}".format(DATA_DIR))
             os.makedirs(DATA_DIR)
         if not os.path.exists(MODULE_DIR):
-            logger.debug('Creating directory: {}'.format(MODULE_DIR))
+            logger.debug("Creating directory: {}".format(MODULE_DIR))
             os.makedirs(MODULE_DIR)
-        logger.info('Settings path: {}'.format(get_settings_path()))
-        logger.info('Session path: {}'.format(get_session_path()))
-        logger.info('Log directory: {}'.format(LOG_DIR))
-        logger.info('Data directory: {}'.format(DATA_DIR))
+        logger.info("Settings path: {}".format(get_settings_path()))
+        logger.info("Session path: {}".format(get_session_path()))
+        logger.info("Log directory: {}".format(LOG_DIR))
+        logger.info("Data directory: {}".format(DATA_DIR))
 
         @view.open_file.connect
         def on_open_file(file):
@@ -622,44 +679,46 @@ class Editor:
         directory.
         """
         self.modes = modes
-        logger.info('Available modes: {}'.format(', '.join(self.modes.keys())))
+        logger.info("Available modes: {}".format(", ".join(self.modes.keys())))
         # Ensure there is a workspace directory.
-        wd = self.modes['python'].workspace_dir()
+        wd = self.modes["python"].workspace_dir()
         if not os.path.exists(wd):
-            logger.debug('Creating directory: {}'.format(wd))
+            logger.debug("Creating directory: {}".format(wd))
             os.makedirs(wd)
         # Ensure PyGameZero assets are copied over.
-        images_path = os.path.join(wd, 'images')
-        fonts_path = os.path.join(wd, 'fonts')
-        sounds_path = os.path.join(wd, 'sounds')
-        music_path = os.path.join(wd, 'music')
+        images_path = os.path.join(wd, "images")
+        fonts_path = os.path.join(wd, "fonts")
+        sounds_path = os.path.join(wd, "sounds")
+        music_path = os.path.join(wd, "music")
         if not os.path.exists(images_path):
-            logger.debug('Creating directory: {}'.format(images_path))
+            logger.debug("Creating directory: {}".format(images_path))
             os.makedirs(images_path)
             for img in DEFAULT_IMAGES:
-                shutil.copy(path(img, 'pygamezero/'),
-                            os.path.join(images_path, img))
+                shutil.copy(
+                    path(img, "pygamezero/"), os.path.join(images_path, img)
+                )
         if not os.path.exists(fonts_path):
-            logger.debug('Creating directory: {}'.format(fonts_path))
+            logger.debug("Creating directory: {}".format(fonts_path))
             os.makedirs(fonts_path)
         if not os.path.exists(sounds_path):
-            logger.debug('Creating directory: {}'.format(sounds_path))
+            logger.debug("Creating directory: {}".format(sounds_path))
             os.makedirs(sounds_path)
             for sfx in DEFAULT_SOUNDS:
-                shutil.copy(path(sfx, 'pygamezero/'),
-                            os.path.join(sounds_path, sfx))
+                shutil.copy(
+                    path(sfx, "pygamezero/"), os.path.join(sounds_path, sfx)
+                )
         if not os.path.exists(music_path):
-            logger.debug('Creating directory: {}'.format(music_path))
+            logger.debug("Creating directory: {}".format(music_path))
             os.makedirs(music_path)
         # Ensure Web based assets are copied over.
         template_path = os.path.join(wd, "templates")
         static_path = os.path.join(wd, "static")
         if not os.path.exists(template_path):
-            logger.debug('Creating directory: {}'.format(template_path))
-            shutil.copytree(path('templates', 'web/'), template_path)
+            logger.debug("Creating directory: {}".format(template_path))
+            shutil.copytree(path("templates", "web/"), template_path)
         if not os.path.exists(static_path):
-            logger.debug('Creating directory: {}'.format(static_path))
-            shutil.copytree(path('static', 'web/'), static_path)
+            logger.debug("Creating directory: {}".format(static_path))
+            shutil.copytree(path("static", "web/"), static_path)
             # Copy all the static directories.
         # Start the timer to poll every second for an attached or removed
         # USB device.
@@ -678,54 +737,65 @@ class Editor:
             try:
                 old_session = json.load(f)
             except ValueError:
-                logger.error('Settings file {} could not be parsed.'.format(
-                             settings_path))
+                logger.error(
+                    "Settings file {} could not be parsed.".format(
+                        settings_path
+                    )
+                )
             else:
-                logger.info('Restoring session from: {}'.format(settings_path))
+                logger.info("Restoring session from: {}".format(settings_path))
                 logger.debug(old_session)
-                if 'theme' in old_session:
-                    self.theme = old_session['theme']
-                if 'mode' in old_session:
-                    old_mode = old_session['mode']
+                if "theme" in old_session:
+                    self.theme = old_session["theme"]
+                if "mode" in old_session:
+                    old_mode = old_session["mode"]
                     if old_mode in self.modes:
-                        self.mode = old_session['mode']
+                        self.mode = old_session["mode"]
                     else:
                         # Unknown mode (perhaps an old version?)
                         self.select_mode(None)
                 else:
                     # So ask for the desired mode.
                     self.select_mode(None)
-                if 'paths' in old_session:
-                    old_paths = self._abspath(old_session['paths'])
+                if "paths" in old_session:
+                    old_paths = self._abspath(old_session["paths"])
                     launch_paths = self._abspath(paths) if paths else set()
                     for old_path in old_paths:
                         # if the os passed in a file, defer loading it now
                         if old_path in launch_paths:
                             continue
                         self.direct_load(old_path)
-                    logger.info('Loaded files.')
-                if 'envars' in old_session:
-                    self.envars = old_session['envars']
-                    logger.info('User defined environment variables: '
-                                '{}'.format(self.envars))
-                if 'minify' in old_session:
-                    self.minify = old_session['minify']
-                    logger.info('Minify scripts on micro:bit? '
-                                '{}'.format(self.minify))
-                if 'microbit_runtime' in old_session:
-                    self.microbit_runtime = old_session['microbit_runtime']
+                    logger.info("Loaded files.")
+                if "envars" in old_session:
+                    self.envars = old_session["envars"]
+                    logger.info(
+                        "User defined environment variables: "
+                        "{}".format(self.envars)
+                    )
+                if "minify" in old_session:
+                    self.minify = old_session["minify"]
+                    logger.info(
+                        "Minify scripts on micro:bit? "
+                        "{}".format(self.minify)
+                    )
+                if "microbit_runtime" in old_session:
+                    self.microbit_runtime = old_session["microbit_runtime"]
                     if self.microbit_runtime:
-                        logger.info('Custom micro:bit runtime path: '
-                                    '{}'.format(self.microbit_runtime))
+                        logger.info(
+                            "Custom micro:bit runtime path: "
+                            "{}".format(self.microbit_runtime)
+                        )
                         if not os.path.isfile(self.microbit_runtime):
-                            self.microbit_runtime = ''
-                            logger.warning('The specified micro:bit runtime '
-                                           'does not exist. Using default '
-                                           'runtime instead.')
-                if 'zoom_level' in old_session:
-                    self._view.zoom_position = old_session['zoom_level']
+                            self.microbit_runtime = ""
+                            logger.warning(
+                                "The specified micro:bit runtime "
+                                "does not exist. Using default "
+                                "runtime instead."
+                            )
+                if "zoom_level" in old_session:
+                    self._view.zoom_position = old_session["zoom_level"]
                     self._view.set_zoom()
-                old_window = old_session.get('window', {})
+                old_window = old_session.get("window", {})
                 self._view.size_window(**old_window)
         # handle os passed file last,
         # so it will not be focused over by another tab
@@ -736,32 +806,34 @@ class Editor:
         self.show_status_message(random.choice(MOTD), 10)
         if not self._view.tab_count:
             py = self.modes[self.mode].code_template + NEWLINE
-            tab = self._view.add_tab(None, py, self.modes[self.mode].api(),
-                                     NEWLINE)
+            tab = self._view.add_tab(
+                None, py, self.modes[self.mode].api(), NEWLINE
+            )
             tab.setCursorPosition(len(py.split(NEWLINE)), 0)
-            logger.info('Starting with blank file.')
+            logger.info("Starting with blank file.")
 
     def toggle_theme(self):
         """
         Switches between themes (night, day or high-contrast).
         """
-        if self.theme == 'day':
-            self.theme = 'night'
-        elif self.theme == 'night':
-            self.theme = 'contrast'
+        if self.theme == "day":
+            self.theme = "night"
+        elif self.theme == "night":
+            self.theme = "contrast"
         else:
-            self.theme = 'day'
-        logger.info('Toggle theme to: {}'.format(self.theme))
+            self.theme = "day"
+        logger.info("Toggle theme to: {}".format(self.theme))
         self._view.set_theme(self.theme)
 
     def new(self):
         """
         Adds a new tab to the editor.
         """
-        logger.info('Added a new tab.')
+        logger.info("Added a new tab.")
         default_text = self.modes[self.mode].code_template + NEWLINE
-        self._view.add_tab(None, default_text, self.modes[self.mode].api(),
-                           NEWLINE)
+        self._view.add_tab(
+            None, default_text, self.modes[self.mode].api(), NEWLINE
+        )
 
     def _load(self, path):
         """
@@ -773,16 +845,18 @@ class Editor:
         to cleanly handle / report / log errors when encountered in a helpful
         manner.
         """
-        logger.info('Loading script from: {}'.format(path))
-        error = _("The file contains characters Mu expects to be encoded as "
-                  "{0} or as the computer's default encoding {1}, but which "
-                  "are encoded in some other way.\n\nIf this file was saved "
-                  "in another application, re-save the file via the "
-                  "'Save as' option and set the encoding to {0}")
+        logger.info("Loading script from: {}".format(path))
+        error = _(
+            "The file contains characters Mu expects to be encoded as "
+            "{0} or as the computer's default encoding {1}, but which "
+            "are encoded in some other way.\n\nIf this file was saved "
+            "in another application, re-save the file via the "
+            "'Save as' option and set the encoding to {0}"
+        )
         error = error.format(ENCODING, locale.getpreferredencoding())
         # Does the file even exist?
         if not os.path.isfile(path):
-            logger.info('The file {} does not exist.'.format(path))
+            logger.info("The file {} does not exist.".format(path))
             return
         # see if file is open first
         for widget in self._view.widgets:
@@ -794,18 +868,19 @@ class Editor:
             # nothing else we can do).
             if not os.path.isfile(widget.path):
                 logger.info(
-                    'The file {} no longer exists.'.format(widget.path))
+                    "The file {} no longer exists.".format(widget.path)
+                )
                 continue
             # Check for duplication of open file.
             if os.path.samefile(path, widget.path):
-                logger.info('Script already open.')
+                logger.info("Script already open.")
                 msg = _('The file "{}" is already open.')
                 self._view.show_message(msg.format(os.path.basename(path)))
                 self._view.focus_tab(widget)
                 return
         name, text, newline, file_mode = None, None, None, None
         try:
-            if path.lower().endswith('.py'):
+            if path.lower().endswith(".py"):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
                 try:
@@ -827,39 +902,52 @@ class Editor:
                             name = path
                     except Exception as exc:
                         # No worries, log it and try the next mode
-                        logger.warning('Error when mode {} try to open the '
-                                       '{} file.'.format(mode_name, path),
-                                       exc_info=exc)
+                        logger.warning(
+                            "Error when mode {} try to open the "
+                            "{} file.".format(mode_name, path),
+                            exc_info=exc,
+                        )
                     else:
                         if text:
                             file_mode = mode_name
                             break
                 else:
-                    message = _('Mu was not able to open this file')
-                    info = _('Currently Mu only works with Python source '
-                             'files or hex files created with embedded '
-                             'MicroPython code.')
+                    message = _("Mu was not able to open this file")
+                    info = _(
+                        "Currently Mu only works with Python source "
+                        "files or hex files created with embedded "
+                        "MicroPython code."
+                    )
                     self._view.show_message(message, info)
                     return
         except OSError:
             message = _("Could not load {}").format(path)
-            logger.exception('Could not load {}'.format(path))
-            info = _("Does this file exist?\nIf it does, do you have "
-                     "permission to read it?\n\nPlease check and try again.")
+            logger.exception("Could not load {}".format(path))
+            info = _(
+                "Does this file exist?\nIf it does, do you have "
+                "permission to read it?\n\nPlease check and try again."
+            )
             self._view.show_message(message, info)
         else:
             if file_mode and self.mode != file_mode:
                 device_name = self.modes[file_mode].name
-                message = _('Is this a {} file?').format(device_name)
-                info = _('It looks like this could be a {} file.\n\n'
-                         'Would you like to change Mu to the {}'
-                         'mode?').format(device_name, device_name)
-                if self._view.show_confirmation(
-                        message, info, icon='Question') == QMessageBox.Ok:
+                message = _("Is this a {} file?").format(device_name)
+                info = _(
+                    "It looks like this could be a {} file.\n\n"
+                    "Would you like to change Mu to the {}"
+                    "mode?"
+                ).format(device_name, device_name)
+                if (
+                    self._view.show_confirmation(
+                        message, info, icon="Question"
+                    )
+                    == QMessageBox.Ok
+                ):
                     self.change_mode(file_mode)
             logger.debug(text)
             self._view.add_tab(
-                name, text, self.modes[self.mode].api(), newline)
+                name, text, self.modes[self.mode].api(), newline
+            )
 
     def get_dialog_directory(self, default=None):
         """
@@ -876,13 +964,13 @@ class Editor:
         elif self.current_path and os.path.isdir(self.current_path):
             folder = self.current_path
         else:
-            current_file_path = ''
+            current_file_path = ""
             workspace_path = self.modes[self.mode].workspace_dir()
             tab = self._view.current_tab
             if tab and tab.path:
                 current_file_path = os.path.dirname(os.path.abspath(tab.path))
             folder = current_file_path if current_file_path else workspace_path
-        logger.info('Using path for file dialog: {}'.format(folder))
+        logger.info("Using path for file dialog: {}".format(folder))
         return folder
 
     def load(self, *args, default_path=None):
@@ -891,17 +979,19 @@ class Editor:
         extracts a Python script from a hex file.
         """
         # Get all supported extensions from the different modes
-        extensions = ['py']
+        extensions = ["py"]
         for mode_name, mode in self.modes.items():
             if mode.file_extensions:
                 extensions += mode.file_extensions
         extensions = set([e.lower() for e in extensions])
-        extensions = '*.{} *.{}'.format(' *.'.join(extensions),
-                                        ' *.'.join(extensions).upper())
+        extensions = "*.{} *.{}".format(
+            " *.".join(extensions), " *.".join(extensions).upper()
+        )
         folder = self.get_dialog_directory(default_path)
         allow_previous = not bool(default_path)
-        path = self._view.get_load_path(folder, extensions,
-                                        allow_previous=allow_previous)
+        path = self._view.get_load_path(
+            folder, extensions, allow_previous=allow_previous
+        )
         if path:
             self.current_path = os.path.dirname(os.path.abspath(path))
             self._load(path)
@@ -918,12 +1008,14 @@ class Editor:
         """
         for p in paths:
             try:
-                logger.info('Passed-in filename: {}'.format(p))
+                logger.info("Passed-in filename: {}".format(p))
                 # abspath will fail for non-paths
                 self.direct_load(os.path.abspath(p))
             except Exception as e:
-                logging.warning('Can\'t open file from command line {}'.
-                                format(p), exc_info=e)
+                logging.warning(
+                    "Can't open file from command line {}".format(p),
+                    exc_info=e,
+                )
 
     def _abspath(self, paths):
         """
@@ -935,7 +1027,7 @@ class Editor:
             try:
                 abspath = os.path.abspath(p)
             except Exception as ex:
-                logger.error('Could not get path for {}: {}'.format(p, ex))
+                logger.error("Could not get path for {}: {}".format(p, ex))
             else:
                 if abspath not in result:
                     result.append(abspath)
@@ -947,22 +1039,26 @@ class Editor:
         associated with the tab. If there's a problem this will be logged and
         reported and the tab status will continue to show as Modified.
         """
-        logger.info('Saving script to: {}'.format(tab.path))
+        logger.info("Saving script to: {}".format(tab.path))
         logger.debug(tab.text())
         try:
             save_and_encode(tab.text(), tab.path, tab.newline)
         except OSError as e:
             logger.error(e)
-            error_message = _('Could not save file (disk problem)')
-            information = _("Error saving file to disk. Ensure you have "
-                            "permission to write the file and "
-                            "sufficient disk space.")
+            error_message = _("Could not save file (disk problem)")
+            information = _(
+                "Error saving file to disk. Ensure you have "
+                "permission to write the file and "
+                "sufficient disk space."
+            )
         except UnicodeEncodeError:
             error_message = _("Could not save file (encoding problem)")
             logger.exception(error_message)
-            information = _("Unable to convert all the characters. If you "
-                            "have an encoding line at the top of the file, "
-                            "remove it and try again.")
+            information = _(
+                "Unable to convert all the characters. If you "
+                "have an encoding line at the top of the file, "
+                "remove it and try again."
+            )
         else:
             error_message = information = None
         if error_message and show_error_messages:
@@ -982,7 +1078,7 @@ class Editor:
         return False.
         """
         logger.info('Checking path "{}" for shadow module.'.format(path))
-        filename = os.path.basename(path).replace('.py', '')
+        filename = os.path.basename(path).replace(".py", "")
         return filename in self.modes[self.mode].module_names
 
     def save(self, *args, default=None):
@@ -998,12 +1094,15 @@ class Editor:
             folder = self.get_dialog_directory(default)
             path = self._view.get_save_path(folder)
             if path and self.check_for_shadow_module(path):
-                message = _('You cannot use the filename '
-                            '"{}"').format(os.path.basename(path))
-                info = _('This name is already used by another part of '
-                         'Python. If you use this name, things are '
-                         'likely to break. Please try again with a '
-                         'different filename.')
+                message = _("You cannot use the filename " '"{}"').format(
+                    os.path.basename(path)
+                )
+                info = _(
+                    "This name is already used by another part of "
+                    "Python. If you use this name, things are "
+                    "likely to break. Please try again with a "
+                    "different filename."
+                )
                 self._view.show_message(message, info)
                 return
             tab.path = path
@@ -1033,14 +1132,14 @@ class Editor:
         """
         Make the editor's text bigger
         """
-        logger.info('Zoom in')
+        logger.info("Zoom in")
         self._view.zoom_in()
 
     def zoom_out(self):
         """
         Make the editor's text smaller.
         """
-        logger.info('Zoom out')
+        logger.info("Zoom out")
         self._view.zoom_out()
 
     def check_code(self):
@@ -1057,34 +1156,34 @@ class Editor:
             return
         tab.has_annotations = not tab.has_annotations
         if tab.has_annotations:
-            logger.info('Checking code.')
+            logger.info("Checking code.")
             self._view.reset_annotations()
-            filename = tab.path if tab.path else _('untitled')
+            filename = tab.path if tab.path else _("untitled")
             builtins = self.modes[self.mode].builtins
             flake = check_flake(filename, tab.text(), builtins)
             if flake:
                 logger.info(flake)
-                self._view.annotate_code(flake, 'error')
+                self._view.annotate_code(flake, "error")
             pep8 = check_pycodestyle(tab.text())
             if pep8:
                 logger.info(pep8)
-                self._view.annotate_code(pep8, 'style')
+                self._view.annotate_code(pep8, "style")
             self._view.show_annotations()
             tab.has_annotations = bool(flake or pep8)
             if not tab.has_annotations:
                 # No problems detected, so confirm this with a friendly
                 # message.
                 ok_messages = [
-                    _('Good job! No problems found.'),
-                    _('Hurrah! Checker turned up no problems.'),
-                    _('Nice one! Zero problems detected.'),
-                    _('Well done! No problems here.'),
-                    _('Awesome! Zero problems found.'),
+                    _("Good job! No problems found."),
+                    _("Hurrah! Checker turned up no problems."),
+                    _("Nice one! Zero problems detected."),
+                    _("Well done! No problems here."),
+                    _("Awesome! Zero problems found."),
                 ]
                 self.show_status_message(random.choice(ok_messages))
-                self._view.set_checker_icon('check-good.png')
+                self._view.set_checker_icon("check-good.png")
             else:
-                self._view.set_checker_icon('check-bad.png')
+                self._view.set_checker_icon("check-bad.png")
         else:
             self._view.reset_annotations()
 
@@ -1093,10 +1192,11 @@ class Editor:
         Display browser based help about Mu.
         """
         language_code = QLocale.system().name()[:2]
-        major_version = '.'.join(__version__.split('.')[:2])
-        url = 'https://codewith.mu/{}/help/{}'.format(language_code,
-                                                      major_version)
-        logger.info('Showing help at %r.', url)
+        major_version = ".".join(__version__.split(".")[:2])
+        url = "https://codewith.mu/{}/help/{}".format(
+            language_code, major_version
+        )
+        logger.info("Showing help at %r.", url)
         webbrowser.open_new(url)
 
     def quit(self, *args, **kwargs):
@@ -1105,11 +1205,13 @@ class Editor:
         """
         if self._view.modified:
             # Alert the user to handle unsaved work.
-            msg = _('There is un-saved work, exiting the application will'
-                    ' cause you to lose it.')
+            msg = _(
+                "There is un-saved work, exiting the application will"
+                " cause you to lose it."
+            )
             result = self._view.show_confirmation(msg)
             if result == QMessageBox.Cancel:
-                if args and hasattr(args[0], 'ignore'):
+                if args and hasattr(args[0], "ignore"):
                     # The function is handling an event, so ignore it.
                     args[0].ignore()
                 return
@@ -1121,38 +1223,38 @@ class Editor:
         # everything is cleaned up.
         self.modes[self.mode].stop()
         session = {
-            'theme': self.theme,
-            'mode': self.mode,
-            'paths': paths,
-            'envars': self.envars,
-            'minify': self.minify,
-            'microbit_runtime': self.microbit_runtime,
-            'zoom_level': self._view.zoom_position,
-            'window': {
-                'x': self._view.x(),
-                'y': self._view.y(),
-                'w': self._view.width(),
-                'h': self._view.height(),
-            }
+            "theme": self.theme,
+            "mode": self.mode,
+            "paths": paths,
+            "envars": self.envars,
+            "minify": self.minify,
+            "microbit_runtime": self.microbit_runtime,
+            "zoom_level": self._view.zoom_position,
+            "window": {
+                "x": self._view.x(),
+                "y": self._view.y(),
+                "w": self._view.width(),
+                "h": self._view.height(),
+            },
         }
         session_path = get_session_path()
-        with open(session_path, 'w') as out:
-            logger.debug('Session: {}'.format(session))
-            logger.debug('Saving session to: {}'.format(session_path))
+        with open(session_path, "w") as out:
+            logger.debug("Session: {}".format(session))
+            logger.debug("Saving session to: {}".format(session_path))
             json.dump(session, out, indent=2)
         # Clean up temporary mu.pth file if needed (Windows only).
-        if sys.platform == 'win32' and 'pythonw.exe' in sys.executable:
+        if sys.platform == "win32" and "pythonw.exe" in sys.executable:
             if site.ENABLE_USER_SITE:
                 site_path = site.USER_SITE
-                path_file = os.path.join(site_path, 'mu.pth')
+                path_file = os.path.join(site_path, "mu.pth")
                 if os.path.exists(path_file):
                     try:
                         os.remove(path_file)
-                        logger.info('{} removed.'.format(path_file))
+                        logger.info("{} removed.".format(path_file))
                     except Exception as ex:
-                        logger.error('Unable to delete {}'.format(path_file))
+                        logger.error("Unable to delete {}".format(path_file))
                         logger.error(ex)
-        logger.info('Quitting.\n\n')
+        logger.info("Quitting.\n\n")
         sys.exit(0)
 
     def show_admin(self, event=None):
@@ -1161,34 +1263,40 @@ class Editor:
 
         Ensure any changes to the envars is updated.
         """
-        logger.info('Showing admin with logs from {}'.format(LOG_FILE))
-        envars = '\n'.join(['{}={}'.format(name, value) for name, value in
-                            self.envars])
+        logger.info("Showing admin with logs from {}".format(LOG_FILE))
+        envars = "\n".join(
+            ["{}={}".format(name, value) for name, value in self.envars]
+        )
         settings = {
-            'envars': envars,
-            'minify': self.minify,
-            'microbit_runtime': self.microbit_runtime,
+            "envars": envars,
+            "minify": self.minify,
+            "microbit_runtime": self.microbit_runtime,
         }
         packages = installed_packages()
-        with open(LOG_FILE, 'r', encoding='utf8') as logfile:
-            new_settings = self._view.show_admin(logfile.read(), settings,
-                                                 '\n'.join(packages))
+        with open(LOG_FILE, "r", encoding="utf8") as logfile:
+            new_settings = self._view.show_admin(
+                logfile.read(), settings, "\n".join(packages)
+            )
         if new_settings:
-            self.envars = extract_envars(new_settings['envars'])
-            self.minify = new_settings['minify']
-            runtime = new_settings['microbit_runtime'].strip()
+            self.envars = extract_envars(new_settings["envars"])
+            self.minify = new_settings["minify"]
+            runtime = new_settings["microbit_runtime"].strip()
             if runtime and not os.path.isfile(runtime):
-                self.microbit_runtime = ''
-                message = _('Could not find MicroPython runtime.')
-                information = _("The micro:bit runtime you specified "
-                                "('{}') does not exist. "
-                                "Please try again.").format(runtime)
+                self.microbit_runtime = ""
+                message = _("Could not find MicroPython runtime.")
+                information = _(
+                    "The micro:bit runtime you specified "
+                    "('{}') does not exist. "
+                    "Please try again."
+                ).format(runtime)
                 self._view.show_message(message, information)
             else:
                 self.microbit_runtime = runtime
-            new_packages = [p for p in
-                            new_settings['packages'].lower().split('\n')
-                            if p.strip()]
+            new_packages = [
+                p
+                for p in new_settings["packages"].lower().split("\n")
+                if p.strip()
+            ]
             old_packages = [p.lower() for p in packages]
             self.sync_package_state(old_packages, new_packages)
         else:
@@ -1203,15 +1311,15 @@ class Editor:
         """
         old = set(old_packages)
         new = set(new_packages)
-        logger.info('Synchronize package states...')
-        logger.info('Old: {}'.format(old))
-        logger.info('New: {}'.format(new))
+        logger.info("Synchronize package states...")
+        logger.info("Old: {}".format(old))
+        logger.info("New: {}".format(new))
         to_remove = old.difference(new)
         to_add = new.difference(old)
         if to_remove or to_add:
-            logger.info('To add: {}'.format(to_add))
-            logger.info('To remove: {}'.format(to_remove))
-            logger.info('Site packages: {}'.format(MODULE_DIR))
+            logger.info("To add: {}".format(to_add))
+            logger.info("To remove: {}".format(to_remove))
+            logger.info("Site packages: {}".format(MODULE_DIR))
             self._view.sync_packages(to_remove, to_add, MODULE_DIR)
 
     def select_mode(self, event=None):
@@ -1220,13 +1328,14 @@ class Editor:
         """
         if self.modes[self.mode].is_debugger:
             return
-        logger.info('Showing available modes: {}'.format(
-            list(self.modes.keys())))
+        logger.info(
+            "Showing available modes: {}".format(list(self.modes.keys()))
+        )
         self.selecting_mode = True  # Flag to stop auto-detection of modes.
         new_mode = self._view.select_mode(self.modes, self.mode)
         self.selecting_mode = False
         if new_mode and new_mode != self.mode:
-            logger.info('New mode selected: {}'.format(new_mode))
+            logger.info("New mode selected: {}".format(new_mode))
             self.change_mode(new_mode)
 
     def change_mode(self, mode):
@@ -1236,11 +1345,11 @@ class Editor:
         """
         # Remove the old mode's REPL / filesystem / plotter if required.
         old_mode = self.modes[self.mode]
-        if hasattr(old_mode, 'remove_repl'):
+        if hasattr(old_mode, "remove_repl"):
             old_mode.remove_repl()
-        if hasattr(old_mode, 'remove_fs'):
+        if hasattr(old_mode, "remove_fs"):
             old_mode.remove_fs()
-        if hasattr(old_mode, 'remove_plotter'):
+        if hasattr(old_mode, "remove_plotter"):
             if old_mode.plotter:
                 old_mode.remove_plotter()
         # Re-assign to new mode.
@@ -1248,13 +1357,14 @@ class Editor:
         # Update buttons.
         self._view.change_mode(self.modes[mode])
         button_bar = self._view.button_bar
-        button_bar.connect('modes', self.select_mode, 'Ctrl+Shift+M')
+        button_bar.connect("modes", self.select_mode, "Ctrl+Shift+M")
         button_bar.connect("new", self.new, "Ctrl+N")
         button_bar.connect("load", self.load, "Ctrl+O")
         button_bar.connect("save", self.save, "Ctrl+S")
         for action in self.modes[mode].actions():
-            button_bar.connect(action['name'], action['handler'],
-                               action['shortcut'])
+            button_bar.connect(
+                action["name"], action["handler"], action["shortcut"]
+            )
         button_bar.connect("zoom-in", self.zoom_in, "Ctrl++")
         button_bar.connect("zoom-out", self.zoom_out, "Ctrl+-")
         button_bar.connect("theme", self.toggle_theme, "F1")
@@ -1265,10 +1375,11 @@ class Editor:
         button_bar.connect("quit", self.quit, "Ctrl+Q")
         self._view.status_bar.set_mode(self.modes[mode].name)
         # Update references to default file locations.
-        logger.info('Workspace directory: {}'.format(
-            self.modes[mode].workspace_dir()))
+        logger.info(
+            "Workspace directory: {}".format(self.modes[mode].workspace_dir())
+        )
         # Reset remembered current path for load/save dialogs.
-        self.current_path = ''
+        self.current_path = ""
         # Ensure auto-save timeouts are set.
         if self.modes[mode].save_timeout > 0:
             # Start the timer
@@ -1281,8 +1392,9 @@ class Editor:
             for tab in self._view.widgets:
                 tab.breakpoint_handles = set()
                 tab.reset_annotations()
-        self.show_status_message(_('Changed to {} mode.').format(
-            self.modes[mode].name))
+        self.show_status_message(
+            _("Changed to {} mode.").format(self.modes[mode].name)
+        )
 
     def autosave(self):
         """
@@ -1294,8 +1406,10 @@ class Editor:
                 if tab.path and tab.isModified():
                     # Suppress error message on autosave attempts
                     self.save_tab_to_file(tab, show_error_messages=False)
-                    logger.info('Autosave detected and saved '
-                                'changes in {}.'.format(tab.path))
+                    logger.info(
+                        "Autosave detected and saved "
+                        "changes in {}.".format(tab.path)
+                    )
 
     def check_usb(self):
         """
@@ -1308,7 +1422,7 @@ class Editor:
         device_types = set()
         # Detect connected devices.
         for name, mode in self.modes.items():
-            if hasattr(mode, 'find_device'):
+            if hasattr(mode, "find_device"):
                 # The mode can detect an attached device.
                 port, serial = mode.find_device(with_logging=False)
                 if port:
@@ -1327,7 +1441,7 @@ class Editor:
                 self.connected_devices.add(device)
                 mode_name = device[0]
                 device_name = self.modes[mode_name].name
-                msg = _('Detected new {} device.').format(device_name)
+                msg = _("Detected new {} device.").format(device_name)
                 self.show_status_message(msg)
                 # Only ask to switch mode if a single device type is connected
                 # and we're not already trying to select a new mode via the
@@ -1335,12 +1449,17 @@ class Editor:
                 # by the current mode.
                 m = self.modes[self.mode]
                 running = hasattr(m, "runner") and m.runner
-                if (len(device_types) == 1 and self.mode != mode_name and not
-                        self.selecting_mode) and not running:
-                    msg_body = _('Would you like to change Mu to the {} '
-                                 'mode?').format(device_name)
+                if (
+                    len(device_types) == 1
+                    and self.mode != mode_name
+                    and not self.selecting_mode
+                ) and not running:
+                    msg_body = _(
+                        "Would you like to change Mu to the {} " "mode?"
+                    ).format(device_name)
                     change_confirmation = self._view.show_confirmation(
-                        msg, msg_body, icon='Question')
+                        msg, msg_body, icon="Question"
+                    )
                     if change_confirmation == QMessageBox.Ok:
                         self.change_mode(mode_name)
 
@@ -1354,14 +1473,16 @@ class Editor:
         """
         How to handle the toggling of a breakpoint.
         """
-        if (self.modes[self.mode].has_debugger or
-                self.modes[self.mode].is_debugger):
+        if (
+            self.modes[self.mode].has_debugger
+            or self.modes[self.mode].is_debugger
+        ):
             tab = self._view.current_tab
             code = tab.text(line)
-            if self.mode == 'debugger':
+            if self.mode == "debugger":
                 # The debugger is running.
                 if is_breakpoint_line(code):
-                    self.modes['debugger'].toggle_breakpoint(line, tab)
+                    self.modes["debugger"].toggle_breakpoint(line, tab)
                     return
             else:
                 # The debugger isn't running.
@@ -1372,9 +1493,11 @@ class Editor:
                     handle = tab.markerAdd(line, tab.BREAKPOINT_MARKER)
                     tab.breakpoint_handles.add(handle)
                     return
-            msg = _('Cannot Set Breakpoint.')
-            info = _("Lines that are comments or some multi-line "
-                     "statements cannot have breakpoints.")
+            msg = _("Cannot Set Breakpoint.")
+            info = _(
+                "Lines that are comments or some multi-line "
+                "statements cannot have breakpoints."
+            )
             self._view.show_message(msg, info)
 
     def rename_tab(self, tab_id=None):
@@ -1391,33 +1514,40 @@ class Editor:
             new_path = self._view.get_save_path(tab.path)
             if new_path and new_path != tab.path:
                 if self.check_for_shadow_module(new_path):
-                    message = _('You cannot use the filename '
-                                '"{}"').format(os.path.basename(new_path))
-                    info = _('This name is already used by another part of '
-                             'Python. If you use that name, things are '
-                             'likely to break. Please try again with a '
-                             'different filename.')
+                    message = _("You cannot use the filename " '"{}"').format(
+                        os.path.basename(new_path)
+                    )
+                    info = _(
+                        "This name is already used by another part of "
+                        "Python. If you use that name, things are "
+                        "likely to break. Please try again with a "
+                        "different filename."
+                    )
                     self._view.show_message(message, info)
                     return
-                logger.info('Attempting to rename {} to {}'.format(tab.path,
-                                                                   new_path))
+                logger.info(
+                    "Attempting to rename {} to {}".format(tab.path, new_path)
+                )
                 # The user specified a path to a file.
-                if not os.path.basename(new_path).endswith('.py'):
+                if not os.path.basename(new_path).endswith(".py"):
                     # No extension given, default to .py
-                    new_path += '.py'
+                    new_path += ".py"
                 # Check for duplicate path with currently open tab.
                 for other_tab in self._view.widgets:
                     if other_tab.path == new_path:
-                        logger.info('Cannot rename, a file of that name is '
-                                    'already open in Mu')
-                        message = _('Could not rename file.')
-                        information = _("A file of that name is already open "
-                                        "in Mu.")
+                        logger.info(
+                            "Cannot rename, a file of that name is "
+                            "already open in Mu"
+                        )
+                        message = _("Could not rename file.")
+                        information = _(
+                            "A file of that name is already open " "in Mu."
+                        )
                         self._view.show_message(message, information)
                         return
                 # Finally rename
                 tab.path = new_path
-                logger.info('Renamed file to: {}'.format(tab.path))
+                logger.info("Renamed file to: {}".format(tab.path))
                 self.save()
 
     def find_replace(self):
@@ -1431,23 +1561,26 @@ class Editor:
         If there is, find (and, optionally, replace) then confirm outcome with
         a status message.
         """
-        result = self._view.show_find_replace(self.find, self.replace,
-                                              self.global_replace)
+        result = self._view.show_find_replace(
+            self.find, self.replace, self.global_replace
+        )
         if result:
             self.find, self.replace, self.global_replace = result
             if self.find:
                 if self.replace:
-                    replaced = self._view.replace_text(self.find, self.replace,
-                                                       self.global_replace)
+                    replaced = self._view.replace_text(
+                        self.find, self.replace, self.global_replace
+                    )
                     if replaced == 1:
                         msg = _('Replaced "{}" with "{}".')
-                        self.show_status_message(msg.format(self.find,
-                                                            self.replace))
+                        self.show_status_message(
+                            msg.format(self.find, self.replace)
+                        )
                     elif replaced > 1:
                         msg = _('Replaced {} matches of "{}" with "{}".')
-                        self.show_status_message(msg.format(replaced,
-                                                            self.find,
-                                                            self.replace))
+                        self.show_status_message(
+                            msg.format(replaced, self.find, self.replace)
+                        )
                     else:
                         msg = _('Could not find "{}".')
                         self.show_status_message(msg.format(self.find))
@@ -1459,9 +1592,11 @@ class Editor:
                         msg = _('Could not find "{}".')
                     self.show_status_message(msg.format(self.find))
             else:
-                message = _('You must provide something to find.')
-                information = _("Please try again, this time with something "
-                                "in the find box.")
+                message = _("You must provide something to find.")
+                information = _(
+                    "Please try again, this time with something "
+                    "in the find box."
+                )
                 self._view.show_message(message, information)
 
     def toggle_comments(self):
@@ -1481,24 +1616,28 @@ class Editor:
         if tab.path and not tab.path.endswith(".py"):
             return
         from black import format_str, FileMode, PY36_VERSIONS
+
         try:
             source_code = tab.text()
-            logger.info('Tidy code.')
+            logger.info("Tidy code.")
             logger.info(source_code)
             filemode = FileMode(target_versions=PY36_VERSIONS, line_length=88)
             tidy_code = format_str(source_code, mode=filemode)
             # The following bypasses tab.setText which resets the undo history.
             # Doing it this way means the user can use CTRL-Z to undo the
             # reformatting from black.
-            tab.SendScintilla(tab.SCI_SETTEXT, tidy_code.encode('utf-8'))
-            self.show_status_message(_("Successfully cleaned the code. "
-                                       "Use CTRL-Z to undo."))
+            tab.SendScintilla(tab.SCI_SETTEXT, tidy_code.encode("utf-8"))
+            self.show_status_message(
+                _("Successfully cleaned the code. " "Use CTRL-Z to undo.")
+            )
         except Exception as ex:
             # The user's code is problematic. Recover with a modal dialog
             # containing a helpful message.
             logger.error(ex)
-            message = _('Your code contains problems.')
-            information = _("These must be fixed before tidying will work. "
-                            "Please use the 'Check' button to highlight "
-                            "these problems.")
+            message = _("Your code contains problems.")
+            information = _(
+                "These must be fixed before tidying will work. "
+                "Please use the 'Check' button to highlight "
+                "these problems."
+            )
             self._view.show_message(message, information)
