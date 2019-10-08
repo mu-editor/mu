@@ -32,9 +32,9 @@ class DebugMode(BaseMode):
     Represents the functionality required by the Python 3 visual debugger.
     """
 
-    name = _('Graphical Debugger')
-    description = _('Debug your Python 3 code.')
-    icon = 'python'
+    name = _("Graphical Debugger")
+    description = _("Debug your Python 3 code.")
+    icon = "python"
     runner = None
     is_debugger = True
     save_timeout = 0  # No need to auto-save when in read-only debug mode.
@@ -46,39 +46,39 @@ class DebugMode(BaseMode):
         """
         return [
             {
-                'name': 'stop',
-                'display_name': _('Stop'),
-                'description': _('Stop the running code.'),
-                'handler': self.button_stop,
-                'shortcut': 'Shift+F5',
+                "name": "stop",
+                "display_name": _("Stop"),
+                "description": _("Stop the running code."),
+                "handler": self.button_stop,
+                "shortcut": "Shift+F5",
             },
             {
-                'name': 'run',
-                'display_name': _('Continue'),
-                'description': _('Continue to run your Python script.'),
-                'handler': self.button_continue,
-                'shortcut': 'F5',
+                "name": "run",
+                "display_name": _("Continue"),
+                "description": _("Continue to run your Python script."),
+                "handler": self.button_continue,
+                "shortcut": "F5",
             },
             {
-                'name': 'step-over',
-                'display_name': _('Step Over'),
-                'description': _('Step over a line of code.'),
-                'handler': self.button_step_over,
-                'shortcut': 'F10',
+                "name": "step-over",
+                "display_name": _("Step Over"),
+                "description": _("Step over a line of code."),
+                "handler": self.button_step_over,
+                "shortcut": "F10",
             },
             {
-                'name': 'step-in',
-                'display_name': _('Step In'),
-                'description': _('Step into a function.'),
-                'handler': self.button_step_in,
-                'shortcut': 'F11',
+                "name": "step-in",
+                "display_name": _("Step In"),
+                "description": _("Step into a function."),
+                "handler": self.button_step_in,
+                "shortcut": "F11",
             },
             {
-                'name': 'step-out',
-                'display_name': _('Step Out'),
-                'description': _('Step out of a function.'),
-                'handler': self.button_step_out,
-                'shortcut': 'Shift+F11',
+                "name": "step-out",
+                "display_name": _("Step Out"),
+                "description": _("Step out of a function."),
+                "handler": self.button_step_out,
+                "shortcut": "Shift+F11",
             },
         ]
 
@@ -96,7 +96,7 @@ class DebugMode(BaseMode):
         # Grab the Python file.
         tab = self.view.current_tab
         if tab is None:
-            logger.debug('There is no active text editor.')
+            logger.debug("There is no active text editor.")
             self.stop()
             return
         if tab.path is None:
@@ -110,27 +110,27 @@ class DebugMode(BaseMode):
             self.set_buttons(modes=False)
             envars = self.editor.envars
             cwd = os.path.dirname(tab.path)
-            self.runner = self.view.add_python3_runner(tab.path,
-                                                       cwd,
-                                                       debugger=True,
-                                                       envars=envars)
+            self.runner = self.view.add_python3_runner(
+                tab.path, cwd, debugger=True, envars=envars
+            )
             self.runner.process.waitForStarted()
             self.runner.process.finished.connect(self.finished)
             self.view.add_debug_inspector()
             self.view.set_read_only(True)
-            self.debugger = Debugger('localhost', DEBUGGER_PORT,
-                                     proc=self.runner.process)
+            self.debugger = Debugger(
+                "localhost", DEBUGGER_PORT, proc=self.runner.process
+            )
             self.debugger.view = self
             self.debugger.start()
         else:
-            logger.debug('Current script has not been saved. Aborting debug.')
+            logger.debug("Current script has not been saved. Aborting debug.")
             self.stop()
 
     def stop(self):
         """
         Stop the debug runner and reset the UI.
         """
-        logger.debug('Stopping debugger.')
+        logger.debug("Stopping debugger.")
         if self.runner:
             self.runner.process.kill()
             self.runner.process.waitForFinished()
@@ -139,16 +139,19 @@ class DebugMode(BaseMode):
             self.view.remove_python_runner()
             self.view.remove_debug_inspector()
         self.set_buttons(modes=True)
-        self.editor.change_mode('python')
-        self.editor.mode = 'python'
+        self.editor.change_mode("python")
+        self.editor.mode = "python"
         self.view.set_read_only(False)
 
     def finished(self):
         """
         Called when the debugged Python process is finished.
         """
-        buttons = {action['name']: False for action in self.actions()
-                   if action['name'] != 'stop'}
+        buttons = {
+            action["name"]: False
+            for action in self.actions()
+            if action["name"] != "stop"
+        }
         self.set_buttons(**buttons)
         self.editor.show_status_message(_("Your script has finished running."))
         for tab in self.view.widgets:
@@ -219,7 +222,7 @@ class DebugMode(BaseMode):
         process_runner = self.view.process_runner
         if process_runner:
             msg = _("Unable to connect to the Python debugger.\n\n") + message
-            process_runner.append(msg.encode('utf-8'))
+            process_runner.append(msg.encode("utf-8"))
             # Set the state to finished.
             self.finished()
             process_runner.finished(1, -1)
@@ -238,8 +241,11 @@ class DebugMode(BaseMode):
             for handle in list(tab.breakpoint_handles):
                 line = tab.markerLine(handle)
                 code = tab.text(line)
-                if line > -1 and line not in break_lines and \
-                        is_breakpoint_line(code):
+                if (
+                    line > -1
+                    and line not in break_lines
+                    and is_breakpoint_line(code)
+                ):
                     self.debugger.create_breakpoint(tab.path, line + 1)
                     break_lines.add(line)
                 else:
@@ -253,8 +259,9 @@ class DebugMode(BaseMode):
         Handle when a breakpoint is enabled.
         """
         tab = self.view.current_tab
-        if tab.path == breakpoint.filename and \
-                not tab.markersAtLine(breakpoint.line - 1):
+        if tab.path == breakpoint.filename and not tab.markersAtLine(
+            breakpoint.line - 1
+        ):
             tab.markerAdd(breakpoint.line - 1, tab.BREAKPOINT_MARKER)
 
     def debug_on_breakpoint_disable(self, breakpoint):
@@ -268,7 +275,7 @@ class DebugMode(BaseMode):
         """
         Handle when the debugger has moved to the referenced line in the file.
         """
-        ignored = ['bdb.py', ]  # Files the debugger should ignore.
+        ignored = ["bdb.py"]  # Files the debugger should ignore.
         if os.path.basename(filename) in ignored:
             self.debugger.do_return()
             return
@@ -283,7 +290,7 @@ class DebugMode(BaseMode):
         if stack:
             locals_dict = {}
             for frame in stack:
-                for k, v in frame[1]['locals'].items():
+                for k, v in frame[1]["locals"].items():
                     locals_dict[k] = v
             self.view.update_debug_inspector(locals_dict)
 
@@ -293,10 +300,10 @@ class DebugMode(BaseMode):
         """
         process_runner = self.view.process_runner
         for item in args:
-            process_runner.append(item.encode('utf-8'))
+            process_runner.append(item.encode("utf-8"))
         for k, v in kwargs.items():
-            msg = '{}: {}'.format(k, v)
-            process_runner.append(msg.encode('utf-8'))
+            msg = "{}: {}".format(k, v)
+            process_runner.append(msg.encode("utf-8"))
 
     def debug_on_info(self, message):
         """
@@ -308,15 +315,17 @@ class DebugMode(BaseMode):
         """
         Handle when the debugger sends a warning message.
         """
-        self.editor.show_status_message(_("Debugger warning: {}").format(
-            message))
+        self.editor.show_status_message(
+            _("Debugger warning: {}").format(message)
+        )
 
     def debug_on_error(self, message):
         """
         Handle when the debugger sends an error message.
         """
-        self.editor.show_status_message(_("Debugger error: {}").format(
-            message))
+        self.editor.show_status_message(
+            _("Debugger error: {}").format(message)
+        )
 
     def debug_on_call(self, args):
         """

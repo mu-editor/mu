@@ -1,1 +1,1 @@
-blue = 'blue'
+blue = "blue"
