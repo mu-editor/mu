@@ -25,14 +25,14 @@ def test_is_breakpoint_line_valid_blank_line():
     """
     If the line is blank, you can't set a breakpoint.
     """
-    assert is_breakpoint_line('        ') is False
+    assert is_breakpoint_line("        ") is False
 
 
 def test_is_breakpoint_line_comment():
     """
     You can't set a breakpoint on a line that is a comment.
     """
-    assert is_breakpoint_line('# A comment') is False
+    assert is_breakpoint_line("# A comment") is False
     assert is_breakpoint_line('""" A comment """') is False
     assert is_breakpoint_line("''' A comment'''") is False
 
@@ -50,9 +50,9 @@ def test_is_breakpoint_line_opening_collection():
     Breakpoints cannot be set on the first line of this statement (for all
     collection types).
     """
-    assert is_breakpoint_line('foo = [') is False
-    assert is_breakpoint_line('foo = {') is False
-    assert is_breakpoint_line('foo = (') is False
+    assert is_breakpoint_line("foo = [") is False
+    assert is_breakpoint_line("foo = {") is False
+    assert is_breakpoint_line("foo = (") is False
 
 
 def test_is_breakpoint_line_closing_collection():
@@ -68,6 +68,6 @@ def test_is_breakpoint_line_closing_collection():
     Breakpoints cannot be set on the final line of this statement (for all
     collection types).
     """
-    assert is_breakpoint_line(']') is False
-    assert is_breakpoint_line('}') is False
-    assert is_breakpoint_line(')') is False
+    assert is_breakpoint_line("]") is False
+    assert is_breakpoint_line("}") is False
+    assert is_breakpoint_line(")") is False

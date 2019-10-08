@@ -56,11 +56,11 @@ FONT_FILENAME_PATTERN = "SourceCodePro-{variant}.otf"
 FONT_VARIANTS = ("Bold", "BoldIt", "It", "Regular", "Semibold", "SemiboldIt")
 # Load the three themes from resources/css/[night|day|contrast].css
 # NIGHT_STYLE is a dark theme.
-NIGHT_STYLE = load_stylesheet('night.css')
+NIGHT_STYLE = load_stylesheet("night.css")
 # DAY_STYLE is a light conventional theme.
-DAY_STYLE = load_stylesheet('day.css')
+DAY_STYLE = load_stylesheet("day.css")
 # CONTRAST_STYLE is a high contrast theme.
-CONTRAST_STYLE = load_stylesheet('contrast.css')
+CONTRAST_STYLE = load_stylesheet("contrast.css")
 
 
 logger = logging.getLogger(__name__)
@@ -71,10 +71,12 @@ class Font:
     Utility class that makes it easy to set font related values within the
     editor.
     """
+
     _DATABASE = None
 
-    def __init__(self, color='#181818', paper='#FEFEF7', bold=False,
-                 italic=False):
+    def __init__(
+        self, color="#181818", paper="#FEFEF7", bold=False, italic=False
+    ):
         self.color = color
         self.paper = paper
         self.bold = bold
@@ -145,29 +147,29 @@ class DayTheme(Theme):
     This is a light theme.
     """
 
-    FunctionMethodName = ClassName = Font(color='#0000a0')
-    UnclosedString = Font(paper='#FFDDDD')
-    Comment = CommentBlock = Font(color='gray')
-    Keyword = Font(color='#005050', bold=True)
-    SingleQuotedString = DoubleQuotedString = Font(color='#800000')
-    TripleSingleQuotedString = TripleDoubleQuotedString = Font(color='#060')
-    Number = Font(color='#00008B')
-    Decorator = Font(color='#cc6600')
+    FunctionMethodName = ClassName = Font(color="#0000a0")
+    UnclosedString = Font(paper="#FFDDDD")
+    Comment = CommentBlock = Font(color="gray")
+    Keyword = Font(color="#005050", bold=True)
+    SingleQuotedString = DoubleQuotedString = Font(color="#800000")
+    TripleSingleQuotedString = TripleDoubleQuotedString = Font(color="#060")
+    Number = Font(color="#00008B")
+    Decorator = Font(color="#cc6600")
     Default = Identifier = Font()
-    Operator = Font(color='#400040')
-    HighlightedIdentifier = Font(color='#0000a0')
-    Paper = QColor('#FEFEF7')
-    Caret = QColor('#181818')
-    Margin = QColor('#EEE')
-    IndicatorError = QColor('red')
-    IndicatorStyle = QColor('blue')
-    DebugStyle = QColor('#ffcc33')
-    IndicatorWordMatch = QColor('lightGrey')
-    BraceBackground = QColor('lightGrey')
-    BraceForeground = QColor('blue')
-    UnmatchedBraceBackground = QColor('#FFDDDD')
-    UnmatchedBraceForeground = QColor('black')
-    BreakpointMarker = QColor('#D80000')
+    Operator = Font(color="#400040")
+    HighlightedIdentifier = Font(color="#0000a0")
+    Paper = QColor("#FEFEF7")
+    Caret = QColor("#181818")
+    Margin = QColor("#EEE")
+    IndicatorError = QColor("red")
+    IndicatorStyle = QColor("blue")
+    DebugStyle = QColor("#ffcc33")
+    IndicatorWordMatch = QColor("lightGrey")
+    BraceBackground = QColor("lightGrey")
+    BraceForeground = QColor("blue")
+    UnmatchedBraceBackground = QColor("#FFDDDD")
+    UnmatchedBraceForeground = QColor("black")
+    BreakpointMarker = QColor("#D80000")
     # HTML
     Tag = Keyword
     UnknownTag = Tag
@@ -187,8 +189,9 @@ class DayTheme(Theme):
     ClassSelector = Tag
     PseudoClass = ClassSelector
     UnknownPseudoClass = ClassSelector
-    CSS1Property = CSS2Property = CSS3Property = UnknownProperty = \
-        SingleQuotedString
+    CSS1Property = (
+        CSS2Property
+    ) = CSS3Property = UnknownProperty = SingleQuotedString
     Value = Number
     IDSelector = Tag
     Important = UnmatchedBraceBackground
@@ -204,32 +207,35 @@ class NightTheme(Theme):
 
     This is the dark theme.
     """
+
     # Python / General
-    FunctionMethodName = ClassName = Font(color='#81a2be', paper='#222')
-    UnclosedString = Font(paper='#c93827')
-    Comment = CommentBlock = CommentLine = Font(color='#969896', paper='#222')
-    Keyword = Font(color='#73a46a', bold=True, paper='#222')
-    SingleQuotedString = DoubleQuotedString = Font(color='#f0c674',
-                                                   paper='#222')
-    TripleSingleQuotedString = TripleDoubleQuotedString = Font(color='#f0c674',
-                                                               paper='#222')
-    Number = Font(color='#b5bd68', paper='#222')
-    Decorator = Font(color='#cc6666', paper='#222')
-    Default = Identifier = Font(color='#DDD', paper='#222')
-    Operator = Font(color='#b294bb', paper='#222')
-    HighlightedIdentifier = Font(color='#de935f', paper='#222')
-    Paper = QColor('#222')
-    Caret = QColor('#c6c6c6')
-    Margin = QColor('#424446')
-    IndicatorError = QColor('#c93827')
-    IndicatorStyle = QColor('#2f5692')
-    DebugStyle = QColor('#444')
-    IndicatorWordMatch = QColor('#f14721')
-    BraceBackground = QColor('#ed1596')
-    BraceForeground = QColor('#222')
-    UnmatchedBraceBackground = QColor('#c93827')
-    UnmatchedBraceForeground = QColor('#222')
-    BreakpointMarker = QColor('#c93827')
+    FunctionMethodName = ClassName = Font(color="#81a2be", paper="#222")
+    UnclosedString = Font(paper="#c93827")
+    Comment = CommentBlock = CommentLine = Font(color="#969896", paper="#222")
+    Keyword = Font(color="#73a46a", bold=True, paper="#222")
+    SingleQuotedString = DoubleQuotedString = Font(
+        color="#f0c674", paper="#222"
+    )
+    TripleSingleQuotedString = TripleDoubleQuotedString = Font(
+        color="#f0c674", paper="#222"
+    )
+    Number = Font(color="#b5bd68", paper="#222")
+    Decorator = Font(color="#cc6666", paper="#222")
+    Default = Identifier = Font(color="#DDD", paper="#222")
+    Operator = Font(color="#b294bb", paper="#222")
+    HighlightedIdentifier = Font(color="#de935f", paper="#222")
+    Paper = QColor("#222")
+    Caret = QColor("#c6c6c6")
+    Margin = QColor("#424446")
+    IndicatorError = QColor("#c93827")
+    IndicatorStyle = QColor("#2f5692")
+    DebugStyle = QColor("#444")
+    IndicatorWordMatch = QColor("#f14721")
+    BraceBackground = QColor("#ed1596")
+    BraceForeground = QColor("#222")
+    UnmatchedBraceBackground = QColor("#c93827")
+    UnmatchedBraceForeground = QColor("#222")
+    BreakpointMarker = QColor("#c93827")
     # HTML
     Tag = Keyword
     UnknownTag = Tag
@@ -249,8 +255,9 @@ class NightTheme(Theme):
     ClassSelector = Tag
     PseudoClass = ClassSelector
     UnknownPseudoClass = ClassSelector
-    CSS1Property = CSS2Property = CSS3Property = UnknownProperty = \
-        SingleQuotedString
+    CSS1Property = (
+        CSS2Property
+    ) = CSS3Property = UnknownProperty = SingleQuotedString
     Value = Number
     IDSelector = Tag
     Important = UnmatchedBraceBackground
@@ -267,30 +274,31 @@ class ContrastTheme(Theme):
     This is the high contrast theme.
     """
 
-    FunctionMethodName = ClassName = Font(color='#AAA', paper='black')
-    UnclosedString = Font(paper='#666')
-    Comment = CommentBlock = Font(color='#AAA', paper='black')
-    Keyword = Font(color='#EEE', bold=True, paper='black')
-    SingleQuotedString = DoubleQuotedString = Font(color='#AAA', paper='black')
-    TripleSingleQuotedString = TripleDoubleQuotedString = Font(color='#AAA',
-                                                               paper='black')
-    Number = Font(color='#AAA', paper='black')
-    Decorator = Font(color='#cccccc', paper='black')
-    Default = Identifier = Font(color='#fff', paper='black')
-    Operator = Font(color='#CCC', paper='black')
-    HighlightedIdentifier = Font(color='#ffffff', paper='black')
-    Paper = QColor('black')
-    Caret = QColor('white')
-    Margin = QColor('#333')
-    IndicatorError = QColor('white')
-    IndicatorStyle = QColor('cyan')
-    DebugStyle = QColor('#666')
-    IndicatorWordMatch = QColor('grey')
-    BraceBackground = QColor('white')
-    BraceForeground = QColor('black')
-    UnmatchedBraceBackground = QColor('#666')
-    UnmatchedBraceForeground = QColor('black')
-    BreakpointMarker = QColor('lightGrey')
+    FunctionMethodName = ClassName = Font(color="#AAA", paper="black")
+    UnclosedString = Font(paper="#666")
+    Comment = CommentBlock = Font(color="#AAA", paper="black")
+    Keyword = Font(color="#EEE", bold=True, paper="black")
+    SingleQuotedString = DoubleQuotedString = Font(color="#AAA", paper="black")
+    TripleSingleQuotedString = TripleDoubleQuotedString = Font(
+        color="#AAA", paper="black"
+    )
+    Number = Font(color="#AAA", paper="black")
+    Decorator = Font(color="#cccccc", paper="black")
+    Default = Identifier = Font(color="#fff", paper="black")
+    Operator = Font(color="#CCC", paper="black")
+    HighlightedIdentifier = Font(color="#ffffff", paper="black")
+    Paper = QColor("black")
+    Caret = QColor("white")
+    Margin = QColor("#333")
+    IndicatorError = QColor("white")
+    IndicatorStyle = QColor("cyan")
+    DebugStyle = QColor("#666")
+    IndicatorWordMatch = QColor("grey")
+    BraceBackground = QColor("white")
+    BraceForeground = QColor("black")
+    UnmatchedBraceBackground = QColor("#666")
+    UnmatchedBraceForeground = QColor("black")
+    BreakpointMarker = QColor("lightGrey")
     # HTML
     Tag = Keyword
     UnknownTag = Tag
@@ -310,8 +318,9 @@ class ContrastTheme(Theme):
     ClassSelector = Tag
     PseudoClass = ClassSelector
     UnknownPseudoClass = ClassSelector
-    CSS1Property = CSS2Property = CSS3Property = UnknownProperty = \
-        SingleQuotedString
+    CSS1Property = (
+        CSS2Property
+    ) = CSS3Property = UnknownProperty = SingleQuotedString
     Value = Number
     IDSelector = Tag
     Important = UnmatchedBraceBackground

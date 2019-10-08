@@ -33,14 +33,20 @@ pjoin = os.path.join
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def find_makensis_win():
     """Locate makensis.exe on Windows by querying the registry"""
     try:
-        nsis_install_dir = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\\NSIS')
+        nsis_install_dir = winreg.QueryValue(
+            winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\NSIS"
+        )
     except OSError:
-        nsis_install_dir = winreg.QueryValue(winreg.HKEY_LOCAL_MACHINE, 'SOFTWARE\\Wow6432Node\\NSIS')
+        nsis_install_dir = winreg.QueryValue(
+            winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Wow6432Node\\NSIS"
+        )
 
-    return pjoin(nsis_install_dir, 'makensis.exe')
+    return pjoin(nsis_install_dir, "makensis.exe")
+
 
 class InputError(ValueError):
     def __init__(self, param, value, expected):
@@ -49,7 +55,10 @@ class InputError(ValueError):
         self.expected = expected
 
     def __str__(self):
-        return "{e.value!r} is not valid for {e.param}, expected {e.expected}".format(e=self)
+        return "{e.value!r} is not valid for {e.param}, expected {e.expected}".format(
+            e=self
+        )
+
 
 class MuInstallerBuilder(InstallerBuilder):
     """Controls building an installer specific for Mu. Inherits and overrides
@@ -69,24 +78,24 @@ class MuInstallerBuilder(InstallerBuilder):
         url, filename = self._python_download_url_filename()
         cache_file = get_cache_dir(ensure_existence=True) / filename
         if not cache_file.is_file():
-            logger.info('Downloading embeddable Python build...')
-            logger.info('Getting %s', url)
+            logger.info("Downloading embeddable Python build...")
+            logger.info("Getting %s", url)
             download(url, cache_file)
 
         print("Using " + str(cache_file))
 
-        logger.info('Unpacking Python...')
-        python_dir = pjoin(self.build_dir, 'Python')
+        logger.info("Unpacking Python...")
+        python_dir = pjoin(self.build_dir, "Python")
 
         with zipfile.ZipFile(str(cache_file)) as z:
             z.extractall(python_dir)
 
         # Ensure stdlib is an unzipped folder called pythonXY.zip (where X, Y
         # are MAJOR MINOR version numbers).
-        version = ''.join(self.py_version.split('.')[:2])
+        version = "".join(self.py_version.split(".")[:2])
         stdlibzip = "python{}.zip".format(version)
         zipped = os.path.abspath(pjoin(python_dir, stdlibzip))
-        temp_target = os.path.abspath(pjoin(python_dir, 'tempstdlib'))
+        temp_target = os.path.abspath(pjoin(python_dir, "tempstdlib"))
         with zipfile.ZipFile(zipped) as z:
             z.extractall(temp_target)
         # Rename the unzipped directory to pythonXY.zip
@@ -96,15 +105,16 @@ class MuInstallerBuilder(InstallerBuilder):
         # Delete all *._pth files. See:
         # https://docs.python.org/3/using/windows.html#finding-modules
         # for more information.
-        pth_files = [os.path.abspath(pjoin(python_dir, f))
-                     for f in os.listdir(python_dir)
-                     if os.path.isfile(pjoin(python_dir, f))
-                     and f.endswith('._pth')]
+        pth_files = [
+            os.path.abspath(pjoin(python_dir, f))
+            for f in os.listdir(python_dir)
+            if os.path.isfile(pjoin(python_dir, f)) and f.endswith("._pth")
+        ]
         for pth in pth_files:
             print("Removing " + pth)
             os.remove(pth)
 
-        self.install_dirs.append(('Python', '$INSTDIR'))
+        self.install_dirs.append(("Python", "$INSTDIR"))
 
     def prepare_shortcuts(self):
         """Prepare shortcut files in the build directory.
@@ -117,35 +127,46 @@ class MuInstallerBuilder(InstallerBuilder):
         """
         files = set()
         for scname, sc in self.shortcuts.items():
-            if not sc.get('target'):
-                if sc.get('entry_point'):
-                    sc['script'] = script = scname.replace(' ', '_') + '.launch.py' \
-                                                + ('' if sc['console'] else 'w')
+            if not sc.get("target"):
+                if sc.get("entry_point"):
+                    sc["script"] = script = (
+                        scname.replace(" ", "_")
+                        + ".launch.py"
+                        + ("" if sc["console"] else "w")
+                    )
 
-                    specified_preamble = sc.get('extra_preamble', None)
+                    specified_preamble = sc.get("extra_preamble", None)
                     if isinstance(specified_preamble, str):
                         # Filename
-                        extra_preamble = io.open(specified_preamble, encoding='utf-8')
+                        extra_preamble = io.open(
+                            specified_preamble, encoding="utf-8"
+                        )
                     elif specified_preamble is None:
                         extra_preamble = io.StringIO()  # Empty
                     else:
                         # Passed a StringIO or similar object
                         extra_preamble = specified_preamble
 
-                    self.write_script(sc['entry_point'], pjoin(self.build_dir, script),
-                                      extra_preamble.read().rstrip())
+                    self.write_script(
+                        sc["entry_point"],
+                        pjoin(self.build_dir, script),
+                        extra_preamble.read().rstrip(),
+                    )
                 else:
-                    shutil.copy2(sc['script'], self.build_dir)
+                    shutil.copy2(sc["script"], self.build_dir)
 
-                target = '$INSTDIR\Python\python{}.exe'
-                sc['target'] = target.format('' if sc['console'] else 'w')
-                sc['parameters'] = '"-Es" "%s"' % ntpath.join('$INSTDIR', sc['script'])
-                files.add(os.path.basename(sc['script']))
+                target = "$INSTDIR\Python\python{}.exe"
+                sc["target"] = target.format("" if sc["console"] else "w")
+                sc["parameters"] = '"-Es" "%s"' % ntpath.join(
+                    "$INSTDIR", sc["script"]
+                )
+                files.add(os.path.basename(sc["script"]))
 
-            shutil.copy2(sc['icon'], self.build_dir)
-            sc['icon'] = os.path.basename(sc['icon'])
-            files.add(sc['icon'])
-        self.install_files.extend([(f, '$INSTDIR') for f in files])
+            shutil.copy2(sc["icon"], self.build_dir)
+            sc["icon"] = os.path.basename(sc["icon"])
+            files.add(sc["icon"])
+        self.install_files.extend([(f, "$INSTDIR") for f in files])
+
 
 def main(argv=None):
     """Make an installer from the command line.
@@ -157,10 +178,13 @@ def main(argv=None):
     logger.handlers = [logging.StreamHandler()]
 
     import argparse
-    argp = argparse.ArgumentParser(prog='pynsist')
-    argp.add_argument('config_file')
-    argp.add_argument('--no-makensis', action='store_true',
-        help='Prepare files and folders, stop before calling makensis. For debugging.'
+
+    argp = argparse.ArgumentParser(prog="pynsist")
+    argp.add_argument("config_file")
+    argp.add_argument(
+        "--no-makensis",
+        action="store_true",
+        help="Prepare files and folders, stop before calling makensis. For debugging.",
     )
     options = argp.parse_args(argv)
 
@@ -169,10 +193,11 @@ def main(argv=None):
         os.chdir(dirname)
 
     from nsist import configreader
+
     try:
         cfg = configreader.read_and_validate(config_file)
     except configreader.InvalidConfig as e:
-        logger.error('Error parsing configuration file:')
+        logger.error("Error parsing configuration file:")
         logger.error(str(e))
         sys.exit(1)
 
