@@ -64,9 +64,19 @@ tidy: clean
 	black -l 79 mu 
 	black -l 79 package 
 	black -l 79 tests
-	black -l 79 utils 
+	black -l 79 utils
 
-check: clean tidy flake8 coverage
+black: clean
+	@echo "\nChecking code with black..."
+	black --check -l 79 setup.py 
+	black --check -l 79 win_installer.py
+	black --check -l 79 make.py
+	black --check -l 79 mu 
+	black --check -l 79 package 
+	black --check -l 79 tests
+	black --check -l 79 utils
+
+check: clean black flake8 coverage
 
 dist: check
 	@echo "\nChecks pass, good to package..."
