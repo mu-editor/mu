@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import os
 import logging
-from mu.logic import MODULE_DIR
+from mu.logic import VENV_DIR, VENV_PYTHON, venv_path
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from mu.resources import load_icon
@@ -56,6 +56,7 @@ class KernelRunner(QObject):
         Create the expected context, start the kernel, obtain a client and
         emit a signal when both are started.
         """
+        module_dir = venv_path()
         logger.info(sys.path)
         os.chdir(self.cwd)  # Ensure the kernel runs with the expected CWD.
         # Add user defined envars to os.environ so they can be picked up by
@@ -69,12 +70,12 @@ class KernelRunner(QObject):
         # Ensure the expected paths are in PYTHONPATH of the subprocess so the
         # kernel and Mu-installed third party applications can be found.
         if "PYTHONPATH" not in os.environ:
-            paths = sys.path + [MODULE_DIR]
+            paths = sys.path + [module_dir]
             os.environ["PYTHONPATH"] = os.pathsep.join(paths)
-        if MODULE_DIR not in os.environ["PYTHONPATH"]:
+        if module_dir not in os.environ["PYTHONPATH"]:
             # This is needed on Windows to ensure user installed third party
             # packages are available in the REPL.
-            new_path = os.pathsep.join([os.environ["PYTHONPATH"], MODULE_DIR])
+            new_path = os.pathsep.join([os.environ["PYTHONPATH"], module_dir])
             os.environ["PYTHONPATH"] = new_path
         logger.info("REPL PYTHONPATH: {}".format(os.environ["PYTHONPATH"]))
         self.repl_kernel_manager = QtKernelManager()

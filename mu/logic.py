@@ -32,6 +32,7 @@ import locale
 import shutil
 import appdirs
 import site
+import subprocess
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QLocale
 from pyflakes.api import check
@@ -48,8 +49,9 @@ WORKSPACE_NAME = "mu_code"
 # The default directory for application data (i.e., configuration).
 DATA_DIR = appdirs.user_data_dir(appname="mu", appauthor="python")
 # The directory containing user installed third party modules.
-MODULE_DIR = os.path.join(DATA_DIR, "site-packages")
-sys.path.append(MODULE_DIR)
+VENV_DIR = os.path.join(DATA_DIR, "mu_venv")
+# The Python interpreter in the virtualenv created by Mu for the user.
+VENV_PYTHON = os.path.join(VENV_DIR, "bin", "python3")
 # The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.
@@ -191,30 +193,38 @@ def installed_packages():
     """
     List all the third party modules installed by the user.
     """
-    result = []
-    pkg_dirs = [
-        os.path.join(MODULE_DIR, d)
-        for d in os.listdir(MODULE_DIR)
-        if d.endswith("dist-info") or d.endswith("egg-info")
-    ]
-    logger.info("Packages found: {}".format(pkg_dirs))
-    for pkg in pkg_dirs:
-        if pkg.endswith("dist-info"):
-            # Modern.
-            metadata_file = os.path.join(pkg, "METADATA")
-        else:
-            # Legacy (eggs).
-            metadata_file = os.path.join(pkg, "PKG-INFO")
-        try:
-            with open(metadata_file, "rb") as f:
-                lines = f.readlines()
-                name = lines[1].rsplit(b":")[-1].strip()
-                result.append(name.decode("utf-8"))
-        except Exception as ex:
-            # Just log any errors.
-            logger.error("Unable to get metadata for package: " + pkg)
-            logger.error(ex)
-    return sorted(result)
+    logger.info("Discovering installed third party module in venv.")
+    result = subprocess.run([VENV_PYTHON, "-m", "pip", "freeze"], stdout=subprocess.PIPE, universal_newlines=True)
+    try:
+        result.check_returncode()
+    except subprocess.CalledProcessError as ex:
+        logger.error("Could not get installed third party modules.")
+        logger.error(ex)
+        return []
+    packages = result.stdout.split("\n")
+    logger.info(packages)
+    installed = []
+    for p in packages:
+        name = p.split("==")[0].strip()
+        if name and name != "mu-editor":
+            installed.append(name)
+    return installed
+
+
+def venv_path():
+    logger.info("Finding user-site for venv.")
+    result = subprocess.run([VENV_PYTHON, "--version"], stdout=subprocess.PIPE, universal_newlines=True)
+    try:
+        result.check_returncode()
+    except subprocess.CalledProcessError as ex:
+        logger.error("Could not get user-site.")
+        logger.error(ex)
+        return "" 
+    raw_version = result.stdout.strip().split(" ")[-1]
+    version_numbers = raw_version.split(".")
+    path = os.path.join(VENV_DIR, "lib", "python{}.{}".format(version_numbers[0], version_numbers[1]), "site-packages")
+    logger.info(path)
+    return path 
 
 
 def write_and_flush(fileobj, content):
@@ -660,9 +670,14 @@ class Editor:
         if not os.path.exists(DATA_DIR):
             logger.debug("Creating directory: {}".format(DATA_DIR))
             os.makedirs(DATA_DIR)
-        if not os.path.exists(MODULE_DIR):
-            logger.debug("Creating directory: {}".format(MODULE_DIR))
-            os.makedirs(MODULE_DIR)
+        if not os.path.exists(VENV_DIR):
+            logger.debug("Creating virtualenv: {}".format(VENV_DIR))
+            result = subprocess.run([sys.executable, "-m", "venv", VENV_DIR])
+            try:
+                result.check_returncode()
+            except subprocess.CalledProcessError as ex:
+                logger.error("Could not create virtualenv.")
+                logger.error(ex)
         logger.info("Settings path: {}".format(get_settings_path()))
         logger.info("Session path: {}".format(get_session_path()))
         logger.info("Log directory: {}".format(LOG_DIR))
@@ -1319,8 +1334,8 @@ class Editor:
         if to_remove or to_add:
             logger.info("To add: {}".format(to_add))
             logger.info("To remove: {}".format(to_remove))
-            logger.info("Site packages: {}".format(MODULE_DIR))
-            self._view.sync_packages(to_remove, to_add, MODULE_DIR)
+            logger.info("Virtualenv: {}".format(VENV_DIR))
+            self._view.sync_packages(to_remove, to_add, VENV_PYTHON)
 
     def select_mode(self, event=None):
         """

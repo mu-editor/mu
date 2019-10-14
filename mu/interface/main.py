@@ -911,13 +911,13 @@ class Window(QMainWindow):
         else:
             return {}
 
-    def sync_packages(self, to_remove, to_add, module_dir):
+    def sync_packages(self, to_remove, to_add, venv_python):
         """
         Display a modal dialog that indicates the status of the add/remove
         package management operation.
         """
         package_box = PackageDialog(self)
-        package_box.setup(to_remove, to_add, module_dir)
+        package_box.setup(to_remove, to_add, venv_python)
         package_box.exec()
 
     def show_message(self, message, information=None, icon=None):
