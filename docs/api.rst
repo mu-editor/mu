@@ -116,12 +116,12 @@ API autocomplete and call tips can be found in the ``mu.modes.api`` namespace.
 .. automodule:: mu.modes.base
     :members:
 
-``mu.modes.adafruit``
-+++++++++++++++++++++
+``mu.modes.circuitpython``
+++++++++++++++++++++++++++
 
-Adafruit mode for CircuitPython.
+CircuitPython mode for Adafruit boards (and others).
 
-.. automodule:: mu.modes.adafruit
+.. automodule:: mu.modes.circuitpython
     :members:
 
 ``mu.modes.debugger``

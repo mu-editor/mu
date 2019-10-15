@@ -16,7 +16,6 @@ matrix:
       sudo: required
       language: python
       python: 3.7
-
     # To maximise compatibility pick earliest image, OS X 10.12
     - os: osx
       osx_image: xcode8.3
@@ -55,8 +54,9 @@ install:
   - pip freeze
 
 script:
-  # Run the tests on the Linux platform: needs "X Virtual Framebuffer".
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run make check; fi
+  # For Linux run only the tests on 3.5 and the full checker elsewhere, all need the "X Virtual Framebuffer"
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" = "3.5" ]; then xvfb-run make coverage; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" != "3.5" ]; then xvfb-run make check; fi
   - make clean
 
   # Run the tests on macOS and package it: "make macos" runs checks+tests first.

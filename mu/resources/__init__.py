@@ -23,8 +23,8 @@ from PyQt5.QtCore import QDir
 
 
 # The following lines add the images and css directories to the search path.
-QDir.addSearchPath('images', resource_filename(__name__, 'images'))
-QDir.addSearchPath('css', resource_filename(__name__, 'css'))
+QDir.addSearchPath("images", resource_filename(__name__, "images"))
+QDir.addSearchPath("css", resource_filename(__name__, "css"))
 
 
 def path(name, resource_dir="images/"):
@@ -44,7 +44,7 @@ def load_pixmap(name):
 
 def load_stylesheet(name):
     """Load a CSS stylesheet from the resources directory."""
-    return resource_string(__name__, "css/" + name).decode('utf8')
+    return resource_string(__name__, "css/" + name).decode("utf8")
 
 
 def load_font_data(name):

@@ -31,13 +31,26 @@ class PyGameZeroMode(BaseMode):
     Represents the functionality required by the PyGameZero mode.
     """
 
-    name = _('Pygame Zero')
-    description = _('Make games with Pygame Zero.')
-    icon = 'pygamezero'
+    name = _("Pygame Zero")
+    description = _("Make games with Pygame Zero.")
+    icon = "pygamezero"
     runner = None
-    builtins = ['clock', 'music', 'Actor', 'keyboard', 'animate', 'Rect',
-                'ZRect', 'images', 'sounds', 'mouse', 'keys', 'keymods',
-                'exit', 'screen']
+    builtins = [
+        "clock",
+        "music",
+        "Actor",
+        "keyboard",
+        "animate",
+        "Rect",
+        "ZRect",
+        "images",
+        "sounds",
+        "mouse",
+        "keys",
+        "keymods",
+        "exit",
+        "screen",
+    ]
 
     def actions(self):
         """
@@ -46,39 +59,39 @@ class PyGameZeroMode(BaseMode):
         """
         return [
             {
-                'name': 'play',
-                'display_name': _('Play'),
-                'description': _('Play your Pygame Zero game.'),
-                'handler': self.play_toggle,
-                'shortcut': 'F5',
+                "name": "play",
+                "display_name": _("Play"),
+                "description": _("Play your Pygame Zero game."),
+                "handler": self.play_toggle,
+                "shortcut": "F5",
             },
             {
-                'name': 'images',
-                'display_name': _('Images'),
-                'description': _('Show the images used by Pygame Zero.'),
-                'handler': self.show_images,
-                'shortcut': 'Ctrl+Shift+I',
+                "name": "images",
+                "display_name": _("Images"),
+                "description": _("Show the images used by Pygame Zero."),
+                "handler": self.show_images,
+                "shortcut": "Ctrl+Shift+I",
             },
             {
-                'name': 'fonts',
-                'display_name': _('Fonts'),
-                'description': _('Show the fonts used by Pygame Zero.'),
-                'handler': self.show_fonts,
-                'shortcut': 'Ctrl+Shift+F',
+                "name": "fonts",
+                "display_name": _("Fonts"),
+                "description": _("Show the fonts used by Pygame Zero."),
+                "handler": self.show_fonts,
+                "shortcut": "Ctrl+Shift+F",
             },
             {
-                'name': 'sounds',
-                'display_name': _('Sounds'),
-                'description': _('Show the sounds used by Pygame Zero.'),
-                'handler': self.show_sounds,
-                'shortcut': 'Ctrl+Shift+N',
+                "name": "sounds",
+                "display_name": _("Sounds"),
+                "description": _("Show the sounds used by Pygame Zero."),
+                "handler": self.show_sounds,
+                "shortcut": "Ctrl+Shift+N",
             },
             {
-                'name': 'music',
-                'display_name': _('Music'),
-                'description': _('Show the music used by Pygame Zero.'),
-                'handler': self.show_music,
-                'shortcut': 'Ctrl+Shift+M',
+                "name": "music",
+                "display_name": _("Music"),
+                "description": _("Show the music used by Pygame Zero."),
+                "handler": self.show_music,
+                "shortcut": "Ctrl+Shift+M",
             },
         ]
 
@@ -95,18 +108,18 @@ class PyGameZeroMode(BaseMode):
         """
         if self.runner:
             self.stop_game()
-            play_slot = self.view.button_bar.slots['play']
-            play_slot.setIcon(load_icon('play'))
-            play_slot.setText(_('Play'))
-            play_slot.setToolTip(_('Play your Pygame Zero game.'))
+            play_slot = self.view.button_bar.slots["play"]
+            play_slot.setIcon(load_icon("play"))
+            play_slot.setText(_("Play"))
+            play_slot.setToolTip(_("Play your Pygame Zero game."))
             self.set_buttons(modes=True)
         else:
             self.run_game()
             if self.runner:
-                play_slot = self.view.button_bar.slots['play']
-                play_slot.setIcon(load_icon('stop'))
-                play_slot.setText(_('Stop'))
-                play_slot.setToolTip(_('Stop your Pygame Zero game.'))
+                play_slot = self.view.button_bar.slots["play"]
+                play_slot.setIcon(load_icon("stop"))
+                play_slot.setText(_("Stop"))
+                play_slot.setToolTip(_("Stop your Pygame Zero game."))
                 self.set_buttons(modes=False)
 
     def run_game(self):
@@ -116,7 +129,7 @@ class PyGameZeroMode(BaseMode):
         # Grab the Python file.
         tab = self.view.current_tab
         if tab is None:
-            logger.debug('There is no active text editor.')
+            logger.debug("There is no active text editor.")
             self.stop_game()
             return
         if tab.path is None:
@@ -128,20 +141,22 @@ class PyGameZeroMode(BaseMode):
                 self.editor.save_tab_to_file(tab)
             logger.debug(tab.text())
             envars = self.editor.envars
-            args = ['-m', 'pgzero']
+            args = ["-m", "pgzero"]
             cwd = os.path.dirname(tab.path)
-            self.runner = self.view.add_python3_runner(tab.path,
-                                                       cwd,
-                                                       interactive=False,
-                                                       envars=envars,
-                                                       python_args=args)
+            self.runner = self.view.add_python3_runner(
+                tab.path,
+                cwd,
+                interactive=False,
+                envars=envars,
+                python_args=args,
+            )
             self.runner.process.waitForStarted()
 
     def stop_game(self):
         """
         Stop the currently running game.
         """
-        logger.debug('Stopping script.')
+        logger.debug("Stopping script.")
         if self.runner:
             self.runner.process.kill()
             self.runner.process.waitForFinished()

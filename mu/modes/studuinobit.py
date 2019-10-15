@@ -23,8 +23,14 @@ from mu.modes.base import MicroPythonMode, StuduinoBitFileManager
 from mu.modes.api import STUDUINOBIT_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QThread
-from PyQt5.QtWidgets import (QDialog, QGridLayout, QPushButton,
-                             QHBoxLayout, QGroupBox, QLabel)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QGridLayout,
+    QPushButton,
+    QHBoxLayout,
+    QGroupBox,
+    QLabel,
+)
 from mu.contrib import microfs
 from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, save_and_encode
 from serial import Serial
@@ -37,9 +43,10 @@ class StuduinoBitMode(MicroPythonMode):
     Represents the functionality required for running
     MicroPython on Studuino:bit
     """
-    name = _('Artec Studuino:Bit MicroPython')
+
+    name = _("Artec Studuino:Bit MicroPython")
     description = _("Write MicroPython on Studuino:bit.")
-    icon = 'studuinobit'
+    icon = "studuinobit"
     fs = None
 
     # There are many boards which use ESP microcontrollers but they often use
@@ -47,7 +54,7 @@ class StuduinoBitMode(MicroPythonMode):
     # Product ID for the connected devices.
     valid_boards = [
         # VID  , PID
-        (0x20A0, 0x4269),   # Studuion:bit VID, PID
+        (0x20A0, 0x4269)  # Studuion:bit VID, PID
     ]
 
     def __init__(self, editor, view):
@@ -60,43 +67,49 @@ class StuduinoBitMode(MicroPythonMode):
         """
         buttons = [
             {
-                'name': 'run',
-                'display_name': _('Run'),
-                'description': _('Run your code directly on the Studuino:bit'
-                                 ' via the REPL.'),
-                'handler': self.run,
-                'shortcut': 'F5',
+                "name": "run",
+                "display_name": _("Run"),
+                "description": _(
+                    "Run your code directly on the Studuino:bit"
+                    " via the REPL."
+                ),
+                "handler": self.run,
+                "shortcut": "F5",
             },
             {
-                'name': 'flash_sb',
-                'display_name': _('Flash'),
-                'description': _('Flash your code onto the Studuino:bit.'),
-                'handler': self.toggle_flash,
-                'shortcut': 'F3',
+                "name": "flash_sb",
+                "display_name": _("Flash"),
+                "description": _("Flash your code onto the Studuino:bit."),
+                "handler": self.toggle_flash,
+                "shortcut": "F3",
             },
             {
-                'name': 'files_sb',
-                'display_name': _('Files'),
-                'description': _('Access the file system on Studuino:bit.'),
-                'handler': self.toggle_files,
-                'shortcut': 'F4',
+                "name": "files_sb",
+                "display_name": _("Files"),
+                "description": _("Access the file system on Studuino:bit."),
+                "handler": self.toggle_files,
+                "shortcut": "F4",
             },
             {
-                'name': 'repl',
-                'display_name': _('REPL'),
-                'description': _('Use the REPL to live-code on the '
-                                 'Studuino:bit.'),
-                'handler': self.toggle_repl,
-                'shortcut': 'Ctrl+Shift+I',
-            }, ]
+                "name": "repl",
+                "display_name": _("REPL"),
+                "description": _(
+                    "Use the REPL to live-code on the " "Studuino:bit."
+                ),
+                "handler": self.toggle_repl,
+                "shortcut": "Ctrl+Shift+I",
+            },
+        ]
         if CHARTS:
-            buttons.append({
-                'name': 'plotter',
-                'display_name': _('Plotter'),
-                'description': _('Plot incoming REPL data.'),
-                'handler': self.toggle_plotter,
-                'shortcut': 'CTRL+Shift+P',
-            })
+            buttons.append(
+                {
+                    "name": "plotter",
+                    "display_name": _("Plotter"),
+                    "description": _("Plot incoming REPL data."),
+                    "handler": self.toggle_plotter,
+                    "shortcut": "CTRL+Shift+P",
+                }
+            )
         return buttons
 
     def api(self):
@@ -120,10 +133,12 @@ class StuduinoBitMode(MicroPythonMode):
                     self.set_buttons(files_sb=False, flash_sb=False)
         else:
             message = _("REPL and file system cannot work at the same time.")
-            information = _("The REPL and file system both use the same USB "
-                            "serial connection. Only one can be active "
-                            "at any time. Toggle the file system off and "
-                            "try again.")
+            information = _(
+                "The REPL and file system both use the same USB "
+                "serial connection. Only one can be active "
+                "at any time. Toggle the file system off and "
+                "try again."
+            )
             self.view.show_message(message, information)
 
     def toggle_flash(self, event):
@@ -133,7 +148,7 @@ class StuduinoBitMode(MicroPythonMode):
         """
         regist_box = RegisterWindow(self.view)
         result = regist_box.exec()
-        if (result == 0):
+        if result == 0:
             return
 
         # Display sending message
@@ -144,8 +159,12 @@ class StuduinoBitMode(MicroPythonMode):
         reg_num = reg_info[0]
 
         tab = self.view.current_tab
-        usr_file = os.path.join(HOME_DIRECTORY, WORKSPACE_NAME,
-                                'studuinobit', 'usr' + reg_num + '.py')
+        usr_file = os.path.join(
+            HOME_DIRECTORY,
+            WORKSPACE_NAME,
+            "studuinobit",
+            "usr" + reg_num + ".py",
+        )
         save_and_encode(tab.text(), usr_file, tab.newline)
 
         # Send script
@@ -153,15 +172,18 @@ class StuduinoBitMode(MicroPythonMode):
         serial = None
         exp_flag = False
         try:
-            serial = Serial(device_port, 115200, timeout=1, parity='N')
+            serial = Serial(device_port, 115200, timeout=1, parity="N")
             filename = os.path.basename(usr_file)
-            microfs.put(usr_file, 'usr/' + filename, serial)
-            microfs.execute([
-                'import machine',
-                'machine.nvs_setint("lastSelected", {0})'.format(reg_num),
-            ], serial)
+            microfs.put(usr_file, "usr/" + filename, serial)
+            microfs.execute(
+                [
+                    "import machine",
+                    'machine.nvs_setint("lastSelected", {0})'.format(reg_num),
+                ],
+                serial,
+            )
             time.sleep(0.1)
-            serial.write(b'\x04')
+            serial.write(b"\x04")
         except Exception as e:
             logger.error(e)
             exp_flag = True
@@ -175,8 +197,12 @@ class StuduinoBitMode(MicroPythonMode):
 
         # dlg_msg.close()
         if not exp_flag:
-            self.editor.show_status_message(_("Finished transfer. \
-                Press the reset button on the Studuino:bit"))
+            self.editor.show_status_message(
+                _(
+                    "Finished transfer. \
+                Press the reset button on the Studuino:bit"
+                )
+            )
         else:
             self.editor.show_status_message(_("Can't transfer."))
 
@@ -191,12 +217,15 @@ class StuduinoBitMode(MicroPythonMode):
             elif not (self.repl or self.plotter):
                 self.set_buttons(files_sb=True, flash_sb=True)
         else:
-            message = _("The plotter and file system cannot work at the same "
-                        "time.")
-            information = _("The plotter and file system both use the same "
-                            "USB serial connection. Only one can be active "
-                            "at any time. Toggle the file system off and "
-                            "try again.")
+            message = _(
+                "The plotter and file system cannot work at the same " "time."
+            )
+            information = _(
+                "The plotter and file system both use the same "
+                "USB serial connection. Only one can be active "
+                "at any time. Toggle the file system off and "
+                "try again."
+            )
             self.view.show_message(message, information)
 
     def run(self):
@@ -208,37 +237,41 @@ class StuduinoBitMode(MicroPythonMode):
         if not self.repl:
             device_port, serial_number = self.find_device()
             try:
-                serial = Serial(device_port, 115200, timeout=1, parity='N')
+                serial = Serial(device_port, 115200, timeout=1, parity="N")
             except Exception as e:
                 logger.error(e)
                 return
 
             try:
-                microfs.execute([
-                    'import machine',
-                    'machine.nvs_setint("lastSelected", 99)',
-                ], serial)
+                microfs.execute(
+                    [
+                        "import machine",
+                        'machine.nvs_setint("lastSelected", 99)',
+                    ],
+                    serial,
+                )
             except IOError as e:
-                self.editor.\
-                    show_status_message(_('Please REST Button'))
+                self.editor.show_status_message(_("Please REST Button"))
                 logger.error(e)
                 serial.close()
                 return
 
             serial.close()
 
-        logger.info('Running script.')
+        logger.info("Running script.")
         # Grab the Python script.
         tab = self.view.current_tab
         if tab is None:
             # There is no active text editor.
             message = _("Cannot run anything without any active editor tabs.")
-            information = _("Running transfers the content of the current tab"
-                            " onto the device. It seems like you don't have "
-                            " any tabs open.")
+            information = _(
+                "Running transfers the content of the current tab"
+                " onto the device. It seems like you don't have "
+                " any tabs open."
+            )
             self.view.show_message(message, information)
             return
-        python_script = tab.text().split('\n')
+        python_script = tab.text().split("\n")
         if not self.repl:
             self.toggle_repl(None)
         if self.repl:
@@ -250,25 +283,31 @@ class StuduinoBitMode(MicroPythonMode):
         system navigator for the MicroPython device on or off.
         """
         if self.repl:
-            message = _("File system cannot work at the same time as the "
-                        "REPL or plotter.")
-            information = _("The file system and the REPL and plotter "
-                            "use the same USB serial connection. Toggle the "
-                            "REPL and plotter off and try again.")
+            message = _(
+                "File system cannot work at the same time as the "
+                "REPL or plotter."
+            )
+            information = _(
+                "The file system and the REPL and plotter "
+                "use the same USB serial connection. Toggle the "
+                "REPL and plotter off and try again."
+            )
             self.view.show_message(message, information)
         else:
             if self.fs is None:
                 time.sleep(1)
                 self.add_fs()
                 if self.fs:
-                    logger.info('Toggle filesystem on.')
-                    self.set_buttons(run=False, repl=False,
-                                     plotter=False, flash_sb=False)
+                    logger.info("Toggle filesystem on.")
+                    self.set_buttons(
+                        run=False, repl=False, plotter=False, flash_sb=False
+                    )
             else:
                 self.remove_fs()
-                logger.info('Toggle filesystem off.')
-                self.set_buttons(run=True, repl=True,
-                                 plotter=True, flash_sb=True)
+                logger.info("Toggle filesystem off.")
+                self.set_buttons(
+                    run=True, repl=True, plotter=True, flash_sb=True
+                )
 
     def add_fs(self):
         """
@@ -280,24 +319,26 @@ class StuduinoBitMode(MicroPythonMode):
 
         # Check for MicroPython device
         if not device_port:
-            message = _('Could not find an attached Studuino:bit.')
-            information = _("Please make sure the device is plugged "
-                            "into this computer.\n\nThe device must "
-                            "have MicroPython flashed onto it before "
-                            "the file system will work.\n\n"
-                            "Finally, press the device's reset button "
-                            "and wait a few seconds before trying "
-                            "again.")
+            message = _("Could not find an attached Studuino:bit.")
+            information = _(
+                "Please make sure the device is plugged "
+                "into this computer.\n\nThe device must "
+                "have MicroPython flashed onto it before "
+                "the file system will work.\n\n"
+                "Finally, press the device's reset button "
+                "and wait a few seconds before trying "
+                "again."
+            )
             self.view.show_message(message, information)
             return
 
         self.file_manager_thread = QThread(self)
         self.file_manager = StuduinoBitFileManager(device_port)
         self.file_manager.moveToThread(self.file_manager_thread)
-        self.file_manager_thread.started.\
-            connect(self.file_manager.on_start)
-        self.fs = self.view.add_studuinobit_filesystem(self.workspace_dir(),
-                                                       self.file_manager)
+        self.file_manager_thread.started.connect(self.file_manager.on_start)
+        self.fs = self.view.add_studuinobit_filesystem(
+            self.workspace_dir(), self.file_manager
+        )
         self.fs.set_message.connect(self.editor.show_status_message)
         self.fs.set_warning.connect(self.view.show_message)
         self.file_manager_thread.start()
@@ -327,26 +368,31 @@ class StuduinoBitMode(MicroPythonMode):
         device_port, serial_number = self.find_device()
         if device_port:
             try:
-                self.view.add_studuionbit_repl(device_port, self.name,
-                                               self.force_interrupt)
-                logger.info('Started REPL on port: {}'.format(device_port))
+                self.view.add_studuionbit_repl(
+                    device_port, self.name, self.force_interrupt
+                )
+                logger.info("Started REPL on port: {}".format(device_port))
                 self.repl = True
             except IOError as ex:
                 logger.error(ex)
                 self.repl = False
-                info = _("Click on the device's reset button, wait a few"
-                         " seconds and then try again.")
+                info = _(
+                    "Click on the device's reset button, wait a few"
+                    " seconds and then try again."
+                )
                 self.view.show_message(str(ex), info)
             except Exception as ex:
                 logger.error(ex)
         else:
-            message = _('Could not find an attached device.')
-            information = _('Please make sure the device is plugged into this'
-                            ' computer.\n\nIt must have a version of'
-                            ' MicroPython (or CircuitPython) flashed onto it'
-                            ' before the REPL will work.\n\nFinally, press the'
-                            " device's reset button and wait a few seconds"
-                            ' before trying again.')
+            message = _("Could not find an attached device.")
+            information = _(
+                "Please make sure the device is plugged into this"
+                " computer.\n\nIt must have a version of"
+                " MicroPython (or CircuitPython) flashed onto it"
+                " before the REPL will work.\n\nFinally, press the"
+                " device's reset button and wait a few seconds"
+                " before trying again."
+            )
             self.view.show_message(message, information)
 
 
@@ -362,8 +408,8 @@ class RegisterWindow(QDialog):
         offset_v = 5
         offset_h = 3
         for i in range(10):
-            reg_fname = QLabel('usr' + str(i) + '.py')
-            button = QPushButton('Transfer')
+            reg_fname = QLabel("usr" + str(i) + ".py")
+            button = QPushButton("Transfer")
             button.clicked.connect(self.on_click)
             hbox = QHBoxLayout()
             group_box = QGroupBox()
@@ -379,7 +425,7 @@ class RegisterWindow(QDialog):
                 grid.addWidget(group_box, i, 0)
 
         self.setLayout(grid)
-        self.setWindowTitle('Select a slot to transfer.')
+        self.setWindowTitle("Select a slot to transfer.")
 
         self.parent = parent
 

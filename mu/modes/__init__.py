@@ -7,5 +7,13 @@ from .esp import ESPMode
 from .web import WebMode
 from .studuinobit import StuduinoBitMode
 
-__all__ = ['PythonMode', 'CircuitPythonMode', 'MicrobitMode', 'DebugMode',
-           'PyGameZeroMode', 'ESPMode', "WebMode", 'StuduinoBitMode', ]
+__all__ = [
+    "PythonMode",
+    "CircuitPythonMode",
+    "MicrobitMode",
+    "DebugMode",
+    "PyGameZeroMode",
+    "ESPMode",
+    "WebMode",
+    "StuduinoBitMode",
+]

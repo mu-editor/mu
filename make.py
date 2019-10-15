@@ -7,11 +7,10 @@ import subprocess
 
 PYTEST = "pytest"
 FLAKE8 = "flake8"
+TIDY = "black"
 PYGETTEXT = os.path.join(sys.base_prefix, "tools", "i18n", "pygettext.py")
 
-INCLUDE_PATTERNS = {
-    "*.py"
-}
+INCLUDE_PATTERNS = {"*.py"}
 EXCLUDE_PATTERNS = {
     "build/*",
     "docs/*",
@@ -23,10 +22,7 @@ _exported = {}
 
 
 def _walk(
-    start_from=".",
-    include_patterns=None,
-    exclude_patterns=None,
-    recurse=True
+    start_from=".", include_patterns=None, exclude_patterns=None, recurse=True
 ):
     if include_patterns:
         _include_patterns = set(os.path.normpath(p) for p in include_patterns)
@@ -41,12 +37,16 @@ def _walk(
         for filename in filenames:
             filepath = os.path.normpath(os.path.join(dirpath, filename))
 
-            if not any(fnmatch.fnmatch(filepath, pattern)
-                       for pattern in _include_patterns):
+            if not any(
+                fnmatch.fnmatch(filepath, pattern)
+                for pattern in _include_patterns
+            ):
                 continue
 
-            if any(fnmatch.fnmatch(filepath, pattern)
-                   for pattern in _exclude_patterns):
+            if any(
+                fnmatch.fnmatch(filepath, pattern)
+                for pattern in _exclude_patterns
+            ):
                 continue
 
             yield filepath
@@ -122,15 +122,17 @@ def coverage():
     Call py.test with coverage turned on
     """
     print("\ncoverage")
-    return subprocess.run([
-        PYTEST,
-        "--cov-config",
-        ".coveragerc",
-        "--cov-report",
-        "term-missing",
-        "--cov=mu",
-        "tests/"
-    ]).returncode
+    return subprocess.run(
+        [
+            PYTEST,
+            "--cov-config",
+            ".coveragerc",
+            "--cov-report",
+            "term-missing",
+            "--cov=mu",
+            "tests/",
+        ]
+    ).returncode
 
 
 @export
@@ -145,15 +147,31 @@ def flake8(*flake8_args):
 
 
 @export
+def tidy():
+    """Tidy code with the 'black' formatter.
+    """
+    print("\nTidy")
+    for target in [
+        "setup.py",
+        "win_installer.py",
+        "make.py",
+        "mu",
+        "package",
+        "tests",
+        "utils",
+    ]:
+        return_code = subprocess.run([TIDY, "-l", "79", target]).returncode
+        if return_code != 0:
+            return return_code
+    return 0
+
+
+@export
 def check():
     """Run all the checkers and tests
     """
     print("\nCheck")
-    funcs = [
-        clean,
-        flake8,
-        coverage
-    ]
+    funcs = [clean, tidy, flake8, coverage]
     for func in funcs:
         return_code = func()
         if return_code != 0:
@@ -185,8 +203,10 @@ def translate():
 
     result = _process_code(PYGETTEXT, True)
     print("\nNew messages.pot file created.")
-    print("Remember to update the translation strings"
-          "found in the locale directory.")
+    print(
+        "Remember to update the translation strings"
+        "found in the locale directory."
+    )
     return result
 
 
@@ -197,13 +217,21 @@ def translateall():
     if not os.path.exists(PYGETTEXT):
         raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
 
-    result = subprocess.run([
-        "python", PYGETTEXT,
-        "mu/*", "mu/debugger/*", "mu/modes/*", "mu/resources/*"
-    ]).returncode
+    result = subprocess.run(
+        [
+            "python",
+            PYGETTEXT,
+            "mu/*",
+            "mu/debugger/*",
+            "mu/modes/*",
+            "mu/resources/*",
+        ]
+    ).returncode
     print("\nNew messages.pot file created.")
-    print("Remember to update the translation strings"
-          "found in the locale directory.")
+    print(
+        "Remember to update the translation strings"
+        "found in the locale directory."
+    )
     return result
 
 
@@ -213,8 +241,9 @@ def run():
     """
     clean()
     if not os.environ.get("VIRTUAL_ENV"):
-        raise RuntimeError("Cannot run Mu;"
-                           "your Python virtualenv is not activated")
+        raise RuntimeError(
+            "Cannot run Mu;" "your Python virtualenv is not activated"
+        )
     return subprocess.run(["python", "-m", "mu"]).returncode
 
 
@@ -235,9 +264,8 @@ def publish_test():
     """
     dist()
     print("Packaging complete; upload to PyPI")
-    return subprocess.run([
-        "twine", "upload",
-        "-r", "test", "--sign", "dist/*"]
+    return subprocess.run(
+        ["twine", "upload", "-r", "test", "--sign", "dist/*"]
     ).returncode
 
 
@@ -256,9 +284,9 @@ def win32():
     """
     check()
     print("Building 32-bit Windows installer")
-    return subprocess.run([
-        "python", "win_installer.py", "32", "setup.py"
-    ]).returncode
+    return subprocess.run(
+        ["python", "win_installer.py", "32", "setup.py"]
+    ).returncode
 
 
 @export
@@ -267,9 +295,9 @@ def win64():
     """
     check()
     print("Building 64-bit Windows installer")
-    return subprocess.run([
-        "python", "win_installer.py", "64", "setup.py"
-    ]).returncode
+    return subprocess.run(
+        ["python", "win_installer.py", "64", "setup.py"]
+    ).returncode
 
 
 @export
@@ -290,7 +318,7 @@ def docs():
 def help():
     """Display all commands with their description in alphabetical order
     """
-    module_doc = sys.modules['__main__'].__doc__ or "check"
+    module_doc = sys.modules["__main__"].__doc__ or "check"
     print(module_doc + "\n" + "=" * len(module_doc) + "\n")
 
     for command, function in sorted(_exported.items()):
@@ -314,5 +342,5 @@ def main(command="help", *args):
         return function(*args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main(*sys.argv[1:]))

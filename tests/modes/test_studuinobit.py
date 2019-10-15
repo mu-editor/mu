@@ -28,9 +28,9 @@ def test_StuduinoBitMode_init():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     studuinobit_mode = StuduinoBitMode(editor, view)
-    assert studuinobit_mode.name == _('Artec Studuino:Bit MicroPython')
+    assert studuinobit_mode.name == _("Artec Studuino:Bit MicroPython")
     assert studuinobit_mode.description is not None
-    assert studuinobit_mode.icon == 'studuinobit'
+    assert studuinobit_mode.icon == "studuinobit"
 
 
 def test_StuduinoBitMode_actions(studuinobit_mode):
@@ -39,16 +39,16 @@ def test_StuduinoBitMode_actions(studuinobit_mode):
     """
     actions = studuinobit_mode.actions()
     assert len(actions) == 5
-    assert actions[0]['name'] == 'run'
-    assert actions[0]['handler'] == studuinobit_mode.run
-    assert actions[1]['name'] == 'flash_sb'
-    assert actions[1]['handler'] == studuinobit_mode.toggle_flash
-    assert actions[2]['name'] == 'files_sb'
-    assert actions[2]['handler'] == studuinobit_mode.toggle_files
-    assert actions[3]['name'] == 'repl'
-    assert actions[3]['handler'] == studuinobit_mode.toggle_repl
-    assert actions[4]['name'] == 'plotter'
-    assert actions[4]['handler'] == studuinobit_mode.toggle_plotter
+    assert actions[0]["name"] == "run"
+    assert actions[0]["handler"] == studuinobit_mode.run
+    assert actions[1]["name"] == "flash_sb"
+    assert actions[1]["handler"] == studuinobit_mode.toggle_flash
+    assert actions[2]["name"] == "files_sb"
+    assert actions[2]["handler"] == studuinobit_mode.toggle_files
+    assert actions[3]["name"] == "repl"
+    assert actions[3]["handler"] == studuinobit_mode.toggle_repl
+    assert actions[4]["name"] == "plotter"
+    assert actions[4]["handler"] == studuinobit_mode.toggle_plotter
 
 
 def test_api(studuinobit_mode):
@@ -66,12 +66,14 @@ def test_add_fs(fm, qthread, studuinobit_mode):
     It's possible to add the file system pane if the REPL is inactive.
     """
     studuinobit_mode.view.current_tab = None
-    studuinobit_mode.find_device = \
-        mock.MagicMock(return_value=('COM0', '12345'))
+    studuinobit_mode.find_device = mock.MagicMock(
+        return_value=("COM0", "12345")
+    )
     studuinobit_mode.add_fs()
     workspace = studuinobit_mode.workspace_dir()
-    studuinobit_mode.view.add_studuinobit_filesystem.\
-        assert_called_once_with(workspace, studuinobit_mode.file_manager)
+    studuinobit_mode.view.add_studuinobit_filesystem.assert_called_once_with(
+        workspace, studuinobit_mode.file_manager
+    )
     assert studuinobit_mode.fs
 
 
@@ -124,12 +126,14 @@ def test_toggle_repl_on(studuinobit_mode):
     def side_effect(*args, **kwargs):
         studuinobit_mode.repl = True
 
-    with mock.patch('mu.modes.esp.MicroPythonMode.toggle_repl',
-                    side_effect=side_effect) as super_toggle_repl:
+    with mock.patch(
+        "mu.modes.esp.MicroPythonMode.toggle_repl", side_effect=side_effect
+    ) as super_toggle_repl:
         studuinobit_mode.toggle_repl(event)
     super_toggle_repl.assert_called_once_with(event)
-    studuinobit_mode.set_buttons.\
-        assert_called_once_with(files_sb=False, flash_sb=False)
+    studuinobit_mode.set_buttons.assert_called_once_with(
+        files_sb=False, flash_sb=False
+    )
     assert studuinobit_mode.repl
 
 
@@ -172,7 +176,7 @@ def test_toggle_repl_on_fail(studuinobit_mode):
     studuinobit_mode.toggle_repl(event)
 
 
-@mock.patch('mu.modes.esp.MicroPythonMode.toggle_repl')
+@mock.patch("mu.modes.esp.MicroPythonMode.toggle_repl")
 def test_toggle_repl_fail(super_toggle_repl, studuinobit_mode):
     """
     Ensure buttons are not disabled if enabling the REPL fails,
@@ -201,12 +205,14 @@ def test_toggle_repl_off(studuinobit_mode):
     def side_effect(*args, **kwargs):
         studuinobit_mode.repl = False
 
-    with mock.patch('mu.modes.esp.MicroPythonMode.toggle_repl',
-                    side_effect=side_effect) as super_toggle_repl:
+    with mock.patch(
+        "mu.modes.esp.MicroPythonMode.toggle_repl", side_effect=side_effect
+    ) as super_toggle_repl:
         studuinobit_mode.toggle_repl(event)
     super_toggle_repl.assert_called_once_with(event)
-    studuinobit_mode.set_buttons.\
-        assert_called_once_with(files_sb=True, flash_sb=True)
+    studuinobit_mode.set_buttons.assert_called_once_with(
+        files_sb=True, flash_sb=True
+    )
 
 
 def test_toggle_repl_with_fs(studuinobit_mode):
@@ -224,6 +230,7 @@ def test_toggle_files_on(studuinobit_mode):
     """
     If the fs is off, toggle it on.
     """
+
     def side_effect(*args, **kwargs):
         studuinobit_mode.fs = True
 
@@ -234,9 +241,9 @@ def test_toggle_files_on(studuinobit_mode):
     event = mock.Mock()
     studuinobit_mode.toggle_files(event)
     assert studuinobit_mode.add_fs.call_count == 1
-    studuinobit_mode.set_buttons.\
-        assert_called_once_with(flash_sb=False, run=False,
-                                repl=False, plotter=False)
+    studuinobit_mode.set_buttons.assert_called_once_with(
+        flash_sb=False, run=False, repl=False, plotter=False
+    )
 
 
 def test_toggle_files_off(studuinobit_mode):
@@ -288,8 +295,8 @@ def test_run_dtr_editor_none(studuinobit_mode):
     and no device is found.
     """
     studuinobit_mode.repl = False
-    with mock.patch('mu.modes.studuinobit.microfs') as mock_microfs:
-        mock_microfs.execute.return_value = ('', '')
+    with mock.patch("mu.modes.studuinobit.microfs") as mock_microfs:
+        mock_microfs.execute.return_value = ("", "")
         studuinobit_mode.view.current_tab = None
         studuinobit_mode.run()
 
@@ -310,8 +317,8 @@ def test_run_dtr_editor_toggle_repl(studuinobit_mode):
     and no device is found.
     """
     studuinobit_mode.repl = False
-    with mock.patch('mu.modes.studuinobit.microfs') as mock_microfs:
-        mock_microfs.execute.return_value = ('', '')
+    with mock.patch("mu.modes.studuinobit.microfs") as mock_microfs:
+        mock_microfs.execute.return_value = ("", "")
         studuinobit_mode.view.current_tab.text.return_value = "bar"
         studuinobit_mode.run()
 
@@ -321,8 +328,9 @@ def test_run(studuinobit_mode):
     Ensure run/repl/files buttons are disabled while flashing.
     """
     studuinobit_mode.set_buttons = mock.MagicMock()
-    studuinobit_mode.find_device =\
-        mock.MagicMock(return_value=('COM0', '12345'))
+    studuinobit_mode.find_device = mock.MagicMock(
+        return_value=("COM0", "12345")
+    )
     studuinobit_mode.run()
     # studuinobit_mode.set_buttons.assert_called_once_with(files_sb=False)
 
@@ -332,7 +340,7 @@ def test_on_data_flood(studuinobit_mode):
     Ensure the "Files" button is re-enabled before calling the base method.
     """
     studuinobit_mode.set_buttons = mock.MagicMock()
-    with mock.patch('builtins.super') as mock_super:
+    with mock.patch("builtins.super") as mock_super:
         studuinobit_mode.on_data_flood()
         studuinobit_mode.set_buttons.assert_called_once_with(files_sb=True)
         mock_super().on_data_flood.assert_called_once_with()
@@ -348,13 +356,16 @@ def test_toggle_plotter(studuinobit_mode):
     def side_effect(*args, **kwargs):
         studuinobit_mode.plotter = True
 
-    with mock.patch('mu.modes.studuinobit.MicroPythonMode.toggle_plotter',
-                    side_effect=side_effect) as tp:
+    with mock.patch(
+        "mu.modes.studuinobit.MicroPythonMode.toggle_plotter",
+        side_effect=side_effect,
+    ) as tp:
         studuinobit_mode.plotter = None
         studuinobit_mode.toggle_plotter(None)
         tp.assert_called_once_with(None)
-        studuinobit_mode.set_buttons.\
-            assert_called_once_with(files_sb=False, flash_sb=False)
+        studuinobit_mode.set_buttons.assert_called_once_with(
+            files_sb=False, flash_sb=False
+        )
 
 
 def test_toggle_plotter_no_repl_or_plotter(studuinobit_mode):
@@ -369,13 +380,16 @@ def test_toggle_plotter_no_repl_or_plotter(studuinobit_mode):
         studuinobit_mode.plotter = False
         studuinobit_mode.repl = False
 
-    with mock.patch('mu.modes.studuinobit.MicroPythonMode.toggle_plotter',
-                    side_effect=side_effect) as tp:
+    with mock.patch(
+        "mu.modes.studuinobit.MicroPythonMode.toggle_plotter",
+        side_effect=side_effect,
+    ) as tp:
         studuinobit_mode.plotter = None
         studuinobit_mode.toggle_plotter(None)
         tp.assert_called_once_with(None)
-        studuinobit_mode.set_buttons.\
-            assert_called_once_with(files_sb=True, flash_sb=True)
+        studuinobit_mode.set_buttons.assert_called_once_with(
+            files_sb=True, flash_sb=True
+        )
 
 
 def test_toggle_plotter_with_fs(studuinobit_mode):
@@ -398,22 +412,23 @@ def test_toggle_flash_on(studuinobit_mode):
     studuinobit_mode.view.current_tab.text.return_value = "bar"
     studuinobit_mode.view.current_tab.newline = "\n"
 
-    with mock.patch('mu.modes.studuinobit.RegisterWindow') as m,\
-            mock.patch('mu.modes.studuinobit.microfs') as mock_microfs,\
-            mock.patch('mu.modes.studuinobit.Serial') as mock_serial,\
-            mock.patch("mu.modes.studuinobit.save_and_encode",
-                       return_value=None) as mock_save:
+    with mock.patch("mu.modes.studuinobit.RegisterWindow") as m, mock.patch(
+        "mu.modes.studuinobit.microfs"
+    ) as mock_microfs, mock.patch(
+        "mu.modes.studuinobit.Serial"
+    ) as mock_serial, mock.patch(
+        "mu.modes.studuinobit.save_and_encode", return_value=None
+    ) as mock_save:
 
         mock_serial = mock.MagicMock(return_value=mock.MagicMock())
         mock_serial.write = mock.MagicMock(return_value=True)
 
         studuinobit_mode.regist_box = m.return_value
         studuinobit_mode.regist_box.exec.return_value = 1
-        studuinobit_mode.regist_box.get_register_info.\
-            return_value = ['1', ]
+        studuinobit_mode.regist_box.get_register_info.return_value = ["1"]
 
         mock_microfs.put.return_value = None
-        mock_microfs.execute.return_value = ('', '')
+        mock_microfs.execute.return_value = ("", "")
 
         event = mock.Mock()
         studuinobit_mode.toggle_flash(event)
@@ -421,22 +436,24 @@ def test_toggle_flash_on(studuinobit_mode):
         assert mock_save.call_count == 1
         assert mock_microfs.put.call_count == 1
         assert mock_microfs.execute.call_count == 1
-        studuinobit_mode.editor.show_status_message.\
-            assert_called_with(_("Finished transfer. \
-                Press the reset button on the Studuino:bit"))
+        studuinobit_mode.editor.show_status_message.assert_called_with(
+            _(
+                "Finished transfer. \
+                Press the reset button on the Studuino:bit"
+            )
+        )
 
 
 def test_toggle_flash_on_cancel(studuinobit_mode):
     """
     If the fs is off, toggle it on.
     """
-    with mock.patch('mu.modes.studuinobit.RegisterWindow') as m:
+    with mock.patch("mu.modes.studuinobit.RegisterWindow") as m:
         studuinobit_mode.regist_box = m.return_value
         studuinobit_mode.regist_box.exec.return_value = 0
         event = mock.Mock()
         result = studuinobit_mode.toggle_flash(event)
-        studuinobit_mode.regist_box.exec.\
-            assert_called_once_with()
+        studuinobit_mode.regist_box.exec.assert_called_once_with()
         assert result is None
 
 
@@ -448,28 +465,30 @@ def test_toggle_flash_on_exception(studuinobit_mode):
     studuinobit_mode.view.current_tab.text.return_value = "bar"
     studuinobit_mode.view.current_tab.newline = "\n"
 
-    with mock.patch('mu.modes.studuinobit.RegisterWindow') as m:
-        with mock.patch('mu.modes.studuinobit.microfs') as mock_microfs:
-            with mock.patch("mu.modes.studuinobit.save_and_encode",
-                            return_value=None) as mock_save:
+    with mock.patch("mu.modes.studuinobit.RegisterWindow") as m:
+        with mock.patch("mu.modes.studuinobit.microfs") as mock_microfs:
+            with mock.patch(
+                "mu.modes.studuinobit.save_and_encode", return_value=None
+            ) as mock_save:
 
                 studuinobit_mode.regist_box = m.return_value
                 studuinobit_mode.regist_box.exec.return_value = 1
-                studuinobit_mode.regist_box.get_register_info.\
-                    return_value = ['1', ]
+                studuinobit_mode.regist_box.get_register_info.return_value = [
+                    "1"
+                ]
 
                 mock_microfs.put.return_value = None
                 mock_microfs.execute.side_effect = Exception()
-                mock_microfs.execute.return_value = ('', 'BANG!')
+                mock_microfs.execute.return_value = ("", "BANG!")
 
                 event = mock.Mock()
                 studuinobit_mode.toggle_flash(event)
 
-                studuinobit_mode.editor.\
-                    show_status_message(_("Updating..."))
+                studuinobit_mode.editor.show_status_message(_("Updating..."))
                 assert mock_save.call_count == 1
-                studuinobit_mode.editor.\
-                    show_status_message(_("Can't transfer."))
+                studuinobit_mode.editor.show_status_message(
+                    _("Can't transfer.")
+                )
 
 
 def test_studuinobit_mode_add_repl_no_port():
@@ -484,7 +503,7 @@ def test_studuinobit_mode_add_repl_no_port():
     sbm.find_device = mock.MagicMock(return_value=(None, None))
     sbm.add_repl()
     assert view.show_message.call_count == 1
-    message = _('Could not find an attached device.')
+    message = _("Could not find an attached device.")
     assert view.show_message.call_args[0][0] == message
 
 
@@ -497,10 +516,10 @@ def test_studuinobit_mode_add_repl_ioerror():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
-    ex = IOError('BOOM')
+    ex = IOError("BOOM")
     view.add_studuionbit_repl = mock.MagicMock(side_effect=ex)
     sbm = StuduinoBitMode(editor, view)
-    sbm.find_device = mock.MagicMock(return_value=('COM0', '12345'))
+    sbm.find_device = mock.MagicMock(return_value=("COM0", "12345"))
     sbm.add_repl()
     assert view.show_message.call_count == 1
     assert view.show_message.call_args[0][0] == str(ex)
@@ -512,12 +531,13 @@ def test_studuinobit_mode_add_repl_exception():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    ex = Exception('BOOM')
+    ex = Exception("BOOM")
     view.add_studuionbit_repl = mock.MagicMock(side_effect=ex)
     sbm = StuduinoBitMode(editor, view)
-    sbm.find_device = mock.MagicMock(return_value=('COM0', '12345'))
-    with mock.patch('mu.modes.studuinobit.logger',
-                    return_value=None) as logger:
+    sbm.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    with mock.patch(
+        "mu.modes.studuinobit.logger", return_value=None
+    ) as logger:
         sbm.add_repl()
         logger.error.assert_called_once_with(ex)
 
@@ -532,11 +552,11 @@ def test_studuinobit_mode_add_repl():
     view.show_message = mock.MagicMock()
     view.add_studuionbit_repl = mock.MagicMock()
     sbm = StuduinoBitMode(editor, view)
-    sbm.find_device = mock.MagicMock(return_value=('COM0', '12345'))
-    with mock.patch('os.name', 'nt'):
+    sbm.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    with mock.patch("os.name", "nt"):
         sbm.add_repl()
     assert view.show_message.call_count == 0
-    assert view.add_studuionbit_repl.call_args[0][0] == 'COM0'
+    assert view.add_studuionbit_repl.call_args[0][0] == "COM0"
 
 
 def test_studuinobit_mode_add_repl_no_force_interrupt():
@@ -550,11 +570,11 @@ def test_studuinobit_mode_add_repl_no_force_interrupt():
     view.add_studuionbit_repl = mock.MagicMock()
     sbm = StuduinoBitMode(editor, view)
     sbm.force_interrupt = False
-    sbm.find_device = mock.MagicMock(return_value=('COM0', '12345'))
-    with mock.patch('os.name', 'nt'):
+    sbm.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    with mock.patch("os.name", "nt"):
         sbm.add_repl()
     assert view.show_message.call_count == 0
-    assert view.add_studuionbit_repl.call_args[0][0] == 'COM0'
+    assert view.add_studuionbit_repl.call_args[0][0] == "COM0"
     assert view.add_studuionbit_repl.call_args[0][2] is False
 
 
@@ -584,10 +604,10 @@ def test_registerwindow_on_click():
 
     rw.sender = mock.MagicMock(return_value=mock.MagicMock())
     rw.sender().parent = mock.MagicMock(return_value=mock.MagicMock())
-    rw.sender().parent().title.return_value = '1'
+    rw.sender().parent().title.return_value = "1"
     rw.accept = mock.MagicMock()
     rw.on_click()
     rw.accept.assert_called_once_with()
 
     info = rw.get_register_info()
-    assert info == ['1']
+    assert info == ["1"]
