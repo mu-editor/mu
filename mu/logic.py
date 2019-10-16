@@ -1615,14 +1615,27 @@ class Editor:
         # Only works on Python, so abort.
         if tab.path and not tab.path.endswith(".py"):
             return
-        from black import format_str, FileMode, PY36_VERSIONS
+        from black import format_str, FileMode
 
         try:
             source_code = tab.text()
             logger.info("Tidy code.")
             logger.info(source_code)
-            filemode = FileMode(target_versions=PY36_VERSIONS, line_length=88)
-            tidy_code = format_str(source_code, mode=filemode)
+            try:
+
+                filemode = FileMode(FileMode.PYTHON36)
+            except AttributeError:
+                from black import PY36_VERSIONS
+
+                filemode = FileMode(
+                    target_versions=PY36_VERSIONS, line_length=88
+                )
+            try:
+                tidy_code = format_str(
+                    source_code, mode=filemode, line_length=88
+                )
+            except TypeError:
+                tidy_code = format_str(source_code, mode=filemode)
             # The following bypasses tab.setText which resets the undo history.
             # Doing it this way means the user can use CTRL-Z to undo the
             # reformatting from black.
