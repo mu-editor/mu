@@ -56,7 +56,6 @@ from PyQt5.QtGui import (
 )
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from mu import language_code
-from mu.logic import VENV_PYTHON, venv_path
 from mu.interface.themes import Font
 from mu.interface.themes import DEFAULT_FONT_SIZE
 
@@ -713,20 +712,21 @@ class PythonProcessPane(QTextEdit):
 
     def start_process(
         self,
+        interpreter,
+        pythonpath,
         script_name,
         working_directory,
         interactive=True,
         debugger=False,
         command_args=None,
         envars=None,
-        runner=None,
         python_args=None,
     ):
         """
         Start the child Python process.
 
-        Will run the referenced Python script_name within the context of the
-        working directory.
+        Will use the referenced interpreter and pythonpath to run the Python
+        script_name within the context of the working directory.
 
         If interactive is True (the default) the Python process will run in
         interactive mode (dropping the user into the REPL when the script
@@ -741,11 +741,8 @@ class PythonProcessPane(QTextEdit):
         If there is a list of environment variables, these will be part of the
         context of the new child process.
 
-        If runner is given, this is used as the command to start the Python
-        process.
-
         If python_args is given, these are passed as arguments to the Python
-        runtime used to launch the child process.
+        interpreter used to launch the child process.
         """
         if not envars:  # Envars must be a list if not passed a value.
             envars = []
@@ -753,6 +750,7 @@ class PythonProcessPane(QTextEdit):
         if script_name:
             self.script = os.path.abspath(os.path.normcase(script_name))
         logger.info("Running script: {}".format(self.script))
+        logger.info("Using interpreter: {}".format(interpreter))
         if interactive:
             logger.info("Running with interactive mode.")
         if command_args is None:
@@ -772,9 +770,10 @@ class PythonProcessPane(QTextEdit):
             encoding = "{}.utf-8".format(language_code)
             env.insert("LC_ALL", encoding)
             env.insert("LANG", encoding)
+        # Ensure the PYTHONPATH is set correctly.
         if "PYTHONPATH" not in envars:
-            paths = [venv_path(), ] + sys.path
-            envars.append(("PYTHONPATH", os.pathsep.join(paths)))
+            envars.append(("PYTHONPATH", pythonpath))
+        # Mange environment variables that may have been set by the user.
         if envars:
             logger.info(
                 "Running with environment variables: " "{}".format(envars)
@@ -792,16 +791,9 @@ class PythonProcessPane(QTextEdit):
             parent_dir = os.path.join(os.path.dirname(__file__), "..")
             mu_dir = os.path.abspath(parent_dir)
             runner = os.path.join(mu_dir, "mu-debug.py")
-            python_exec = VENV_PYTHON  
             args = [runner, self.script] + command_args
-            self.process.start(python_exec, args)
+            self.process.start(interpreter, args)
         else:
-            if runner:
-                # Use the passed in Python "runner" to run the script.
-                python_exec = runner
-            else:
-                # Use the current system Python to run the script.
-                python_exec = VENV_PYTHON 
             args = []
             if self.script:
                 if interactive:
@@ -812,9 +804,8 @@ class PythonProcessPane(QTextEdit):
                     args = [self.script] + command_args
             if python_args:
                 args = python_args + args
-            logger.info("Runner: {}".format(python_exec))
             logger.info("Args: {}".format(args))
-            self.process.start(python_exec, args)
+            self.process.start(interpreter, args)
             self.running = True
 
     def finished(self, code, status):

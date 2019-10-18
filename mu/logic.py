@@ -33,6 +33,7 @@ import shutil
 import appdirs
 import site
 import subprocess
+import shutil
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QLocale
 from pyflakes.api import check
@@ -48,10 +49,10 @@ HOME_DIRECTORY = os.path.expanduser("~")
 WORKSPACE_NAME = "mu_code"
 # The default directory for application data (i.e., configuration).
 DATA_DIR = appdirs.user_data_dir(appname="mu", appauthor="python")
-# The directory containing user installed third party modules.
-VENV_DIR = os.path.join(DATA_DIR, "mu_venv")
-# The Python interpreter in the virtualenv created by Mu for the user.
-VENV_PYTHON = os.path.join(VENV_DIR, "bin", "python3")
+# The name of the default virtual environment used by Mu.
+VENV_NAME = "mu_venv"
+# The directory containing default virtual environment.
+VENV_DIR = os.path.join(DATA_DIR, VENV_NAME)
 # The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.
@@ -189,19 +190,76 @@ ENCODING_COOKIE_RE = re.compile(
 logger = logging.getLogger(__name__)
 
 
-def installed_packages():
+def get_full_pythonpath(interpreter):
     """
-    List all the third party modules installed by the user.
+    Given an interpreter from a virtualenv, returns a PYTHONPATH containing
+    both the virtualenvs paths and then the paths from Mu's own sys.path.
+    """
+    result = subprocess.run(
+        [interpreter] + ["-c", "import sys; print('\\n'.join(sys.path))"],
+        stdout=subprocess.PIPE,
+        universal_newlines=True
+    )
+    paths = set()
+    for p in result.stdout.split("\n"):
+        if p.strip():
+            paths.add(p)
+    for p in sys.path:
+        if p.strip():
+            paths.add(p)
+    return os.pathsep.join(list(paths))
+
+
+def run_in_venv(interpreter, *args, pythonpath=None):
+    """
+    Runs the Python interpreter for a virtualenv with the referenced args. In
+    addition, Mu's Python packages are placed in the Python path so they become
+    available to the interpreter.
+
+    Returns a (potentially empty) string representation of stdout or else
+    raises an exception.
+    """
+    logger.info(
+        "Running command in Python venv: {}, {}, PYTHONPATH={}".format(
+            interpreter, args, pythonpath
+        )
+    )
+    env = os.environ.copy()
+    if pythonpath:
+        env["PYTHONPATH"] = pythonpath
+    # Get the result from running the command.
+    result = subprocess.run(
+        [interpreter] + list(args),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
+        env=env
+    )
+    try:
+        # Check / log the result.
+        result.check_returncode()
+        logger.info("Process stdout: {}".format(result.stdout))
+        logger.info("Process stderr: {}".format(result.stderr))
+    except subprocess.CalledProcessError as ex:
+        # Log the error then re-raise.
+        logger.error("Could not run command with Python venv.")
+        logger.error("stdout: {}".format(result.stdout))
+        logger.error("stderr: {}".format(result.stderr))
+        logger.error(ex)
+        raise ex
+    return result.stdout
+
+
+def installed_packages(venv_python):
+    """
+    List all the third party modules installed by the user in the virtualenv
+    containing the referenced Python interpreter.
     """
     logger.info("Discovering installed third party module in venv.")
-    result = subprocess.run([VENV_PYTHON, "-m", "pip", "freeze"], stdout=subprocess.PIPE, universal_newlines=True)
-    try:
-        result.check_returncode()
-    except subprocess.CalledProcessError as ex:
-        logger.error("Could not get installed third party modules.")
-        logger.error(ex)
-        return []
-    packages = result.stdout.split("\n")
+    result = run_in_venv(
+        venv_python, "-m", "pip", "freeze" 
+    )
+    packages = result.split("\n")
     logger.info(packages)
     installed = []
     for p in packages:
@@ -211,20 +269,56 @@ def installed_packages():
     return installed
 
 
-def venv_path():
-    logger.info("Finding user-site for venv.")
-    result = subprocess.run([VENV_PYTHON, "--version"], stdout=subprocess.PIPE, universal_newlines=True)
+def make_venv(path=VENV_DIR):
+    """
+    Create a new virtualenv at the referenced path.
+    """
+    logger.info("Creating virtualenv: {}".format(path))
+    venv_name = os.path.basename(path)
+    logger.info("Virtualenv name: {}".format(venv_name))
+    # Create the virtualenv.
+    result = subprocess.run(
+        [sys.executable, "-m", "venv", "--without-pip", path]
+    )
     try:
         result.check_returncode()
     except subprocess.CalledProcessError as ex:
-        logger.error("Could not get user-site.")
+        logger.error("Could not create virtualenv.")
         logger.error(ex)
-        return "" 
-    raw_version = result.stdout.strip().split(" ")[-1]
-    version_numbers = raw_version.split(".")
-    path = os.path.join(VENV_DIR, "lib", "python{}.{}".format(version_numbers[0], version_numbers[1]), "site-packages")
-    logger.info(path)
-    return path 
+        raise ex
+    # Set the path to the interpreter and do some Windows based post-processing
+    # needed to make sure the venv is set up correctly.
+    if sys.platform == "win32":
+        script_dir = os.path.join(path, "Scripts")
+        interpreter = os.path.join(script_dir, "python")
+        if "pythonw.exe" in sys.executable:
+            # On Windows, if installed via NSIS, copy the "pythonXY.zip"
+            # directory from sys.executable's location into the Scripts
+            # directory.
+            zipname = "python{}{}.zip".format(
+                sys.version_info.major, sys.version_info.minor
+            )
+            source_dir = os.path.dirname(os.path.abspath(sys.executable))
+            source_path = os.path.join(source_dir, zipname)
+            shutil.copytree(source_path, script_dir)
+    else:
+        # For Linux/OSX.
+        interpreter = os.path.join(path, "bin", "python")
+    pythonpath = get_full_pythonpath(interpreter)
+    # Create a kernel spec that uses the new venv to be used by the REPL.
+    result = run_in_venv(
+        interpreter,
+        "-m",
+        "ipykernel",
+        "install",
+        "--user",
+        "--name",
+        venv_name,
+        "--display-name",
+        '"Python/Mu ({})"'.format(venv_name),
+        pythonpath=pythonpath
+    )
+    return venv_name, interpreter, pythonpath
 
 
 def write_and_flush(fileobj, content):
@@ -670,14 +764,14 @@ class Editor:
         if not os.path.exists(DATA_DIR):
             logger.debug("Creating directory: {}".format(DATA_DIR))
             os.makedirs(DATA_DIR)
+        self.venv_name = None  # To be set or overridden during restore.
+        self.venv_python = None  # To be set or overridden during restore.
+        self.venv_python_path = None  # To be set or overridden during restore.
         if not os.path.exists(VENV_DIR):
-            logger.debug("Creating virtualenv: {}".format(VENV_DIR))
-            result = subprocess.run([sys.executable, "-m", "venv", VENV_DIR])
-            try:
-                result.check_returncode()
-            except subprocess.CalledProcessError as ex:
-                logger.error("Could not create virtualenv.")
-                logger.error(ex)
+            venv_result = make_venv()
+            self.venv_name = venv_result[0]
+            self.venv_python = venv_result[1]
+            self.venv_python_path = venv_result[2]
         logger.info("Settings path: {}".format(get_settings_path()))
         logger.info("Session path: {}".format(get_session_path()))
         logger.info("Log directory: {}".format(LOG_DIR))
@@ -810,6 +904,20 @@ class Editor:
                 if "zoom_level" in old_session:
                     self._view.zoom_position = old_session["zoom_level"]
                     self._view.set_zoom()
+                if "venv_name" in old_session:
+                    self.venv_name = old_session["venv_name"]
+                if "venv_python" in old_session:
+                    self.venv_python = old_session["venv_python"]
+                if "venv_python_path" in old_session:
+                    self.venv_python_path = old_session["venv_python_path"]
+                if (not self.venv_name or not self.venv_python or not self.venv_python_path):
+                    # If there's no virtualenv based Python interpreter, or
+                    # PYTHONPATH, then fallback to try [re]create new
+                    # virtualenv.
+                    result = make_venv()
+                    self.venv_name = result[0]
+                    self.venv_python = result[1]
+                    self.venv_python_path = result[2]
                 old_window = old_session.get("window", {})
                 self._view.size_window(**old_window)
         # handle os passed file last,
@@ -1245,6 +1353,9 @@ class Editor:
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
             "zoom_level": self._view.zoom_position,
+            "venv_name": self.venv_name,
+            "venv_python": self.venv_python,
+            "venv_python_path": self.venv_python_path,
             "window": {
                 "x": self._view.x(),
                 "y": self._view.y(),
@@ -1257,18 +1368,6 @@ class Editor:
             logger.debug("Session: {}".format(session))
             logger.debug("Saving session to: {}".format(session_path))
             json.dump(session, out, indent=2)
-        # Clean up temporary mu.pth file if needed (Windows only).
-        if sys.platform == "win32" and "pythonw.exe" in sys.executable:
-            if site.ENABLE_USER_SITE:
-                site_path = site.USER_SITE
-                path_file = os.path.join(site_path, "mu.pth")
-                if os.path.exists(path_file):
-                    try:
-                        os.remove(path_file)
-                        logger.info("{} removed.".format(path_file))
-                    except Exception as ex:
-                        logger.error("Unable to delete {}".format(path_file))
-                        logger.error(ex)
         logger.info("Quitting.\n\n")
         sys.exit(0)
 
@@ -1287,7 +1386,7 @@ class Editor:
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
         }
-        packages = installed_packages()
+        packages = installed_packages(self.venv_python)
         with open(LOG_FILE, "r", encoding="utf8") as logfile:
             new_settings = self._view.show_admin(
                 logfile.read(), settings, "\n".join(packages)
@@ -1335,7 +1434,7 @@ class Editor:
             logger.info("To add: {}".format(to_add))
             logger.info("To remove: {}".format(to_remove))
             logger.info("Virtualenv: {}".format(VENV_DIR))
-            self._view.sync_packages(to_remove, to_add, VENV_PYTHON)
+            self._view.sync_packages(to_remove, to_add, self.venv_python)
 
     def select_mode(self, event=None):
         """

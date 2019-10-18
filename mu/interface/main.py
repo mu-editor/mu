@@ -666,17 +666,19 @@ class Window(QMainWindow):
 
     def add_python3_runner(
         self,
+        interpreter,
+        pythonpath,
         script_name,
         working_directory,
         interactive=False,
         debugger=False,
         command_args=None,
-        runner=None,
         envars=None,
         python_args=None,
     ):
         """
-        Display console output for the referenced Python script.
+        Display console output for the interpreter with the referenced
+        pythonpath running the referenced script.
 
         The script will be run within the workspace_path directory.
 
@@ -691,9 +693,6 @@ class Window(QMainWindow):
         If there is a list of command_args (the default is None) then these
         will be passed as further arguments into the command run in the
         new process.
-
-        If runner is given, this is used as the command to start the Python
-        process.
 
         If envars is given, these will become part of the environment context
         of the new chlid process.
@@ -714,13 +713,14 @@ class Window(QMainWindow):
         )
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
         self.process_runner.start_process(
+            interpreter,
+            pythonpath,
             script_name,
             working_directory,
             interactive,
             debugger,
             command_args,
             envars,
-            runner,
             python_args,
         )
         self.process_runner.setFocus()

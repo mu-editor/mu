@@ -172,7 +172,13 @@ class WebMode(BaseMode):
             args = ["-m", "flask", "run"]
             cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(
-                "", cwd, interactive=False, envars=envars, python_args=args
+                self.venv_python,
+                self.venv_python_path,
+                "",
+                cwd,
+                interactive=False,
+                envars=envars,
+                python_args=args,
             )
             logger.debug("Starting Flask app.")
             self.runner.process.waitForStarted()

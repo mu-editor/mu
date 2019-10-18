@@ -353,7 +353,7 @@ class PackageDialog(QDialog):
         """
         self.to_remove = to_remove
         self.to_add = to_add
-        self.venv_python = venv_python 
+        self.venv_python = venv_python
         self.pkg_dirs = {}  # To hold locations of to-be-removed packages.
         self.process = None
         # Basic layout.
@@ -374,7 +374,9 @@ class PackageDialog(QDialog):
         # Kick off processing of packages.
         self.commands = []
         if self.to_remove:
-            self.commands.append(["-m", "pip", "uninstall", "-y" ] + list(self.to_remove))
+            self.commands.append(
+                ["-m", "pip", "uninstall", "-y"] + list(self.to_remove)
+            )
         if self.to_add:
             self.commands.append(["-m", "pip", "install"] + list(self.to_add))
         self.run_pip()
