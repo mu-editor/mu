@@ -44,6 +44,7 @@ class CircuitPythonMode(MicroPythonMode):
         (0x1209, 0xBAB1),  # Electronic Cats Meow Meow
         (0x1209, 0xBAB2),  # Electronic Cats CatWAN USBStick
         (0x1209, 0xBAB3),  # Electronic Cats Bast Pro Mini M0
+        (0x1209, 0xBAB6),  # Electronic Cats Bast Escornabot Makech
         (0x1B4F, 0x8D22),  # SparkFun SAMD21 Mini Breakout
         (0x1B4F, 0x8D23),  # SparkFun SAMD21 Dev Breakout
         (0x1209, 0x2017),  # Mini SAM M4
