@@ -152,6 +152,11 @@ def test_base_mode_remove_plotter():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+
+    def view_rp(*args, **kwargs):
+        view.plotter = None
+
+    view.remove_plotter = mock.MagicMock(side_effect=view_rp)
     view.plotter_pane.raw_data = [1, 2, 3]
     bm = BaseMode(editor, view)
     bm.plotter = mock.MagicMock()
@@ -386,12 +391,16 @@ def test_micropython_mode_remove_repl():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    view.remove_repl = mock.MagicMock()
+
+    def view_rr(*args, **kwargs):
+        view.repl = None
+
+    view.remove_repl = mock.MagicMock(side_effect=view_rr)
     mm = MicroPythonMode(editor, view)
     mm.repl = True
     mm.remove_repl()
     assert view.remove_repl.call_count == 1
-    assert mm.repl is False
+    assert mm.repl is None
 
 
 def test_micropython_mode_toggle_repl_on():

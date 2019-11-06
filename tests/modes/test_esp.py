@@ -10,6 +10,15 @@ from mu.modes.api import ESP_APIS, SHARED_APIS
 def esp_mode():
     editor = mock.MagicMock()
     view = mock.MagicMock()
+
+    def view_amr(*args, **kwargs):
+        view.repl = True
+
+    def view_rr(*args, **kwargs):
+        view.repl = None
+
+    view.add_micropython_repl = mock.MagicMock(side_effect=view_amr)
+    view.remove_repl = mock.MagicMock(side_effect=view_rr)
     esp_mode = ESPMode(editor, view)
     return esp_mode
 

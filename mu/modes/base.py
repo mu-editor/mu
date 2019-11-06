@@ -92,8 +92,6 @@ class BaseMode(QObject):
     name = "UNNAMED MODE"
     description = "DESCRIPTION NOT AVAILABLE."
     icon = "help"
-    repl = None
-    plotter = None
     is_debugger = False
     has_debugger = False
     save_timeout = 5  #: Number of seconds to wait before saving work.
@@ -105,6 +103,8 @@ class BaseMode(QObject):
     def __init__(self, editor, view):
         self.editor = editor
         self.view = view
+        view.repl = None
+        view.plotter = None
         super().__init__()
 
     def stop(self):
@@ -202,9 +202,24 @@ class BaseMode(QObject):
             csv_writer = csv.writer(csvfile)
             csv_writer.writerows(self.view.plotter_pane.raw_data)
         self.view.remove_plotter()
-        self.plotter = None
         logger.info("Removing plotter")
         self.return_focus_to_current_tab()
+
+    @property
+    def repl(self):
+        return self.view.repl
+
+    @property
+    def plotter(self):
+        return self.view.plotter
+
+    @repl.setter
+    def repl(self, x):
+        self.view.repl = x
+
+    @plotter.setter
+    def plotter(self, x):
+        self.view.plotter = x
 
     def on_data_flood(self):
         """
@@ -216,7 +231,6 @@ class BaseMode(QObject):
         """
         logger.error("Plotting data flood detected.")
         self.view.remove_plotter()
-        self.plotter = None
         msg = _("Data Flood Detected!")
         info = _(
             "The plotter is flooded with data which will make Mu "
@@ -299,7 +313,7 @@ class MicroPythonMode(BaseMode):
         """
         Toggles the REPL on and off.
         """
-        if self.repl:
+        if self.view.repl:
             self.remove_repl()
             logger.info("Toggle REPL off.")
         else:
@@ -311,7 +325,6 @@ class MicroPythonMode(BaseMode):
         If there's an active REPL, disconnect and hide it.
         """
         self.view.remove_repl()
-        self.repl = False
 
     def add_repl(self):
         """
@@ -325,10 +338,9 @@ class MicroPythonMode(BaseMode):
                     device_port, self.name, self.force_interrupt
                 )
                 logger.info("Started REPL on port: {}".format(device_port))
-                self.repl = True
             except IOError as ex:
                 logger.error(ex)
-                self.repl = False
+                self.view.remove_repl()
                 info = _(
                     "Click on the device's reset button, wait a few"
                     " seconds and then try again."
@@ -352,7 +364,7 @@ class MicroPythonMode(BaseMode):
         """
         Toggles the plotter on and off.
         """
-        if self.plotter:
+        if self.view.plotter:
             self.remove_plotter()
             logger.info("Toggle plotter off.")
         else:
@@ -368,10 +380,9 @@ class MicroPythonMode(BaseMode):
             try:
                 self.view.add_micropython_plotter(device_port, self.name, self)
                 logger.info("Started plotter")
-                self.plotter = True
             except IOError as ex:
                 logger.error(ex)
-                self.plotter = False
+                self.view.remove_plotter()
                 info = _(
                     "Click on the device's reset button, wait a few"
                     " seconds and then try again."
