@@ -814,6 +814,22 @@ def test_Window_close_serial_link():
     assert w.serial is None
 
 
+def test_Window_remove_serial_link():
+    """
+    Ensure the repl and/or plotter panes are closed when
+    a serial link disappears.
+    """
+    w = mu.interface.main.Window()
+    w.serial_name = "/dev/ttyUSB0"
+    repl = mock.MagicMock()
+    plotter = mock.MagicMock()
+    w.repl = repl
+    w.plotter = plotter
+    w.remove_serial_link(("microbit", "/dev/ttyUSB0"))
+    repl.deleteLater.assert_called_once_with()
+    plotter.deleteLater.assert_called_once_with()
+
+
 def test_Window_add_filesystem():
     """
     Ensure the expected settings are updated when adding a file system pane.

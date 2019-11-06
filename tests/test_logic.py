@@ -2633,6 +2633,9 @@ def test_check_usb():
     ed.show_status_message.assert_called_with(expected)
     assert view.show_confirmation.called
     ed.change_mode.assert_called_once_with("microbit")
+    ed.modes = {}
+    ed.check_usb()
+    assert view.remove_serial_link.called_once_with("/dev/ttyUSB0")
 
 
 def test_check_usb_change_mode_cancel():

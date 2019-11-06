@@ -1435,6 +1435,7 @@ class Editor:
                 to_remove.append(connected)
         for device in to_remove:
             self.connected_devices.remove(device)
+            self._view.remove_serial_link(device)
         # Add newly connected devices.
         for device in devices:
             if device not in self.connected_devices:

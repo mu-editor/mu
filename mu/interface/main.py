@@ -307,6 +307,7 @@ class Window(QMainWindow):
     timer = None
     usb_checker = None
     serial = None
+    serial_name = None
     repl = None
     plotter = None
     zooms = ("xs", "s", "m", "l", "xl", "xxl", "xxxl")  # levels of zoom.
@@ -519,6 +520,7 @@ class Window(QMainWindow):
         """
         self.input_buffer = []
         self.serial = QSerialPort()
+        self.serial_name = port
         self.serial.setPortName(port)
         if self.serial.open(QIODevice.ReadWrite):
             self.serial.setDataTerminalReady(True)
@@ -544,6 +546,15 @@ class Window(QMainWindow):
         if self.serial:
             self.serial.close()
             self.serial = None
+
+    def remove_serial_link(self, device):
+        """
+        Remove the repl and/or plotter associated with the current
+        serial link when it disappears. Called from check_usb.
+        """
+        if self.serial_name == device[1]:
+            self.remove_repl()
+            self.remove_plotter()
 
     def add_filesystem(self, home, file_manager, board_name="board"):
         """
