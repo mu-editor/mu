@@ -35,7 +35,7 @@ import site
 import subprocess
 import shutil
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QLocale
+from PyQt5.QtCore import QLocale, QProcess, QProcessEnvironment
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
 from mu.resources import path
@@ -190,18 +190,42 @@ ENCODING_COOKIE_RE = re.compile(
 logger = logging.getLogger(__name__)
 
 
+def run_python_subprocess(interpreter, *args, pythonpath=None):
+    """
+    Run the referenced Python interpreter with the passed in args and
+    PYTHONPATH. This is a **BLOCKING** call to the subprocess and should
+    only be used for quick Python commands needed for pip, venv and other
+    related tasks to work.
+    """
+    logger.info("Starting new sub-process with: {} {} (PYTHONPATH={})".format(interpreter, args, pythonpath))
+    process = QProcess()
+    process.setProcessChannelMode(QProcess.MergedChannels)
+    env = QProcessEnvironment.systemEnvironment()
+    env.insert("PYTHONUNBUFFERED", "1")
+    env.insert("PYTHONIOENCODING", "utf-8")
+    if pythonpath:
+        env.insert("PYTHONPATH", pythonpath)
+    else:
+        env.insert("PYTHONPATH", )
+    process.setProcessEnvironment(env)
+    process.start(interpreter, args)
+    if not process.waitForStarted():
+        raise RuntimeError("Could not start new subprocess.")
+    if not process.waitForFinished():
+        raise RuntimeError("Could not complete new subprocess.")
+    result = process.readAll().data().decode("utf-8")
+    logger.info(result)
+    return result
+
+
 def get_full_pythonpath(interpreter):
     """
     Given an interpreter from a virtualenv, returns a PYTHONPATH containing
     both the virtualenvs paths and then the paths from Mu's own sys.path.
     """
-    result = subprocess.run(
-        [interpreter] + ["-c", "import sys; print('\\n'.join(sys.path))"],
-        stdout=subprocess.PIPE,
-        universal_newlines=True
-    )
+    result = run_python_subprocess(interpreter, "-c", "import sys; print('\\n'.join(sys.path))")
     paths = set()
-    for p in result.stdout.split("\n"):
+    for p in result.split("\n"):
         if p.strip():
             paths.add(p)
     for p in sys.path:
@@ -210,54 +234,17 @@ def get_full_pythonpath(interpreter):
     return os.pathsep.join(list(paths))
 
 
-def run_in_venv(interpreter, *args, pythonpath=None):
-    """
-    Runs the Python interpreter for a virtualenv with the referenced args. In
-    addition, Mu's Python packages are placed in the Python path so they become
-    available to the interpreter.
-
-    Returns a (potentially empty) string representation of stdout or else
-    raises an exception.
-    """
-    logger.info(
-        "Running command in Python venv: {}, {}, PYTHONPATH={}".format(
-            interpreter, args, pythonpath
-        )
-    )
-    env = os.environ.copy()
-    if pythonpath:
-        env["PYTHONPATH"] = pythonpath
-    # Get the result from running the command.
-    result = subprocess.run(
-        [interpreter] + list(args),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True,
-        env=env
-    )
-    try:
-        # Check / log the result.
-        result.check_returncode()
-        logger.info("Process stdout: {}".format(result.stdout))
-        logger.info("Process stderr: {}".format(result.stderr))
-    except subprocess.CalledProcessError as ex:
-        # Log the error then re-raise.
-        logger.error("Could not run command with Python venv.")
-        logger.error("stdout: {}".format(result.stdout))
-        logger.error("stderr: {}".format(result.stderr))
-        logger.error(ex)
-        raise ex
-    return result.stdout
-
-
 def installed_packages(venv_python):
     """
     List all the third party modules installed by the user in the virtualenv
     containing the referenced Python interpreter.
     """
-    logger.info("Discovering installed third party module in venv.")
-    result = run_in_venv(
-        venv_python, "-m", "pip", "freeze" 
+    logger.info("Discovering installed third party modules in venv.")
+
+    path = "C:\\Users\\ntoll\\AppData\\Local\\python\\mu\\mu_venv\\lib\\site-packages"
+    logger.info(path)
+    result = run_python_subprocess(
+        venv_python, "-m", "pip", "freeze"  #, pythonpath=path
     )
     packages = result.split("\n")
     logger.info(packages)
@@ -277,15 +264,7 @@ def make_venv(path=VENV_DIR):
     venv_name = os.path.basename(path)
     logger.info("Virtualenv name: {}".format(venv_name))
     # Create the virtualenv.
-    result = subprocess.run(
-        [sys.executable, "-m", "venv", "--without-pip", path]
-    )
-    try:
-        result.check_returncode()
-    except subprocess.CalledProcessError as ex:
-        logger.error("Could not create virtualenv.")
-        logger.error(ex)
-        raise ex
+    result = run_python_subprocess(sys.executable,  "-m", "venv", "--without-pip", path)
     # Set the path to the interpreter and do some Windows based post-processing
     # needed to make sure the venv is set up correctly.
     if sys.platform == "win32":
@@ -300,13 +279,17 @@ def make_venv(path=VENV_DIR):
             )
             source_dir = os.path.dirname(os.path.abspath(sys.executable))
             source_path = os.path.join(source_dir, zipname)
-            shutil.copytree(source_path, script_dir)
+            destination_path = os.path.join(script_dir, zipname)
+            logger.info("Copying from {}".format(source_path))
+            logger.info("Copying to {}".format(destination_path))
+            if not os.path.exists(destination_path):
+                shutil.copytree(source_path, destination_path)
     else:
         # For Linux/OSX.
         interpreter = os.path.join(path, "bin", "python")
     pythonpath = get_full_pythonpath(interpreter)
     # Create a kernel spec that uses the new venv to be used by the REPL.
-    result = run_in_venv(
+    result = run_python_subprocess(
         interpreter,
         "-m",
         "ipykernel",
