@@ -137,6 +137,19 @@ def test_MicrobitSettingsWidget_setup():
     assert mbsw.runtime_path.text() == "/foo/bar"
 
 
+def test_CircuitPythonSettingsWidget_setup():
+    """
+    Ensure the widget for editing settings related to adafruit mode
+    displays the referenced settings data in the expected way.
+    """
+    circuitpython_run = True
+    circuitpython_lib = True
+    mbsw = mu.interface.dialogs.CircuitPythonSettingsWidget()
+    mbsw.setup(circuitpython_run, circuitpython_lib)
+    assert mbsw.circuitpython_run.isChecked()
+    assert mbsw.circuitpython_lib.isChecked()
+
+
 def test_PackagesWidget_setup():
     """
     Ensure the widget for editing settings related to third party packages
