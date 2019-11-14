@@ -301,7 +301,7 @@ class AdminDialog(QDialog):
             "minify": self.microbit_widget.minify.isChecked(),
             "microbit_runtime": self.microbit_widget.runtime_path.text(),
             'circuitpython_run': self.circuitpython_widget.circuitpython_run.isChecked(),
-            'circuitpython_lib': self.circuitpython_widget.circuitpython_lib.isChecked()
+            'circuitpython_lib': self.circuitpython_widget.circuitpython_lib.isChecked(),
             "packages": self.package_widget.text_area.toPlainText(),
         }
 
