@@ -171,6 +171,8 @@ def test_AdminDialog_setup():
         "envars": "name=value",
         "minify": True,
         "microbit_runtime": "/foo/bar",
+        "circuitpython_run": True,
+        "circuitpython_lib": True,
     }
     packages = "foo\nbar\nbaz\n"
     mock_window = QWidget()
