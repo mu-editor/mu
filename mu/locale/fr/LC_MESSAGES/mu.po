@@ -1057,8 +1057,8 @@ msgstr "Mu a été créé par Nicholas H. Tollervey"
 #: mu/logic.py:116
 msgid "To understand what recursion is, you must first understand recursion."
 msgstr ""
-"Pour comprendre ce qu'est la récursivité. Tu dois d'abord comprend ce qu'est "
-"la récursivité."
+"Pour comprendre ce qu'est la récursivité. Tu dois d'abord comprendre ce "
+"qu'est la récursivité."
 
 #: mu/logic.py:117
 msgid ""
@@ -1130,7 +1130,7 @@ msgstr ""
 
 #: mu/logic.py:677
 msgid "# Write your code here :-)"
-msgstr "# Ecrit ton programme ici ;-)"
+msgstr "# Ecris ton programme ici ;-)"
 
 #: mu/logic.py:731
 msgid "The file \"{}\" is already open."
@@ -1377,13 +1377,13 @@ msgid ""
 "To fix this, make sure your code prints small tuples of data between calls "
 "to 'sleep' for a very short period of time."
 msgstr ""
-"Le grapheur est inondé par les donnée ce qui rend Mu peu réactif voir "
+"Le grapheur est inondé par les données ce qui rend Mu peu réactif voire "
 "bloqué. Par sécurité, le grapheur a été interrompu.\n"
 "\n"
 "L'inondation se produit lorsque de bloc de données de plus de 1024 octets "
 "sont envoyés en boucle au grapheur.\n"
 "\n"
-"Pour corriger ceci, assure toi que ton programme affiche des petits tuples "
+"Pour corriger ceci, assure-toi que ton programme affiche des petits tuples "
 "de données entre les appels à 'sleep' pour une courte période de temps."
 
 #: mu/modes/base.py:262 mu/modes/base.py:301
@@ -1509,7 +1509,7 @@ msgstr "BBC micro:bit"
 
 #: mu/modes/microbit.py:169
 msgid "Write MicroPython for the BBC micro:bit."
-msgstr "Ecrit un programme MicroPython pour la micro:bit"
+msgstr "Ecris un programme MicroPython pour la micro:bit"
 
 #: mu/modes/microbit.py:190
 msgid "Flash"
@@ -1631,7 +1631,7 @@ msgstr ""
 #: mu/modes/microbit.py:530
 msgid "File system cannot work at the same time as the REPL or plotter."
 msgstr ""
-"Le système de fichier ne peut pas fonctionner en même temps que le REPL ou "
+"Le système de fichiers ne peut pas fonctionner en même temps que le REPL ou "
 "le grapheur."
 
 #: mu/modes/microbit.py:532

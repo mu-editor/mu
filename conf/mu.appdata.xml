@@ -20,8 +20,8 @@
         <p>Mu is written in Python and works on Windows, OSX, Linux and
         Raspberry Pi.</p>
 	</description>
-	<url type="homepage">http://codewith.mu/</url>
-	<url type="help">http://codewith.mu/tutorials/</url>
+	<url type="homepage">https://codewith.mu/</url>
+	<url type="help">https://codewith.mu/tutorials/</url>
 	<url type="bugtracker">https://github.com/mu-editor/mu/issues</url>
 	<project_group>mu-editor</project_group>
 	<developer_name>Nicholas H.Tollervey</developer_name>

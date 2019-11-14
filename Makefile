@@ -6,10 +6,10 @@ all:
 	@echo "\nThere is no default Makefile target right now. Try:\n"
 	@echo "make run - run the local development version of Mu."
 	@echo "make clean - reset the project and remove auto-generated assets."
-	@echo "make pyflakes - run the PyFlakes code checker."
-	@echo "make pycodestyle - run the PEP8 style checker."
+	@echo "make flake8 - run the flake8 code checker."
 	@echo "make test - run the test suite."
 	@echo "make coverage - view a report on test coverage."
+	@echo "make tidy - tidy code with the 'black' formatter."
 	@echo "make check - run all the checkers and tests."
 	@echo "make dist - make a dist/wheel for the project."
 	@echo "make publish-test - publish the project to PyPI test instance."
@@ -19,12 +19,12 @@ all:
 	@echo "make translateall - as with translate but for all API strings."
 	@echo "make win32 - create a 32bit Windows installer for Mu."
 	@echo "make win64 - create a 64bit Windows installer for Mu."
+	@echo "make macos - create a macOS native application for Mu."
 	@echo "make video - create an mp4 video representing code commits.\n"
 
 clean:
 	rm -rf build
 	rm -rf dist
-	rm -rf mu_editor.egg-info
 	rm -rf .coverage
 	rm -rf .eggs
 	rm -rf docs/_build
@@ -47,19 +47,26 @@ else
 	python run.py
 endif
 
-pyflakes:
-	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils -o -path ./venv \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pyflakes
-
-pycodestyle:
-	find . \( -name _build -o -name var \) -type d -prune -o -name '*.py' -print0 | $(XARGS) -n 1 pycodestyle --repeat --exclude=build/*,docs/*,mu/contrib*,mu/modes/api/*,utils/*,venv/*,.vscode/* --ignore=E731,E402,W504
+flake8:
+	flake8
 
 test: clean
-	pytest
+	pytest --random-order
 
 coverage: clean
-	pytest --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
+	pytest --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
-check: clean pycodestyle pyflakes coverage
+tidy: clean
+	@echo "\nTidying code with black..."
+	black -l 79 setup.py 
+	black -l 79 win_installer.py
+	black -l 79 make.py
+	black -l 79 mu 
+	black -l 79 package 
+	black -l 79 tests
+	black -l 79 utils 
+
+check: clean tidy flake8 coverage
 
 dist: check
 	@echo "\nChecks pass, good to package..."
@@ -69,7 +76,7 @@ publish-test: dist
 	@echo "\nPackaging complete... Uploading to PyPi..."
 	twine upload -r test --sign dist/*
 
-publish-live: dist 
+publish-live: dist
 	@echo "\nPackaging complete... Uploading to PyPi..."
 	twine upload --sign dist/*
 
@@ -91,11 +98,15 @@ translateall:
 
 win32: check
 	@echo "\nBuilding 32bit Windows installer."
-	python win_installer.py 32
+	python win_installer.py 32 setup.py
 
 win64: check
 	@echo "\nBuilding 64bit Windows installer."
-	python win_installer.py 64
+	python win_installer.py 64 setup.py
+
+macos: check
+	@echo "\nPackaging Mu into a macOS native application."
+	python setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz
 
 video: clean
 	@echo "\nFetching contributor avatars."

@@ -1,6 +1,158 @@
 Release History
 ---------------
 
+1.1.0-alpha.2
+=============
+
+The second alpha release of 1.1. This version may contain bugs and is
+unfinished (more new features will be arriving in alpha 3). Please provide bug
+reports or feedback via: https://github.com/mu-editor/mu/issues/new
+
+* **NEW FEATURE** A brand new web mode for creating simple dynamic web
+  applications with the Flask web framework. Currently users are able to edit
+  Python, HTML and CSS files, run a local server and view their website in
+  thier browser. We expect to add a deployment option thanks to PythonAnywhere
+  by the time alpha 3 is released.
+* **NEW FEATURE** A new Slovak translation of Mu thanks to Miroslav Biňas
+  (GitHub user `bletvaska <https://github.com/bletvaska>`_).
+* **ACHIEVEMENT UNLOCKED** Fixed a problematic bug where students got into a
+  seemingly impossible loop because the auto-save feature encountered errors
+  and got in the way of renaming a file. We are THRILLED TO BITS that the fix
+  for this problem was contributed by
+  `Sean Tibor <http://teachingpython.fm>`_, a teacher from
+  Fort Lauderdale, Florida. **Teachers coding the tools they use to teach has
+  been a core aim for Mu, and Sean gets the gold medal (or perhaps a beer when
+  I next see him) for unlocking this achievement.**
+* **RENAME** At the suggestion of Adafruit's Dan Halbert, the "Adafruit" mode
+  has been renamed to "CircuitPython" mode to reflect the growing number of
+  manufacturers who support CircuitPython. Many thanks to
+  `Benjamin Shockley <http://benjaminshockley.com/>`_ for putting the work in
+  to make this happen.
+* **NEW DEVICES** Several new non-Adafruit boards have been added to the
+  renamed CircuitPython mode. Many thanks to
+  `Shawn Hymel <http://shawnhymel.com>`_ (SparkFun) and
+  `Gustavo Reynaga <http://www.gustavoreynaga.com/>`_ (Electronic Cats) for
+  contributing these valuable changes.
+* Add some new free-to-reuse image and sound assets for use in PyGameZero
+  example games.
+* Middle mouse wheel scrolling with the CTRL or CMD (on Mac) keys will zoom the
+  UI in a consistent manner across all platforms.
+* Minor documentation updates / corrections thanks to
+  `Luke Slevinsky <https://lukeslev.github.io/>`_.
+* Refinement of the built-in educational libraries as we start to unbundle a
+  slew of software from Mu's installer so users can install such packages from
+  within Mu. Many thanks to the formidably talented
+  `Martin O'Hanlon <https://www.stuffaboutcode.com/>`_ for his help.
+* PyGameZero mode will look for game assets relative to the location of the
+  game file, rather than just within the user's workspace. Thanks to the
+  evergreen `Tim Golden <http://timgolden.me.uk/>`_ for this helpful update.
+* Minor corrections to the French localisation by GitHub user
+  `ogoletti <https://github.com/ogoletti>`_.
+* UI related convenience in the new ESP mode so that the current / most recent
+  filesystem path is used when using the file copy pane. Many thanks (as
+  always) to `Martin Dybdal <http://dybber.dk/>`_ for his continued work on all
+  things ESP related in Mu.
+* A tidy up of the file save dialog so it uses Qt's built in dialog features.
+  Thanks to `Tiago Montes <https://tmont.es/>`_ for being his usual awesome
+  self.
+* Tabs are restored on startup in the correct order. Once again, this is the
+  work of Tiago Montes.
+* The mechanism for generating the various installers and packages for Mu has
+  been significantly refactored so that there is, if possible, always a single
+  source for configuration information. The significant amount of effort to
+  make this happen was, once again (again), contributed by Tiago Montes.
+* Window size and location is also restored on startup. Tiago Montes, who
+  implemented this change, has been **ON FIRE** during this development phase.
+* A small (but important) change to the tool-tip for the sleep function found
+  in MicroPython on the micro:bit has been submitted to the pedagogical legend
+  and friend of Mu that is `Dave Ames <https://dave-ames.net/>`_.
+* A helpful message is now sent to the output pane when the graphical
+  debugger starts in Python 3 mode. The Shakespeare like talents of
+  long term Mu-tineer `Steve Stagg <https://sta.gg/>`_  are behind this
+  Nobel-prize-worthy literary contribution.
+* Re-add support for user defined syntax check overrides. Many thanks to
+  `Leroy Levin <https://github.com/leroyle>`_ for making this happen..!
+* Ensure that ``pip`` is updated while creating the Windows installers. Thanks
+  to `Yu Wang <https://github.com/bigeyex>`_ for making this change.
+* Various minor updates and fixes to aid code readibility.
+
+1.1.0-alpha.1
+=============
+
+The first alpha release of 1.1. This version may contain bugs and is unfinished
+(more new features will be added in later alpha releases or, depending on
+feedback, we may change the behaviour of existing features). Please provide bug
+reports or feedback via: https://github.com/mu-editor/mu/issues/new
+
+* **NEW FEATURE** Installation of third party packages from PyPI. Click on the
+  cog icon to open the admin dialog and select the "Third Party Packages" tab.
+* **NEW FEATURE** Code tidy via the wonderful code formatter
+  `Black <https://black.readthedocs.io/en/stable/>`_. Click the new "Tidy"
+  button to reformat and tidy your code so it looks more readable. If your code
+  has errors, these will be pointed out. Many thanks to Black's creator and
+  maintainer, Łukasz Langa, for this contribution.
+* **NEW FEATURE** A new ESP8266 / ESP32 mode for working with these WiFi
+  enabled cheap IoT boards. Many thanks to Martin Dybdal for driving this
+  work forward and doing the heavy lifting. Thanks also to Murilo Polese for
+  testing and very constructive input in the review stage of this feature.
+* **OS CHANGE** Due to Qt's and Travis's lack of support, Mu will only run on
+  Mac OS 10.12 and above.
+* Ensure line-number margin is not too sensitive to inaccurate clicking from
+  young coders trying to position the cursor at the beginning of the line.
+  Thanks to Tiago Montes for this enhancement.
+* Fix some typos in the French translation. Thank you to GitHub user
+  @camillem.
+* Fix a bug relating to Adafruit boards when a file on a board which is then
+  unplugged is saved, Mu used to crash. Thanks to Melissa LeBlanc-Williams for
+  the report of this problem.
+* Fix problem with a missing newline at the end of a file. Thanks to Melissa
+  LeBlanc-Williams for the eagle-eyes and fix.
+* Fix for PYTHONPATH related problems on Windows (the current directory is now
+  on the path when a script is run). Thanks to Tim Golden for this fix.
+* Update to locale detection (use Qt's QLocale class). Thanks to Tiago Montes
+  for making this happen.
+* Fix bug relating to match selection of non-ASCII characters. Thank you to
+  Tiago Montes for this work.
+* Fixed various encoding related issues on OSX.
+* Various minor / trivial bug fixes and tidy ups.
+
+1.0.2
+=====
+
+Another bugfix and translation release. No new features were added. Unless
+there are show-stoppers, the next release will be 1.1 with new features.
+
+* Updated OSX to macOS, as per Apple's usage of the terms. Thanks Craig Steele.
+* Updates and improvements to the Chinese translation. Thank John Guan.
+* Improved locale detection on macOS. Many thanks to Tiago Montes.
+* Cosmetic stripping of trailing spaces on save. Thanks to Tim Golden.
+* Update PyQt version so pip installed Mu works with Python 3.5. Thanks to
+  Carlos Pereira Atencio.
+* Fix incorrect setting of dataTerminalReady flag. Thanks to GitHub user
+  @wu6692776.
+* Spanish language improvements and fixes by Juan Biondi, @yeyeto2788 and
+  Carlos Pereira Atencio.
+* Improvements and fixes to the German translation by Eberhard Fahle.
+* Fix encoding bug on Windows which caused crashes and lost files. Many thanks
+  to Tim Golden for this work.
+* Keyboard focus loss when closing REPL is now fixed. Thanks again Tim Golden.
+* More devices for Adafruit mode along with a capability to work with future
+  devices which have the Adafruit vendor ID. Thanks to Limor Friend for this
+  contribution.
+* Fix a bug introduced in 1.0.1 where output from a child Python process was
+  being truncated.
+* Fix an off-by-one error when reading bytes from UART on MicroPython devices.
+* Ensure zoom is consistent and remembered between panes and sessions.
+* Ensure mu_code and/or current directory of current script are on Python path
+  in Mu installed from the installer on Windows. Thanks to Tim Golden and Tim
+  McCurrach for helping to test the fix.
+* Added Argon, Boron and Xenon boards to Adafruit mode since they're also
+  supported by Adafruit's CircuitPython.
+* The directory used to start a load/save dialog is either what the user last
+  selected, the current directory of the current file or the mode's working
+  directory (in order of precedence). This is reset when the mode is changed.
+* Various minor typo and bug fixes.
+
 1.0.1
 =====
 

@@ -41,9 +41,8 @@ Next Minor Release
 
 1.1.0 will introduce some new "beta" modes:
 
-* PyBoard mode for PyBoards version 1 and 2.
-* Kano mode for MicroPython based devices made by Kano.
-* BeeWare/Toga mode for simple mobile (Android / iOS) development.
+* ESP mode for embedded devices from ESP.
+* Web mode for creating simple dynamic websites.
 
 It will also add some new features:
 

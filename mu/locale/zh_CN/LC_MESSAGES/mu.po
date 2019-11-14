@@ -6,13 +6,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mu Chinese\n"
 "POT-Creation-Date: 2018-08-07 18:21+0800\n"
-"PO-Revision-Date: 2018-08-29 22:57+0800\n"
+"PO-Revision-Date: 2018-11-19 13:46+0800\n"
 "Language-Team: 管宁川John (Guan.NingChuan@Gmail.Com)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.2\n"
 "Last-Translator: 管宁川John <Guan.NingChuan@Gmail.Com>\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Language: zh_CN\n"
@@ -30,7 +30,7 @@ msgid ""
 "Connection timed out. Is your machine slow or busy? Free up some of the "
 "machine's resources and try again."
 msgstr ""
-"连接超时。是你的电脑运行太慢还是运行的东西太多？尝试释放一些机器资源再试一次"
+"连接超时。是你的电脑运行太慢还是运行的东西太多？尝试清理内存或CPU占用再试一次"
 "吧。"
 
 #: mu/debugger/client.py:116
@@ -39,7 +39,7 @@ msgid ""
 "Ensure you have '127.0.0.1 localhost' in your /etc/hosts file."
 msgstr ""
 "找不到 localhost 。\n"
-"请确认你的 /etc/hosts 文件里有这一段：“127.0.0.1 localhost”"
+"请确认你的 /etc/hosts 文件里有这一段：“127.0.0.1 localhost” 。"
 
 #: mu/interface/dialogs.py:55
 msgid "Select Mode"
@@ -59,7 +59,7 @@ msgstr "通过点击有Mu图标的“模式”按钮来随时更改模式。"
 #: mu/interface/dialogs.py:107
 msgid ""
 "When reporting a bug, copy and paste the content of the following log file."
-msgstr "报告 bug 时，复制并粘贴以下日志文件的内容。"
+msgstr "反馈 bug 时，复制并粘贴以下日志文件的内容。"
 
 #: mu/interface/dialogs.py:127
 msgid ""
@@ -174,7 +174,7 @@ msgstr "主题"
 
 #: mu/interface/main.py:91
 msgid "Toggle theme between day, night or high contrast."
-msgstr "切换白天、夜间或者高对比度的主题。"
+msgstr "切换日间、夜间或者高对比度的主题。"
 
 #: mu/interface/main.py:94
 msgid "Check"
@@ -282,11 +282,11 @@ msgstr "删除（无法撤销）"
 
 #: mu/interface/panes.py:346
 msgid "Deleting '{}' from micro:bit."
-msgstr "正在从 micro:bit 中删除“{}”"
+msgstr "正在从 micro:bit 中删除“{}”。"
 
 #: mu/interface/panes.py:355
 msgid "'{}' successfully deleted from micro:bit."
-msgstr "已成功从 micro:bit 中删除“{}”"
+msgstr "已成功从 micro:bit 中删除“{}”。"
 
 #: mu/interface/panes.py:385
 msgid "Getting '{}' from micro:bit. Copying to '{}'."
@@ -358,7 +358,7 @@ msgstr ""
 
 #: mu/logic.py:71
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
-msgstr "这个编辑器名为 Mu ，你可以读作“谬(mew)”或“沐(moo)”。"
+msgstr "这个编辑器名为 Mu ，你可以读作“谬(miu)”或“沐(mu)”。"
 
 #: mu/logic.py:72
 msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
@@ -401,11 +401,11 @@ msgstr "开阔思路、冒险精神及尊重是多样性的关键。"
 #: mu/logic.py:82
 msgid ""
 "Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
-msgstr "如果它不起作用，别担心。 学习课程，修复它，然后再试一次！:-)"
+msgstr "如果它不起作用，别担心。 看看教程，修复它，然后再试一次！:-)"
 
 #: mu/logic.py:84
 msgid "Coding is collaboration."
-msgstr "编程是合作。"
+msgstr "编程需要合作。"
 
 #: mu/logic.py:85
 msgid "Compliment and amplify the good things with code."
@@ -414,19 +414,19 @@ msgstr "使用代码来赞美和放大美好的东西。"
 #: mu/logic.py:86
 msgid ""
 "In theory, theory and practice are the same. In practice, they're not. ;-)"
-msgstr "理论上，理论和实践都是一样的。 在实践中，并不是。;-)"
+msgstr "理论上来说，理论和实践都是一样的。 在实践中，并不是。;-)"
 
 #: mu/logic.py:88
 msgid "Debugging is twice as hard as writing the code in the first place."
-msgstr "在开始的时候，调试比写代码难两倍。"
+msgstr "在开始的时候，调试代码比写代码要难两倍。"
 
 #: mu/logic.py:89
 msgid "It's fun to program."
-msgstr "编程很有趣。"
+msgstr "编程是个有趣的事情。"
 
 #: mu/logic.py:90
 msgid "Programming has more to do with problem solving than writing code."
-msgstr "编程更多地与解决问题有关，而不是单纯的写代码。"
+msgstr "编程更多地是为了解决问题，而不是单纯的写代码。"
 
 #: mu/logic.py:91
 msgid "Start with your users' needs."
@@ -443,15 +443,15 @@ msgstr "让自己站在用户的位置上。"
 #: mu/logic.py:94
 msgid ""
 "Explaining a programming problem to a friend often reveals the solution. :-)"
-msgstr "向朋友解释编程的问题，通常会获得解决方案。:-)"
+msgstr "与朋友讨论编程中遇到的问题，通常会获得新的解决方案。:-)"
 
 #: mu/logic.py:96
 msgid "If you don't know, ask. Nobody to ask? Just look it up."
-msgstr "如果你不知道，请提问题。 没有人提问？ 查查看吧。"
+msgstr "如果你不知道，就提问吧。找不到人问的话，就自己查查看吧。"
 
 #: mu/logic.py:97
 msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
-msgstr "复杂是敌人。 KISS - keep it simple, stupid!（保持简单和愚蠢！）"
+msgstr "复杂是敌人。 KISS - keep it simple, stupid!（保持简单和纯粹！）"
 
 #: mu/logic.py:98
 msgid "Beautiful is better than ugly."
@@ -502,11 +502,11 @@ msgstr "做比不做好，但立马去做有时还不如不做。"
 
 #: mu/logic.py:111
 msgid "If the implementation is hard to explain, it's a bad idea."
-msgstr "如果实现很难说明，那它是个坏想法。"
+msgstr "如果写的代码很难清楚表述的话，那就是个糟糕想法。"
 
 #: mu/logic.py:112
 msgid "If the implementation is easy to explain, it may be a good idea."
-msgstr "如果实现容易解释，那它有可能是个好想法。"
+msgstr "如果写的代码很容易清楚表述的话，那很有可能是个好想法。"
 
 #: mu/logic.py:113
 msgid "Namespaces are one honking great idea -- let's do more of those!"
@@ -528,7 +528,7 @@ msgstr "算法：程序员在不想解释他们所做的事情时使用的一个
 
 #: mu/logic.py:118
 msgid "Programmers count from zero."
-msgstr "程序员们都从零开始计数。"
+msgstr "程序员们都从0开始计数。"
 
 #: mu/logic.py:119
 msgid "Simplicity is the ultimate sophistication."
@@ -586,7 +586,7 @@ msgstr "语法错误。 Python 无法理解这一行。 检查缺少的字符！
 
 #: mu/logic.py:669
 msgid "# Write your code here :-)"
-msgstr "＃在这里写上你的代码:-)"
+msgstr "# 在这里写上你的代码 :-)"
 
 #: mu/logic.py:707
 msgid ""
@@ -639,7 +639,7 @@ msgstr ""
 
 #: mu/logic.py:773
 msgid "Is this a {} file?"
-msgstr "这是一个{}文件吗？"
+msgstr "这是一个 {} 文件吗？"
 
 #: mu/logic.py:774
 msgid ""
@@ -689,7 +689,7 @@ msgstr ""
 
 #: mu/logic.py:968
 msgid "Good job! No problems found."
-msgstr "做得好！ 没有发现问题。"
+msgstr "干得漂亮！ 没有发现问题。"
 
 #: mu/logic.py:969
 msgid "Hurrah! Checker turned up no problems."
@@ -710,7 +710,7 @@ msgstr "真棒！没发现问题。"
 #: mu/logic.py:999
 msgid ""
 "There is un-saved work, exiting the application will cause you to lose it."
-msgstr "你有还没有保存的代码，如果退出程序将会导致你丢失它们。"
+msgstr "你有还没有保存的代码，如果现在退出程序的话将不会保存。"
 
 #: mu/logic.py:1052
 msgid "Could not find MicroPython runtime."
@@ -723,15 +723,15 @@ msgstr "您指定的 micro:bit 运行时（’{}’）不存在。请再试一�
 
 #: mu/logic.py:1123
 msgid "Changed to {} mode."
-msgstr "已更改为{}模式。"
+msgstr "已更改为 {} 模式。"
 
 #: mu/logic.py:1168
 msgid "Detected new {} device."
-msgstr "检测到新的{}设备。"
+msgstr "检测到新的 {} 设备。"
 
 #: mu/logic.py:1175
 msgid "Would you like to change Mu to the {} mode?"
-msgstr "你想将 Mu 改为{}模式吗？"
+msgstr "你想将 Mu 改为 {} 模式吗？"
 
 #: mu/logic.py:1210
 msgid "Cannot Set Breakpoint."
@@ -777,11 +777,11 @@ msgstr "高亮显示“{}”的匹配项。"
 
 #: mu/logic.py:1297
 msgid "You must provide something to find."
-msgstr "你必须提供需要查找的内容。"
+msgstr "你需要提供需要查找的内容。"
 
 #: mu/logic.py:1298
 msgid "Please try again, this time with something in the find box."
-msgstr "请再次尝试，这次是在查找框中的内容。"
+msgstr "请在查找框中输入内容，然后重试。"
 
 #: mu/modes/adafruit.py:32
 msgid "Adafruit CircuitPython"
@@ -17010,7 +17010,7 @@ msgstr "继续"
 
 #: mu/modes/debugger.py:58
 msgid "Continue to run your Python script."
-msgstr "继续运行你的 Python 脚本"
+msgstr "继续运行你的 Python 脚本。"
 
 #: mu/modes/debugger.py:64
 msgid "Step Over"
@@ -17114,7 +17114,7 @@ msgstr "您的脚本太长，简化器不可用"
 
 #: mu/modes/microbit.py:288
 msgid "Your script is too long!"
-msgstr "你的脚本太长！"
+msgstr "你的脚本太长了！"
 
 #: mu/modes/microbit.py:368
 msgid "Flashing \"{}\" onto the micro:bit."
@@ -17122,7 +17122,7 @@ msgstr "正在将“{}”刷入到 micro:bit 。"
 
 #: mu/modes/microbit.py:370
 msgid " Runtime: {}"
-msgstr "运行时：{}"
+msgstr " 运行时：{}"
 
 #: mu/modes/microbit.py:416
 msgid "Unsupported BBC micro:bit."
@@ -17150,54 +17150,62 @@ msgid ""
 "Alternatively, try removing and re-attaching the device or saving your work "
 "and restarting Mu if the device remains unfound."
 msgstr ""
+"请确保您留出了足够的时间让您的计算机正确连接和配置 BBC micro:bit 设备。这可能"
+"需要几秒钟的时间。 或者您可以尝试保存文件并重新连接设备，如果仍未发现设备，您"
+"还可以尝试重新启动 Mu 。"
 
 #: mu/modes/microbit.py:489
 msgid "Finished flashing."
-msgstr ""
+msgstr "刷入完成。"
 
 #: mu/modes/microbit.py:524
 msgid "Copied code onto micro:bit."
-msgstr ""
+msgstr "已将代码复制到 micro:bit 。"
 
 #: mu/modes/microbit.py:533
 msgid "There was a problem flashing the micro:bit."
-msgstr ""
+msgstr "刷入程序到 micro:bit 时出现了一个问题。"
 
 #: mu/modes/microbit.py:534
 msgid ""
 "Please do not disconnect the device until flashing has completed. Please "
 "check the logs for more information."
-msgstr ""
+msgstr "在刷入完成之前，请不要断开设备。 请查看日志以获取更多信息。"
 
 #: mu/modes/microbit.py:555
 msgid "REPL and file system cannot work at the same time."
-msgstr ""
+msgstr "REPL和文件系统不能同时工作。"
 
 #: mu/modes/microbit.py:556
 msgid ""
 "The REPL and file system both use the same USB serial connection. Only one "
 "can be active at any time. Toggle the file system off and try again."
 msgstr ""
+"REPL和文件系统都使用相同的USB串口通讯。任何时候只能使用其中一个功能。请关闭文"
+"件系统，然后重试。"
 
 #: mu/modes/microbit.py:573
 msgid "The plotter and file system cannot work at the same time."
-msgstr ""
+msgstr "绘图器和文件系统无法同时工作。"
 
 #: mu/modes/microbit.py:575
 msgid ""
 "The plotter and file system both use the same USB serial connection. Only "
 "one can be active at any time. Toggle the file system off and try again."
 msgstr ""
+"绘图器和文件系统都使用相同的USB串口通讯。任何时候只能使用其中一个功能。请关闭"
+"文件系统，然后重试。"
 
 #: mu/modes/microbit.py:587
 msgid "File system cannot work at the same time as the REPL or plotter."
-msgstr ""
+msgstr "文件系统无法与REPL或绘图器同时工作。"
 
 #: mu/modes/microbit.py:589
 msgid ""
 "The file system and the REPL and plotter use the same USB serial connection. "
 "Toggle the REPL and plotter off and try again."
 msgstr ""
+"文件系统、REPL、绘图器使用相同的USB串口通讯。 请关闭REPL和绘图器，然后重试。"
 
 #: mu/modes/microbit.py:612
 msgid ""
@@ -17209,6 +17217,11 @@ msgid ""
 "Finally, press the device's reset button and wait a few seconds before "
 "trying again."
 msgstr ""
+"请确保已将设备插入此计算机。\n"
+"\n"
+"在文件系统工作之前，设备必须已输入MicroPython。\n"
+"\n"
+"最后，按设备的重置(reset)按钮并等待几秒钟后再重试。"
 
 #: mu/modes/pygamezero.py:35
 msgid "Pygame Zero"

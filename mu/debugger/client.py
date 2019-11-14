@@ -31,6 +31,7 @@ class UnknownBreakpoint(Exception):
     """
     The client encountered an unknown breakpoint.
     """
+
     pass
 
 
@@ -38,6 +39,7 @@ class ConnectionNotBootstrapped(Exception):
     """
     The connection to the runner hasn't been completed.
     """
+
     pass
 
 
@@ -48,8 +50,15 @@ class Breakpoint:
     named function) in a file.
     """
 
-    def __init__(self, bpnum, filename, line, enabled=True, temporary=False,
-                 funcname=None):
+    def __init__(
+        self,
+        bpnum,
+        filename,
+        line,
+        enabled=True,
+        temporary=False,
+        funcname=None,
+    ):
         self.bpnum = bpnum
         self.filename = filename
         self.line = line
@@ -58,7 +67,7 @@ class Breakpoint:
         self.funcname = funcname
 
     def __str__(self):
-        return '{}:{}'.format(self.filename, self.line)
+        return "{}:{}".format(self.filename, self.line)
 
 
 class CommandBufferHandler(QObject):
@@ -92,10 +101,12 @@ class CommandBufferHandler(QObject):
         pause_between_attempts = 0.2
         while not connected:
             try:
-                self.debugger.socket = socket.socket(socket.AF_INET,
-                                                     socket.SOCK_STREAM)
-                self.debugger.socket.connect((self.debugger.host,
-                                              self.debugger.port))
+                self.debugger.socket = socket.socket(
+                    socket.AF_INET, socket.SOCK_STREAM
+                )
+                self.debugger.socket.connect(
+                    (self.debugger.host, self.debugger.port)
+                )
                 connected = True
             except ConnectionRefusedError:
                 # Allow up to connection_attempts attempts to connect.
@@ -103,23 +114,31 @@ class CommandBufferHandler(QObject):
                 # debug runner enough time to start up and start listening.
                 tries += 1
                 if tries >= connection_attempts:
-                    self.on_fail.emit(_('Connection timed out. Is your '
-                                        'machine slow or busy? Free up some '
-                                        "of the machine's resources and try "
-                                        "again."))
+                    self.on_fail.emit(
+                        _(
+                            "Connection timed out. Is your "
+                            "machine slow or busy? Free up some "
+                            "of the machine's resources and try "
+                            "again."
+                        )
+                    )
                     return
                 time.sleep(pause_between_attempts)
             except OSError:
                 # This will catch address related errors. Especially on OSX
                 # this is usually solved by adding "127.0.0.1 localhost" to
                 # /etc/hosts.
-                self.on_fail.emit(_('Could not find localhost.\n'
-                                    "Ensure you have '127.0.0.1 localhost' in "
-                                    "your /etc/hosts file."))
+                self.on_fail.emit(
+                    _(
+                        "Could not find localhost.\n"
+                        "Ensure you have '127.0.0.1 localhost' in "
+                        "your /etc/hosts file."
+                    )
+                )
                 return
         # Getting here means the connection has been established, so handle all
         # incoming data from the debug runner process.
-        remainder = b''
+        remainder = b""
         while not self.stopped:
             new_buffer = None
             try:
@@ -141,14 +160,14 @@ class CommandBufferHandler(QObject):
                 if terminator is None:
                     remainder = commands.pop()
                 else:
-                    remainder = b''
+                    remainder = b""
                 for command in commands:
-                    command = command.decode('utf-8')
+                    command = command.decode("utf-8")
                     logger.debug(command)
                     self.on_command.emit(command)
             else:
                 # If recv() returns None, the socket is closed.
-                logger.debug('Debug client closed.')
+                logger.debug("Debug client closed.")
                 break
 
 
@@ -157,7 +176,7 @@ class Debugger(QObject):
     Represents the networked debugger client.
     """
 
-    ETX = b'\x03'  # End transmission token.
+    ETX = b"\x03"  # End transmission token.
 
     def __init__(self, host, port, proc=None):
         """
@@ -186,8 +205,8 @@ class Debugger(QObject):
         Handle a command emitted by the client thread.
         """
         event, data = json.loads(command)
-        if hasattr(self, 'on_{}'.format(event)):
-            getattr(self, 'on_{}'.format(event))(**data)
+        if hasattr(self, "on_{}".format(event)):
+            getattr(self, "on_{}".format(event))(**data)
 
     def on_fail(self, message):
         """
@@ -204,7 +223,7 @@ class Debugger(QObject):
         self.listener_thread.quit()
         self.listener_thread.wait()
         if self.proc is not None:
-            self.output('quit')
+            self.output("quit")
         self.socket.shutdown(socket.SHUT_WR)
         if self.proc is not None:
             # Wait for the runner process to die.
@@ -215,13 +234,13 @@ class Debugger(QObject):
         Send a command to the debug runner.
         """
         try:
-            dumped = json.dumps((event, data)).encode('utf-8')
+            dumped = json.dumps((event, data)).encode("utf-8")
             self.socket.sendall(dumped + Debugger.ETX)
         except OSError as e:
-            logger.debug('Debugger client error.')
+            logger.debug("Debugger client error.")
             logger.debug(e)
         except AttributeError as e:
-            logger.debug('Debugger client not connected to runner.')
+            logger.debug("Debugger client not connected to runner.")
             logger.debug(e)
 
     def breakpoint(self, breakpoint):
@@ -253,19 +272,19 @@ class Debugger(QObject):
         Create a new, enabled breakpoint at the specified line of the given
         file.
         """
-        self.output('break', filename=filename, line=line, temporary=temporary)
+        self.output("break", filename=filename, line=line, temporary=temporary)
 
     def enable_breakpoint(self, breakpoint):
         """
         Enable an existing breakpoint.
         """
-        self.output('enable', bpnum=breakpoint.bpnum)
+        self.output("enable", bpnum=breakpoint.bpnum)
 
     def disable_breakpoint(self, breakpoint):
         """
         Disable an existing breakpoint.
         """
-        self.output('disable', bpnum=breakpoint.bpnum)
+        self.output("disable", bpnum=breakpoint.bpnum)
 
     def ignore_breakpoint(self, breakpoint, count):
         """
@@ -273,37 +292,37 @@ class Debugger(QObject):
 
         (N.B. Use a count of 0 to restore the breakpoint.
         """
-        self.output('ignore', bpnum=breakpoint.bpnum, count=count)
+        self.output("ignore", bpnum=breakpoint.bpnum, count=count)
 
     def clear_breakpoint(self, breakpoint):
         """
         Clear an existing breakpoint.
         """
-        self.output('clear', bpnum=breakpoint.bpnum)
+        self.output("clear", bpnum=breakpoint.bpnum)
 
     def do_run(self):
         """
         Run the debugger until the next breakpoint.
         """
-        self.output('continue')
+        self.output("continue")
 
     def do_step(self):
         """
         Step through one stack frame.
         """
-        self.output('step')
+        self.output("step")
 
     def do_next(self):
         """
         Go to the next line in the current stack frame.
         """
-        self.output('next')
+        self.output("next")
 
     def do_return(self):
         """
         Return to the previous stack frame.
         """
-        self.output('return')
+        self.output("return")
 
     # Handlers for events raised by the debug runner. These generally follow
     # the pattern of updating state in the client object to reflect that of
@@ -315,7 +334,7 @@ class Debugger(QObject):
         The runner has finished setting up.
         """
         self.bp_index = {}
-        self.bp_list = list([True, ])  # Breakpoints count from 1
+        self.bp_list = list([True])  # Breakpoints count from 1
         for bp_data in breakpoints:
             self.on_breakpoint_create(**bp_data)
         self.view.debug_on_bootstrap()
@@ -420,19 +439,19 @@ class Debugger(QObject):
         """
         The runner has sent an informative message.
         """
-        logger.info('Debug runner says: {}'.format(message))
+        logger.info("Debug runner says: {}".format(message))
         self.view.debug_on_info(message)
 
     def on_warning(self, message):
         """
         The runner has sent a warning message.
         """
-        logger.warning('Debug runner says: {}'.format(message))
+        logger.warning("Debug runner says: {}".format(message))
         self.view.debug_on_warning(message)
 
     def on_error(self, message):
         """
         The runner has sent an error message.
         """
-        logger.error('Debug runner says: {}'.format(message))
+        logger.error("Debug runner says: {}".format(message))
         self.view.debug_on_error(message)

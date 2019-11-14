@@ -1,28 +1,3 @@
-appdirs
-beautifulsoup4
-coverage
-gpiozero
-guizero
-matplotlib
-nudatus
-qscintilla
-qtconsole
-pgzero
-pigpio
-Pillow
-pycodestyle
-pyflakes
-pynsist
-pyqt5
-PyQtChart
-pyserial
-pytest
-pytest-cov
-pytest-random-order
-requests
-semver
-scrapy
-setuptools
-sphinx
-twine
-wheel
+# Mu doesn't use requirements.txt:
+# - To install please refer to https://codewith.mu/.
+# - To setup a development environment see https://mu.readthedocs.io/.

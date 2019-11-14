@@ -23,11 +23,11 @@ msgstr "Registrando en {}"
 
 #: mu/app.py:183
 msgid "Debugger requires a Python script filename to run."
-msgstr "Para ejecutar el depurador el script de Python requiere un nombre de archivo."
+msgstr "Para ejecutar el depurador, el script de Python requiere un nombre de archivo."
 
 #: mu/debugger/client.py:106
 msgid "Connection timed out. Is your machine slow or busy? Free up some of the machine's resources and try again."
-msgstr "Tiempo de conexión agotado. ¿Es su ordenador lento o esta ocupado? Libere algunos de los recursos del ordenador y vuelva a intentarlo."
+msgstr "Tiempo de conexión agotado. ¿Es tu ordenador lento o esta ocupado? Libere algunos de los recursos del ordenador y vuelva a intentarlo."
 
 #: mu/debugger/client.py:116
 msgid ""
@@ -35,11 +35,11 @@ msgid ""
 "Ensure you have '127.0.0.1 localhost' in your /etc/hosts file."
 msgstr ""
 "No se pudo localizar localhost.\n"
-"Asegúrese de tener '127.0.0.1 localhost' en su archivo /etc/hosts."
+"Asegúrate de tener '127.0.0.1 localhost' en tu archivo /etc/hosts."
 
 #: mu/interface/dialogs.py:55
 msgid "Select Mode"
-msgstr "Selección de modo"
+msgstr "Seleccionar modo"
 
 #: mu/interface/dialogs.py:57
 msgid "Please select the desired mode then click \"OK\". Otherwise, click \"Cancel\"."
@@ -51,7 +51,7 @@ msgstr "Cambia el modo en cualquier momento haciendo clic en el botón \"Modo\" 
 
 #: mu/interface/dialogs.py:107
 msgid "When reporting a bug, copy and paste the content of the following log file."
-msgstr "Cuando informes de un error, copia y pega el contenido del siguiente archivo de registro."
+msgstr "Cuando informes un error, copia y pega el contenido del siguiente archivo de registro."
 
 #: mu/interface/dialogs.py:127
 msgid ""
@@ -123,7 +123,7 @@ msgstr "Nuevo"
 
 #: mu/interface/main.py:72
 msgid "Create a new Python script."
-msgstr "Crea un nuevo script de Python."
+msgstr "Crear un nuevo script de Python."
 
 #: mu/interface/main.py:73
 msgid "Load"
@@ -251,7 +251,7 @@ msgstr "Actual modo de comportamiento de Mu."
 
 #: mu/interface/panes.py:296
 msgid "File already exists; overwrite it?"
-msgstr "El archivo ya existe; ¿sobrescribirlo?"
+msgstr "El archivo ya existe; ¿Quieres sobrescribirlo?"
 
 #: mu/interface/panes.py:297
 msgid "File already exists"
@@ -283,7 +283,7 @@ msgstr "Obteniendo '{}' del micro:bit. Copiando a '{}'."
 
 #: mu/interface/panes.py:396
 msgid "Successfully copied '{}' from the micro:bit to your computer."
-msgstr "'{}' copiado con éxito del micro:bit a su ordenador."
+msgstr "'{}' copiado con éxito del micro:bit a tu ordenador."
 
 #: mu/interface/panes.py:409
 msgid "Open in Mu"
@@ -307,7 +307,7 @@ msgstr "Archivos en tu ordenador:"
 
 #: mu/interface/panes.py:527
 msgid "There was a problem getting the list of files on the micro:bit. Please check Mu's logs for technical information. Alternatively, try unplugging/plugging-in your micro:bit and/or restarting Mu."
-msgstr "Hubo un problema al obtener la lista de archivos del micro:bit. Por favor revisa los registros de Mu para obtener información técnica. Alternativamente, intente desconectar y conectar su micro:bit y/o reiniciar Mu."
+msgstr "Hubo un problema al obtener la lista de archivos del micro:bit. Por favor revisa los registros de Mu para obtener información técnica. Alternativamente, intenta desconectar y conectar su micro:bit y/o reiniciar Mu."
 
 #: mu/interface/panes.py:538
 msgid "There was a problem copying the file '{}' onto the micro:bit. Please check Mu's logs for more information."
@@ -383,7 +383,7 @@ msgstr "En teoría, la teoría y práctica son lo mismo. En la práctica, no lo 
 
 #: mu/logic.py:89
 msgid "Debugging is twice as hard as writing the code in the first place."
-msgstr "La depuración es el doble de difícil que escribir el código en primer lugar."
+msgstr "La depuración es doblemente difícil que escribir el código en primer lugar."
 
 #: mu/logic.py:90
 msgid "It's fun to program."
@@ -395,7 +395,7 @@ msgstr "La programación tiene más que ver con la resolución de problemas que 
 
 #: mu/logic.py:92
 msgid "Start with your users' needs."
-msgstr "Comienza con las necesidades de sus usuarios."
+msgstr "Comienza con las necesidades de tus usuarios."
 
 #: mu/logic.py:93
 msgid "Try to see things from your users' point of view."
@@ -443,7 +443,7 @@ msgstr "Legibilidad cuenta."
 
 #: mu/logic.py:105
 msgid "Special cases aren't special enough to break the rules. Although practicality beats purity."
-msgstr "Los casos especiales no son lo suficientemente especiales como para romper las reglas. Aunque la practicalidad supera a la pureza."
+msgstr "Los casos especiales no son suficientemente especiales como para romper las reglas. Aunque la practicalidad supera a la pureza."
 
 #: mu/logic.py:107
 msgid "Errors should never pass silently. Unless explicitly silenced."
@@ -451,7 +451,7 @@ msgstr "Los errores nunca deberían pasar silenciosamente. A menos que esté exp
 
 #: mu/logic.py:108
 msgid "In the face of ambiguity, refuse the temptation to guess."
-msgstr "En vista de la ambigüedad, rechaza la tentación de conjeturar."
+msgstr "En vista de la ambigüedad, rechaza la tentación de adivinar."
 
 #: mu/logic.py:109
 msgid "There should be one-- and preferably only one --obvious way to do it."
@@ -615,7 +615,7 @@ msgstr "No se pudo guardar el archivo (problema de codificación)"
 
 #: mu/logic.py:861
 msgid "Unable to convert all the characters. If you have an encoding line at the top of the file, remove it and try again."
-msgstr "No se pueden convertir todos los caracteres. Si tiene una línea de codificación en la primera linea del archivo, quítela e intente de nuevo."
+msgstr "No se pueden convertir todos los caracteres. Si tiene una línea de codificación en la primera linea del archivo, quítala e intenta de nuevo."
 
 #: mu/logic.py:870
 msgid "Saved file: {}"
@@ -635,7 +635,7 @@ msgstr "¡Buen trabajo! No se encontraron problemas."
 
 #: mu/logic.py:977
 msgid "Hurrah! Checker turned up no problems."
-msgstr "¡Hurra! El comprobado no encontró ningún problema."
+msgstr "¡Hurra! El comprobador no encontró ningún problema."
 
 #: mu/logic.py:978
 msgid "Nice one! Zero problems detected."
@@ -651,15 +651,15 @@ msgstr "¡Increíble! Cero problemas encontrados."
 
 #: mu/logic.py:1007
 msgid "There is un-saved work, exiting the application will cause you to lose it."
-msgstr "Hay trabajo no guardado, salir de la aplicación hará que lo pierdas."
+msgstr "Hay trabajo sin guardar, salir de la aplicación hará que lo pierdas."
 
 #: mu/logic.py:1060
 msgid "Could not find MicroPython runtime."
-msgstr "No se pudo encontrar el intepretador de MicroPython."
+msgstr "No se pudo encontrar el inteprete de MicroPython."
 
 #: mu/logic.py:1061
 msgid "The micro:bit runtime you specified ('{}') does not exist. Please try again."
-msgstr "El interpretador para micro:bit especificado (‘{}’) no existe. Por favor inténtalo de nuevo."
+msgstr "El interprete para micro:bit especificado (‘{}’) no existe. Por favor inténtalo de nuevo."
 
 #: mu/logic.py:1131
 msgid "Changed to {} mode."
@@ -667,7 +667,7 @@ msgstr "Cambiado al modo {}."
 
 #: mu/logic.py:1176
 msgid "Detected new {} device."
-msgstr "Detectado nuevo dispositivo {}."
+msgstr "Nuevo dispositivo detectado {}."
 
 #: mu/logic.py:1183
 msgid "Would you like to change Mu to the {} mode?"
@@ -683,7 +683,7 @@ msgstr "Las líneas que son comentarios o algunas declaraciones de varias línea
 
 #: mu/logic.py:1239
 msgid "This name is already used by another part of Python. If you use that name, things are likely to break. Please try again with a different filename."
-msgstr "Este nombre ya es usado por otra parte de Python. Si usa ese nombre, es probable algo se rompa. Por favor inténtalo de nuevo con un nombre de archivo diferente."
+msgstr "Este nombre ya es usado por otra parte de Python. Si usas ese nombre, es probable algo se rompa. Por favor inténtalo de nuevo con un nombre de archivo diferente."
 
 #: mu/logic.py:1256
 msgid "Could not rename file."
@@ -739,7 +739,7 @@ msgstr "Trazador"
 
 #: mu/modes/adafruit.py:73 mu/modes/microbit.py:216
 msgid "Plot incoming REPL data."
-msgstr "Trazar los entrantes datos del REPL."
+msgstr "Trazar los datos entrantes del REPL."
 
 #: mu/modes/adafruit.py:143
 msgid "Could not find an attached Adafruit CircuitPython device."
@@ -753,7 +753,7 @@ msgid ""
 "\n"
 "...to store your code."
 msgstr ""
-"Los archivos Python para Adafruit CircuitPython se almacenan en el dispositivo. Por lo tanto, para editar estos archivos, debe tener el dispositivo conectado. Hasta que no conecte uno, Mu usará este directorio:\n"
+"Los archivos Python para Adafruit CircuitPython se almacenan en el dispositivo. Por lo tanto, para editar estos archivos, debes tener el dispositivo conectado. Hasta que no conectes uno, Mu usará este directorio:\n"
 "\n"
 "{}\n"
 "\n"
@@ -775,11 +775,11 @@ msgstr ""
 "\n"
 "La inundación pasa cuando se envían repetidamente bloques de datos de más de 1024 bytes al trazador.\n"
 "\n"
-"Para solucionarlo, asegúrese de que su código imprima pequeñas tuplas de datos entre llamadas a ‘sleep’ durante un corto período de tiempo."
+"Para solucionarlo, asegúrate de que tu código imprima pequeñas tuplas de datos entre llamadas a ‘sleep’ durante un corto período de tiempo."
 
 #: mu/modes/base.py:262 mu/modes/base.py:301
 msgid "Click on the device's reset button, wait a few seconds and then try again."
-msgstr "Haz clic en el botón de reinicio del dispositivo, espere unos segundos y luego vuelve a intentarlo."
+msgstr "Haz clic en el botón de reinicio del dispositivo, espera unos segundos y luego vuelve a intentarlo."
 
 #: mu/modes/base.py:268 mu/modes/base.py:307
 msgid "Could not find an attached device."
@@ -797,7 +797,7 @@ msgstr ""
 "\n"
 "Debe tener una versión de MicroPython (o CircuitPython) programada antes de que el REPL funcione.\n"
 "\n"
-"Finalmente, presione el botón de reinicio del dispositivo y espere unos segundos antes intentarlo otra vez."
+"Finalmente, presiona el botón de reinicio del dispositivo y espera unos segundos antes intentarlo otra vez."
 
 #: mu/modes/base.py:308
 msgid ""
@@ -811,7 +811,7 @@ msgstr ""
 "\n"
 "Debe tener una versión de MicroPython (o CircuitPython) programada antes de que el Trazador funcione.\n"
 "\n"
-"Por último, presione el botón de reinicio del dispositivo y espere unos segundos antes intentarlo otra vez."
+"Por último, presiona el botón de reinicio del dispositivo y espera unos segundos antes intentarlo otra vez."
 
 #: mu/modes/debugger.py:35
 msgid "Graphical Debugger"
@@ -915,7 +915,7 @@ msgstr "REPL"
 
 #: mu/modes/microbit.py:207
 msgid "Use the REPL to live-code on the micro:bit."
-msgstr "Use el REPL para programar en vivo en el micro:bit."
+msgstr "Usa el REPL para programar en vivo en el micro:bit."
 
 #: mu/modes/microbit.py:257
 msgid "Unable to flash \"{}\""
@@ -947,7 +947,7 @@ msgstr "Programando \"{}\" en el micro:bit."
 
 #: mu/modes/microbit.py:370
 msgid " Runtime: {}"
-msgstr " Interpretador: {}"
+msgstr " Interprete: {}"
 
 #: mu/modes/microbit.py:416
 msgid "Unsupported BBC micro:bit."
@@ -969,7 +969,7 @@ msgstr "No se pudo encontrar un BBC micro:bit conectado."
 
 #: mu/modes/microbit.py:454
 msgid "Please ensure you leave enough time for the BBC micro:bit to be attached and configured correctly by your computer. This may take several seconds. Alternatively, try removing and re-attaching the device or saving your work and restarting Mu if the device remains unfound."
-msgstr "Asegúrate de dejar tiempo suficiente para que el BBC micro:bit se conecte y sea configurado correctamente por tu ordenador. Esto puede tomar varios segundos. Alternativamente, si el dispositivo sigue sin descubrirse intenta desconectar y volver a conectarlo, o guarda tu trabajo y reiniciar Mu."
+msgstr "Asegúrate de dejar tiempo suficiente para que el BBC micro:bit se conecte y sea configurado correctamente por tu ordenador. Esto puede tomar varios segundos. Alternativamente, si el dispositivo sigue sin descubrirse intenta desconectar y volver a conectarlo, o guarda tu trabajo y reinicia Mu."
 
 #: mu/modes/microbit.py:468
 msgid "Finished flashing."
@@ -985,7 +985,7 @@ msgstr "Hubo un problema al programar el micro:bit."
 
 #: mu/modes/microbit.py:513
 msgid "Please do not disconnect the device until flashing has completed. Please check the logs for more information."
-msgstr "Por favor, no desconecte el dispositivo hasta que la programación se haya completado. Por favor revisa los registros para más información."
+msgstr "Por favor, no desconectes el dispositivo hasta que la programación se haya completado. Por favor revisa los registros para más información."
 
 #: mu/modes/microbit.py:534
 msgid "REPL and file system cannot work at the same time."
@@ -1023,7 +1023,7 @@ msgstr ""
 "\n"
 "El dispositivo debe tener MicroPython programado antes de que el sistema de archivos funcione.\n"
 "\n"
-"Por último, presione el botón de reinicio del dispositivo y espere unos segundos antes de volver a intentarlo."
+"Por último, presiona el botón de reinicio del dispositivo y espera unos segundos antes de volver a intentarlo."
 
 #: mu/modes/pygamezero.py:35
 msgid "Pygame Zero"
@@ -1103,7 +1103,7 @@ msgstr "Depura tu script de Python."
 
 #: mu/modes/python3.py:128
 msgid "Use the REPL for live coding."
-msgstr "Use el REPL para la programar en vivo."
+msgstr "Usa el REPL para la programar en vivo."
 
 #: mu/modes/python3.py:137
 msgid "Plot data from your script or the REPL."

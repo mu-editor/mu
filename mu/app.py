@@ -33,8 +33,15 @@ from mu import __version__, language_code
 from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface import Window
 from mu.resources import load_pixmap, load_icon
-from mu.modes import (PythonMode, AdafruitMode, MicrobitMode, DebugMode,
-                      PyGameZeroMode)
+from mu.modes import (
+    PythonMode,
+    CircuitPythonMode,
+    MicrobitMode,
+    DebugMode,
+    PyGameZeroMode,
+    ESPMode,
+    WebMode,
+)
 from mu.debugger.runner import run as run_debugger
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
@@ -47,14 +54,16 @@ def setup_logging():
         os.makedirs(LOG_DIR)
 
     # set logging format
-    log_fmt = ('%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) '
-               '%(levelname)s: %(message)s')
+    log_fmt = (
+        "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) "
+        "%(levelname)s: %(message)s"
+    )
     formatter = logging.Formatter(log_fmt)
 
     # define log handlers such as for rotating log files
-    handler = TimedRotatingFileHandler(LOG_FILE, when='midnight',
-                                       backupCount=5, delay=0,
-                                       encoding=ENCODING)
+    handler = TimedRotatingFileHandler(
+        LOG_FILE, when="midnight", backupCount=5, delay=0, encoding=ENCODING
+    )
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG)
 
@@ -63,7 +72,6 @@ def setup_logging():
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
     sys.excepthook = excepthook
-    print(_('Logging to {}').format(LOG_FILE))
 
 
 def setup_modes(editor, view):
@@ -74,15 +82,17 @@ def setup_modes(editor, view):
     splitting things out here to contain the mess. ;-)
     """
     modes = {
-        'python': PythonMode(editor, view),
-        'adafruit': AdafruitMode(editor, view),
-        'microbit': MicrobitMode(editor, view),
-        'debugger': DebugMode(editor, view),
+        "python": PythonMode(editor, view),
+        "circuitpython": CircuitPythonMode(editor, view),
+        "microbit": MicrobitMode(editor, view),
+        "esp": ESPMode(editor, view),
+        "web": WebMode(editor, view),
+        "debugger": DebugMode(editor, view),
     }
 
     # Check if pgzero is available (without importing it)
-    if any([m for m in pkgutil.iter_modules() if 'pgzero' in m]):
-        modes['pygamezero'] = PyGameZeroMode(editor, view)
+    if any([m for m in pkgutil.iter_modules() if "pgzero" in m]):
+        modes["pygamezero"] = PyGameZeroMode(editor, view)
 
     # return available modes
     return modes
@@ -92,7 +102,7 @@ def excepthook(*exc_args):
     """
     Log exception and exit cleanly.
     """
-    logging.error('Unrecoverable error', exc_info=(exc_args))
+    logging.error("Unrecoverable error", exc_info=(exc_args))
     sys.__excepthook__(*exc_args)
     sys.exit(1)
 
@@ -109,17 +119,17 @@ def run():
     - close the splash screen after startup timer ends
     """
     setup_logging()
-    logging.info('\n\n-----------------\n\nStarting Mu {}'.format(__version__))
+    logging.info("\n\n-----------------\n\nStarting Mu {}".format(__version__))
     logging.info(platform.uname())
-    logging.info('Python path: {}'.format(sys.path))
-    logging.info('Language code: {}'.format(language_code))
+    logging.info("Python path: {}".format(sys.path))
+    logging.info("Language code: {}".format(language_code))
 
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
     # By default PyQt uses the script name (run.py)
-    app.setApplicationName('mu')
+    app.setApplicationName("mu")
     # Set hint as to the .desktop files name
-    app.setDesktopFileName('mu.codewith.editor')
+    app.setDesktopFileName("mu.codewith.editor")
     app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
     # Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
@@ -131,9 +141,9 @@ def run():
 
     @editor_window.load_theme.connect
     def load_theme(theme):
-        if theme == 'contrast':
+        if theme == "contrast":
             app.setStyleSheet(CONTRAST_STYLE)
-        elif theme == 'night':
+        elif theme == "night":
             app.setStyleSheet(NIGHT_STYLE)
         else:
             app.setStyleSheet(DAY_STYLE)
@@ -149,14 +159,14 @@ def run():
     # Restore the previous session along with files passed by the os
     editor.restore_session(sys.argv[1:])
     # Connect the various UI elements in the window to the editor.
-    editor_window.connect_tab_rename(editor.rename_tab, 'Ctrl+Shift+S')
-    editor_window.connect_find_replace(editor.find_replace, 'Ctrl+F')
-    editor_window.connect_toggle_comments(editor.toggle_comments, 'Ctrl+K')
+    editor_window.connect_tab_rename(editor.rename_tab, "Ctrl+Shift+S")
+    editor_window.connect_find_replace(editor.find_replace, "Ctrl+F")
+    editor_window.connect_toggle_comments(editor.toggle_comments, "Ctrl+K")
     status_bar = editor_window.status_bar
-    status_bar.connect_logs(editor.show_admin, 'Ctrl+Shift+D')
+    status_bar.connect_logs(editor.show_admin, "Ctrl+Shift+D")
 
     # Display a friendly "splash" icon.
-    splash = QSplashScreen(load_pixmap('splash-screen'))
+    splash = QSplashScreen(load_pixmap("splash-screen"))
     splash.show()
 
     # Hide the splash icon.
@@ -179,6 +189,7 @@ def debug():
     if len(sys.argv) > 1:
         filename = os.path.normcase(os.path.abspath(sys.argv[1]))
         args = sys.argv[2:]
-        run_debugger('localhost', DEBUGGER_PORT, filename, args)
+        run_debugger("localhost", DEBUGGER_PORT, filename, args)
     else:
-        print(_("Debugger requires a Python script filename to run."))
+        # See https://github.com/mu-editor/mu/issues/743
+        print("Debugger requires a Python script filename to run.")
