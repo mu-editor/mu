@@ -198,6 +198,28 @@ class MicrobitSettingsWidget(QWidget):
         widget_layout.addStretch()
 
 
+class CircuitPythonSettingsWidget(QWidget):
+    """
+    Used for configuring how to interact with adafruit mode:
+
+    * Enable the "Run" button.
+    """
+
+    def setup(self, circuitpython_run, circuitpython_lib):
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+        self.circuitpython_run = QCheckBox(_('Enable the "Run" button to '
+                                        'save and copy the current '
+                                        'file to CIRCUITPY?'))
+        self.circuitpython_run.setChecked(circuitpython_run)
+        widget_layout.addWidget(self.circuitpython_run)
+        self.circuitpython_lib = QCheckBox(_('Enable the copy library to '
+                                        'CIRCUITPY function?'))
+        self.circuitpython_lib.setChecked(circuitpython_lib)
+        widget_layout.addWidget(self.circuitpython_lib)
+        widget_layout.addStretch()
+
+
 class PackagesWidget(QWidget):
     """
     Used for editing and displaying 3rd party packages installed via pip to be
@@ -260,6 +282,10 @@ class AdminDialog(QDialog):
             settings.get("minify", False), settings.get("microbit_runtime", "")
         )
         self.tabs.addTab(self.microbit_widget, _("BBC micro:bit Settings"))
+        self.circuitpython_widget = CircuitPythonSettingsWidget()
+        self.circuitpython_widget.setup(settings.get('circuitpython_run', False),
+                                   settings.get('circuitpython_lib', False))
+        self.tabs.addTab(self.circuitpython_widget, _('CircuitPython Settings'))
         self.package_widget = PackagesWidget()
         self.package_widget.setup(packages)
         self.tabs.addTab(self.package_widget, _("Third Party Packages"))
@@ -274,6 +300,8 @@ class AdminDialog(QDialog):
             "envars": self.envar_widget.text_area.toPlainText(),
             "minify": self.microbit_widget.minify.isChecked(),
             "microbit_runtime": self.microbit_widget.runtime_path.text(),
+            'circuitpython_run': self.circuitpython_widget.circuitpython_run.isChecked(),
+            'circuitpython_lib': self.circuitpython_widget.circuitpython_lib.isChecked()
             "packages": self.package_widget.text_area.toPlainText(),
         }
 
