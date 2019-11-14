@@ -426,6 +426,13 @@ def get_settings_path():
     return get_admin_file_path("settings.json")
 
 
+def get_pathname(self):
+    """
+    Returns the pathname of the currently edited file
+    """
+    return self.view.current_tab.path
+
+
 def extract_envars(raw):
     """
     Returns a list of environment variables given a string containing
@@ -651,6 +658,8 @@ class Editor:
         self.envars = []  # See restore session and show_admin
         self.minify = False
         self.microbit_runtime = ""
+        self.circuitpython_run = False
+        self.circuitpython_lib = False
         self.connected_devices = set()
         self.find = ""
         self.replace = ""
@@ -792,6 +801,18 @@ class Editor:
                                 "does not exist. Using default "
                                 "runtime instead."
                             )
+                if "circuitpython_run" in old_session:
+                    self.circuitpython_run = old_session["circuitpython_run"]
+                    logger.info(
+                        'Enable CircuitPython "Run" button? '
+                        "{}".format(self.circuitpython_run)
+                    )
+                if "circuitpython_lib" in old_session:
+                    self.circuitpython_lib = old_session["circuitpython_lib"]
+                    logger.info(
+                        "Enable CircuitPython copy library function? "
+                        "{}".format(self.circuitpython_lib)
+                    )
                 if "zoom_level" in old_session:
                     self._view.zoom_position = old_session["zoom_level"]
                     self._view.set_zoom()
@@ -1229,6 +1250,8 @@ class Editor:
             "envars": self.envars,
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
+            "circuitpython_run": self.circuitpython_run,
+            "circuitpython_lib": self.circuitpython_lib,
             "zoom_level": self._view.zoom_position,
             "window": {
                 "x": self._view.x(),
@@ -1271,6 +1294,8 @@ class Editor:
             "envars": envars,
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
+            "circuitpython_run": self.circuitpython_run,
+            "circuitpython_lib": self.circuitpython_lib,
         }
         packages = installed_packages()
         with open(LOG_FILE, "r", encoding="utf8") as logfile:
@@ -1280,6 +1305,11 @@ class Editor:
         if new_settings:
             self.envars = extract_envars(new_settings["envars"])
             self.minify = new_settings["minify"]
+            self.circuitpython_run = new_settings["circuitpython_run"]
+            self.circuitpython_lib = new_settings["circuitpython_lib"]
+            #  show/hide circuitpython "run" button possibly changed in admin
+            if self.mode == "circuitpython":
+                self.change_mode(self.mode)
             runtime = new_settings["microbit_runtime"].strip()
             if runtime and not os.path.isfile(runtime):
                 self.microbit_runtime = ""
