@@ -51,9 +51,9 @@ from mu.interface.themes import (
     DayTheme,
     NightTheme,
     ContrastTheme,
-    DEFAULT_FONT_SIZE,
 )
 from mu.interface.panes import (
+    PANE_ZOOM_SIZES,
     DebugInspector,
     DebugInspectorItem,
     PythonProcessPane,
@@ -79,7 +79,7 @@ class ButtonBar(QToolBar):
     def __init__(self, parent):
         super().__init__(parent)
         self.setMovable(False)
-        self.setIconSize(QSize(64, 64))
+        self.set_zoom("m")
         self.setToolButtonStyle(3)
         self.setContextMenuPolicy(Qt.PreventContextMenu)
         self.setObjectName("StandardToolBar")
@@ -164,21 +164,6 @@ class ButtonBar(QToolBar):
             name="quit", display_name=_("Quit"), tool_text=_("Quit Mu.")
         )
 
-    def set_responsive_mode(self, width, height):
-        """
-        Compact button bar for when window is very small.
-        """
-        font_size = DEFAULT_FONT_SIZE
-        if width < 1124 and height > 600:
-            self.setIconSize(QSize(48, 48))
-        elif height < 600 and width < 940:
-            font_size = 10
-            self.setIconSize(QSize(32, 32))
-        else:
-            self.setIconSize(QSize(64, 64))
-        stylesheet = "QWidget{font-size: " + str(font_size) + "px;}"
-        self.setStyleSheet(stylesheet)
-
     def addAction(self, name, display_name, tool_text):
         """
         Creates an action associated with an icon and name and adds it to the
@@ -198,6 +183,23 @@ class ButtonBar(QToolBar):
         self.slots[name].pyqtConfigure(triggered=handler)
         if shortcut:
             self.slots[name].setShortcut(QKeySequence(shortcut))
+
+    def set_font_size(self, font_size):
+        stylesheet = "QWidget{font-size: " + str(font_size) + "pt;}"
+        self.setStyleSheet(stylesheet)
+
+        # Scale icons to be three times as tall as the text, using the
+        # display resolution to adjust from points to pixels
+
+        dpi = QDesktopWidget().logicalDpiX()
+        icon_size = int(font_size * 3 * dpi / 72 + 0.5)
+        self.setIconSize(QSize(icon_size, icon_size))
+
+    def set_zoom(self, size):
+        """
+        Set the current zoom level given the "t-shirt" size.
+        """
+        self.set_font_size(PANE_ZOOM_SIZES[size])
 
 
 class FileTabs(QTabWidget):
@@ -988,19 +990,13 @@ class Window(QMainWindow):
         widget_layout = QVBoxLayout()
         self.widget.setLayout(widget_layout)
         self.button_bar = ButtonBar(self.widget)
+        self.connect_zoom(self.button_bar)
         self.tabs = FileTabs()
         self.setCentralWidget(self.tabs)
         self.status_bar = StatusBar(parent=self)
         self.setStatusBar(self.status_bar)
         self.addToolBar(self.button_bar)
         self.show()
-
-    def resizeEvent(self, resizeEvent):
-        """
-        Respond to window getting too small for the button bar to fit well.
-        """
-        size = resizeEvent.size()
-        self.button_bar.set_responsive_mode(size.width(), size.height())
 
     def select_mode(self, modes, current_mode):
         """
