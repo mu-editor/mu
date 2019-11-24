@@ -106,7 +106,7 @@ win64: check
 
 macos: check
 	@echo "\nPackaging Mu into a macOS native application."
-	python setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz
+	python3 setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz
 
 video: clean
 	@echo "\nFetching contributor avatars."
