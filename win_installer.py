@@ -182,6 +182,8 @@ def pypi_wheels_in(requirements):
             if found_wheel:
                 wheels.append(found_wheel)
                 feedback = "ok"
+                if found_wheel != requirement:
+                    feedback += " ({})".format(found_wheel)
             else:
                 feedback = "missing"
         print(feedback)
