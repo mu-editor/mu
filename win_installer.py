@@ -152,7 +152,7 @@ def pypi_wheels_in(requirements):
         print("-", requirement, end=" ")
         package = yarg.get(name)
         releases = package.release(version)
-        if any(r.package_type == "wheel" for r in releases):
+        if releases and any(r.package_type == "wheel" for r in releases):
             wheels.append(requirement)
             feedback = "ok"
         else:
