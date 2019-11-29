@@ -18,7 +18,9 @@ jobs:
     - python: 3.8
     - os: osx
   include:
-    - python: 3.8
+    # TODO: When a production verion of pygame is compatible with Python 3.8,
+    # allow_failures above and the pip install pygame below should be removed.
+    - python: 3.8  # When a production version of 
       before_install: pip install pygame==2.0.0.dev6
     - os: osx
       osx_image: xcode11.2
