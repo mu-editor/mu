@@ -113,7 +113,10 @@ def create_packaging_venv(target_directory, name="mu-packaging-venv"):
     """
     fullpath = os.path.join(target_directory, name)
     subprocess.run([sys.executable, "-m", "venv", fullpath])
-    return os.path.join(fullpath, "Scripts", "python.exe")
+    if sys.platform == "win32":
+        return os.path.join(fullpath, "Scripts", "python.exe")
+    else:
+        return os.path.join(fullpath, "bin", "python")
 
 
 def pip_freeze(python, encoding):
@@ -187,12 +190,21 @@ def create_pynsist_cfg(python, repo_root, filename, encoding="latin1"):
     icon_file = os.path.join(repo_root, "package", "icons", "win_icon.ico")
     license_file = os.path.join(repo_root, "LICENSE")
 
+    # On Linux Debian systems "pkg-resources" is erroneously reported.
+    # This is a bug in Debian's patched version of pip.
+    excluded_packages = {mu_package_name, "pkg-resources", "noise"}
+    # Packages that only install on Windows, but not on Linux.
+    force_include_packages = {"pywin32==227"}
+
     requirements = [
         # Those from pip freeze except the Mu package itself.
         line
         for line in pip_freeze(python, encoding=encoding)
-        if line.partition("==")[0] != mu_package_name
+        if line.partition("==")[0] not in excluded_packages
     ]
+    for p in force_include_packages:
+        if p not in requirements:
+            requirements.append(p)
     wheels = pypi_wheels_in(requirements)
     packages = packages_from(requirements, wheels)
 

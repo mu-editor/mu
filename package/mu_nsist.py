@@ -22,7 +22,6 @@ import ntpath
 import os
 import shutil
 import sys
-import winreg
 import zipfile
 
 from nsist import InstallerBuilder
@@ -32,20 +31,6 @@ from nsist.util import download, get_cache_dir
 pjoin = os.path.join
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-def find_makensis_win():
-    """Locate makensis.exe on Windows by querying the registry"""
-    try:
-        nsis_install_dir = winreg.QueryValue(
-            winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\NSIS"
-        )
-    except OSError:
-        nsis_install_dir = winreg.QueryValue(
-            winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Wow6432Node\\NSIS"
-        )
-
-    return pjoin(nsis_install_dir, "makensis.exe")
 
 
 class InputError(ValueError):
