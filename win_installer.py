@@ -139,29 +139,6 @@ def about_dict(repo_root):
     return about
 
 
-def pypi_wheel_release(name, version):
-    """
-    Returns a `name==version` string if there's such a wheel at PyPI. When
-    version ends with ".0", a shorter version may be returned, matching what's
-    found at PyPI (name=`PyQtChart` version=`5.12.0` returns `PyQtChart==5.12`,
-    as of this writing). When no releases are found, a ValueError is raised.
-    """
-    package = yarg.get(name)
-    while True:
-        releases = package.release(version)
-        if releases or not version.endswith(".0"):
-            break
-        version = version[:-2]
-
-    if not releases:
-        raise ValueError("No {n!r} package found at PyPI.".format(n=name))
-
-    if any(r.package_type == "wheel" for r in releases):
-        return "{n}=={v}".format(n=name, v=version)
-
-    return None
-
-
 def pypi_wheels_in(requirements):
     """
     Returns a list of the entries in requirements which are distributed as
@@ -173,19 +150,18 @@ def pypi_wheels_in(requirements):
     for requirement in requirements:
         name, _, version = requirement.partition("==")
         print("-", requirement, end=" ")
-
-        try:
-            found_wheel = pypi_wheel_release(name, version)
-        except ValueError as exc:
-            feedback = "ERROR: {}".format(exc)
+        package = yarg.get(name)
+        releases = package.release(version)
+        if not releases:
+            feedback = (
+                "WARNING: Just installed but not found at PyPI."
+                " (bad meta-data?)"
+            )
+        elif any(r.package_type == "wheel" for r in releases):
+            wheels.append(requirement)
+            feedback = "ok"
         else:
-            if found_wheel:
-                wheels.append(found_wheel)
-                feedback = "ok"
-                if found_wheel != requirement:
-                    feedback += " ({})".format(found_wheel)
-            else:
-                feedback = "missing"
+            feedback = "missing"
         print(feedback)
 
     return wheels
@@ -202,12 +178,10 @@ def packages_from(requirements, wheels):
     """
     Returns a list of the entires in requirements that aren't found in
     wheels (both assumed to be lists/iterables of strings formatted like
-    "name==version", but only compared by name).
+    "name==version").
     """
-    req_names = map(package_name, requirements)
-    whl_names = map(package_name, wheels)
-    packages = set(req_names) - set(whl_names)
-    return list(packages)
+    packages = set(requirements) - set(wheels)
+    return [package_name(p) for p in packages]
 
 
 def create_pynsist_cfg(python, repo_root, filename, encoding="latin1"):
