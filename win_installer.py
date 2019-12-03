@@ -106,13 +106,26 @@ TKINTER_ASSETS_URLS = {
 }
 
 
+def subprocess_run(args):
+    """
+    Wrapper around subprocess.run: when the sub-process exits with a non-zero
+    return code, prints out a message and exits with the same code.
+    """
+    cp = subprocess.run(args)
+    try:
+        cp.check_returncode()
+    except subprocess.CalledProcessError as exc:
+        print(exc)
+        sys.exit(cp.returncode)
+
+
 def create_packaging_venv(target_directory, name="mu-packaging-venv"):
     """
     Creates a Python virtual environment in the target_directry, returning
     the path to the newly created environment's Python executable.
     """
     fullpath = os.path.join(target_directory, name)
-    subprocess.run([sys.executable, "-m", "venv", fullpath])
+    subprocess_run([sys.executable, "-m", "venv", fullpath])
     return os.path.join(fullpath, "Scripts", "python.exe")
 
 
@@ -265,12 +278,12 @@ def run(bitness, repo_root):
         venv_python = create_packaging_venv(work_dir)
 
         print("Updating pip in the virtual environment", venv_python)
-        subprocess.run(
+        subprocess_run(
             [venv_python, "-m", "pip", "install", "--upgrade", "pip"]
         )
 
         print("Installing mu with", venv_python)
-        subprocess.run([venv_python, "-m", "pip", "install", repo_root])
+        subprocess_run([venv_python, "-m", "pip", "install", repo_root])
 
         pynsist_cfg = os.path.join(work_dir, "pynsist.cfg")
         print("Creating pynsist configuration file", pynsist_cfg)
@@ -284,11 +297,11 @@ def run(bitness, repo_root):
         unzip_file(filename, work_dir)
 
         print("Installing pynsist.")
-        subprocess.run([venv_python, "-m", "pip", "install", PYNSIST_REQ])
+        subprocess_run([venv_python, "-m", "pip", "install", PYNSIST_REQ])
 
         mu_pynsist_script = os.path.join(repo_root, "package", "mu_nsist.py")
         print("Running custom pynsist script at", mu_pynsist_script)
-        subprocess.run([venv_python, mu_pynsist_script, pynsist_cfg])
+        subprocess_run([venv_python, mu_pynsist_script, pynsist_cfg])
 
         destination_dir = os.path.join(repo_root, "dist")
         print("Copying installer file to", destination_dir)
