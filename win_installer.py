@@ -166,17 +166,17 @@ def pypi_wheels_in(requirements):
         package = yarg.get(name)
         releases = package.release(version)
         if not releases:
-            feedback = (
-                "WARNING: Just installed but not found at PyPI."
-                " (bad meta-data?)"
+            raise RuntimeError(
+                "ABORTING: Did not find {!r} at PyPI. (bad meta-data?)".format(
+                    requirement
+                )
             )
-        elif any(r.package_type == "wheel" for r in releases):
+        if any(r.package_type == "wheel" for r in releases):
             wheels.append(requirement)
             feedback = "ok"
         else:
             feedback = "missing"
         print(feedback)
-
     return wheels
 
 
