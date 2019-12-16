@@ -44,6 +44,9 @@ BOARD_IDS = set(
         (0x239A, 0x8019),  # circuitplayground m0 PID
         (0x239A, 0x8015),  # circuitplayground m0 PID prototype
         (0x239A, 0x801B),  # feather m0 express PID
+        (0x04D8, 0xEC72),  # XinaBox CC03
+        (0x04D8, 0xEC75),  # XinaBox CS11
+        (0x04D8, 0xED5E), # XinaBox CW03
     ]
 )
 
