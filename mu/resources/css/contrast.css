@@ -82,18 +82,25 @@ QTabBar::tab::selected {
     background: #555;
 }
 
-QTabBar::close-button {
-    image: url(images:close-tab.png);
-    padding: 3px;
-    /* See https://github.com/mu-editor/mu/issues/594 */
-    /* subcontrol-position: right; */
+QTabBar::tab QLabel {
+    background: transparent;
 }
 
-QTabBar::close-button:hover {
-    image: url(images:close-tab.png);
+QTabBar::tab QPushButton {
     padding: 3px;
+    margin: 0;
+    background: transparent;
+    border: none;
+    min-width: 10px;
+    min-height: 10px;
+    max-width: 10px;
+    max-height: 10px;
+}
+
+QTabBar::tab QPushButton:hover {
     background: #c93827;
     border-radius: 3px;
+    border: none;
 }
 
 QTabWidget::pane {

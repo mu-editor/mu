@@ -35,21 +35,23 @@ logger = logging.getLogger(__name__)
 
 # List of supported board USB IDs.  Each board is a tuple of unique USB vendor
 # ID, USB product ID.
-BOARD_IDS = set([
-    (0x0D28, 0x0204),  # micro:bit USB VID, PID
-    (0x239A, 0x800B),  # Adafruit Feather M0 CDC only USB VID, PID
-    (0x239A, 0x8016),  # Adafruit Feather M0 CDC + MSC USB VID, PID
-    (0x239A, 0x8014),  # metro m0 PID
-    (0x239A, 0x8019),  # circuitplayground m0 PID
-    (0x239A, 0x8015),  # circuitplayground m0 PID prototype
-    (0x239A, 0x801B),  # feather m0 express PID
-])
+BOARD_IDS = set(
+    [
+        (0x0D28, 0x0204),  # micro:bit USB VID, PID
+        (0x239A, 0x800B),  # Adafruit Feather M0 CDC only USB VID, PID
+        (0x239A, 0x8016),  # Adafruit Feather M0 CDC + MSC USB VID, PID
+        (0x239A, 0x8014),  # metro m0 PID
+        (0x239A, 0x8019),  # circuitplayground m0 PID
+        (0x239A, 0x8015),  # circuitplayground m0 PID prototype
+        (0x239A, 0x801B),  # feather m0 express PID
+    ]
+)
 
 
 # Cache module names for filename shadow checking later.
 MODULE_NAMES = set([name for _, name, _ in pkgutil.iter_modules()])
-MODULE_NAMES.add('sys')
-MODULE_NAMES.add('builtins')
+MODULE_NAMES.add("sys")
+MODULE_NAMES.add("builtins")
 
 
 def get_default_workspace():
@@ -67,17 +69,18 @@ def get_default_workspace():
         with open(sp) as f:
             settings = json.load(f)
     except FileNotFoundError:
-        logger.error('Settings file {} does not exist.'.format(sp))
+        logger.error("Settings file {} does not exist.".format(sp))
     except ValueError:
-        logger.error('Settings file {} could not be parsed.'.format(sp))
+        logger.error("Settings file {} could not be parsed.".format(sp))
     else:
-        if 'workspace' in settings:
-            if os.path.isdir(settings['workspace']):
-                workspace_dir = settings['workspace']
+        if "workspace" in settings:
+            if os.path.isdir(settings["workspace"]):
+                workspace_dir = settings["workspace"]
             else:
                 logger.error(
-                    'Workspace value in the settings file is not a valid'
-                    'directory: {}'.format(settings['workspace']))
+                    "Workspace value in the settings file is not a valid"
+                    "directory: {}".format(settings["workspace"])
+                )
     return workspace_dir
 
 
@@ -86,9 +89,9 @@ class BaseMode(QObject):
     Represents the common aspects of a mode.
     """
 
-    name = 'UNNAMED MODE'
-    description = 'DESCRIPTION NOT AVAILABLE.'
-    icon = 'help'
+    name = "UNNAMED MODE"
+    description = "DESCRIPTION NOT AVAILABLE."
+    icon = "help"
     repl = None
     plotter = None
     is_debugger = False
@@ -97,11 +100,19 @@ class BaseMode(QObject):
     builtins = None  #: Symbols to assume as builtins when checking code style.
     file_extensions = []
     module_names = MODULE_NAMES
+    code_template = _("# Write your code here :-)")
 
     def __init__(self, editor, view):
         self.editor = editor
         self.view = view
         super().__init__()
+
+    def stop(self):
+        """
+        Called if/when the editor quits when in this mode. Override in child
+        classes to clean up state, stop child processes etc.
+        """
+        pass  # Default is to do nothing
 
     def actions(self):
         """
@@ -119,6 +130,27 @@ class BaseMode(QObject):
         settings file to be used to set a custom path.
         """
         return get_default_workspace()
+
+    def assets_dir(self, asset_type):
+        """
+        Determine (and create) the directory for a set of assets
+
+        This supports the [Images] and [Sounds] &c. buttons in pygamezero
+        mode and possibly other modes, too.
+
+        If a tab is current and has an active file, the assets directory
+        is looked for under that path; otherwise the workspace directory
+        is used.
+
+        If the assets directory does not exist it is created
+        """
+        if self.view.current_tab and self.view.current_tab.path:
+            base_dir = os.path.dirname(self.view.current_tab.path)
+        else:
+            base_dir = self.workspace_dir()
+        assets_dir = os.path.join(base_dir, asset_type)
+        os.makedirs(assets_dir, exist_ok=True)
+        return assets_dir
 
     def api(self):
         """
@@ -159,19 +191,19 @@ class BaseMode(QObject):
         called 'data_capture' in the workspace directory. The file contains
         CSV data and is named with a timestamp for easy identification.
         """
-        data_dir = os.path.join(get_default_workspace(), 'data_capture')
+        data_dir = os.path.join(get_default_workspace(), "data_capture")
         if not os.path.exists(data_dir):
-            logger.debug('Creating directory: {}'.format(data_dir))
+            logger.debug("Creating directory: {}".format(data_dir))
             os.makedirs(data_dir)
         # Save the raw data as CSV
         filename = "{}.csv".format(time.strftime("%Y%m%d-%H%M%S"))
         f = os.path.join(data_dir, filename)
-        with open(f, 'w') as csvfile:
+        with open(f, "w") as csvfile:
             csv_writer = csv.writer(csvfile)
             csv_writer.writerows(self.view.plotter_pane.raw_data)
         self.view.remove_plotter()
         self.plotter = None
-        logger.info('Removing plotter')
+        logger.info("Removing plotter")
         self.return_focus_to_current_tab()
 
     def on_data_flood(self):
@@ -182,31 +214,37 @@ class BaseMode(QObject):
         things (usually, put a time.sleep(x) into the code generating the
         data).
         """
-        logger.error('Plotting data flood detected.')
+        logger.error("Plotting data flood detected.")
         self.view.remove_plotter()
         self.plotter = None
-        msg = _('Data Flood Detected!')
-        info = _("The plotter is flooded with data which will make Mu "
-                 "unresponsive and freeze. As a safeguard, the plotter has "
-                 "been stopped.\n\n"
-                 "Flooding is when chunks of data of more than 1024 bytes are "
-                 "repeatedly sent to the plotter.\n\n"
-                 "To fix this, make sure your code prints small tuples of "
-                 "data between calls to 'sleep' for a very short period of "
-                 "time.")
+        msg = _("Data Flood Detected!")
+        info = _(
+            "The plotter is flooded with data which will make Mu "
+            "unresponsive and freeze. As a safeguard, the plotter has "
+            "been stopped.\n\n"
+            "Flooding is when chunks of data of more than 1024 bytes are "
+            "repeatedly sent to the plotter.\n\n"
+            "To fix this, make sure your code prints small tuples of "
+            "data between calls to 'sleep' for a very short period of "
+            "time."
+        )
         self.view.show_message(msg, info)
 
     def open_file(self, path):
         """
         Some files are not plain text and each mode can attempt to decode them.
+
+        When overridden, should return the text and newline convention for the
+        file.
         """
-        return None
+        return None, None
 
 
 class MicroPythonMode(BaseMode):
     """
     Includes functionality that works with a USB serial based REPL.
     """
+
     valid_boards = BOARD_IDS
     force_interrupt = True
 
@@ -221,28 +259,36 @@ class MicroPythonMode(BaseMode):
             pid = port.productIdentifier()
             vid = port.vendorIdentifier()
             # Look for the port VID & PID in the list of known board IDs
-            if (vid, pid) in self.valid_boards or \
-               (vid, None) in self.valid_boards:
+            if (vid, pid) in self.valid_boards or (
+                vid,
+                None,
+            ) in self.valid_boards:
                 port_name = port.portName()
                 serial_number = port.serialNumber()
                 if with_logging:
-                    logger.info('Found device on port: {}'.format(port_name))
-                    logger.info('Serial number: {}'.format(serial_number))
+                    logger.info("Found device on port: {}".format(port_name))
+                    logger.info("Serial number: {}".format(serial_number))
                 return (self.port_path(port_name), serial_number)
         if with_logging:
-            logger.warning('Could not find device.')
-            logger.debug('Available ports:')
-            logger.debug(['PID:0x{:04x} VID:0x{:04x} PORT:{}'.format(
-                p.productIdentifier(),
-                p.vendorIdentifier(),
-                p.portName()) for p in available_ports])
+            logger.warning("Could not find device.")
+            logger.debug("Available ports:")
+            logger.debug(
+                [
+                    "PID:0x{:04x} VID:0x{:04x} PORT:{}".format(
+                        p.productIdentifier(),
+                        p.vendorIdentifier(),
+                        p.portName(),
+                    )
+                    for p in available_ports
+                ]
+            )
         return (None, None)
 
     def port_path(self, port_name):
-        if os.name == 'posix':
+        if os.name == "posix":
             # If we're on Linux or OSX reference the port is like this...
             return "/dev/{}".format(port_name)
-        elif os.name == 'nt':
+        elif os.name == "nt":
             # On Windows simply return the port (e.g. COM0).
             return port_name
         else:
@@ -255,10 +301,10 @@ class MicroPythonMode(BaseMode):
         """
         if self.repl:
             self.remove_repl()
-            logger.info('Toggle REPL off.')
+            logger.info("Toggle REPL off.")
         else:
             self.add_repl()
-            logger.info('Toggle REPL on.')
+            logger.info("Toggle REPL on.")
 
     def remove_repl(self):
         """
@@ -275,26 +321,31 @@ class MicroPythonMode(BaseMode):
         device_port, serial_number = self.find_device()
         if device_port:
             try:
-                self.view.add_micropython_repl(device_port, self.name,
-                                               self.force_interrupt)
-                logger.info('Started REPL on port: {}'.format(device_port))
+                self.view.add_micropython_repl(
+                    device_port, self.name, self.force_interrupt
+                )
+                logger.info("Started REPL on port: {}".format(device_port))
                 self.repl = True
             except IOError as ex:
                 logger.error(ex)
                 self.repl = False
-                info = _("Click on the device's reset button, wait a few"
-                         " seconds and then try again.")
+                info = _(
+                    "Click on the device's reset button, wait a few"
+                    " seconds and then try again."
+                )
                 self.view.show_message(str(ex), info)
             except Exception as ex:
                 logger.error(ex)
         else:
-            message = _('Could not find an attached device.')
-            information = _('Please make sure the device is plugged into this'
-                            ' computer.\n\nIt must have a version of'
-                            ' MicroPython (or CircuitPython) flashed onto it'
-                            ' before the REPL will work.\n\nFinally, press the'
-                            " device's reset button and wait a few seconds"
-                            ' before trying again.')
+            message = _("Could not find an attached device.")
+            information = _(
+                "Please make sure the device is plugged into this"
+                " computer.\n\nIt must have a version of"
+                " MicroPython (or CircuitPython) flashed onto it"
+                " before the REPL will work.\n\nFinally, press the"
+                " device's reset button and wait a few seconds"
+                " before trying again."
+            )
             self.view.show_message(message, information)
 
     def toggle_plotter(self, event):
@@ -303,10 +354,10 @@ class MicroPythonMode(BaseMode):
         """
         if self.plotter:
             self.remove_plotter()
-            logger.info('Toggle plotter off.')
+            logger.info("Toggle plotter off.")
         else:
             self.add_plotter()
-            logger.info('Toggle plotter on.')
+            logger.info("Toggle plotter on.")
 
     def add_plotter(self):
         """
@@ -316,24 +367,28 @@ class MicroPythonMode(BaseMode):
         if device_port:
             try:
                 self.view.add_micropython_plotter(device_port, self.name, self)
-                logger.info('Started plotter')
+                logger.info("Started plotter")
                 self.plotter = True
             except IOError as ex:
                 logger.error(ex)
                 self.plotter = False
-                info = _("Click on the device's reset button, wait a few"
-                         " seconds and then try again.")
+                info = _(
+                    "Click on the device's reset button, wait a few"
+                    " seconds and then try again."
+                )
                 self.view.show_message(str(ex), info)
             except Exception as ex:
                 logger.error(ex)
         else:
-            message = _('Could not find an attached device.')
-            information = _('Please make sure the device is plugged into this'
-                            ' computer.\n\nIt must have a version of'
-                            ' MicroPython (or CircuitPython) flashed onto it'
-                            ' before the Plotter will work.\n\nFinally, press'
-                            " the device's reset button and wait a few seconds"
-                            ' before trying again.')
+            message = _("Could not find an attached device.")
+            information = _(
+                "Please make sure the device is plugged into this"
+                " computer.\n\nIt must have a version of"
+                " MicroPython (or CircuitPython) flashed onto it"
+                " before the Plotter will work.\n\nFinally, press"
+                " the device's reset button and wait a few seconds"
+                " before trying again."
+            )
             self.view.show_message(message, information)
 
     def on_data_flood(self):
@@ -385,7 +440,7 @@ class FileManager(QObject):
         """
         # Create a new serial connection.
         try:
-            self.serial = Serial(self.port, 115200, timeout=1, parity='N')
+            self.serial = Serial(self.port, 115200, timeout=1, parity="N")
             self.ls()
         except Exception as ex:
             logger.exception(ex)

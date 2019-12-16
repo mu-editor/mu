@@ -6,6 +6,7 @@ import os.path
 from mu.modes.pygamezero import PyGameZeroMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS, PYGAMEZERO_APIS
 from unittest import mock
+import tempfile
 
 
 def test_pgzero_mode():
@@ -15,9 +16,9 @@ def test_pgzero_mode():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pm = PyGameZeroMode(editor, view)
-    assert pm.name == 'Pygame Zero'
+    assert pm.name == "Pygame Zero"
     assert pm.description is not None
-    assert pm.icon == 'pygamezero'
+    assert pm.icon == "pygamezero"
     assert pm.is_debugger is False
     assert pm.editor == editor
     assert pm.view == view
@@ -25,16 +26,16 @@ def test_pgzero_mode():
 
     actions = pm.actions()
     assert len(actions) == 5
-    assert actions[0]['name'] == 'play'
-    assert actions[0]['handler'] == pm.play_toggle
-    assert actions[1]['name'] == 'images'
-    assert actions[1]['handler'] == pm.show_images
-    assert actions[2]['name'] == 'fonts'
-    assert actions[2]['handler'] == pm.show_fonts
-    assert actions[3]['name'] == 'sounds'
-    assert actions[3]['handler'] == pm.show_sounds
-    assert actions[4]['name'] == 'music'
-    assert actions[4]['handler'] == pm.show_music
+    assert actions[0]["name"] == "play"
+    assert actions[0]["handler"] == pm.play_toggle
+    assert actions[1]["name"] == "images"
+    assert actions[1]["handler"] == pm.show_images
+    assert actions[2]["name"] == "fonts"
+    assert actions[2]["handler"] == pm.show_fonts
+    assert actions[3]["name"] == "sounds"
+    assert actions[3]["handler"] == pm.show_sounds
+    assert actions[4]["name"] == "music"
+    assert actions[4]["handler"] == pm.show_music
 
 
 def test_pgzero_api():
@@ -65,10 +66,10 @@ def test_pgzero_play_toggle_on():
     pm.set_buttons = mock.MagicMock()
     pm.play_toggle(None)
     pm.run_game.assert_called_once_with()
-    slot = pm.view.button_bar.slots['play']
+    slot = pm.view.button_bar.slots["play"]
     assert slot.setIcon.call_count == 1
-    slot.setText.assert_called_once_with('Stop')
-    slot.setToolTip.assert_called_once_with('Stop your Pygame Zero game.')
+    slot.setText.assert_called_once_with("Stop")
+    slot.setToolTip.assert_called_once_with("Stop your Pygame Zero game.")
     pm.set_buttons.assert_called_once_with(modes=False)
 
 
@@ -84,7 +85,7 @@ def test_pgzero_play_toggle_on_cancelled():
     pm.run_game = mock.MagicMock()
     pm.play_toggle(None)
     pm.run_game.assert_called_once_with()
-    slot = pm.view.button_bar.slots['play']
+    slot = pm.view.button_bar.slots["play"]
     assert slot.setIcon.call_count == 0
 
 
@@ -101,10 +102,10 @@ def test_pgzero_play_toggle_off():
     pm.set_buttons = mock.MagicMock()
     pm.play_toggle(None)
     pm.stop_game.assert_called_once_with()
-    slot = pm.view.button_bar.slots['play']
+    slot = pm.view.button_bar.slots["play"]
     assert slot.setIcon.call_count == 1
-    slot.setText.assert_called_once_with('Play')
-    slot.setToolTip.assert_called_once_with('Play your Pygame Zero game.')
+    slot.setText.assert_called_once_with("Play")
+    slot.setToolTip.assert_called_once_with("Play your Pygame Zero game.")
     pm.set_buttons.assert_called_once_with(modes=True)
 
 
@@ -113,20 +114,23 @@ def test_pgzero_run_game():
     Ensure that running the game launches the process as expected.
     """
     editor = mock.MagicMock()
-    editor.envars = [['name', 'value'], ]
+    editor.envars = [["name", "value"]]
     view = mock.MagicMock()
-    view.current_tab.path = '/foo/bar'
+    view.current_tab.path = "/foo/bar"
     view.current_tab.isModified.return_value = True
     mock_runner = mock.MagicMock()
     view.add_python3_runner.return_value = mock_runner
     pm = PyGameZeroMode(editor, view)
     pm.run_game()
     editor.save_tab_to_file.called_once_with(view.current_tab)
-    py_args = ['-m', 'pgzero']
-    view.add_python3_runner.assert_called_once_with('/foo/bar', '/foo',
-                                                    interactive=False,
-                                                    envars=editor.envars,
-                                                    python_args=py_args)
+    py_args = ["-m", "pgzero"]
+    view.add_python3_runner.assert_called_once_with(
+        "/foo/bar",
+        "/foo",
+        interactive=False,
+        envars=editor.envars,
+        python_args=py_args,
+    )
     mock_runner.process.waitForStarted.assert_called_once_with()
 
 
@@ -194,9 +198,23 @@ def test_pgzero_show_images():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.current_tab.path = os.path.join(tempfile.gettempdir(), "abc.py")
     pm = PyGameZeroMode(editor, view)
     pm.show_images(None)
-    image_dir = os.path.join(pm.workspace_dir(), 'images')
+    image_dir = os.path.join(os.path.dirname(view.current_tab.path), "images")
+    view.open_directory_from_os.assert_called_once_with(image_dir)
+
+
+def test_pgzero_show_images_no_file():
+    """
+    Run the OS file explorer for the workspace if no file is current.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
+    pm = PyGameZeroMode(editor, view)
+    pm.show_images(None)
+    image_dir = os.path.join(pm.workspace_dir(), "images")
     view.open_directory_from_os.assert_called_once_with(image_dir)
 
 
@@ -206,10 +224,24 @@ def test_pgzero_show_fonts():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.current_tab.path = os.path.join(tempfile.gettempdir(), "abc.py")
     pm = PyGameZeroMode(editor, view)
     pm.show_fonts(None)
-    fonts_dir = os.path.join(pm.workspace_dir(), 'fonts')
+    fonts_dir = os.path.join(os.path.dirname(view.current_tab.path), "fonts")
     view.open_directory_from_os.assert_called_once_with(fonts_dir)
+
+
+def test_pgzero_show_fonts_no_file():
+    """
+    Run the OS file explorer for the workspace if no file is current.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
+    pm = PyGameZeroMode(editor, view)
+    pm.show_fonts(None)
+    font_dir = os.path.join(pm.workspace_dir(), "fonts")
+    view.open_directory_from_os.assert_called_once_with(font_dir)
 
 
 def test_pgzero_show_sounds():
@@ -218,10 +250,24 @@ def test_pgzero_show_sounds():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.current_tab.path = os.path.join(tempfile.gettempdir(), "abc.py")
     pm = PyGameZeroMode(editor, view)
     pm.show_sounds(None)
-    sounds_dir = os.path.join(pm.workspace_dir(), 'sounds')
+    sounds_dir = os.path.join(os.path.dirname(view.current_tab.path), "sounds")
     view.open_directory_from_os.assert_called_once_with(sounds_dir)
+
+
+def test_pgzero_show_sounds_no_file():
+    """
+    Run the OS file explorer for the workspace if no file is current.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
+    pm = PyGameZeroMode(editor, view)
+    pm.show_sounds(None)
+    sound_dir = os.path.join(pm.workspace_dir(), "sounds")
+    view.open_directory_from_os.assert_called_once_with(sound_dir)
 
 
 def test_pgzero_show_music():
@@ -230,7 +276,21 @@ def test_pgzero_show_music():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    view.current_tab.path = os.path.join(tempfile.gettempdir(), "abc.py")
     pm = PyGameZeroMode(editor, view)
     pm.show_music(None)
-    music_dir = os.path.join(pm.workspace_dir(), 'music')
+    music_dir = os.path.join(os.path.dirname(view.current_tab.path), "music")
+    view.open_directory_from_os.assert_called_once_with(music_dir)
+
+
+def test_pgzero_show_music_no_file():
+    """
+    Run the OS file explorer for the workspace if no file is current.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
+    pm = PyGameZeroMode(editor, view)
+    pm.show_music(None)
+    music_dir = os.path.join(pm.workspace_dir(), "music")
     view.open_directory_from_os.assert_called_once_with(music_dir)

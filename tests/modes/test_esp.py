@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import pytest
 from unittest import mock
 from mu.modes.esp import ESPMode
@@ -20,9 +21,9 @@ def test_ESPMode_init():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     esp_mode = ESPMode(editor, view)
-    assert esp_mode.name == 'ESP MicroPython'
+    assert esp_mode.name == "ESP MicroPython"
     assert esp_mode.description is not None
-    assert esp_mode.icon == 'esp'
+    assert esp_mode.icon == "esp"
 
 
 def test_ESPMode_actions(esp_mode):
@@ -31,14 +32,14 @@ def test_ESPMode_actions(esp_mode):
     """
     actions = esp_mode.actions()
     assert len(actions) == 4
-    assert actions[0]['name'] == 'run'
-    assert actions[0]['handler'] == esp_mode.run
-    assert actions[1]['name'] == 'files'
-    assert actions[1]['handler'] == esp_mode.toggle_files
-    assert actions[2]['name'] == 'repl'
-    assert actions[2]['handler'] == esp_mode.toggle_repl
-    assert actions[3]['name'] == 'plotter'
-    assert actions[3]['handler'] == esp_mode.toggle_plotter
+    assert actions[0]["name"] == "run"
+    assert actions[0]["handler"] == esp_mode.run
+    assert actions[1]["name"] == "files"
+    assert actions[1]["handler"] == esp_mode.toggle_files
+    assert actions[2]["name"] == "repl"
+    assert actions[2]["handler"] == esp_mode.toggle_repl
+    assert actions[3]["name"] == "plotter"
+    assert actions[3]["handler"] == esp_mode.toggle_plotter
 
 
 def test_api(esp_mode):
@@ -55,12 +56,29 @@ def test_add_fs(fm, qthread, esp_mode):
     """
     It's possible to add the file system pane if the REPL is inactive.
     """
-    esp_mode.find_device = mock.MagicMock(return_value=('COM0', '12345'))
+    esp_mode.view.current_tab = None
+    esp_mode.find_device = mock.MagicMock(return_value=("COM0", "12345"))
     esp_mode.add_fs()
     workspace = esp_mode.workspace_dir()
-    esp_mode.view.add_filesystem.assert_called_once_with(workspace,
-                                                         esp_mode.file_manager,
-                                                         "ESP board")
+    esp_mode.view.add_filesystem.assert_called_once_with(
+        workspace, esp_mode.file_manager, "ESP board"
+    )
+    assert esp_mode.fs
+
+
+@mock.patch("mu.modes.esp.QThread")
+@mock.patch("mu.modes.esp.FileManager")
+def test_add_fs_project_path(fm, qthread, esp_mode):
+    """
+    It's possible to add the file system pane if the REPL is inactive.
+    """
+    esp_mode.view.current_tab.path = "foo"
+    esp_mode.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    esp_mode.add_fs()
+    workspace = os.path.dirname(os.path.abspath("foo"))
+    esp_mode.view.add_filesystem.assert_called_once_with(
+        workspace, esp_mode.file_manager, "ESP board"
+    )
     assert esp_mode.fs
 
 
@@ -95,15 +113,16 @@ def test_toggle_repl_on(esp_mode):
     def side_effect(*args, **kwargs):
         esp_mode.repl = True
 
-    with mock.patch('mu.modes.esp.MicroPythonMode.toggle_repl',
-                    side_effect=side_effect) as super_toggle_repl:
+    with mock.patch(
+        "mu.modes.esp.MicroPythonMode.toggle_repl", side_effect=side_effect
+    ) as super_toggle_repl:
         esp_mode.toggle_repl(event)
     super_toggle_repl.assert_called_once_with(event)
     esp_mode.set_buttons.assert_called_once_with(files=False)
     assert esp_mode.repl
 
 
-@mock.patch('mu.modes.esp.MicroPythonMode.toggle_repl')
+@mock.patch("mu.modes.esp.MicroPythonMode.toggle_repl")
 def test_toggle_repl_fail(super_toggle_repl, esp_mode):
     """
     Ensure buttons are not disabled if enabling the REPL fails,
@@ -132,8 +151,9 @@ def test_toggle_repl_off(esp_mode):
     def side_effect(*args, **kwargs):
         esp_mode.repl = False
 
-    with mock.patch('mu.modes.esp.MicroPythonMode.toggle_repl',
-                    side_effect=side_effect) as super_toggle_repl:
+    with mock.patch(
+        "mu.modes.esp.MicroPythonMode.toggle_repl", side_effect=side_effect
+    ) as super_toggle_repl:
         esp_mode.toggle_repl(event)
     super_toggle_repl.assert_called_once_with(event)
     esp_mode.set_buttons.assert_called_once_with(files=True)
@@ -154,6 +174,7 @@ def test_toggle_files_on(esp_mode):
     """
     If the fs is off, toggle it on.
     """
+
     def side_effect(*args, **kwargs):
         esp_mode.fs = True
 
@@ -164,9 +185,9 @@ def test_toggle_files_on(esp_mode):
     event = mock.Mock()
     esp_mode.toggle_files(event)
     assert esp_mode.add_fs.call_count == 1
-    esp_mode.set_buttons.assert_called_once_with(run=False,
-                                                 repl=False,
-                                                 plotter=False)
+    esp_mode.set_buttons.assert_called_once_with(
+        run=False, repl=False, plotter=False
+    )
 
 
 def test_toggle_files_off(esp_mode):
@@ -218,7 +239,7 @@ def test_run(esp_mode):
     Ensure run/repl/files buttons are disabled while flashing.
     """
     esp_mode.set_buttons = mock.MagicMock()
-    esp_mode.find_device = mock.MagicMock(return_value=('COM0', '12345'))
+    esp_mode.find_device = mock.MagicMock(return_value=("COM0", "12345"))
     esp_mode.run()
     esp_mode.set_buttons.assert_called_once_with(files=False)
 
@@ -228,7 +249,7 @@ def test_on_data_flood(esp_mode):
     Ensure the "Files" button is re-enabled before calling the base method.
     """
     esp_mode.set_buttons = mock.MagicMock()
-    with mock.patch('builtins.super') as mock_super:
+    with mock.patch("builtins.super") as mock_super:
         esp_mode.on_data_flood()
         esp_mode.set_buttons.assert_called_once_with(files=True)
         mock_super().on_data_flood.assert_called_once_with()
@@ -244,8 +265,10 @@ def test_toggle_plotter(esp_mode):
     def side_effect(*args, **kwargs):
         esp_mode.plotter = True
 
-    with mock.patch('mu.modes.microbit.MicroPythonMode.toggle_plotter',
-                    side_effect=side_effect) as tp:
+    with mock.patch(
+        "mu.modes.microbit.MicroPythonMode.toggle_plotter",
+        side_effect=side_effect,
+    ) as tp:
         esp_mode.plotter = None
         esp_mode.toggle_plotter(None)
         tp.assert_called_once_with(None)
@@ -264,8 +287,10 @@ def test_toggle_plotter_no_repl_or_plotter(esp_mode):
         esp_mode.plotter = False
         esp_mode.repl = False
 
-    with mock.patch('mu.modes.microbit.MicroPythonMode.toggle_plotter',
-                    side_effect=side_effect) as tp:
+    with mock.patch(
+        "mu.modes.microbit.MicroPythonMode.toggle_plotter",
+        side_effect=side_effect,
+    ) as tp:
         esp_mode.plotter = None
         esp_mode.toggle_plotter(None)
         tp.assert_called_once_with(None)

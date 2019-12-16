@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Age-o-meter</h1>
+
+<p>How old are you..?
+
+<form action="/age" method="post">
+    {% if error %}
+    <p><strong>{{error}}</strong></p>
+    {% endif %}
+    <label for="dob">Please enter your date of birth:</label>
+    <input type="text" name="dob" placeholder="YYYY-MM-DD">
+    <input type="submit" value="Submit">
+</form>
+
+{% if days_old %}
+<p>Your are <strong>{{days_old}}</strong> days old.</p>
+{% endif %}
+{% endblock %}

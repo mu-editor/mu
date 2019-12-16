@@ -21,21 +21,49 @@ import logging
 import serial
 import os.path
 from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QIODevice
-from PyQt5.QtWidgets import (QToolBar, QAction, QDesktopWidget, QWidget,
-                             QVBoxLayout, QTabWidget, QFileDialog, QMessageBox,
-                             QLabel, QMainWindow, QStatusBar, QDockWidget,
-                             QShortcut)
+from PyQt5.QtWidgets import (
+    QToolBar,
+    QAction,
+    QDesktopWidget,
+    QWidget,
+    QVBoxLayout,
+    QTabWidget,
+    QFileDialog,
+    QMessageBox,
+    QLabel,
+    QMainWindow,
+    QStatusBar,
+    QDockWidget,
+    QShortcut,
+    QApplication,
+    QTabBar,
+    QPushButton,
+    QHBoxLayout,
+)
 from PyQt5.QtGui import QKeySequence, QStandardItemModel
 from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
-from mu.interface.dialogs import (ModeSelector, AdminDialog, FindReplaceDialog,
-                                  PackageDialog)
-from mu.interface.themes import (DayTheme, NightTheme, ContrastTheme,
-                                 DEFAULT_FONT_SIZE)
-from mu.interface.panes import (DebugInspector, DebugInspectorItem,
-                                PythonProcessPane, JupyterREPLPane,
-                                MicroPythonREPLPane, FileSystemPane,
-                                PlotterPane)
+from mu.interface.dialogs import (
+    ModeSelector,
+    AdminDialog,
+    FindReplaceDialog,
+    PackageDialog,
+)
+from mu.interface.themes import (
+    DayTheme,
+    NightTheme,
+    ContrastTheme,
+    DEFAULT_FONT_SIZE,
+)
+from mu.interface.panes import (
+    DebugInspector,
+    DebugInspectorItem,
+    PythonProcessPane,
+    JupyterREPLPane,
+    MicroPythonREPLPane,
+    FileSystemPane,
+    PlotterPane,
+)
 from mu.interface.editor import EditorPane
 from mu.resources import load_icon, load_pixmap
 
@@ -67,41 +95,75 @@ class ButtonBar(QToolBar):
 
     def change_mode(self, mode):
         self.reset()
-        self.addAction(name="modes", display_name=_("Mode"),
-                       tool_text=_("Change Mu's mode of behaviour."))
+        self.addAction(
+            name="modes",
+            display_name=_("Mode"),
+            tool_text=_("Change Mu's mode of behaviour."),
+        )
         self.addSeparator()
-        self.addAction(name="new", display_name=_("New"),
-                       tool_text=_("Create a new Python script."))
-        self.addAction(name="load", display_name=_("Load"),
-                       tool_text=_("Load a Python script."))
-        self.addAction(name="save", display_name=_("Save"),
-                       tool_text=_("Save the current Python script."))
+        self.addAction(
+            name="new",
+            display_name=_("New"),
+            tool_text=_("Create a new Python script."),
+        )
+        self.addAction(
+            name="load",
+            display_name=_("Load"),
+            tool_text=_("Load a Python script."),
+        )
+        self.addAction(
+            name="save",
+            display_name=_("Save"),
+            tool_text=_("Save the current Python script."),
+        )
         self.addSeparator()
 
         for action in mode.actions():
-            self.addAction(name=action['name'],
-                           display_name=action['display_name'],
-                           tool_text=action['description'])
+            self.addAction(
+                name=action["name"],
+                display_name=action["display_name"],
+                tool_text=action["description"],
+            )
 
         self.addSeparator()
-        self.addAction(name="zoom-in", display_name=_('Zoom-in'),
-                       tool_text=_("Zoom in (to make the text bigger)."))
-        self.addAction(name="zoom-out", display_name=_('Zoom-out'),
-                       tool_text=_("Zoom out (to make the text smaller)."))
-        self.addAction(name="theme", display_name=_('Theme'),
-                       tool_text=_("Toggle theme between day, night or "
-                                   "high contrast."))
+        self.addAction(
+            name="zoom-in",
+            display_name=_("Zoom-in"),
+            tool_text=_("Zoom in (to make the text bigger)."),
+        )
+        self.addAction(
+            name="zoom-out",
+            display_name=_("Zoom-out"),
+            tool_text=_("Zoom out (to make the text smaller)."),
+        )
+        self.addAction(
+            name="theme",
+            display_name=_("Theme"),
+            tool_text=_(
+                "Toggle theme between day, night or " "high contrast."
+            ),
+        )
         self.addSeparator()
-        self.addAction(name="check", display_name=_('Check'),
-                       tool_text=_("Check your code for mistakes."))
+        self.addAction(
+            name="check",
+            display_name=_("Check"),
+            tool_text=_("Check your code for mistakes."),
+        )
         if sys.version_info[:2] >= (3, 6):
-            self.addAction(name="tidy", display_name=_('Tidy'),
-                           tool_text=_("Tidy up the layout of your code."))
-        self.addAction(name="help", display_name=_('Help'),
-                       tool_text=_("Show help about Mu in a browser."))
+            self.addAction(
+                name="tidy",
+                display_name=_("Tidy"),
+                tool_text=_("Tidy up the layout of your code."),
+            )
+        self.addAction(
+            name="help",
+            display_name=_("Help"),
+            tool_text=_("Show help about Mu in a browser."),
+        )
         self.addSeparator()
-        self.addAction(name="quit", display_name=_('Quit'),
-                       tool_text=_("Quit Mu."))
+        self.addAction(
+            name="quit", display_name=_("Quit"), tool_text=_("Quit Mu.")
+        )
 
     def set_responsive_mode(self, width, height):
         """
@@ -123,8 +185,9 @@ class ButtonBar(QToolBar):
         Creates an action associated with an icon and name and adds it to the
         widget's slots.
         """
-        action = QAction(load_icon(name), display_name, self,
-                         toolTip=tool_text)
+        action = QAction(
+            load_icon(name), display_name, self, toolTip=tool_text
+        )
         super().addAction(action)
         self.slots[name] = action
 
@@ -145,8 +208,9 @@ class FileTabs(QTabWidget):
 
     def __init__(self):
         super(FileTabs, self).__init__()
-        self.setTabsClosable(True)
-        self.tabCloseRequested.connect(self.removeTab)
+        # We are implementing closable tabs manually
+        self.setTabsClosable(False)
+        self.setMovable(True)
         self.currentChanged.connect(self.change_tab)
 
     def removeTab(self, tab_id):
@@ -156,11 +220,69 @@ class FileTabs(QTabWidget):
         window = self.nativeParentWidget()
         modified = self.widget(tab_id).isModified()
         if modified:
-            msg = ('There is un-saved work, closing the tab will cause you '
-                   'to lose it.')
+            msg = (
+                "There is un-saved work, closing the tab will cause you "
+                "to lose it."
+            )
             if window.show_confirmation(msg) == QMessageBox.Cancel:
                 return
         super(FileTabs, self).removeTab(tab_id)
+
+    def addTab(self, widget, title):
+        """
+        Add a new tab to the switcher
+        """
+        # Proxy up to the real addTab
+        tab_id = super(FileTabs, self).addTab(widget, title)
+        # A widget to put the indicator and close button in
+        container = QWidget()
+        box = QHBoxLayout(container)
+        # We don't want any margins on the layout, that would expand the tab
+        box.setContentsMargins(0, 0, 0, 0)
+        # Ensure some space between image and button
+        box.setSpacing(6)
+        # Counterintuitively QImage doesn't show an image, QLabel does
+        state_lbl = QLabel(container)
+        box.addWidget(state_lbl)
+        state_lbl.setPixmap(load_pixmap("document.svg"))
+
+        # Watch for status change to update the dirty indicator
+        # We watch here as it's far easier to keep track of state_lbl
+        # It does mean we assume all tabs are EditorPane
+        @widget.modificationChanged.connect
+        def on_modified():
+            if widget.isModified():
+                state_lbl.setPixmap(load_pixmap("document-dirty.svg"))
+            else:
+                # This icon is actually empty
+                state_lbl.setPixmap(load_pixmap("document.svg"))
+
+        # Setup our own close button since we are overriding the built in one
+        close_btn = QPushButton(container)
+        box.addWidget(close_btn)
+        close_btn.setToolTip(_("Close file"))
+        close_btn.setFlat(True)
+        # Bit of a weird size but we want to avoid giant tabs
+        close_btn.setIconSize(QSize(10, 10))
+        close_btn.setIcon(load_icon("close-tab.svg"))
+        close_btn.show()
+
+        # Handle 'clicked' events
+        @close_btn.clicked.connect
+        def close():
+            # The tab_id isn't constant and may have changed, lookup the
+            # current id of the EditorPane
+            tab_id = self.indexOf(widget)
+            # Close the tab
+            self.removeTab(tab_id)
+
+        container.setLayout(box)
+        # Add the box, clearly it isn't a button but QTabBar actually takes
+        # any QWidget not just buttons
+        self.tabBar().setTabButton(tab_id, QTabBar.RightSide, container)
+
+        # Return the index of the new page just like the reall addTab
+        return tab_id
 
     def change_tab(self, tab_id):
         """
@@ -170,7 +292,7 @@ class FileTabs(QTabWidget):
         current_tab = self.widget(tab_id)
         window = self.nativeParentWidget()
         if current_tab:
-            window.update_title(current_tab.label)
+            window.update_title(current_tab.title)
         else:
             window.update_title(None)
 
@@ -187,7 +309,7 @@ class Window(QMainWindow):
     serial = None
     repl = None
     plotter = None
-    zooms = ('xs', 's', 'm', 'l', 'xl', 'xxl', 'xxxl')  # levels of zoom.
+    zooms = ("xs", "s", "m", "l", "xl", "xxl", "xxxl")  # levels of zoom.
     zoom_position = 2  # current level of zoom (as position in zooms tuple).
 
     _zoom_in = pyqtSignal(str)
@@ -198,6 +320,19 @@ class Window(QMainWindow):
     open_file = pyqtSignal(str)
     load_theme = pyqtSignal(str)
     previous_folder = None
+
+    def wheelEvent(self, event):
+        """
+        Trap a CTRL-scroll event so the user is able to zoom in and out.
+        """
+        modifiers = QApplication.keyboardModifiers()
+        if modifiers == Qt.ControlModifier:
+            zoom = event.angleDelta().y() > 0
+            if zoom:
+                self.zoom_in()
+            else:
+                self.zoom_out()
+            event.ignore()
 
     def set_zoom(self):
         """
@@ -243,17 +378,27 @@ class Window(QMainWindow):
         for tab in self.widgets:
             tab.setReadOnly(is_readonly)
 
-    def get_load_path(self, folder, extensions='*'):
+    def get_load_path(self, folder, extensions="*", allow_previous=True):
         """
         Displays a dialog for selecting a file to load. Returns the selected
-        path. Defaults to start in the referenced folder.
+        path. Defaults to start in the referenced folder unless a previous
+        folder has been used and the allow_previous flag is True (the default
+        behaviour)
         """
+        if allow_previous:
+            open_in = (
+                folder
+                if self.previous_folder is None
+                else self.previous_folder
+            )
+        else:
+            open_in = folder
         path, _ = QFileDialog.getOpenFileName(
-            self.widget, 'Open file',
-            folder if self.previous_folder is None else self.previous_folder,
-            extensions)
-        self.previous_folder = os.path.dirname(path)
-        logger.debug('Getting load path: {}'.format(path))
+            self.widget, "Open file", open_in, extensions
+        )
+        logger.debug("Getting load path: {}".format(path))
+        if allow_previous:
+            self.previous_folder = os.path.dirname(path)
         return path
 
     def get_save_path(self, folder):
@@ -262,10 +407,14 @@ class Window(QMainWindow):
         path. Defaults to start in the referenced folder.
         """
         path, _ = QFileDialog.getSaveFileName(
-            self.widget, 'Save file',
-            folder if self.previous_folder is None else self.previous_folder)
+            self.widget,
+            "Save file",
+            folder if self.previous_folder is None else self.previous_folder,
+            "Python (*.py);;Other (*.*)",
+            "Python (*.py)",
+        )
         self.previous_folder = os.path.dirname(path)
-        logger.debug('Getting save path: {}'.format(path))
+        logger.debug("Getting save path: {}".format(path))
         return path
 
     def get_microbit_path(self, folder):
@@ -275,11 +424,13 @@ class Window(QMainWindow):
         start in the referenced folder.
         """
         path = QFileDialog.getExistingDirectory(
-            self.widget, 'Locate BBC micro:bit',
+            self.widget,
+            "Locate BBC micro:bit",
             folder if self.previous_folder is None else self.previous_folder,
-            QFileDialog.ShowDirsOnly)
+            QFileDialog.ShowDirsOnly,
+        )
         self.previous_folder = os.path.dirname(path)
-        logger.debug('Getting micro:bit path: {}'.format(path))
+        logger.debug("Getting micro:bit path: {}".format(path))
         return path
 
     def add_tab(self, path, text, api, newline):
@@ -294,8 +445,10 @@ class Window(QMainWindow):
         @new_tab.modificationChanged.connect
         def on_modified():
             modified_tab_index = self.tabs.currentIndex()
+            # Update tab label & window title
+            # Tab dirty indicator is managed in FileTabs.addTab
             self.tabs.setTabText(modified_tab_index, new_tab.label)
-            self.update_title(new_tab.label)
+            self.update_title(new_tab.title)
 
         @new_tab.open_file.connect
         def on_open_file(file):
@@ -311,6 +464,9 @@ class Window(QMainWindow):
         return new_tab
 
     def focus_tab(self, tab):
+        """
+        Force focus on the referenced tab.
+        """
         index = self.tabs.indexOf(tab)
         self.tabs.setCurrentIndex(index)
         tab.setFocus()
@@ -400,7 +556,7 @@ class Window(QMainWindow):
             # Bubble the signal up
             self.open_file.emit(file)
 
-        self.fs = QDockWidget(_('Filesystem on ') + board_name)
+        self.fs = QDockWidget(_("Filesystem on ") + board_name)
         self.fs.setWidget(self.fs_pane)
         self.fs.setFeatures(QDockWidget.DockWidgetMovable)
         self.fs.setAllowedAreas(Qt.BottomDockWidgetArea)
@@ -431,9 +587,9 @@ class Window(QMainWindow):
             self.open_serial_link(port)
             if force_interrupt:
                 # Send a Control-B / exit raw mode.
-                self.serial.write(b'\x02')
+                self.serial.write(b"\x02")
                 # Send a Control-C / keyboard interrupt.
-                self.serial.write(b'\x03')
+                self.serial.write(b"\x03")
         repl_pane = MicroPythonREPLPane(serial=self.serial)
         self.data_received.connect(repl_pane.process_bytes)
         self.add_repl(repl_pane, name)
@@ -459,31 +615,33 @@ class Window(QMainWindow):
         plotter_pane = PlotterPane()
         self.data_received.connect(plotter_pane.process_bytes)
         plotter_pane.data_flood.connect(mode.on_data_flood)
-        self.add_plotter(plotter_pane, _('Python3 data tuple'))
+        self.add_plotter(plotter_pane, _("Python3 data tuple"))
 
     def add_jupyter_repl(self, kernel_manager, kernel_client):
         """
         Adds a Jupyter based REPL pane to the application.
         """
-        kernel_manager.kernel.gui = 'qt4'
+        kernel_manager.kernel.gui = "qt4"
         kernel_client.start_channels()
         ipython_widget = JupyterREPLPane()
         ipython_widget.kernel_manager = kernel_manager
         ipython_widget.kernel_client = kernel_client
         ipython_widget.on_append_text.connect(self.on_stdout_write)
-        self.add_repl(ipython_widget, _('Python3 (Jupyter)'))
+        self.add_repl(ipython_widget, _("Python3 (Jupyter)"))
 
     def add_repl(self, repl_pane, name):
         """
         Adds the referenced REPL pane to the application.
         """
         self.repl_pane = repl_pane
-        self.repl = QDockWidget(_('{} REPL').format(name))
+        self.repl = QDockWidget(_("{} REPL").format(name))
         self.repl.setWidget(repl_pane)
         self.repl.setFeatures(QDockWidget.DockWidgetMovable)
-        self.repl.setAllowedAreas(Qt.BottomDockWidgetArea |
-                                  Qt.LeftDockWidgetArea |
-                                  Qt.RightDockWidgetArea)
+        self.repl.setAllowedAreas(
+            Qt.BottomDockWidgetArea
+            | Qt.LeftDockWidgetArea
+            | Qt.RightDockWidgetArea
+        )
         self.addDockWidget(Qt.BottomDockWidgetArea, self.repl)
         self.connect_zoom(self.repl_pane)
         self.repl_pane.set_theme(self.theme)
@@ -494,20 +652,29 @@ class Window(QMainWindow):
         Adds the referenced plotter pane to the application.
         """
         self.plotter_pane = plotter_pane
-        self.plotter = QDockWidget(_('{} Plotter').format(name))
+        self.plotter = QDockWidget(_("{} Plotter").format(name))
         self.plotter.setWidget(plotter_pane)
         self.plotter.setFeatures(QDockWidget.DockWidgetMovable)
-        self.plotter.setAllowedAreas(Qt.BottomDockWidgetArea |
-                                     Qt.LeftDockWidgetArea |
-                                     Qt.RightDockWidgetArea)
+        self.plotter.setAllowedAreas(
+            Qt.BottomDockWidgetArea
+            | Qt.LeftDockWidgetArea
+            | Qt.RightDockWidgetArea
+        )
         self.addDockWidget(Qt.BottomDockWidgetArea, self.plotter)
         self.plotter_pane.set_theme(self.theme)
         self.plotter_pane.setFocus()
 
-    def add_python3_runner(self, script_name, working_directory,
-                           interactive=False, debugger=False,
-                           command_args=None, runner=None, envars=None,
-                           python_args=None):
+    def add_python3_runner(
+        self,
+        script_name,
+        working_directory,
+        interactive=False,
+        debugger=False,
+        command_args=None,
+        runner=None,
+        envars=None,
+        python_args=None,
+    ):
         """
         Display console output for the referenced Python script.
 
@@ -535,17 +702,27 @@ class Window(QMainWindow):
         Python runtime used to launch the child process.
         """
         self.process_runner = PythonProcessPane(self)
-        self.runner = QDockWidget(_("Running: {}").format(
-                                  os.path.basename(script_name)))
+        self.runner = QDockWidget(
+            _("Running: {}").format(os.path.basename(script_name))
+        )
         self.runner.setWidget(self.process_runner)
         self.runner.setFeatures(QDockWidget.DockWidgetMovable)
-        self.runner.setAllowedAreas(Qt.BottomDockWidgetArea |
-                                    Qt.LeftDockWidgetArea |
-                                    Qt.RightDockWidgetArea)
+        self.runner.setAllowedAreas(
+            Qt.BottomDockWidgetArea
+            | Qt.LeftDockWidgetArea
+            | Qt.RightDockWidgetArea
+        )
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
-        self.process_runner.start_process(script_name, working_directory,
-                                          interactive, debugger, command_args,
-                                          envars, runner, python_args)
+        self.process_runner.start_process(
+            script_name,
+            working_directory,
+            interactive,
+            debugger,
+            command_args,
+            envars,
+            runner,
+            python_args,
+        )
         self.process_runner.setFocus()
         self.process_runner.on_append_text.connect(self.on_stdout_write)
         self.connect_zoom(self.process_runner)
@@ -558,12 +735,14 @@ class Window(QMainWindow):
         self.debug_inspector = DebugInspector()
         self.debug_model = QStandardItemModel()
         self.debug_inspector.setModel(self.debug_model)
-        self.inspector = QDockWidget(_('Debug Inspector'))
+        self.inspector = QDockWidget(_("Debug Inspector"))
         self.inspector.setWidget(self.debug_inspector)
         self.inspector.setFeatures(QDockWidget.DockWidgetMovable)
-        self.inspector.setAllowedAreas(Qt.BottomDockWidgetArea |
-                                       Qt.LeftDockWidgetArea |
-                                       Qt.RightDockWidgetArea)
+        self.inspector.setAllowedAreas(
+            Qt.BottomDockWidgetArea
+            | Qt.LeftDockWidgetArea
+            | Qt.RightDockWidgetArea
+        )
         self.addDockWidget(Qt.RightDockWidgetArea, self.inspector)
         self.connect_zoom(self.debug_inspector)
 
@@ -572,11 +751,10 @@ class Window(QMainWindow):
         Given the contents of a dict representation of the locals in the
         current stack frame, update the debug inspector with the new values.
         """
-        excluded_names = ['__builtins__', '__debug_code__',
-                          '__debug_script__', ]
+        excluded_names = ["__builtins__", "__debug_code__", "__debug_script__"]
         names = sorted([x for x in locals_dict if x not in excluded_names])
         self.debug_model.clear()
-        self.debug_model.setHorizontalHeaderLabels([_('Name'), _('Value'), ])
+        self.debug_model.setHorizontalHeaderLabels([_("Name"), _("Value")])
         for name in names:
             try:
                 # DANGER!
@@ -587,39 +765,51 @@ class Window(QMainWindow):
                 # Show a list consisting of rows of position/value
                 list_item = DebugInspectorItem(name)
                 for i, i_val in enumerate(val):
-                    list_item.appendRow([
-                        DebugInspectorItem(str(i)),
-                        DebugInspectorItem(repr(i_val))
-                    ])
-                self.debug_model.appendRow([
-                    list_item,
-                    DebugInspectorItem(_('(A list of {} items.)')
-                                       .format(len(val)))
-                ])
+                    list_item.appendRow(
+                        [
+                            DebugInspectorItem(str(i)),
+                            DebugInspectorItem(repr(i_val)),
+                        ]
+                    )
+                self.debug_model.appendRow(
+                    [
+                        list_item,
+                        DebugInspectorItem(
+                            _("(A list of {} items.)").format(len(val))
+                        ),
+                    ]
+                )
             elif isinstance(val, dict):
                 # Show a dict consisting of rows of key/value pairs.
                 dict_item = DebugInspectorItem(name)
                 for k, k_val in val.items():
-                    dict_item.appendRow([
-                        DebugInspectorItem(repr(k)),
-                        DebugInspectorItem(repr(k_val))
-                    ])
-                self.debug_model.appendRow([
-                    dict_item,
-                    DebugInspectorItem(_('(A dict of {} items.)')
-                                       .format(len(val)))
-                ])
+                    dict_item.appendRow(
+                        [
+                            DebugInspectorItem(repr(k)),
+                            DebugInspectorItem(repr(k_val)),
+                        ]
+                    )
+                self.debug_model.appendRow(
+                    [
+                        dict_item,
+                        DebugInspectorItem(
+                            _("(A dict of {} items.)").format(len(val))
+                        ),
+                    ]
+                )
             else:
-                self.debug_model.appendRow([
-                    DebugInspectorItem(name),
-                    DebugInspectorItem(locals_dict[name]),
-                ])
+                self.debug_model.appendRow(
+                    [
+                        DebugInspectorItem(name),
+                        DebugInspectorItem(locals_dict[name]),
+                    ]
+                )
 
     def remove_filesystem(self):
         """
         Removes the file system pane from the application.
         """
-        if hasattr(self, 'fs') and self.fs:
+        if hasattr(self, "fs") and self.fs:
             self.fs_pane = None
             self.fs.setParent(None)
             self.fs.deleteLater()
@@ -653,7 +843,7 @@ class Window(QMainWindow):
         """
         Removes the runner pane from the application.
         """
-        if hasattr(self, 'runner') and self.runner:
+        if hasattr(self, "runner") and self.runner:
             self.process_runner = None
             self.runner.setParent(None)
             self.runner.deleteLater()
@@ -663,7 +853,7 @@ class Window(QMainWindow):
         """
         Removes the debug inspector pane from the application.
         """
-        if hasattr(self, 'inspector') and self.inspector:
+        if hasattr(self, "inspector") and self.inspector:
             self.debug_inspector = None
             self.debug_model = None
             self.inspector.setParent(None)
@@ -676,22 +866,36 @@ class Window(QMainWindow):
         """
         self.theme = theme
         self.load_theme.emit(theme)
-        if theme == 'contrast':
+        if theme == "contrast":
             new_theme = ContrastTheme
-            new_icon = 'theme_day'
-        elif theme == 'night':
+            new_icon = "theme_day"
+        elif theme == "night":
             new_theme = NightTheme
-            new_icon = 'theme_contrast'
+            new_icon = "theme_contrast"
         else:
             new_theme = DayTheme
-            new_icon = 'theme'
+            new_icon = "theme"
         for widget in self.widgets:
             widget.set_theme(new_theme)
-        self.button_bar.slots['theme'].setIcon(load_icon(new_icon))
-        if hasattr(self, 'repl') and self.repl:
+        self.button_bar.slots["theme"].setIcon(load_icon(new_icon))
+        if hasattr(self, "repl") and self.repl:
             self.repl_pane.set_theme(theme)
-        if hasattr(self, 'plotter') and self.plotter:
+        if hasattr(self, "plotter") and self.plotter:
             self.plotter_pane.set_theme(theme)
+
+    def set_checker_icon(self, icon):
+        """
+        Set the status icon to use on the check button
+        """
+        self.button_bar.slots["check"].setIcon(load_icon(icon))
+        timer = QTimer()
+
+        @timer.timeout.connect
+        def reset():
+            self.button_bar.slots["check"].setIcon(load_icon("check.png"))
+            timer.stop()
+
+        timer.start(500)
 
     def show_admin(self, log, settings, packages):
         """
@@ -730,7 +934,7 @@ class Window(QMainWindow):
         """
         message_box = QMessageBox(self)
         message_box.setText(message)
-        message_box.setWindowTitle('Mu')
+        message_box.setWindowTitle("Mu")
         if information:
             message_box.setInformativeText(information)
         if icon and hasattr(message_box, icon):
@@ -756,7 +960,7 @@ class Window(QMainWindow):
         """
         message_box = QMessageBox(self)
         message_box.setText(message)
-        message_box.setWindowTitle(_('Mu'))
+        message_box.setWindowTitle(_("Mu"))
         if information:
             message_box.setInformativeText(information)
         if icon and hasattr(message_box, icon):
@@ -777,20 +981,30 @@ class Window(QMainWindow):
         """
         title = self.title
         if filename:
-            title += ' - ' + filename
+            title += " - " + filename
         self.setWindowTitle(title)
 
-    def autosize_window(self):
+    def screen_size(self):
         """
-        Makes the editor 80% of the width*height of the screen and centres it.
+        Returns an (width, height) tuple with the screen geometry.
         """
         screen = QDesktopWidget().screenGeometry()
-        w = int(screen.width() * 0.8)
-        h = int(screen.height() * 0.8)
+        return screen.width(), screen.height()
+
+    def size_window(self, x=None, y=None, w=None, h=None):
+        """
+        Makes the editor 80% of the width*height of the screen and centres it
+        when none of x, y, w and h is passed in; otherwise uses the passed in
+        values to position and size the editor window.
+        """
+        screen_width, screen_height = self.screen_size()
+        w = int(screen_width * 0.8) if w is None else w
+        h = int(screen_height * 0.8) if h is None else h
         self.resize(w, h)
         size = self.geometry()
-        self.move((screen.width() - size.width()) / 2,
-                  (screen.height() - size.height()) / 2)
+        x = (screen_width - size.width()) / 2 if x is None else x
+        y = (screen_height - size.height()) / 2 if y is None else y
+        self.move(x, y)
 
     def reset_annotations(self):
         """
@@ -825,22 +1039,19 @@ class Window(QMainWindow):
         self.setWindowIcon(load_icon(self.icon))
         self.update_title()
         self.read_only_tabs = False
-        self.setMinimumSize(920, 400)
+        screen_width, screen_height = self.screen_size()
+        self.setMinimumSize(screen_width // 2, screen_height // 2)
         self.setTabPosition(Qt.AllDockWidgetAreas, QTabWidget.North)
-
         self.widget = QWidget()
-
         widget_layout = QVBoxLayout()
         self.widget.setLayout(widget_layout)
         self.button_bar = ButtonBar(self.widget)
         self.tabs = FileTabs()
-        self.tabs.setMovable(True)
         self.setCentralWidget(self.tabs)
         self.status_bar = StatusBar(parent=self)
         self.setStatusBar(self.status_bar)
         self.addToolBar(self.button_bar)
         self.show()
-        self.autosize_window()
 
     def resizeEvent(self, resizeEvent):
         """
@@ -911,10 +1122,10 @@ class Window(QMainWindow):
         Given the path to a directory, open the OS's built in filesystem
         explorer for that path. Works with Windows, OSX and Linux.
         """
-        if sys.platform == 'win32':
+        if sys.platform == "win32":
             # Windows
             os.startfile(path)
-        elif sys.platform == 'darwin':
+        elif sys.platform == "darwin":
             # OSX
             os.system('open "{}"'.format(path))
         else:
@@ -950,8 +1161,9 @@ class Window(QMainWindow):
             return 0
         if global_replace:
             counter = 0
-            found = self.current_tab.findFirst(target_text, True, True,
-                                               False, False, line=0, index=0)
+            found = self.current_tab.findFirst(
+                target_text, True, True, False, False, line=0, index=0
+            )
             if found:
                 counter += 1
                 self.current_tab.replace(replace)
@@ -960,8 +1172,9 @@ class Window(QMainWindow):
                     counter += 1
             return counter
         else:
-            found = self.current_tab.findFirst(target_text, True, True, False,
-                                               True)
+            found = self.current_tab.findFirst(
+                target_text, True, True, False, True
+            )
             if found:
                 self.current_tab.replace(replace)
                 return 1
@@ -974,8 +1187,9 @@ class Window(QMainWindow):
         the current tab for the target_text. Returns True if there's a match.
         """
         if self.current_tab:
-            return self.current_tab.findFirst(target_text, True, True, False,
-                                              True)
+            return self.current_tab.findFirst(
+                target_text, True, True, False, True
+            )
         else:
             return False
 
@@ -1001,7 +1215,8 @@ class StatusBar(QStatusBar):
     Defines the look and behaviour of the status bar along the bottom of the
     UI.
     """
-    def __init__(self, parent=None, mode='python'):
+
+    def __init__(self, parent=None, mode="python"):
         super().__init__(parent)
         self.mode = mode
         # Mode selector.
@@ -1011,9 +1226,9 @@ class StatusBar(QStatusBar):
         self.set_mode(mode)
         # Logs viewer
         self.logs_label = QLabel()
-        self.logs_label.setObjectName('AdministrationLabel')
-        self.logs_label.setPixmap(load_pixmap('logs').scaledToHeight(24))
-        self.logs_label.setToolTip(_('Mu Administration'))
+        self.logs_label.setObjectName("AdministrationLabel")
+        self.logs_label.setPixmap(load_pixmap("logs").scaledToHeight(24))
+        self.logs_label.setToolTip(_("Mu Administration"))
         self.addPermanentWidget(self.logs_label)
 
     def connect_logs(self, handler, shortcut):
@@ -1021,8 +1236,9 @@ class StatusBar(QStatusBar):
         Connect the mouse press event and keyboard shortcut for the log widget
         to the referenced handler function.
         """
-        self.logs_label.shortcut = QShortcut(QKeySequence(shortcut),
-                                             self.parent())
+        self.logs_label.shortcut = QShortcut(
+            QKeySequence(shortcut), self.parent()
+        )
         self.logs_label.shortcut.activated.connect(handler)
         self.logs_label.mousePressEvent = handler
 
@@ -1031,8 +1247,9 @@ class StatusBar(QStatusBar):
         Connect the mouse press event and keyboard shortcut for the mode widget
         to the referenced handler function.
         """
-        self.mode_label.shortcut = QShortcut(QKeySequence(shortcut),
-                                             self.parent())
+        self.mode_label.shortcut = QShortcut(
+            QKeySequence(shortcut), self.parent()
+        )
         self.mode_label.shortcut.activated.connect(handler)
         self.mode_label.mousePressEvent = handler
 
@@ -1046,4 +1263,4 @@ class StatusBar(QStatusBar):
         """
         Updates the mode label to the new mode.
         """
-        self.mode_label.setText(mode.capitalize())
+        self.mode_label.setText(mode)
