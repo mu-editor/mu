@@ -16662,8 +16662,8 @@ msgstr ""
 #: mu/modes/api/shared.py:69
 msgid ""
 "globals() \n"
-"Return a dictionary representing the current global symbol table.\n"
-"I.e. named objects that are currently in the global scope."
+"返回当前全局符号表的字典。\n"
+"即：当前在全局范围内的命名对象。"
 msgstr ""
 
 #: mu/modes/api/shared.py:70
