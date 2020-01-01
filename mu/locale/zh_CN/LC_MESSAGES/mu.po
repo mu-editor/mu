@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-12-31 14:53+0800\n"
-"PO-Revision-Date: 2020-01-01 12:49+0800\n"
+"PO-Revision-Date: 2020-01-01 16:20+0800\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -3337,263 +3337,263 @@ msgstr ""
 
 #: mu/modes/api/microbit.py:398
 msgid "microbit.Image.HEART"
-msgstr ""
+msgstr "microbit.Image.HEART"
 
 #: mu/modes/api/microbit.py:399
 msgid "microbit.Image.HEART_SMALL"
-msgstr ""
+msgstr "microbit.Image.HEART_SMALL"
 
 #: mu/modes/api/microbit.py:400
 msgid "microbit.Image.HAPPY"
-msgstr ""
+msgstr "microbit.Image.HAPPY"
 
 #: mu/modes/api/microbit.py:401
 msgid "microbit.Image.SMILE"
-msgstr ""
+msgstr "microbit.Image.SMILE"
 
 #: mu/modes/api/microbit.py:402
 msgid "microbit.Image.SAD"
-msgstr ""
+msgstr "microbit.Image.SAD"
 
 #: mu/modes/api/microbit.py:403
 msgid "microbit.Image.CONFUSED"
-msgstr ""
+msgstr "microbit.Image.CONFUSED"
 
 #: mu/modes/api/microbit.py:404
 msgid "microbit.Image.ANGRY"
-msgstr ""
+msgstr "microbit.Image.ANGRY"
 
 #: mu/modes/api/microbit.py:405
 msgid "microbit.Image.ASLEEP"
-msgstr ""
+msgstr "microbit.Image.ASLEEP"
 
 #: mu/modes/api/microbit.py:406
 msgid "microbit.Image.SURPRISED"
-msgstr ""
+msgstr "microbit.Image.SURPRISED"
 
 #: mu/modes/api/microbit.py:407
 msgid "microbit.Image.SILLY"
-msgstr ""
+msgstr "microbit.Image.SILLY"
 
 #: mu/modes/api/microbit.py:408
 msgid "microbit.Image.FABULOUS"
-msgstr ""
+msgstr "microbit.Image.FABULOUS"
 
 #: mu/modes/api/microbit.py:409
 msgid "microbit.Image.MEH"
-msgstr ""
+msgstr "microbit.Image.MEH"
 
 #: mu/modes/api/microbit.py:410
 msgid "microbit.Image.YES"
-msgstr ""
+msgstr "microbit.Image.YES"
 
 #: mu/modes/api/microbit.py:411
 msgid "microbit.Image.NO"
-msgstr ""
+msgstr "microbit.Image.NO"
 
 #: mu/modes/api/microbit.py:412
 msgid "microbit.Image.CLOCK12"
-msgstr ""
+msgstr "microbit.Image.CLOCK12"
 
 #: mu/modes/api/microbit.py:413
 msgid "microbit.Image.CLOCK11"
-msgstr ""
+msgstr "microbit.Image.CLOCK11"
 
 #: mu/modes/api/microbit.py:414
 msgid "microbit.Image.CLOCK10"
-msgstr ""
+msgstr "microbit.Image.CLOCK10"
 
 #: mu/modes/api/microbit.py:415
 msgid "microbit.Image.CLOCK9"
-msgstr ""
+msgstr "microbit.Image.CLOCK9"
 
 #: mu/modes/api/microbit.py:416
 msgid "microbit.Image.CLOCK8"
-msgstr ""
+msgstr "microbit.Image.CLOCK8"
 
 #: mu/modes/api/microbit.py:417
 msgid "microbit.Image.CLOCK7"
-msgstr ""
+msgstr "microbit.Image.CLOCK7"
 
 #: mu/modes/api/microbit.py:418
 msgid "microbit.Image.CLOCK6"
-msgstr ""
+msgstr "microbit.Image.CLOCK6"
 
 #: mu/modes/api/microbit.py:419
 msgid "microbit.Image.CLOCK5"
-msgstr ""
+msgstr "microbit.Image.CLOCK5"
 
 #: mu/modes/api/microbit.py:420
 msgid "microbit.Image.CLOCK4"
-msgstr ""
+msgstr "microbit.Image.CLOCK4"
 
 #: mu/modes/api/microbit.py:421
 msgid "microbit.Image.CLOCK3"
-msgstr ""
+msgstr "microbit.Image.CLOCK3"
 
 #: mu/modes/api/microbit.py:422
 msgid "microbit.Image.CLOCK2"
-msgstr ""
+msgstr "microbit.Image.CLOCK2"
 
 #: mu/modes/api/microbit.py:423
 msgid "microbit.Image.CLOCK1"
-msgstr ""
+msgstr "microbit.Image.CLOCK1"
 
 #: mu/modes/api/microbit.py:424
 msgid "microbit.Image.ARROW_N"
-msgstr ""
+msgstr "microbit.Image.ARROW_N"
 
 #: mu/modes/api/microbit.py:425
 msgid "microbit.Image.ARROW_NE"
-msgstr ""
+msgstr "microbit.Image.ARROW_NE"
 
 #: mu/modes/api/microbit.py:426
 msgid "microbit.Image.ARROW_E"
-msgstr ""
+msgstr "microbit.Image.ARROW_E"
 
 #: mu/modes/api/microbit.py:427
 msgid "microbit.Image.ARROW_SE"
-msgstr ""
+msgstr "microbit.Image.ARROW_SE"
 
 #: mu/modes/api/microbit.py:428
 msgid "microbit.Image.ARROW_S"
-msgstr ""
+msgstr "microbit.Image.ARROW_S"
 
 #: mu/modes/api/microbit.py:429
 msgid "microbit.Image.ARROW_SW"
-msgstr ""
+msgstr "microbit.Image.ARROW_SW"
 
 #: mu/modes/api/microbit.py:430
 msgid "microbit.Image.ARROW_W"
-msgstr ""
+msgstr "microbit.Image.ARROW_W"
 
 #: mu/modes/api/microbit.py:431
 msgid "microbit.Image.ARROW_NW"
-msgstr ""
+msgstr "microbit.Image.ARROW_NW"
 
 #: mu/modes/api/microbit.py:432
 msgid "microbit.Image.TRIANGLE"
-msgstr ""
+msgstr "microbit.Image.TRIANGLE"
 
 #: mu/modes/api/microbit.py:433
 msgid "microbit.Image.TRIANGLE_LEFT"
-msgstr ""
+msgstr "microbit.Image.TRIANGLE_LEFT"
 
 #: mu/modes/api/microbit.py:434
 msgid "microbit.Image.CHESSBOARD"
-msgstr ""
+msgstr "microbit.Image.CHESSBOARD"
 
 #: mu/modes/api/microbit.py:435
 msgid "microbit.Image.DIAMOND"
-msgstr ""
+msgstr "microbit.Image.DIAMOND"
 
 #: mu/modes/api/microbit.py:436
 msgid "microbit.Image.DIAMOND_SMALL"
-msgstr ""
+msgstr "microbit.Image.DIAMOND_SMALL"
 
 #: mu/modes/api/microbit.py:437
 msgid "microbit.Image.SQUARE"
-msgstr ""
+msgstr "microbit.Image.SQUARE"
 
 #: mu/modes/api/microbit.py:438
 msgid "microbit.Image.SQUARE_SMALL"
-msgstr ""
+msgstr "microbit.Image.SQUARE_SMALL"
 
 #: mu/modes/api/microbit.py:439
 msgid "microbit.Image.RABBIT"
-msgstr ""
+msgstr "microbit.Image.RABBIT"
 
 #: mu/modes/api/microbit.py:440
 msgid "microbit.Image.COW"
-msgstr ""
+msgstr "microbit.Image.COW"
 
 #: mu/modes/api/microbit.py:441
 msgid "microbit.Image.MUSIC_CROTCHET"
-msgstr ""
+msgstr "microbit.Image.MUSIC_CROTCHET"
 
 #: mu/modes/api/microbit.py:442
 msgid "microbit.Image.MUSIC_QUAVER"
-msgstr ""
+msgstr "microbit.Image.MUSIC_QUAVER"
 
 #: mu/modes/api/microbit.py:443
 msgid "microbit.Image.MUSIC_QUAVERS"
-msgstr ""
+msgstr "microbit.Image.MUSIC_QUAVERS"
 
 #: mu/modes/api/microbit.py:444
 msgid "microbit.Image.PITCHFORK"
-msgstr ""
+msgstr "microbit.Image.PITCHFORK"
 
 #: mu/modes/api/microbit.py:445
 msgid "microbit.Image.XMAS"
-msgstr ""
+msgstr "microbit.Image.XMAS"
 
 #: mu/modes/api/microbit.py:446
 msgid "microbit.Image.PACMAN"
-msgstr ""
+msgstr "microbit.Image.PACMAN"
 
 #: mu/modes/api/microbit.py:447
 msgid "microbit.Image.TARGET"
-msgstr ""
+msgstr "microbit.Image.TARGET"
 
 #: mu/modes/api/microbit.py:448
 msgid "microbit.Image.TSHIRT"
-msgstr ""
+msgstr "microbit.Image.TSHIRT"
 
 #: mu/modes/api/microbit.py:449
 msgid "microbit.Image.ROLLERSKATE"
-msgstr ""
+msgstr "microbit.Image.ROLLERSKATE"
 
 #: mu/modes/api/microbit.py:450
 msgid "microbit.Image.DUCK"
-msgstr ""
+msgstr "microbit.Image.DUCK"
 
 #: mu/modes/api/microbit.py:451
 msgid "microbit.Image.HOUSE"
-msgstr ""
+msgstr "microbit.Image.HOUSE"
 
 #: mu/modes/api/microbit.py:452
 msgid "microbit.Image.TORTOISE"
-msgstr ""
+msgstr "microbit.Image.TORTOISE"
 
 #: mu/modes/api/microbit.py:453
 msgid "microbit.Image.BUTTERFLY"
-msgstr ""
+msgstr "microbit.Image.BUTTERFLY"
 
 #: mu/modes/api/microbit.py:454
 msgid "microbit.Image.STICKFIGURE"
-msgstr ""
+msgstr "microbit.Image.STICKFIGURE"
 
 #: mu/modes/api/microbit.py:455
 msgid "microbit.Image.GHOST"
-msgstr ""
+msgstr "microbit.Image.GHOST"
 
 #: mu/modes/api/microbit.py:456
 msgid "microbit.Image.SWORD"
-msgstr ""
+msgstr "microbit.Image.SWORD"
 
 #: mu/modes/api/microbit.py:457
 msgid "microbit.Image.GIRAFFE"
-msgstr ""
+msgstr "microbit.Image.GIRAFFE"
 
 #: mu/modes/api/microbit.py:458
 msgid "microbit.Image.SKULL"
-msgstr ""
+msgstr "microbit.Image.SKULL"
 
 #: mu/modes/api/microbit.py:459
 msgid "microbit.Image.UMBRELLA"
-msgstr ""
+msgstr "microbit.Image.UMBRELLA"
 
 #: mu/modes/api/microbit.py:460
 msgid "microbit.Image.SNAKE"
-msgstr ""
+msgstr "microbit.Image.SNAKE"
 
 #: mu/modes/api/microbit.py:461
 msgid "microbit.Image.ALL_CLOCKS"
-msgstr ""
+msgstr "microbit.Image.ALL_CLOCKS"
 
 #: mu/modes/api/microbit.py:462
 msgid "microbit.Image.ALL_ARROWS"
-msgstr ""
+msgstr "microbit.Image.ALL_ARROWS"
 
 #: mu/modes/api/microbit.py:465
 msgid ""
@@ -3728,87 +3728,87 @@ msgstr ""
 
 #: mu/modes/api/microbit.py:515
 msgid "music.DADADADUM"
-msgstr ""
+msgstr "music.DADADADUM"
 
 #: mu/modes/api/microbit.py:516
 msgid "music.ENTERTAINER"
-msgstr ""
+msgstr "music.ENTERTAINER"
 
 #: mu/modes/api/microbit.py:517
 msgid "music.PRELUDE"
-msgstr ""
+msgstr "music.PRELUDE"
 
 #: mu/modes/api/microbit.py:518
 msgid "music.ODE"
-msgstr ""
+msgstr "music.ODE"
 
 #: mu/modes/api/microbit.py:519
 msgid "music.NYAN"
-msgstr ""
+msgstr "music.NYAN"
 
 #: mu/modes/api/microbit.py:520
 msgid "music.RINGTONE"
-msgstr ""
+msgstr "music.RINGTONE"
 
 #: mu/modes/api/microbit.py:521
 msgid "music.FUNK"
-msgstr ""
+msgstr "music.FUNK"
 
 #: mu/modes/api/microbit.py:522
 msgid "music.BLUES"
-msgstr ""
+msgstr "music.BLUES"
 
 #: mu/modes/api/microbit.py:523
 msgid "music.BIRTHDAY"
-msgstr ""
+msgstr "music.BIRTHDAY"
 
 #: mu/modes/api/microbit.py:524
 msgid "music.WEDDING"
-msgstr ""
+msgstr "music.WEDDING"
 
 #: mu/modes/api/microbit.py:525
 msgid "music.FUNERAL"
-msgstr ""
+msgstr "music.FUNERAL"
 
 #: mu/modes/api/microbit.py:526
 msgid "music.PUNCHLINE"
-msgstr ""
+msgstr "music.PUNCHLINE"
 
 #: mu/modes/api/microbit.py:527
 msgid "music.PYTHON"
-msgstr ""
+msgstr "music.PYTHON"
 
 #: mu/modes/api/microbit.py:528
 msgid "music.BADDY"
-msgstr ""
+msgstr "music.BADDY"
 
 #: mu/modes/api/microbit.py:529
 msgid "music.CHASE"
-msgstr ""
+msgstr "music.CHASE"
 
 #: mu/modes/api/microbit.py:530
 msgid "music.BA_DING"
-msgstr ""
+msgstr "music.BA_DING"
 
 #: mu/modes/api/microbit.py:531
 msgid "music.WAWAWAWAA"
-msgstr ""
+msgstr "music.WAWAWAWAA"
 
 #: mu/modes/api/microbit.py:532
 msgid "music.JUMP_UP"
-msgstr ""
+msgstr "music.JUMP_UP"
 
 #: mu/modes/api/microbit.py:533
 msgid "music.JUMP_DOWN"
-msgstr ""
+msgstr "music.JUMP_DOWN"
 
 #: mu/modes/api/microbit.py:534
 msgid "music.POWER_UP"
-msgstr ""
+msgstr "music.POWER_UP"
 
 #: mu/modes/api/microbit.py:535
 msgid "music.POWER_DOWN"
-msgstr ""
+msgstr "music.POWER_DOWN"
 
 #: mu/modes/api/microbit.py:537
 msgid "antigravity"
@@ -16337,10 +16337,10 @@ msgid ""
 "If the optional 'maxsplit' is provided, splitting will occur 'maxsplit' "
 "times."
 msgstr ""
-"拆分（sep =无，最大分时=-1）\n"
-"返回字符串中的单词列表，使用\"sep\"作为分隔符字符串。\n"
-"如果未提供\"sep\"，则拆分算法使用空白。\n"
-"如果提供了可选的\"最大拆分\"，则拆分将发生\"最大拆分\"时间。"
+"split(sep=None, maxsplit=-1) \n"
+"使用 'sep' 作为分隔符把字符串拆分成列表。\n"
+"如果未提供 'sep'，则使用空格当作分隔符。\n"
+"如果提供了可选的 'maxsplit'，则拆分只进行 'maxsplit' 次。"
 
 #: mu/modes/api/shared.py:43
 msgid ""
@@ -16352,18 +16352,26 @@ msgid ""
 "'maxsplit'\n"
 "times from the right."
 msgstr ""
+"rsplit(sep=None, maxsplit=-1) \n"
+"使用 'sep' 作为分隔符把字符串拆分成列表。\n"
+"如果未提供 'sep'，则使用空格当作分隔符。\n"
+"如果提供了可选的 'maxsplit'，则拆分只从右侧开始进行 'maxsplit' 次。"
 
 #: mu/modes/api/shared.py:45
 msgid ""
 "startswith(prefix) \n"
 "Returns True if the string starts with 'prefix'."
 msgstr ""
+"startswith(prefix) \n"
+"如果字符串以 'prefix' 开头，则返回True。"
 
 #: mu/modes/api/shared.py:46
 msgid ""
 "endswith(suffix) \n"
 "Returns True if the string ends with 'suffix'."
 msgstr ""
+"endswith(suffix) \n"
+"如果字符串以 'suffix' 结尾，则返回True。"
 
 #: mu/modes/api/shared.py:48
 msgid ""
@@ -16376,6 +16384,11 @@ msgid ""
 "The chars argument is not a prefix or suffix; rather, all combinations of "
 "its values are stripped"
 msgstr ""
+"strip(chars) \n"
+"返回一个删除了前导和后缀字符的字符串。\n"
+"'chars' 参数是一个字符串，指定要删除的内容。\n"
+"如果省略或为None，则 'chars' 参数默认为值为空格。\n"
+"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符。"
 
 #: mu/modes/api/shared.py:51
 msgid ""
@@ -16388,6 +16401,11 @@ msgid ""
 "are\n"
 "stripped"
 msgstr ""
+"lstrip(chars) \n"
+"返回一个删除了前导字符的字符串。\n"
+"'chars' 参数是一个字符串，指定要删除的内容。\n"
+"如果省略或为None，则 'chars' 参数默认为值为空格。\n"
+"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符。"
 
 #: mu/modes/api/shared.py:54
 msgid ""
@@ -16400,6 +16418,11 @@ msgid ""
 "are\n"
 "stripped"
 msgstr ""
+"rstrip(chars) \n"
+"返回一个删除了后缀字符的字符串。\n"
+"'chars' 参数是一个字符串，指定要删除的内容。\n"
+"如果省略或为None，则 'chars' 参数默认为值为空格。\n"
+"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符。"
 
 #: mu/modes/api/shared.py:57
 msgid ""
@@ -16414,6 +16437,11 @@ msgid ""
 "the\n"
 "string value of the corresponding argument."
 msgstr ""
+"format(*args, **kwargs) \n"
+"执行字符串格式化操作。\n"
+"调用此方法的字符串可以包含字符或用大括号{}分隔的替换字段。\n"
+"每个替换字段使用数字索引或关键字。\n"
+"返回的字符串中每个替换字段都用相应参数中的字符串替换。"
 
 #: mu/modes/api/shared.py:60
 msgid ""
@@ -16421,6 +16449,8 @@ msgid ""
 "Return a copy of the string with all othe occurrences of 'old' replaced with "
 "'new'."
 msgstr ""
+"replace(old, new) \n"
+"返回字符串的副本，其中所有出现的 'old' 都替换为 'new' 。"
 
 #: mu/modes/api/shared.py:63
 msgid ""
@@ -16428,6 +16458,9 @@ msgid ""
 "Return the number of non-overlapping occurrences of substring 'sub'.\n"
 "Optional arguments 'start' and 'end' specify the slice of the string to use. "
 msgstr ""
+"count(sub, start, end) \n"
+"返回子字符串 'sub' 不重叠的出现次数。\n"
+"可选参数 'start' 和 'end' 指定统计字符串的范围。"
 
 #: mu/modes/api/shared.py:66
 msgid ""
@@ -16440,6 +16473,10 @@ msgid ""
 "itself,\n"
 "followed by two empty strings."
 msgstr ""
+"partition(sep) \n"
+"使用找到的首个 'sep' 分割字符串，并返回一个三个成员的元组。包含分隔符前的部"
+"分，分隔符本身以及分隔符后的部分。\n"
+"如果找不到分隔符，返回的元组为字符串本身，和两个空字符串。"
 
 #: mu/modes/api/shared.py:69
 msgid ""
@@ -16452,6 +16489,10 @@ msgid ""
 "strings,\n"
 "followed by the string itself."
 msgstr ""
+"rpartition(sep) \n"
+"使用逆向找到的首个 'sep' 分割字符串，并返回一个三个成员的元组。包含分隔符前的"
+"部分，分隔符本身以及分隔符后的部分。\n"
+"如果找不到分隔符，返回的元组为字符串本身，和两个空字符串。"
 
 #: mu/modes/api/shared.py:72
 msgid ""
@@ -16459,6 +16500,8 @@ msgid ""
 "Return a copy of the string with all the cased characters converted to "
 "lowercase."
 msgstr ""
+"lower() \n"
+"所有字符都转换为小写。"
 
 #: mu/modes/api/shared.py:75
 msgid ""
@@ -16466,6 +16509,8 @@ msgid ""
 "Return a copy of the string with all the cased characters converted to "
 "uppercase."
 msgstr ""
+"upper() \n"
+"所有字符都转换为大写。"
 
 #: mu/modes/api/shared.py:78
 msgid ""
@@ -16474,6 +16519,8 @@ msgid ""
 "is\n"
 "at least one character."
 msgstr ""
+"isspace() \n"
+"如果字符串由一到任意多个空格组成，则返回True。"
 
 #: mu/modes/api/shared.py:81
 msgid ""
@@ -16481,6 +16528,8 @@ msgid ""
 "Return True if all the characters in the string are alphabetic and there is\n"
 "at least one character."
 msgstr ""
+"isalpha() \n"
+"如果字符串仅由一到做任意多个字母组成，则返回True。"
 
 #: mu/modes/api/shared.py:84
 msgid ""
@@ -16488,6 +16537,8 @@ msgid ""
 "Return True if all characters in the string are digits and there is\n"
 "at least one character."
 msgstr ""
+"isdigit() \n"
+"如果字符串仅由一到做任意多个数字组成，则返回True。"
 
 #: mu/modes/api/shared.py:87
 msgid ""
@@ -16495,6 +16546,8 @@ msgid ""
 "Return True if all characters in the string are uppercase and there is\n"
 "at least one character."
 msgstr ""
+"isupper() \n"
+"如果字符串不为空并且所有字符都是大写的，则返回True。"
 
 #: mu/modes/api/shared.py:90
 msgid ""
@@ -16502,18 +16555,24 @@ msgid ""
 "Return True if all characters in the string are lowercase and there is\n"
 "at least one character."
 msgstr ""
+"islower() \n"
+"如果字符串不为空并且所有字符都是小写的，则返回True。"
 
 #: mu/modes/api/shared.py:93
 msgid ""
 "abs(x) \n"
 "Return the absolute value of the number 'x'."
 msgstr ""
+"abs(x) \n"
+"返回数字 'x' 的绝对值。"
 
 #: mu/modes/api/shared.py:95
 msgid ""
 "all(iterable) \n"
 "Return True if all elements of iterable are true (or iterable is empty)."
 msgstr ""
+"all(iterable) \n"
+"如果迭代器里所有成员都为真值（或迭代器为空），则返回True。"
 
 #: mu/modes/api/shared.py:98
 msgid ""
@@ -16521,12 +16580,16 @@ msgid ""
 "Return True if any element of iterable is true. If iterable is empty, return "
 "False."
 msgstr ""
+"any(iterable) \n"
+"如果迭代器里任一个成员为真值，则返回True。如果迭代器为空，则返回False。"
 
 #: mu/modes/api/shared.py:100
 msgid ""
 "bin(x) \n"
 "Convert an integer (whole) number into a binary string."
 msgstr ""
+"bin(x) \n"
+"将整数 'x' 转换为二进制字符串，以 '0b' 作前缀。"
 
 #: mu/modes/api/shared.py:102
 msgid ""
@@ -16535,24 +16598,32 @@ msgid ""
 "to\n"
 "generate the resulting truth value."
 msgstr ""
+"bool(x) \n"
+"把 'x' 转换成布尔值，即True或False之一。"
 
 #: mu/modes/api/shared.py:105
 msgid ""
 "bytearray(seq) \n"
 "Return a new array of bytes specified by the sequence 'seq' of integers."
 msgstr ""
+"bytearray(seq) \n"
+"把 'seq' 转换成 bytearray（每个成员都只有单个字节）。"
 
 #: mu/modes/api/shared.py:108
 msgid ""
 "bytes(seq) \n"
 "Return a new 'bytes' object - an immutable sequence of 'seq' integers."
 msgstr ""
+"bytes(seq) \n"
+"返回 'seq' 个元素的 byte 串。"
 
 #: mu/modes/api/shared.py:111
 msgid ""
 "callable(object) \n"
 "Return True if the 'object' appears to be callable. Otherwise return False."
 msgstr ""
+"callable(object) \n"
+"如果 'object' 可调用，则返回True。否则返回False。"
 
 #: mu/modes/api/shared.py:114
 msgid ""
@@ -16560,6 +16631,8 @@ msgid ""
 "Return a string representing a character whose Unicode code point is the "
 "integer 'i'."
 msgstr ""
+"chr(i) \n"
+"返回一个 Unicode 为 'i' 的字符。"
 
 #: mu/modes/api/shared.py:117
 msgid ""
@@ -16570,12 +16643,20 @@ msgid ""
 "  @classmethod\n"
 "  def func(cls): ..."
 msgstr ""
+"classmethod(function) \n"
+"返回函数的类方法。通常用作装饰器：\n"
+"\n"
+"class C:\n"
+"  @classmethod\n"
+"  def func(cls): ..."
 
 #: mu/modes/api/shared.py:119
 msgid ""
 "dict(): \n"
 "Create a new dictionary object."
 msgstr ""
+"dict(): \n"
+"创建一个新的字典对象。"
 
 #: mu/modes/api/shared.py:121
 msgid ""
@@ -16583,6 +16664,8 @@ msgid ""
 "Return a list of names in the scope of 'object'. If no object is supplied,\n"
 "returns a ist of names in the current local scope."
 msgstr ""
+"dir(object) \n"
+"返回 'object' 的属性列表。如果没有提供 'object' 则返回self的属性列表。"
 
 #: mu/modes/api/shared.py:124
 msgid ""
@@ -16591,6 +16674,9 @@ msgid ""
 "the quotient and remainder. For example, divmod(5, 4) results in (1, 1). "
 "That is, what's is 5 divided by 4? It's 1 remainder 1."
 msgstr ""
+"divmod(a, b) \n"
+"返回 'a' 除以 'b' 的商和余数。例如，divmod(5, 4) 得到 (1, 1)。即5除以4为1余"
+"1。"
 
 #: mu/modes/api/shared.py:127
 msgid ""
@@ -16603,6 +16689,13 @@ msgid ""
 "list(enumerate(seasons))\n"
 "[(0, 'Spring'), (1, 'Summer'), (2, 'Fall'), (3, 'Winter')]"
 msgstr ""
+"enumerate(iterable, start=0) \n"
+"从迭代器生成一个枚举对象。\n"
+"每个枚举成员都包含索引和迭代器里的值。例如：\n"
+"\n"
+"seasons = ['Spring', 'Summer', 'Autumn', 'Winter']\n"
+"list(enumerate(seasons))\n"
+"[(0, 'Spring'), (1, 'Summer'), (2, 'Fall'), (3, 'Winter')]"
 
 #: mu/modes/api/shared.py:130
 msgid ""
@@ -16612,6 +16705,9 @@ msgid ""
 "the context specified by 'globals' and 'locals' which must be dictionary "
 "objects."
 msgstr ""
+"eval(expression, globals=None, locals=None) \n"
+"解释并执行 Python表达式 'expression'。可以通过（字典类型）'globals' 和 "
+"'locals' 指定上下文。"
 
 #: mu/modes/api/shared.py:133
 msgid ""
@@ -16624,6 +16720,10 @@ msgid ""
 "both\n"
 "'globals' and 'locals' must be dictionary objects."
 msgstr ""
+"exec(object, globals, locals) \n"
+"动态执行Python代码。\n"
+"'object' 必须是包含可以解释和执行的Python代码字符串。可以通过（字典类"
+"型）'globals' 和 'locals' 指定上下文。"
 
 #: mu/modes/api/shared.py:136
 msgid ""
@@ -16631,12 +16731,16 @@ msgid ""
 "Construct an iterator from those elements of 'iterable' for which 'function' "
 "returns True."
 msgstr ""
+"filter(function, iterable) \n"
+"使用 'function' 来过滤 'iterable'，返回代入 'function' 后得到True的成员。"
 
 #: mu/modes/api/shared.py:139
 msgid ""
 "float(x) \n"
 "Return a floating point number constructed from a number or string 'x'."
 msgstr ""
+"float(x) \n"
+"把 'x' 转换成浮点数。"
 
 #: mu/modes/api/shared.py:142
 msgid ""
@@ -16644,6 +16748,8 @@ msgid ""
 "Return a new frozenset object, optionally with elements taken from "
 "'iterable'."
 msgstr ""
+"frozenset(iterable) \n"
+"从 'iterable' 生成不可变集合。"
 
 #: mu/modes/api/shared.py:145
 msgid ""
@@ -16652,6 +16758,9 @@ msgid ""
 "string.\n"
 "Optionally return 'default' if 'name' is not an attribute of 'object'."
 msgstr ""
+"getattr(object, name, default) \n"
+"返回 'object' 的 'name' 属性的值。 'name' 必须是字符串。\n"
+"如果 'name' 不是 'object' 的属性，则返回 'default'（可选） 。"
 
 #: mu/modes/api/shared.py:148
 msgid ""
@@ -16659,6 +16768,8 @@ msgid ""
 "Return a dictionary representing the current global symbol table.\n"
 "I.e. named objects that are currently in the global scope."
 msgstr ""
+"globals() \n"
+"返回全局对象字典。即全局作用域下所有的对象。"
 
 #: mu/modes/api/shared.py:151
 msgid ""
@@ -16666,18 +16777,24 @@ msgid ""
 "Returns True if the 'object' has an attribute called 'name'. 'name' must be "
 "a string."
 msgstr ""
+"hasattr(object, name) \n"
+"如果 'object' 有名为 'name' 的属性，则返回True。 'name' 必须是字符串。"
 
 #: mu/modes/api/shared.py:154
 msgid ""
 "hash(object) \n"
 "Return a hash value of the object (if it has one). Hash values are integers."
 msgstr ""
+"hash(object) \n"
+"返回对象的哈希值（如果有）。哈希值是整数。"
 
 #: mu/modes/api/shared.py:157
 msgid ""
 "help(object) \n"
 "Invoke the built-in help system (intended for interactive use in the REPL."
 msgstr ""
+"help(object) \n"
+"调用内置的帮助系统（用于REPL中的交互使用）。"
 
 #: mu/modes/api/shared.py:160
 msgid ""
@@ -16685,6 +16802,8 @@ msgid ""
 "Convert an integer 'x' to a lowercase hexadevimal string prefixed with '0x'. "
 "For example, hex(255) returns '0xff'."
 msgstr ""
+"hex(x) \n"
+"将整数转换为十六进制字符串，以 '0x' 作前缀。"
 
 #: mu/modes/api/shared.py:163
 msgid ""
@@ -16692,6 +16811,8 @@ msgid ""
 "Return the identity of an object. This is an integer that is guaranteed to "
 "be unique."
 msgstr ""
+"id(object) \n"
+"返回对象的标识。是一个确保唯一的整数。"
 
 #: mu/modes/api/shared.py:166
 msgid ""
@@ -16699,12 +16820,16 @@ msgid ""
 "Return an integer constructed from a number or string 'x'. The optional "
 "'base' (indicating the base of the number) defaults to 10."
 msgstr ""
+"int(x, base=10) \n"
+"把 'x' 转成整数。可选的 'base' 表示 'x' 是多少进制数。"
 
 #: mu/modes/api/shared.py:169
 msgid ""
 "isinstance(object, classinfo) \n"
 "Return True if the 'object' is an instance of 'classinfo'."
 msgstr ""
+"isinstance(object, classinfo) \n"
+"如果 'object' 是 'classinfo' 的实例，则返回True。"
 
 #: mu/modes/api/shared.py:172
 msgid ""
@@ -16712,6 +16837,8 @@ msgid ""
 "Return True if the 'class' is a subclass (direct, indirect or virtual) of "
 "'classinfo'."
 msgstr ""
+"issubclass(class, classinfo) \n"
+"如果 'class' 是 'classinfo' 的子类（直接，间接或虚拟），则返回True。"
 
 #: mu/modes/api/shared.py:175
 msgid ""
@@ -16719,18 +16846,24 @@ msgid ""
 "Return an iterator object for the 'object' (that must support the iteration "
 "protocol."
 msgstr ""
+"iter(object) \n"
+"从 'object' 生成一个迭代器（必须支持迭代）。"
 
 #: mu/modes/api/shared.py:177
 msgid ""
 "len(object) \n"
 "Return the length (the number of items) in an 'object'."
 msgstr ""
+"len(object) \n"
+"返回 'object' 的长度（成员数）。"
 
 #: mu/modes/api/shared.py:179
 msgid ""
 "list(iterable) \n"
 "Return a list, optionally based upon the members of 'iterable'."
 msgstr ""
+"list(iterable) \n"
+"从 'iterable' 生成列表。"
 
 #: mu/modes/api/shared.py:182
 msgid ""
@@ -16739,6 +16872,8 @@ msgid ""
 "objects\n"
 "that are currently in the local scope."
 msgstr ""
+"locals() \n"
+"返回当前作用域对象字典。即当前作用域下所有的对象。"
 
 #: mu/modes/api/shared.py:185
 msgid ""
@@ -16746,6 +16881,9 @@ msgid ""
 "Return an iterator that applies 'function' to every item of 'iterable', "
 "yielding the results."
 msgstr ""
+"map(function, iterable) \n"
+"使用 'function' 来重新生成 'iterable'，由每个成员代入 'function' 后得到的返回"
+"值组成。"
 
 #: mu/modes/api/shared.py:188
 msgid ""
@@ -16753,6 +16891,8 @@ msgid ""
 "Return the largest item in 'items', which can be either an iterable or two "
 "or more arguments."
 msgstr ""
+"max(items) \n"
+"返回 'items' 中最大的成员，'items' 可以是迭代器，也可以是两个或更多个参数。"
 
 #: mu/modes/api/shared.py:191
 msgid ""
@@ -16760,24 +16900,32 @@ msgid ""
 "Return the smallest item in 'items', which can be either an iterable or two "
 "or more arguments."
 msgstr ""
+"min(items) \n"
+"返回 'items' 中最小的成员，'items' 可以是迭代器，也可以是两个或更多个参数。"
 
 #: mu/modes/api/shared.py:193
 msgid ""
 "next(iterator) \n"
 "Retrieve the next item from the iterator."
 msgstr ""
+"next(iterator) \n"
+"返回迭代器的下一个成员。"
 
 #: mu/modes/api/shared.py:194
 msgid ""
 "object() \n"
 "Return a new featureless object."
 msgstr ""
+"object() \n"
+"返回一个空对象。"
 
 #: mu/modes/api/shared.py:195
 msgid ""
 "oct(x) \n"
 "Convert an integer number to an octal (base 8) string."
 msgstr ""
+"oct(x) \n"
+"将整数转换为八进制字符串，以 '0o' 作前缀。"
 
 #: mu/modes/api/shared.py:197
 msgid ""
@@ -16790,6 +16938,12 @@ msgid ""
 "'b' - binary mode\n"
 "'t' - text mode."
 msgstr ""
+"open(file, mode='rt') \n"
+"打开 'file' 文件并返回句柄对象。 'mode' 是可选的，用于指定访问模式：\n"
+"'r' - 只读\n"
+"'w' - 只写\n"
+"'b' - 二进制模式\n"
+"'t' - 文本模式。"
 
 #: mu/modes/api/shared.py:200
 msgid ""
@@ -16797,6 +16951,8 @@ msgid ""
 "Given a string representing one Unicode character, return an integer "
 "representing the Unicode code point of that character."
 msgstr ""
+"ord(c) \n"
+"返回字符 'c' 的 Unicode。"
 
 #: mu/modes/api/shared.py:203
 msgid ""
@@ -16804,6 +16960,9 @@ msgid ""
 "Return 'x' to the power of 'y'. If the optional 'z' is given, return 'x' to "
 "the power of 'y' modulo 'z' (giving the remainder)."
 msgstr ""
+"pow(x, y, z) \n"
+"返回 'x' 的 'y' 次幂。如果给出了可选的 'z'，则返回 'x' 的 'y' 次幂除以 'z' 后"
+"的余数。"
 
 #: mu/modes/api/shared.py:206
 msgid ""
@@ -16811,6 +16970,9 @@ msgid ""
 "Print objects, separated by 'sep' and followed by 'end'.\n"
 "All non-keyword arguments are converted to strings."
 msgstr ""
+"print(*objects, sep=' ', end='\\n') \n"
+"打印对象，以 'sep' 分隔，后跟 'end' 。除 'sep', 'end' 外的其它参数都将转换为"
+"字符串。"
 
 #: mu/modes/api/shared.py:209
 msgid ""
@@ -16818,18 +16980,26 @@ msgid ""
 "Return an immutable sequence containing items between 'start' and 'stop' "
 "with 'step' difference between them."
 msgstr ""
+"range(start, stop, step) \n"
+"返回一个序列，从 'start' 开始到 'stop' 结束，间隔 'step'。例如：\n"
+"range(5) #0, 1, 2, 3, 4\n"
+"range(1, 9, 3) #1, 4, 7"
 
 #: mu/modes/api/shared.py:212
 msgid ""
 "repr(object) \n"
 "Return a string containing a printable representation of an 'object'."
 msgstr ""
+"repr(object) \n"
+"将对象转化为可以被解释器读取的字串。"
 
 #: mu/modes/api/shared.py:214
 msgid ""
 "reversed(seq) \n"
 "Return a reverse iterator of the sequence 'seq'."
 msgstr ""
+"reversed(seq) \n"
+"返回序列 'seq' 逆序后生成的迭代器。"
 
 #: mu/modes/api/shared.py:216
 msgid ""
@@ -16837,12 +17007,17 @@ msgid ""
 "Return the floating point 'number' rounded to the (optional) 'ndigits'.\n"
 "If 'ndigits' is omitted, round to the nearest whole number."
 msgstr ""
+"round(number, ndigits) \n"
+"返回把 'number' 四舍五入到某一位（可选 'ndigits'）的浮点数 。\n"
+"如果省略 'ndigits'，则四舍五入到整数。"
 
 #: mu/modes/api/shared.py:219
 msgid ""
 "set(iterable) \n"
 "Return a new set object, optionally containing elements taken from iterable."
 msgstr ""
+"set(iterable) \n"
+"返回用迭代器的成员生成的集合。"
 
 #: mu/modes/api/shared.py:222
 msgid ""
@@ -16850,6 +17025,8 @@ msgid ""
 "Set the 'value' to the attribute called 'name' on object 'object'. 'name' "
 "must be a string."
 msgstr ""
+"setattr(object, name, value) \n"
+"将对象 'object' 上名为 'name' 的属性值设置为 'value'。 'name' 必须是字符串。"
 
 #: mu/modes/api/shared.py:225
 msgid ""
@@ -16859,6 +17036,10 @@ msgid ""
 "a function used for comparison and the optional 'reverse' is a boolean "
 "indicating the comparison should be reversed."
 msgstr ""
+"sorted(iterable, key, reverse) \n"
+"返回一个排序后的 'iterable' 列表。\n"
+"可选的 'key' 指定了用于比较的函数，可选的 'reverse' 是一个布尔值，表示是否倒"
+"序。"
 
 #: mu/modes/api/shared.py:228
 msgid ""
@@ -16869,12 +17050,20 @@ msgid ""
 "  @staticmethod\n"
 "def func(): ..."
 msgstr ""
+"staticmethod(function) \n"
+"返回函数的静态方法。通常用作装饰器：\n"
+"\n"
+"class C:\n"
+"  @staticmethod\n"
+"def func(): ..."
 
 #: mu/modes/api/shared.py:230
 msgid ""
 "str(object) \n"
 "Return a string version of 'object'."
 msgstr ""
+"str(object) \n"
+"返回'object'v的字符串副本。"
 
 #: mu/modes/api/shared.py:232
 msgid ""
@@ -16882,6 +17071,8 @@ msgid ""
 "Sums 'start' and items of an iterable from left to right and returns the "
 "total."
 msgstr ""
+"sum(iterable, start=0) \n"
+"从 'start' 开始对 'iterable' 里的成员进行求和并返回。"
 
 #: mu/modes/api/shared.py:235
 msgid ""
@@ -16891,18 +17082,25 @@ msgid ""
 "of 'type'. This is useful for accessing inherited methods that have been\n"
 "overridden in a class."
 msgstr ""
+"super(type, object-or-type) \n"
+"返回 'type' 的父级或同级类的委托方法代理。\n"
+"这个方法用来调用已在类里重写的继承方法。"
 
 #: mu/modes/api/shared.py:238
 msgid ""
 "tuple(iterable) \n"
 "Return an immutable sequence based upon the items in 'iterable'."
 msgstr ""
+"tuple(iterable) \n"
+"根据 'iterable' 中的成员返回一个元组。"
 
 #: mu/modes/api/shared.py:241
 msgid ""
 "type(object) \n"
 "Return the type of an object (i.e. what sort of thing it is)."
 msgstr ""
+"type(object) \n"
+"返回 'object' 的类型（即 'object' 是什么东西）。"
 
 #: mu/modes/api/shared.py:244
 msgid ""
@@ -16915,6 +17113,13 @@ msgid ""
 "list(zip(x, y))\n"
 "[(1, 4), (2, 5), (3, 6)]"
 msgstr ""
+"zip(*iterables) \n"
+"创建一个迭代器，整合了传入的可迭代对象中的元素。\n"
+"例如：\n"
+"x = [1, 2, 3]\n"
+"y = [4, 5, 6]\n"
+"list(zip(x, y))\n"
+"[(1, 4), (2, 5), (3, 6)]"
 
 #: mu/modes/base.py:220
 msgid "Data Flood Detected!"
@@ -17214,9 +17419,9 @@ msgid ""
 msgstr ""
 "请确保已将设备插入此计算机。\n"
 "\n"
-"在文件系统工作之前，设备必须已输入MicroPython。\n"
+"在文件系统工作之前，设备必须已刷入MicroPython。\n"
 "\n"
-"最后，按设备的重置(reset)按钮并等待几秒钟后再重试。"
+"最后，按设备的复位(reset)按钮并等待几秒钟后再重试。"
 
 #: mu/modes/pygamezero.py:34
 msgid "Pygame Zero"
