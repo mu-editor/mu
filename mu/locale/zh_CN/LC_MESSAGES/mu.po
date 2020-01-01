@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-12-31 14:53+0800\n"
-"PO-Revision-Date: 2020-01-01 16:20+0800\n"
+"PO-Revision-Date: 2020-01-01 18:18+0800\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -16388,7 +16388,7 @@ msgstr ""
 "返回一个删除了前导和后缀字符的字符串。\n"
 "'chars' 参数是一个字符串，指定要删除的内容。\n"
 "如果省略或为None，则 'chars' 参数默认为值为空格。\n"
-"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符。"
+"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符"
 
 #: mu/modes/api/shared.py:51
 msgid ""
@@ -16405,7 +16405,7 @@ msgstr ""
 "返回一个删除了前导字符的字符串。\n"
 "'chars' 参数是一个字符串，指定要删除的内容。\n"
 "如果省略或为None，则 'chars' 参数默认为值为空格。\n"
-"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符。"
+"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符"
 
 #: mu/modes/api/shared.py:54
 msgid ""
@@ -16422,7 +16422,7 @@ msgstr ""
 "返回一个删除了后缀字符的字符串。\n"
 "'chars' 参数是一个字符串，指定要删除的内容。\n"
 "如果省略或为None，则 'chars' 参数默认为值为空格。\n"
-"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符。"
+"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符"
 
 #: mu/modes/api/shared.py:57
 msgid ""
@@ -16460,7 +16460,7 @@ msgid ""
 msgstr ""
 "count(sub, start, end) \n"
 "返回子字符串 'sub' 不重叠的出现次数。\n"
-"可选参数 'start' 和 'end' 指定统计字符串的范围。"
+"可选参数 'start' 和 'end' 指定统计字符串的范围 "
 
 #: mu/modes/api/shared.py:66
 msgid ""
@@ -16983,7 +16983,7 @@ msgstr ""
 "range(start, stop, step) \n"
 "返回一个序列，从 'start' 开始到 'stop' 结束，间隔 'step'。例如：\n"
 "range(5) #0, 1, 2, 3, 4\n"
-"range(1, 9, 3) #1, 4, 7"
+"range(1, 9, 3)  #1, 4, 7 ."
 
 #: mu/modes/api/shared.py:212
 msgid ""
