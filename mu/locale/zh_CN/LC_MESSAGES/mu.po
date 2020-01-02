@@ -2544,6 +2544,9 @@ msgid ""
 "Put micro:bit in panic() mode and display an unhappy face.\n"
 "Press the reset button to exit panic() mode."
 msgstr ""
+"microbit.panic() \n"
+"将micro:bit置于panic()模式下并显示不高兴的脸。\n"
+"按重置按钮退出panic()模式。"
 
 #: mu/modes/api/microbit.py:69
 msgid ""
@@ -2563,7 +2566,7 @@ msgid ""
 "Return micro:bit's tilt (X acceleration) in milli-g's."
 msgstr ""
 "microbit.accelerometer.get_x() \n"
-"返回 micro:bit’s 的倾斜度 (X 轴向加速度) ，单位为毫克。"
+"返回 micro:bit 的倾斜度 (X 轴向加速度) ，单位为毫克。"
 
 #: mu/modes/api/microbit.py:79
 msgid ""
@@ -2571,7 +2574,7 @@ msgid ""
 "Return micro:bit's tilt (Y acceleration) in milli-g's."
 msgstr ""
 "microbit.accelerometer.get_y() \n"
-"返回 micro:bit’s 的倾斜度 (Y 轴向加速度) ，单位为毫克。"
+"返回 micro:bit 的倾斜度 (Y 轴向加速度) ，单位为毫克。"
 
 #: mu/modes/api/microbit.py:82
 msgid ""
@@ -2580,8 +2583,8 @@ msgid ""
 "Z is a positive number when moving up. Moving down, Z is a negative number."
 msgstr ""
 "microbit.accelerometer.get_z() \n"
-"返回 micro:bit’s 的倾斜度 (Z轴向加速度) ，单位为毫克。\n"
-"向上移动时返回值为正数。 向下移动移动时返回的Z为负数。"
+"返回 micro:bit 的倾斜度 (Z 轴向加速度) ，单位为毫克。\n"
+"向上移动时返回值为正数，向下移动移动时返回的Z为负数。"
 
 #: mu/modes/api/microbit.py:85
 msgid ""
@@ -2828,6 +2831,9 @@ msgid ""
 "If pin0 is_touched() on micro:bit, return True. If nothing is touching the\n"
 "pin, return False."
 msgstr ""
+"microbit.pin0.is_touched() \n"
+"如果micro:bit上的针脚pin0被触碰，is_touched() 会返回True. 如果没有任何东西触"
+"碰此针脚，将返回 False。"
 
 #: mu/modes/api/microbit.py:164
 msgid ""
@@ -2847,6 +2853,8 @@ msgid ""
 "Read the voltage applied to pin0. Return the reading as a number between\n"
 "0 (meaning 0v) and 1023 (meaning 3.3v)."
 msgstr ""
+"microbit.pin0.read_analog() \n"
+"读取pin0上输出的电压值. 返回一个介于0 (意味着0v) 和 1023 (意味着3.3v)的数字。"
 
 #: mu/modes/api/microbit.py:173
 msgid ""
@@ -2872,6 +2880,9 @@ msgid ""
 "If pin1 is_touched() on micro:bit, return True. If nothing is touching the\n"
 "pin, return False."
 msgstr ""
+"microbit.pin1.is_touched() \n"
+"如果micro:bit上的针脚pin1被触碰，is_touched() 会返回True. 如果没有任何东西触"
+"碰此针脚，将返回 False。"
 
 #: mu/modes/api/microbit.py:185
 msgid ""
@@ -2891,6 +2902,8 @@ msgid ""
 "Read the voltage applied to pin1. Return the reading as a number between\n"
 "0 (meaning 0v) and 1023 (meaning 3.3v)."
 msgstr ""
+"microbit.pin1.read_analog() \n"
+"读取pin1上输出的电压值. 返回一个介于0 (意味着0v) 和 1023 (意味着3.3v)的数字。"
 
 #: mu/modes/api/microbit.py:194
 msgid ""
@@ -2916,6 +2929,9 @@ msgid ""
 "If pin2 is_touched() on micro:bit, return True. If nothing is touching the\n"
 "pin, return False."
 msgstr ""
+"microbit.pin2.is_touched() \n"
+"如果micro:bit上的针脚pin2被触碰，is_touched() 会返回True. 如果没有任何东西触"
+"碰此针脚，将返回 False。"
 
 #: mu/modes/api/microbit.py:206
 msgid ""
@@ -2935,6 +2951,8 @@ msgid ""
 "Read the voltage applied to pin2. Return the reading as a number between\n"
 "0 (meaning 0v) and 1023 (meaning 3.3v)."
 msgstr ""
+"microbit.pin2.read_analog() \n"
+"读取pin2上输出的电压值. 返回一个介于0 (意味着0v) 和 1023 (意味着3.3v)的数字。"
 
 #: mu/modes/api/microbit.py:215
 msgid ""
@@ -16392,7 +16410,7 @@ msgstr ""
 "返回一个删除了前导和后缀字符的字符串。\n"
 "'chars' 参数是一个字符串，指定要删除的内容。\n"
 "如果省略或为None，则 'chars' 参数默认为值为空格。\n"
-"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符。"
+"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符"
 
 #: mu/modes/api/shared.py:51
 msgid ""
@@ -16409,7 +16427,7 @@ msgstr ""
 "返回一个删除了前导字符的字符串。\n"
 "'chars' 参数是一个字符串，指定要删除的内容。\n"
 "如果省略或为None，则 'chars' 参数默认为值为空格。\n"
-"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符。"
+"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符"
 
 #: mu/modes/api/shared.py:54
 msgid ""
@@ -16426,7 +16444,7 @@ msgstr ""
 "返回一个删除了后缀字符的字符串。\n"
 "'chars' 参数是一个字符串，指定要删除的内容。\n"
 "如果省略或为None，则 'chars' 参数默认为值为空格。\n"
-"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符。"
+"'chars' 参数不是前缀或后缀；它包含了所有会删除的字符"
 
 #: mu/modes/api/shared.py:57
 msgid ""
@@ -16464,7 +16482,7 @@ msgid ""
 msgstr ""
 "count(sub, start, end) \n"
 "返回子字符串 'sub' 不重叠的出现次数。\n"
-"可选参数 'start' 和 'end' 指定统计字符串的范围。"
+"可选参数 'start' 和 'end' 指定统计字符串的范围 "
 
 #: mu/modes/api/shared.py:66
 msgid ""
@@ -16987,7 +17005,7 @@ msgstr ""
 "range(start, stop, step) \n"
 "返回一个序列，从 'start' 开始到 'stop' 结束，间隔 'step'。例如：\n"
 "range(5) #0, 1, 2, 3, 4\n"
-"range(1, 9, 3) #1, 4, 7"
+"range(1, 9, 3)  #1, 4, 7 ."
 
 #: mu/modes/api/shared.py:212
 msgid ""
@@ -23326,7 +23344,7 @@ msgstr ""
 "让micro:bit睡眠几毫秒（1秒= 1000 ms）\n"
 "sleep(2000) 使micro:bit小睡2秒。\n"
 "注意：如果您使用time.sleep()，其时间以秒为单位，而不是毫秒，\n"
-"在这种情况下，请使用time.sleep(2) 让micro:bit小睡2秒。."
+"在这种情况下，请使用time.sleep(2) 让micro:bit小睡2秒。"
 
 #: mu/modes/api/pygamezero.py:94
 msgid ""
