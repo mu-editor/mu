@@ -101,6 +101,8 @@ class ModeSelector(QDialog):
         button_box = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
+        button_box.button(QDialogButtonBox.Ok).setText(_("Ok"))
+        button_box.button(QDialogButtonBox.Cancel).setText(_("Cancel"))
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         widget_layout.addWidget(button_box)
@@ -244,6 +246,8 @@ class AdminDialog(QDialog):
         button_box = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
+        button_box.button(QDialogButtonBox.Ok).setText(_("Ok"))
+        button_box.button(QDialogButtonBox.Cancel).setText(_("Cancel"))
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         widget_layout.addWidget(button_box)
@@ -315,6 +319,8 @@ class FindReplaceDialog(QDialog):
         button_box = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
+        button_box.button(QDialogButtonBox.Ok).setText(_("Ok"))
+        button_box.button(QDialogButtonBox.Cancel).setText(_("Cancel"))
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         widget_layout.addWidget(button_box)
@@ -368,6 +374,7 @@ class PackageDialog(QDialog):
         widget_layout.addWidget(self.text_area)
         # Buttons.
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok)
+        self.button_box.button(QDialogButtonBox.Ok).setText(_("Ok"))
         self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
         self.button_box.accepted.connect(self.accept)
         widget_layout.addWidget(self.button_box)
