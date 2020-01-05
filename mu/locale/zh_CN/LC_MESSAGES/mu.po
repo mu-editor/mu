@@ -2,12 +2,14 @@
 # Contributee:
 #    管宁川John <guan.ningchuan@gmail.com>
 #    Tairraos <xiaole.tao@gmail.com>
+#    leafdown <>
+#    Judy Zhu <>
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-12-31 14:53+0800\n"
-"PO-Revision-Date: 2020-01-04 20:39+0800\n"
+"PO-Revision-Date: 2020-01-05 11:20+0800\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2544,6 +2546,23 @@ msgid ""
 "Put micro:bit in panic() mode and display an unhappy face.\n"
 "Press the reset button to exit panic() mode."
 msgstr ""
+"microbit.panic() \n"
+"将micro:bit置于panic()模式下并显示不高兴的脸。\n"
+"按重置按钮退出panic()模式。"
+
+#: mu/modes/api/microbit.py:66
+msgid ""
+"microbit.sleep(time) \n"
+"Put micro:bit to sleep for some milliseconds (1 second = 1000 ms) of time.\n"
+"sleep(2000) gives micro:bit a 2 second nap.\n"
+"NB: If you use time.sleep(), times are in whole seconds not milliseconds,\n"
+"use time.sleep(2) to nap for 2 seconds, in that case."
+msgstr ""
+"microbit.sleep(time) \n"
+"让micro:bit睡眠几毫秒（1秒= 1000 ms）\n"
+"sleep(2000) 使micro:bit小睡2秒。\n"
+"注意：如果您使用time.sleep()，其时间以秒为单位，而不是毫秒，\n"
+"在这种情况下，请使用time.sleep(2) 让micro:bit小睡2秒。"
 
 #: mu/modes/api/microbit.py:69
 msgid ""
@@ -2828,6 +2847,9 @@ msgid ""
 "If pin0 is_touched() on micro:bit, return True. If nothing is touching the\n"
 "pin, return False."
 msgstr ""
+"microbit.pin0.is_touched() \n"
+"如果micro:bit上的针脚pin0被触碰，is_touched() 会返回True. 如果没有任何东西触"
+"碰此针脚，将返回 False。"
 
 #: mu/modes/api/microbit.py:164
 msgid ""
@@ -2847,6 +2869,8 @@ msgid ""
 "Read the voltage applied to pin0. Return the reading as a number between\n"
 "0 (meaning 0v) and 1023 (meaning 3.3v)."
 msgstr ""
+"microbit.pin0.read_analog() \n"
+"读取pin0上输出的电压值. 返回一个介于0 (意味着0v) 和 1023 (意味着3.3v)的数字。"
 
 #: mu/modes/api/microbit.py:173
 msgid ""
@@ -2872,6 +2896,9 @@ msgid ""
 "If pin1 is_touched() on micro:bit, return True. If nothing is touching the\n"
 "pin, return False."
 msgstr ""
+"microbit.pin1.is_touched() \n"
+"如果micro:bit上的针脚pin1被触碰，is_touched() 会返回True. 如果没有任何东西触"
+"碰此针脚，将返回 False。"
 
 #: mu/modes/api/microbit.py:185
 msgid ""
@@ -2891,6 +2918,8 @@ msgid ""
 "Read the voltage applied to pin1. Return the reading as a number between\n"
 "0 (meaning 0v) and 1023 (meaning 3.3v)."
 msgstr ""
+"microbit.pin1.read_analog() \n"
+"读取pin1上输出的电压值. 返回一个介于0 (意味着0v) 和 1023 (意味着3.3v)的数字。"
 
 #: mu/modes/api/microbit.py:194
 msgid ""
@@ -2916,6 +2945,9 @@ msgid ""
 "If pin2 is_touched() on micro:bit, return True. If nothing is touching the\n"
 "pin, return False."
 msgstr ""
+"microbit.pin2.is_touched() \n"
+"如果micro:bit上的针脚pin2被触碰，is_touched() 会返回True. 如果没有任何东西触"
+"碰此针脚，将返回 False。"
 
 #: mu/modes/api/microbit.py:206
 msgid ""
@@ -2935,6 +2967,8 @@ msgid ""
 "Read the voltage applied to pin2. Return the reading as a number between\n"
 "0 (meaning 0v) and 1023 (meaning 3.3v)."
 msgstr ""
+"microbit.pin2.read_analog() \n"
+"读取pin2上输出的电压值. 返回一个介于0 (意味着0v) 和 1023 (意味着3.3v)的数字。"
 
 #: mu/modes/api/microbit.py:215
 msgid ""
@@ -3263,12 +3297,16 @@ msgid ""
 "microbit.Image.width() \n"
 "Return the width of the image in pixels."
 msgstr ""
+"microbit.Image.width() \n"
+"返回图象的象素宽度"
 
 #: mu/modes/api/microbit.py:370
 msgid ""
 "microbit.Image.height() \n"
 "Return the height of the image in pixels."
 msgstr ""
+"microbit.Image.height() \n"
+"返回图象的象素高度"
 
 #: mu/modes/api/microbit.py:372
 msgid ""
@@ -17715,34 +17753,37 @@ msgid ""
 "Each separate package name should be on a new line. Packages are installed "
 "from PyPI (see: https://pypi.org/)."
 msgstr ""
+"下面显示的包可在Python 3模式下导入。 从列表中删除包会使包不可用。\n"
+"\n"
+"每个单独的包名称应该占用一个新行。包是从PyPI安装的（见：https://pypi.org/）。"
 
 #: mu/interface/dialogs.py:265
 msgid "Third Party Packages"
-msgstr ""
+msgstr "第三方包"
 
 #: mu/interface/dialogs.py:361
 msgid "Third Party Package Status"
-msgstr ""
+msgstr "第三方包状态"
 
 #: mu/interface/main.py:155
 msgid "Tidy"
-msgstr ""
+msgstr "整理"
 
 #: mu/interface/main.py:156
 msgid "Tidy up the layout of your code."
-msgstr ""
+msgstr "整理你的代码布局。"
 
 #: mu/interface/main.py:263
 msgid "Close file"
-msgstr ""
+msgstr "关闭文件"
 
 #: mu/interface/main.py:559
 msgid "Filesystem on "
-msgstr ""
+msgstr "文件系统位于"
 
 #: mu/interface/panes.py:548
 msgid "Files on your device:"
-msgstr ""
+msgstr "文件保存在此设备"
 
 #: mu/interface/panes.py:623
 msgid ""
@@ -17775,7 +17816,7 @@ msgstr ""
 
 #: mu/logic.py:1637
 msgid "Your code contains problems."
-msgstr ""
+msgstr "你的代码还有些问题。"
 
 #: mu/logic.py:1639
 msgid ""
@@ -17877,19 +17918,19 @@ msgstr ""
 
 #: mu/modes/api/esp.py:89
 msgid "machine.Pin.OUT"
-msgstr ""
+msgstr "machine.Pin.OUT"
 
 #: mu/modes/api/esp.py:90
 msgid "machine.Pin.IN"
-msgstr ""
+msgstr "machine.Pin.IN"
 
 #: mu/modes/api/esp.py:91
 msgid "machine.Pin.PULL_UP"
-msgstr ""
+msgstr "machine.Pin.PULL_UP"
 
 #: mu/modes/api/esp.py:92
 msgid "machine.Pin.PULL_DOWN"
-msgstr ""
+msgstr "machine.Pin.PULL_DOWN"
 
 #: mu/modes/api/esp.py:94
 msgid ""
@@ -17968,11 +18009,11 @@ msgstr ""
 
 #: mu/modes/api/esp.py:129
 msgid "network.WLAN.STA_IF"
-msgstr ""
+msgstr "network.WLAN.STA_IF"
 
 #: mu/modes/api/esp.py:130
 msgid "network.WLAN.AP_IF"
-msgstr ""
+msgstr "network.WLAN.AP_IF"
 
 #: mu/modes/api/esp.py:132
 msgid ""
@@ -23488,20 +23529,6 @@ msgid ""
 "to the app.cli object then they are wrapped with this function\n"
 "by default unless it’s disabled.\n"
 msgstr ""
-
-#: mu/modes/api/microbit.py:66
-msgid ""
-"microbit.sleep(time) \n"
-"Put micro:bit to sleep for some milliseconds (1 second = 1000 ms) of time.\n"
-"sleep(2000) gives micro:bit a 2 second nap.\n"
-"NB: If you use time.sleep(), times are in whole seconds not milliseconds,\n"
-"use time.sleep(2) to nap for 2 seconds, in that case."
-msgstr ""
-"microbit.sleep(time) \n"
-"让micro:bit睡眠几毫秒（1秒= 1000 ms）\n"
-"sleep(2000) 使micro:bit小睡2秒。\n"
-"注意：如果您使用time.sleep()，其时间以秒为单位，而不是毫秒，\n"
-"在这种情况下，请使用time.sleep(2) 让micro:bit小睡2秒。."
 
 #: mu/modes/api/pygamezero.py:94
 msgid ""
