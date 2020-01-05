@@ -2,8 +2,8 @@
 # Contributee:
 #    管宁川John <guan.ningchuan@gmail.com>
 #    Tairraos <xiaole.tao@gmail.com>
-#    leafdown <>
-#    Judy Zhu <>
+#    leafdown <leafdown@gmail.com>
+#    Judy Zhu <judy.zhu@gmail.com>
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
