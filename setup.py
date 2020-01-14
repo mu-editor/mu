@@ -21,15 +21,15 @@ with open(os.path.join(base_dir, "CHANGES.rst"), encoding="utf8") as f:
 
 
 install_requires = [
-    'PyQt5==5.12.1;"arm" not in platform_machine',
-    'QScintilla==2.11.1;"arm" not in platform_machine',
-    'PyQtChart==5.12;"arm" not in platform_machine',
+    'PyQt5==5.13.2;"arm" not in platform_machine',
+    'QScintilla==2.11.3;"arm" not in platform_machine',
+    'PyQtChart==5.13.1;"arm" not in platform_machine',
     # `flake8` is actually a testing/packaging dependency that, among other
     # packages, brings in `pycodestyle` and `pyflakes` which are runtime
     # dependencies. For the sake of "locality", it is being declared here,
     # though. Regarding these packages' versions, please refer to:
     # http://flake8.pycqa.org/en/latest/faq.html#why-does-flake8-use-ranges-for-its-dependencies
-    "flake8 >= 3.7.8",
+    "flake8 >= 3.7.9",
     "pycodestyle >= 2.5.0, < 2.6.0",
     "pyflakes >= 2.1.0, < 2.2.0",
     "pyserial==3.4",
@@ -38,8 +38,9 @@ install_requires = [
     "appdirs>=1.4.3",
     "semver>=2.8.0",
     "nudatus>=0.0.3",
-    'black>=18.9b0;python_version > "3.5"',
+    'black>=19.10b0;python_version > "3.5"',
     "Flask==1.0.2",
+    "python-dateutil==2.8.0",
 ]
 
 
