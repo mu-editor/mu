@@ -82,4 +82,4 @@ deploy:
   set_public: true
   folder: windows
   on:
-    branch: [master]
+    branch: [master, 1.0-mainline]
