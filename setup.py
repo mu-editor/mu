@@ -12,10 +12,10 @@ with open('CHANGES.rst') as f:
     changes = f.read()
 
 install_requires = ['pycodestyle==2.4.0', 'pyflakes==2.0.0',
-                    'pyserial==3.4', 'pyqt5==5.11.3', 'qscintilla==2.10.8',
+                    'pyserial==3.4', 'pyqt5==5.14.1', 'qscintilla==2.11.4',
                     'qtconsole==4.3.1', 'matplotlib==2.2.2',
-                    'pgzero==1.2', 'PyQtChart==5.11.3', 'appdirs>=1.4.3',
-                    'gpiozero>=1.4.1', 'guizero>=0.5.2',
+                    'pgzero==1.2', 'PyQtChart==5.14.0', 'appdirs>=1.4.3',
+                    'gpiozero>=1.4.1', 'guizero>=1.1.0',
                     'pigpio>=1.40.post1', 'Pillow>=5.2.0',
                     'requests>=2.19.1', 'semver>=2.8.0', 'nudatus>=0.0.3', ]
 
