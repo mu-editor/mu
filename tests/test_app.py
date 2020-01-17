@@ -77,6 +77,7 @@ def test_run():
 
     class Win(mock.MagicMock):
         load_theme = DumSig()
+        icon = "icon"
 
     window = Win()
 
@@ -102,7 +103,7 @@ def test_run():
         assert ed.call_count == 1
         assert len(ed.mock_calls) == 3
         assert win.call_count == 1
-        assert len(win.mock_calls) == 11
+        assert len(win.mock_calls) == 6
         assert ex.call_count == 1
         window.load_theme.emit('day')
         qa.assert_has_calls([mock.call().setStyleSheet(DAY_STYLE)])
