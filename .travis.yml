@@ -77,6 +77,13 @@ script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then du -sk dist/; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv dist/mu-editor.zip dist/mu-editor_$(date '+%Y-%m-%d_%H_%M')_${TRAVIS_BRANCH}_${TRAVIS_COMMIT:0:7}.zip; fi
 
+# Workaround for Ruby SSL failure when uploading. See: https://travis-ci.community/t/ruby-openssl-python-deployment-fails-on-osx-image/6753/10
+before_deploy:
+  - for lib in ssl crypto; do ln -s /usr/local/opt/openssl{@1.0,}/lib/lib${lib}.1.0.0.dylib; done
+  - rvm reinstall $(travis_internal_ruby) --disable-binary
+  - for lib in ssl crypto; do rm /usr/local/opt/openssl/lib/lib${lib}.1.0.0.dylib; done
+  - cat ~/.rvm/log/*_ruby-2.4.2/gemset.pristine-ruby-2.4.2.log
+
 # Deploy the build version in an S3 bucket
 deploy:
   provider: s3
