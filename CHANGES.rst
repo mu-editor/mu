@@ -1,6 +1,15 @@
 Release History
 ---------------
 
+1.0.3
+=====
+
+Bugfix.
+
+* Updated to the latest version of Qt to fix syntax highlighting issues in OSX.
+* Ensure CWD is set to the directory containing the script to be run in Python3
+  mode.
+
 1.0.2
 =====
 
