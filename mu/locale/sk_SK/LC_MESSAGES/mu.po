@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mu 1.1\n"
 "POT-Creation-Date: 2019-07-08 16:46+0200\n"
-"PO-Revision-Date: 2019-07-16 09:53+0200\n"
+"PO-Revision-Date: 2019-07-17 09:42+0200\n"
 "Last-Translator: Mirek Biňas <mirek@cnl.sk>\n"
 "Language-Team: Slovak\n"
 "Language: sk\n"
@@ -84,6 +84,11 @@ msgid ""
 "Each separate package name should be on a new line. Packages are installed from "
 "PyPI (see: https://pypi.org/)."
 msgstr ""
+"Balíky zobrazené nižšie bude možné importovať v režime Python 3. Odstránením "
+"balíka zo zoznamu odstránite jeho dostupnosť.\n"
+"\n"
+"Názov každého samostatného balíka by sa mal nachádzať na novom riadku. Balíky "
+"sú nainštalované z PyPI (pozri: https://pypi.org/)."
 
 #: mu/interface/dialogs.py:203 mu/interface/main.py:1047
 msgid "Mu Administration"
@@ -276,7 +281,7 @@ msgstr "Mu"
 
 #: mu/interface/main.py:1040
 msgid "Mu's current mode of behaviour."
-msgstr "Aktuálny režim správania editora Mu."
+msgstr "Aktuálny režim správania sa editora Mu."
 
 #: mu/interface/panes.py:351
 msgid "File already exists; overwrite it?"
@@ -424,7 +429,7 @@ msgstr ""
 
 #: mu/logic.py:93
 msgid "Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
-msgstr ""
+msgstr "Netrápte sa, ak to nefunguje. Poučte sa, opravte to a skúste znova! :-)"
 
 #: mu/logic.py:95
 msgid "Coding is collaboration."
@@ -479,11 +484,11 @@ msgstr ""
 
 #: mu/logic.py:109
 msgid "Beautiful is better than ugly."
-msgstr ""
+msgstr "Krásny je lepší ako škaredý."
 
 #: mu/logic.py:110
 msgid "Explicit is better than implicit."
-msgstr ""
+msgstr "Explicitný je lepší ako implicitný."
 
 #: mu/logic.py:111
 msgid "Simple is better than complex. Complex is better than complicated."
@@ -723,11 +728,11 @@ msgstr "Úžasné! Nula nájdených problémov."
 
 #: mu/logic.py:1105
 msgid "There is un-saved work, exiting the application will cause you to lose it."
-msgstr ""
+msgstr "Vaša práca nie je uložená. Ukončením aplikácie ju stratíte."
 
 #: mu/logic.py:1179
 msgid "Could not find MicroPython runtime."
-msgstr ""
+msgstr "Nepodarilo sa nájsť runtime pre MicroPython."
 
 #: mu/logic.py:1180
 msgid "The micro:bit runtime you specified ('{}') does not exist. Please try again."
@@ -794,7 +799,7 @@ msgstr ""
 
 #: mu/logic.py:1491
 msgid "Successfully cleaned the code. Use CTRL-Z to undo."
-msgstr ""
+msgstr "Kód bol úspešne vyčistený. Stlačte CTRL-Z pre vrátenie."
 
 #: mu/logic.py:1497
 msgid "Your code contains problems."
@@ -844,6 +849,13 @@ msgid ""
 "Finally, press the device's reset button and wait a few seconds before trying "
 "again."
 msgstr ""
+"Uistite sa prosím, že je zariadenie pripojené k tomuto počítaču.\n"
+"\n"
+"Predtým, ako bude fungovať REPL, musí mať zariadenie vypálený MicroPython (alebo "
+"CircuitPython).\n"
+"\n"
+"Nakoniec stlačte na zariadení tlačidlo reset, počkajte niekoľko sekúnd a skúste "
+"to znova."
 
 #: mu/modes/base.py:363
 msgid ""
@@ -920,7 +932,7 @@ msgstr "Pokračovať"
 
 #: mu/modes/debugger.py:58
 msgid "Continue to run your Python script."
-msgstr ""
+msgstr "Pokračovať vo vašom Python skripte."
 
 #: mu/modes/debugger.py:64
 msgid "Step Over"
@@ -932,19 +944,19 @@ msgstr ""
 
 #: mu/modes/debugger.py:71
 msgid "Step In"
-msgstr ""
+msgstr "Vstúpiť"
 
 #: mu/modes/debugger.py:72
 msgid "Step into a function."
-msgstr ""
+msgstr "Vstúpiť do funkcie."
 
 #: mu/modes/debugger.py:78
 msgid "Step Out"
-msgstr ""
+msgstr "Vystúpiť"
 
 #: mu/modes/debugger.py:79
 msgid "Step out of a function."
-msgstr ""
+msgstr "Vystúpiť z funkcie."
 
 #: mu/modes/debugger.py:153
 msgid "Your script has finished running."
@@ -1043,7 +1055,7 @@ msgstr ""
 
 #: mu/modes/esp.py:198
 msgid "Could not find an attached ESP8266/ESP32."
-msgstr ""
+msgstr "Nenašlo sa pripojené zariadenie ESP8266/ESP32."
 
 #: mu/modes/esp.py:199 mu/modes/microbit.py:527
 msgid ""
@@ -1055,6 +1067,12 @@ msgid ""
 "Finally, press the device's reset button and wait a few seconds before trying "
 "again."
 msgstr ""
+"Uistite sa prosím, že je zariadenie pripojené k počítaču.\n"
+"\n"
+"Aby súborový systém fungoval, musí mať zariadenie nahratý MicroPython.\n"
+"\n"
+"Nakoniec stlačte na zariadení tlačidlo reset a pred ďalším vyskúšaním počkajte "
+"niekoľko sekúnd."
 
 #: mu/modes/esp.py:222
 msgid "ESP board"
@@ -1110,7 +1128,7 @@ msgstr "Váš skript je príliš dlhý!"
 
 #: mu/modes/microbit.py:283
 msgid "Flashing \"{}\" onto the micro:bit."
-msgstr ""
+msgstr "Na micro:bit sa vypaľuje \"{}\"."
 
 #: mu/modes/microbit.py:285
 msgid " Runtime: {}"
@@ -1127,10 +1145,14 @@ msgid ""
 "\n"
 "https://codewith.mu/"
 msgstr ""
+"Vaše zariadenie je novšie ako táto verzia Mu. Aktualizujte prosím Mu na najnovšiu verziu, "
+"aby podporavala toto zariadenie.\n"
+"\n"
+"https://codewith.mu/"
 
 #: mu/modes/microbit.py:389 mu/modes/microbit.py:526
 msgid "Could not find an attached BBC micro:bit."
-msgstr ""
+msgstr "Nepodarilo sa nájsť pripojený BBC micro:bit."
 
 #: mu/modes/microbit.py:390
 msgid ""
@@ -1150,13 +1172,15 @@ msgstr ""
 
 #: mu/modes/microbit.py:448
 msgid "There was a problem flashing the micro:bit."
-msgstr ""
+msgstr "Počas vypaľovania na micro:bit sa vyskytol problém."
 
 #: mu/modes/microbit.py:449
 msgid ""
 "Please do not disconnect the device until flashing has completed. Please check "
 "the logs for more information."
 msgstr ""
+"Prosím neodpájajte zariadenie, pokiaľ nie je vypálenie ukončené. Ďalšie "
+"informácie nájdete v záznamníku."
 
 #: mu/modes/microbit.py:543
 msgid "micro:bit"
@@ -1176,7 +1200,7 @@ msgstr "Hrať"
 
 #: mu/modes/pygamezero.py:51 mu/modes/pygamezero.py:101
 msgid "Play your Pygame Zero game."
-msgstr ""
+msgstr "Zahrajte si vašu Pygame Zero hru."
 
 #: mu/modes/pygamezero.py:57 mu/modes/web.py:102
 msgid "Images"
