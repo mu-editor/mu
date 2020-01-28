@@ -11,7 +11,7 @@ Our continuous integration setup provides the following automation:
 * Creation of a stand-alone .app for Mac OSX for each commit on our master
   branch.
 
-However, such automation does make make a release. What follows is a check-list
+However, such automation does not make a release. What follows is a check-list
 of steps needed to cut a release.
 
 User Activity Checks
