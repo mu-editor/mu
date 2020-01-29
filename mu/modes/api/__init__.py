@@ -5,6 +5,7 @@ from .pi import PI_APIS
 from .shared import SHARED_APIS
 from .pygamezero import PYGAMEZERO_APIS
 from .esp import ESP_APIS
+from .studuinobit import STUDUINOBIT_APIS
 from .flask import FLASK_APIS
 
 __all__ = [

@@ -41,6 +41,7 @@ from mu.modes import (
     PyGameZeroMode,
     ESPMode,
     WebMode,
+    StuduinoBitMode,
 )
 from mu.debugger.runner import run as run_debugger
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
@@ -88,6 +89,7 @@ def setup_modes(editor, view):
         "esp": ESPMode(editor, view),
         "web": WebMode(editor, view),
         "debugger": DebugMode(editor, view),
+        "studuinobit": StuduinoBitMode(editor, view),
     }
 
     # Check if pgzero is available (without importing it)

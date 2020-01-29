@@ -9,6 +9,7 @@ You may:
 * rm - remove a named file on the device. Based on the Unix command.
 * put - copy a named local file onto the device a la equivalent FTP command.
 * get - copy a named file from the device to the local file system a la FTP.
+* tree - get the device folder structure.
 """
 from __future__ import print_function
 import ast
@@ -24,7 +25,7 @@ from serial import Serial
 PY2 = sys.version_info < (3,)
 
 
-__all__ = ["ls", "rm", "put", "get", "get_serial"]
+__all__ = ["ls", "rm", "put", "get", "get_serial", "tree"]
 
 
 #: The help text to be shown when requested.
@@ -36,6 +37,7 @@ You may use the following commands:
 'rm' - remove a named file on the device (based on the Unix command);
 'put' - copy a named local file onto the device just like the FTP command; and,
 'get' - copy a named file from the device to the local file system a la FTP.
+'tree' - get the device folder structure.
 
 For example, 'ufs ls' will list the files on a connected BBC micro:bit.
 """
@@ -119,6 +121,27 @@ def get_serial():
     return Serial(port, SERIAL_BAUD_RATE, timeout=1, parity="N")
 
 
+def send_cmd(commands, serial):
+    """
+    Separated RAW REPL ON / OFF processing from execute function to trace device
+    directory hierarchy.   
+    """
+    result = b""
+    for command in commands:
+        command_bytes = command.encode("utf-8")
+        for i in range(0, len(command_bytes), 32):
+            serial.write(command_bytes[i : min(i + 32, len(command_bytes))])
+            time.sleep(0.01)
+        serial.write(b"\x04")
+        response = serial.read_until(b"\x04>")  # Read until prompt.
+        out, err = response[2:-2].split(b"\x04", 1)  # Split stdout, stderr
+        result += out
+        if err:
+            return b"", err
+
+    return result, err
+
+
 def execute(commands, serial=None):
     """
     Sends the command to the connected micro:bit via serial and returns the
@@ -170,6 +193,48 @@ def clean_error(err):
         except Exception:
             return decoded
     return "There was an error."
+
+
+def seek(dirs, path, serial, flist):
+    """
+    Get device directory hierarchy.
+    """
+    dirs = ast.literal_eval(dirs.decode("utf-8"))
+    for f in dirs:
+        # kind = os.stat(path+'/'+f)[0]
+        command = ["import os", "print(os.stat('" + path + "/" + f + "'))"]
+        out, err = send_cmd(command, serial)
+        out = ast.literal_eval(out.decode("utf-8"))
+        kind = out[0]
+
+        if kind == 0x4000:  # dir
+            new_path = path + "/" + f
+
+            # tree(os.listdir(new_path), new_path)
+            command = ["import os", "print(os.listdir('" + new_path + "'))"]
+            out, err = send_cmd(command, serial)
+            seek(out, new_path, serial, flist)
+
+        if kind == 0x8000:
+            flist.append(path + "/" + f)
+
+
+def tree(serial=None):
+    """
+    Get device directory tree hierarchy.
+    """
+    raw_on(serial)
+
+    # Get root files
+    flist = []
+    commands = ["import os", "print(os.listdir('.'))"]
+    out, err = send_cmd(commands, serial)
+
+    seek(out, ".", serial, flist)
+
+    raw_off(serial)
+
+    return flist
 
 
 def ls(serial=None):

@@ -5,7 +5,12 @@ Tests for the BaseMode class.
 import os
 import mu
 import pytest
-from mu.modes.base import BaseMode, MicroPythonMode, FileManager
+from mu.modes.base import (
+    BaseMode,
+    MicroPythonMode,
+    FileManager,
+    StuduinoBitFileManager,
+)
 from unittest import mock
 
 
@@ -666,3 +671,94 @@ def test_FileManager_delete_fail():
     with mock.patch("mu.modes.base.microfs.rm", side_effect=Exception("boom")):
         fm.delete("foo.py")
     fm.on_delete_fail.emit.assert_called_once_with("foo.py")
+
+
+def test_StuduinoBitFileManager_on_start():
+    """
+    When a thread signals it has started, create a serial connection and then
+    tree the files.
+    """
+    fm = StuduinoBitFileManager("/dev/ttyUSB0")
+    fm.tree = mock.MagicMock()
+    with mock.patch("mu.modes.base.Serial") as mock_serial:
+        fm.on_start()
+        mock_serial.assert_called_once_with(
+            "/dev/ttyUSB0", 115200, timeout=1, parity="N"
+        )
+    fm.tree.assert_called_once_with()
+
+
+def test_StuduinoBitFileManager_on_start_fails():
+    """
+    When a thread signals it has started, but the serial connection cannot be
+    established, ensure that the on_tree_fail is emitted to signal Mu can't get
+    the tree of files from the board (because a connection cannot be
+    established).
+    """
+    fm = StuduinoBitFileManager("/dev/ttyUSB0")
+    fm.on_list_fail = mock.MagicMock()
+    mock_serial = mock.MagicMock(side_effect=Exception("BOOM!"))
+    with mock.patch("mu.modes.base.Serial", mock_serial):
+        fm.on_start()
+        mock_serial.assert_called_once_with(
+            "/dev/ttyUSB0", 115200, timeout=1, parity="N"
+        )
+    fm.on_list_fail.emit.assert_called_once_with()
+
+
+def test_StuduinoBitFileManager_put():
+    """
+    The on_put_file signal is emitted with the name of the effected file when
+    microfs.put completes successfully.
+    """
+    fm = StuduinoBitFileManager("/dev/ttyUSB0")
+    fm.serial = mock.MagicMock()
+    fm.on_put_file = mock.MagicMock()
+    mock_put = mock.MagicMock()
+    path = os.path.join("directory", "foo.py")
+    with mock.patch("mu.modes.base.microfs.put", mock_put):
+        fm.put(path, "distpath")
+    mock_put.assert_called_once_with(
+        path, target="distpath/foo.py", serial=fm.serial
+    )
+    fm.on_put_file.emit.assert_called_once_with("foo.py")
+
+
+def test_StuduinoBitFileManager_put_fail():
+    """
+    The on_put_fail signal is emitted when a problem is encountered.
+    """
+    fm = StuduinoBitFileManager("/dev/ttyUSB0")
+    fm.on_put_fail = mock.MagicMock()
+    with mock.patch(
+        "mu.modes.base.microfs.put", side_effect=Exception("boom")
+    ):
+        fm.put("foo.py", "distpath")
+    fm.on_put_fail.emit.assert_called_once_with("foo.py")
+
+
+def test_StuduinoBitFileManager_tree():
+    """
+    The on_tree_files signal is emitted with a tuple of files when
+    microfs.tree completes successfully.
+    """
+    fm = StuduinoBitFileManager("/dev/ttyUSB0")
+    fm.serial = mock.MagicMock()
+    fm.on_list_files = mock.MagicMock()
+    mock_tree = mock.MagicMock(return_value=["foo.py", "bar.py"])
+    with mock.patch("mu.modes.base.microfs.tree", mock_tree):
+        fm.tree()
+    fm.on_list_files.emit.assert_called_once_with(("foo.py", "bar.py"))
+
+
+def test_StuduinoFileManager_tree_fail():
+    """
+    The on_tree_fail signal is emitted when a problem is encountered.
+    """
+    fm = StuduinoBitFileManager("/dev/ttyUSB0")
+    fm.on_list_fail = mock.MagicMock()
+    with mock.patch(
+        "mu.modes.base.microfs.tree", side_effect=Exception("boom")
+    ):
+        fm.tree()
+    fm.on_list_fail.emit.assert_called_once_with()

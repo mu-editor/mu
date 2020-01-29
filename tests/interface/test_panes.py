@@ -2,9 +2,9 @@
 """
 Tests for the user interface elements of Mu.
 """
-from PyQt5.QtWidgets import QApplication, QMessageBox, QLabel
+from PyQt5.QtWidgets import QApplication, QMessageBox, QLabel, QTreeWidgetItem
 from PyQt5.QtChart import QChart, QLineSeries, QValueAxis
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import QTextCursor
 from unittest import mock
 import sys
@@ -14,11 +14,25 @@ import mu
 import platform
 from collections import deque
 import mu.interface.panes
+import pytest
+
 
 # Required so the QWidget tests don't abort with the message:
 # "QWidget: Must construct a QApplication before a QWidget"
 # The QApplication need only be instantiated once.
 app = QApplication([])
+
+
+@pytest.fixture
+def drop_event():
+    drop_event = mock.MagicMock()
+    source = mu.interface.panes.LocalFileList("pc_home_path")
+    mock_item = mock.MagicMock()
+    mock_item.text = mock.MagicMock(return_value="pc_foo.py")
+    source.currentItem = mock.MagicMock(return_value=mock_item)
+    drop_event.source = mock.MagicMock(return_value=source)
+    drop_event.pos.return_value = QPoint(0, 0)
+    return drop_event
 
 
 def test_PANE_ZOOM_SIZES():
@@ -525,7 +539,7 @@ def test_MuFileList_show_confirm_overwrite_dialog():
         assert mfl.show_confirm_overwrite_dialog()
     msg = "File already exists; overwrite it?"
     mock_qmb.setText.assert_called_once_with(msg)
-    mock_qmb.setWindowTitle.assert_called_once_with("File already exists")
+    mock_qmb.setWindowTitle.assert_called_once_with(_("File already exists"))
     mock_qmb.setIcon.assert_called_once_with(QMessageBox.Information)
 
 
@@ -2482,3 +2496,805 @@ def test_PlotterPane_set_theme():
     pp.chart.setTheme.reset_mock()
     pp.set_theme("contrast")
     pp.chart.setTheme.assert_called_once_with(QChart.ChartThemeHighContrast)
+
+
+def test_MuFileTree_show_confirm_overwrite_dialog():
+    """
+    Ensure the user is notified of an existing file.
+    """
+    mfl = mu.interface.panes.MuFileTree()
+    mock_qmb = mock.MagicMock()
+    mock_qmb.setIcon = mock.MagicMock(return_value=None)
+    mock_qmb.setText = mock.MagicMock(return_value=None)
+    mock_qmb.setWindowTitle = mock.MagicMock(return_value=None)
+    mock_qmb.exec_ = mock.MagicMock(return_value=QMessageBox.Ok)
+    mock_qmb_class = mock.MagicMock(return_value=mock_qmb)
+    mock_qmb_class.Ok = QMessageBox.Ok
+    mock_qmb_class.Information = QMessageBox.Information
+    with mock.patch("mu.interface.panes.QMessageBox", mock_qmb_class):
+        assert mfl.show_confirm_overwrite_dialog()
+    msg = _("File already exists; overwrite it?")
+    mock_qmb.setText.assert_called_once_with(msg)
+    mock_qmb.setWindowTitle.assert_called_once_with(_("File already exists"))
+    mock_qmb.setIcon.assert_called_once_with(QMessageBox.Information)
+
+
+def test_MicroPythonDeviceFileTree_init():
+    """
+    Check the widget references the user's home and allows drag and drop.
+    """
+    mfs = mu.interface.panes.MicroPythonDeviceFileTree("home/path")
+    assert mfs.home == "home/path"
+    assert mfs.dragDropMode() == mfs.DragDrop
+
+
+def test_MicroPythonDeviceFileTree_dropEvent_no_target(drop_event):
+    # create object in MicroPythonDeviceFileTree
+    mfs = mu.interface.panes.MicroPythonDeviceFileTree("pc_home_path")
+    mfs.itemAt = mock.MagicMock(return_value=None)
+    mfs.show_confirm_overwrite_dialog = mock.MagicMock(return_value=False)
+    mfs.findItems = mock.MagicMock(return_value=False)
+    # create result check
+    msg_emit = mock.MagicMock()
+    mfs.set_message = mock.MagicMock(return_value=msg_emit)
+    put_emit = mock.MagicMock()
+    mfs.put = mock.MagicMock(return_value=put_emit)
+    # go
+    mfs.dropEvent(drop_event)
+    # check result
+    fn = os.path.join("pc_home_path", "pc_foo.py")
+    msg = _("Copying '" + fn + "' to device.")
+    assert mfs.findItems.call_count == 1
+    assert mfs.show_confirm_overwrite_dialog.call_count == 0
+    mfs.set_message.emit.assert_called_once_with(msg)
+    mfs.put.emit.assert_called_once_with(fn, "")
+
+
+def test_MicroPythonDeviceFileTree_dropEvent_target_has_child(drop_event):
+    # create object in MicroPythonDeviceFileTree
+    mfs = mu.interface.panes.MicroPythonDeviceFileTree("pc_home_path")
+    target_item = mock.MagicMock()
+    target_item.childCount.return_value = 1
+    target_item.text = mock.MagicMock(return_value="bar")
+    child_item = mock.MagicMock()
+    child_item.text.return_value = "dev_foo.py"
+    target_item.child = mock.MagicMock(return_value=child_item)
+    target_item.parent = mock.MagicMock(return_value=None)
+    mfs.itemAt = mock.MagicMock(return_value=target_item)
+    mfs.show_confirm_overwrite_dialog = mock.MagicMock(return_value=False)
+    mfs.findItems = mock.MagicMock(return_value=False)
+    # create result check
+    msg_emit = mock.MagicMock()
+    mfs.set_message = mock.MagicMock(return_value=msg_emit)
+    put_emit = mock.MagicMock()
+    mfs.put = mock.MagicMock(return_value=put_emit)
+    # go
+    mfs.dropEvent(drop_event)
+    # check result
+    fn = os.path.join("pc_home_path", "pc_foo.py")
+    msg = _("Copying '" + fn + "' to device.")
+    assert mfs.findItems.call_count == 0
+    assert mfs.show_confirm_overwrite_dialog.call_count == 0
+    mfs.set_message.emit.assert_called_once_with(msg)
+    mfs.put.emit.assert_called_once_with(fn, "bar")
+
+
+def test_MicroPythonDeviceFileTree_dropEvent_target_has_paraent(drop_event):
+    # create object in MicroPythonDeviceFileTree
+    mfs = mu.interface.panes.MicroPythonDeviceFileTree("pc_home_path")
+    target_item = mock.MagicMock()
+    target_item.childCount.return_value = 0
+    target_item.text.return_value = "dev_foo.py"
+    p_item = mock.MagicMock()
+    p_item.text = mock.MagicMock(return_value="bar")
+    p_item.parent.return_value = None
+    target_item.parent = mock.MagicMock(return_value=p_item)
+    mfs.itemAt = mock.MagicMock(return_value=target_item)
+    mfs.show_confirm_overwrite_dialog = mock.MagicMock(return_value=False)
+    mfs.findItems = mock.MagicMock(return_value=False)
+    # create result check
+    msg_emit = mock.MagicMock()
+    mfs.set_message = mock.MagicMock(return_value=msg_emit)
+    put_emit = mock.MagicMock()
+    mfs.put = mock.MagicMock(return_value=put_emit)
+    # go
+    mfs.dropEvent(drop_event)
+    # check result
+    fn = os.path.join("pc_home_path", "pc_foo.py")
+    msg = _("Copying '" + fn + "' to device.")
+    assert mfs.findItems.call_count == 0
+    assert mfs.show_confirm_overwrite_dialog.call_count == 0
+    mfs.set_message.emit.assert_called_once_with(msg)
+    mfs.put.emit.assert_called_once_with(fn, "bar")
+
+
+def test_MicroPythonDeviceFileTree_dropEvent_rewrite(drop_event):
+    # create object in MicroPythonDeviceFileTree
+    mfs = mu.interface.panes.MicroPythonDeviceFileTree("pc_home_path")
+    target_item = mock.MagicMock()
+    target_item.childCount.return_value = 1
+    target_item.text = mock.MagicMock(return_value="bar")
+    child_item = mock.MagicMock()
+    child_item.text.return_value = "pc_foo.py"
+    target_item.child = mock.MagicMock(return_value=child_item)
+    target_item.parent = mock.MagicMock(return_value=None)
+    mfs.itemAt = mock.MagicMock(return_value=target_item)
+    mfs.show_confirm_overwrite_dialog = mock.MagicMock(return_value=True)
+    mfs.findItems = mock.MagicMock(return_value=False)
+    # create result check
+    msg_emit = mock.MagicMock()
+    mfs.set_message = mock.MagicMock(return_value=msg_emit)
+    put_emit = mock.MagicMock()
+    mfs.put = mock.MagicMock(return_value=put_emit)
+    # go
+    mfs.dropEvent(drop_event)
+    # check result
+    assert mfs.findItems.call_count == 0
+    assert mfs.show_confirm_overwrite_dialog.call_count == 1
+    fn = os.path.join("pc_home_path", "pc_foo.py")
+    msg = _("Copying '" + fn + "' to device.")
+    mfs.set_message.emit.assert_called_once_with(msg)
+    mfs.put.emit.assert_called_once_with(fn, "bar")
+
+
+def test_MicroPythonDeviceFileTree_dropEvent_cancel(drop_event):
+    # create object in MicroPythonDeviceFileTree
+    mfs = mu.interface.panes.MicroPythonDeviceFileTree("pc_home_path")
+    mfs.itemAt = mock.MagicMock(return_value=None)
+    mfs.show_confirm_overwrite_dialog = mock.MagicMock(return_value=False)
+    mfs.findItems = mock.MagicMock(return_value=True)
+    # create result check
+    msg_emit = mock.MagicMock()
+    mfs.set_message = mock.MagicMock(return_value=msg_emit)
+    put_emit = mock.MagicMock()
+    mfs.put = mock.MagicMock(return_value=put_emit)
+    # go
+    mfs.dropEvent(drop_event)
+    # check result
+    assert mfs.findItems.call_count == 1
+    assert mfs.show_confirm_overwrite_dialog.call_count == 1
+    mfs.set_message.emit.call_count = 0
+    mfs.put.emit.call_count = 0
+
+
+def test_MicroPythonDeviceFileTree_dropEvent_wrong_source():
+    """
+    Ensure that only drop events whose origins are LocalFileList objects are
+    handled.
+    """
+    mock_event = mock.MagicMock()
+    source = mock.MagicMock()
+    mock_event.source.return_value = source
+    mfs = mu.interface.panes.MicroPythonDeviceFileTree("homepath")
+    mfs.findItems = mock.MagicMock()
+    mfs.dropEvent(mock_event)
+    assert mfs.findItems.call_count == 0
+
+
+def test_MicroPythonDeviceFileTree_on_put():
+    """
+    A message and list_files signal should be emitted.
+    """
+    mfs = mu.interface.panes.MicroPythonDeviceFileTree("homepath")
+    mfs.set_message = mock.MagicMock()
+    mfs.list_files = mock.MagicMock()
+    mfs.on_put("my_file.py")
+    mfs.list_files.emit.assert_called_once_with()
+
+
+def test_MicroPythonDeviceFileTree_contextMenuEvent():
+    """
+    Ensure that the menu displayed when a file on the micro:bit is
+    right-clicked works as expected when activated.
+    """
+    mock_menu = mock.MagicMock()
+    mock_action = mock.MagicMock()
+    mock_menu.addAction.return_value = mock_action
+    mock_menu.exec_.return_value = mock_action
+    mfs = mu.interface.panes.MicroPythonDeviceFileTree("homepath")
+    mock_current = mock.MagicMock()
+    mock_current.text.return_value = "foo.py"
+    mock_current.childCount.return_value = 0
+    mock_current.parent.return_value = None
+    mfs.currentItem = mock.MagicMock(return_value=mock_current)
+    mfs.disable = mock.MagicMock()
+    mfs.set_message = mock.MagicMock()
+    mfs.delete = mock.MagicMock()
+    mfs.mapToGlobal = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    with mock.patch("mu.interface.panes.QMenu", return_value=mock_menu):
+        mfs.contextMenuEvent(mock_event)
+    mfs.disable.emit.assert_called_once_with()
+    assert mfs.set_message.emit.call_count == 1
+    mfs.delete.emit.assert_called_once_with("/foo.py")
+
+
+def test_MicroPythonDeviceFileTree_contextMenuEvent_has_child():
+    """
+    Ensure that the menu displayed when a file on the micro:bit is
+    right-clicked works as expected when activated.
+    """
+    mock_menu = mock.MagicMock()
+    mock_action = mock.MagicMock()
+    mock_menu.addAction.return_value = mock_action
+    mock_menu.exec_.return_value = mock_action
+    mfs = mu.interface.panes.MicroPythonDeviceFileTree("homepath")
+    mock_current = mock.MagicMock()
+    mock_current.text.return_value = "foo"
+    mock_current.childCount.return_value = 1
+    mock_current.parent.return_value = None
+    mfs.currentItem = mock.MagicMock(return_value=mock_current)
+    # create result check
+    mfs.disable = mock.MagicMock()
+    mfs.set_message = mock.MagicMock()
+    mfs.delete = mock.MagicMock()
+    mfs.mapToGlobal = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    # go
+    with mock.patch("mu.interface.panes.QMenu", return_value=mock_menu):
+        mfs.contextMenuEvent(mock_event)
+    # result check
+    assert mfs.disable.emit.call_count == 0
+    assert mfs.delete.emit.call_count == 0
+    mfs.set_message.emit.assert_called_once_with(_("Can't delete folder."))
+
+
+def test_MicroPythonDeviceFileTree_contextMenuEvent_has_parent():
+    """
+    Ensure that the menu displayed when a file on the micro:bit is
+    right-clicked works as expected when activated.
+    """
+    mock_menu = mock.MagicMock()
+    mock_action = mock.MagicMock()
+    mock_menu.addAction.return_value = mock_action
+    mock_menu.exec_.return_value = mock_action
+    mfs = mu.interface.panes.MicroPythonDeviceFileTree("homepath")
+    mock_current = mock.MagicMock()
+    mock_current.text = mock.MagicMock(return_value="foo.py")
+    mock_current.childCount.return_value = 0
+    p_item = mock.MagicMock()
+    p_item.text = mock.MagicMock(return_value="bar")
+    p_item.parent.return_value = None
+    mock_current.parent = mock.MagicMock(return_value=p_item)
+    mfs.currentItem = mock.MagicMock(return_value=mock_current)
+    # create result check
+    mfs.disable = mock.MagicMock()
+    mfs.set_message = mock.MagicMock()
+    mfs.delete = mock.MagicMock()
+    mfs.mapToGlobal = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    # go
+    with mock.patch("mu.interface.panes.QMenu", return_value=mock_menu):
+        mfs.contextMenuEvent(mock_event)
+    # result check
+    mfs.disable.emit.assert_called_once_with()
+    assert mfs.set_message.emit.call_count == 1
+    mfs.delete.emit.assert_called_once_with("bar/foo.py")
+
+
+def test_MicroPythonDeviceFileTree_on_delete():
+    """
+    On delete should emit a message and list_files signal.
+    """
+    mfs = mu.interface.panes.MicroPythonDeviceFileTree("homepath")
+    mfs.set_message = mock.MagicMock()
+    mfs.list_files = mock.MagicMock()
+    mfs.on_delete("my_file.py")
+    mfs.list_files.emit.assert_called_once_with()
+
+
+def test_StuduinoBitFileSystemPane_init():
+    """
+    Check things are set up as expected.
+    """
+    home = "homepath"
+    test_studuinobit_fs = mu.interface.panes.MicroPythonDeviceFileTree(home)
+    test_studuinobit_fs.disable = mock.MagicMock()
+    test_studuinobit_fs.set_message = mock.MagicMock()
+    test_local_fs = mu.interface.panes.StuduinoBitLocalFileList(home)
+    test_local_fs.disable = mock.MagicMock()
+    test_local_fs.set_message = mock.MagicMock()
+    mock_mfl = mock.MagicMock(return_value=test_studuinobit_fs)
+    mock_lfl = mock.MagicMock(return_value=test_local_fs)
+    with mock.patch(
+        "mu.interface.panes.MicroPythonDeviceFileTree", mock_mfl
+    ), mock.patch("mu.interface.panes.StuduinoBitLocalFileList", mock_lfl):
+        fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+        assert isinstance(fsp.studuinobit_label, QLabel)
+        assert isinstance(fsp.local_label, QLabel)
+        assert fsp.studuinobit_fs == test_studuinobit_fs
+        assert fsp.local_fs == test_local_fs
+        test_studuinobit_fs.disable.connect.assert_called_once_with(
+            fsp.disable
+        )
+        test_studuinobit_fs.set_message.connect.assert_called_once_with(
+            fsp.show_message
+        )
+        test_local_fs.disable.connect.assert_called_once_with(fsp.disable)
+        test_local_fs.set_message.connect.assert_called_once_with(
+            fsp.show_message
+        )
+
+
+def test_StuduinoBitFileSystemPane_disable():
+    """
+    The child list widgets are disabled correctly.
+    """
+    fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+    fsp.studuinobit_fs = mock.MagicMock()
+    fsp.local_fs = mock.MagicMock()
+    fsp.disable()
+    fsp.studuinobit_fs.setDisabled.assert_called_once_with(True)
+    fsp.local_fs.setDisabled.assert_called_once_with(True)
+    fsp.studuinobit_fs.setAcceptDrops.assert_called_once_with(False)
+    fsp.local_fs.setAcceptDrops.assert_called_once_with(False)
+
+
+def test_StuduinoBitFileSystemPane_enable():
+    """
+    The child list widgets are enabled correctly.
+    """
+    fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+    fsp.studuinobit_fs = mock.MagicMock()
+    fsp.local_fs = mock.MagicMock()
+    fsp.enable()
+    fsp.studuinobit_fs.setDisabled.assert_called_once_with(False)
+    fsp.local_fs.setDisabled.assert_called_once_with(False)
+    fsp.studuinobit_fs.setAcceptDrops.assert_called_once_with(True)
+    fsp.local_fs.setAcceptDrops.assert_called_once_with(True)
+
+
+def test_StuduinoBitFileSystemPane_set_theme():
+    """
+    Setting theme doesn't error
+    """
+    fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+    fsp.set_theme("test")
+
+
+def test_StuduinoBitFileSystemPane_show_message():
+    """
+    Ensure the expected message signal is emitted.
+    """
+    fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+    fsp.set_message = mock.MagicMock()
+    fsp.show_message("Hello")
+    fsp.set_message.emit.assert_called_once_with("Hello")
+
+
+def test_StuduinoBitFileSystemPane_show_warning():
+    """
+    Ensure the expected warning signal is emitted.
+    """
+    fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+    fsp.set_warning = mock.MagicMock()
+    fsp.show_warning("Hello")
+    fsp.set_warning.emit.assert_called_once_with("Hello")
+
+
+def test_StuduinoBitFileSystemPane_on_tree():
+    """
+    When lists of files have been obtained from the micro:bit and local
+    filesystem, make sure they're properly processed by the on_tree event
+    handler.
+    """
+    fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+    studuinobit_files = [
+        "./boot.py",
+        "./lib/pyatcrobo2/body.py",
+        "./lib/pyatcrobo2/const.py",
+    ]
+    fsp.studuinobit_fs = mock.MagicMock()
+    fsp.local_fs = mock.MagicMock()
+    fsp.enable = mock.MagicMock()
+    local_files = ["qux.py", "baz.py"]
+    mock_listdir = mock.MagicMock(return_value=local_files)
+    mock_isfile = mock.MagicMock(return_value=True)
+    with mock.patch("mu.interface.panes.os.listdir", mock_listdir), mock.patch(
+        "mu.interface.panes.os.path.isfile", mock_isfile
+    ):
+        fsp.on_tree(studuinobit_files)
+    fsp.studuinobit_fs.clear.assert_called_once_with()
+    fsp.local_fs.clear.assert_called_once_with()
+    assert fsp.studuinobit_fs.addTopLevelItems.call_count == 1
+    assert fsp.local_fs.addItem.call_count == 2
+    fsp.enable.assert_called_once_with()
+
+
+def test_StuduinoBitFileSystemPane_on_tree_fail():
+    """
+    A warning is emitted and the widget disabled if listing files fails.
+    """
+    fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+    fsp.show_warning = mock.MagicMock()
+    fsp.disable = mock.MagicMock()
+    fsp.on_tree_fail()
+    assert fsp.show_warning.call_count == 1
+    fsp.disable.assert_called_once_with()
+
+
+def test_StuduinoBitFileSystemPane_on_put_fail():
+    """
+    A warning is emitted if putting files on the micro:bit fails.
+    """
+    fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+    fsp.show_warning = mock.MagicMock()
+    fsp.on_put_fail("foo.py")
+    assert fsp.show_warning.call_count == 1
+
+
+def test_StuduinoBitFileSystemPane_on_delete_fail():
+    """
+    A warning is emitted if deleting files on the micro:bit fails.
+    """
+    fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+    fsp.show_warning = mock.MagicMock()
+    fsp.on_delete_fail("foo.py")
+    assert fsp.show_warning.call_count == 1
+
+
+def test_StuduinoBitFileSystemPane_on_get_fail():
+    """
+    A warning is emitted if getting files from the micro:bit fails.
+    """
+    fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+    fsp.show_warning = mock.MagicMock()
+    fsp.on_get_fail("foo.py")
+    assert fsp.show_warning.call_count == 1
+
+
+def test_StuduinoBitFileSystemPane_set_font_size():
+    """
+    Ensure the right size is set as the point size and the text based UI child
+    widgets are updated.
+    """
+    fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+    fsp.font = mock.MagicMock()
+    fsp.studuinobit_label = mock.MagicMock()
+    fsp.local_label = mock.MagicMock()
+    fsp.studuinobit_fs = mock.MagicMock()
+    fsp.local_fs = mock.MagicMock()
+    fsp.set_font_size(22)
+    fsp.font.setPointSize.assert_called_once_with(22)
+    fsp.studuinobit_label.setFont.assert_called_once_with(fsp.font)
+    fsp.local_label.setFont.assert_called_once_with(fsp.font)
+    fsp.studuinobit_fs.setFont.assert_called_once_with(fsp.font)
+    fsp.local_fs.setFont.assert_called_once_with(fsp.font)
+
+
+def test_StuduinoBitFileSystemPane_open_file():
+    """
+    FileSystemPane should propogate the open_file signal
+    """
+    fsp = mu.interface.panes.StuduinoBitFileSystemPane("homepath")
+    fsp.open_file = mock.MagicMock()
+    mock_open_emit = mock.MagicMock()
+    fsp.open_file.emit = mock_open_emit
+    fsp.local_fs.open_file.emit("test")
+    mock_open_emit.assert_called_once_with("test")
+
+
+def test_StuduinoBitLocalFileList_dropEvent_Folder():
+    """
+    Ensure a valid drop event is handled as expected.
+    """
+    mock_event = mock.MagicMock()
+    source = mu.interface.panes.MicroPythonDeviceFileTree("homepath")
+    source.currentItem = mock.MagicMock()
+    parent = QTreeWidgetItem(None, ["foo"])
+    entry = QTreeWidgetItem(None, ["bar"])
+    child = QTreeWidgetItem(None, ["baz.py"])
+    entry.addChild(child)
+    parent.addChild(entry)
+    source.currentItem.return_value = entry
+    mock_event.source.return_value = source
+
+    lfs = mu.interface.panes.StuduinoBitLocalFileList("homepath")
+    lfs.disable = mock.MagicMock()
+    lfs.set_message = mock.MagicMock()
+    lfs.get = mock.MagicMock()
+    # Test
+    lfs.dropEvent(mock_event)
+    assert lfs.set_message.emit.call_count == 1
+
+
+def test_StuduinoBitLocalFileList_dropEvent_File_Have_Parent():
+    """
+    Ensure a valid drop event is handled as expected.
+    """
+    mock_event = mock.MagicMock()
+    source = mu.interface.panes.MicroPythonDeviceFileTree("homepath")
+    source.currentItem = mock.MagicMock()
+    parent = QTreeWidgetItem(None, ["foo"])
+    entry = QTreeWidgetItem(None, ["bar.py"])
+    parent.addChild(entry)
+    source.currentItem.return_value = entry
+    mock_event.source.return_value = source
+
+    lfs = mu.interface.panes.StuduinoBitLocalFileList("homepath")
+    lfs.disable = mock.MagicMock()
+    lfs.set_message = mock.MagicMock()
+    lfs.get = mock.MagicMock()
+    # Test
+    lfs.dropEvent(mock_event)
+    fn = os.path.join("homepath", "bar.py")
+    lfs.disable.emit.assert_called_once_with()
+    assert lfs.set_message.emit.call_count == 1
+    lfs.get.emit.assert_called_once_with("foo/bar.py", fn)
+
+
+def test_StuduinoBitLocalFileList_dropEvent_wrong_source():
+    """
+    Ensure that only drop events whose origins are LocalFileList objects are
+    handled.
+    """
+    mock_event = mock.MagicMock()
+    source = mock.MagicMock()
+    mock_event.source.return_value = source
+    mfs = mu.interface.panes.MicroPythonDeviceFileList("homepath")
+    mfs.findItems = mock.MagicMock()
+    mfs.dropEvent(mock_event)
+    assert mfs.findItems.call_count == 0
+
+
+def test_StuduinoBitREPLPane_process_bytes():
+    """
+    Ensure bytes coming from the device to the application are processed as
+    expected. Backspace is enacted, carriage-return is ignored, newline moves
+    the cursor position to the end of the line before enacted and all others
+    are simply inserted.
+    """
+    mock_serial = mock.MagicMock()
+    mock_tc = mock.MagicMock()
+    mock_tc.movePosition = mock.MagicMock(
+        side_effect=[True, False, True, True]
+    )
+    mock_tc.deleteChar = mock.MagicMock(return_value=None)
+    rp = mu.interface.panes.StuduinoBitREPLPane(mock_serial)
+    rp.textCursor = mock.MagicMock(return_value=mock_tc)
+    rp.setTextCursor = mock.MagicMock(return_value=None)
+    rp.insertPlainText = mock.MagicMock(return_value=None)
+    rp.ensureCursorVisible = mock.MagicMock(return_value=None)
+    bs = bytes([8, 13, 10, 65])  # \b, \r, \n, 'A'
+    rp.process_bytes(bs)
+    rp.textCursor.assert_called_once_with()
+    assert mock_tc.movePosition.call_count == 4
+    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Left
+    assert mock_tc.movePosition.call_args_list[3][0][0] == QTextCursor.End
+    assert rp.setTextCursor.call_count == 3
+    assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[1][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[2][0][0] == mock_tc
+    assert rp.insertPlainText.call_count == 2
+    assert rp.insertPlainText.call_args_list[0][0][0] == chr(10)
+    assert rp.insertPlainText.call_args_list[1][0][0] == chr(65)
+    rp.ensureCursorVisible.assert_called_once_with()
+
+
+def test_StuduinoBitREPLPane_process_bytes_VT100():
+    """
+    Ensure bytes coming from the device to the application are processed as
+    expected. In this case, make sure VT100 related codes are handled properly.
+    """
+    mock_serial = mock.MagicMock()
+    mock_tc = mock.MagicMock()
+    mock_tc.movePosition = mock.MagicMock(return_value=False)
+    mock_tc.removeSelectedText = mock.MagicMock()
+    mock_tc.deleteChar = mock.MagicMock(return_value=None)
+    rp = mu.interface.panes.StuduinoBitREPLPane(mock_serial)
+    rp.textCursor = mock.MagicMock(return_value=mock_tc)
+    rp.setTextCursor = mock.MagicMock(return_value=None)
+    rp.insertPlainText = mock.MagicMock(return_value=None)
+    rp.ensureCursorVisible = mock.MagicMock(return_value=None)
+    bs = bytes(
+        [
+            27,
+            91,
+            ord("1"),
+            ord("A"),  # <Esc>[1A
+            27,
+            91,
+            ord("1"),
+            ord("B"),  # <Esc>[1B
+            27,
+            91,
+            ord("1"),
+            ord("C"),  # <Esc>[1C
+            27,
+            91,
+            ord("1"),
+            ord("D"),  # <Esc>[1D
+            27,
+            91,
+            ord("K"),  # <Esc>[K
+        ]
+    )
+    rp.process_bytes(bs)
+    rp.textCursor.assert_called_once_with()
+    assert mock_tc.movePosition.call_count == 6
+    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Up
+    assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[3][0][0] == QTextCursor.Right
+    assert mock_tc.movePosition.call_args_list[4][0][0] == QTextCursor.Left
+    assert (
+        mock_tc.movePosition.call_args_list[5][0][0] == QTextCursor.EndOfLine
+    )
+    assert (
+        mock_tc.movePosition.call_args_list[5][1]["mode"]
+        == QTextCursor.KeepAnchor
+    )
+    assert rp.setTextCursor.call_count == 5
+    assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[1][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[2][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[3][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[4][0][0] == mock_tc
+    mock_tc.removeSelectedText.assert_called_once_with()
+    rp.ensureCursorVisible.assert_called_once_with()
+
+
+def test_StuduinoBitREPLPane_process_bytes_UTF8():
+    """
+    Ensure bytes coming from the device to the application are processed as
+    expected. In this case, make sure UTF8 related codes are handled properly.
+    """
+    mock_serial = mock.MagicMock()
+    mock_tc = mock.MagicMock()
+    mock_tc.movePosition = mock.MagicMock(return_value=False)
+    mock_tc.removeSelectedText = mock.MagicMock()
+    mock_tc.deleteChar = mock.MagicMock(return_value=None)
+    rp = mu.interface.panes.StuduinoBitREPLPane(mock_serial)
+    rp.textCursor = mock.MagicMock(return_value=mock_tc)
+    rp.setTextCursor = mock.MagicMock(return_value=None)
+    rp.insertPlainText = mock.MagicMock(return_value=None)
+    rp.ensureCursorVisible = mock.MagicMock(return_value=None)
+    bs = bytes(
+        [0xE0, 0xA0, 0x80, 0xEF, 0xBF, 0xBF]  # min(U+0800)  # max(U+FFFF)
+    )
+    rp.process_bytes(bs)
+    rp.textCursor.assert_called_once_with()
+    assert mock_tc.movePosition.call_count == 1
+    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
+    assert rp.setTextCursor.call_count == 2
+    assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
+    assert rp.setTextCursor.call_args_list[1][0][0] == mock_tc
+    rp.ensureCursorVisible.assert_called_once_with()
+
+
+def test_StuduinoBitREPLPane_process_bytes_UTF8_Error():
+    """
+    Ensure bytes coming from the device to the application are processed as
+    expected. In this case, make sure UTF8 related codes are handled properly.
+    """
+    mock_serial = mock.MagicMock()
+    mock_tc = mock.MagicMock()
+    mock_tc.movePosition = mock.MagicMock(return_value=False)
+    mock_tc.removeSelectedText = mock.MagicMock()
+    mock_tc.deleteChar = mock.MagicMock(return_value=None)
+    rp = mu.interface.panes.StuduinoBitREPLPane(mock_serial)
+    rp.textCursor = mock.MagicMock(return_value=mock_tc)
+    rp.setTextCursor = mock.MagicMock(return_value=None)
+    rp.insertPlainText = mock.MagicMock(return_value=None)
+    rp.ensureCursorVisible = mock.MagicMock(return_value=None)
+    bs = bytes([0xEF, 0xBF, 0xC0])  # over max(U+FFFF)
+    rp.process_bytes(bs)
+    rp.textCursor.assert_called_once_with()
+    assert mock_tc.movePosition.call_count == 1
+    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
+    assert rp.setTextCursor.call_count == 1
+    assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
+    rp.ensureCursorVisible.assert_called_once_with()
+
+
+def test_StuduinoBitREPLPane_process_bytes_Div_ESC_CSI():
+    """
+    Ensure bytes coming from the device to the application are processed as
+    expected. In this case, make sure UTF8 related codes are handled properly.
+    """
+    mock_serial = mock.MagicMock()
+    mock_tc = mock.MagicMock()
+    mock_tc.movePosition = mock.MagicMock(return_value=False)
+    mock_tc.removeSelectedText = mock.MagicMock()
+    mock_tc.deleteChar = mock.MagicMock(return_value=None)
+    rp = mu.interface.panes.StuduinoBitREPLPane(mock_serial)
+    rp.textCursor = mock.MagicMock(return_value=mock_tc)
+    rp.setTextCursor = mock.MagicMock(return_value=None)
+    rp.insertPlainText = mock.MagicMock(return_value=None)
+    rp.ensureCursorVisible = mock.MagicMock(return_value=None)
+    bs = bytes([27])  # <Esc>[1A
+    rp.process_bytes(bs)
+
+    bs = bytes([91])  # <Esc>[1A
+    rp.process_bytes(bs)
+
+    bs = bytes([ord("1")])  # <Esc>[1A
+    rp.process_bytes(bs)
+
+    bs = bytes([ord("A")])  # <Esc>[1A
+    rp.process_bytes(bs)
+
+    # rp.textCursor.assert_called_once_with()
+    assert mock_tc.movePosition.call_count == 5
+    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[3][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[4][0][0] == QTextCursor.Up
+    assert rp.setTextCursor.call_count == 1
+    assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
+    rp.ensureCursorVisible.assert_called_once_with()
+
+
+def test_StuduinoBitREPLPane_process_bytes_SGL():
+    """
+    Ensure bytes coming from the device to the application are processed as
+    expected. In this case, make sure UTF8 related codes are handled properly.
+    """
+    mock_serial = mock.MagicMock()
+    mock_tc = mock.MagicMock()
+    mock_tc.movePosition = mock.MagicMock(return_value=False)
+    mock_tc.removeSelectedText = mock.MagicMock()
+    mock_tc.deleteChar = mock.MagicMock(return_value=None)
+    rp = mu.interface.panes.StuduinoBitREPLPane(mock_serial)
+    rp.textCursor = mock.MagicMock(return_value=mock_tc)
+    rp.setTextCursor = mock.MagicMock(return_value=None)
+    rp.insertPlainText = mock.MagicMock(return_value=None)
+    rp.ensureCursorVisible = mock.MagicMock(return_value=None)
+    bs = bytes([27])  # ESC
+    rp.process_bytes(bs)
+
+    bs = bytes([91])  # CSI
+    rp.process_bytes(bs)
+
+    bs = bytes([ord("0"), ord(";"), 32, ord("m")])  # SGR
+    rp.process_bytes(bs)
+
+    # rp.textCursor.assert_called_once_with()
+    assert mock_tc.movePosition.call_count == 3
+    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Down
+    assert rp.setTextCursor.call_count == 0
+    # assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
+    rp.ensureCursorVisible.assert_called_once_with()
+
+
+def test_StuduinoBitREPLPane_process_bytes_Inv_ESC_CSI():
+    """
+    Ensure bytes coming from the device to the application are processed as
+    expected. In this case, make sure UTF8 related codes are handled properly.
+    """
+    mock_serial = mock.MagicMock()
+    mock_tc = mock.MagicMock()
+    mock_tc.movePosition = mock.MagicMock(return_value=False)
+    mock_tc.removeSelectedText = mock.MagicMock()
+    mock_tc.deleteChar = mock.MagicMock(return_value=None)
+    rp = mu.interface.panes.StuduinoBitREPLPane(mock_serial)
+    rp.textCursor = mock.MagicMock(return_value=mock_tc)
+    rp.setTextCursor = mock.MagicMock(return_value=None)
+    rp.insertPlainText = mock.MagicMock(return_value=None)
+    rp.ensureCursorVisible = mock.MagicMock(return_value=None)
+    bs = bytes([27])  # ESC
+    rp.process_bytes(bs)
+
+    bs = bytes([91])  # CSI
+    rp.process_bytes(bs)
+
+    bs = bytes([ord("1")])  # Ps
+    rp.process_bytes(bs)
+
+    bs = bytes([ord("E")])  # E
+    rp.process_bytes(bs)
+
+    # rp.textCursor.assert_called_once_with()
+    assert mock_tc.movePosition.call_count == 4
+    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[3][0][0] == QTextCursor.Down
+    assert rp.setTextCursor.call_count == 0
+    # assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
+    # rp.ensureCursorVisible.assert_called_once_with()

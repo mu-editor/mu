@@ -495,3 +495,59 @@ class FileManager(QObject):
         except Exception as ex:
             logger.error(ex)
             self.on_delete_fail.emit(device_filename)
+
+
+class StuduinoBitFileManager(FileManager):
+    """
+    Override on_start() and put() method for using to manage filesystem
+    operations of Studuino:bit Mode.
+    """
+
+    def __init__(self, port):
+        """
+        Initialise with a port.
+        """
+        super().__init__(port)
+
+    def on_start(self):
+        """
+        Run when the thread containing this object's instance is started so
+        it can emit the tree of files found on the connected device.
+        """
+        # Create a new serial connection.
+        try:
+            self.serial = Serial(self.port, 115200, timeout=1, parity="N")
+            self.tree()
+        except Exception as ex:
+            logger.exception(ex)
+            self.on_list_fail.emit()
+
+    def tree(self):
+        """
+        Tree the files on the Studuino:bit. Emit the resulting tuple of
+        filenames or emit a failure signal.
+        """
+        try:
+            result = tuple(microfs.tree(self.serial))
+            self.on_list_files.emit(result)
+        except Exception as ex:
+            logger.exception(ex)
+            self.on_list_fail.emit()
+
+    def put(self, local_filename, dist):
+        """
+        Put the referenced local file onto the filesystem on the Studuino:bit.
+        Emit the name of the file on the Studuino:bit when complete, or emit
+        a failure signal.
+        """
+        try:
+            filename = os.path.basename(local_filename)
+            microfs.put(
+                local_filename,
+                target=dist + "/" + filename,
+                serial=self.serial,
+            )
+            self.on_put_file.emit(filename)
+        except Exception as ex:
+            logger.error(ex)
+            self.on_put_fail.emit(local_filename)
