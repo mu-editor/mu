@@ -1307,7 +1307,7 @@ class Editor:
             self.minify = new_settings["minify"]
             self.circuitpython_run = new_settings["circuitpython_run"]
             self.circuitpython_lib = new_settings["circuitpython_lib"]
-            #  show/hide circuitpython "run" button possibly changed in admin
+            #  show/hide circuitpython "run" options possibly changed in admin
             if self.mode == "circuitpython":
                 self.change_mode(self.mode)
             runtime = new_settings["microbit_runtime"].strip()
