@@ -169,16 +169,21 @@ class ButtonBar(QToolBar):
         """
         Compact button bar for when window is very small.
         """
-        font_size = DEFAULT_FONT_SIZE
-        if width < 1124 and height > 600:
-            self.setIconSize(QSize(48, 48))
-        elif height < 600 and width < 940:
-            font_size = 10
-            self.setIconSize(QSize(32, 32))
+        if width < 1020:
+            icon_size, icon_spacing, font_size = 32, 1, 10
+        elif width < 1240:
+            icon_size, icon_spacing, font_size = 48, 3, 12
         else:
-            self.setIconSize(QSize(64, 64))
-        stylesheet = "QWidget{font-size: " + str(font_size) + "px;}"
-        self.setStyleSheet(stylesheet)
+            icon_size, icon_spacing, font_size = 64, 4, DEFAULT_FONT_SIZE
+        self.setIconSize(QSize(icon_size, icon_size))
+        self.setStyleSheet(
+            """
+            QWidget {{ font-size: {font_size}px; }}
+            QToolBar {{ spacing: {icon_spacing}px; }}
+        """.format(
+                font_size=font_size, icon_spacing=icon_spacing
+            )
+        )
 
     def addAction(self, name, display_name, tool_text):
         """
