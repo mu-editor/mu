@@ -122,6 +122,28 @@ QStatusBar QLabel {
     margin: 0;
 }
 
+QStatusBar QComboBox {
+    padding: 4px 25px 4px 3px;
+    border: 1px solid #b4b4b4;      /* Border */
+    margin: 2px;
+}
+
+QStatusBar QComboBox::drop-down {
+    /* subcontrol-origin: padding; */
+    /* subcontrol-position: top right; */
+    border: 0;
+    /* border-left: 1px solid #b4b4b4;      /\* Border *\/ */
+    width: 15px;
+    image: unset;
+    padding-right: 2px;
+
+}
+
+QStatusBar QComboBox::down-arrow {
+    image: url(images:dropdown-arrow.png);
+}
+
+
 #AdministrationLabel:hover, #AdministrationLabel:focus {
     background: #cccccc;
 }
