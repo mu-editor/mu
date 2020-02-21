@@ -41,10 +41,11 @@ class ESPMode(MicroPythonMode):
     # the same USB / serial chips (which actually define the Vendor ID and
     # Product ID for the connected devices.
     valid_boards = [
-        # VID  , PID
-        (0x1A86, 0x7523),  # HL-340
-        (0x10C4, 0xEA60),  # CP210x
-        (0x0403, 0x6015),  # Sparkfun ESP32 VID, PID
+        # VID  , PID,    Manufacturer string, Device name
+        (0x1A86, 0x7523, None, "HL-340"),
+        (0x10C4, 0xEA60, None, "CP210x"),
+        (0x0403, 0x6015, None, "Sparkfun ESP32 Thing"),
+        (0x0403, 0x6001, "M5STACK Inc.", "M5Stack ESP32 device"),
     ]
 
     def actions(self):
@@ -209,7 +210,7 @@ class ESPMode(MicroPythonMode):
         """
 
         # Find serial port the ESP8266/ESP32 is connected to
-        device_port, serial_number = self.find_device()
+        device_port, serial_number, board_name = self.find_device()
 
         # Check for MicroPython device
         if not device_port:

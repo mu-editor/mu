@@ -92,7 +92,11 @@ class MicrobitMode(MicroPythonMode):
     flash_timer = None
     file_extensions = ["hex"]
 
-    valid_boards = [(0x0D28, 0x0204)]  # micro:bit USB VID, PID
+    # Device name should only be supplied for modes
+    # supporting more than one board, thus None is returned.
+    #
+    #               VID,     PID,   manufact., device name
+    valid_boards = [(0x0D28, 0x0204, None, None)]
 
     valid_serial_numbers = [9900, 9901]  # Serial numbers of supported boards.
 
@@ -225,7 +229,7 @@ class MicrobitMode(MicroPythonMode):
         port = None
         serial_number = None
         try:
-            port, serial_number = self.find_device()
+            port, serial_number, board_name = self.find_device()
             logger.info("Serial port: {}".format(port))
             logger.info("Device serial number: {}".format(serial_number))
         except Exception as ex:
@@ -554,7 +558,7 @@ class MicrobitMode(MicroPythonMode):
         Add the file system navigator to the UI.
         """
         # Check for micro:bit
-        port, serial_number = self.find_device()
+        port, serial_number, board_name = self.find_device()
         if not port:
             message = _("Could not find an attached BBC micro:bit.")
             information = _(

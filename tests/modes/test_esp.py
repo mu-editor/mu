@@ -57,7 +57,9 @@ def test_add_fs(fm, qthread, esp_mode):
     It's possible to add the file system pane if the REPL is inactive.
     """
     esp_mode.view.current_tab = None
-    esp_mode.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    esp_mode.find_device = mock.MagicMock(
+        return_value=("COM0", "12345", "ESP8266")
+    )
     esp_mode.add_fs()
     workspace = esp_mode.workspace_dir()
     esp_mode.view.add_filesystem.assert_called_once_with(
@@ -73,7 +75,9 @@ def test_add_fs_project_path(fm, qthread, esp_mode):
     It's possible to add the file system pane if the REPL is inactive.
     """
     esp_mode.view.current_tab.path = "foo"
-    esp_mode.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    esp_mode.find_device = mock.MagicMock(
+        return_value=("COM0", "12345", "ESP8266")
+    )
     esp_mode.add_fs()
     workspace = os.path.dirname(os.path.abspath("foo"))
     esp_mode.view.add_filesystem.assert_called_once_with(
@@ -86,7 +90,7 @@ def test_add_fs_no_device(esp_mode):
     """
     If there's no device attached then ensure a helpful message is displayed.
     """
-    esp_mode.find_device = mock.MagicMock(return_value=(None, None))
+    esp_mode.find_device = mock.MagicMock(return_value=(None, None, None))
     esp_mode.add_fs()
     assert esp_mode.view.show_message.call_count == 1
 
@@ -229,7 +233,7 @@ def test_run_no_device(esp_mode):
     Ensure an error message is displayed if attempting to run a script
     and no device is found.
     """
-    esp_mode.find_device = mock.MagicMock(return_value=(None, None))
+    esp_mode.find_device = mock.MagicMock(return_value=(None, None, None))
     esp_mode.run()
     assert esp_mode.view.show_message.call_count == 1
 
@@ -239,7 +243,9 @@ def test_run(esp_mode):
     Ensure run/repl/files buttons are disabled while flashing.
     """
     esp_mode.set_buttons = mock.MagicMock()
-    esp_mode.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    esp_mode.find_device = mock.MagicMock(
+        return_value=("COM0", "12345", "ESP8266")
+    )
     esp_mode.run()
     esp_mode.set_buttons.assert_called_once_with(files=False)
 
