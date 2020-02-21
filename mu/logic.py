@@ -934,13 +934,13 @@ class Editor:
             self._view.show_message(message, info)
         else:
             if file_mode and self.mode != file_mode:
-                device_name = self.modes[file_mode].name
-                message = _("Is this a {} file?").format(device_name)
+                mode_name = self.modes[file_mode].name
+                message = _("Is this a {} file?").format(mode_name)
                 info = _(
                     "It looks like this could be a {} file.\n\n"
                     "Would you like to change Mu to the {}"
                     "mode?"
-                ).format(device_name, device_name)
+                ).format(mode_name, mode_name)
                 if (
                     self._view.show_confirmation(
                         message, info, icon="Question"
@@ -1425,13 +1425,13 @@ class Editor:
         devices = []
         device_types = set()
         # Detect connected devices.
-        for name, mode in self.modes.items():
+        for mode_name, mode in self.modes.items():
             if hasattr(mode, "find_device"):
                 # The mode can detect an attached device.
-                port, serial = mode.find_device(with_logging=False)
+                port, serial, board_name = mode.find_device(with_logging=False)
                 if port:
-                    devices.append((name, port))
-                    device_types.add(name)
+                    devices.append((mode_name, board_name, port))
+                    device_types.add(mode_name)
         # Remove no-longer connected devices.
         to_remove = []
         for connected in self.connected_devices:
@@ -1444,8 +1444,14 @@ class Editor:
             if device not in self.connected_devices:
                 self.connected_devices.add(device)
                 mode_name = device[0]
-                device_name = self.modes[mode_name].name
-                msg = _("Detected new {} device.").format(device_name)
+                board_name = device[1]
+                long_mode_name = self.modes[mode_name].name
+                if board_name:
+                    msg = _("Detected new {} device: {}.").format(
+                        long_mode_name, board_name
+                    )
+                else:
+                    msg = _("Detected new {} device.").format(long_mode_name)
                 self.show_status_message(msg)
                 # Only ask to switch mode if a single device type is connected
                 # and we're not already trying to select a new mode via the
@@ -1460,7 +1466,7 @@ class Editor:
                 ) and not running:
                     msg_body = _(
                         "Would you like to change Mu to the {} " "mode?"
-                    ).format(device_name)
+                    ).format(long_mode_name)
                     change_confirmation = self._view.show_confirmation(
                         msg, msg_body, icon="Question"
                     )

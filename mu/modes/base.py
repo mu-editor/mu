@@ -35,18 +35,16 @@ logger = logging.getLogger(__name__)
 
 # List of supported board USB IDs.  Each board is a tuple of unique USB vendor
 # ID, USB product ID.
-BOARD_IDS = set(
-    [
-        (0x0D28, 0x0204),  # micro:bit USB VID, PID
-        (0x239A, 0x800B),  # Adafruit Feather M0 CDC only USB VID, PID
-        (0x239A, 0x8016),  # Adafruit Feather M0 CDC + MSC USB VID, PID
-        (0x239A, 0x8014),  # metro m0 PID
-        (0x239A, 0x8019),  # circuitplayground m0 PID
-        (0x239A, 0x8015),  # circuitplayground m0 PID prototype
-        (0x239A, 0x801B),  # feather m0 express PID
-    ]
-)
-
+BOARD_IDS = [
+    # VID  , PID   , manufact., device name
+    (0x0D28, 0x0204, None, "micro:bit"),
+    (0x239A, 0x800B, None, "Adafruit Feather M0"),  # CDC only
+    (0x239A, 0x8016, None, "Adafruit Feather M0"),  # CDC + MSC
+    (0x239A, 0x8014, None, "Adafruit Metro M0"),
+    (0x239A, 0x8019, None, "Circuit Playground Express M0"),
+    (0x239A, 0x8015, None, "Circuit Playground M0 (prototype)"),
+    (0x239A, 0x801B, None, "Adafruit Feather M0 Express"),
+]
 
 # Cache module names for filename shadow checking later.
 MODULE_NAMES = set([name for _, name, _ in pkgutil.iter_modules()])
@@ -248,27 +246,44 @@ class MicroPythonMode(BaseMode):
     valid_boards = BOARD_IDS
     force_interrupt = True
 
+    def compatible_board(self, vid, pid, manufacturer):
+        """
+        A compatible board must match on vendor ID, but only needs to
+        match on product ID or manufacturer ID, if they are supplied
+        in the list of valid boards (aren't None).
+        """
+        for v, p, m, device_name in self.valid_boards:
+            if (
+                v == vid
+                and (p == pid or p is None)
+                and (m == manufacturer or m is None)
+            ):
+                return (v, p, m, device_name)
+        return None
+
     def find_device(self, with_logging=True):
         """
-        Returns the port and serial number for the first MicroPython-ish device
-        found connected to the host computer. If no device is found, returns
-        the tuple (None, None).
+        Returns the port and serial number, and name for the first
+        MicroPython-ish device found connected to the host computer.
+        If no device is found, returns the tuple (None, None, None).
         """
         available_ports = QSerialPortInfo.availablePorts()
         for port in available_ports:
             pid = port.productIdentifier()
             vid = port.vendorIdentifier()
-            # Look for the port VID & PID in the list of known board IDs
-            if (vid, pid) in self.valid_boards or (
-                vid,
-                None,
-            ) in self.valid_boards:
+            manufacturer = port.manufacturer()
+
+            device = self.compatible_board(vid, pid, manufacturer)
+            if device:
                 port_name = port.portName()
                 serial_number = port.serialNumber()
+                board_name = device[3]
                 if with_logging:
                     logger.info("Found device on port: {}".format(port_name))
                     logger.info("Serial number: {}".format(serial_number))
-                return (self.port_path(port_name), serial_number)
+                    if board_name:
+                        logger.info("Board type: {}".format(board_name))
+                return (self.port_path(port_name), serial_number, board_name)
         if with_logging:
             logger.warning("Could not find device.")
             logger.debug("Available ports:")
@@ -282,7 +297,7 @@ class MicroPythonMode(BaseMode):
                     for p in available_ports
                 ]
             )
-        return (None, None)
+        return (None, None, None)
 
     def port_path(self, port_name):
         if os.name == "posix":
@@ -318,7 +333,7 @@ class MicroPythonMode(BaseMode):
         Detect a connected MicroPython based device and, if found, connect to
         the REPL and display it to the user.
         """
-        device_port, serial_number = self.find_device()
+        device_port, serial_number, board_name = self.find_device()
         if device_port:
             try:
                 self.view.add_micropython_repl(
@@ -363,7 +378,7 @@ class MicroPythonMode(BaseMode):
         """
         Check if REPL exists, and if so, enable the plotter pane!
         """
-        device_port, serial_number = self.find_device()
+        device_port, serial_number, board_name = self.find_device()
         if device_port:
             try:
                 self.view.add_micropython_plotter(device_port, self.name, self)

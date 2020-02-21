@@ -210,12 +210,11 @@ def test_micropython_mode_find_device():
     view = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
     mock_port = mock.MagicMock()
-    for vid, pid in mm.valid_boards:
+    for vid, pid, manufacturer, board_name in mm.valid_boards:
         mock_port.vid = vid
-        mock_port.productIdentifier = mock.MagicMock()
-        mock_port.productIdentifier.return_value = pid
-        mock_port.vendorIdentifier = mock.MagicMock()
-        mock_port.vendorIdentifier.return_value = vid
+        mock_port.productIdentifier = mock.MagicMock(return_value=pid)
+        mock_port.vendorIdentifier = mock.MagicMock(return_value=vid)
+        mock_port.manufacturer = mock.MagicMock(return_value=manufacturer)
         mock_port.portName = mock.MagicMock(return_value="COM0")
         mock_port.serialNumber = mock.MagicMock(return_value="12345")
         mock_os = mock.MagicMock()
@@ -224,7 +223,7 @@ def test_micropython_mode_find_device():
             "mu.modes.base.QSerialPortInfo.availablePorts",
             return_value=[mock_port],
         ), mock.patch("mu.modes.base.os", mock_os):
-            assert mm.find_device() == ("COM0", "12345")
+            assert mm.find_device() == ("COM0", "12345", board_name)
 
 
 def test_micropython_mode_find_device_no_ports():
@@ -237,7 +236,7 @@ def test_micropython_mode_find_device_no_ports():
     with mock.patch(
         "mu.modes.base.QSerialPortInfo.availablePorts", return_value=[]
     ):
-        assert mm.find_device() == (None, None)
+        assert mm.find_device() == (None, None, None)
 
 
 def test_micropython_mode_find_device_but_no_device():
@@ -255,7 +254,7 @@ def test_micropython_mode_find_device_but_no_device():
         "mu.modes.base.QSerialPortInfo.availablePorts",
         return_value=[mock_port],
     ):
-        assert mm.find_device() == (None, None)
+        assert mm.find_device() == (None, None, None)
 
 
 def test_micropython_mode_port_path_posix():
@@ -303,7 +302,7 @@ def test_micropython_mode_add_repl_no_port():
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=(None, None))
+    mm.find_device = mock.MagicMock(return_value=(None, None, None))
     mm.add_repl()
     assert view.show_message.call_count == 1
     message = "Could not find an attached device."
@@ -322,7 +321,9 @@ def test_micropython_mode_add_repl_ioerror():
     ex = IOError("BOOM")
     view.add_micropython_repl = mock.MagicMock(side_effect=ex)
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    mm.find_device = mock.MagicMock(
+        return_value=("COM0", "12345", "micro:bit")
+    )
     mm.add_repl()
     assert view.show_message.call_count == 1
     assert view.show_message.call_args[0][0] == str(ex)
@@ -337,7 +338,9 @@ def test_micropython_mode_add_repl_exception():
     ex = Exception("BOOM")
     view.add_micropython_repl = mock.MagicMock(side_effect=ex)
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    mm.find_device = mock.MagicMock(
+        return_value=("COM0", "12345", "micro:bit")
+    )
     with mock.patch("mu.modes.base.logger", return_value=None) as logger:
         mm.add_repl()
         logger.error.assert_called_once_with(ex)
@@ -353,7 +356,9 @@ def test_micropython_mode_add_repl():
     view.show_message = mock.MagicMock()
     view.add_micropython_repl = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    mm.find_device = mock.MagicMock(
+        return_value=("COM0", "12345", "micro:bit")
+    )
     with mock.patch("os.name", "nt"):
         mm.add_repl()
     assert view.show_message.call_count == 0
@@ -371,7 +376,9 @@ def test_micropython_mode_add_repl_no_force_interrupt():
     view.add_micropython_repl = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
     mm.force_interrupt = False
-    mm.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    mm.find_device = mock.MagicMock(
+        return_value=("COM0", "12345", "micro:bit")
+    )
     with mock.patch("os.name", "nt"):
         mm.add_repl()
     assert view.show_message.call_count == 0
@@ -455,7 +462,7 @@ def test_micropython_mode_add_plotter_no_port():
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=(None, None))
+    mm.find_device = mock.MagicMock(return_value=(None, None, None))
     mm.add_plotter()
     assert view.show_message.call_count == 1
     message = "Could not find an attached device."
@@ -474,7 +481,9 @@ def test_micropython_mode_add_plotter_ioerror():
     ex = IOError("BOOM")
     view.add_micropython_plotter = mock.MagicMock(side_effect=ex)
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "123456"))
+    mm.find_device = mock.MagicMock(
+        return_value=("COM0", "123456", "micro:bit")
+    )
     mm.add_plotter()
     assert view.show_message.call_count == 1
     assert view.show_message.call_args[0][0] == str(ex)
@@ -489,7 +498,9 @@ def test_micropython_mode_add_plotter_exception():
     ex = Exception("BOOM")
     view.add_micropython_plotter = mock.MagicMock(side_effect=ex)
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    mm.find_device = mock.MagicMock(
+        return_value=("COM0", "12345", "micro:bit")
+    )
     with mock.patch("mu.modes.base.logger", return_value=None) as logger:
         mm.add_plotter()
         logger.error.assert_called_once_with(ex)
@@ -505,7 +516,9 @@ def test_micropython_mode_add_plotter():
     view.show_message = mock.MagicMock()
     view.add_micropython_plotter = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    mm.find_device = mock.MagicMock(
+        return_value=("COM0", "12345", "micro:bit")
+    )
     with mock.patch("os.name", "nt"):
         mm.add_plotter()
     assert view.show_message.call_count == 0

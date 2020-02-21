@@ -2622,10 +2622,10 @@ def test_check_usb():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None)
+    mode_py.find_device.return_value = (None, None, None)
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345")
+    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345", None)
     ed.modes = {"microbit": mode_mb, "python": mode_py}
     ed.show_status_message = mock.MagicMock()
     ed.check_usb()
@@ -2646,14 +2646,18 @@ def test_check_usb_change_mode_cancel():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None)
+    mode_py.find_device.return_value = (None, None, None)
     mode_cp = mock.MagicMock()
     mode_cp.name = "CircuitPlayground"
-    mode_cp.find_device.return_value = ("/dev/ttyUSB1", "12345")
+    mode_cp.find_device.return_value = (
+        "/dev/ttyUSB1",
+        "12345",
+        "Adafruit Feather",
+    )
     ed.modes = {"circuitplayground": mode_cp, "python": mode_py}
     ed.show_status_message = mock.MagicMock()
     ed.check_usb()
-    expected = "Detected new CircuitPlayground device."
+    expected = "Detected new CircuitPlayground device: Adafruit Feather."
     ed.show_status_message.assert_called_with(expected)
     assert view.show_confirmation.called
     ed.change_mode.assert_not_called()
@@ -2669,9 +2673,9 @@ def test_check_usb_already_in_mode():
     ed.change_mode = mock.MagicMock()
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345")
+    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345", None)
     mode_cp = mock.MagicMock()
-    mode_cp.find_device.return_value = (None, None)
+    mode_cp.find_device.return_value = (None, None, None)
     ed.modes = {"microbit": mode_mb, "circuitplayground": mode_cp}
     ed.mode = "microbit"
     ed.show_status_message = mock.MagicMock()
@@ -2692,10 +2696,10 @@ def test_check_usb_currently_running_code():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = True
-    mode_py.find_device.return_value = (None, None)
+    mode_py.find_device.return_value = (None, None, None)
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345")
+    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345", None)
     ed.modes = {"microbit": mode_mb, "python": mode_py}
     ed.show_status_message = mock.MagicMock()
     ed.check_usb()
@@ -2714,13 +2718,17 @@ def test_check_usb_multiple_devices():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None)
+    mode_py.find_device.return_value = (None, None, None)
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345")
+    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345", None)
     mode_cp = mock.MagicMock()
     mode_cp.name = "CircuitPlayground"
-    mode_cp.find_device.return_value = ("/dev/ttyUSB1", "54321")
+    mode_cp.find_device.return_value = (
+        "/dev/ttyUSB1",
+        "54321",
+        "Adafruit Feather",
+    )
     ed.modes = {
         "microbit": mode_mb,
         "circuitplayground": mode_cp,
@@ -2729,7 +2737,9 @@ def test_check_usb_multiple_devices():
     ed.show_status_message = mock.MagicMock()
     ed.check_usb()
     expected_mb = mock.call("Detected new BBC micro:bit device.")
-    expected_cp = mock.call("Detected new CircuitPlayground device.")
+    expected_cp = mock.call(
+        "Detected new CircuitPlayground device: Adafruit Feather."
+    )
     ed.show_status_message.assert_has_calls(
         (expected_mb, expected_cp), any_order=True
     )
@@ -2749,15 +2759,19 @@ def test_check_usb_when_selecting_mode_is_silent():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None)
+    mode_py.find_device.return_value = (None, None, None)
     mode_cp = mock.MagicMock()
     mode_cp.name = "CircuitPlayground"
-    mode_cp.find_device.return_value = ("/dev/ttyUSB1", "12345")
+    mode_cp.find_device.return_value = (
+        "/dev/ttyUSB1",
+        "12345",
+        "Adafruit Feather",
+    )
     ed.modes = {"circuitplayground": mode_cp, "python": mode_py}
     ed.show_status_message = mock.MagicMock()
     ed.selecting_mode = True
     ed.check_usb()
-    expected = "Detected new CircuitPlayground device."
+    expected = "Detected new CircuitPlayground device: Adafruit Feather."
     ed.show_status_message.assert_called_with(expected)
     assert view.show_confirmation.call_count == 0
     ed.change_mode.assert_not_called()
