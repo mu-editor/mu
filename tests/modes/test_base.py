@@ -553,7 +553,7 @@ def test_micropython_mode_add_plotter_ioerror():
     view.show_message = mock.MagicMock()
     ex = IOError("BOOM")
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "12345", "micro:bit"))
+    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
     mock_repl_connection = mock.MagicMock()
     mock_repl_connection.open = mock.MagicMock(side_effect=ex)
     mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
