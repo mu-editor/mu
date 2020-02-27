@@ -164,6 +164,9 @@ def run():
     editor_window.connect_toggle_comments(editor.toggle_comments, "Ctrl+K")
     status_bar = editor_window.status_bar
     status_bar.connect_logs(editor.show_admin, "Ctrl+Shift+D")
+    editor.device_connected.connect(status_bar.device_connected)
+    editor.device_disconnected.connect(status_bar.device_disconnected)
+
 
     # Display a friendly "splash" icon.
     splash = QSplashScreen(load_pixmap("splash-screen"))

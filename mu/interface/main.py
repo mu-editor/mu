@@ -1160,20 +1160,13 @@ class StatusBar(QStatusBar):
     def __init__(self, parent=None, mode="python"):
         super().__init__(parent)
         self.mode = mode
-        # Device selector
+        self.msg_duration = 5
+
         self.device_selector = QComboBox()
-        self.device_selector.setInsertPolicy(QComboBox.InsertAlphabetically)
-        self.device_selector.addItems(
-            [
-                "COM1: micro:bit",
-                "/dev/tty.usbserial-A152130CB6: Sparkfun ESP32 Thing",
-                "COM7: WeMos D1 mini",
-                "COM8: Unrecognized device",
-            ]
-        )
-
+        self.device_selector.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.device_selector.setHidden(True)
         self.addPermanentWidget(self.device_selector)
-
+        
         # Mode selector.
         self.mode_label = QLabel()
         self.mode_label.setToolTip(_("Mu's current mode of behaviour."))
@@ -1219,3 +1212,31 @@ class StatusBar(QStatusBar):
         Updates the mode label to the new mode.
         """
         self.mode_label.setText(mode)
+
+    def add_device(self, port, board_name):
+        self.device_selector.addItem("{}: {}".format(port, board_name))
+        self.device_selector.model().sort(0)
+        self.device_selector.setHidden(False)
+
+    def rm_device(self, port, board_name):
+        ix = self.device_selector.findText("{}: {}".format(port, board_name))
+        self.device_selector.removeItem(ix)
+        if self.device_selector.count() == 0:
+            self.device_selector.setHidden(True)
+
+    def device_connected(self, mode_name, long_mode_name, board_name, port):
+        if board_name:
+            msg = _("Detected new {} device: {}.").format(
+                long_mode_name, board_name
+            )
+        else:
+            msg = _("Detected new {} device.").format(long_mode_name)
+            board_name = long_mode_name
+
+        self.set_message(msg, self.msg_duration * 1000)
+        self.add_device(port, board_name)
+
+    def device_disconnected(self, mode_name, long_mode_name, board_name, port):
+        if board_name is None:
+            board_name = long_mode_name
+        self.rm_device(port, board_name)

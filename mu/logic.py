@@ -33,7 +33,7 @@ import shutil
 import appdirs
 import site
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QLocale
+from PyQt5.QtCore import QLocale, QObject, pyqtSignal
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
 from mu.resources import path
@@ -615,12 +615,16 @@ class MuFlakeCodeReporter:
             )
 
 
-class Editor:
+class Editor(QObject):
     """
     Application logic for the editor itself.
     """
 
+    device_connected = pyqtSignal(str, str, str, str)
+    device_disconnected = pyqtSignal(str, str, str, str)
+
     def __init__(self, view, status_bar=None):
+        super().__init__()
         logger.info("Setting up editor.")
         self._view = view
         self._status_bar = status_bar
@@ -1418,20 +1422,18 @@ class Editor:
                 to_remove.append(connected)
         for device in to_remove:
             self.connected_devices.remove(device)
+            mode_name, board_name, port = device
+            long_mode_name = self.modes[mode_name].name
+            self.device_disconnected.emit(mode_name, long_mode_name,
+                                          board_name, port)
         # Add newly connected devices.
         for device in devices:
             if device not in self.connected_devices:
                 self.connected_devices.add(device)
-                mode_name = device[0]
-                board_name = device[1]
+                mode_name, board_name, port = device
                 long_mode_name = self.modes[mode_name].name
-                if board_name:
-                    msg = _("Detected new {} device: {}.").format(
-                        long_mode_name, board_name
-                    )
-                else:
-                    msg = _("Detected new {} device.").format(long_mode_name)
-                self.show_status_message(msg)
+                self.device_connected.emit(mode_name, long_mode_name,
+                                           board_name, port)
                 # Only ask to switch mode if a single device type is connected
                 # and we're not already trying to select a new mode via the
                 # dialog. Cannot change mode if a script is already being run
