@@ -24,10 +24,15 @@ import time
 import logging
 import pkgutil
 from serial import Serial
-from PyQt5.QtSerialPort import QSerialPortInfo
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
+from PyQt5.QtCore import QObject, pyqtSignal, QIODevice, QTimer
 from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path
 from mu.contrib import microfs
+
+ENTER_RAW_MODE = b"\x01"  # CTRL-A
+EXIT_RAW_MODE = b"\x02"  # CTRL-B
+KEYBOARD_INTERRUPT = b"\x03"  # CTRL-C
+SOFT_REBOOT = b"\x04"  # CTRL-C
 
 
 logger = logging.getLogger(__name__)
@@ -82,6 +87,120 @@ def get_default_workspace():
     return workspace_dir
 
 
+class REPLConnection(QObject):
+    serial = None
+    data_received = pyqtSignal(bytes)
+    connection_error = pyqtSignal(str)
+
+    def __init__(self, port, baudrate=115200):
+        super().__init__()
+        self.serial = QSerialPort()
+        self._port = port
+        self._baudrate = baudrate
+        self.serial.setPortName(port)
+        self.serial.setBaudRate(baudrate)
+
+    @property
+    def port(self):
+        if self.serial:
+            # perhaps return self.serial.portName()?
+            return self._port
+        else:
+            return None
+
+    @property
+    def baudrate(self):
+        if self.serial:
+            # perhaps return self.serial.baudRate()
+            return self._baudrate
+        else:
+            return None
+
+    def open(self):
+        """
+        Open the serial link
+        """
+
+        logger.info("Connecting to REPL on port: {}".format(self.port))
+
+        if not self.serial.open(QIODevice.ReadWrite):
+            msg = _("Cannot connect to device on port {}").format(self.port)
+            raise IOError(msg)
+
+        self.serial.setDataTerminalReady(True)
+        if not self.serial.isDataTerminalReady():
+            # Using pyserial as a 'hack' to open the port and set DTR
+            # as QtSerial does not seem to work on some Windows :(
+            # See issues #281 and #302 for details.
+            self.serial.close()
+            pyser = Serial(self.port)  # open serial port w/pyserial
+            pyser.dtr = True
+            pyser.close()
+            self.serial.open(QIODevice.ReadWrite)
+        self.serial.readyRead.connect(self._on_serial_read)
+
+        logger.info("Connected to REPL on port: {}".format(self.port))
+
+    def close(self):
+        """
+        Close and clean up the currently open serial link.
+        """
+        logger.info("Closing connection to REPL on port: {}".format(self.port))
+        if self.serial:
+            self.serial.close()
+            self.serial = None
+
+    def _on_serial_read(self):
+        """
+        Called when data is ready to be send from the device
+        """
+        data = bytes(self.serial.readAll())
+        self.data_received.emit(data)
+
+    def write(self, data):
+        self.serial.write(data)
+
+    def send_interrupt(self):
+        self.write(EXIT_RAW_MODE)  # CTRL-B
+        self.write(KEYBOARD_INTERRUPT)  # CTRL-C
+
+    def execute(self, commands):
+        """
+        Execute a series of commands over a period of time (scheduling
+        remaining commands to be run in the next iteration of the event loop).
+        """
+        if commands:
+            command = commands[0]
+            logger.info("Sending command {}".format(command))
+            self.write(command)
+            remainder = commands[1:]
+            remaining_task = lambda commands=remainder: self.execute(commands)
+            QTimer.singleShot(2, remaining_task)
+
+    def send_commands(self, commands):
+        """
+        Send commands to the REPL via raw mode.
+        """
+        # Sequence of commands to get into raw mode (From pyboard.py).
+        raw_on = [
+            KEYBOARD_INTERRUPT,
+            KEYBOARD_INTERRUPT,
+            ENTER_RAW_MODE,
+            SOFT_REBOOT,
+            KEYBOARD_INTERRUPT,
+            KEYBOARD_INTERRUPT,
+        ]
+
+        newline = [b'print("\\n");']
+        commands = [c.encode("utf-8") + b"\r" for c in commands]
+        commands.append(b"\r")
+        commands.append(SOFT_REBOOT)
+        raw_off = [EXIT_RAW_MODE]
+        command_sequence = raw_on + newline + commands + raw_off
+        logger.info(command_sequence)
+        self.execute(command_sequence)
+
+
 class BaseMode(QObject):
     """
     Represents the common aspects of a mode.
@@ -90,8 +209,8 @@ class BaseMode(QObject):
     name = "UNNAMED MODE"
     description = "DESCRIPTION NOT AVAILABLE."
     icon = "help"
-    repl = None
-    plotter = None
+    repl = False
+    plotter = False
     is_debugger = False
     has_debugger = False
     save_timeout = 5  #: Number of seconds to wait before saving work.
@@ -200,7 +319,7 @@ class BaseMode(QObject):
             csv_writer = csv.writer(csvfile)
             csv_writer.writerows(self.view.plotter_pane.raw_data)
         self.view.remove_plotter()
-        self.plotter = None
+        self.plotter = False
         logger.info("Removing plotter")
         self.return_focus_to_current_tab()
 
@@ -214,7 +333,7 @@ class BaseMode(QObject):
         """
         logger.error("Plotting data flood detected.")
         self.view.remove_plotter()
-        self.plotter = None
+        self.plotter = False
         msg = _("Data Flood Detected!")
         info = _(
             "The plotter is flooded with data which will make Mu "
@@ -245,6 +364,7 @@ class MicroPythonMode(BaseMode):
 
     valid_boards = BOARD_IDS
     force_interrupt = True
+    connection = None
 
     def compatible_board(self, vid, pid, manufacturer):
         """
@@ -325,6 +445,9 @@ class MicroPythonMode(BaseMode):
         """
         If there's an active REPL, disconnect and hide it.
         """
+        if not self.plotter and self.connection:
+            self.connection.close()
+            self.connection = None
         self.view.remove_repl()
         self.repl = False
 
@@ -336,9 +459,13 @@ class MicroPythonMode(BaseMode):
         device_port, serial_number, board_name = self.find_device()
         if device_port:
             try:
-                self.view.add_micropython_repl(
-                    device_port, self.name, self.force_interrupt
-                )
+                if not self.connection:
+                    self.connection = REPLConnection(device_port)
+                    self.connection.open()
+                    if self.force_interrupt:
+                        self.connection.send_interrupt()
+
+                self.view.add_micropython_repl(self.name, self.connection)
                 logger.info("Started REPL on port: {}".format(device_port))
                 self.repl = True
             except IOError as ex:
@@ -381,7 +508,12 @@ class MicroPythonMode(BaseMode):
         device_port, serial_number, board_name = self.find_device()
         if device_port:
             try:
-                self.view.add_micropython_plotter(device_port, self.name, self)
+                if not self.connection:
+                    self.connection = REPLConnection(device_port)
+                    self.connection.open()
+                self.view.add_micropython_plotter(
+                    self.name, self.connection, self.on_data_flood
+                )
                 logger.info("Started plotter")
                 self.plotter = True
             except IOError as ex:
@@ -412,6 +544,15 @@ class MicroPythonMode(BaseMode):
         """
         self.remove_repl()
         super().on_data_flood()
+
+    def remove_plotter(self):
+        """
+        Remove plotter pane. Disconnects serial connection to device.
+        """
+        if not self.repl and self.connection:
+            self.connection.close()
+            self.connection = None
+        super().remove_plotter()
 
 
 class FileManager(QObject):

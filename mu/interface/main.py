@@ -18,9 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
 import logging
-import serial
 import os.path
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QIODevice
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
     QToolBar,
     QAction,
@@ -41,7 +40,6 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
 )
 from PyQt5.QtGui import QKeySequence, QStandardItemModel
-from PyQt5.QtSerialPort import QSerialPort
 from mu import __version__
 from mu.interface.dialogs import (
     ModeSelector,
@@ -306,7 +304,6 @@ class Window(QMainWindow):
     icon = "icon"
     timer = None
     usb_checker = None
-    serial = None
     repl = None
     plotter = None
     zooms = ("xs", "s", "m", "l", "xl", "xxl", "xxxl")  # levels of zoom.
@@ -314,8 +311,6 @@ class Window(QMainWindow):
 
     _zoom_in = pyqtSignal(str)
     _zoom_out = pyqtSignal(str)
-    close_serial = pyqtSignal()
-    write_to_serial = pyqtSignal(bytes)
     data_received = pyqtSignal(bytes)
     open_file = pyqtSignal(str)
     load_theme = pyqtSignal(str)
@@ -497,53 +492,11 @@ class Window(QMainWindow):
                 return True
         return False
 
-    def on_serial_read(self):
-        """
-        Called when the connected device is ready to send data via the serial
-        connection. It reads all the available data, emits the data_received
-        signal with the received bytes and, if appropriate, emits the
-        tuple_received signal with the tuple created from the bytes received.
-        """
-        data = bytes(self.serial.readAll())  # get all the available bytes.
-        self.data_received.emit(data)
-
     def on_stdout_write(self, data):
         """
         Called when either a running script or the REPL write to STDOUT.
         """
         self.data_received.emit(data)
-
-    def open_serial_link(self, port):
-        """
-        Creates a new serial link instance.
-        """
-        self.input_buffer = []
-        self.serial = QSerialPort()
-        self.serial.setPortName(port)
-        if self.serial.open(QIODevice.ReadWrite):
-            self.serial.setDataTerminalReady(True)
-            if not self.serial.isDataTerminalReady():
-                # Using pyserial as a 'hack' to open the port and set DTR
-                # as QtSerial does not seem to work on some Windows :(
-                # See issues #281 and #302 for details.
-                self.serial.close()
-                pyser = serial.Serial(port)  # open serial port w/pyserial
-                pyser.dtr = True
-                pyser.close()
-                self.serial.open(QIODevice.ReadWrite)
-            self.serial.setBaudRate(115200)
-            self.serial.readyRead.connect(self.on_serial_read)
-        else:
-            msg = _("Cannot connect to device on port {}").format(port)
-            raise IOError(msg)
-
-    def close_serial_link(self):
-        """
-        Close and clean up the currently open serial link.
-        """
-        if self.serial:
-            self.serial.close()
-            self.serial = None
 
     def add_filesystem(self, home, file_manager, board_name="board"):
         """
@@ -579,30 +532,21 @@ class Window(QMainWindow):
         self.connect_zoom(self.fs_pane)
         return self.fs_pane
 
-    def add_micropython_repl(self, port, name, force_interrupt=True):
+    def add_micropython_repl(self, name, connection):
         """
         Adds a MicroPython based REPL pane to the application.
         """
-        if not self.serial:
-            self.open_serial_link(port)
-            if force_interrupt:
-                # Send a Control-B / exit raw mode.
-                self.serial.write(b"\x02")
-                # Send a Control-C / keyboard interrupt.
-                self.serial.write(b"\x03")
-        repl_pane = MicroPythonREPLPane(serial=self.serial)
-        self.data_received.connect(repl_pane.process_bytes)
+        repl_pane = MicroPythonREPLPane(connection)
+        connection.data_received.connect(repl_pane.process_tty_data)
         self.add_repl(repl_pane, name)
 
-    def add_micropython_plotter(self, port, name, mode):
+    def add_micropython_plotter(self, name, connection, data_flood_handler):
         """
         Adds a plotter that reads data from a serial connection.
         """
-        if not self.serial:
-            self.open_serial_link(port)
         plotter_pane = PlotterPane()
-        self.data_received.connect(plotter_pane.process_bytes)
-        plotter_pane.data_flood.connect(mode.on_data_flood)
+        connection.data_received.connect(plotter_pane.process_tty_data)
+        plotter_pane.data_flood.connect(data_flood_handler)
         self.add_plotter(plotter_pane, name)
 
     def add_python3_plotter(self, mode):
@@ -613,7 +557,7 @@ class Window(QMainWindow):
         data emitted by the REPL or script via data_received.
         """
         plotter_pane = PlotterPane()
-        self.data_received.connect(plotter_pane.process_bytes)
+        self.data_received.connect(plotter_pane.process_tty_data)
         plotter_pane.data_flood.connect(mode.on_data_flood)
         self.add_plotter(plotter_pane, _("Python3 data tuple"))
 
@@ -824,8 +768,6 @@ class Window(QMainWindow):
             self.repl.setParent(None)
             self.repl.deleteLater()
             self.repl = None
-            if not self.plotter:
-                self.close_serial_link()
 
     def remove_plotter(self):
         """
@@ -836,8 +778,6 @@ class Window(QMainWindow):
             self.plotter.setParent(None)
             self.plotter.deleteLater()
             self.plotter = None
-            if not self.repl:
-                self.close_serial_link()
 
     def remove_python_runner(self):
         """

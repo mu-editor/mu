@@ -279,12 +279,12 @@ class PythonMode(BaseMode):
         """
         Toggles the plotter on and off.
         """
-        if self.plotter is None:
-            logger.info("Toggle plotter on.")
-            self.add_plotter()
-        else:
+        if self.plotter:
             logger.info("Toggle plotter off.")
             self.remove_plotter()
+        else:
+            logger.info("Toggle plotter on.")
+            self.add_plotter()
 
     def add_plotter(self):
         """

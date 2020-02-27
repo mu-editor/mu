@@ -615,27 +615,6 @@ class MuFlakeCodeReporter:
             )
 
 
-class REPL:
-    """
-    Read, Evaluate, Print, Loop.
-
-    Represents the REPL. Since the logic for the REPL is simply a USB/serial
-    based widget this class only contains a reference to the associated port.
-    """
-
-    def __init__(self, port):
-        if os.name == "posix":
-            # If we're on Linux or OSX reference the port is like this...
-            self.port = "/dev/{}".format(port)
-        elif os.name == "nt":
-            # On Windows simply return the port (e.g. COM0).
-            self.port = port
-        else:
-            # No idea how to deal with other OS's so fail.
-            raise NotImplementedError("OS not supported.")
-        logger.info("Created new REPL object with port: {}".format(self.port))
-
-
 class Editor:
     """
     Application logic for the editor itself.

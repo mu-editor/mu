@@ -174,8 +174,8 @@ class ESPMode(MicroPythonMode):
         python_script = tab.text().split("\n")
         if not self.repl:
             self.toggle_repl(None)
-        if self.repl:
-            self.view.repl_pane.send_commands(python_script)
+        if self.repl and self.connection:
+            self.connection.send_commands(python_script)
 
     def toggle_files(self, event):
         """

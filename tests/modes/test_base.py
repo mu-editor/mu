@@ -5,7 +5,13 @@ Tests for the BaseMode class.
 import os
 import mu
 import pytest
-from mu.modes.base import BaseMode, MicroPythonMode, FileManager
+from mu.modes.base import (
+    BaseMode,
+    MicroPythonMode,
+    FileManager,
+    REPLConnection,
+)
+from PyQt5.QtCore import QIODevice
 from unittest import mock
 
 
@@ -168,7 +174,7 @@ def test_base_mode_remove_plotter():
         "mu.modes.base.csv", mock_csv
     ):
         bm.remove_plotter()
-    assert bm.plotter is None
+    assert bm.plotter is False
     view.remove_plotter.assert_called_once_with()
     dd = os.path.join(bm.workspace_dir(), "data_capture")
     mock_mkdir.assert_called_once_with(dd)
@@ -319,12 +325,13 @@ def test_micropython_mode_add_repl_ioerror():
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     ex = IOError("BOOM")
-    view.add_micropython_repl = mock.MagicMock(side_effect=ex)
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(
-        return_value=("COM0", "12345", "micro:bit")
-    )
-    mm.add_repl()
+    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
+    mock_repl_connection = mock.MagicMock()
+    mock_repl_connection.open = mock.MagicMock(side_effect=ex)
+    mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
+    with mock.patch("mu.modes.base.REPLConnection", mock_connection_class):
+        mm.add_repl()
     assert view.show_message.call_count == 1
     assert view.show_message.call_args[0][0] == str(ex)
 
@@ -336,14 +343,15 @@ def test_micropython_mode_add_repl_exception():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     ex = Exception("BOOM")
-    view.add_micropython_repl = mock.MagicMock(side_effect=ex)
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(
-        return_value=("COM0", "12345", "micro:bit")
-    )
+    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
+    mock_repl_connection = mock.MagicMock()
+    mock_repl_connection.open = mock.MagicMock(side_effect=ex)
+    mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
     with mock.patch("mu.modes.base.logger", return_value=None) as logger:
-        mm.add_repl()
-        logger.error.assert_called_once_with(ex)
+        with mock.patch("mu.modes.base.REPLConnection", mock_connection_class):
+            mm.add_repl()
+            logger.error.assert_called_once_with(ex)
 
 
 def test_micropython_mode_add_repl():
@@ -356,34 +364,36 @@ def test_micropython_mode_add_repl():
     view.show_message = mock.MagicMock()
     view.add_micropython_repl = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(
-        return_value=("COM0", "12345", "micro:bit")
-    )
-    with mock.patch("os.name", "nt"):
+    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
+    mock_repl_connection = mock.MagicMock()
+    mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
+    with mock.patch("mu.modes.base.REPLConnection", mock_connection_class):
         mm.add_repl()
     assert view.show_message.call_count == 0
-    assert view.add_micropython_repl.call_args[0][0] == "COM0"
+    assert view.add_micropython_repl.call_args[0][1] == mock_repl_connection
+    mock_repl_connection.send_interrupt.assert_called_once()
 
 
 def test_micropython_mode_add_repl_no_force_interrupt():
     """
     Nothing goes wrong so check the _view.add_micropython_repl gets the
-    expected arguments (including the flag so no keyboard interrupt is called).
+    expected arguments (including the flag so no keyboard interrupt
+    is called).
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
-    view.add_micropython_repl = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
     mm.force_interrupt = False
-    mm.find_device = mock.MagicMock(
-        return_value=("COM0", "12345", "micro:bit")
-    )
-    with mock.patch("os.name", "nt"):
+    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
+    mock_repl_connection = mock.MagicMock()
+    mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
+
+    with mock.patch("mu.modes.base.REPLConnection", mock_connection_class):
         mm.add_repl()
-    assert view.show_message.call_count == 0
-    assert view.add_micropython_repl.call_args[0][0] == "COM0"
-    assert view.add_micropython_repl.call_args[0][2] is False
+
+    view.show_message.assert_not_called()
+    mock_repl_connection.send_interrupt.assert_not_called()
 
 
 def test_micropython_mode_remove_repl():
@@ -399,6 +409,69 @@ def test_micropython_mode_remove_repl():
     mm.remove_repl()
     assert view.remove_repl.call_count == 1
     assert mm.repl is False
+
+
+def test_micropython_mode_remove_repl_and_disconnect():
+    """
+    If there is a repl, make sure it's removed as expected and the state is
+    updated. Disconnect any open serial connection.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    mm = MicroPythonMode(editor, view)
+    mm.repl = True
+    mm.plotter = False
+    mock_repl_connection = mock.MagicMock()
+    mm.connection = mock_repl_connection
+    mm.remove_repl()
+    mock_repl_connection.close.assert_called_once()
+    assert mm.connection is None
+
+
+def test_micropython_mode_remove_plotter_disconnects():
+    """
+    Ensure that connections are closed when plotter is closed.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    mm = MicroPythonMode(editor, view)
+    mm.repl = False
+    mm.plotter = True
+    mock_repl_connection = mock.MagicMock()
+    mm.connection = mock_repl_connection
+    mm.remove_plotter()
+    mock_repl_connection.close.assert_called_once()
+    assert mm.connection is None
+
+
+def test_micropython_mode_remove_repl_active_plotter():
+    """
+    When removing the repl, if the plotter is active, retain the
+    connection.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    mm = MicroPythonMode(editor, view)
+    mm.connection = mock.MagicMock()
+    mm.plotter = True
+    mm.remove_repl()
+    assert mm.repl is False
+    assert mm.connection is not None
+
+
+def test_micropython_mode_remove_plotter_active_repl():
+    """
+    When removing the plotter, if the repl is active, retain the
+    connection.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    mm = MicroPythonMode(editor, view)
+    mm.connection = mock.MagicMock()
+    mm.repl = True
+    mm.remove_plotter()
+    assert mm.plotter is False
+    assert mm.connection is not None
 
 
 def test_micropython_mode_toggle_repl_on():
@@ -479,12 +552,13 @@ def test_micropython_mode_add_plotter_ioerror():
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     ex = IOError("BOOM")
-    view.add_micropython_plotter = mock.MagicMock(side_effect=ex)
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(
-        return_value=("COM0", "123456", "micro:bit")
-    )
-    mm.add_plotter()
+    mm.find_device = mock.MagicMock(return_value=("COM0", "12345", "micro:bit"))
+    mock_repl_connection = mock.MagicMock()
+    mock_repl_connection.open = mock.MagicMock(side_effect=ex)
+    mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
+    with mock.patch("mu.modes.base.REPLConnection", mock_connection_class):
+        mm.add_plotter()
     assert view.show_message.call_count == 1
     assert view.show_message.call_args[0][0] == str(ex)
 
@@ -496,14 +570,15 @@ def test_micropython_mode_add_plotter_exception():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     ex = Exception("BOOM")
-    view.add_micropython_plotter = mock.MagicMock(side_effect=ex)
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(
-        return_value=("COM0", "12345", "micro:bit")
-    )
+    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
+    mock_repl_connection = mock.MagicMock()
+    mock_repl_connection.open = mock.MagicMock(side_effect=ex)
+    mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
     with mock.patch("mu.modes.base.logger", return_value=None) as logger:
-        mm.add_plotter()
-        logger.error.assert_called_once_with(ex)
+        with mock.patch("mu.modes.base.REPLConnection", mock_connection_class):
+            mm.add_plotter()
+            logger.error.assert_called_once_with(ex)
 
 
 def test_micropython_mode_add_plotter():
@@ -516,13 +591,14 @@ def test_micropython_mode_add_plotter():
     view.show_message = mock.MagicMock()
     view.add_micropython_plotter = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(
-        return_value=("COM0", "12345", "micro:bit")
-    )
-    with mock.patch("os.name", "nt"):
+    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
+    mock_repl_connection = mock.MagicMock()
+    mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
+    with mock.patch("mu.modes.base.REPLConnection", mock_connection_class):
         mm.add_plotter()
-    assert view.show_message.call_count == 0
-    assert view.add_micropython_plotter.call_args[0][0] == "COM0"
+    view.show_message.assert_not_called()
+    assert view.add_micropython_plotter.call_args[0][1] == mock_repl_connection
+    mock_repl_connection.open.assert_called_once()
 
 
 def test_micropython_on_data_flood():
@@ -679,3 +755,183 @@ def test_FileManager_delete_fail():
     with mock.patch("mu.modes.base.microfs.rm", side_effect=Exception("boom")):
         fm.delete("foo.py")
     fm.on_delete_fail.emit.assert_called_once_with("foo.py")
+
+
+def test_REPLConnection_init_default_args():
+    """
+    Ensure the MicroPython REPLConnection object is instantiated as expected.
+    """
+    mock_serial_class = mock.MagicMock()
+    with mock.patch("mu.modes.base.QSerialPort", mock_serial_class):
+        conn = REPLConnection("COM0", baudrate=9600)
+
+    assert conn.port == "COM0"
+    assert conn.baudrate == 9600
+
+
+def test_REPLConnection_open():
+    """
+    Ensure the serial port is opened in the expected manner.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=True)
+    mock_serial.readyRead = mock.MagicMock()
+    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    with mock.patch("mu.modes.base.QSerialPort", mock_serial_class):
+        conn = REPLConnection("COM0", baudrate=9600)
+        conn.open()
+    mock_serial.setPortName.assert_called_once_with("COM0")
+    mock_serial.setBaudRate.assert_called_once_with(9600)
+    mock_serial.open.assert_called_once_with(QIODevice.ReadWrite)
+    mock_serial.readyRead.connect.assert_called_once_with(conn._on_serial_read)
+
+
+def test_REPLConnection_open_unable_to_connect():
+    """
+    If serial.open fails raise an IOError.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.setPortName = mock.MagicMock(return_value=None)
+    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
+    mock_serial.open = mock.MagicMock(return_value=False)
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+    with mock.patch("mu.modes.base.QSerialPort", mock_serial_class):
+        with pytest.raises(IOError):
+            conn = REPLConnection("COM0")
+            conn.open()
+
+
+def test_REPLConnection_open_DTR_unset():
+    """
+    If data terminal ready (DTR) is unset (as can be the case on some
+    Windows / Qt combinations) then fall back to PySerial to correct. See
+    issues #281 and #302 for details.
+    """
+    # Mock QtSerialPort object
+    mock_qt_serial = mock.MagicMock()
+    mock_qt_serial.isDataTerminalReady.return_value = False
+    mock_qtserial_class = mock.MagicMock(return_value=mock_qt_serial)
+    # Mock PySerial object
+    mock_Serial = mock.MagicMock()
+    mock_pyserial_class = mock.MagicMock(return_value=mock_Serial)
+    with mock.patch("mu.modes.base.QSerialPort", mock_qtserial_class):
+        with mock.patch("mu.modes.base.Serial", mock_pyserial_class):
+            conn = REPLConnection("COM0")
+            conn.open()
+
+    # Check that Qt serial is opened twice
+    mock_qt_serial.close.assert_called_once_with()
+    assert mock_qt_serial.open.call_count == 2
+
+    # Check that DTR is set true with PySerial
+    assert mock_Serial.dtr is True
+    mock_Serial.close.assert_called_once_with()
+
+
+def test_REPLConnection_close():
+    """
+    Ensure the serial link is closed / cleaned up as expected.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+
+    with mock.patch("mu.modes.base.QSerialPort", mock_serial_class):
+        conn = REPLConnection("COM0")
+        conn.open()
+        conn.close()
+
+    mock_serial.close.assert_called_once_with()
+    assert conn.serial is None
+    assert conn.port is None
+    assert conn.baudrate is None
+
+
+def test_REPLConnection_on_serial_read():
+    """
+    When data is received the data_received signal should emit it.
+    """
+    mock_serial = mock.MagicMock()
+    mock_serial.readAll.return_value = b"Hello"
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+
+    with mock.patch("mu.modes.base.QSerialPort", mock_serial_class):
+        conn = REPLConnection("COM0")
+
+    conn.data_received = mock.MagicMock()
+    conn._on_serial_read()
+    conn.data_received.emit.assert_called_once_with(b"Hello")
+
+
+def test_REPLConnection_write():
+    mock_serial = mock.MagicMock()
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+
+    with mock.patch("mu.modes.base.QSerialPort", mock_serial_class):
+        conn = REPLConnection("COM0")
+        conn.open()
+        conn.write(b"Hello")
+
+    mock_serial.write.assert_called_once_with(b"Hello")
+
+
+def test_REPLConnection_send_interrupt():
+    mock_serial = mock.MagicMock()
+    mock_serial_class = mock.MagicMock(return_value=mock_serial)
+
+    with mock.patch("mu.modes.base.QSerialPort", mock_serial_class):
+        conn = REPLConnection("COM0")
+        conn.open()
+        conn.send_interrupt()
+
+    mock_serial.write.assert_any_call(b"\x02")  # CTRL-B
+    mock_serial.write.assert_any_call(b"\x03")  # CTRL-C
+
+
+def test_REPLConnection_execute():
+    """
+    Ensure the first command is sent via serial to the connected device, and
+    further commands are scheduled for the future.
+    """
+    mock_serial_class = mock.MagicMock()
+    with mock.patch("mu.modes.base.QSerialPort", mock_serial_class):
+        conn = REPLConnection("COM0")
+        conn.write = mock.MagicMock()
+
+    # Mocks QTimer, so only first command will be sent
+    commands = [b"A", b"B"]
+    with mock.patch("mu.modes.base.QTimer") as mock_timer:
+        conn.execute(commands)
+        conn.write.assert_called_once_with(b"A")
+        assert mock_timer.singleShot.call_count == 1
+
+
+def test_REPLConnection_send_commands():
+    """
+    Ensure the list of commands is correctly encoded and bound by control
+    commands to put the board into and out of raw mode.
+    """
+    mock_serial_class = mock.MagicMock()
+    with mock.patch("mu.modes.base.QSerialPort", mock_serial_class):
+        conn = REPLConnection("COM0")
+        conn.execute = mock.MagicMock()
+        commands = ["import os", "print(os.listdir())"]
+        conn.send_commands(commands)
+
+    expected = [
+        b"\x03",  # Keyboard interrupt
+        b"\x03",  # Keyboard interrupt
+        b"\x01",  # Put the board into raw mode.
+        b"\x04",  # Soft-reboot
+        b"\x03",  # Keyboard interrupt
+        b"\x03",  # Keyboard interrupt
+        b'print("\\n");',  # Ensure a newline at the start of output.
+        b"import os\r",  # The commands to run.
+        b"print(os.listdir())\r",
+        b"\r",  # Ensure newline after commands.
+        b"\x04",  # Evaluate the commands.
+        b"\x02",  # Leave raw mode.
+    ]
+    conn.execute.assert_called_once_with(expected)

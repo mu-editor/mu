@@ -243,10 +243,10 @@ def test_run(esp_mode):
     Ensure run/repl/files buttons are disabled while flashing.
     """
     esp_mode.set_buttons = mock.MagicMock()
-    esp_mode.find_device = mock.MagicMock(
-        return_value=("COM0", "12345", "ESP8266")
-    )
-    esp_mode.run()
+    esp_mode.find_device = mock.MagicMock(return_value=("COM0", "12345", "ESP8266"))
+    mock_connection_class = mock.MagicMock()
+    with mock.patch("mu.modes.base.REPLConnection", mock_connection_class):
+        esp_mode.run()
     esp_mode.set_buttons.assert_called_once_with(files=False)
 
 

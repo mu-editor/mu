@@ -731,33 +731,6 @@ def test_MuFlakeCodeReporter_flake_un_matched():
     assert r.log[0]["message"] == "something went wrong"
 
 
-def test_REPL_posix():
-    """
-    The port is set correctly in a posix environment.
-    """
-    with mock.patch("os.name", "posix"):
-        r = mu.logic.REPL("ttyACM0")
-        assert r.port == "/dev/ttyACM0"
-
-
-def test_REPL_nt():
-    """
-    The port is set correctly in an nt (Windows) environment.
-    """
-    with mock.patch("os.name", "nt"):
-        r = mu.logic.REPL("COM0")
-        assert r.port == "COM0"
-
-
-def test_REPL_unsupported():
-    """
-    A NotImplementedError is raised on an unsupported OS.
-    """
-    with mock.patch("os.name", "SPARC"):
-        with pytest.raises(NotImplementedError):
-            mu.logic.REPL("tty0")
-
-
 def test_editor_init():
     """
     Ensure a new instance is set-up correctly and creates the required folders
