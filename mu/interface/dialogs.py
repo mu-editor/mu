@@ -21,8 +21,10 @@ import sys
 import logging
 import csv
 import shutil
+from PyQt5 import QtCore
 from PyQt5.QtCore import QSize, QProcess, QTimer
 from PyQt5.QtWidgets import (
+    QHBoxLayout,
     QVBoxLayout,
     QListWidget,
     QLabel,
@@ -34,9 +36,13 @@ from PyQt5.QtWidgets import (
     QWidget,
     QCheckBox,
     QLineEdit,
+    QPushButton,
+    QFileDialog
 )
 from PyQt5.QtGui import QTextCursor
 from mu.resources import load_icon
+from mu.resources.esp import esptool
+from multiprocessing import Process
 
 
 logger = logging.getLogger(__name__)
@@ -225,6 +231,160 @@ class PackagesWidget(QWidget):
         widget_layout.addWidget(self.text_area)
 
 
+class ESP32SettingsWidget(QWidget):
+    """
+    Used for configuring how to interact with the ESP32:
+
+    * Override MicroPython.
+    """
+
+    def setup(self):
+        widget_layout = QVBoxLayout()
+
+        # Checkbox for erase, label for explain
+        form_set = QHBoxLayout()
+        self.erase = QCheckBox(_("Elrase the entire flash before updating?"))
+        self.erase.setChecked(False)
+        form_set.addWidget(self.erase)
+        widget_layout.addLayout(form_set)
+
+        # Label explained the forms following
+        self.setLayout(widget_layout)
+        label = QLabel(
+            _(
+                "Override the built-in MicroPython runtime with "
+                "the following file:"
+            )
+        )
+        label.setWordWrap(True)
+        widget_layout.addWidget(label)
+
+        # Edit box for write command, Button for select firmware, Button for update
+        form_set = QHBoxLayout()
+        self.txtFolder = QLineEdit()
+        self.btnFolder = QPushButton(_("..."))
+        self.btnExec = QPushButton(_("Update"))
+        self.btnExec.setEnabled(False)
+        form_set.addWidget(self.txtFolder)
+        form_set.addWidget(self.btnFolder)
+        form_set.addWidget(self.btnExec)
+        widget_layout.addLayout(form_set)
+
+        # Text area for information
+        form_set = QHBoxLayout()
+        self.log_text_area = QPlainTextEdit()
+        self.log_text_area.setReadOnly(True)
+
+        init_msg = _('''
+You can check the built-in MicroPython information by following command in REPL,
+>>> import sys
+>>> sys.implementation
+''')
+        self.log_text_area.setPlainText(init_msg)
+        upload_info = _('''
+The upload takes about 30 seconds.
+''')
+        self.log_text_area.appendPlainText(upload_info)
+        form_set.addWidget(self.log_text_area)
+        widget_layout.addLayout(form_set)
+
+        widget_layout.addStretch()
+
+        # Set event
+        self.btnFolder.clicked.connect(self.show_folder_dialog)
+        self.btnExec.clicked.connect(self.update_firmware)
+        self.btnExec.installEventFilter(self)
+
+        self.filename = ''
+
+    def show_folder_dialog(self):
+        #default_command = 'esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 '
+        default_command=''
+        self.command = ''
+        # open dialog and set to foldername
+        filename = QFileDialog.getOpenFileName(self,
+                                                'open file',
+                                                os.path.expanduser('.'),
+                                                "Firmware (*.bin)")
+        print(filename)
+        if filename:
+            filename = filename[0].replace('/', os.sep)
+            self.txtFolder.setText(default_command + filename)
+
+    def update_firmware(self):
+        self.commands = []
+        self.log_text_area.appendPlainText('Updating...\n')
+
+        esptool = './mu/resources/esp/esptool.py'
+        if self.erase.isChecked():
+            command = [esptool, 'erase_flash']
+            # self.process.start('python', command)
+            self.commands.append(command)
+
+        #command = self.txtFolder.text()
+        #command = command.split()
+        #command.remove('esptool.py')
+        command = ['--chip', 'esp32', '--baud', '460800', 'write_flash', '-z', '0x1000', self.txtFolder.text()]
+        command.insert(0, esptool)
+        # self.process.start('python', command)
+        self.commands.append(command)
+        self.run_esptool()
+
+    def run_esptool(self):
+        command = self.commands.pop(0)
+        print(command)
+        self.process = QProcess(self)
+        self.process.setProcessChannelMode(QProcess.MergedChannels)
+        self.process.readyRead.connect(self.read_process)
+        self.process.finished.connect(self.finished)
+
+        self.process.start('python', command)
+
+    def finished(self):
+        """
+        Called when the subprocess that uses pip to install a package is
+        finished.
+        """
+        if self.commands:
+            self.process = None
+            self.run_esptool()
+
+    def read_process(self):
+        """
+        Read data from the child process and append it to the text area. Try
+        to keep reading until there's no more data from the process.
+        """
+        data = self.process.readAll()
+        if data:
+            try:
+                self.append_data(data.data().decode("utf-8"))
+            except UnicodeDecodeError as e:
+                # print(e)
+                pass
+            QTimer.singleShot(2, self.read_process)
+
+    def append_data(self, msg):
+        """
+        Add data to the end of the text area.
+        """
+        cursor = self.log_text_area.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        cursor.insertText(msg)
+        cursor.movePosition(QTextCursor.End)
+        self.log_text_area.setTextCursor(cursor)
+
+    def eventFilter(self, obj, event):
+        if obj == self.btnExec and event.type() == QtCore.QEvent.HoverEnter:
+            self.onHovered()
+        return super(ESP32SettingsWidget, self).eventFilter(obj, event)
+
+    def onHovered(self):
+        if len(self.txtFolder.text()) > 0:
+            self.btnExec.setEnabled(True)
+        else:
+            self.btnExec.setEnabled(False)
+
+
 class AdminDialog(QDialog):
     """
     Displays administrative related information and settings (logs, environment
@@ -263,6 +423,9 @@ class AdminDialog(QDialog):
         self.package_widget = PackagesWidget()
         self.package_widget.setup(packages)
         self.tabs.addTab(self.package_widget, _("Third Party Packages"))
+        self.esp32_widget = ESP32SettingsWidget()
+        self.esp32_widget.setup()
+        self.tabs.addTab(self.esp32_widget, _("ESP32 Firmware Settings"))
 
     def settings(self):
         """
