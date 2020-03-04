@@ -321,12 +321,8 @@ The upload takes about 30 seconds.
             # self.process.start('python', command)
             self.commands.append(command)
 
-        #command = self.txtFolder.text()
-        #command = command.split()
-        #command.remove('esptool.py')
         command = ['--chip', 'esp32', '--baud', '460800', 'write_flash', '-z', '0x1000', self.txtFolder.text()]
         command.insert(0, esptool)
-        # self.process.start('python', command)
         self.commands.append(command)
         self.run_esptool()
 
