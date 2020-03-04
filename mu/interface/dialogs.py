@@ -41,9 +41,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QTextCursor
 from mu.resources import load_icon
-from mu.resources.esp import esptool
 from multiprocessing import Process
-
+from mu.logic import MODULE_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -243,7 +242,7 @@ class ESP32SettingsWidget(QWidget):
 
         # Checkbox for erase, label for explain
         form_set = QHBoxLayout()
-        self.erase = QCheckBox(_("Elrase the entire flash before updating?"))
+        self.erase = QCheckBox(_("Erase the entire flash before updating?"))
         self.erase.setChecked(False)
         form_set.addWidget(self.erase)
         widget_layout.addLayout(form_set)
@@ -312,10 +311,11 @@ The upload takes about 30 seconds.
             self.txtFolder.setText(default_command + filename)
 
     def update_firmware(self):
+        self.err = 0
         self.commands = []
         self.log_text_area.appendPlainText('Updating...\n')
 
-        esptool = './mu/resources/esp/esptool.py'
+        esptool = MODULE_DIR + '/esptool.py'
         if self.erase.isChecked():
             command = [esptool, 'erase_flash']
             # self.process.start('python', command)
@@ -348,20 +348,31 @@ The upload takes about 30 seconds.
         if self.commands:
             self.process = None
             self.run_esptool()
+        else:
+            if (self.err == 1):
+                self.log_text_area.appendPlainText('''
+Select Third Party Packages Tab and add esptool.
+''')
+
 
     def read_process(self):
         """
         Read data from the child process and append it to the text area. Try
         to keep reading until there's no more data from the process.
         """
+        msg = ''
         data = self.process.readAll()
         if data:
             try:
-                self.append_data(data.data().decode("utf-8"))
+                msg = data.data().decode("utf-8")
+                self.append_data(msg)
             except UnicodeDecodeError as e:
                 # print(e)
                 pass
             QTimer.singleShot(2, self.read_process)
+
+        if msg in "[Errno 2] No such file or directory":
+            self.err = 1
 
     def append_data(self, msg):
         """
