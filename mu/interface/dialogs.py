@@ -280,10 +280,9 @@ You can check the built-in MicroPython information by following command in REPL,
 >>> sys.implementation
 ''')
         self.log_text_area.setPlainText(init_msg)
-        upload_info = _('''
-The upload takes about 30 seconds.
+        self.log_text_area.appendPlainText('''
+If not install esptool yet, select "Third Party Packages" Tab and add esptool.
 ''')
-        self.log_text_area.appendPlainText(upload_info)
         form_set.addWidget(self.log_text_area)
         widget_layout.addLayout(form_set)
 
