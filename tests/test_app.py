@@ -132,9 +132,9 @@ def test_run(qtapp):
         assert timer.call_count == 1
         assert len(timer.mock_calls) == 4
         assert ed.call_count == 1
-        assert len(ed.mock_calls) == 3
+        assert len(ed.mock_calls) == 5
         assert win.call_count == 1
-        assert len(win.mock_calls) == 6
+        assert len(win.mock_calls) == 8
         assert ex.call_count == 1
         window.load_theme.emit("day")
         qa.assert_has_calls([mock.call().setStyleSheet(DAY_STYLE)])

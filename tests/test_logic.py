@@ -199,6 +199,36 @@ def test_CONSTANTS():
     assert mu.logic.WORKSPACE_NAME
 
 
+@pytest.fixture
+def microbit_com1():
+    microbit = mu.logic.Device(
+        0x0D28, 0x0204, "COM1", 123456, "BBC micro:bit", "microbit", None,
+    )
+    return microbit
+
+
+@pytest.fixture
+def microbit_com2():
+    microbit = mu.logic.Device(
+        0x0D28, 0x0204, "COM2", 123456, "BBC micro:bit", "microbit", None,
+    )
+    return microbit
+
+
+@pytest.fixture
+def adafruit_feather():
+    microbit = mu.logic.Device(
+        0x239A,
+        0x800B,
+        "COM1",
+        123456,
+        "CircuitPython",
+        "circuitpython",
+        "Adafruit Feather",
+    )
+    return microbit
+
+
 def test_installed_packages_dist_info():
     """
     Ensure module meta-data is processed properly to give a return value of a
@@ -750,7 +780,7 @@ def test_editor_init():
         assert e.envars == []
         assert e.minify is False
         assert e.microbit_runtime == ""
-        assert e.connected_devices == set()
+        # assert e.connected_devices == set()
         assert e.find == ""
         assert e.replace == ""
         assert e.global_replace is False
@@ -2584,7 +2614,7 @@ def test_autosave():
     )
 
 
-def test_check_usb():
+def test_check_usb(microbit_com1):
     """
     Ensure the check_usb callback actually checks for connected USB devices.
     """
@@ -2595,22 +2625,20 @@ def test_check_usb():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None, None)
+    mode_py.find_devices.return_value = []
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345", None)
+    mode_mb.find_devices.return_value = [microbit_com1]
     ed.modes = {"microbit": mode_mb, "python": mode_py}
-    ed.show_status_message = mock.MagicMock()
+    ed.device_connected = mock.MagicMock()
     ed.check_usb()
-    expected = "Detected new BBC micro:bit device."
-    ed.show_status_message.assert_called_with(expected)
-    assert view.show_confirmation.called
-    ed.change_mode.assert_called_once_with("microbit")
+    ed.device_connected.emit.assert_called_with(microbit_com1)
 
 
-def test_check_usb_change_mode_cancel():
+def test_check_usb_change_mode_cancel(adafruit_feather):
     """
-    Ensure the check_usb doesn't change mode if confirmation cancelled by user.
+    Ensure the check_usb doesn't change mode if confirmation cancelled by
+    user.
     """
     view = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
@@ -2619,24 +2647,19 @@ def test_check_usb_change_mode_cancel():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None, None)
+    mode_py.find_devices.return_value = []
     mode_cp = mock.MagicMock()
     mode_cp.name = "CircuitPlayground"
-    mode_cp.find_device.return_value = (
-        "/dev/ttyUSB1",
-        "12345",
-        "Adafruit Feather",
-    )
+    mode_cp.find_devices.return_value = [adafruit_feather]
     ed.modes = {"circuitplayground": mode_cp, "python": mode_py}
-    ed.show_status_message = mock.MagicMock()
+    ed.device_connected = mock.MagicMock()
     ed.check_usb()
-    expected = "Detected new CircuitPlayground device: Adafruit Feather."
-    ed.show_status_message.assert_called_with(expected)
+    ed.device_connected.emit.assert_called_with(adafruit_feather)
     assert view.show_confirmation.called
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_already_in_mode():
+def test_check_usb_already_in_mode(microbit_com1):
     """
     Ensure the check_usb doesn't ask to change mode if already selected.
     """
@@ -2646,9 +2669,9 @@ def test_check_usb_already_in_mode():
     ed.change_mode = mock.MagicMock()
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345", None)
+    mode_mb.find_devices.return_value = [microbit_com1]
     mode_cp = mock.MagicMock()
-    mode_cp.find_device.return_value = (None, None, None)
+    mode_cp.find_devices.return_value = []
     ed.modes = {"microbit": mode_mb, "circuitplayground": mode_cp}
     ed.mode = "microbit"
     ed.show_status_message = mock.MagicMock()
@@ -2657,7 +2680,7 @@ def test_check_usb_already_in_mode():
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_currently_running_code():
+def test_check_usb_currently_running_code(microbit_com1):
     """
     Ensure the check_usb doesn't ask to change mode if the current mode is
     running code.
@@ -2669,10 +2692,10 @@ def test_check_usb_currently_running_code():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = True
-    mode_py.find_device.return_value = (None, None, None)
+    mode_py.find_device.return_value = []
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345", None)
+    mode_mb.find_devices.return_value = [microbit_com1]
     ed.modes = {"microbit": mode_mb, "python": mode_py}
     ed.show_status_message = mock.MagicMock()
     ed.check_usb()
@@ -2682,7 +2705,8 @@ def test_check_usb_currently_running_code():
 
 def test_check_usb_multiple_devices():
     """
-    Ensure the check_usb doesn't ask to change mode if multiple devices found.
+    Ensure the check_usb doesn't ask to change mode if multiple devices
+    found.
     """
     view = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
@@ -2691,36 +2715,30 @@ def test_check_usb_multiple_devices():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None, None)
+    mode_py.find_devices.return_value = []
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345", None)
+    mode_mb.find_devices.return_value = [microbit_com1]
     mode_cp = mock.MagicMock()
     mode_cp.name = "CircuitPlayground"
-    mode_cp.find_device.return_value = (
-        "/dev/ttyUSB1",
-        "54321",
-        "Adafruit Feather",
-    )
+    mode_cp.find_devices.return_value = [adafruit_feather]
     ed.modes = {
         "microbit": mode_mb,
         "circuitplayground": mode_cp,
         "python": mode_py,
     }
-    ed.show_status_message = mock.MagicMock()
+    ed.device_connected = mock.MagicMock()
     ed.check_usb()
-    expected_mb = mock.call("Detected new BBC micro:bit device.")
-    expected_cp = mock.call(
-        "Detected new CircuitPlayground device: Adafruit Feather."
-    )
-    ed.show_status_message.assert_has_calls(
+    expected_mb = mock.call(microbit_com1)
+    expected_cp = mock.call(adafruit_feather)
+    ed.device_connected.emit.assert_has_calls(
         (expected_mb, expected_cp), any_order=True
     )
     view.show_confirmation.assert_not_called()
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_when_selecting_mode_is_silent():
+def test_check_usb_when_selecting_mode_is_silent(adafruit_feather):
     """
     Ensure the check_usb doesn't ask to change mode if the user has the mode
     selection dialog active (indicated by the selecting_mode flag.
@@ -2732,36 +2750,31 @@ def test_check_usb_when_selecting_mode_is_silent():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None, None)
+    mode_py.find_devices.return_value = []
     mode_cp = mock.MagicMock()
     mode_cp.name = "CircuitPlayground"
-    mode_cp.find_device.return_value = (
-        "/dev/ttyUSB1",
-        "12345",
-        "Adafruit Feather",
-    )
+    mode_cp.find_devices.return_value = [adafruit_feather]
     ed.modes = {"circuitplayground": mode_cp, "python": mode_py}
-    ed.show_status_message = mock.MagicMock()
+    ed.device_connected = mock.MagicMock()
     ed.selecting_mode = True
     ed.check_usb()
-    expected = "Detected new CircuitPlayground device: Adafruit Feather."
-    ed.show_status_message.assert_called_with(expected)
+    ed.device_connected.emit.assert_called_with(adafruit_feather)
     assert view.show_confirmation.call_count == 0
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_remove_disconnected_devices():
-    """
-    Ensure that if a device is no longer connected, it is removed from
-    the set of connected devices.
-    """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.modes = {}
-    ed.show_status_message = mock.MagicMock()
-    ed.connected_devices = {("microbit", "/dev/ttyACM1")}
-    ed.check_usb()
-    assert len(ed.connected_devices) == 0
+# def test_check_usb_remove_disconnected_devices():
+#     """
+#     Ensure that if a device is no longer connected, it is removed from
+#     the set of connected devices.
+#     """
+#     view = mock.MagicMock()
+#     ed = mu.logic.Editor(view)
+#     ed.modes = {}
+#     ed.show_status_message = mock.MagicMock()
+#     ed.connected_devices = {("microbit", "/dev/ttyACM1")}
+#     ed.check_usb()
+#     assert len(ed.connected_devices) == 0
 
 
 def test_show_status_message():
@@ -3460,3 +3473,66 @@ def test_tidy_code_invalid_python():
     ed = mu.logic.Editor(mock_view)
     ed.tidy_code()
     assert mock_view.show_message.call_count == 1
+
+
+def test_device_init(microbit_com1):
+    """
+    Test that all properties are set properly and can be read.
+    """
+    assert microbit_com1.vid == 0x0D28
+    assert microbit_com1.pid == 0x0204
+    assert microbit_com1.port == "COM1"
+    assert microbit_com1.serial_number == 123456
+    assert microbit_com1.long_mode_name == "BBC micro:bit"
+    assert microbit_com1.short_mode_name == "microbit"
+
+
+def test_device_with_no_board_name_is_mode_name(microbit_com1):
+    """
+    Test that when no board name is given, the board name is the same
+    as the mode name.
+    """
+    assert microbit_com1.name == "BBC micro:bit"
+
+
+def test_com1_equality(microbit_com1):
+    """
+    Test that two separate Device-objects representing the same device
+    are recognized as equal.
+    """
+    identical_microbit_com1 = mu.logic.Device(
+        0x0D28, 0x0204, "COM1", 123456, "BBC micro:bit", "microbit", None,
+    )
+    assert microbit_com1 == identical_microbit_com1
+
+
+def test_com1_not_equal_on_different_ports(microbit_com1):
+    """
+    Test that if two otherwise identical devices differ on the port, they
+    are not recognized as being equal.
+    """
+    microbit_com2 = mu.logic.Device(
+        0x0D28, 0x0204, "COM2", 123456, "BBC micro:bit", "microbit", None,
+    )
+    assert microbit_com1 != microbit_com2
+
+
+def test_com1_hash_equality(microbit_com1):
+    """
+    Test that hash function returns the same for two identical Device-objects.
+    """
+    identical_microbit_com1 = mu.logic.Device(
+        0x0D28, 0x0204, "COM1", 123456, "BBC micro:bit", "microbit", None,
+    )
+    assert hash(microbit_com1) == hash(identical_microbit_com1)
+
+
+def test_com1_hash_not_equal_on_different_ports(microbit_com1):
+    """
+    Test that the hash function differs, when two otherwise identical
+    devices are connected to two different ports.
+    """
+    microbit_com2 = mu.logic.Device(
+        0x0D28, 0x0204, "COM2", 123456, "BBC micro:bit", "microbit", None,
+    )
+    assert hash(microbit_com1) != hash(microbit_com2)

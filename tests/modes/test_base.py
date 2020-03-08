@@ -5,6 +5,7 @@ Tests for the BaseMode class.
 import os
 import mu
 import pytest
+from mu.logic import Device
 from mu.modes.base import (
     BaseMode,
     MicroPythonMode,
@@ -15,6 +16,13 @@ from PyQt5.QtCore import QIODevice
 from unittest import mock
 
 
+@pytest.fixture()
+def microbit():
+    return Device(
+        0x0D28, 0x0204, "COM0", "123456", "BBC micro:bit", "microbit"
+    )
+
+
 def test_base_mode():
     """
     Sanity check for the parent class of all modes.
@@ -23,6 +31,7 @@ def test_base_mode():
     view = mock.MagicMock()
     bm = BaseMode(editor, view)
     assert bm.name == "UNNAMED MODE"
+    assert bm.short_name == "UNDEFINED_MODE"
     assert bm.description == "DESCRIPTION NOT AVAILABLE."
     assert bm.icon == "help"
     assert bm.is_debugger is False
@@ -208,6 +217,8 @@ def test_base_mode_open_file():
     assert newline is None
 
 
+# TODO Avoid using BOARD_IDS from base.py (which is only ever used in
+# this test)
 def test_micropython_mode_find_device():
     """
     Ensure it's possible to detect a device and return the expected port.
@@ -225,11 +236,24 @@ def test_micropython_mode_find_device():
         mock_port.serialNumber = mock.MagicMock(return_value="12345")
         mock_os = mock.MagicMock()
         mock_os.name = "nt"
+        mock_sys = mock.MagicMock()
+        mock_sys.platform = "win32"
+        device = Device(
+            mock_port.vendorIdentifier(),
+            mock_port.productIdentifier(),
+            mock_port.portName(),
+            mock_port.serialNumber(),
+            "micro:bit",
+            board_name,
+            None,
+        )
         with mock.patch(
             "mu.modes.base.QSerialPortInfo.availablePorts",
             return_value=[mock_port],
-        ), mock.patch("mu.modes.base.os", mock_os):
-            assert mm.find_device() == ("COM0", "12345", board_name)
+        ), mock.patch("mu.modes.base.os", mock_os), mock.patch(
+            "mu.modes.base.sys", mock_sys
+        ):
+            assert mm.find_devices() == [device]
 
 
 def test_micropython_mode_find_device_no_ports():
@@ -242,7 +266,7 @@ def test_micropython_mode_find_device_no_ports():
     with mock.patch(
         "mu.modes.base.QSerialPortInfo.availablePorts", return_value=[]
     ):
-        assert mm.find_device() == (None, None, None)
+        assert mm.find_devices() == []
 
 
 def test_micropython_mode_find_device_but_no_device():
@@ -260,7 +284,41 @@ def test_micropython_mode_find_device_but_no_device():
         "mu.modes.base.QSerialPortInfo.availablePorts",
         return_value=[mock_port],
     ):
-        assert mm.find_device() == (None, None, None)
+        assert mm.find_devices() == []
+
+
+def test_micropython_mode_find_device_darwin_remove_extraneous_devices():
+    """
+    Check that if on OS X, only one version of the same device is shown,
+    as OS X shows every device on two different ports.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    mm = MicroPythonMode(editor, view)
+    mock_port = mock.MagicMock()
+    mock_port.portName = mock.MagicMock(return_value="tty.usbserial-XXX")
+    mock_port.productIdentifier = mock.MagicMock(return_value=0x0204)
+    mock_port.vendorIdentifier = mock.MagicMock(return_value=0x0D28)
+    mock_port.serialNumber = mock.MagicMock(return_value="123456")
+    mock_port2 = mock.MagicMock()
+    mock_port2.portName = mock.MagicMock(return_value="cu.usbserial-XXX")
+    mock_port2.productIdentifier = mock.MagicMock(return_value=0x0204)
+    mock_port2.vendorIdentifier = mock.MagicMock(return_value=0x0D28)
+    mock_port2.serialNumber = mock.MagicMock(return_value="123456")
+    device = Device(
+        mock_port2.vendorIdentifier(),
+        mock_port2.productIdentifier(),
+        "/dev/" + mock_port2.portName(),
+        mock_port2.serialNumber(),
+        "micro:bit",
+        None,
+        None,
+    )
+    with mock.patch("sys.platform", "darwin"), mock.patch(
+        "mu.modes.base.QSerialPortInfo.availablePorts",
+        return_value=[mock_port, mock_port2],
+    ):
+        assert mm.find_devices() == [device]
 
 
 def test_micropython_mode_port_path_posix():
@@ -305,28 +363,28 @@ def test_micropython_mode_add_repl_no_port():
     message is enacted.
     """
     editor = mock.MagicMock()
+    editor.current_device = None
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=(None, None, None))
     mm.add_repl()
     assert view.show_message.call_count == 1
     message = "Could not find an attached device."
     assert view.show_message.call_args[0][0] == message
 
 
-def test_micropython_mode_add_repl_ioerror():
+def test_micropython_mode_add_repl_ioerror(microbit):
     """
     Sometimes when attempting to connect to the device there is an IOError
     because it's still booting up or connecting to the host computer. In this
     case, ensure a useful message is displayed.
     """
     editor = mock.MagicMock()
+    editor.current_device = microbit
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     ex = IOError("BOOM")
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
     mock_repl_connection = mock.MagicMock()
     mock_repl_connection.open = mock.MagicMock(side_effect=ex)
     mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
@@ -336,15 +394,15 @@ def test_micropython_mode_add_repl_ioerror():
     assert view.show_message.call_args[0][0] == str(ex)
 
 
-def test_micropython_mode_add_repl_exception():
+def test_micropython_mode_add_repl_exception(microbit):
     """
     Ensure that any non-IOError based exceptions are logged.
     """
     editor = mock.MagicMock()
+    editor.current_device = microbit
     view = mock.MagicMock()
     ex = Exception("BOOM")
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
     mock_repl_connection = mock.MagicMock()
     mock_repl_connection.open = mock.MagicMock(side_effect=ex)
     mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
@@ -354,17 +412,17 @@ def test_micropython_mode_add_repl_exception():
             logger.error.assert_called_once_with(ex)
 
 
-def test_micropython_mode_add_repl():
+def test_micropython_mode_add_repl(microbit):
     """
     Nothing goes wrong so check the _view.add_micropython_repl gets the
     expected argument.
     """
     editor = mock.MagicMock()
+    editor.current_device = microbit
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     view.add_micropython_repl = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
     mock_repl_connection = mock.MagicMock()
     mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
     with mock.patch("mu.modes.base.REPLConnection", mock_connection_class):
@@ -374,24 +432,22 @@ def test_micropython_mode_add_repl():
     mock_repl_connection.send_interrupt.assert_called_once()
 
 
-def test_micropython_mode_add_repl_no_force_interrupt():
+def test_micropython_mode_add_repl_no_force_interrupt(microbit):
     """
     Nothing goes wrong so check the _view.add_micropython_repl gets the
     expected arguments (including the flag so no keyboard interrupt
     is called).
     """
     editor = mock.MagicMock()
+    editor.current_device = microbit
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
     mm.force_interrupt = False
-    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
     mock_repl_connection = mock.MagicMock()
     mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
-
     with mock.patch("mu.modes.base.REPLConnection", mock_connection_class):
         mm.add_repl()
-
     view.show_message.assert_not_called()
     mock_repl_connection.send_interrupt.assert_not_called()
 
@@ -532,28 +588,28 @@ def test_micropython_mode_add_plotter_no_port():
     message is enacted.
     """
     editor = mock.MagicMock()
+    editor.current_device = None
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=(None, None, None))
     mm.add_plotter()
     assert view.show_message.call_count == 1
     message = "Could not find an attached device."
     assert view.show_message.call_args[0][0] == message
 
 
-def test_micropython_mode_add_plotter_ioerror():
+def test_micropython_mode_add_plotter_ioerror(microbit):
     """
     Sometimes when attempting to connect to the device there is an IOError
     because it's still booting up or connecting to the host computer. In this
     case, ensure a useful message is displayed.
     """
     editor = mock.MagicMock()
+    editor.current_device = microbit
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     ex = IOError("BOOM")
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
     mock_repl_connection = mock.MagicMock()
     mock_repl_connection.open = mock.MagicMock(side_effect=ex)
     mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
@@ -563,15 +619,15 @@ def test_micropython_mode_add_plotter_ioerror():
     assert view.show_message.call_args[0][0] == str(ex)
 
 
-def test_micropython_mode_add_plotter_exception():
+def test_micropython_mode_add_plotter_exception(microbit):
     """
     Ensure that any non-IOError based exceptions are logged.
     """
     editor = mock.MagicMock()
+    editor.current_device = microbit
     view = mock.MagicMock()
     ex = Exception("BOOM")
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
     mock_repl_connection = mock.MagicMock()
     mock_repl_connection.open = mock.MagicMock(side_effect=ex)
     mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
@@ -581,17 +637,17 @@ def test_micropython_mode_add_plotter_exception():
             logger.error.assert_called_once_with(ex)
 
 
-def test_micropython_mode_add_plotter():
+def test_micropython_mode_add_plotter(microbit):
     """
     Nothing goes wrong so check the _view.add_micropython_plotter gets the
     expected argument.
     """
     editor = mock.MagicMock()
+    editor.current_device = microbit
     view = mock.MagicMock()
     view.show_message = mock.MagicMock()
     view.add_micropython_plotter = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
-    mm.find_device = mock.MagicMock(return_value=("COM0", "1234", "micro:bit"))
     mock_repl_connection = mock.MagicMock()
     mock_connection_class = mock.MagicMock(return_value=mock_repl_connection)
     with mock.patch("mu.modes.base.REPLConnection", mock_connection_class):

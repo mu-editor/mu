@@ -1156,6 +1156,7 @@ class StatusBar(QStatusBar):
     Defines the look and behaviour of the status bar along the bottom of the
     UI.
     """
+    device_changed = pyqtSignal("PyQt_PyObject")
 
     def __init__(self, parent=None, mode="python"):
         super().__init__(parent)
@@ -1165,8 +1166,9 @@ class StatusBar(QStatusBar):
         self.device_selector = QComboBox()
         self.device_selector.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         self.device_selector.setHidden(True)
+        self.device_selector.currentIndexChanged.connect(self._device_changed)
         self.addPermanentWidget(self.device_selector)
-        
+
         # Mode selector.
         self.mode_label = QLabel()
         self.mode_label.setToolTip(_("Mu's current mode of behaviour."))
@@ -1213,30 +1215,25 @@ class StatusBar(QStatusBar):
         """
         self.mode_label.setText(mode)
 
-    def add_device(self, port, board_name):
-        self.device_selector.addItem("{}: {}".format(port, board_name))
-        self.device_selector.model().sort(0)
-        self.device_selector.setHidden(False)
+    def _device_changed(self, i):
+        if i < 0:
+            device = None
+        else:
+            devices = self.device_selector.model()
+            device = devices[i]
+        self.device_changed.emit(device)
 
-    def rm_device(self, port, board_name):
-        ix = self.device_selector.findText("{}: {}".format(port, board_name))
-        self.device_selector.removeItem(ix)
-        if self.device_selector.count() == 0:
-            self.device_selector.setHidden(True)
-
-    def device_connected(self, mode_name, long_mode_name, board_name, port):
-        if board_name:
+    def device_connected(self, device):
+        if device.board_name:
             msg = _("Detected new {} device: {}.").format(
-                long_mode_name, board_name
+                device.long_mode_name, device.board_name
             )
         else:
-            msg = _("Detected new {} device.").format(long_mode_name)
-            board_name = long_mode_name
+            msg = _("Detected new {} device.").format(device.long_mode_name)
 
         self.set_message(msg, self.msg_duration * 1000)
-        self.add_device(port, board_name)
+        self.device_selector.setHidden(False)
 
-    def device_disconnected(self, mode_name, long_mode_name, board_name, port):
-        if board_name is None:
-            board_name = long_mode_name
-        self.rm_device(port, board_name)
+    def device_disconnected(self, device):
+        if self.device_selector.count() == 0:
+            self.device_selector.setHidden(True)

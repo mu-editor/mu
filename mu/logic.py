@@ -34,6 +34,7 @@ import appdirs
 import site
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QLocale, QObject, pyqtSignal
+from PyQt5 import QtCore
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
 from mu.resources import path
@@ -615,13 +616,112 @@ class MuFlakeCodeReporter:
             )
 
 
+class Device:
+    """
+    Device object, containing both information about the connected device,
+    the port it's connected through and the mode it works with.
+    """
+
+    def __init__(
+        self,
+        vid,
+        pid,
+        port,
+        serial_number,
+        long_mode_name,
+        short_mode_name,
+        board_name=None,
+    ):
+        self.vid = vid
+        self.pid = pid
+        self.port = port
+        self.serial_number = serial_number
+        self.short_mode_name = short_mode_name
+        self.long_mode_name = long_mode_name
+        self.board_name = board_name
+
+    @property
+    def name(self):
+        if self.board_name:
+            return self.board_name
+        else:
+            return self.long_mode_name
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__)
+            and self.pid == other.pid
+            and self.vid == other.vid
+            and self.port == other.port
+            and self.serial_number == other.serial_number
+        )
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __lt__(self, other):
+        return self.name < other.name
+
+    def __str__(self):
+        s = "{} on {} (VID: {}, PID: {})"
+        return s.format(self.name, self.port, self.vid, self.pid)
+
+    def __hash__(self):
+        return hash(str(self))
+
+
+class DeviceList(QtCore.QAbstractListModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._devices = list()
+
+    def __iter__(self):
+        """
+        Enables iteration over the list of devices
+        """
+        return iter(self._devices)
+
+    def __getitem__(self, i):
+        """
+        Enable [] operator
+        """
+        return self._devices[i]
+
+    def rowCount(self, parent):
+        return len(self._devices)
+
+    def data(self, index, role):
+        device = self._devices[index.row()]
+        if role == QtCore.Qt.ToolTipRole:
+            return str(device)
+        elif role == QtCore.Qt.DisplayRole:
+            return device.name
+
+    def add_device(self, device):
+        parent = QtCore.QModelIndex()
+        # TODO: insert sorted
+        position = len(self._devices)
+        self.beginInsertRows(parent, position, position)
+        self._devices.append(device)
+        # self._devices.sort()
+        self.endInsertRows()
+
+    def remove_device(self, device):
+        parent = QtCore.QModelIndex()
+        # TODO find the actual position it's removed from
+        position = len(self._devices) - 1
+        self.beginRemoveRows(parent, position, position)
+        self._devices.remove(device)
+        self.endRemoveRows()
+
+
 class Editor(QObject):
     """
     Application logic for the editor itself.
     """
 
-    device_connected = pyqtSignal(str, str, str, str)
-    device_disconnected = pyqtSignal(str, str, str, str)
+    device_connected = pyqtSignal("PyQt_PyObject")
+    device_disconnected = pyqtSignal("PyQt_PyObject")
 
     def __init__(self, view, status_bar=None):
         super().__init__()
@@ -635,7 +735,10 @@ class Editor(QObject):
         self.envars = []  # See restore session and show_admin
         self.minify = False
         self.microbit_runtime = ""
-        self.connected_devices = set()
+        self.connected_devices = DeviceList(parent=self)
+        self.device_connected.connect(self.connected_devices.add_device)
+        self.device_disconnected.connect(self.connected_devices.remove_device)
+        self.current_device = None
         self.find = ""
         self.replace = ""
         self.current_path = ""  # Directory of last loaded file.
@@ -1409,31 +1512,20 @@ class Editor(QObject):
         device_types = set()
         # Detect connected devices.
         for mode_name, mode in self.modes.items():
-            if hasattr(mode, "find_device"):
-                # The mode can detect an attached device.
-                port, serial, board_name = mode.find_device(with_logging=False)
-                if port:
-                    devices.append((mode_name, board_name, port))
+            if hasattr(mode, "find_devices"):
+                # The mode can detect attached devices.
+                detected = mode.find_devices(with_logging=False)
+                if detected:
                     device_types.add(mode_name)
+                    devices.extend(detected)
         # Remove no-longer connected devices.
-        to_remove = []
         for connected in self.connected_devices:
             if connected not in devices:
-                to_remove.append(connected)
-        for device in to_remove:
-            self.connected_devices.remove(device)
-            mode_name, board_name, port = device
-            long_mode_name = self.modes[mode_name].name
-            self.device_disconnected.emit(mode_name, long_mode_name,
-                                          board_name, port)
+                self.device_disconnected.emit(connected)
         # Add newly connected devices.
         for device in devices:
             if device not in self.connected_devices:
-                self.connected_devices.add(device)
-                mode_name, board_name, port = device
-                long_mode_name = self.modes[mode_name].name
-                self.device_connected.emit(mode_name, long_mode_name,
-                                           board_name, port)
+                self.device_connected.emit(device)
                 # Only ask to switch mode if a single device type is connected
                 # and we're not already trying to select a new mode via the
                 # dialog. Cannot change mode if a script is already being run
@@ -1442,17 +1534,21 @@ class Editor(QObject):
                 running = hasattr(m, "runner") and m.runner
                 if (
                     len(device_types) == 1
-                    and self.mode != mode_name
+                    and self.mode != device.short_mode_name
                     and not self.selecting_mode
                 ) and not running:
+                    msg = _("Detected new {} device.").format(device.name)
                     msg_body = _(
                         "Would you like to change Mu to the {} " "mode?"
-                    ).format(long_mode_name)
+                    ).format(device.long_mode_name)
                     change_confirmation = self._view.show_confirmation(
                         msg, msg_body, icon="Question"
                     )
                     if change_confirmation == QMessageBox.Ok:
-                        self.change_mode(mode_name)
+                        self.change_mode(device.short_mode_name)
+
+    def device_changed(self, device):
+        self.current_device = device
 
     def show_status_message(self, message, duration=5):
         """

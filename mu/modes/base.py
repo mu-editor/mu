@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import json
+import sys
 import os
 import os.path
 import csv
@@ -26,7 +27,7 @@ import pkgutil
 from serial import Serial
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 from PyQt5.QtCore import QObject, pyqtSignal, QIODevice, QTimer
-from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path
+from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path, Device
 from mu.contrib import microfs
 
 ENTER_RAW_MODE = b"\x01"  # CTRL-A
@@ -207,6 +208,7 @@ class BaseMode(QObject):
     """
 
     name = "UNNAMED MODE"
+    short_name = "UNDEFINED_MODE"
     description = "DESCRIPTION NOT AVAILABLE."
     icon = "help"
     repl = False
@@ -356,6 +358,12 @@ class BaseMode(QObject):
         """
         return None, None
 
+    # def device_changed(self, port):
+    #     """
+    #     Invoked when the user changes device.
+    #     """
+    #     return
+
 
 class MicroPythonMode(BaseMode):
     """
@@ -366,45 +374,61 @@ class MicroPythonMode(BaseMode):
     force_interrupt = True
     connection = None
 
-    def compatible_board(self, vid, pid, manufacturer):
+    def compatible_board(self, port):
         """
         A compatible board must match on vendor ID, but only needs to
         match on product ID or manufacturer ID, if they are supplied
         in the list of valid boards (aren't None).
         """
+        pid = port.productIdentifier()
+        vid = port.vendorIdentifier()
+        manufacturer = port.manufacturer()
+        serial_number = port.serialNumber()
+        port_name = self.port_path(port.portName())
+
         for v, p, m, device_name in self.valid_boards:
             if (
                 v == vid
                 and (p == pid or p is None)
                 and (m == manufacturer or m is None)
             ):
-                return (v, p, m, device_name)
+                return Device(
+                    vid,
+                    pid,
+                    port_name,
+                    serial_number,
+                    self.name,
+                    self.short_name,
+                    device_name,
+                )
         return None
 
-    def find_device(self, with_logging=True):
+    def find_devices(self, with_logging=True):
         """
         Returns the port and serial number, and name for the first
         MicroPython-ish device found connected to the host computer.
         If no device is found, returns the tuple (None, None, None).
         """
         available_ports = QSerialPortInfo.availablePorts()
+        devices = []
         for port in available_ports:
-            pid = port.productIdentifier()
-            vid = port.vendorIdentifier()
-            manufacturer = port.manufacturer()
-
-            device = self.compatible_board(vid, pid, manufacturer)
+            device = self.compatible_board(port)
             if device:
-                port_name = port.portName()
-                serial_number = port.serialNumber()
-                board_name = device[3]
+                # On OS X devices show up with two different port
+                # numbers (/dev/tty.usbserial-xxx and
+                # /dev/cu.usbserial-xxx) we only want to display the
+                # ones on ports names /dev/cu.usbserial-xxx to users
+                if sys.platform == "darwin" and device.port[:7] != "/dev/cu":
+                    continue
                 if with_logging:
-                    logger.info("Found device on port: {}".format(port_name))
-                    logger.info("Serial number: {}".format(serial_number))
-                    if board_name:
-                        logger.info("Board type: {}".format(board_name))
-                return (self.port_path(port_name), serial_number, board_name)
-        if with_logging:
+                    logger.info("Found device on port: {}".format(device.port))
+                    logger.info(
+                        "Serial number: {}".format(device.serial_number)
+                    )
+                    if device.board_name:
+                        logger.info("Board type: {}".format(device.board_name))
+                devices.append(device)
+        if not devices and with_logging:
             logger.warning("Could not find device.")
             logger.debug("Available ports:")
             logger.debug(
@@ -417,7 +441,7 @@ class MicroPythonMode(BaseMode):
                     for p in available_ports
                 ]
             )
-        return (None, None, None)
+        return devices
 
     def port_path(self, port_name):
         if os.name == "posix":
@@ -456,17 +480,17 @@ class MicroPythonMode(BaseMode):
         Detect a connected MicroPython based device and, if found, connect to
         the REPL and display it to the user.
         """
-        device_port, serial_number, board_name = self.find_device()
-        if device_port:
+        device = self.editor.current_device
+        if device:
             try:
                 if not self.connection:
-                    self.connection = REPLConnection(device_port)
+                    self.connection = REPLConnection(device.port)
                     self.connection.open()
                     if self.force_interrupt:
                         self.connection.send_interrupt()
 
                 self.view.add_micropython_repl(self.name, self.connection)
-                logger.info("Started REPL on port: {}".format(device_port))
+                logger.info("Started REPL on port: {}".format(device.port))
                 self.repl = True
             except IOError as ex:
                 logger.error(ex)
@@ -505,11 +529,11 @@ class MicroPythonMode(BaseMode):
         """
         Check if REPL exists, and if so, enable the plotter pane!
         """
-        device_port, serial_number, board_name = self.find_device()
-        if device_port:
+        device = self.editor.current_device
+        if device:
             try:
                 if not self.connection:
-                    self.connection = REPLConnection(device_port)
+                    self.connection = REPLConnection(device.port)
                     self.connection.open()
                 self.view.add_micropython_plotter(
                     self.name, self.connection, self.on_data_flood

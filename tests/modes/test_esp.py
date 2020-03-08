@@ -90,7 +90,7 @@ def test_add_fs_no_device(esp_mode):
     """
     If there's no device attached then ensure a helpful message is displayed.
     """
-    esp_mode.find_device = mock.MagicMock(return_value=(None, None, None))
+    esp_mode.editor.current_device = None
     esp_mode.add_fs()
     assert esp_mode.view.show_message.call_count == 1
 
@@ -233,7 +233,7 @@ def test_run_no_device(esp_mode):
     Ensure an error message is displayed if attempting to run a script
     and no device is found.
     """
-    esp_mode.find_device = mock.MagicMock(return_value=(None, None, None))
+    esp_mode.editor.current_device = None
     esp_mode.run()
     assert esp_mode.view.show_message.call_count == 1
 

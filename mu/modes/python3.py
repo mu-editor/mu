@@ -103,6 +103,7 @@ class PythonMode(BaseMode):
     """
 
     name = _("Python 3")
+    short_name = "python"
     description = _("Create code using standard Python 3.")
     icon = "python"
     runner = None

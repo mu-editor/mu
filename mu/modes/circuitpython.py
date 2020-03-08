@@ -30,6 +30,7 @@ class CircuitPythonMode(MicroPythonMode):
     """
 
     name = _("CircuitPython")
+    short_name = "circuitpython"
     description = _("Write code for boards running CircuitPython.")
     icon = "circuitpython"
     save_timeout = 0  #: No auto-save on CP boards. Will restart.

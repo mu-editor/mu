@@ -33,6 +33,7 @@ class ESPMode(MicroPythonMode):
     """
 
     name = _("ESP MicroPython")
+    short_name = "esp"
     description = _("Write MicroPython on ESP8266/ESP32 boards.")
     icon = "esp"
     fs = None
@@ -210,10 +211,10 @@ class ESPMode(MicroPythonMode):
         """
 
         # Find serial port the ESP8266/ESP32 is connected to
-        device_port, serial_number, board_name = self.find_device()
+        device = self.editor.current_device
 
         # Check for MicroPython device
-        if not device_port:
+        if not device:
             message = _("Could not find an attached ESP8266/ESP32.")
             information = _(
                 "Please make sure the device is plugged "
@@ -227,7 +228,7 @@ class ESPMode(MicroPythonMode):
             self.view.show_message(message, information)
             return
         self.file_manager_thread = QThread(self)
-        self.file_manager = FileManager(device_port)
+        self.file_manager = FileManager(device.port)
         self.file_manager.moveToThread(self.file_manager_thread)
         self.file_manager_thread.started.connect(self.file_manager.on_start)
 
