@@ -1156,6 +1156,7 @@ class StatusBar(QStatusBar):
     Defines the look and behaviour of the status bar along the bottom of the
     UI.
     """
+
     device_changed = pyqtSignal("PyQt_PyObject")
 
     def __init__(self, parent=None, mode="python"):

@@ -697,19 +697,21 @@ class DeviceList(QtCore.QAbstractListModel):
         elif role == QtCore.Qt.DisplayRole:
             return device.name
 
-    def add_device(self, device):
+    def add_device(self, new_device):
         parent = QtCore.QModelIndex()
-        # TODO: insert sorted
-        position = len(self._devices)
+        # Find position to insert sorted
+        position = 0
+        for i, device in enumerate(self._devices):
+            if new_device > device:
+                position = i + 1
+        # Insert
         self.beginInsertRows(parent, position, position)
-        self._devices.append(device)
-        # self._devices.sort()
+        self._devices.insert(position, new_device)
         self.endInsertRows()
 
     def remove_device(self, device):
         parent = QtCore.QModelIndex()
-        # TODO find the actual position it's removed from
-        position = len(self._devices) - 1
+        position = self._devices.index(device)
         self.beginRemoveRows(parent, position, position)
         self._devices.remove(device)
         self.endRemoveRows()
