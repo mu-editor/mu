@@ -665,7 +665,7 @@ class Device:
         return self.name < other.name
 
     def __str__(self):
-        s = "{} on {} (VID: {}, PID: {})"
+        s = "{} on {} (VID: 0x{:04X}, PID: 0x{:04X})"
         return s.format(self.name, self.port, self.vid, self.pid)
 
     def __hash__(self):
@@ -1529,7 +1529,7 @@ class Editor(QObject):
                 logger.info(
                     (
                         "{} device connected on port: {}"
-                        "(VID: {}, PID: {}, manufacturer {})"
+                        "(VID: 0x{:04X}, PID: 0x{:04X}, manufacturer {})"
                     ).format(
                         connected.short_mode_name,
                         connected.port,
@@ -1545,7 +1545,7 @@ class Editor(QObject):
                 logger.info(
                     (
                         "{} device connected on port: {}"
-                        "(VID: {}, PID: {}, manufacturer: '{}')"
+                        "(VID: 0x{:04X}, PID: 0x{:04X}, manufacturer: '{}')"
                     ).format(
                         device.short_mode_name,
                         device.port,
