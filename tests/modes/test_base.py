@@ -310,11 +310,14 @@ def test_micropython_mode_find_device_darwin_remove_extraneous_devices():
         mock_port2.productIdentifier(),
         "/dev/" + mock_port2.portName(),
         mock_port2.serialNumber(),
-        "micro:bit",
-        None,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
         None,
     )
     with mock.patch("sys.platform", "darwin"), mock.patch(
+        "os.name", "posix"
+    ), mock.patch(
         "mu.modes.base.QSerialPortInfo.availablePorts",
         return_value=[mock_port, mock_port2],
     ):
