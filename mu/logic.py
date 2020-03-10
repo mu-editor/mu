@@ -628,6 +628,7 @@ class Device:
         pid,
         port,
         serial_number,
+        manufacturer,
         long_mode_name,
         short_mode_name,
         board_name=None,
@@ -636,6 +637,7 @@ class Device:
         self.pid = pid
         self.port = port
         self.serial_number = serial_number
+        self.manufacturer = manufacturer
         self.short_mode_name = short_mode_name
         self.long_mode_name = long_mode_name
         self.board_name = board_name
@@ -1524,10 +1526,34 @@ class Editor(QObject):
         for connected in self.connected_devices:
             if connected not in devices:
                 self.device_disconnected.emit(connected)
+                logger.info(
+                    (
+                        "{} device connected on port: {}"
+                        "(VID: {}, PID: {}, manufacturer {})"
+                    ).format(
+                        connected.short_mode_name,
+                        connected.port,
+                        connected.vid,
+                        connected.pid,
+                        connected.manufacturer,
+                    )
+                )
         # Add newly connected devices.
         for device in devices:
             if device not in self.connected_devices:
                 self.device_connected.emit(device)
+                logger.info(
+                    (
+                        "{} device connected on port: {}"
+                        "(VID: {}, PID: {}, manufacturer: '{}')"
+                    ).format(
+                        device.short_mode_name,
+                        device.port,
+                        device.vid,
+                        device.pid,
+                        device.manufacturer,
+                    )
+                )
                 # Only ask to switch mode if a single device type is connected
                 # and we're not already trying to select a new mode via the
                 # dialog. Cannot change mode if a script is already being run

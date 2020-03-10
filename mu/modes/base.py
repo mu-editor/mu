@@ -397,6 +397,7 @@ class MicroPythonMode(BaseMode):
                     pid,
                     port_name,
                     serial_number,
+                    manufacturer,
                     self.name,
                     self.short_name,
                     device_name,

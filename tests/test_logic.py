@@ -202,7 +202,14 @@ def test_CONSTANTS():
 @pytest.fixture
 def microbit_com1():
     microbit = mu.logic.Device(
-        0x0D28, 0x0204, "COM1", 123456, "BBC micro:bit", "microbit", None,
+        0x0D28,
+        0x0204,
+        "COM1",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
     )
     return microbit
 
@@ -210,7 +217,14 @@ def microbit_com1():
 @pytest.fixture
 def microbit_com2():
     microbit = mu.logic.Device(
-        0x0D28, 0x0204, "COM2", 123456, "BBC micro:bit", "microbit", None,
+        0x0D28,
+        0x0204,
+        "COM2",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
     )
     return microbit
 
@@ -222,6 +236,7 @@ def adafruit_feather():
         0x800B,
         "COM1",
         123456,
+        "ARM",
         "CircuitPython",
         "circuitpython",
         "Adafruit Feather",
@@ -2703,7 +2718,7 @@ def test_check_usb_currently_running_code(microbit_com1):
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_multiple_devices():
+def test_check_usb_multiple_devices(microbit_com1, adafruit_feather):
     """
     Ensure the check_usb doesn't ask to change mode if multiple devices
     found.
@@ -3501,7 +3516,14 @@ def test_com1_equality(microbit_com1):
     are recognized as equal.
     """
     identical_microbit_com1 = mu.logic.Device(
-        0x0D28, 0x0204, "COM1", 123456, "BBC micro:bit", "microbit", None,
+        0x0D28,
+        0x0204,
+        "COM1",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
     )
     assert microbit_com1 == identical_microbit_com1
 
@@ -3512,7 +3534,14 @@ def test_com1_not_equal_on_different_ports(microbit_com1):
     are not recognized as being equal.
     """
     microbit_com2 = mu.logic.Device(
-        0x0D28, 0x0204, "COM2", 123456, "BBC micro:bit", "microbit", None,
+        0x0D28,
+        0x0204,
+        "COM2",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
     )
     assert microbit_com1 != microbit_com2
 
@@ -3522,7 +3551,14 @@ def test_com1_hash_equality(microbit_com1):
     Test that hash function returns the same for two identical Device-objects.
     """
     identical_microbit_com1 = mu.logic.Device(
-        0x0D28, 0x0204, "COM1", 123456, "BBC micro:bit", "microbit", None,
+        0x0D28,
+        0x0204,
+        "COM1",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
     )
     assert hash(microbit_com1) == hash(identical_microbit_com1)
 
@@ -3533,6 +3569,13 @@ def test_com1_hash_not_equal_on_different_ports(microbit_com1):
     devices are connected to two different ports.
     """
     microbit_com2 = mu.logic.Device(
-        0x0D28, 0x0204, "COM2", 123456, "BBC micro:bit", "microbit", None,
+        0x0D28,
+        0x0204,
+        "COM2",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
     )
     assert hash(microbit_com1) != hash(microbit_com2)

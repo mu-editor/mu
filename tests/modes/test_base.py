@@ -19,7 +19,7 @@ from unittest import mock
 @pytest.fixture()
 def microbit():
     return Device(
-        0x0D28, 0x0204, "COM0", "123456", "BBC micro:bit", "microbit"
+        0x0D28, 0x0204, "COM0", "123456", "ARM", "BBC micro:bit", "microbit"
     )
 
 

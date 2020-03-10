@@ -19,14 +19,14 @@ TEST_ROOT = os.path.split(os.path.dirname(__file__))[0]
 @pytest.fixture()
 def microbit():
     return Device(
-        0x0D28, 0x0204, "COM0", "123456", "BBC micro:bit", "microbit"
+        0x0D28, 0x0204, "COM0", "123456", "ARM", "BBC micro:bit", "microbit"
     )
 
 
 @pytest.fixture()
 def microbit_old_firmware():
     return Device(
-        0x0D28, 0x0204, "COM0", "990112345", "BBC micro:bit", "microbit"
+        0x0D28, 0x0204, "COM0", "990112345", "ARM", "BBC micro:bit", "microbit"
     )
 
 
