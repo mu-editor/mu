@@ -132,7 +132,7 @@ def test_run(qtapp):
         assert timer.call_count == 1
         assert len(timer.mock_calls) == 4
         assert ed.call_count == 1
-        assert len(ed.mock_calls) == 5
+        assert len(ed.mock_calls) == 6
         assert win.call_count == 1
         assert len(win.mock_calls) == 8
         assert ex.call_count == 1

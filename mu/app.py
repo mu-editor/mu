@@ -165,9 +165,11 @@ def run():
     status_bar = editor_window.status_bar
     status_bar.connect_logs(editor.show_admin, "Ctrl+Shift+D")
     editor.device_connected.connect(status_bar.device_connected)
-    editor.device_disconnected.connect(status_bar.device_disconnected)
-    status_bar.device_changed.connect(editor.device_changed)
-    status_bar.device_selector.setModel(editor.connected_devices)
+    device_selector = editor_window.status_bar.device_selector
+    editor.device_connected.connect(device_selector.device_connected)
+    editor.device_disconnected.connect(device_selector.device_disconnected)
+    device_selector.device_changed.connect(editor.device_changed)
+    device_selector.selector.setModel(editor.connected_devices)
 
     # Display a friendly "splash" icon.
     splash = QSplashScreen(load_pixmap("splash-screen"))

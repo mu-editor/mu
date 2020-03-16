@@ -1150,6 +1150,80 @@ class Window(QMainWindow):
         if self.current_tab:
             self.current_tab.toggle_comments()
 
+    def show_device_selector(self):
+        self.status_bar.device_selector.setHidden(False)
+
+    def hide_device_selector(self):
+        self.status_bar.device_selector.setHidden(True)
+
+
+class DeviceSelector(QWidget):
+    """
+    Allow users to see status of connected devices (connected/disconnected),
+    and select between devices, when multiple are connected.
+
+    Emits the device_changed signal when a user selects a different device.
+    """
+
+    device_changed = pyqtSignal("PyQt_PyObject")
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setObjectName("DeviceSelector")
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+        self.device_changed.connect(self._update_view)
+
+        # Device selection combobox
+        self.selector = QComboBox()
+        self.selector.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.selector.setHidden(True)
+        self.selector.currentIndexChanged.connect(self._device_changed)
+        layout.addWidget(self.selector)
+
+        # Status indicator icon
+        self.connected_icon = load_pixmap("chip-connected").scaledToHeight(24)
+        self.disconnected_icon = load_pixmap(
+            "chip-disconnected"
+        ).scaledToHeight(24)
+        self.connection_status = QLabel()
+        self.connection_status.setPixmap(self.disconnected_icon)
+        layout.addWidget(self.connection_status)
+
+    def _device_changed(self, i):
+        if i < 0:
+            device = None
+        else:
+            devices = self.selector.model()
+            device = devices[i]
+        self.device_changed.emit(device)
+
+    def device_connected(self, device):
+        self._update_view()
+
+    def device_disconnected(self, device):
+        self._update_view()
+
+    def _update_view(self):
+        num_devices = self.selector.count()
+        # Hide/show menu
+        if num_devices <= 1:
+            self.selector.setHidden(True)
+        else:
+            self.selector.setHidden(False)
+        # Set icon and tooltip
+        if num_devices == 0:
+            self.connection_status.setPixmap(self.disconnected_icon)
+            self.connection_status.setToolTip(_("No device connected."))
+        else:
+            self.connection_status.setPixmap(self.connected_icon)
+            model = self.selector.model()
+            ix = model.index(self.selector.currentIndex(), 0)
+            tooltip = self.selector.model().data(ix, Qt.ToolTipRole)
+            self.connection_status.setToolTip(tooltip)
+
 
 class StatusBar(QStatusBar):
     """
@@ -1157,24 +1231,22 @@ class StatusBar(QStatusBar):
     UI.
     """
 
-    device_changed = pyqtSignal("PyQt_PyObject")
-
     def __init__(self, parent=None, mode="python"):
         super().__init__(parent)
         self.mode = mode
         self.msg_duration = 5
-
-        self.device_selector = QComboBox()
-        self.device_selector.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-        self.device_selector.setHidden(True)
-        self.device_selector.currentIndexChanged.connect(self._device_changed)
-        self.addPermanentWidget(self.device_selector)
 
         # Mode selector.
         self.mode_label = QLabel()
         self.mode_label.setToolTip(_("Mu's current mode of behaviour."))
         self.addPermanentWidget(self.mode_label)
         self.set_mode(mode)
+
+        # Device selector.
+        self.device_selector = DeviceSelector()
+        self.device_selector.setHidden(True)
+        self.addPermanentWidget(self.device_selector)
+
         # Logs viewer
         self.logs_label = QLabel()
         self.logs_label.setObjectName("AdministrationLabel")
@@ -1216,14 +1288,6 @@ class StatusBar(QStatusBar):
         """
         self.mode_label.setText(mode)
 
-    def _device_changed(self, i):
-        if i < 0:
-            device = None
-        else:
-            devices = self.device_selector.model()
-            device = devices[i]
-        self.device_changed.emit(device)
-
     def device_connected(self, device):
         if device.board_name:
             msg = _("Detected new {} device: {}.").format(
@@ -1233,8 +1297,3 @@ class StatusBar(QStatusBar):
             msg = _("Detected new {} device.").format(device.long_mode_name)
 
         self.set_message(msg, self.msg_duration * 1000)
-        self.device_selector.setHidden(False)
-
-    def device_disconnected(self, device):
-        if self.device_selector.count() == 0:
-            self.device_selector.setHidden(True)

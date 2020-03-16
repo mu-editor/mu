@@ -358,6 +358,18 @@ class BaseMode(QObject):
         """
         return None, None
 
+    def activate(self):
+        """
+        Executed when the mode is activated
+        """
+        pass  # Default is to do nothing
+
+    def deactivate(self):
+        """
+        Executed when the mode is activated
+        """
+        pass  # Default is to do nothing
+
     # def device_changed(self, port):
     #     """
     #     Invoked when the user changes device.
@@ -578,6 +590,12 @@ class MicroPythonMode(BaseMode):
             self.connection.close()
             self.connection = None
         super().remove_plotter()
+
+    def activate(self):
+        self.view.show_device_selector()
+
+    def deactivate(self):
+        self.view.hide_device_selector()
 
 
 class FileManager(QObject):

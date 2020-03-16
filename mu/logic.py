@@ -689,6 +689,9 @@ class DeviceList(QtCore.QAbstractListModel):
         """
         return self._devices[i]
 
+    def __len__(self):
+        return len(self._devices)
+
     def rowCount(self, parent):
         return len(self._devices)
 
@@ -1446,8 +1449,12 @@ class Editor(QObject):
         if hasattr(old_mode, "remove_plotter"):
             if old_mode.plotter:
                 old_mode.remove_plotter()
+        # Deactivate old mode
+        self.modes[self.mode].deactivate()
         # Re-assign to new mode.
         self.mode = mode
+        # Activate new mode
+        self.modes[mode].activate()
         # Update buttons.
         self._view.change_mode(self.modes[mode])
         button_bar = self._view.button_bar
@@ -1554,28 +1561,32 @@ class Editor(QObject):
                         device.manufacturer,
                     )
                 )
-                # Only ask to switch mode if a single device type is connected
-                # and we're not already trying to select a new mode via the
-                # dialog. Cannot change mode if a script is already being run
-                # by the current mode.
-                m = self.modes[self.mode]
-                running = hasattr(m, "runner") and m.runner
-                if (
-                    len(device_types) == 1
-                    and self.mode != device.short_mode_name
-                    and not self.selecting_mode
-                ) and not running:
-                    msg = _("Detected new {} device.").format(device.name)
-                    msg_body = _(
-                        "Would you like to change Mu to the {} " "mode?"
-                    ).format(device.long_mode_name)
-                    change_confirmation = self._view.show_confirmation(
-                        msg, msg_body, icon="Question"
-                    )
-                    if change_confirmation == QMessageBox.Ok:
-                        self.change_mode(device.short_mode_name)
+
+    def ask_to_change_mode(self, new_mode, mode_name, heading):
+        # Only ask to switch mode if we're not already trying to
+        # select a new mode via the dialog. Cannot change mode if
+        # a script is already being run by the current mode.
+        m = self.modes[self.mode]
+        running = hasattr(m, "runner") and m.runner
+        if (self.mode != new_mode and not self.selecting_mode) and not running:
+            msg_body = _(
+                "Would you like to change Mu to the {} " "mode?"
+            ).format(mode_name)
+            change_confirmation = self._view.show_confirmation(
+                heading, msg_body, icon="Question"
+            )
+            if change_confirmation == QMessageBox.Ok:
+                self.change_mode(new_mode)
 
     def device_changed(self, device):
+        if device:
+            if self.current_device is None:
+                heading = _("Detected new {} device.").format(device.name)
+            else:
+                heading = _("Device changed to {}.").format(device.name)
+            self.ask_to_change_mode(
+                device.short_mode_name, device.long_mode_name, heading
+            )
         self.current_device = device
 
     def show_status_message(self, message, duration=5):
