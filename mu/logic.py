@@ -1275,7 +1275,7 @@ class Editor:
         packages = installed_packages()
         with open(LOG_FILE, "r", encoding="utf8") as logfile:
             new_settings = self._view.show_admin(
-                logfile.read(), settings, "\n".join(packages)
+                logfile.read(), settings, "\n".join(packages), self.mode
             )
         if new_settings:
             self.envars = extract_envars(new_settings["envars"])
