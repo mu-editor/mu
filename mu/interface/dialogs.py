@@ -366,7 +366,7 @@ Select Third Party Packages Tab and add esptool.
                 pass
             QTimer.singleShot(2, self.read_process)
 
-        if msg in "[Errno 2] No such file or directory":
+        if "[Errno 2] No such file or directory" in msg:
             self.err = 1
 
     def append_data(self, msg):
@@ -400,7 +400,7 @@ class AdminDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def setup(self, log, settings, packages):
+    def setup(self, log, settings, packages, mode):
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_("Mu Administration"))
         widget_layout = QVBoxLayout()
@@ -429,9 +429,10 @@ class AdminDialog(QDialog):
         self.package_widget = PackagesWidget()
         self.package_widget.setup(packages)
         self.tabs.addTab(self.package_widget, _("Third Party Packages"))
-        self.esp32_widget = ESP32SettingsWidget()
-        self.esp32_widget.setup()
-        self.tabs.addTab(self.esp32_widget, _("ESP32 Firmware Settings"))
+        if mode == "esp":
+            self.esp32_widget = ESP32SettingsWidget()
+            self.esp32_widget.setup()
+            self.tabs.addTab(self.esp32_widget, _("ESP32 Firmware Settings"))
 
     def settings(self):
         """
