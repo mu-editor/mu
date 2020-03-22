@@ -730,11 +730,10 @@ class Editor(QObject):
     device_connected = pyqtSignal("PyQt_PyObject")
     device_disconnected = pyqtSignal("PyQt_PyObject")
 
-    def __init__(self, view, status_bar=None):
+    def __init__(self, view):
         super().__init__()
         logger.info("Setting up editor.")
         self._view = view
-        self._status_bar = status_bar
         self.fs = None
         self.theme = "day"
         self.mode = "python"
@@ -817,6 +816,27 @@ class Editor(QObject):
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
+
+    def connect_to_status_bar(self, status_bar):
+        """
+        Connect the editor with the Window-statusbar.
+        Should be called after Editor.setup(), to ensure modes are initialized
+        """
+        # Connect to logs
+        status_bar.connect_logs(self.show_admin, "Ctrl+Shift+D")
+        # Show connection messages in status_bar
+        self.device_connected.connect(status_bar.device_connected)
+        # Connect device list with device_selector
+        device_selector = status_bar.device_selector
+        device_selector.selector.setModel(self.connected_devices)
+        # Connect device events to device selector in status bar
+        self.device_connected.connect(device_selector.device_connected)
+        self.device_disconnected.connect(device_selector.device_disconnected)
+        device_selector.device_changed.connect(self.device_changed)
+        # Connect device_changed to modes
+        if self.modes:
+            for mode in self.modes.values():
+                device_selector.device_changed.connect(mode.device_changed)
 
     def restore_session(self, paths=None):
         """

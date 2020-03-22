@@ -162,14 +162,7 @@ def run():
     editor_window.connect_tab_rename(editor.rename_tab, "Ctrl+Shift+S")
     editor_window.connect_find_replace(editor.find_replace, "Ctrl+F")
     editor_window.connect_toggle_comments(editor.toggle_comments, "Ctrl+K")
-    status_bar = editor_window.status_bar
-    status_bar.connect_logs(editor.show_admin, "Ctrl+Shift+D")
-    editor.device_connected.connect(status_bar.device_connected)
-    device_selector = editor_window.status_bar.device_selector
-    editor.device_connected.connect(device_selector.device_connected)
-    editor.device_disconnected.connect(device_selector.device_disconnected)
-    device_selector.device_changed.connect(editor.device_changed)
-    device_selector.selector.setModel(editor.connected_devices)
+    editor.connect_to_status_bar(editor_window.status_bar)
 
     # Display a friendly "splash" icon.
     splash = QSplashScreen(load_pixmap("splash-screen"))

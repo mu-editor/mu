@@ -370,11 +370,11 @@ class BaseMode(QObject):
         """
         pass  # Default is to do nothing
 
-    # def device_changed(self, port):
-    #     """
-    #     Invoked when the user changes device.
-    #     """
-    #     return
+    def device_changed(self, new_device):
+        """
+        Invoked when the user changes device.
+        """
+        pass
 
 
 class MicroPythonMode(BaseMode):
@@ -596,6 +596,24 @@ class MicroPythonMode(BaseMode):
 
     def deactivate(self):
         self.view.hide_device_selector()
+        if self.plotter:
+            self.remove_plotter()
+        if self.repl:
+            self.remove_repl()
+
+    def device_changed(self, new_device):
+        """
+        Invoked when the user changes device.
+        """
+        # Reconnect REPL, Plotter and send interrupt
+        if self.repl:
+            self.remove_repl()
+            self.add_repl()
+        if self.plotter:
+            self.remove_plotter()
+            self.add_plotter()
+        if self.connection:
+            self.connection.send_interrupt()
 
 
 class FileManager(QObject):

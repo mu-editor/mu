@@ -261,3 +261,14 @@ class ESPMode(MicroPythonMode):
         """
         self.set_buttons(files=True)
         super().on_data_flood()
+
+    def deactivate(self):
+        super().deactivate()
+        if self.fs:
+            self.remove_fs()
+
+    def device_changed(self, new_device):
+        super().device_changed(new_device)
+        if self.fs:
+            self.remove_fs()
+            self.add_fs()

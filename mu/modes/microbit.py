@@ -616,3 +616,14 @@ class MicrobitMode(MicroPythonMode):
             return text, sniff_newline_convention(text)
         else:
             return None, None
+
+    def deactivate(self):
+        super().deactivate()
+        if self.fs:
+            self.remove_fs()
+
+    def device_changed(self, new_device):
+        super().device_changed(new_device)
+        if self.fs:
+            self.remove_fs()
+            self.add_fs()
