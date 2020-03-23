@@ -4,6 +4,7 @@ import pytest
 from unittest import mock
 from mu.modes.esp import ESPMode
 from mu.modes.api import ESP_APIS, SHARED_APIS
+from mu.logic import Device
 
 
 @pytest.fixture
@@ -315,3 +316,42 @@ def test_toggle_plotter_with_fs(esp_mode):
     esp_mode.fs = True
     esp_mode.toggle_plotter(None)
     assert esp_mode.view.show_message.call_count == 1
+
+
+def test_deactivate(esp_mode):
+    """
+    Ensure Filesystem pane is hidden, when MicroPython-mode is
+    deactivated.
+    """
+    esp_mode.remove_fs = mock.MagicMock()
+    esp_mode.activate()
+    esp_mode.fs = True
+    esp_mode.deactivate()
+    esp_mode.remove_fs.assert_called_once()
+
+
+@pytest.fixture()
+def sparkfunESP32():
+    return Device(
+        0x0403,
+        0x6015,
+        "COM0",
+        "123456",
+        "Sparkfun ESP32 Thing",
+        "ESP MicroPython",
+        "esp",
+    )
+
+
+def test_device_changed(esp_mode, sparkfunESP32):
+    """
+    Ensure Filesystem pane is reconnected, when the user changes
+    device.
+    """
+    esp_mode.add_fs = mock.MagicMock()
+    esp_mode.remove_fs = mock.MagicMock()
+    esp_mode.activate()
+    esp_mode.fs = True
+    esp_mode.device_changed(sparkfunESP32)
+    esp_mode.remove_fs.assert_called_once()
+    esp_mode.add_fs.assert_called_once()

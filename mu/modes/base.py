@@ -592,9 +592,16 @@ class MicroPythonMode(BaseMode):
         super().remove_plotter()
 
     def activate(self):
+        """
+        Invoked whenever the mode is activated.
+        """
         self.view.show_device_selector()
 
     def deactivate(self):
+        """
+        Invoked whenever the mode is deactivated.
+        """
+        # Remove REPL/Plotter if they are active
         self.view.hide_device_selector()
         if self.plotter:
             self.remove_plotter()

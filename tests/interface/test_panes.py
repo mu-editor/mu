@@ -324,7 +324,6 @@ def test_MicroPythonREPLPane_keyPressEvent_meta(qtapp):
     mock_repl_connection.write.assert_called_once_with(bytes([expected]))
 
 
-
 def test_MicroPythonREPLPane_process_tty_data(qtapp):
     """
     Ensure bytes coming from the device to the application are processed as

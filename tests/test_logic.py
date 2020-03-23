@@ -18,7 +18,7 @@ import uuid
 import pytest
 import mu.logic
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtCore import pyqtSignal, QObject, Qt
 
 from mu import __version__
 
@@ -231,7 +231,7 @@ def microbit_com2():
 
 @pytest.fixture
 def adafruit_feather():
-    microbit = mu.logic.Device(
+    adafruit_feather = mu.logic.Device(
         0x239A,
         0x800B,
         "COM1",
@@ -241,7 +241,7 @@ def adafruit_feather():
         "circuitpython",
         "Adafruit Feather",
     )
-    return microbit
+    return adafruit_feather
 
 
 def test_installed_packages_dist_info():
@@ -776,6 +776,117 @@ def test_MuFlakeCodeReporter_flake_un_matched():
     assert r.log[0]["message"] == "something went wrong"
 
 
+def test_device__init(adafruit_feather):
+    assert adafruit_feather.vid == 0x239A
+    assert adafruit_feather.pid == 0x800B
+    assert adafruit_feather.port == "COM1"
+    assert adafruit_feather.serial_number == 123456
+    assert adafruit_feather.manufacturer == "ARM"
+    assert adafruit_feather.long_mode_name == "CircuitPython"
+    assert adafruit_feather.short_mode_name == "circuitpython"
+    assert adafruit_feather.board_name == "Adafruit Feather"
+
+
+def test_device_name(microbit_com1, adafruit_feather):
+    assert microbit_com1.name == "BBC micro:bit"
+    assert adafruit_feather.name == "Adafruit Feather"
+
+
+def test_device_equality(microbit_com1):
+    assert microbit_com1 == microbit_com1
+
+
+def test_device_inequality(microbit_com1, microbit_com2):
+    assert microbit_com1 != microbit_com2
+
+
+def test_device_ordering(microbit_com1, adafruit_feather):
+    assert adafruit_feather < microbit_com1
+
+
+def test_device_to_string(adafruit_feather):
+    assert (
+        str(adafruit_feather)
+        == "Adafruit Feather on COM1 (VID: 0x239A, PID: 0x800B)"
+    )
+
+
+def test_device_hash(microbit_com1, microbit_com2):
+    assert hash(microbit_com1) == hash(microbit_com1)
+    assert hash(microbit_com1) != hash(microbit_com2)
+
+
+def test_devicelist_index(microbit_com1):
+    dl = mu.logic.DeviceList()
+    dl.add_device(microbit_com1)
+    assert dl[0] == microbit_com1
+
+
+def test_devicelist_length(microbit_com1, microbit_com2):
+    dl = mu.logic.DeviceList()
+    assert len(dl) == 0
+    dl.add_device(microbit_com1)
+    assert len(dl) == 1
+    dl.add_device(microbit_com2)
+    assert len(dl) == 2
+
+
+def test_devicelist_rowCount(microbit_com1, microbit_com2):
+    dl = mu.logic.DeviceList()
+    assert dl.rowCount(None) == 0
+    dl.add_device(microbit_com1)
+    assert dl.rowCount(None) == 1
+    dl.add_device(microbit_com2)
+    assert dl.rowCount(None) == 2
+
+
+def test_devicelist_data(microbit_com1, adafruit_feather):
+    dl = mu.logic.DeviceList()
+    dl.add_device(microbit_com1)
+    dl.add_device(adafruit_feather)
+    tooltip = dl.data(dl.index(0), Qt.ToolTipRole)
+    display = dl.data(dl.index(0), Qt.DisplayRole)
+    assert display == adafruit_feather.name
+    assert tooltip == str(adafruit_feather)
+    tooltip = dl.data(dl.index(1), Qt.ToolTipRole)
+    display = dl.data(dl.index(1), Qt.DisplayRole)
+    assert display == microbit_com1.name
+    assert tooltip == str(microbit_com1)
+
+
+def test_devicelist_add_device_in_sorted_order(
+    microbit_com1, adafruit_feather
+):
+    dl = mu.logic.DeviceList()
+    dl.add_device(microbit_com1)
+    assert dl[0] == microbit_com1
+    dl.add_device(adafruit_feather)
+    assert dl[0] == adafruit_feather
+    assert dl[1] == microbit_com1
+
+    xyz_device = mu.logic.Device(
+        0x123B, 0x333A, "COM1", 123456, "ARM", "ESP Mode", "esp", "xyz",
+    )
+    dl.add_device(xyz_device)
+    assert dl[2] == xyz_device
+
+
+def test_devicelist_remove_device(microbit_com1, adafruit_feather):
+    dl = mu.logic.DeviceList()
+    dl.add_device(microbit_com1)
+    assert len(dl) == 1
+    dl.remove_device(microbit_com1)
+    assert len(dl) == 0
+
+    dl.add_device(microbit_com1)
+    dl.add_device(adafruit_feather)
+    assert len(dl) == 2
+    dl.remove_device(adafruit_feather)
+    assert len(dl) == 1
+    dl.remove_device(microbit_com1)
+    assert len(dl) == 0
+
+
 def test_editor_init():
     """
     Ensure a new instance is set-up correctly and creates the required folders
@@ -827,6 +938,29 @@ def test_editor_setup():
         assert mock_shutil_copytree.call_count == 2
     assert e.modes == mock_modes
     view.set_usb_checker.assert_called_once_with(1, e.check_usb)
+
+
+def test_editor_connect_to_status_bar():
+    """
+    Check that the Window status bar is connected appropriately
+    to Editor-pane and to modes
+    """
+    view = mock.MagicMock()
+    e = mu.logic.Editor(view)
+    mock_python_mode = mock.MagicMock()
+    mock_esp_mode = mock.MagicMock()
+    mock_python_mode.workspace_dir.return_value = "foo"
+    mock_modes = {"python": mock_python_mode, "esp": mock_esp_mode}
+    mock_device_selector = mock.MagicMock()
+    with mock.patch("os.path.exists", return_value=False), mock.patch(
+        "os.makedirs", return_value=None
+    ), mock.patch("shutil.copy"), mock.patch("shutil.copytree"):
+        e.setup(mock_modes)
+        sb = mu.interface.main.StatusBar()
+        sb.device_selector = mock_device_selector
+        e.connect_to_status_bar(sb)
+        # Check device_changed signal is connected to both editor and modes
+        assert sb.device_selector.device_changed.connect.call_count == 3
 
 
 def test_editor_restore_session_existing_runtime():
@@ -2650,146 +2784,138 @@ def test_check_usb(microbit_com1):
     ed.device_connected.emit.assert_called_with(microbit_com1)
 
 
-# def test_check_usb_change_mode_cancel(adafruit_feather):
-#     """
-#     Ensure the check_usb doesn't change mode if confirmation cancelled by
-#     user.
-#     """
-#     view = mock.MagicMock()
-#     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
-#     ed = mu.logic.Editor(view)
-#     ed.change_mode = mock.MagicMock()
-#     mode_py = mock.MagicMock()
-#     mode_py.name = "Python3"
-#     mode_py.runner = None
-#     mode_py.find_devices.return_value = []
-#     mode_cp = mock.MagicMock()
-#     mode_cp.name = "CircuitPlayground"
-#     mode_cp.find_devices.return_value = [adafruit_feather]
-#     ed.modes = {"circuitplayground": mode_cp, "python": mode_py}
-#     ed.device_connected = mock.MagicMock()
-#     ed.check_usb()
-#     ed.device_connected.emit.assert_called_with(adafruit_feather)
-#     assert view.show_confirmation.called
-#     ed.change_mode.assert_not_called()
+def test_check_usb_remove_disconnected_devices(microbit_com1):
+    """
+    Ensure that if a device is no longer connected, it is removed from
+    the set of connected devices.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    # No modes, so no devices should be detected
+    ed.modes = {}
+    ed.show_status_message = mock.MagicMock()
+    ed.connected_devices.add_device(microbit_com1)
+    ed.check_usb()
+    assert len(ed.connected_devices) == 0
 
 
-# def test_check_usb_already_in_mode(microbit_com1):
-#     """
-#     Ensure the check_usb doesn't ask to change mode if already selected.
-#     """
-#     view = mock.MagicMock()
-#     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
-#     ed = mu.logic.Editor(view)
-#     ed.change_mode = mock.MagicMock()
-#     mode_mb = mock.MagicMock()
-#     mode_mb.name = "BBC micro:bit"
-#     mode_mb.find_devices.return_value = [microbit_com1]
-#     mode_cp = mock.MagicMock()
-#     mode_cp.find_devices.return_value = []
-#     ed.modes = {"microbit": mode_mb, "circuitplayground": mode_cp}
-#     ed.mode = "microbit"
-#     ed.show_status_message = mock.MagicMock()
-#     ed.check_usb()
-#     view.show_confirmation.assert_not_called()
-#     ed.change_mode.assert_not_called()
+def test_ask_to_change_mode_confirm():
+    """
+    Ensure the ask_to_change_mode calls change_mode, if user confirms.
+    """
+    view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mode_py = mock.MagicMock()
+    mode_py.name = "Python3"
+    mode_py.runner = None
+    mode_mb = mock.MagicMock()
+    mode_mb.name = "BBC micro:bit"
+    ed.modes = {"microbit": mode_mb, "python": mode_py}
+    ed.ask_to_change_mode("microbit", "python", "New device detected")
+    assert view.show_confirmation.called
+    ed.change_mode.assert_called_once_with("microbit")
 
 
-# def test_check_usb_currently_running_code(microbit_com1):
-#     """
-#     Ensure the check_usb doesn't ask to change mode if the current mode is
-#     running code.
-#     """
-#     view = mock.MagicMock()
-#     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
-#     ed = mu.logic.Editor(view)
-#     ed.change_mode = mock.MagicMock()
-#     mode_py = mock.MagicMock()
-#     mode_py.name = "Python3"
-#     mode_py.runner = True
-#     mode_py.find_device.return_value = []
-#     mode_mb = mock.MagicMock()
-#     mode_mb.name = "BBC micro:bit"
-#     mode_mb.find_devices.return_value = [microbit_com1]
-#     ed.modes = {"microbit": mode_mb, "python": mode_py}
-#     ed.show_status_message = mock.MagicMock()
-#     ed.check_usb()
-#     view.show_confirmation.assert_not_called()
-#     ed.change_mode.assert_not_called()
+def test_ask_to_change_mode_cancel(adafruit_feather):
+    """
+    Ensure the ask_to_change_mode doesn't change mode if confirmation cancelled
+    by user.
+    """
+    view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mode_py = mock.MagicMock()
+    mode_py.name = "Python3"
+    mode_py.runner = None
+    mode_cp = mock.MagicMock()
+    mode_cp.name = "CircuitPlayground"
+    ed.modes = {"circuitplayground": mode_cp, "python": mode_py}
+    ed.ask_to_change_mode(mode_cp, mode_py, "New device detected")
+    assert view.show_confirmation.called
+    ed.change_mode.assert_not_called()
 
 
-# def test_check_usb_multiple_devices(microbit_com1, adafruit_feather):
-#     """
-#     Ensure the check_usb doesn't ask to change mode if multiple devices
-#     found.
-#     """
-#     view = mock.MagicMock()
-#     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
-#     ed = mu.logic.Editor(view)
-#     ed.change_mode = mock.MagicMock()
-#     mode_py = mock.MagicMock()
-#     mode_py.name = "Python3"
-#     mode_py.runner = None
-#     mode_py.find_devices.return_value = []
-#     mode_mb = mock.MagicMock()
-#     mode_mb.name = "BBC micro:bit"
-#     mode_mb.find_devices.return_value = [microbit_com1]
-#     mode_cp = mock.MagicMock()
-#     mode_cp.name = "CircuitPlayground"
-#     mode_cp.find_devices.return_value = [adafruit_feather]
-#     ed.modes = {
-#         "microbit": mode_mb,
-#         "circuitplayground": mode_cp,
-#         "python": mode_py,
-#     }
-#     ed.device_connected = mock.MagicMock()
-#     ed.check_usb()
-#     expected_mb = mock.call(microbit_com1)
-#     expected_cp = mock.call(adafruit_feather)
-#     ed.device_connected.emit.assert_has_calls(
-#         (expected_mb, expected_cp), any_order=True
-#     )
-#     view.show_confirmation.assert_not_called()
-#     ed.change_mode.assert_not_called()
+def test_ask_to_change_mode_already_in_mode(microbit_com1):
+    """
+    Ensure the ask_to_change_mode doesn't ask to change mode if already
+    selected.
+    """
+    view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mode_mb = mock.MagicMock()
+    mode_mb.name = "BBC micro:bit"
+    mode_mb.find_devices.return_value = [microbit_com1]
+    mode_cp = mock.MagicMock()
+    mode_cp.find_devices.return_value = []
+    ed.modes = {"microbit": mode_mb, "circuitplayground": mode_cp}
+    ed.mode = "microbit"
+    ed.show_status_message = mock.MagicMock()
+    ed.ask_to_change_mode(mode_mb, mode_mb, "New device detected")
+    view.show_confirmation.assert_not_called()
+    ed.change_mode.assert_not_called()
 
 
-# def test_check_usb_when_selecting_mode_is_silent(adafruit_feather):
-#     """
-#     Ensure the check_usb doesn't ask to change mode if the user has the mode
-#     selection dialog active (indicated by the selecting_mode flag.
-#     """
-#     view = mock.MagicMock()
-#     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
-#     ed = mu.logic.Editor(view)
-#     ed.change_mode = mock.MagicMock()
-#     mode_py = mock.MagicMock()
-#     mode_py.name = "Python3"
-#     mode_py.runner = None
-#     mode_py.find_devices.return_value = []
-#     mode_cp = mock.MagicMock()
-#     mode_cp.name = "CircuitPlayground"
-#     mode_cp.find_devices.return_value = [adafruit_feather]
-#     ed.modes = {"circuitplayground": mode_cp, "python": mode_py}
-#     ed.device_connected = mock.MagicMock()
-#     ed.selecting_mode = True
-#     ed.check_usb()
-#     ed.device_connected.emit.assert_called_with(adafruit_feather)
-#     assert view.show_confirmation.call_count == 0
-#     ed.change_mode.assert_not_called()
+def test_ask_to_change_mode_currently_running_code(microbit_com1):
+    """
+    Ensure the ask_to_check_mode doesn't ask to change mode if the current mode
+    is running code.
+    """
+    view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mode_py = mock.MagicMock()
+    mode_py.name = "Python3"
+    mode_py.runner = True
+    mode_py.find_device.return_value = []
+    mode_mb = mock.MagicMock()
+    mode_mb.name = "BBC micro:bit"
+    mode_mb.find_devices.return_value = [microbit_com1]
+    ed.modes = {"microbit": mode_mb, "python": mode_py}
+    ed.show_status_message = mock.MagicMock()
+    ed.ask_to_change_mode(mode_mb, mode_py, "New device detected")
+    view.show_confirmation.assert_not_called()
+    ed.change_mode.assert_not_called()
 
 
-# def test_check_usb_remove_disconnected_devices():
-#     """
-#     Ensure that if a device is no longer connected, it is removed from
-#     the set of connected devices.
-#     """
-#     view = mock.MagicMock()
-#     ed = mu.logic.Editor(view)
-#     ed.modes = {}
-#     ed.show_status_message = mock.MagicMock()
-#     ed.connected_devices = {("microbit", "/dev/ttyACM1")}
-#     ed.check_usb()
-#     assert len(ed.connected_devices) == 0
+def test_ask_to_change_mode_when_selecting_mode_is_silent(adafruit_feather):
+    """
+    Ensure ask_to_change_mode doesn't ask to change mode if the user has
+    the mode selection dialog active (indicated by the selecting_mode flag).
+    """
+    view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mode_py = mock.MagicMock()
+    mode_py.name = "Python3"
+    mode_py.runner = None
+    mode_py.find_devices.return_value = []
+    mode_cp = mock.MagicMock()
+    mode_cp.name = "CircuitPlayground"
+    mode_cp.find_devices.return_value = [adafruit_feather]
+    ed.modes = {"circuitplayground": mode_cp, "python": mode_py}
+    ed.selecting_mode = True
+    ed.ask_to_change_mode(mode_cp, mode_py, "New device detected")
+    assert view.show_confirmation.call_count == 0
+    ed.change_mode.assert_not_called()
+
+
+def test_device_changed(microbit_com1, adafruit_feather):
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    ed.ask_to_change_mode = mock.MagicMock()
+    ed.device_changed(adafruit_feather)
+    ed.ask_to_change_mode.assert_called_once()
+    assert ed.current_device == adafruit_feather
+    ed.device_changed(microbit_com1)
+    assert ed.ask_to_change_mode.call_count == 2
+    assert ed.current_device == microbit_com1
 
 
 def test_show_status_message():

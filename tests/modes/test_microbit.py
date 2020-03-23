@@ -1381,3 +1381,35 @@ def test_open_hex_with_exception():
     assert newline is None
     assert mock_extract.call_count == 1
     assert mock_open.call_count == 1
+
+
+def test_deactivate():
+    """
+    Ensure Filesystem pane is hidden, when MicroPython-mode is
+    deactivated.
+    """
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    mm.remove_fs = mock.MagicMock()
+    mm.activate()
+    mm.fs = True
+    mm.deactivate()
+    mm.remove_fs.assert_called_once()
+
+
+def test_device_changed(microbit):
+    """
+    Ensure Filesystem pane is reconnected, when the user changes
+    device.
+    """
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    mm.add_fs = mock.MagicMock()
+    mm.remove_fs = mock.MagicMock()
+    mm.activate()
+    mm.fs = True
+    mm.device_changed(microbit)
+    mm.remove_fs.assert_called_once()
+    mm.add_fs.assert_called_once()

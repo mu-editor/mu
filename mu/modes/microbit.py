@@ -618,11 +618,17 @@ class MicrobitMode(MicroPythonMode):
             return None, None
 
     def deactivate(self):
+        """
+        Invoked whenever the mode is deactivated.
+        """
         super().deactivate()
         if self.fs:
             self.remove_fs()
 
     def device_changed(self, new_device):
+        """
+        Invoked when the user changes device.
+        """
         super().device_changed(new_device)
         if self.fs:
             self.remove_fs()

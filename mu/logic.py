@@ -638,18 +638,27 @@ class Device:
         self.port = port
         self.serial_number = serial_number
         self.manufacturer = manufacturer
-        self.short_mode_name = short_mode_name
         self.long_mode_name = long_mode_name
+        self.short_mode_name = short_mode_name
         self.board_name = board_name
 
     @property
     def name(self):
+        """
+        Returns the device name.
+        """
         if self.board_name:
             return self.board_name
         else:
             return self.long_mode_name
 
     def __eq__(self, other):
+        """
+        Equality on devices. Comparison on vid, pid, and serial_number,
+        and most importantly also matches on which port the device is
+        connected to. That is, if two identical devices are connected
+        to separate ports they are considered different.
+        """
         return (
             isinstance(other, self.__class__)
             and self.pid == other.pid
@@ -659,16 +668,29 @@ class Device:
         )
 
     def __ne__(self, other):
+        """
+        Inequality of devices is the negation of equality
+        """
         return not self.__eq__(other)
 
     def __lt__(self, other):
+        """
+        Alphabetical ordering according to device name
+        """
         return self.name < other.name
 
     def __str__(self):
+        """
+        String representation of devices includes name, port, and VID/PID
+        """
         s = "{} on {} (VID: 0x{:04X}, PID: 0x{:04X})"
         return s.format(self.name, self.port, self.vid, self.pid)
 
     def __hash__(self):
+        """
+        Hash is the hash of the string representation, includes the same
+        elements in the hash as in equality testing.
+        """
         return hash(str(self))
 
 
@@ -690,12 +712,23 @@ class DeviceList(QtCore.QAbstractListModel):
         return self._devices[i]
 
     def __len__(self):
+        """
+        Number of devices
+        """
         return len(self._devices)
 
     def rowCount(self, parent):
+        """
+        Number of devices
+        """
         return len(self._devices)
 
     def data(self, index, role):
+        """
+        Reimplements QAbstractListModel.data(): returns data for the
+        specified index and role. In this case only implmented for
+        ToolTipRole and DisplayRole
+        """
         device = self._devices[index.row()]
         if role == QtCore.Qt.ToolTipRole:
             return str(device)
@@ -703,6 +736,9 @@ class DeviceList(QtCore.QAbstractListModel):
             return device.name
 
     def add_device(self, new_device):
+        """
+        Add a new device to the device list, maintains alphabetical ordering
+        """
         parent = QtCore.QModelIndex()
         # Find position to insert sorted
         position = 0
@@ -715,6 +751,9 @@ class DeviceList(QtCore.QAbstractListModel):
         self.endInsertRows()
 
     def remove_device(self, device):
+        """
+        Remove the given device from the device list
+        """
         parent = QtCore.QModelIndex()
         position = self._devices.index(device)
         self.beginRemoveRows(parent, position, position)
@@ -1583,6 +1622,11 @@ class Editor(QObject):
                 )
 
     def ask_to_change_mode(self, new_mode, mode_name, heading):
+        """
+        Open a dialog asking the user, whether to change mode from
+        mode_name to new_mode. The dialog can be customized by the
+        heading-parameter.
+        """
         # Only ask to switch mode if we're not already trying to
         # select a new mode via the dialog. Cannot change mode if
         # a script is already being run by the current mode.
@@ -1595,10 +1639,16 @@ class Editor(QObject):
             change_confirmation = self._view.show_confirmation(
                 heading, msg_body, icon="Question"
             )
+            print(change_confirmation)
             if change_confirmation == QMessageBox.Ok:
                 self.change_mode(new_mode)
 
     def device_changed(self, device):
+        """
+        Slot for receiving signals that the current device has changed.
+        If the device change requires mode change, the user will be
+        asked through a dialog.
+        """
         if device:
             if self.current_device is None:
                 heading = _("Detected new {} device.").format(device.name)

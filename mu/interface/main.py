@@ -1151,9 +1151,15 @@ class Window(QMainWindow):
             self.current_tab.toggle_comments()
 
     def show_device_selector(self):
+        """
+        Reveals the device selector in the status bar
+        """
         self.status_bar.device_selector.setHidden(False)
 
     def hide_device_selector(self):
+        """
+        Hides the device selector in the status bar
+        """
         self.status_bar.device_selector.setHidden(True)
 
 
@@ -1168,6 +1174,9 @@ class DeviceSelector(QWidget):
     device_changed = pyqtSignal("PyQt_PyObject")
 
     def __init__(self, parent=None):
+        """
+        Initialize the DeviceSelector
+        """
         super().__init__(parent)
 
         self.setObjectName("DeviceSelector")
@@ -1193,6 +1202,10 @@ class DeviceSelector(QWidget):
         layout.addWidget(self.connection_status)
 
     def _device_changed(self, i):
+        """
+        Called when the device is changed by user or programmatically.
+        Updates the current device and emits the device_changed signal.
+        """
         if i < 0:
             device = None
         else:
@@ -1201,12 +1214,22 @@ class DeviceSelector(QWidget):
         self.device_changed.emit(device)
 
     def device_connected(self, device):
+        """
+        Update the view when new devices are connected.
+        """
         self._update_view()
 
     def device_disconnected(self, device):
+        """
+        Update the view when devices are disconnected.
+        """
         self._update_view()
 
     def _update_view(self):
+        """
+        Update icon and show/hide combobox-selector, when devices
+        connects/disconnects
+        """
         num_devices = self.selector.count()
         # Hide/show menu
         if num_devices <= 1:
@@ -1289,6 +1312,9 @@ class StatusBar(QStatusBar):
         self.mode_label.setText(mode)
 
     def device_connected(self, device):
+        """
+        Show a tooltip whenever a new device connects
+        """
         if device.board_name:
             msg = _("Detected new {} device: {}.").format(
                 device.long_mode_name, device.board_name

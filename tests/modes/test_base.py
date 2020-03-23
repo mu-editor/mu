@@ -217,6 +217,18 @@ def test_base_mode_open_file():
     assert newline is None
 
 
+def test_base_mode_activate_deactivate_change(microbit):
+    """
+    Dummy test of no-operation base methods only meant for overriding.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    bm = BaseMode(editor, view)
+    bm.activate()
+    bm.deactivate()
+    bm.device_changed(microbit)
+
+
 # TODO Avoid using BOARD_IDS from base.py (which is only ever used in
 # this test)
 def test_micropython_mode_find_device():
@@ -675,7 +687,67 @@ def test_micropython_on_data_flood():
         mock_super().on_data_flood.assert_called_once_with()
 
 
+def test_micropython_activate():
+    """
+    Ensure the device selector is shown when MicroPython-mode is activated.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.show_device_selector = mock.MagicMock()
+    mm = MicroPythonMode(editor, view)
+    mm.activate()
+    view.show_device_selector.assert_called_once()
+
+
+def test_micropython_deactivate():
+    """
+    Ensure REPL/Plotter and device_selector is hidden, when
+    MicroPython-mode is deactivated.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.show_device_selector = mock.MagicMock()
+    view.hide_device_selector = mock.MagicMock()
+    mm = MicroPythonMode(editor, view)
+    mm.remove_repl = mock.MagicMock()
+    mm.remove_plotter = mock.MagicMock()
+    mm.activate()
+    mm.repl = True
+    mm.plotter = True
+    mm.deactivate()
+    view.hide_device_selector.assert_called_once()
+    mm.remove_repl.assert_called_once()
+    mm.remove_plotter.assert_called_once()
+
+
+def test_micropython_device_changed(microbit):
+    """
+    Ensure REPL/Plotter and connection are reconnected, when the
+    user changes device.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.show_device_selector = mock.MagicMock()
+    view.hide_device_selector = mock.MagicMock()
+    mm = MicroPythonMode(editor, view)
+    mm.add_repl = mock.MagicMock()
+    mm.add_plotter = mock.MagicMock()
+    mm.remove_repl = mock.MagicMock()
+    mm.remove_plotter = mock.MagicMock()
+    mm.repl = True
+    mm.plotter = True
+    mm.connection = mock.MagicMock()
+    mm.activate()
+    mm.device_changed(microbit)
+    mm.add_repl.assert_called_once()
+    mm.add_plotter.assert_called_once()
+    mm.remove_repl.assert_called_once()
+    mm.remove_plotter.assert_called_once()
+    mm.connection.send_interrupt.assert_called_once()
+
+
 def test_FileManager_on_start():
+
     """
     When a thread signals it has started, create a serial connection and then
     list the files.
