@@ -645,7 +645,12 @@ def test_LocalFileList_contextMenuEvent():
     mock_menu = mock.MagicMock()
     mock_action_first = mock.MagicMock()
     mock_action_second = mock.MagicMock()
-    mock_menu.addAction.side_effect = [mock_action_first, mock_action_second]
+    mock_action_third = mock.MagicMock()
+    mock_menu.addAction.side_effect = [
+        mock_action_first,
+        mock_action_second,
+        mock_action_third,
+    ]
     mock_menu.exec_.return_value = mock_action_first
     mfs = mu.interface.panes.LocalFileList("homepath")
     mock_open = mock.MagicMock()
@@ -686,6 +691,38 @@ def test_LocalFileList_contextMenuEvent_external():
         mfs.contextMenuEvent(mock_event)
     assert mfs.set_message.emit.call_count == 1
     assert mock_open.call_count == 0
+
+
+def test_LocalFileList_contextMenuEvent_write_to_mainpy():
+    """
+    Ensure that the filesystem put-signal is emitted when a local file
+    is right-clicked and the appropriate menu item activated by a
+    user.
+    """
+    mock_menu = mock.MagicMock()
+    mock_action_first = mock.MagicMock()
+    mock_action_second = mock.MagicMock()
+    mock_action_third = mock.MagicMock()
+    mock_menu.addAction.side_effect = [
+        mock_action_first,
+        mock_action_second,
+        mock_action_third,
+    ]
+    mock_menu.exec_.return_value = mock_action_second
+    mfs = mu.interface.panes.LocalFileList("homepath")
+    mfs.put = mock.MagicMock()
+    mock_current = mock.MagicMock()
+    mock_current.text.return_value = "foo.py"
+    mfs.currentItem = mock.MagicMock(return_value=mock_current)
+    mfs.set_message = mock.MagicMock()
+    mfs.mapToGlobal = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    with mock.patch("mu.interface.panes.QMenu", return_value=mock_menu):
+        mfs.contextMenuEvent(mock_event)
+    assert mfs.set_message.emit.call_count == 0
+    mfs.put.emit.assert_called_once_with(
+        os.path.join("homepath", "foo.py"), "main.py"
+    )
 
 
 def test_FileSystemPane_init():
