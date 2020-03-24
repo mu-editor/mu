@@ -444,7 +444,7 @@ def test_micropython_mode_add_repl(microbit):
         mm.add_repl()
     assert view.show_message.call_count == 0
     assert view.add_micropython_repl.call_args[0][1] == mock_repl_connection
-    mock_repl_connection.send_interrupt.assert_called_once()
+    mock_repl_connection.send_interrupt.assert_called_once_with()
 
 
 def test_micropython_mode_add_repl_no_force_interrupt(microbit):
@@ -495,7 +495,7 @@ def test_micropython_mode_remove_repl_and_disconnect():
     mock_repl_connection = mock.MagicMock()
     mm.connection = mock_repl_connection
     mm.remove_repl()
-    mock_repl_connection.close.assert_called_once()
+    mock_repl_connection.close.assert_called_once_with()
     assert mm.connection is None
 
 
@@ -511,7 +511,7 @@ def test_micropython_mode_remove_plotter_disconnects():
     mock_repl_connection = mock.MagicMock()
     mm.connection = mock_repl_connection
     mm.remove_plotter()
-    mock_repl_connection.close.assert_called_once()
+    mock_repl_connection.close.assert_called_once_with()
     assert mm.connection is None
 
 
@@ -669,7 +669,7 @@ def test_micropython_mode_add_plotter(microbit):
         mm.add_plotter()
     view.show_message.assert_not_called()
     assert view.add_micropython_plotter.call_args[0][1] == mock_repl_connection
-    mock_repl_connection.open.assert_called_once()
+    mock_repl_connection.open.assert_called_once_with()
 
 
 def test_micropython_on_data_flood():
@@ -696,7 +696,7 @@ def test_micropython_activate():
     view.show_device_selector = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
     mm.activate()
-    view.show_device_selector.assert_called_once()
+    view.show_device_selector.assert_called_once_with()
 
 
 def test_micropython_deactivate():
@@ -715,9 +715,9 @@ def test_micropython_deactivate():
     mm.repl = True
     mm.plotter = True
     mm.deactivate()
-    view.hide_device_selector.assert_called_once()
-    mm.remove_repl.assert_called_once()
-    mm.remove_plotter.assert_called_once()
+    view.hide_device_selector.assert_called_once_with()
+    mm.remove_repl.assert_called_once_with()
+    mm.remove_plotter.assert_called_once_with()
 
 
 def test_micropython_device_changed(microbit):
@@ -739,11 +739,11 @@ def test_micropython_device_changed(microbit):
     mm.connection = mock.MagicMock()
     mm.activate()
     mm.device_changed(microbit)
-    mm.add_repl.assert_called_once()
-    mm.add_plotter.assert_called_once()
-    mm.remove_repl.assert_called_once()
-    mm.remove_plotter.assert_called_once()
-    mm.connection.send_interrupt.assert_called_once()
+    mm.add_repl.assert_called_once_with()
+    mm.add_plotter.assert_called_once_with()
+    mm.remove_repl.assert_called_once_with()
+    mm.remove_plotter.assert_called_once_with()
+    mm.connection.send_interrupt.assert_called_once_with()
 
 
 def test_FileManager_on_start():

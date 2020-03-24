@@ -327,7 +327,7 @@ def test_deactivate(esp_mode):
     esp_mode.activate()
     esp_mode.fs = True
     esp_mode.deactivate()
-    esp_mode.remove_fs.assert_called_once()
+    esp_mode.remove_fs.assert_called_once_with()
 
 
 @pytest.fixture()
@@ -353,5 +353,5 @@ def test_device_changed(esp_mode, sparkfunESP32):
     esp_mode.activate()
     esp_mode.fs = True
     esp_mode.device_changed(sparkfunESP32)
-    esp_mode.remove_fs.assert_called_once()
-    esp_mode.add_fs.assert_called_once()
+    esp_mode.remove_fs.assert_called_once_with()
+    esp_mode.add_fs.assert_called_once_with()

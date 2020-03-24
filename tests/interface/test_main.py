@@ -2081,7 +2081,7 @@ def test_StatusBar_device_connected_microbit(microbit):
     sb = mu.interface.main.StatusBar()
     sb.set_message = mock.MagicMock()
     sb.device_connected(microbit)
-    sb.set_message.assert_called_once()
+    assert sb.set_message.call_count == 1
 
 
 def test_StatusBar_device_connected_adafruit_feather(adafruit_feather):
@@ -2092,4 +2092,4 @@ def test_StatusBar_device_connected_adafruit_feather(adafruit_feather):
     sb = mu.interface.main.StatusBar()
     sb.set_message = mock.MagicMock()
     sb.device_connected(adafruit_feather)
-    sb.set_message.assert_called_once()
+    assert sb.set_message.call_count == 1

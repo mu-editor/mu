@@ -2923,7 +2923,11 @@ def test_device_changed(microbit_com1, adafruit_feather):
     ed = mu.logic.Editor(view)
     ed.ask_to_change_mode = mock.MagicMock()
     ed.device_changed(adafruit_feather)
-    ed.ask_to_change_mode.assert_called_once()
+    ed.ask_to_change_mode.assert_called_once_with(
+        "circuitpython",
+        "CircuitPython",
+        "Detected new Adafruit Feather device.",
+    )
     assert ed.current_device == adafruit_feather
     ed.device_changed(microbit_com1)
     assert ed.ask_to_change_mode.call_count == 2

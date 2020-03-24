@@ -1395,7 +1395,7 @@ def test_deactivate():
     mm.activate()
     mm.fs = True
     mm.deactivate()
-    mm.remove_fs.assert_called_once()
+    mm.remove_fs.assert_called_once_with()
 
 
 def test_device_changed(microbit):
@@ -1411,5 +1411,5 @@ def test_device_changed(microbit):
     mm.activate()
     mm.fs = True
     mm.device_changed(microbit)
-    mm.remove_fs.assert_called_once()
-    mm.add_fs.assert_called_once()
+    mm.remove_fs.assert_called_once_with()
+    mm.add_fs.assert_called_once_with()
