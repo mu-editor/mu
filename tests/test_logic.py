@@ -800,8 +800,20 @@ def test_device_inequality(microbit_com1, microbit_com2):
     assert microbit_com1 != microbit_com2
 
 
-def test_device_ordering(microbit_com1, adafruit_feather):
+def test_device_ordering_lt(microbit_com1, adafruit_feather):
     assert adafruit_feather < microbit_com1
+
+
+def test_device_ordering_gt(microbit_com1, adafruit_feather):
+    assert microbit_com1 > adafruit_feather
+
+
+def test_device_ordering_le(microbit_com1, adafruit_feather):
+    assert adafruit_feather <= microbit_com1
+
+
+def test_device_ordering_ge(microbit_com1, adafruit_feather):
+    assert microbit_com1 >= adafruit_feather
 
 
 def test_device_to_string(adafruit_feather):

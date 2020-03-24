@@ -679,6 +679,24 @@ class Device:
         """
         return self.name < other.name
 
+    def __gt__(self, other):
+        """
+        Alphabetical ordering according to device name
+        """
+        return self.name > other.name
+
+    def __le__(self, other):
+        """
+        Alphabetical ordering according to device name
+        """
+        return self.name <= other.name
+
+    def __ge__(self, other):
+        """
+        Alphabetical ordering according to device name
+        """
+        return self.name >= other.name
+
     def __str__(self):
         """
         String representation of devices includes name, port, and VID/PID
