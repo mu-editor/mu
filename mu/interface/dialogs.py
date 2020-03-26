@@ -21,11 +21,12 @@ import sys
 import logging
 import csv
 import shutil
-from PyQt5 import QtCore
-from PyQt5.QtCore import QSize, QProcess, QTimer
+import pkgutil
+from PyQt5.QtCore import QSize, QProcess, QTimer, Qt
 from PyQt5.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
+    QGridLayout,
     QListWidget,
     QLabel,
     QListWidgetItem,
@@ -37,11 +38,12 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QLineEdit,
     QPushButton,
-    QFileDialog
+    QFileDialog,
+    QGroupBox,
+    QComboBox,
 )
 from PyQt5.QtGui import QTextCursor
 from mu.resources import load_icon
-from multiprocessing import Process
 from mu.logic import MODULE_DIR
 
 logger = logging.getLogger(__name__)
@@ -230,144 +232,163 @@ class PackagesWidget(QWidget):
         widget_layout.addWidget(self.text_area)
 
 
-class ESP32SettingsWidget(QWidget):
+class ESPFirmwareFlasherWidget(QWidget):
     """
-    Used for configuring how to interact with the ESP32:
+    Used for configuring how to interact with the ESP:
 
     * Override MicroPython.
     """
 
     def setup(self):
         widget_layout = QVBoxLayout()
-
-        # Checkbox for erase, label for explain
-        form_set = QHBoxLayout()
-        self.erase = QCheckBox(_("Erase the entire flash before updating?"))
-        self.erase.setChecked(False)
-        form_set.addWidget(self.erase)
-        widget_layout.addLayout(form_set)
-
-        # Label explained the forms following
         self.setLayout(widget_layout)
-        label = QLabel(
-            _(
-                "Override the built-in MicroPython runtime with "
-                "the following file:"
-            )
-        )
-        label.setWordWrap(True)
-        widget_layout.addWidget(label)
 
-        # Edit box for write command, Button for select firmware, Button for update
-        form_set = QHBoxLayout()
+        # Check whether esptool is installed, show error if not
+        esptool_installed = pkgutil.find_loader("esptool")
+        if not esptool_installed:
+            error_msg = _(
+                "The ESP Firmware flasher requires the esptool' "
+                "package to be installed.\n"
+                "Select \"Third Party Packages\", add 'esptool' "
+                "and click 'OK'"
+            )
+            error_label = QLabel(error_msg)
+            widget_layout.addWidget(error_label)
+            return
+
+        # Instructions
+        grp_instructions = QGroupBox(
+            _("How to flash MicroPython to your device")
+        )
+        grp_instructions_vbox = QVBoxLayout()
+        grp_instructions.setLayout(grp_instructions_vbox)
+        instructions = _(
+            "&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />"
+            "&nbsp;2. Download firmware from the "
+            '<a href="https://micropython.org/download">'
+            "https://micropython.org/download</a><br/>"
+            "&nbsp;3. Connect your device<br/>"
+            "&nbsp;4. Load the .bin file below using the 'Browse' button<br/>"
+            "&nbsp;5. Press 'Erase & write firmware'"
+            # "<br /><br />Check the current MicroPython version using the "
+            # "following commands:<br />"
+            # ">>> import sys<br />"
+            # ">>> sys.implementation"
+        )
+        label = QLabel(instructions)
+        label.setTextFormat(Qt.RichText)
+        label.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        label.setOpenExternalLinks(True)
+        label.setWordWrap(True)
+        grp_instructions_vbox.addWidget(label)
+        widget_layout.addWidget(grp_instructions)
+
+        # Device type, firmware path, flash button
+        device_type_label = QLabel("Device type:")
+        self.device_type = QComboBox(self)
+        self.device_type.addItem("ESP8266")
+        self.device_type.addItem("ESP32")
+        firmware_label = QLabel("Firmware (.bin):")
         self.txtFolder = QLineEdit()
-        self.btnFolder = QPushButton(_("..."))
-        self.btnExec = QPushButton(_("Update"))
+        self.btnFolder = QPushButton(_("Browse"))
+        self.btnExec = QPushButton(_("Erase && write firmware"))
         self.btnExec.setEnabled(False)
-        form_set.addWidget(self.txtFolder)
-        form_set.addWidget(self.btnFolder)
-        form_set.addWidget(self.btnExec)
+        form_set = QGridLayout()
+        form_set.addWidget(device_type_label, 0, 0)
+        form_set.addWidget(self.device_type, 0, 1)
+        form_set.addWidget(firmware_label, 1, 0)
+        form_set.addWidget(self.txtFolder, 1, 1)
+        form_set.addWidget(self.btnFolder, 1, 2)
+        form_set.addWidget(self.btnExec, 1, 3)
         widget_layout.addLayout(form_set)
 
-        # Text area for information
-        form_set = QHBoxLayout()
+        # Output area
         self.log_text_area = QPlainTextEdit()
         self.log_text_area.setReadOnly(True)
-
-        init_msg = _('''
-You can check the built-in MicroPython information by following command in REPL,
->>> import sys
->>> sys.implementation
-''')
-        self.log_text_area.setPlainText(init_msg)
-        self.log_text_area.appendPlainText('''
-If not install esptool yet, select "Third Party Packages" Tab and add esptool.
-''')
+        form_set = QHBoxLayout()
         form_set.addWidget(self.log_text_area)
         widget_layout.addLayout(form_set)
-
         widget_layout.addStretch()
 
-        # Set event
+        # Connect events
+        self.txtFolder.textChanged.connect(self.firmware_path_changed)
         self.btnFolder.clicked.connect(self.show_folder_dialog)
         self.btnExec.clicked.connect(self.update_firmware)
-        self.btnExec.installEventFilter(self)
-
-        self.filename = ''
 
     def show_folder_dialog(self):
-        #default_command = 'esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z 0x1000 '
-        default_command=''
-        self.command = ''
         # open dialog and set to foldername
-        filename = QFileDialog.getOpenFileName(self,
-                                                'open file',
-                                                os.path.expanduser('.'),
-                                                "Firmware (*.bin)")
-        print(filename)
+        filename = QFileDialog.getOpenFileName(
+            self,
+            "Select MicroPython firmware (.bin)",
+            os.path.expanduser("."),
+            "Firmware (*.bin)",
+        )
         if filename:
-            filename = filename[0].replace('/', os.sep)
-            self.txtFolder.setText(default_command + filename)
+            filename = filename[0].replace("/", os.sep)
+            self.txtFolder.setText(filename)
 
     def update_firmware(self):
-        self.err = 0
-        self.commands = []
-        self.log_text_area.appendPlainText('Updating...\n')
+        esptool = MODULE_DIR + "/esptool.py"
+        erase_command = 'python "{}" erase_flash'.format(esptool)
 
-        esptool = MODULE_DIR + '/esptool.py'
-        if self.erase.isChecked():
-            command = [esptool, 'erase_flash']
-            # self.process.start('python', command)
-            self.commands.append(command)
+        if self.device_type.currentText() == "ESP32":
+            write_command = (
+                'python "{}" --chip esp32 --baud 460800 '
+                'write_flash -z 0x1000 "{}"'
+            ).format(esptool, self.txtFolder.text())
+        else:
+            write_command = (
+                'python "{}" --chip esp8266 --baud 460800 '
+                'write_flash --flash_size=detect 0 "{}"'
+            ).format(esptool, self.txtFolder.text())
 
-        command = ['--chip', 'esp32', '--baud', '460800', 'write_flash', '-z', '0x1000', self.txtFolder.text()]
-        command.insert(0, esptool)
-        self.commands.append(command)
+        self.commands = [erase_command, write_command]
         self.run_esptool()
 
     def run_esptool(self):
-        command = self.commands.pop(0)
-        print(command)
         self.process = QProcess(self)
         self.process.setProcessChannelMode(QProcess.MergedChannels)
-        self.process.readyRead.connect(self.read_process)
-        self.process.finished.connect(self.finished)
+        self.process.readyReadStandardError.connect(self.read_process)
+        self.process.readyReadStandardOutput.connect(self.read_process)
+        self.process.finished.connect(self.esptool_finished)
+        self.process.errorOccurred.connect(self.esptool_error)
 
-        self.process.start('python', command)
+        command = self.commands.pop(0)
+        self.log_text_area.appendPlainText(command + "\n")
+        self.process.start(command)
 
-    def finished(self):
+    def esptool_error(self, error_num):
+        self.log_text_area.appendPlainText(
+            "Error occured: Error {}\n".format(error_num)
+        )
+        self.process = None
+
+    def esptool_finished(self, exitCode, exitStatus):
         """
-        Called when the subprocess that uses pip to install a package is
-        finished.
+        Called when the subprocess that executes 'esptool.py is finished.
         """
+        # Exit if a command fails
+        if exit != 0 or exitStatus == QProcess.CrashExit:
+            self.log_text_area.appendPlainText("Error on flashing. Aborting.")
+            return
         if self.commands:
             self.process = None
             self.run_esptool()
-        else:
-            if (self.err == 1):
-                self.log_text_area.appendPlainText('''
-Select Third Party Packages Tab and add esptool.
-''')
-
 
     def read_process(self):
         """
         Read data from the child process and append it to the text area. Try
         to keep reading until there's no more data from the process.
         """
-        msg = ''
+        msg = ""
         data = self.process.readAll()
         if data:
             try:
                 msg = data.data().decode("utf-8")
                 self.append_data(msg)
-            except UnicodeDecodeError as e:
-                # print(e)
+            except UnicodeDecodeError:
                 pass
             QTimer.singleShot(2, self.read_process)
-
-        if "[Errno 2] No such file or directory" in msg:
-            self.err = 1
 
     def append_data(self, msg):
         """
@@ -379,12 +400,7 @@ Select Third Party Packages Tab and add esptool.
         cursor.movePosition(QTextCursor.End)
         self.log_text_area.setTextCursor(cursor)
 
-    def eventFilter(self, obj, event):
-        if obj == self.btnExec and event.type() == QtCore.QEvent.HoverEnter:
-            self.onHovered()
-        return super(ESP32SettingsWidget, self).eventFilter(obj, event)
-
-    def onHovered(self):
+    def firmware_path_changed(self):
         if len(self.txtFolder.text()) > 0:
             self.btnExec.setEnabled(True)
         else:
@@ -430,9 +446,9 @@ class AdminDialog(QDialog):
         self.package_widget.setup(packages)
         self.tabs.addTab(self.package_widget, _("Third Party Packages"))
         if mode == "esp":
-            self.esp32_widget = ESP32SettingsWidget()
-            self.esp32_widget.setup()
-            self.tabs.addTab(self.esp32_widget, _("ESP32 Firmware Settings"))
+            self.esp_widget = ESPFirmwareFlasherWidget()
+            self.esp_widget.setup()
+            self.tabs.addTab(self.esp_widget, _("ESP Firmware flasher"))
 
     def settings(self):
         """

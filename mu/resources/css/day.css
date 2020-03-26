@@ -278,3 +278,27 @@ QTreeView::branch:has-children:open {
 QTreeView::branch:has-children:closed {
     image: url(images:scroll-right.png);
 }
+QComboBox {
+    padding: 2px;
+    border: 1px solid #b4b4b4;
+}
+QComboBox::drop-down {
+    border: 0;
+    width: 15px;
+    image: unset;
+    padding-right: 2px;
+}
+QComboBox::down-arrow {
+    image: url(images:dropdown-arrow.png);
+}
+
+QGroupBox {
+    border: 1px solid #b4b4b4;
+    margin-top: 1ex; /* leave space at the top for the title */
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 8px;
+}
+
