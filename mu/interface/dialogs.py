@@ -368,7 +368,7 @@ class ESPFirmwareFlasherWidget(QWidget):
         Called when the subprocess that executes 'esptool.py is finished.
         """
         # Exit if a command fails
-        if exit != 0 or exitStatus == QProcess.CrashExit:
+        if exitCode != 0 or exitStatus == QProcess.CrashExit:
             self.log_text_area.appendPlainText("Error on flashing. Aborting.")
             return
         if self.commands:
