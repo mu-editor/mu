@@ -122,33 +122,10 @@ QStatusBar QLabel {
     margin: 0;
 }
 
-#DeviceSelector {
-    padding: 0;
-    margin: 0;
-}
-
-#DeviceSelector QLabel {
-    padding: 2px;
-    margin: 0;
-}
-
 #DeviceSelector QComboBox {
     padding: 4px 25px 4px 3px;
-    border: 1px solid #b4b4b4;
     margin: 2px;
 }
-
-#DeviceSelector QComboBox::drop-down {
-    border: 0;
-    width: 15px;
-    image: unset;
-    padding-right: 2px;
-}
-
-#DeviceSelector QComboBox::down-arrow {
-    image: url(images:dropdown-arrow.png);
-}
-
 
 #AdministrationLabel:hover, #AdministrationLabel:focus {
     background: #cccccc;
@@ -306,3 +283,20 @@ QTreeView::branch:has-children:open {
 QTreeView::branch:has-children:closed {
     image: url(images:scroll-right.png);
 }
+
+QComboBox {
+    padding: 2px;
+    border: 1px solid #b4b4b4;
+}
+
+QComboBox::drop-down {
+    border: 0;
+    width: 15px;
+    image: unset;
+    padding-right: 2px;
+}
+
+QComboBox::down-arrow {
+    image: url(images:dropdown-arrow.png);
+}
+
