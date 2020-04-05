@@ -137,6 +137,17 @@ class JupyterREPLPane(RichJupyterWidget):
         self._control.setFocus()
 
 
+VT100_RETURN = b"\r"
+VT100_BACKSPACE = b"\b"
+VT100_DELETE = b"\x1B[\x33\x7E"
+VT100_UP = b"\x1B[A"
+VT100_DOWN = b"\x1B[B"
+VT100_RIGHT = b"\x1B[C"
+VT100_LEFT = b"\x1B[D"
+VT100_HOME = b"\x1B[H"
+VT100_END = b"\x1B[F"
+
+
 class MicroPythonREPLPane(QTextEdit):
     """
     REPL = Read, Evaluate, Print, Loop.
@@ -160,6 +171,7 @@ class MicroPythonREPLPane(QTextEdit):
         self.cursorPositionChanged.connect(self.cursor_moved)
         self.setObjectName("replpane")
         self.set_theme(theme)
+        self.cursorMoved = True
 
     def paste(self):
         """
@@ -198,81 +210,119 @@ class MicroPythonREPLPane(QTextEdit):
         Correctly encodes it and sends it to the connected device.
         """
         key = data.key()
-        msg = bytes(data.text(), "utf8")
+        ctrl_only = data.modifiers() == Qt.ControlModifier
+        meta_only = data.modifiers() == Qt.MetaModifier
+        ctrl_shift_only = data.modifiers() == Qt.ControlModifier | Qt.ShiftModifier
+        shift_down = data.modifiers() & Qt.ShiftModifier
+        on_osx = platform.system() == "Darwin"
+
+        def send(msg):
+            logger.debug("Keyboard event. Sending to tty: {}".format(str(msg)))
+            self.serial.write(msg)
 
         if key == Qt.Key_Return:
-            msg = b"\x1B[F\r" # Return: End + Return
+            send(VT100_RETURN)
         elif key == Qt.Key_Backspace:
-            msg = b"\b"
+            if not self.deleteSelection():
+                send(VT100_BACKSPACE)
         elif key == Qt.Key_Delete:
-            msg = b"\x1B[\x33\x7E"
+            if not self.deleteSelection():
+                send(VT100_DELETE)
         elif key == Qt.Key_Up:
-            msg = b"\x1B[A"
+            send(VT100_UP)
         elif key == Qt.Key_Down:
-            msg = b"\x1B[B"
+            send(VT100_DOWN)
         elif key == Qt.Key_Right:
-            msg = b"\x1B[C"
+            if shift_down:
+                # Text selection - pass down
+                super().keyPressEvent(data)
+            else:
+                # TODO: handle if there is a selection
+                send(VT100_RIGHT)
         elif key == Qt.Key_Left:
-            msg = b"\x1B[D"
+            if shift_down:
+                # Text selection - pass down
+                super().keyPressEvent(data)
+            else:
+                # TODO: handle if there is a selection
+                send(VT100_LEFT)
         elif key == Qt.Key_Home:
-            msg = b"\x1B[H"
+            send(VT100_HOME)
         elif key == Qt.Key_End:
-            msg = b"\x1B[F"
-        elif (
-            platform.system() == "Darwin"
-            and data.modifiers() == Qt.MetaModifier
-        ) or (
-            platform.system() != "Darwin"
-            and data.modifiers() == Qt.ControlModifier
-        ):
+            send(VT100_END)
+        elif (on_osx and meta_only) or (not on_osx and ctrl_only):
             # Handle the Control key. On OSX/macOS/Darwin (python calls this
             # platform Darwin), this is handled by Qt.MetaModifier. Other
             # platforms (Linux, Windows) call this Qt.ControlModifier. Go
             # figure. See http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
             if Qt.Key_A <= key <= Qt.Key_Z:
                 # The microbit treats an input of \x01 as Ctrl+A, etc.
-                msg = bytes([1 + key - Qt.Key_A])
-        elif (data.modifiers() == Qt.ControlModifier | Qt.ShiftModifier) or (
-            platform.system() == "Darwin"
-            and data.modifiers() == Qt.ControlModifier
-        ):
+                send(bytes([1 + key - Qt.Key_A]))
+        elif ctrl_shift_only or (on_osx and ctrl_only):
             # Command-key on Mac, Ctrl-Shift on Win/Lin
             if key == Qt.Key_C:
                 self.copy()
-                msg = b""
             elif key == Qt.Key_V:
+                self.deleteSelection()
                 self.paste()
-                msg = b""
-        self.connection.write(msg)
+        else:
+            self.deleteSelection()
+            send(bytes(data.text(), "utf8"))
 
+    def moveCursor(self, steps):
+        if steps > 0:
+            # Move cursor right if positive
+            logger.debug("Mouse event: Right * {}".format(steps))
+            for i in range(steps):
+                self.serial.write(VT100_RIGHT)
+        elif steps < 0:
+            # Move cursor left if negative
+            logger.debug("Mouse event: Left * {}".format(abs(steps)))
+            for i in range(abs(steps)):
+                self.serial.write(VT100_LEFT)
+
+    def deleteSelection(self):
+        tc = self.textCursor()
+        if tc.hasSelection():
+            selectionSize = tc.selectionEnd() - tc.selectionStart()
+            # Move cursor to end of selection
+            steps = tc.selectionEnd() - self.last_cursor_position
+            tc.setPosition(self.last_cursor_position)
+            self.setTextCursor(tc)
+            self.moveCursor(steps)
+            # Send N backspaces
+            for i in range(selectionSize):
+                self.serial.write(VT100_BACKSPACE)
+            return True
+        return False
 
     def cursor_moved(self):
+        self.cursorMoved = True
+
+    def mouseReleaseEvent(self, mouseEvent):
         # Always return cursor to where it were
         # cursor is moved by the incoming signals send by the board
-        # (processed in process_bytes)
+        # (processed in process_tty_data)
 
-        # Save attempted cursor move destination
+        super().mouseReleaseEvent(mouseEvent)
+        self.cursorMoved = False
+
         tc = self.textCursor()
+
+        # Don't do anything, if there's a selection
+        if tc.hasSelection():
+            return
+
+       # Save attempted cursor move destination
         destination = tc.position()
 
         # Calculate the amount of steps to move to the destination
-        movement = destination - self.last_cursor_position
+        steps = destination - self.last_cursor_position
 
         # Move the cursor back where it was before
         tc.setPosition(self.last_cursor_position)
         self.setTextCursor(tc)
-        self.last_cursor_position = tc.position()
-
-        if movement > 0:
-            # Move cursor right if positive
-            print("Mouse event: Right * {}".format(movement))
-            for i in range(movement):
-                self.connection.write(b"\x1B[C")
-        elif movement < 0:
-            # Move cursor left if negative
-            print("Mouse event: Left * {}".format(abs(movement)))
-            for i in range(abs(movement)):
-                self.connection.write(b"\x1B[D")
+        self.moveCursor(steps)
 
     def process_tty_data(self, data):
         """
@@ -280,7 +330,7 @@ class MicroPythonREPLPane(QTextEdit):
         them in the REPL widget.
         """
         tc = self.textCursor()
-        print("Received input: ", data)
+        logger.debug("Received input: {}".format(str(data)))
         i = 0
         while i < len(data):
             if data[i] == 8:  # \b
@@ -322,7 +372,6 @@ class MicroPythonREPLPane(QTextEdit):
                         self.setTextCursor(tc)
                     elif m.group("action") == "K":  # delete things
                         if m.group("count") == "":  # delete to end of line
-                            print("Input: delete to EOL")
                             tc.movePosition(
                                 QTextCursor.EndOfLine,
                                 mode=QTextCursor.KeepAnchor,
