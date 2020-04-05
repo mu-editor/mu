@@ -156,6 +156,8 @@ class MicroPythonREPLPane(QTextEdit):
         self.setUndoRedoEnabled(False)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.context_menu)
+        self.last_cursor_position = self.textCursor().position()
+        self.cursorPositionChanged.connect(self.cursor_moved)
         self.setObjectName("replpane")
         self.set_theme(theme)
 
@@ -197,7 +199,10 @@ class MicroPythonREPLPane(QTextEdit):
         """
         key = data.key()
         msg = bytes(data.text(), "utf8")
-        if key == Qt.Key_Backspace:
+
+        if key == Qt.Key_Return:
+            msg = b"\x1B[F\r" # Return: End + Return
+        elif key == Qt.Key_Backspace:
             msg = b"\b"
         elif key == Qt.Key_Delete:
             msg = b"\x1B[\x33\x7E"
@@ -240,20 +245,47 @@ class MicroPythonREPLPane(QTextEdit):
                 msg = b""
         self.connection.write(msg)
 
+
+    def cursor_moved(self):
+        # Always return cursor to where it were
+        # cursor is moved by the incoming signals send by the board
+        # (processed in process_bytes)
+
+        # Save attempted cursor move destination
+        tc = self.textCursor()
+        destination = tc.position()
+
+        # Calculate the amount of steps to move to the destination
+        movement = destination - self.last_cursor_position
+
+        # Move the cursor back where it was before
+        tc.setPosition(self.last_cursor_position)
+        self.setTextCursor(tc)
+        self.last_cursor_position = tc.position()
+
+        if movement > 0:
+            # Move cursor right if positive
+            print("Mouse event: Right * {}".format(movement))
+            for i in range(movement):
+                self.connection.write(b"\x1B[C")
+        elif movement < 0:
+            # Move cursor left if negative
+            print("Mouse event: Left * {}".format(abs(movement)))
+            for i in range(abs(movement)):
+                self.connection.write(b"\x1B[D")
+
     def process_tty_data(self, data):
         """
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
         """
         tc = self.textCursor()
-        # The text cursor must be on the last line of the document. If it isn't
-        # then move it there.
-        while tc.movePosition(QTextCursor.Down):
-            pass
+        print("Received input: ", data)
         i = 0
         while i < len(data):
             if data[i] == 8:  # \b
                 tc.movePosition(QTextCursor.Left)
+                self.last_cursor_position = tc.position()
                 self.setTextCursor(tc)
             elif data[i] == 13:  # \r
                 pass
@@ -274,31 +306,40 @@ class MicroPythonREPLPane(QTextEdit):
 
                     if m.group("action") == "A":  # up
                         tc.movePosition(QTextCursor.Up, n=count)
+                        self.last_cursor_position = tc.position()
                         self.setTextCursor(tc)
                     elif m.group("action") == "B":  # down
                         tc.movePosition(QTextCursor.Down, n=count)
+                        self.last_cursor_position = tc.position()
                         self.setTextCursor(tc)
                     elif m.group("action") == "C":  # right
                         tc.movePosition(QTextCursor.Right, n=count)
+                        self.last_cursor_position = tc.position()
                         self.setTextCursor(tc)
                     elif m.group("action") == "D":  # left
                         tc.movePosition(QTextCursor.Left, n=count)
+                        self.last_cursor_position = tc.position()
                         self.setTextCursor(tc)
                     elif m.group("action") == "K":  # delete things
                         if m.group("count") == "":  # delete to end of line
+                            print("Input: delete to EOL")
                             tc.movePosition(
                                 QTextCursor.EndOfLine,
                                 mode=QTextCursor.KeepAnchor,
                             )
                             tc.removeSelectedText()
+                            self.last_cursor_position = tc.position()
                             self.setTextCursor(tc)
             elif data[i] == 10:  # \n
                 tc.movePosition(QTextCursor.End)
+                self.last_cursor_position = tc.position()
                 self.setTextCursor(tc)
                 self.insertPlainText(chr(data[i]))
             else:
                 tc.deleteChar()
+                self.last_cursor_position = tc.position()
                 self.setTextCursor(tc)
+                self.last_cursor_position = tc.position() + 1
                 self.insertPlainText(chr(data[i]))
             i += 1
         self.ensureCursorVisible()
