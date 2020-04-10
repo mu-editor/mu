@@ -26,7 +26,6 @@ import signal
 import string
 import bisect
 import os.path
-import enum
 from PyQt5.QtCore import (
     Qt,
     QProcess,
@@ -174,7 +173,7 @@ class MicroPythonREPLPane(QTextEdit):
         self.device_cursor_position = self.textCursor().position()
         self.setObjectName("replpane")
         self.set_theme(theme)
-        self.unprocessed_input = b"" # used by process_bytes
+        self.unprocessed_input = b""  # used by process_bytes
 
     def paste(self):
         """
@@ -220,7 +219,9 @@ class MicroPythonREPLPane(QTextEdit):
         key = data.key()
         ctrl_only = data.modifiers() == Qt.ControlModifier
         meta_only = data.modifiers() == Qt.MetaModifier
-        ctrl_shift_only = data.modifiers() == Qt.ControlModifier | Qt.ShiftModifier
+        ctrl_shift_only = (
+            data.modifiers() == Qt.ControlModifier | Qt.ShiftModifier
+        )
         shift_down = data.modifiers() & Qt.ShiftModifier
         on_osx = platform.system() == "Darwin"
 
@@ -297,16 +298,12 @@ class MicroPythonREPLPane(QTextEdit):
         of the device cursor.  Then the appropriate number of move
         left or right signals are send.  The Qt cursor is not moved to
         the new_position here, but will be moved once receiving a
-        response (in process_bytes).
+        response (in process_tty_data).
         """
-        # Always return cursor to where it were
-        # cursor is moved by the incoming signals send by the board
-        # (processed in process_tty_data)
-        tc = self.textCursor()
-        # Calculate number of steps
-        steps = new_position - self.device_cursor_position
         # Reset Qt cursor position
         self.set_qtcursor_to_devicecursor()
+        # Calculate number of steps
+        steps = new_position - self.device_cursor_position
         # Send the appropriate right/left moves
         if steps > 0:
             # Move cursor right if positive
@@ -314,9 +311,6 @@ class MicroPythonREPLPane(QTextEdit):
         elif steps < 0:
             # Move cursor left if negative
             self.send(VT100_LEFT * abs(steps))
-        else:
-            # Do nothing if steps == 0
-            pass
 
     def delete_selection(self):
         """
@@ -335,6 +329,12 @@ class MicroPythonREPLPane(QTextEdit):
         return False
 
     def mouseReleaseEvent(self, mouseEvent):
+        """Called whenever a user have had a mouse button pressed, and
+        releases it. We pass it through to the normal way Qt handles
+        button pressed, but also sends as cursor movement signal to
+        the device (except if a selection is made, for selections we first
+        move the cursor on deselection)
+        """
         super().mouseReleaseEvent(mouseEvent)
 
         # If when a user have clicked and not made a selection
@@ -346,20 +346,25 @@ class MicroPythonREPLPane(QTextEdit):
         """
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
-        If received input is incomplete, stores remainder in 
+        If received input is incomplete, stores remainder in
         self.unprocessed_input.
 
         Updates the self.device_cursor_position to match that of the device
         for every input received.
         """
-        logger.debug("MicroPython REPL, received through serial: {}".format(data))
+        logger.debug(
+            "MicroPython REPL, received through serial: {}".format(data)
+        )
         i = 0
         if len(self.unprocessed_input) > 0:
             # Prepend bytes from last time, that wasn't processed
             data = self.unprocessed_input + data
             self.unprocessed_input = b""
 
-        # Reset cursor (e.g. if doing a selection)
+        # Reset cursor. E.g. if doing a selection, the qt cursor and
+        # device cursor will not match, we reset it here to make sure
+        # they do match (this removes any selections when new input is
+        # received)
         self.set_qtcursor_to_devicecursor()
         tc = self.textCursor()
 
@@ -368,26 +373,24 @@ class MicroPythonREPLPane(QTextEdit):
                 tc.movePosition(QTextCursor.Left)
                 self.device_cursor_position = tc.position()
             elif data[i] == 13:  # \r
+                # Carriage return. Do nothing, we handle newlines when
+                # reading \n
                 pass
             elif data[i] == 27:
                 # Escape
                 if len(data) > i + 1 and data[i + 1] == 91:
                     # VT100 cursor detected: <Esc>[
-                    #i += 2  # move index to after the [
-                    regex = r"\x1B\[(?P<count>[\d]*)(;?[\d]*)*(?P<action>[A-Za-z])"
-                    m = re.search(regex, data[i:].decode("utf-8"))
-                    if m:
+                    regex = (
+                        r"\x1B\[(?P<count>[\d]*)(;?[\d]*)*(?P<action>[A-Za-z])"
+                    )
+                    match = re.search(regex, data[i:].decode("utf-8"))
+                    if match:
                         # move to (almost) after control seq
                         # (will ++ at end of loop)
-                        i += m.end() - 1
-
-                        if m.group("count") == "":
-                            count = 1
-                        else:
-                            count = int(m.group("count"))
-
-                        action = m.group("action")
-
+                        i += match.end() - 1
+                        count_string = match.group("count")
+                        count = 1 if count_string == "" else int(count_string)
+                        action = match.group("action")
                         if action == "A":  # up
                             tc.movePosition(QTextCursor.Up, n=count)
                             self.device_cursor_position = tc.position()
@@ -401,7 +404,7 @@ class MicroPythonREPLPane(QTextEdit):
                             tc.movePosition(QTextCursor.Left, n=count)
                             self.device_cursor_position = tc.position()
                         elif action == "K":  # delete things
-                            if m.group("count") == "":  # delete to end of line
+                            if count_string == "":  # delete to end of line
                                 tc.movePosition(
                                     QTextCursor.EndOfLine,
                                     mode=QTextCursor.KeepAnchor,
@@ -410,9 +413,11 @@ class MicroPythonREPLPane(QTextEdit):
                                 self.device_cursor_position = tc.position()
                         else:
                             # Unknown action, log warning and ignore
-                            cmd = m.group(0).replace("\x1B", "<Esc>")
-                            warning = "Received unknown VT100 command: {}".format(cmd)
-                            logger.warn(warning)
+                            command = match.group(0).replace("\x1B", "<Esc>")
+                            msg = "Received unknown VT100 command: {}".format(
+                                command
+                            )
+                            logger.warn(msg)
                     else:
                         # Cursor detected, but no match, must be
                         # incomplete input
@@ -424,11 +429,13 @@ class MicroPythonREPLPane(QTextEdit):
                     # bytes are received to determine what to do
                     self.unprocessed_input = data[i:]
                     break
-            elif data[i] == 10:  # \n
+            elif data[i] == 10:  # \n - newline
                 tc.movePosition(QTextCursor.End)
                 self.device_cursor_position = tc.position() + 1
                 self.insertPlainText(chr(data[i]))
             else:
+                # Char received, with VT100 that should be interpreted
+                # as overwrite the char in front of the cursor
                 tc.deleteChar()
                 self.device_cursor_position = tc.position() + 1
                 self.insertPlainText(chr(data[i]))
