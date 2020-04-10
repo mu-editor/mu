@@ -172,7 +172,7 @@ class MicroPythonREPLPane(QTextEdit):
         self.cursorPositionChanged.connect(self.cursor_moved)
         self.setObjectName("replpane")
         self.set_theme(theme)
-        self.unprocessed_bytes = b""
+        self.unprocessed_input = b""
         self.selection_active = False
 
     def paste(self):
@@ -205,6 +205,10 @@ class MicroPythonREPLPane(QTextEdit):
     def set_theme(self, theme):
         pass
 
+    def send(self, msg):
+        logger.debug("MicroPython REPL, writing to serial: {}".format(msg))
+        self.serial.write(msg)
+
     def keyPressEvent(self, data):
         """
         Called when the user types something in the REPL.
@@ -219,21 +223,18 @@ class MicroPythonREPLPane(QTextEdit):
         shift_down = data.modifiers() & Qt.ShiftModifier
         on_osx = platform.system() == "Darwin"
 
-        def send(msg):
-            self.serial.write(msg)
-
         if key == Qt.Key_Return:
-            send(VT100_RETURN)
+            self.send(VT100_RETURN)
         elif key == Qt.Key_Backspace:
             if not self.delete_selection():
-                send(VT100_BACKSPACE)
+                self.send(VT100_BACKSPACE)
         elif key == Qt.Key_Delete:
             if not self.delete_selection():
-                send(VT100_DELETE)
+                self.send(VT100_DELETE)
         elif key == Qt.Key_Up:
-            send(VT100_UP)
+            self.send(VT100_UP)
         elif key == Qt.Key_Down:
-            send(VT100_DOWN)
+            self.send(VT100_DOWN)
         elif key == Qt.Key_Right:
             if shift_down:
                 # Text selection - pass down
@@ -242,7 +243,7 @@ class MicroPythonREPLPane(QTextEdit):
                 self.move_cursor_to(tc.selectionEnd())
                 self.selection_active = False
             else:
-                send(VT100_RIGHT)
+                self.send(VT100_RIGHT)
         elif key == Qt.Key_Left:
             if shift_down:
                 # Text selection - pass down
@@ -251,11 +252,11 @@ class MicroPythonREPLPane(QTextEdit):
                 self.move_cursor_to(tc.selectionStart())
                 self.selection_active = False
             else:
-                send(VT100_LEFT)
+                self.send(VT100_LEFT)
         elif key == Qt.Key_Home:
-            send(VT100_HOME)
+            self.send(VT100_HOME)
         elif key == Qt.Key_End:
-            send(VT100_END)
+            self.send(VT100_END)
         elif (on_osx and meta_only) or (not on_osx and ctrl_only):
             # Handle the Control key. On OSX/macOS/Darwin (python calls this
             # platform Darwin), this is handled by Qt.MetaModifier. Other
@@ -263,7 +264,7 @@ class MicroPythonREPLPane(QTextEdit):
             # figure. See http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
             if Qt.Key_A <= key <= Qt.Key_Z:
                 # The microbit treats an input of \x01 as Ctrl+A, etc.
-                send(bytes([1 + key - Qt.Key_A]))
+                self.send(bytes([1 + key - Qt.Key_A]))
         elif ctrl_shift_only or (on_osx and ctrl_only):
             # Command-key on Mac, Ctrl-Shift on Win/Lin
             if key == Qt.Key_C:
@@ -273,26 +274,24 @@ class MicroPythonREPLPane(QTextEdit):
                 self.paste()
         else:
             self.delete_selection()
-            send(bytes(data.text(), "utf8"))
+            self.send(bytes(data.text(), "utf8"))
 
     def move_cursor_to(self, new_position):
         # Always return cursor to where it were
         # cursor is moved by the incoming signals send by the board
-        # (processed in process_bytes)
-
+        # (processed in process_tty_data)
         tc = self.textCursor()
         # Calculate number of steps
         steps = new_position - self.device_cursor_position
-
-        tc.setPosition(self.device_cursor_position)
-        self.setTextCursor(tc)
-
+        # Reset Qt cursor position
+        self.move_qtcursor_to_devicecursor()
+        # Send the appropriate right/left moves
         if steps > 0:
             # Move cursor right if positive
-            self.serial.write(VT100_RIGHT * steps)
+            self.send(VT100_RIGHT * steps)
         elif steps < 0:
             # Move cursor left if negative
-            self.serial.write(VT100_LEFT * abs(steps))
+            self.send(VT100_LEFT * abs(steps))
         else:
             # Do nothing if steps == 0
             pass
@@ -309,16 +308,25 @@ class MicroPythonREPLPane(QTextEdit):
             # Move cursor to end of selection
             self.move_cursor_to(tc.selectionEnd())
             # Send N backspaces
-            self.serial.write(VT100_BACKSPACE * selectionSize)
+            self.send(VT100_BACKSPACE * selectionSize)
             return True
         return False
 
-    def devicecursor_to_qtcursor(self):
+    def move_devicecursor_to_qtcursor(self):
         """
         Call this whenever the cursor has been moved, to send the cursor
         movement to the device.
         """
         self.move_cursor_to(self.textCursor().position())
+
+    def move_qtcursor_to_devicecursor(self):
+        """
+        Call this to reset the qtcursor to where we know
+        the device has the cursor placed.
+        """
+        tc = self.textCursor()
+        tc.setPosition(self.device_cursor_position)
+        self.setTextCursor(tc)
 
     def cursor_moved(self):
         # Update the cursor when cursor is moved, except if a selection
@@ -327,7 +335,7 @@ class MicroPythonREPLPane(QTextEdit):
             self.selection_active = True
         else:
             if not self.selection_active:
-                self.devicecursor_to_qtcursor()
+                self.move_devicecursor_to_qtcursor()
 
     def mousePressEvent(self, mouseEvent):
         self.selection_active = True
@@ -336,21 +344,27 @@ class MicroPythonREPLPane(QTextEdit):
     def mouseReleaseEvent(self, mouseEvent):
         super().mouseReleaseEvent(mouseEvent)
         if not self.textCursor().hasSelection():
-            self.devicecursor_to_qtcursor()
+            self.move_devicecursor_to_qtcursor()
             self.selection_active = False
 
     def process_tty_data(self, data):
         """
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
+        If received input is incomplete, stores remainder in 
+        self.unprocessed_input
         """
-        # Input may be incomplete
-        tc = self.textCursor()
+        logger.debug("MicroPython REPL, received through serial: {}".format(data))
         i = 0
-        if len(self.unprocessed_bytes) > 0:
+        if len(self.unprocessed_input) > 0:
             # Prepend bytes from last time, that wasn't processed
-            data = self.unprocessed_bytes + data
-            self.unprocessed_bytes = b""
+            data = self.unprocessed_input + data
+            self.unprocessed_input = b""
+
+        # Reset cursor (e.g. if doing a selection)
+        self.move_qtcursor_to_devicecursor()
+        self.selection_active = False
+        tc = self.textCursor()
 
         while i < len(data):
             if data[i] == 8:  # \b
@@ -410,18 +424,19 @@ class MicroPythonREPLPane(QTextEdit):
                     else:
                         # Cursor detected, but no match, must be
                         # incomplete input
-                        self.unprocessed_bytes = data[i:]
+                        self.unprocessed_input = data[i:]
                         break
                 elif len(data) == i + 1:
                     # Escape received as end of transmission. Perhaps
                     # the transmission is incomplete, wait until next
                     # bytes are received to determine what to do
-                    self.unprocessed_bytes = data[i:]
+                    self.unprocessed_input = data[i:]
                     break
             elif data[i] == 10:  # \n
                 tc.movePosition(QTextCursor.End)
                 self.device_cursor_position = tc.position()
                 self.setTextCursor(tc)
+                self.device_cursor_position = tc.position() + 1
                 self.insertPlainText(chr(data[i]))
             else:
                 tc.deleteChar()
