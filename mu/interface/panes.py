@@ -171,7 +171,10 @@ class MicroPythonREPLPane(QTextEdit):
         self.cursorPositionChanged.connect(self.cursor_moved)
         self.setObjectName("replpane")
         self.set_theme(theme)
-        self.cursorMoved = True
+        self.mouseDown = False
+        self.hadSelection = False
+        self.selectionState = "NO_SELECTION"
+        print(self.selectionState)
 
     def paste(self):
         """
@@ -209,6 +212,7 @@ class MicroPythonREPLPane(QTextEdit):
 
         Correctly encodes it and sends it to the connected device.
         """
+        tc = self.textCursor()
         key = data.key()
         ctrl_only = data.modifiers() == Qt.ControlModifier
         meta_only = data.modifiers() == Qt.MetaModifier
@@ -217,7 +221,7 @@ class MicroPythonREPLPane(QTextEdit):
         on_osx = platform.system() == "Darwin"
 
         def send(msg):
-            logger.debug("Keyboard event. Sending to tty: {}".format(str(msg)))
+            print("Keyboard event. Sending to tty: {}".format(str(msg)))
             self.serial.write(msg)
 
         if key == Qt.Key_Return:
@@ -236,15 +240,23 @@ class MicroPythonREPLPane(QTextEdit):
             if shift_down:
                 # Text selection - pass down
                 super().keyPressEvent(data)
+            elif tc.hasSelection():
+                self.moveCursorTo(tc.selectionEnd())
+                if self.selectionState == "SELECTION_ACTIVE":
+                    self.selectionState = "NO_SELECTION"
+                    print(self.selectionState)
             else:
-                # TODO: handle if there is a selection
                 send(VT100_RIGHT)
         elif key == Qt.Key_Left:
             if shift_down:
                 # Text selection - pass down
                 super().keyPressEvent(data)
+            elif tc.hasSelection():
+                self.moveCursorTo(tc.selectionStart())
+                if self.selectionState == "SELECTION_ACTIVE":
+                    self.selectionState = "NO_SELECTION"
+                    print(self.selectionState)
             else:
-                # TODO: handle if there is a selection
                 send(VT100_LEFT)
         elif key == Qt.Key_Home:
             send(VT100_HOME)
@@ -273,56 +285,112 @@ class MicroPythonREPLPane(QTextEdit):
         if steps > 0:
             # Move cursor right if positive
             logger.debug("Mouse event: Right * {}".format(steps))
-            for i in range(steps):
-                self.serial.write(VT100_RIGHT)
+            print("Move event. Sending {} right to tty: {}".format(steps, str(VT100_RIGHT)))
+            self.serial.write(VT100_RIGHT * steps)
         elif steps < 0:
             # Move cursor left if negative
             logger.debug("Mouse event: Left * {}".format(abs(steps)))
-            for i in range(abs(steps)):
-                self.serial.write(VT100_LEFT)
+            print("Move event. Sending {} left to tty: {}".format(abs(steps), str(VT100_LEFT)))
+            self.serial.write(VT100_LEFT * abs(steps))
+        else:
+            # Do nothing if steps == 0
+            pass
+
+    def moveCursorTo(self, new_position):
+        # Always return cursor to where it were
+        # cursor is moved by the incoming signals send by the board
+        # (processed in process_bytes)
+
+        tc = self.textCursor()
+        # Calculate number of steps
+        steps = new_position - self.last_cursor_position
+        print("Move cursor: {} --> {} ({} steps)".format(self.last_cursor_position, new_position, steps))
+        tc.setPosition(self.last_cursor_position)
+        self.setTextCursor(tc)
+        self.moveCursor(steps)
 
     def deleteSelection(self):
         tc = self.textCursor()
         if tc.hasSelection():
+            if self.selectionState == "SELECTION_ACTIVE":
+                self.selectionState = "NO_SELECTION"
+                print(self.selectionState)
             selectionSize = tc.selectionEnd() - tc.selectionStart()
-            # Move cursor to end of selection
-            steps = tc.selectionEnd() - self.last_cursor_position
-            tc.setPosition(self.last_cursor_position)
-            self.setTextCursor(tc)
-            self.moveCursor(steps)
+            print("Deleting: {}".format(selectionSize))
+            print(tc.selectionEnd())
+            self.moveCursorTo(tc.selectionEnd())
+            print(tc.selectionEnd(), tc.position(), self.last_cursor_position)
             # Send N backspaces
-            for i in range(selectionSize):
-                self.serial.write(VT100_BACKSPACE)
+            print("Delete event. Sending {} backspaces to tty: {}".format(selectionSize, str(VT100_BACKSPACE)))
+            self.serial.write(VT100_BACKSPACE * selectionSize)
             return True
         return False
 
-    def cursor_moved(self):
-        self.cursorMoved = True
-
-    def mouseReleaseEvent(self, mouseEvent):
-        # Always return cursor to where it were
-        # cursor is moved by the incoming signals send by the board
-        # (processed in process_tty_data)
-
-        super().mouseReleaseEvent(mouseEvent)
-        self.cursorMoved = False
-
+    def updateCursor(self):
+        """
+        Call this whenever the cursor has been moved, to send the cursor
+        movement to the device.
+        """
         tc = self.textCursor()
 
         # Don't do anything, if there's a selection
         if tc.hasSelection():
             return
 
-       # Save attempted cursor move destination
-        destination = tc.position()
+        self.moveCursorTo(tc.position())
 
-        # Calculate the amount of steps to move to the destination
-        steps = destination - self.last_cursor_position
+    def cursor_moved(self):
+        # Update the cursor when cursor is moved, except if updated by
+        # mouse or a selection is active
 
-        # Move the cursor back where it was before
-        tc.setPosition(self.last_cursor_position)
-        self.setTextCursor(tc)
-        self.moveCursor(steps)
+        if self.selectionState == "NO_SELECTION" and self.textCursor().hasSelection():
+            self.selectionState = "SELECTION_ACTIVE"
+            print(self.selectionState)
+
+        if self.mouseDown or self.textCursor().hasSelection():
+            return
+        self.updateCursor()
+
+    def mousePressEvent(self, mouseEvent):
+        self.mouseDown = True
+        if self.selectionState == "NO_SELECTION":
+            self.selectionState = "MOUSE_DOWN"
+            print(self.selectionState)
+        elif self.selectionState == "SELECTION_ACTIVE":
+            self.selectionState = "MOUSE_DOWN_WITH_SELECTION"
+            print(self.selectionState)
+        if self.textCursor().hasSelection():
+            self.hadSelection = True
+        super().mousePressEvent(mouseEvent)
+
+    def mouseReleaseEvent(self, mouseEvent):
+        self.mouseDown = False
+        super().mouseReleaseEvent(mouseEvent)
+
+        # If when the cursor is released, there no selection,
+        # update the cursor to the new location
+        if self.selectionState == "MOUSE_DOWN" and self.textCursor().hasSelection():
+            self.selectionState = "SELECTION_ACTIVE"
+            print(self.selectionState)
+        elif self.selectionState == "MOUSE_DOWN" and not self.textCursor().hasSelection():
+            self.updateCursor()
+            self.selectionState = "NO_SELECTION"
+            print(self.selectionState)
+        elif self.selectionState == "MOUSE_DOWN_WITH_SELECTION" and self.textCursor().hasSelection():
+            self.selectionState = "SELECTION_ACTIVE"
+            print(self.selectionState)
+        elif self.selectionState == "MOUSE_DOWN_WITH_SELECTION" and not self.textCursor().hasSelection():
+            self.updateCursor()
+            self.selectionState = "NO_SELECTION"
+            print(self.selectionState)
+        elif self.selectionState == "SELECTION_ACTIVE" and not self.textCursor().hasSelection():
+            self.updateCursor()
+            self.selectionState = "NO_SELECTION"
+            print(self.selectionState)
+            
+        #if not self.textCursor().hasSelection() or self.hadSelection:
+        #    self.updateCursor()
+        self.hadSelection = False
 
     def process_tty_data(self, data):
         """
@@ -330,14 +398,16 @@ class MicroPythonREPLPane(QTextEdit):
         them in the REPL widget.
         """
         tc = self.textCursor()
-        logger.debug("Received input: {}".format(str(data)))
+        print("Received input: {}".format(str(data)))
         i = 0
         while i < len(data):
             if data[i] == 8:  # \b
+                print("Backspace")
                 tc.movePosition(QTextCursor.Left)
                 self.last_cursor_position = tc.position()
                 self.setTextCursor(tc)
             elif data[i] == 13:  # \r
+                print("Return")
                 pass
             elif len(data) > i + 1 and data[i] == 27 and data[i + 1] == 91:
                 # VT100 cursor detected: <Esc>[
@@ -355,36 +425,44 @@ class MicroPythonREPLPane(QTextEdit):
                         count = int(m.group("count"))
 
                     if m.group("action") == "A":  # up
+                        print("Up")
                         tc.movePosition(QTextCursor.Up, n=count)
                         self.last_cursor_position = tc.position()
                         self.setTextCursor(tc)
                     elif m.group("action") == "B":  # down
+                        print("Down")
                         tc.movePosition(QTextCursor.Down, n=count)
                         self.last_cursor_position = tc.position()
                         self.setTextCursor(tc)
                     elif m.group("action") == "C":  # right
+                        print("Right")
                         tc.movePosition(QTextCursor.Right, n=count)
                         self.last_cursor_position = tc.position()
                         self.setTextCursor(tc)
                     elif m.group("action") == "D":  # left
+                        print("Left")
                         tc.movePosition(QTextCursor.Left, n=count)
                         self.last_cursor_position = tc.position()
                         self.setTextCursor(tc)
                     elif m.group("action") == "K":  # delete things
+                        print("Delete to EOL")
                         if m.group("count") == "":  # delete to end of line
                             tc.movePosition(
                                 QTextCursor.EndOfLine,
                                 mode=QTextCursor.KeepAnchor,
                             )
+                            print(tc.selectionStart(), tc.selectionEnd())
                             tc.removeSelectedText()
                             self.last_cursor_position = tc.position()
                             self.setTextCursor(tc)
             elif data[i] == 10:  # \n
+                print("End")
                 tc.movePosition(QTextCursor.End)
                 self.last_cursor_position = tc.position()
                 self.setTextCursor(tc)
                 self.insertPlainText(chr(data[i]))
             else:
+                print("Char")
                 tc.deleteChar()
                 self.last_cursor_position = tc.position()
                 self.setTextCursor(tc)
