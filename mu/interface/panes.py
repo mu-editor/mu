@@ -168,12 +168,13 @@ class MicroPythonREPLPane(QTextEdit):
         self.setUndoRedoEnabled(False)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.context_menu)
+        # The following variable maintains the position where we know
+        # the device cursor is placed. It is initialized to the beginning
+        # of the QTextEdit (i.e. equal to the Qt cursor position)
         self.device_cursor_position = self.textCursor().position()
-        self.cursorPositionChanged.connect(self.cursor_moved)
         self.setObjectName("replpane")
         self.set_theme(theme)
-        self.unprocessed_input = b""
-        self.selection_active = False
+        self.unprocessed_input = b"" # used by process_bytes
 
     def paste(self):
         """
@@ -241,7 +242,6 @@ class MicroPythonREPLPane(QTextEdit):
                 super().keyPressEvent(data)
             elif tc.hasSelection():
                 self.move_cursor_to(tc.selectionEnd())
-                self.selection_active = False
             else:
                 self.send(VT100_RIGHT)
         elif key == Qt.Key_Left:
@@ -250,7 +250,6 @@ class MicroPythonREPLPane(QTextEdit):
                 super().keyPressEvent(data)
             elif tc.hasSelection():
                 self.move_cursor_to(tc.selectionStart())
-                self.selection_active = False
             else:
                 self.send(VT100_LEFT)
         elif key == Qt.Key_Home:
@@ -276,7 +275,30 @@ class MicroPythonREPLPane(QTextEdit):
             self.delete_selection()
             self.send(bytes(data.text(), "utf8"))
 
+    def set_qtcursor_to_devicecursor(self):
+        """
+        Resets the Qt TextCursor to where we know the device has the cursor
+        placed.
+        """
+        tc = self.textCursor()
+        tc.setPosition(self.device_cursor_position)
+        self.setTextCursor(tc)
+
+    def set_devicecursor_to_qtcursor(self):
+        """
+        Call this whenever the cursor has been moved by the user, to send
+        the cursor movement to the device.
+        """
+        self.move_cursor_to(self.textCursor().position())
+
     def move_cursor_to(self, new_position):
+        """Move the cursor, by sending vt100 left/right signals through
+        serial. The Qt cursor is first returned to the known location
+        of the device cursor.  Then the appropriate number of move
+        left or right signals are send.  The Qt cursor is not moved to
+        the new_position here, but will be moved once receiving a
+        response (in process_bytes).
+        """
         # Always return cursor to where it were
         # cursor is moved by the incoming signals send by the board
         # (processed in process_tty_data)
@@ -284,7 +306,7 @@ class MicroPythonREPLPane(QTextEdit):
         # Calculate number of steps
         steps = new_position - self.device_cursor_position
         # Reset Qt cursor position
-        self.move_qtcursor_to_devicecursor()
+        self.set_qtcursor_to_devicecursor()
         # Send the appropriate right/left moves
         if steps > 0:
             # Move cursor right if positive
@@ -303,7 +325,7 @@ class MicroPythonREPLPane(QTextEdit):
         """
         tc = self.textCursor()
         if tc.hasSelection():
-            self.selection_active = False
+            # Calculate how much should be deleted (N)
             selectionSize = tc.selectionEnd() - tc.selectionStart()
             # Move cursor to end of selection
             self.move_cursor_to(tc.selectionEnd())
@@ -312,47 +334,23 @@ class MicroPythonREPLPane(QTextEdit):
             return True
         return False
 
-    def move_devicecursor_to_qtcursor(self):
-        """
-        Call this whenever the cursor has been moved, to send the cursor
-        movement to the device.
-        """
-        self.move_cursor_to(self.textCursor().position())
-
-    def move_qtcursor_to_devicecursor(self):
-        """
-        Call this to reset the qtcursor to where we know
-        the device has the cursor placed.
-        """
-        tc = self.textCursor()
-        tc.setPosition(self.device_cursor_position)
-        self.setTextCursor(tc)
-
-    def cursor_moved(self):
-        # Update the cursor when cursor is moved, except if a selection
-        # is active
-        if self.textCursor().hasSelection():
-            self.selection_active = True
-        else:
-            if not self.selection_active:
-                self.move_devicecursor_to_qtcursor()
-
-    def mousePressEvent(self, mouseEvent):
-        self.selection_active = True
-        super().mousePressEvent(mouseEvent)
-
     def mouseReleaseEvent(self, mouseEvent):
         super().mouseReleaseEvent(mouseEvent)
+
+        # If when a user have clicked and not made a selection
+        # move the device cursor to where the user clicked
         if not self.textCursor().hasSelection():
-            self.move_devicecursor_to_qtcursor()
-            self.selection_active = False
+            self.set_devicecursor_to_qtcursor()
 
     def process_tty_data(self, data):
         """
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
         If received input is incomplete, stores remainder in 
-        self.unprocessed_input
+        self.unprocessed_input.
+
+        Updates the self.device_cursor_position to match that of the device
+        for every input received.
         """
         logger.debug("MicroPython REPL, received through serial: {}".format(data))
         i = 0
@@ -362,8 +360,7 @@ class MicroPythonREPLPane(QTextEdit):
             self.unprocessed_input = b""
 
         # Reset cursor (e.g. if doing a selection)
-        self.move_qtcursor_to_devicecursor()
-        self.selection_active = False
+        self.set_qtcursor_to_devicecursor()
         tc = self.textCursor()
 
         while i < len(data):
