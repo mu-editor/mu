@@ -367,7 +367,6 @@ class MicroPythonREPLPane(QTextEdit):
             if data[i] == 8:  # \b
                 tc.movePosition(QTextCursor.Left)
                 self.device_cursor_position = tc.position()
-                self.setTextCursor(tc)
             elif data[i] == 13:  # \r
                 pass
             elif data[i] == 27:
@@ -392,19 +391,15 @@ class MicroPythonREPLPane(QTextEdit):
                         if action == "A":  # up
                             tc.movePosition(QTextCursor.Up, n=count)
                             self.device_cursor_position = tc.position()
-                            self.setTextCursor(tc)
                         elif action == "B":  # down
                             tc.movePosition(QTextCursor.Down, n=count)
                             self.device_cursor_position = tc.position()
-                            self.setTextCursor(tc)
                         elif action == "C":  # right
                             tc.movePosition(QTextCursor.Right, n=count)
                             self.device_cursor_position = tc.position()
-                            self.setTextCursor(tc)
                         elif action == "D":  # left
                             tc.movePosition(QTextCursor.Left, n=count)
                             self.device_cursor_position = tc.position()
-                            self.setTextCursor(tc)
                         elif action == "K":  # delete things
                             if m.group("count") == "":  # delete to end of line
                                 tc.movePosition(
@@ -413,11 +408,11 @@ class MicroPythonREPLPane(QTextEdit):
                                 )
                                 tc.removeSelectedText()
                                 self.device_cursor_position = tc.position()
-                                self.setTextCursor(tc)
                         else:
                             # Unknown action, log warning and ignore
-                            command = m.group(0).replace("\x1B", "<Esc>")
-                            logger.warn("Received unknown VT100 command: {}".format(command))
+                            cmd = m.group(0).replace("\x1B", "<Esc>")
+                            warning = "Received unknown VT100 command: {}".format(cmd)
+                            logger.warn(warning)
                     else:
                         # Cursor detected, but no match, must be
                         # incomplete input
@@ -431,16 +426,13 @@ class MicroPythonREPLPane(QTextEdit):
                     break
             elif data[i] == 10:  # \n
                 tc.movePosition(QTextCursor.End)
-                self.device_cursor_position = tc.position()
-                self.setTextCursor(tc)
                 self.device_cursor_position = tc.position() + 1
                 self.insertPlainText(chr(data[i]))
             else:
                 tc.deleteChar()
-                self.device_cursor_position = tc.position()
-                self.setTextCursor(tc)
                 self.device_cursor_position = tc.position() + 1
                 self.insertPlainText(chr(data[i]))
+            self.setTextCursor(tc)
             i += 1
         # Scroll textarea if necessary to see cursor
         self.ensureCursorVisible()
