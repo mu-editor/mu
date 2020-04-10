@@ -26,6 +26,7 @@ import signal
 import string
 import bisect
 import os.path
+import enum
 from PyQt5.QtCore import (
     Qt,
     QProcess,
@@ -148,6 +149,12 @@ VT100_HOME = b"\x1B[H"
 VT100_END = b"\x1B[F"
 
 
+class SelectionState(enum.Enum):
+    NO_SELECTION = 1
+    SELECTION_ACTIVE = 2
+    MOUSE_DOWN = 3
+    SELECTION_WITH_MOUSE_DOWN = 4
+
 class MicroPythonREPLPane(QTextEdit):
     """
     REPL = Read, Evaluate, Print, Loop.
@@ -171,7 +178,7 @@ class MicroPythonREPLPane(QTextEdit):
         self.cursorPositionChanged.connect(self.cursor_moved)
         self.setObjectName("replpane")
         self.set_theme(theme)
-        self.selectionState = "NO_SELECTION"
+        self.selectionState = SelectionState.NO_SELECTION
         print(self.selectionState)
         self.unprocessed_bytes = b""
 
@@ -240,8 +247,8 @@ class MicroPythonREPLPane(QTextEdit):
                 super().keyPressEvent(data)
             elif tc.hasSelection():
                 self.moveCursorTo(tc.selectionEnd())
-                if self.selectionState == "SELECTION_ACTIVE":
-                    self.selectionState = "NO_SELECTION"
+                if self.selectionState == SelectionState.SELECTION_ACTIVE:
+                    self.selectionState = SelectionState.NO_SELECTION
             else:
                 send(VT100_RIGHT)
         elif key == Qt.Key_Left:
@@ -250,8 +257,8 @@ class MicroPythonREPLPane(QTextEdit):
                 super().keyPressEvent(data)
             elif tc.hasSelection():
                 self.moveCursorTo(tc.selectionStart())
-                if self.selectionState == "SELECTION_ACTIVE":
-                    self.selectionState = "NO_SELECTION"
+                if self.selectionState == SelectionState.SELECTION_ACTIVE:
+                    self.selectionState = SelectionState.NO_SELECTION
             else:
                 send(VT100_LEFT)
         elif key == Qt.Key_Home:
@@ -306,8 +313,8 @@ class MicroPythonREPLPane(QTextEdit):
         """
         tc = self.textCursor()
         if tc.hasSelection():
-            if self.selectionState == "SELECTION_ACTIVE":
-                self.selectionState = "NO_SELECTION"
+            if self.selectionState == SelectionState.SELECTION_ACTIVE:
+                self.selectionState = SelectionState.NO_SELECTION
             selectionSize = tc.selectionEnd() - tc.selectionStart()
             # Move cursor to end of selection
             self.moveCursorTo(tc.selectionEnd())
@@ -333,19 +340,19 @@ class MicroPythonREPLPane(QTextEdit):
         # Update the cursor when cursor is moved, except if updated by
         # mouse or a selection is active
 
-        if self.selectionState == "NO_SELECTION" and self.textCursor().hasSelection():
-            self.selectionState = "SELECTION_ACTIVE"
+        if self.selectionState == SelectionState.NO_SELECTION and self.textCursor().hasSelection():
+            self.selectionState = SelectionState.SELECTION_ACTIVE
             print(self.selectionState)
 
-        if self.selectionState == "NO_SELECTION":
+        if self.selectionState == SelectionState.NO_SELECTION:
             self.updateCursor()
 
     def mousePressEvent(self, mouseEvent):
-        if self.selectionState == "NO_SELECTION":
-            self.selectionState = "MOUSE_DOWN"
+        if self.selectionState == SelectionState.NO_SELECTION:
+            self.selectionState = SelectionState.MOUSE_DOWN
             print(self.selectionState)
-        elif self.selectionState == "SELECTION_ACTIVE":
-            self.selectionState = "MOUSE_DOWN_WITH_SELECTION"
+        elif self.selectionState == SelectionState.SELECTION_ACTIVE:
+            self.selectionState = SelectionState.SELECTION_WITH_MOUSE_DOWN
             print(self.selectionState)
         super().mousePressEvent(mouseEvent)
 
@@ -354,23 +361,23 @@ class MicroPythonREPLPane(QTextEdit):
 
         # If when the cursor is released, there no selection,
         # update the cursor to the new location
-        if self.selectionState == "MOUSE_DOWN" and self.textCursor().hasSelection():
-            self.selectionState = "SELECTION_ACTIVE"
+        if self.selectionState == SelectionState.MOUSE_DOWN and self.textCursor().hasSelection():
+            self.selectionState = SelectionState.SELECTION_ACTIVE
             print(self.selectionState)
-        elif self.selectionState == "MOUSE_DOWN" and not self.textCursor().hasSelection():
+        elif self.selectionState == SelectionState.MOUSE_DOWN and not self.textCursor().hasSelection():
             self.updateCursor()
-            self.selectionState = "NO_SELECTION"
+            self.selectionState = SelectionState.NO_SELECTION
             print(self.selectionState)
-        elif self.selectionState == "MOUSE_DOWN_WITH_SELECTION" and self.textCursor().hasSelection():
-            self.selectionState = "SELECTION_ACTIVE"
+        elif self.selectionState == SelectionState.SELECTION_WITH_MOUSE_DOWN and self.textCursor().hasSelection():
+            self.selectionState = SelectionState.SELECTION_ACTIVE
             print(self.selectionState)
-        elif self.selectionState == "MOUSE_DOWN_WITH_SELECTION" and not self.textCursor().hasSelection():
+        elif self.selectionState == SelectionState.SELECTION_WITH_MOUSE_DOWN and not self.textCursor().hasSelection():
             self.updateCursor()
-            self.selectionState = "NO_SELECTION"
+            self.selectionState = SelectionState.NO_SELECTION
             print(self.selectionState)
-        elif self.selectionState == "SELECTION_ACTIVE" and not self.textCursor().hasSelection():
+        elif self.selectionState == SelectionState.SELECTION_ACTIVE and not self.textCursor().hasSelection():
             self.updateCursor()
-            self.selectionState = "NO_SELECTION"
+            self.selectionState = SelectionState.NO_SELECTION
             print(self.selectionState)
 
     def process_tty_data(self, data):
