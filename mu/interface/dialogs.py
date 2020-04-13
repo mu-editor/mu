@@ -244,7 +244,7 @@ class ESPFirmwareFlasherWidget(QWidget):
         self.setLayout(widget_layout)
 
         # Check whether esptool is installed, show error if not
-        esptool_installed = pkgutil.find_loader("esptool")
+        esptool_installed = os.path.exists(MODULE_DIR + "/esptool.py")
         if not esptool_installed:
             error_msg = _(
                 "The ESP Firmware flasher requires the esptool' "
@@ -262,10 +262,13 @@ class ESPFirmwareFlasherWidget(QWidget):
         )
         grp_instructions_vbox = QVBoxLayout()
         grp_instructions.setLayout(grp_instructions_vbox)
+        # Note: we have to specify the link color here, to something
+        # that's suitable for both day/night/contrast themes, as the
+        # link color is not configurable in the Qt Stylesheets
         instructions = _(
             "&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />"
             "&nbsp;2. Download firmware from the "
-            '<a href="https://micropython.org/download">'
+            '<a href="https://micropython.org/download" style="color:#039be5;">'
             "https://micropython.org/download</a><br/>"
             "&nbsp;3. Connect your device<br/>"
             "&nbsp;4. Load the .bin file below using the 'Browse' button<br/>"
