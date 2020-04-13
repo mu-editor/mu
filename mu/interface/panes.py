@@ -226,6 +226,9 @@ class MicroPythonREPLPane(QTextEdit):
         on_osx = platform.system() == "Darwin"
 
         if key == Qt.Key_Return:
+            # Move cursor to the end of document before sending carriage return
+            tc.movePosition(QTextCursor.End, mode=QTextCursor.MoveAnchor)
+            self.device_cursor_position = tc.position()
             self.send(VT100_RETURN)
         elif key == Qt.Key_Backspace:
             if not self.delete_selection():
