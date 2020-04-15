@@ -417,10 +417,8 @@ class MicroPythonREPLPane(QTextEdit):
                         else:
                             # Unknown action, log warning and ignore
                             command = match.group(0).replace("\x1B", "<Esc>")
-                            msg = "Received unknown VT100 command: {}".format(
-                                command
-                            )
-                            logger.warn(msg)
+                            msg = "Received unsupported VT100 command: {}"
+                            logger.warning(msg.format(command))
                     else:
                         # Cursor detected, but no match, must be
                         # incomplete input
@@ -435,6 +433,7 @@ class MicroPythonREPLPane(QTextEdit):
             elif data[i] == 10:  # \n - newline
                 tc.movePosition(QTextCursor.End)
                 self.device_cursor_position = tc.position() + 1
+                self.setTextCursor(tc)
                 self.insertPlainText(chr(data[i]))
             else:
                 # Char received, with VT100 that should be interpreted
