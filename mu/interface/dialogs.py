@@ -239,7 +239,7 @@ class ESPFirmwareFlasherWidget(QWidget):
     * Override MicroPython.
     """
 
-    def setup(self):
+    def setup(self, mode):
         widget_layout = QVBoxLayout()
         self.setLayout(widget_layout)
 
@@ -318,6 +318,8 @@ class ESPFirmwareFlasherWidget(QWidget):
         self.btnFolder.clicked.connect(self.show_folder_dialog)
         self.btnExec.clicked.connect(self.update_firmware)
 
+        self.mode = mode
+
     def show_folder_dialog(self):
         # open dialog and set to foldername
         filename = QFileDialog.getOpenFileName(
@@ -331,6 +333,17 @@ class ESPFirmwareFlasherWidget(QWidget):
             self.txtFolder.setText(filename)
 
     def update_firmware(self):
+    
+        if self.mode.repl:
+            print('repl')
+            self.mode.toggle_repl(None)
+        if self.mode.plotter:
+            print('plotter')
+            self.mode.toggle_plotter(None)
+        if not self.mode.fs is None:
+            print('fs')
+            self.mode.toggle_files(None)
+
         esptool = MODULE_DIR + "/esptool.py"
         erase_command = 'python "{}" erase_flash'.format(esptool)
 
@@ -448,9 +461,9 @@ class AdminDialog(QDialog):
         self.package_widget = PackagesWidget()
         self.package_widget.setup(packages)
         self.tabs.addTab(self.package_widget, _("Third Party Packages"))
-        if mode == "esp":
+        if mode.name == "ESP MicroPython":
             self.esp_widget = ESPFirmwareFlasherWidget()
-            self.esp_widget.setup()
+            self.esp_widget.setup(mode)
             self.tabs.addTab(self.esp_widget, _("ESP Firmware flasher"))
 
     def settings(self):
