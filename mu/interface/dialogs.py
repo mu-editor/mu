@@ -21,7 +21,6 @@ import sys
 import logging
 import csv
 import shutil
-import pkgutil
 from PyQt5.QtCore import QSize, QProcess, QTimer, Qt
 from PyQt5.QtWidgets import (
     QHBoxLayout,
@@ -268,7 +267,8 @@ class ESPFirmwareFlasherWidget(QWidget):
         instructions = _(
             "&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />"
             "&nbsp;2. Download firmware from the "
-            '<a href="https://micropython.org/download" style="color:#039be5;">'
+            '<a href="https://micropython.org/download" '
+            'style="color:#039be5;">'
             "https://micropython.org/download</a><br/>"
             "&nbsp;3. Connect your device<br/>"
             "&nbsp;4. Load the .bin file below using the 'Browse' button<br/>"
@@ -333,15 +333,12 @@ class ESPFirmwareFlasherWidget(QWidget):
             self.txtFolder.setText(filename)
 
     def update_firmware(self):
-    
+
         if self.mode.repl:
-            print('repl')
             self.mode.toggle_repl(None)
         if self.mode.plotter:
-            print('plotter')
             self.mode.toggle_plotter(None)
-        if not self.mode.fs is None:
-            print('fs')
+        if self.mode.fs is not None:
             self.mode.toggle_files(None)
 
         esptool = MODULE_DIR + "/esptool.py"
