@@ -2532,6 +2532,7 @@ def test_show_admin():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.modes = {"python": mock.MagicMock()}
     ed.sync_package_state = mock.MagicMock()
     ed.envars = [["name", "value"]]
     ed.minify = True
@@ -2572,6 +2573,7 @@ def test_show_admin_no_change():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.modes = {"python": mock.MagicMock()}
     ed.sync_package_state = mock.MagicMock()
     ed.envars = [["name", "value"]]
     ed.minify = True
@@ -2594,6 +2596,7 @@ def test_show_admin_missing_microbit_runtime():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.modes = {"python": mock.MagicMock()}
     ed.sync_package_state = mock.MagicMock()
     ed.envars = [["name", "value"]]
     ed.minify = True

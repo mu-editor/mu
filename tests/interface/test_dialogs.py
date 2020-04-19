@@ -8,7 +8,14 @@ import pytest
 import mu.interface.dialogs
 from PyQt5.QtWidgets import QDialog, QWidget, QDialogButtonBox
 from unittest import mock
-from mu.modes import PythonMode, CircuitPythonMode, MicrobitMode, DebugMode
+from mu.modes import (
+    PythonMode,
+    CircuitPythonMode,
+    MicrobitMode,
+    DebugMode,
+    ESPMode,
+)
+from PyQt5.QtCore import QProcess
 
 
 def test_ModeItem_init():
@@ -142,6 +149,121 @@ def test_PackagesWidget_setup():
     assert pw.text_area.toPlainText() == packages
 
 
+def test_ESPFirmwareFlasherWidget_setup():
+    """
+    Ensure the widget for editing settings related to the ESP Firmware Flasher
+    displays the referenced settings data in the expected way.
+    """
+    mode = mock.MagicMock()
+    espff = mu.interface.dialogs.ESPFirmwareFlasherWidget()
+    with mock.patch("os.path.exists", return_value=False):
+        espff.setup(mode)
+
+    with mock.patch("os.path.exists", return_value=True):
+        espff.setup(mode)
+
+
+def test_ESPFirmwareFlasherWidget_show_folder_dialog():
+    """
+    Ensure the widget for editing settings related to the ESP Firmware Flasher
+    displays the referenced settings data in the expected way.
+    """
+    mock_fd = mock.MagicMock()
+    path = "/foo/bar.py"
+    mock_fd.getOpenFileName = mock.MagicMock(return_value=(path, True))
+    mode = mock.MagicMock()
+    espff = mu.interface.dialogs.ESPFirmwareFlasherWidget()
+    with mock.patch("os.path.exists", return_value=True):
+        espff.setup(mode)
+    with mock.patch("mu.interface.dialogs.QFileDialog", mock_fd):
+        espff.show_folder_dialog()
+    assert espff.txtFolder.text() == path.replace("/", os.sep)
+
+
+def test_ESPFirmwareFlasherWidget_update_firmware():
+    """
+    Ensure the widget for editing settings related to the ESP Firmware Flasher
+    displays the referenced settings data in the expected way.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    mm = ESPMode(editor, view)
+    espff = mu.interface.dialogs.ESPFirmwareFlasherWidget()
+    with mock.patch("os.path.exists", return_value=True):
+        espff.setup(mm)
+
+    espff.mode.repl = True
+    espff.mode.plotter = True
+    espff.mode.fs = True
+    espff.device_type.setCurrentIndex(0)
+    espff.update_firmware()
+
+    espff.device_type.setCurrentIndex(1)
+    espff.update_firmware()
+
+
+def test_ESPFirmwareFlasherWidget_esptool_error():
+    """
+    Ensure the widget for editing settings related to the ESP Firmware Flasher
+    displays the referenced settings data in the expected way.
+    """
+    mode = mock.MagicMock()
+    espff = mu.interface.dialogs.ESPFirmwareFlasherWidget()
+    with mock.patch("os.path.exists", return_value=True):
+        espff.setup(mode)
+    espff.esptool_error(0)
+
+
+def test_ESPFirmwareFlasherWidget_esptool_finished():
+    """
+    Ensure the widget for editing settings related to the ESP Firmware Flasher
+    displays the referenced settings data in the expected way.
+    """
+    mode = mock.MagicMock()
+    espff = mu.interface.dialogs.ESPFirmwareFlasherWidget()
+    with mock.patch("os.path.exists", return_value=True):
+        espff.setup(mode)
+    espff.esptool_finished(1, 0)
+
+    espff.commands = ["foo", "bar"]
+    espff.esptool_finished(0, QProcess.CrashExit + 1)
+
+
+def test_ESPFirmwareFlasherWidget_read_process():
+    """
+    Ensure the widget for editing settings related to the ESP Firmware Flasher
+    displays the referenced settings data in the expected way.
+    """
+    mode = mock.MagicMock()
+    espff = mu.interface.dialogs.ESPFirmwareFlasherWidget()
+    with mock.patch("os.path.exists", return_value=True):
+        espff.setup(mode)
+
+    espff.process = mock.MagicMock()
+    espff.process.readAll().data.return_value = b"halted"
+    espff.read_process()
+
+    data = "𠜎Hello, World!".encode("utf-8")  # Contains a multi-byte char.
+    data = data[1:]  # Split the muti-byte character (cause UnicodeDecodeError)
+    espff.process.readAll().data.return_value = data
+    espff.read_process()
+
+
+def test_ESPFirmwareFlasherWidget_firmware_path_changed():
+    """
+    Ensure the widget for editing settings related to the ESP Firmware Flasher
+    displays the referenced settings data in the expected way.
+    """
+    mode = mock.MagicMock()
+    espff = mu.interface.dialogs.ESPFirmwareFlasherWidget()
+    with mock.patch("os.path.exists", return_value=True):
+        espff.setup(mode)
+    espff.txtFolder.setText("foo")
+    assert espff.btnExec.isEnabled()
+    espff.txtFolder.setText("")
+    assert not espff.btnExec.isEnabled()
+
+
 def test_AdminDialog_setup():
     """
     Ensure the admin dialog is setup properly given the content of a log
@@ -155,8 +277,10 @@ def test_AdminDialog_setup():
     }
     packages = "foo\nbar\nbaz\n"
     mock_window = QWidget()
+    mode = mock.MagicMock()
+    mode.name = "ESP MicroPython"
     ad = mu.interface.dialogs.AdminDialog(mock_window)
-    ad.setup(log, settings, packages)
+    ad.setup(log, settings, packages, mode)
     assert ad.log_widget.log_text_area.toPlainText() == log
     s = ad.settings()
     assert s["packages"] == packages

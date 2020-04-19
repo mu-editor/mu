@@ -1232,10 +1232,10 @@ def test_Window_show_admin():
     mock_admin_display.return_value = mock_admin_box
     with mock.patch("mu.interface.main.AdminDialog", mock_admin_display):
         w = mu.interface.main.Window()
-        result = w.show_admin("log", "envars", "packages")
+        result = w.show_admin("log", "envars", "packages", "mode")
         mock_admin_display.assert_called_once_with(w)
         mock_admin_box.setup.assert_called_once_with(
-            "log", "envars", "packages"
+            "log", "envars", "packages", "mode"
         )
         mock_admin_box.exec.assert_called_once_with()
         assert result == "this is the expected result"
@@ -1252,10 +1252,10 @@ def test_Window_show_admin_cancelled():
     mock_admin_display.return_value = mock_admin_box
     with mock.patch("mu.interface.main.AdminDialog", mock_admin_display):
         w = mu.interface.main.Window()
-        result = w.show_admin("log", "envars", "packages")
+        result = w.show_admin("log", "envars", "packages", "mode")
         mock_admin_display.assert_called_once_with(w)
         mock_admin_box.setup.assert_called_once_with(
-            "log", "envars", "packages"
+            "log", "envars", "packages", "mode"
         )
         mock_admin_box.exec.assert_called_once_with()
         assert result == {}
