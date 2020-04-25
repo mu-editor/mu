@@ -44,6 +44,7 @@ class ESPMode(MicroPythonMode):
         # VID  , PID
         (0x1A86, 0x7523),  # HL-340
         (0x10C4, 0xEA60),  # CP210x
+        (0x0403, 0x6001),  # CH552
         (0x0403, 0x6015),  # Sparkfun ESP32 VID, PID
     ]
 
