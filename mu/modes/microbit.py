@@ -186,6 +186,7 @@ class MicrobitMode(MicroPythonMode):
                     logger.debug("Minify failed")
                     logger.exception(e)
                     message = _("Problem with script")
+                    # XXX hard to translate, use {named} placeholders
                     information = _("{} [{}:{}]").format(msg, line, col)
                     self.view.show_message(message, information, "Warning")
                     return
