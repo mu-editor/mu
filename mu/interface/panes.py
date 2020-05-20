@@ -251,17 +251,22 @@ class MicroPythonREPLPane(QTextEdit):
         while tc.movePosition(QTextCursor.Down):
             pass
         i = 0
+        data = data.decode("utf-8")
         while i < len(data):
-            if data[i] == 8:  # \b
+            if ord(data[i]) == 8:  # \b
                 tc.movePosition(QTextCursor.Left)
                 self.setTextCursor(tc)
-            elif data[i] == 13:  # \r
+            elif ord(data[i]) == 13:  # \r
                 pass
-            elif len(data) > i + 1 and data[i] == 27 and data[i + 1] == 91:
+            elif (
+                len(data) > i + 1
+                and ord(data[i]) == 27
+                and ord(data[i + 1]) == 91
+            ):
                 # VT100 cursor detected: <Esc>[
                 i += 2  # move index to after the [
                 regex = r"(?P<count>[\d]*)(;?[\d]*)*(?P<action>[ABCDKm])"
-                m = re.search(regex, data[i:].decode("utf-8"))
+                m = re.search(regex, data[i:])
                 if m:
                     # move to (almost) after control seq
                     # (will ++ at end of loop)
@@ -292,14 +297,14 @@ class MicroPythonREPLPane(QTextEdit):
                             )
                             tc.removeSelectedText()
                             self.setTextCursor(tc)
-            elif data[i] == 10:  # \n
+            elif ord(data[i]) == 10:  # \n
                 tc.movePosition(QTextCursor.End)
                 self.setTextCursor(tc)
-                self.insertPlainText(chr(data[i]))
+                self.insertPlainText(data[i])
             else:
                 tc.deleteChar()
                 self.setTextCursor(tc)
-                self.insertPlainText(chr(data[i]))
+                self.insertPlainText(data[i])
             i += 1
         self.ensureCursorVisible()
 
