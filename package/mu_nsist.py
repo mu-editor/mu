@@ -22,7 +22,6 @@ import ntpath
 import os
 import shutil
 import sys
-import winreg
 import zipfile
 
 from nsist import InstallerBuilder
@@ -36,6 +35,8 @@ logger = logging.getLogger(__name__)
 
 def find_makensis_win():
     """Locate makensis.exe on Windows by querying the registry"""
+    import winreg
+
     try:
         nsis_install_dir = winreg.QueryValue(
             winreg.HKEY_LOCAL_MACHINE, "SOFTWARE\\NSIS"

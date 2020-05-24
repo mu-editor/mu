@@ -47,6 +47,7 @@ import zipfile
 
 import requests
 import yarg
+import pkg_resources as pkg
 
 
 # The pynsist requirement spec that will be used to install pynsist in
@@ -113,7 +114,11 @@ def create_packaging_venv(target_directory, name="mu-packaging-venv"):
     """
     fullpath = os.path.join(target_directory, name)
     subprocess.run([sys.executable, "-m", "venv", fullpath])
-    return os.path.join(fullpath, "Scripts", "python.exe")
+    if os.name == "nt":
+        python_executable = os.path.join(fullpath, "Scripts", "python.exe")
+    else:
+        python_executable = os.path.join(fullpath, "bin", "python")
+    return python_executable
 
 
 def pip_freeze(python, encoding):
@@ -187,14 +192,28 @@ def create_pynsist_cfg(python, repo_root, filename, encoding="latin1"):
     icon_file = os.path.join(repo_root, "package", "icons", "win_icon.ico")
     license_file = os.path.join(repo_root, "LICENSE")
 
-    requirements = [
-        # Those from pip freeze except the Mu package itself.
-        line
-        for line in pip_freeze(python, encoding=encoding)
-        if line.partition("==")[0] != mu_package_name
-    ]
+    requirements = []
+    for line in pip_freeze(python, encoding=encoding):
+        # Skip requirement if refering to mu-editor itself
+        if line[0:9] == mu_package_name:
+            continue
+        # Replace PyQtChart==5.12.0 with PyQtChart==5.12 (remove the .0)
+        if line == "PyQtChart==5.12.0":
+            line = "PyQtChart==5.12"
+        requirements.append(line)
+
     wheels = pypi_wheels_in(requirements)
     packages = packages_from(requirements, wheels)
+
+    # NSIS expects toplevel module names, not actual package names
+    # for source packages. Otherwise NSIS is unable to locate the packages
+    # Convert package names to module names by reading top_level.txt files
+    modules = []
+    for package in packages:
+        metadata_dir = pkg.get_distribution(package).egg_info
+        top_level_txt = os.path.join(metadata_dir, "top_level.txt")
+        module = open(top_level_txt).read().rstrip()
+        modules.append(module)
 
     installer_exe = "{}_{}bit.exe".format(mu_package_name, bitness)
 
@@ -205,7 +224,7 @@ def create_pynsist_cfg(python, repo_root, filename, encoding="latin1"):
         publisher=mu_author,
         bitness=bitness,
         pypi_wheels="\n    ".join(wheels),
-        packages="\n    ".join(packages),
+        packages="\n    ".join(modules),
         installer_name=installer_exe,
     )
     with open(filename, "wt", encoding=encoding) as f:
