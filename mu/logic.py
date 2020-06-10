@@ -197,7 +197,11 @@ def run_python_subprocess(interpreter, *args, pythonpath=None):
     only be used for quick Python commands needed for pip, venv and other
     related tasks to work.
     """
-    logger.info("Starting new sub-process with: {} {} (PYTHONPATH={})".format(interpreter, args, pythonpath))
+    logger.info(
+        "Starting new sub-process with: {} {} (PYTHONPATH={})".format(
+            interpreter, args, pythonpath
+        )
+    )
     process = QProcess()
     process.setProcessChannelMode(QProcess.MergedChannels)
     env = QProcessEnvironment.systemEnvironment()
@@ -206,7 +210,7 @@ def run_python_subprocess(interpreter, *args, pythonpath=None):
     if pythonpath:
         env.insert("PYTHONPATH", pythonpath)
     else:
-        env.insert("PYTHONPATH", )
+        env.insert("PYTHONPATH",)
     process.setProcessEnvironment(env)
     process.start(interpreter, args)
     if not process.waitForStarted():
@@ -223,7 +227,9 @@ def get_full_pythonpath(interpreter):
     Given an interpreter from a virtualenv, returns a PYTHONPATH containing
     both the virtualenvs paths and then the paths from Mu's own sys.path.
     """
-    result = run_python_subprocess(interpreter, "-c", "import sys; print('\\n'.join(sys.path))")
+    result = run_python_subprocess(
+        interpreter, "-c", "import sys; print('\\n'.join(sys.path))"
+    )
     paths = set()
     for p in result.split("\n"):
         if p.strip():
@@ -244,7 +250,7 @@ def installed_packages(venv_python):
     path = "C:\\Users\\ntoll\\AppData\\Local\\python\\mu\\mu_venv\\lib\\site-packages"
     logger.info(path)
     result = run_python_subprocess(
-        venv_python, "-m", "pip", "freeze"  #, pythonpath=path
+        venv_python, "-m", "pip", "freeze"  # , pythonpath=path
     )
     packages = result.split("\n")
     logger.info(packages)
@@ -264,7 +270,9 @@ def make_venv(path=VENV_DIR):
     venv_name = os.path.basename(path)
     logger.info("Virtualenv name: {}".format(venv_name))
     # Create the virtualenv.
-    result = run_python_subprocess(sys.executable,  "-m", "venv", "--without-pip", path)
+    result = run_python_subprocess(
+        sys.executable, "-m", "venv", "--without-pip", path
+    )
     # Set the path to the interpreter and do some Windows based post-processing
     # needed to make sure the venv is set up correctly.
     if sys.platform == "win32":
@@ -299,7 +307,7 @@ def make_venv(path=VENV_DIR):
         venv_name,
         "--display-name",
         '"Python/Mu ({})"'.format(venv_name),
-        pythonpath=pythonpath
+        pythonpath=pythonpath,
     )
     return venv_name, interpreter, pythonpath
 
@@ -893,7 +901,11 @@ class Editor:
                     self.venv_python = old_session["venv_python"]
                 if "venv_python_path" in old_session:
                     self.venv_python_path = old_session["venv_python_path"]
-                if (not self.venv_name or not self.venv_python or not self.venv_python_path):
+                if (
+                    not self.venv_name
+                    or not self.venv_python
+                    or not self.venv_python_path
+                ):
                     # If there's no virtualenv based Python interpreter, or
                     # PYTHONPATH, then fallback to try [re]create new
                     # virtualenv.
