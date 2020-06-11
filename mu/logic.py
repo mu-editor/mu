@@ -733,11 +733,11 @@ class Editor:
         """
         settings_path = get_session_path()
         self.change_mode(self.mode)
-        self._view.set_theme(self.theme)
         with open(settings_path) as f:
             try:
                 old_session = json.load(f)
             except ValueError:
+                old_session = None
                 logger.error(
                     "Settings file {} could not be parsed.".format(
                         settings_path
@@ -799,6 +799,8 @@ class Editor:
                     self._view.set_zoom()
                 old_window = old_session.get("window", {})
                 self._view.size_window(**old_window)
+        if old_session is None:
+            self._view.set_theme(self.theme)
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
