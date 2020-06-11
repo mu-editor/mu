@@ -733,6 +733,7 @@ class Editor:
         """
         settings_path = get_session_path()
         self.change_mode(self.mode)
+        self._view.set_theme(self.theme)
         with open(settings_path) as f:
             try:
                 old_session = json.load(f)
@@ -747,6 +748,7 @@ class Editor:
                 logger.debug(old_session)
                 if "theme" in old_session:
                     self.theme = old_session["theme"]
+                    self._view.set_theme(self.theme)
                 if "mode" in old_session:
                     old_mode = old_session["mode"]
                     if old_mode in self.modes:
@@ -802,7 +804,6 @@ class Editor:
         if paths and len(paths) > 0:
             self.load_cli(paths)
         self.change_mode(self.mode)
-        self._view.set_theme(self.theme)
         self.show_status_message(random.choice(MOTD), 10)
         if not self._view.tab_count:
             py = self.modes[self.mode].code_template + NEWLINE
