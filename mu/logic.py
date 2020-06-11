@@ -34,6 +34,7 @@ import appdirs
 import site
 import subprocess
 import shutil
+import venv
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QLocale, QProcess, QProcessEnvironment
 from pyflakes.api import check
@@ -270,9 +271,7 @@ def make_venv(path=VENV_DIR):
     venv_name = os.path.basename(path)
     logger.info("Virtualenv name: {}".format(venv_name))
     # Create the virtualenv.
-    result = run_python_subprocess(
-        sys.executable, "-m", "venv", path  ## "--without-pip", path
-    )
+    venv.create(path, with_pip=True, system_site_packages=True)
     # Set the path to the interpreter and do some Windows based post-processing
     # needed to make sure the venv is set up correctly.
     if sys.platform == "win32":
