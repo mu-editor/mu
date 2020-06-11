@@ -1224,6 +1224,7 @@ class PlotterPane(QChartView):
         # Holds the raw actionable data detected while plotting.
         self.raw_data = []
         self.setObjectName("plotterpane")
+        self.num_datapoints = 0 # Number of datapoints to show (caps at self.max_x)
         self.lookback = 500
         self.max_x = 100  # Maximum value along x axis
         self.max_y = 1000  # Maximum value +/- along y axis
@@ -1343,6 +1344,7 @@ class PlotterPane(QChartView):
             min_ranges.append(min(self.data[i]))
             if len(self.data[i]) > self.lookback:
                 self.data[i].pop()
+            self.datapoints = min(self.num_datapoints + 1, self.max_x)
 
         # Re-scale y-axis.
         max_y_range = max(max_ranges)
@@ -1375,8 +1377,8 @@ class PlotterPane(QChartView):
         for i, line_series in enumerate(self.series):
             line_series.clear()
             xy_vals = []
-            for j in range(self.max_x):
-                val = self.data[i][self.max_x - 1 - j]
+            for j in range(self.num_datapoints):
+                val = self.data[i][self.num_datapoints - 1 - j]
                 xy_vals.append((j, val))
             for point in xy_vals:
                 line_series.append(*point)
