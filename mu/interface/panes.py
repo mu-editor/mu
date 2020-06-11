@@ -1224,13 +1224,14 @@ class PlotterPane(QChartView):
         # Holds the raw actionable data detected while plotting.
         self.raw_data = []
         self.setObjectName("plotterpane")
+        self.lookback = 500
         self.max_x = 100  # Maximum value along x axis
         self.max_y = 1000  # Maximum value +/- along y axis
         self.min_y = -1000
         self.flooded = False  # Flag to indicate if data flooding is happening.
 
         # Holds deques for each slot of incoming data (assumes 1 to start with)
-        self.data = [deque([0] * self.max_x)]
+        self.data = [deque([0] * self.lookback)]
         # Holds line series for each slot of incoming data (assumes 1 to start
         # with).
         self.series = [QLineSeries()]
@@ -1324,7 +1325,7 @@ class PlotterPane(QChartView):
                     self.chart.setAxisX(self.axis_x, new_series)
                     self.chart.setAxisY(self.axis_y, new_series)
                     self.series.append(new_series)
-                    self.data.append(deque([0] * self.max_x))
+                    self.data.append(deque([0] * self.lookback))
             else:
                 # Remove old line series.
                 for old_series in self.series[value_len:]:
@@ -1340,7 +1341,7 @@ class PlotterPane(QChartView):
             self.data[i].appendleft(value)
             max_ranges.append(max(self.data[i]))
             min_ranges.append(min(self.data[i]))
-            if len(self.data[i]) > self.max_x:
+            if len(self.data[i]) > self.lookback:
                 self.data[i].pop()
 
         # Re-scale y-axis.
