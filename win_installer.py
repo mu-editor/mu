@@ -152,6 +152,8 @@ def pypi_wheels_in(requirements):
         print("-", requirement, end=" ")
         package = yarg.get(name)
         releases = package.release(version)
+        if not releases:
+            raise RuntimeError(f"No releases found for {package}")
         if any(r.package_type == "wheel" for r in releases):
             wheels.append(requirement)
             feedback = "ok"
