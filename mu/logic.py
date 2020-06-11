@@ -31,12 +31,15 @@ import random
 import locale
 import site
 import shutil
-import venv
+
 import appdirs
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QLocale, QProcess, QProcessEnvironment
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
+import virtualenv
+from virtualenv.config.cli.parser import VirtualEnvOptions
+
 from mu.resources import path
 from mu.debugger.utils import is_breakpoint_line
 from mu import __version__
@@ -268,8 +271,10 @@ def make_venv(path=VENV_DIR):
     logger.info("Creating virtualenv: {}".format(path))
     venv_name = os.path.basename(path)
     logger.info("Virtualenv name: {}".format(venv_name))
-    # Create the virtualenv.
-    venv.create(path, with_pip=True, system_site_packages=True)
+    # Create the virtualenv
+    options = VirtualEnvOptions()
+    options.system_site_packages = True
+    virtualenv.cli_run([path], options)
     # Set the path to the interpreter and do some Windows based post-processing
     # needed to make sure the venv is set up correctly.
     if sys.platform == "win32":
@@ -289,6 +294,18 @@ def make_venv(path=VENV_DIR):
             logger.info("Copying to {}".format(destination_path))
             if not os.path.exists(destination_path):
                 shutil.copytree(source_path, destination_path)
+            #
+            # The virtualenv creator expects to find a DLLs directory
+            # next to the executable's directory as there is in the
+            # full distribution
+            #
+            DLLs_dirpath = os.path.join(source_dir, "DLLs")
+            if not os.path.exists(DLLs_dirpath):
+                logger.debug(
+                    "No DLLs directory at %s; creating it for virtualenv",
+                    DLLs_dirpath,
+                )
+                os.mkdir(DLLs_dirpath)
     else:
         # For Linux/OSX.
         interpreter = os.path.join(path, "bin", "python")

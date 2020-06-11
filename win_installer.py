@@ -74,7 +74,7 @@ entry_point=mu.app:debug
 entry_point=pgzero.runner:main
 
 [Python]
-version=3.6.3
+version=3.6.8
 bitness={bitness}
 format=bundled
 
@@ -221,7 +221,9 @@ def create_pynsist_cfg(python, repo_root, filename, encoding="latin1"):
     wheels = pypi_wheels_in(requirements)
     packages = packages_from(requirements, wheels)
 
-    installer_exe = "{}_{}bit.exe".format(mu_package_name, bitness)
+    installer_exe = "{}_{}bit_{}.exe".format(
+        mu_package_name, bitness, mu_version
+    )
 
     pynsist_cfg_payload = PYNSIST_CFG_TEMPLATE.format(
         version=mu_version,
