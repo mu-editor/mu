@@ -29,12 +29,10 @@ import platform
 import webbrowser
 import random
 import locale
-import shutil
-import appdirs
 import site
-import subprocess
 import shutil
 import venv
+import appdirs
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QLocale, QProcess, QProcessEnvironment
 from pyflakes.api import check
