@@ -628,7 +628,7 @@ def test_Window_add_tab():
     new_tab_index = 999
     w.tabs = mock.MagicMock()
     w.tabs.addTab = mock.MagicMock(return_value=new_tab_index)
-    w.tabs.currentIndex = mock.MagicMock(return_value=new_tab_index)
+    w.tabs.indexOf = mock.MagicMock(return_value=new_tab_index)
     w.tabs.setCurrentIndex = mock.MagicMock(return_value=None)
     w.tabs.setTabText = mock.MagicMock(return_value=None)
     w.connect_zoom = mock.MagicMock(return_value=None)
