@@ -2,7 +2,7 @@
 """
 Tests for the user interface elements of Mu.
 """
-from PyQt5.QtWidgets import QApplication, QMessageBox, QLabel
+from PyQt5.QtWidgets import QMessageBox, QLabel
 from PyQt5.QtChart import QChart, QLineSeries, QValueAxis
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTextCursor
