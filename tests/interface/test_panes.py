@@ -2,7 +2,7 @@
 """
 Tests for the user interface elements of Mu.
 """
-from PyQt5.QtWidgets import QApplication, QMessageBox, QLabel
+from PyQt5.QtWidgets import QMessageBox, QLabel
 from PyQt5.QtChart import QChart, QLineSeries, QValueAxis
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QTextCursor
@@ -14,11 +14,6 @@ import mu
 import platform
 from collections import deque
 import mu.interface.panes
-
-# Required so the QWidget tests don't abort with the message:
-# "QWidget: Must construct a QApplication before a QWidget"
-# The QApplication need only be instantiated once.
-app = QApplication([])
 
 
 def test_PANE_ZOOM_SIZES():

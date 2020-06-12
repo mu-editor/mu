@@ -6,15 +6,9 @@ import sys
 import os
 import pytest
 import mu.interface.dialogs
-from PyQt5.QtWidgets import QApplication, QDialog, QWidget, QDialogButtonBox
+from PyQt5.QtWidgets import QDialog, QWidget, QDialogButtonBox
 from unittest import mock
 from mu.modes import PythonMode, CircuitPythonMode, MicrobitMode, DebugMode
-
-
-# Required so the QWidget tests don't abort with the message:
-# "QWidget: Must construct a QApplication before a QWidget"
-# The QApplication need only be instantiated once.
-app = QApplication([])
 
 
 def test_ModeItem_init():
