@@ -253,7 +253,8 @@ def save_and_encode(text, filepath, newline=os.linesep):
 
     with open(filepath, "w", encoding=encoding, newline="") as f:
         text_to_write = (
-            newline.join(l.rstrip(" ") for l in text.splitlines()) + newline
+            newline.join(line.rstrip(" ") for line in text.splitlines())
+            + newline
         )
         write_and_flush(f, text_to_write)
 
