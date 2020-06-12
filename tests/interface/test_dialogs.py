@@ -14,7 +14,7 @@ from mu.modes import PythonMode, CircuitPythonMode, MicrobitMode, DebugMode
 # Required so the QWidget tests don't abort with the message:
 # "QWidget: Must construct a QApplication before a QWidget"
 # The QApplication need only be instantiated once.
-app = QApplication([])
+# app = QApplication([])
 
 
 def test_ModeItem_init():
