@@ -60,7 +60,7 @@ def _process_code(executable, use_python, *args):
     in the codebase, skipping docs and build artefacts
     """
     if use_python:
-        execution = ["python", executable]
+        execution = [sys.executable, executable]
     else:
         execution = [executable]
     returncodes = set()
@@ -219,7 +219,7 @@ def translateall():
 
     result = subprocess.run(
         [
-            "python",
+            sys.executable,
             PYGETTEXT,
             "mu/*",
             "mu/debugger/*",
@@ -244,7 +244,7 @@ def run():
         raise RuntimeError(
             "Cannot run Mu;" "your Python virtualenv is not activated"
         )
-    return subprocess.run(["python", "-m", "mu"]).returncode
+    return subprocess.run([sys.executable, "-m", "mu"]).returncode
 
 
 @export
@@ -254,7 +254,7 @@ def dist():
     check()
     print("Checks pass; good to package")
     return subprocess.run(
-        ["python", "setup.py", "sdist", "bdist_wheel"]
+        [sys.executable, "setup.py", "sdist", "bdist_wheel"]
     ).returncode
 
 
@@ -285,7 +285,7 @@ def win32():
     check()
     print("Building 32-bit Windows installer")
     return subprocess.run(
-        ["python", "win_installer.py", "32", "setup.py"]
+        [sys.executable, "win_installer.py", "32", "setup.py"]
     ).returncode
 
 
@@ -296,7 +296,7 @@ def win64():
     check()
     print("Building 64-bit Windows installer")
     return subprocess.run(
-        ["python", "win_installer.py", "64", "setup.py"]
+        [sys.executable, "win_installer.py", "64", "setup.py"]
     ).returncode
 
 
