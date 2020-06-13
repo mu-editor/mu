@@ -47,6 +47,7 @@ import zipfile
 
 import requests
 import yarg
+from itertools import takewhile
 
 
 # The pynsist requirement spec that will be used to install pynsist in
@@ -184,7 +185,9 @@ def package_name(requirement):
     """
     Returns the name component of a `name==version` formated requirement.
     """
-    return requirement.partition("==")[0]
+    # Take chars until we reach either = or space
+    name = takewhile(lambda x: not (x == "=" or x == " "), requirement)
+    return "".join(name)
 
 
 def packages_from(requirements, wheels):
