@@ -253,7 +253,8 @@ def save_and_encode(text, filepath, newline=os.linesep):
 
     with open(filepath, "w", encoding=encoding, newline="") as f:
         text_to_write = (
-            newline.join(l.rstrip(" ") for l in text.splitlines()) + newline
+            newline.join(line.rstrip(" ") for line in text.splitlines())
+            + newline
         )
         write_and_flush(f, text_to_write)
 
@@ -737,6 +738,7 @@ class Editor:
             try:
                 old_session = json.load(f)
             except ValueError:
+                old_session = None
                 logger.error(
                     "Settings file {} could not be parsed.".format(
                         settings_path
@@ -747,6 +749,7 @@ class Editor:
                 logger.debug(old_session)
                 if "theme" in old_session:
                     self.theme = old_session["theme"]
+                    self._view.set_theme(self.theme)
                 if "mode" in old_session:
                     old_mode = old_session["mode"]
                     if old_mode in self.modes:
@@ -797,12 +800,13 @@ class Editor:
                     self._view.set_zoom()
                 old_window = old_session.get("window", {})
                 self._view.size_window(**old_window)
+        if old_session is None:
+            self._view.set_theme(self.theme)
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
             self.load_cli(paths)
         self.change_mode(self.mode)
-        self._view.set_theme(self.theme)
         self.show_status_message(random.choice(MOTD), 10)
         if not self._view.tab_count:
             py = self.modes[self.mode].code_template + NEWLINE

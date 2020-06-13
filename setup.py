@@ -21,9 +21,9 @@ with open(os.path.join(base_dir, "CHANGES.rst"), encoding="utf8") as f:
 
 
 install_requires = [
-    'PyQt5==5.12.1;"arm" not in platform_machine',
-    'QScintilla==2.11.1;"arm" not in platform_machine',
-    'PyQtChart==5.12;"arm" not in platform_machine',
+    'PyQt5==5.13.2;"arm" not in platform_machine',
+    'QScintilla==2.11.3;"arm" not in platform_machine',
+    'PyQtChart==5.13.1;"arm" not in platform_machine',
     # `flake8` is actually a testing/packaging dependency that, among other
     # packages, brings in `pycodestyle` and `pyflakes` which are runtime
     # dependencies. For the sake of "locality", it is being declared here,
@@ -33,13 +33,13 @@ install_requires = [
     "pycodestyle >= 2.5.0, < 2.6.0",
     "pyflakes >= 2.1.0, < 2.2.0",
     "pyserial==3.4",
-    "qtconsole==4.4.3",
+    "qtconsole==4.7.4",
     "pgzero==1.2",
     "appdirs>=1.4.3",
     "semver>=2.8.0",
     "nudatus>=0.0.3",
     'black>=18.9b0;python_version > "3.5"',
-    "Flask==1.0.2",
+    "Flask==1.1.2",
 ]
 
 
@@ -51,13 +51,15 @@ extras_require = {
         "pytest-faulthandler",
         "coverage",
     ],
-    "docs": ["sphinx"],
+    "docs": ["docutils >= 0.12, < 0.16", # adding docutils requirement to avoid
+                                         # conflict between sphinx and briefcase
+             "sphinx"],
     "package": [
         # Wheel building and PyPI uploading
         "wheel",
         "twine",
         # Windows native packaging (see win_installer.py).
-        'requests==2.21.0;platform_system == "Windows"',
+        'requests==2.23.0;platform_system == "Windows"',
         'yarg==0.1.9;platform_system == "Windows"',
         # macOS native packaging (see Makefile)
         'briefcase==0.2.9;platform_system == "Darwin"',
