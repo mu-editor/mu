@@ -87,7 +87,7 @@ def test_setup_modes_without_pgzero():
         assert "pygamezero" not in modes
 
 
-def test_run():
+def test_run(qtapp):
     """
     Ensure the run function sets things up in the expected way.
 

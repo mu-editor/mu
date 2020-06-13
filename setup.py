@@ -21,9 +21,9 @@ with open(os.path.join(base_dir, "CHANGES.rst"), encoding="utf8") as f:
 
 
 install_requires = [
-    'PyQt5==5.15;"arm" not in platform_machine',
-    'QScintilla==2.11.4;"arm" not in platform_machine',
-    'PyQtChart==5.15;"arm" not in platform_machine',
+    'PyQt5==5.13.2;"arm" not in platform_machine',
+    'QScintilla==2.11.3;"arm" not in platform_machine',
+    'PyQtChart==5.13.1;"arm" not in platform_machine',
     # `flake8` is actually a testing/packaging dependency that, among other
     # packages, brings in `pycodestyle` and `pyflakes` which are runtime
     # dependencies. For the sake of "locality", it is being declared here,
@@ -51,7 +51,9 @@ extras_require = {
         "pytest-faulthandler",
         "coverage",
     ],
-    "docs": ["sphinx"],
+    "docs": ["docutils >= 0.12, < 0.16", # adding docutils requirement to avoid
+                                         # conflict between sphinx and briefcase
+             "sphinx"],
     "package": [
         # Wheel building and PyPI uploading
         "wheel",
