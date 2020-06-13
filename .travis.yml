@@ -61,9 +61,9 @@ script:
   # Run the tests on macOS and package it: "make macos" runs checks+tests first.
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make macos; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir dist; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then zip -r -X dist/mu-editor.zip macOS/mu-editor.app; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export DMGFILE=macOS/mu-editor-*.dmg; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then du -sk dist/; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv dist/mu-editor.zip dist/mu-editor_$(date '+%Y-%m-%d_%H_%M')_${TRAVIS_BRANCH}_${TRAVIS_COMMIT:0:7}.zip; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv "$DMGFILE" dist/mu-editor_$(date '+%Y-%m-%d_%H_%M')_${TRAVIS_BRANCH}_${TRAVIS_COMMIT:0:7}.dmg; fi
 
 # Deploy the build version in an S3 bucket
 deploy:
