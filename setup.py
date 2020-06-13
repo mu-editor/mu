@@ -29,17 +29,16 @@ install_requires = [
     # dependencies. For the sake of "locality", it is being declared here,
     # though. Regarding these packages' versions, please refer to:
     # http://flake8.pycqa.org/en/latest/faq.html#why-does-flake8-use-ranges-for-its-dependencies
-    "flake8 >= 3.7.8",
-    "pycodestyle >= 2.5.0, < 2.6.0",
-    "pyflakes >= 2.1.0, < 2.2.0",
+    "flake8 >= 3.8.3",
     "pyserial==3.4",
     "qtconsole==4.7.4",
     "pgzero==1.2",
     "appdirs>=1.4.3",
     "semver>=2.8.0",
     "nudatus>=0.0.3",
-    'black>=18.9b0;python_version > "3.5"',
+    'black>=19.10b0;python_version > "3.5"',
     "Flask==1.1.2",
+    "python-dateutil==2.8.0",
 ]
 
 
