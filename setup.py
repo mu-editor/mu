@@ -61,7 +61,7 @@ extras_require = {
         'requests==2.23.0;platform_system == "Windows"',
         'yarg==0.1.9;platform_system == "Windows"',
         # macOS native packaging (see Makefile)
-        'briefcase==0.2.9;platform_system == "Darwin"',
+        'briefcase==0.3.1;platform_system == "Darwin"',
     ],
     "utils": ["scrapy", "beautifulsoup4", "requests"],
 }
@@ -123,8 +123,4 @@ setup(
         "Topic :: Text Editors :: Integrated Development Environments (IDE)",
     ],
     entry_points={"console_scripts": ["mu-editor = mu.app:run"]},
-    options={  # Briefcase packaging options for OSX
-        "app": {"formal_name": "mu-editor", "bundle": "mu.codewith.editor"},
-        "macos": {"icon": "package/icons/mac_icon"},
-    },
 )

@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[tool.briefcase]
+project_name = "Mu Editor"
+bundle = "mu.codewith.editor"
+version = "1.1.0a2"
+author = "Nicholas H. Tollervej"
+author_email = "ntoll@ntoll.org"
+requires = []
+
+[tool.briefcase.app.mu]
+formal_name = "mu-editor"
+description = "A simple Python editor for beginner programmers."
+requires = ['PyQt5==5.13.2;"arm" not in platform_machine',
+            'QScintilla==2.11.3;"arm" not in platform_machine',
+            'PyQtChart==5.13.1;"arm" not in platform_machine',
+            # `flake8` is actually a testing/packaging dependency that, among other
+            # packages, brings in `pycodestyle` and `pyflakes` which are runtime
+            # dependencies. For the sake of "locality", it is being declared here,
+            # though. Regarding these packages' versions, please refer to:
+            # http://flake8.pycqa.org/en/latest/faq.html#why-does-flake8-use-ranges-for-its-dependencies
+            "flake8 >= 3.7.8",
+            "pycodestyle >= 2.5.0, < 2.6.0",
+            "pyflakes >= 2.1.0, < 2.2.0",
+            "pyserial==3.4",
+            "qtconsole==4.7.4",
+            "pgzero==1.2",
+            "appdirs>=1.4.3",
+            "semver>=2.8.0",
+            "nudatus>=0.0.3",
+            'black>=18.9b0;python_version > "3.5"',
+            "Flask==1.1.2"]
+
+sources = ['mu']
+
+[tool.briefcase.app.mu.macOS]
+requires = []
+icon = "package/icons/mac_icon"
+# Previously Mu used the following support package, but it doesn't
+# seem to work well with newer versions of briefcase. I'm leaving
+# it here, as someone might want to reintroduce it instead of the
+# default Python version used by briefcase
+#support_package = "https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz"
