@@ -51,7 +51,7 @@ extras_require = {
         "pytest-faulthandler",
         "coverage",
     ],
-    "docs": ["sphinx"],
+    "docs": ["docutils >= 0.10, < 0.16", "sphinx"],
     "package": [
         # Wheel building and PyPI uploading
         "wheel",
