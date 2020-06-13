@@ -51,7 +51,7 @@ extras_require = {
         "pytest-faulthandler",
         "coverage",
     ],
-    "docs": ["docutils >= 0.10, < 0.16", "sphinx"],
+    "docs": ["sphinx"],
     "package": [
         # Wheel building and PyPI uploading
         "wheel",
@@ -60,7 +60,7 @@ extras_require = {
         'requests==2.23.0;platform_system == "Windows"',
         'yarg==0.1.9;platform_system == "Windows"',
         # macOS native packaging (see Makefile)
-        'briefcase==0.2.9;platform_system == "Darwin"',
+        'briefcase==0.3.0;platform_system == "Darwin"',
     ],
     "utils": ["scrapy", "beautifulsoup4", "requests"],
 }
