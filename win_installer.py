@@ -183,7 +183,8 @@ def pypi_wheels_in(requirements):
 
 def package_name(requirement):
     """
-    Returns the name component of a `name==version` formated requirement.
+    Returns the name component of a `name==version` formatted requirement, or a
+    `name @ file://...` formatted requirement.
     """
     # Take chars until we reach either = or space
     name = takewhile(lambda x: not (x == "=" or x == " "), requirement)
