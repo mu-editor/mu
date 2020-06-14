@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from pkg_resources import resource_filename, resource_string
 from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtCore import QDir
+from PyQt5.QtCore import QDir, QByteArray
 
 
 # The following lines add the images and css directories to the search path.
@@ -51,4 +51,4 @@ def load_font_data(name):
     """
     Load the (binary) content of a font as bytes
     """
-    return resource_string(__name__, "fonts/" + name)
+    return QByteArray(resource_string(__name__, "fonts/" + name))
