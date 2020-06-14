@@ -29,15 +29,17 @@ import platform
 import webbrowser
 import random
 import locale
-import shutil
-import appdirs
 import site
-import subprocess
 import shutil
+
+import appdirs
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QLocale, QProcess, QProcessEnvironment
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
+import virtualenv
+from virtualenv.config.cli.parser import VirtualEnvOptions
+
 from mu.resources import path
 from mu.debugger.utils import is_breakpoint_line
 from mu import __version__
@@ -197,7 +199,11 @@ def run_python_subprocess(interpreter, *args, pythonpath=None):
     only be used for quick Python commands needed for pip, venv and other
     related tasks to work.
     """
-    logger.info("Starting new sub-process with: {} {} (PYTHONPATH={})".format(interpreter, args, pythonpath))
+    logger.info(
+        "Starting new sub-process with: {} {} (PYTHONPATH={})".format(
+            interpreter, args, pythonpath
+        )
+    )
     process = QProcess()
     process.setProcessChannelMode(QProcess.MergedChannels)
     env = QProcessEnvironment.systemEnvironment()
@@ -206,7 +212,7 @@ def run_python_subprocess(interpreter, *args, pythonpath=None):
     if pythonpath:
         env.insert("PYTHONPATH", pythonpath)
     else:
-        env.insert("PYTHONPATH", )
+        env.remove("PYTHONPATH")
     process.setProcessEnvironment(env)
     process.start(interpreter, args)
     if not process.waitForStarted():
@@ -223,7 +229,9 @@ def get_full_pythonpath(interpreter):
     Given an interpreter from a virtualenv, returns a PYTHONPATH containing
     both the virtualenvs paths and then the paths from Mu's own sys.path.
     """
-    result = run_python_subprocess(interpreter, "-c", "import sys; print('\\n'.join(sys.path))")
+    result = run_python_subprocess(
+        interpreter, "-c", "import sys; print('\\n'.join(sys.path))"
+    )
     paths = set()
     for p in result.split("\n"):
         if p.strip():
@@ -241,12 +249,12 @@ def installed_packages(venv_python):
     """
     logger.info("Discovering installed third party modules in venv.")
 
-    path = "C:\\Users\\ntoll\\AppData\\Local\\python\\mu\\mu_venv\\lib\\site-packages"
-    logger.info(path)
+    # ~ path = "C:\\Users\\ntoll\\AppData\\Local\\python\\mu\\mu_venv\\lib\\site-packages"
+    # ~ logger.info(path)
     result = run_python_subprocess(
-        venv_python, "-m", "pip", "freeze"  #, pythonpath=path
+        venv_python, "-m", "pip", "freeze"  # , pythonpath=path
     )
-    packages = result.split("\n")
+    packages = result.splitlines()
     logger.info(packages)
     installed = []
     for p in packages:
@@ -263,8 +271,25 @@ def make_venv(path=VENV_DIR):
     logger.info("Creating virtualenv: {}".format(path))
     venv_name = os.path.basename(path)
     logger.info("Virtualenv name: {}".format(venv_name))
-    # Create the virtualenv.
-    result = run_python_subprocess(sys.executable,  "-m", "venv", "--without-pip", path)
+    source_dir = os.path.dirname(os.path.abspath(sys.executable))
+
+    #
+    # The virtualenv creator expects to find a DLLs directory
+    # next to the executable's directory as there is in the
+    # full distribution
+    #
+    DLLs_dirpath = os.path.join(source_dir, "DLLs")
+    if not os.path.exists(DLLs_dirpath):
+        logger.debug(
+            "No DLLs directory at %s; creating it for virtualenv",
+            DLLs_dirpath,
+        )
+        os.mkdir(DLLs_dirpath)
+
+    # Create the virtualenv
+    options = VirtualEnvOptions()
+    options.system_site_packages = True
+    virtualenv.cli_run([path], options)
     # Set the path to the interpreter and do some Windows based post-processing
     # needed to make sure the venv is set up correctly.
     if sys.platform == "win32":
@@ -277,17 +302,32 @@ def make_venv(path=VENV_DIR):
             zipname = "python{}{}.zip".format(
                 sys.version_info.major, sys.version_info.minor
             )
-            source_dir = os.path.dirname(os.path.abspath(sys.executable))
             source_path = os.path.join(source_dir, zipname)
             destination_path = os.path.join(script_dir, zipname)
             logger.info("Copying from {}".format(source_path))
             logger.info("Copying to {}".format(destination_path))
             if not os.path.exists(destination_path):
                 shutil.copytree(source_path, destination_path)
+            #
+            # The virtualenv creator expects to find a DLLs directory
+            # next to the executable's directory as there is in the
+            # full distribution
+            #
+            DLLs_dirpath = os.path.join(source_dir, "DLLs")
+            if not os.path.exists(DLLs_dirpath):
+                logger.debug(
+                    "No DLLs directory at %s; creating it for virtualenv",
+                    DLLs_dirpath,
+                )
+                os.mkdir(DLLs_dirpath)
     else:
         # For Linux/OSX.
         interpreter = os.path.join(path, "bin", "python")
     pythonpath = get_full_pythonpath(interpreter)
+    # Upgrade pip
+    result = run_python_subprocess(
+        interpreter, "-m", "pip", "install", "--upgrade", "pip"
+    )
     # Create a kernel spec that uses the new venv to be used by the REPL.
     result = run_python_subprocess(
         interpreter,
@@ -299,7 +339,7 @@ def make_venv(path=VENV_DIR):
         venv_name,
         "--display-name",
         '"Python/Mu ({})"'.format(venv_name),
-        pythonpath=pythonpath
+        pythonpath=pythonpath,
     )
     return venv_name, interpreter, pythonpath
 
@@ -340,7 +380,8 @@ def save_and_encode(text, filepath, newline=os.linesep):
 
     with open(filepath, "w", encoding=encoding, newline="") as f:
         text_to_write = (
-            newline.join(l.rstrip(" ") for l in text.splitlines()) + newline
+            newline.join(line.rstrip(" ") for line in text.splitlines())
+            + newline
         )
         write_and_flush(f, text_to_write)
 
@@ -829,6 +870,7 @@ class Editor:
             try:
                 old_session = json.load(f)
             except ValueError:
+                old_session = None
                 logger.error(
                     "Settings file {} could not be parsed.".format(
                         settings_path
@@ -839,6 +881,7 @@ class Editor:
                 logger.debug(old_session)
                 if "theme" in old_session:
                     self.theme = old_session["theme"]
+                    self._view.set_theme(self.theme)
                 if "mode" in old_session:
                     old_mode = old_session["mode"]
                     if old_mode in self.modes:
@@ -893,7 +936,11 @@ class Editor:
                     self.venv_python = old_session["venv_python"]
                 if "venv_python_path" in old_session:
                     self.venv_python_path = old_session["venv_python_path"]
-                if (not self.venv_name or not self.venv_python or not self.venv_python_path):
+                if (
+                    not self.venv_name
+                    or not self.venv_python
+                    or not self.venv_python_path
+                ):
                     # If there's no virtualenv based Python interpreter, or
                     # PYTHONPATH, then fallback to try [re]create new
                     # virtualenv.
@@ -903,12 +950,13 @@ class Editor:
                     self.venv_python_path = result[2]
                 old_window = old_session.get("window", {})
                 self._view.size_window(**old_window)
+        if old_session is None:
+            self._view.set_theme(self.theme)
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
             self.load_cli(paths)
         self.change_mode(self.mode)
-        self._view.set_theme(self.theme)
         self.show_status_message(random.choice(MOTD), 10)
         if not self._view.tab_count:
             py = self.modes[self.mode].code_template + NEWLINE

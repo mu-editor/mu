@@ -140,7 +140,7 @@ def test_python_api():
     assert result == SHARED_APIS + PYTHON3_APIS + PI_APIS
 
 
-def test_python_run_toggle_on():
+def test_python_run_toggle_on(qtapp):
     """
     Check the handler for clicking run starts the new process and updates the
     UI state.
@@ -185,7 +185,7 @@ def test_python_run_toggle_on_cancelled():
     assert slot.setIcon.call_count == 0
 
 
-def test_python_run_toggle_off():
+def test_python_run_toggle_off(qtapp):
     """
     Check the handler for clicking run stops the process and reverts the UI
     state.

@@ -44,7 +44,7 @@ def test_Font():
     assert f.italic
 
 
-def test_theme_apply_to():
+def test_theme_apply_to(qtapp):
     """
     Ensure that the apply_to class method updates the passed in lexer with the
     expected font settings.

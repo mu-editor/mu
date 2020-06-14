@@ -36,7 +36,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import os
 import re
 import shutil
@@ -75,7 +74,7 @@ entry_point=mu.app:debug
 entry_point=pgzero.runner:main
 
 [Python]
-version=3.6.3
+version=3.6.8
 bitness={bitness}
 format=bundled
 
@@ -106,13 +105,26 @@ TKINTER_ASSETS_URLS = {
 }
 
 
+def subprocess_run(args):
+    """
+    Wrapper around subprocess.run: when the sub-process exits with a non-zero
+    return code, prints out a message and exits with the same code.
+    """
+    cp = subprocess.run(args)
+    try:
+        cp.check_returncode()
+    except subprocess.CalledProcessError as exc:
+        print(exc)
+        sys.exit(cp.returncode)
+
+
 def create_packaging_venv(target_directory, name="mu-packaging-venv"):
     """
     Creates a Python virtual environment in the target_directry, returning
     the path to the newly created environment's Python executable.
     """
     fullpath = os.path.join(target_directory, name)
-    subprocess.run([sys.executable, "-m", "venv", fullpath])
+    subprocess_run([sys.executable, "-m", "venv", fullpath])
     return os.path.join(fullpath, "Scripts", "python.exe")
 
 
@@ -152,6 +164,12 @@ def pypi_wheels_in(requirements):
         print("-", requirement, end=" ")
         package = yarg.get(name)
         releases = package.release(version)
+        if not releases:
+            raise RuntimeError(
+                "ABORTING: Did not find {!r} at PyPI. (bad meta-data?)".format(
+                    requirement
+                )
+            )
         if any(r.package_type == "wheel" for r in releases):
             wheels.append(requirement)
             feedback = "ok"
@@ -161,6 +179,13 @@ def pypi_wheels_in(requirements):
     return wheels
 
 
+def package_name(requirement):
+    """
+    Returns the name component of a `name==version` formated requirement.
+    """
+    return requirement.partition("==")[0]
+
+
 def packages_from(requirements, wheels):
     """
     Returns a list of the entires in requirements that aren't found in
@@ -168,7 +193,7 @@ def packages_from(requirements, wheels):
     "name==version").
     """
     packages = set(requirements) - set(wheels)
-    return [p.partition("==")[0] for p in packages]
+    return [package_name(p) for p in packages]
 
 
 def create_pynsist_cfg(python, repo_root, filename, encoding="latin1"):
@@ -191,12 +216,14 @@ def create_pynsist_cfg(python, repo_root, filename, encoding="latin1"):
         # Those from pip freeze except the Mu package itself.
         line
         for line in pip_freeze(python, encoding=encoding)
-        if line.partition("==")[0] != mu_package_name
+        if package_name(line) != mu_package_name
     ]
     wheels = pypi_wheels_in(requirements)
     packages = packages_from(requirements, wheels)
 
-    installer_exe = "{}_{}bit.exe".format(mu_package_name, bitness)
+    installer_exe = "{}_{}bit_{}.exe".format(
+        mu_package_name, bitness, mu_version
+    )
 
     pynsist_cfg_payload = PYNSIST_CFG_TEMPLATE.format(
         version=mu_version,
@@ -252,12 +279,12 @@ def run(bitness, repo_root):
         venv_python = create_packaging_venv(work_dir)
 
         print("Updating pip in the virtual environment", venv_python)
-        subprocess.run(
+        subprocess_run(
             [venv_python, "-m", "pip", "install", "--upgrade", "pip"]
         )
 
         print("Installing mu with", venv_python)
-        subprocess.run([venv_python, "-m", "pip", "install", repo_root])
+        subprocess_run([venv_python, "-m", "pip", "install", repo_root])
 
         pynsist_cfg = os.path.join(work_dir, "pynsist.cfg")
         print("Creating pynsist configuration file", pynsist_cfg)
@@ -271,11 +298,11 @@ def run(bitness, repo_root):
         unzip_file(filename, work_dir)
 
         print("Installing pynsist.")
-        subprocess.run([venv_python, "-m", "pip", "install", PYNSIST_REQ])
+        subprocess_run([venv_python, "-m", "pip", "install", PYNSIST_REQ])
 
         mu_pynsist_script = os.path.join(repo_root, "package", "mu_nsist.py")
         print("Running custom pynsist script at", mu_pynsist_script)
-        subprocess.run([venv_python, mu_pynsist_script, pynsist_cfg])
+        subprocess_run([venv_python, mu_pynsist_script, pynsist_cfg])
 
         destination_dir = os.path.join(repo_root, "dist")
         print("Copying installer file to", destination_dir)

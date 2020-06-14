@@ -444,7 +444,7 @@ class Window(QMainWindow):
 
         @new_tab.modificationChanged.connect
         def on_modified():
-            modified_tab_index = self.tabs.currentIndex()
+            modified_tab_index = self.tabs.indexOf(new_tab)
             # Update tab label & window title
             # Tab dirty indicator is managed in FileTabs.addTab
             self.tabs.setTabText(modified_tab_index, new_tab.label)
