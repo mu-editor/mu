@@ -22,14 +22,12 @@ import ntpath
 import os
 import shutil
 import sys
-import tarfile
 import winreg
 import zipfile
 
 from nsist import InstallerBuilder
 from nsist.configreader import get_installer_builder_args
 from nsist.util import download, get_cache_dir
-import zstandard
 
 pjoin = os.path.join
 logging.basicConfig(level=logging.INFO)
@@ -69,7 +67,7 @@ class MuInstallerBuilder(InstallerBuilder):
     See the documentation on that class for all the details.
     """
 
-    def _fetch_python_embeddable(self):
+    def fetch_python_embeddable(self):
         """Fetch the embeddable Windows build for the specified Python version
 
         It will be unpacked into the build directory.
@@ -117,36 +115,6 @@ class MuInstallerBuilder(InstallerBuilder):
             os.remove(pth)
 
         self.install_dirs.append(("Python", "$INSTDIR"))
-
-    def _unpack_standalone(source_filepath, target_dirpath):
-        #
-        # https://github.com/indygreg/python-build-standalone/releases
-        # eg https://github.com/indygreg/python-build-standalone/releases/download/20200517/cpython-3.7.7-x86_64-pc-windows-msvc-static-noopt-20200517T2142.tar.zst
-        #
-        with open(source_filepath, "rb") as ifh:
-            dctx = zstandard.ZstdDecompressor()
-            with dctx.stream_reader(ifh) as reader:
-                with tarfile.open(mode="r|", fileobj=reader) as tf:
-                    tf.extractall(target_dirpath)
-
-    def fetch_python_embeddable(self):
-        """Fetch a standalone Windows build for the specified version
-
-        It will be unpacked into the build directory
-        """
-        releases_root = "https://github.com/indygreg/python-build-standalone/releases/download/20200517/"
-        latest_filename = "cpython-3.7.7-x86_64-pc-windows-msvc-static-noopt-20200517T2142.tar.zst"
-        url = releases_root + latest_filename
-
-        cache_file = get_cache_dir(ensure_existence=True) / filename
-        if not cache_file.is_file():
-            logger.info("Downloading standalone Python build...")
-            logger.info("Getting %s", url)
-            download(url, cache_file)
-        print("Using " + str(cache_file))
-
-        logger.info("Unpacking Python...")
-        python_dir = pjoin(self.build_dir, "Python")
 
     def prepare_shortcuts(self):
         """Prepare shortcut files in the build directory.

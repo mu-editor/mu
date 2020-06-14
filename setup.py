@@ -38,7 +38,18 @@ install_requires = [
     "nudatus>=0.0.3",
     'black>=19.10b0;python_version > "3.5"',
     "Flask==1.1.2",
-    "python-dateutil==2.8.0",
+    #
+    # Include virtualenv and related support for pre-3.8
+    # The embedded Python download we use doesn't include
+    # the stdlib venv.
+    #
+    "virtualenv",
+    "importlib_metadata",
+    "importlib_resources",
+    #
+    # Needed for packaging
+    #
+    "wheel",
 ]
 
 
@@ -50,9 +61,11 @@ extras_require = {
         "pytest-faulthandler",
         "coverage",
     ],
-    "docs": ["docutils >= 0.12, < 0.16", # adding docutils requirement to avoid
-                                         # conflict between sphinx and briefcase
-             "sphinx"],
+    "docs": [
+        "docutils >= 0.12, < 0.16",  # adding docutils requirement to avoid
+        # conflict between sphinx and briefcase
+        "sphinx",
+    ],
     "package": [
         # Wheel building and PyPI uploading
         "wheel",

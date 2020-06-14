@@ -271,6 +271,21 @@ def make_venv(path=VENV_DIR):
     logger.info("Creating virtualenv: {}".format(path))
     venv_name = os.path.basename(path)
     logger.info("Virtualenv name: {}".format(venv_name))
+    source_dir = os.path.dirname(os.path.abspath(sys.executable))
+
+    #
+    # The virtualenv creator expects to find a DLLs directory
+    # next to the executable's directory as there is in the
+    # full distribution
+    #
+    DLLs_dirpath = os.path.join(source_dir, "DLLs")
+    if not os.path.exists(DLLs_dirpath):
+        logger.debug(
+            "No DLLs directory at %s; creating it for virtualenv",
+            DLLs_dirpath,
+        )
+        os.mkdir(DLLs_dirpath)
+
     # Create the virtualenv
     options = VirtualEnvOptions()
     options.system_site_packages = True
@@ -287,7 +302,6 @@ def make_venv(path=VENV_DIR):
             zipname = "python{}{}.zip".format(
                 sys.version_info.major, sys.version_info.minor
             )
-            source_dir = os.path.dirname(os.path.abspath(sys.executable))
             source_path = os.path.join(source_dir, zipname)
             destination_path = os.path.join(script_dir, zipname)
             logger.info("Copying from {}".format(source_path))
