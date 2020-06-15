@@ -299,3 +299,13 @@ QComboBox::drop-down {
 QComboBox::down-arrow {
     image: url(images:dropdown-arrow-night.png);
 }
+
+QGroupBox {
+    border: 1px solid #b4b4b4;
+    margin-top: 1ex; /* leave space at the top for the title */
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 8px;
+}
