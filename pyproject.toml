@@ -36,8 +36,4 @@ sources = ['mu']
 [tool.briefcase.app.mu.macOS]
 requires = []
 icon = "package/icons/mac_icon"
-# Previously Mu used the following support package, but it doesn't
-# seem to work well with newer versions of briefcase. I'm leaving
-# it here, as someone might want to reintroduce it instead of the
-# default Python version used by briefcase
-#support_package = "https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz"
+support_package = "https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz"
