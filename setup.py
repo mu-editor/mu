@@ -1,9 +1,28 @@
 import os
 import re
+import toml
+import pkg_resources
 from setuptools import setup
 
 
 base_dir = os.path.dirname(__file__)
+
+app_name = "mu"
+
+
+def _parse_briefcase_toml(pyproject_text, app_name):
+    """
+    Load dependencies, version and title from pyproject.toml
+    """
+    pyproject_data = toml.loads(pyproject_text)
+    briefcase_data = pyproject_data["tool"]["briefcase"]
+    app_data = briefcase_data["app"][app_name]
+    setup_data = {
+        "name": pkg_resources.safe_name(app_data["formal_name"]),
+        "version": briefcase_data["version"],
+        "install_requires": app_data["requires"],
+    }
+    return setup_data
 
 
 DUNDER_ASSIGN_RE = re.compile(r"""^__\w+__\s*=\s*['"].+['"]$""")
@@ -19,27 +38,10 @@ with open(os.path.join(base_dir, "README.rst"), encoding="utf8") as f:
 with open(os.path.join(base_dir, "CHANGES.rst"), encoding="utf8") as f:
     changes = f.read()
 
+with open(os.path.join(base_dir, "pyproject.toml"), encoding="utf8") as f:
+    pyproject_toml = f.read()
 
-install_requires = [
-    'PyQt5==5.13.2;"arm" not in platform_machine',
-    'QScintilla==2.11.3;"arm" not in platform_machine',
-    'PyQtChart==5.13.1;"arm" not in platform_machine',
-    # `flake8` is actually a testing/packaging dependency that, among other
-    # packages, brings in `pycodestyle` and `pyflakes` which are runtime
-    # dependencies. For the sake of "locality", it is being declared here,
-    # though. Regarding these packages' versions, please refer to:
-    # http://flake8.pycqa.org/en/latest/faq.html#why-does-flake8-use-ranges-for-its-dependencies
-    "flake8 >= 3.8.3",
-    "pyserial==3.4",
-    "qtconsole==4.7.4",
-    "pgzero==1.2",
-    "appdirs>=1.4.3",
-    "semver>=2.8.0",
-    "nudatus>=0.0.3",
-    'black>=19.10b0;python_version > "3.5"',
-    "Flask==1.1.2",
-    "python-dateutil==2.8.0",
-]
+setup_data = _parse_briefcase_toml(pyproject_toml, app_name)
 
 
 extras_require = {
@@ -50,11 +52,7 @@ extras_require = {
         "pytest-faulthandler",
         "coverage",
     ],
-    "docs": [
-        # require docutils to avoid conflict between sphinx and briefcase
-        "docutils >= 0.12, < 0.16",
-        "sphinx",
-    ],
+    "docs": ["sphinx"],
     "package": [
         # Wheel building and PyPI uploading
         "wheel",
@@ -97,7 +95,7 @@ setup(
         "mu.interface",
         "mu.modes.api",
     ],
-    install_requires=install_requires,
+    install_requires=setup_data["install_requires"],
     extras_require=extras_require,
     include_package_data=True,
     zip_safe=False,
