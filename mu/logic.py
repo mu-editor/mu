@@ -29,7 +29,6 @@ import platform
 import webbrowser
 import random
 import locale
-import site
 import shutil
 
 import appdirs
@@ -249,8 +248,6 @@ def installed_packages(venv_python):
     """
     logger.info("Discovering installed third party modules in venv.")
 
-    # ~ path = "C:\\Users\\ntoll\\AppData\\Local\\python\\mu\\mu_venv\\lib\\site-packages"
-    # ~ logger.info(path)
     result = run_python_subprocess(
         venv_python, "-m", "pip", "freeze"  # , pythonpath=path
     )
@@ -313,11 +310,11 @@ def make_venv(path=VENV_DIR):
         interpreter = os.path.join(path, "bin", "python")
     pythonpath = get_full_pythonpath(interpreter)
     # Upgrade pip
-    result = run_python_subprocess(
+    run_python_subprocess(
         interpreter, "-m", "pip", "install", "--upgrade", "pip"
     )
     # Create a kernel spec that uses the new venv to be used by the REPL.
-    result = run_python_subprocess(
+    run_python_subprocess(
         interpreter,
         "-m",
         "ipykernel",
