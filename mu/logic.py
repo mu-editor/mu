@@ -290,21 +290,7 @@ def make_venv(path=VENV_DIR):
     # Set the path to the interpreter and do some Windows based post-processing
     # needed to make sure the venv is set up correctly.
     if sys.platform == "win32":
-        script_dir = os.path.join(path, "Scripts")
-        interpreter = os.path.join(script_dir, "python")
-        if "pythonw.exe" in sys.executable:
-            # On Windows, if installed via NSIS, copy the "pythonXY.zip"
-            # directory from sys.executable's location into the Scripts
-            # directory.
-            zipname = "python{}{}.zip".format(
-                sys.version_info.major, sys.version_info.minor
-            )
-            source_path = os.path.join(source_dir, zipname)
-            destination_path = os.path.join(script_dir, zipname)
-            logger.info("Copying from {}".format(source_path))
-            logger.info("Copying to {}".format(destination_path))
-            if not os.path.exists(destination_path):
-                shutil.copytree(source_path, destination_path)
+        interpreter = os.path.join(path, "Scripts", "python.exe")
     else:
         # For Linux/OSX.
         interpreter = os.path.join(path, "bin", "python")
