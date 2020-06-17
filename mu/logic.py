@@ -31,6 +31,11 @@ import random
 import locale
 import shutil
 
+#
+# Needed for pywin32?
+#
+import site
+
 import appdirs
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QLocale, QProcess, QProcessEnvironment

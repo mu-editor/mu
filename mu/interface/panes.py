@@ -24,6 +24,11 @@ import logging
 import signal
 import string
 import bisect
+
+#
+# Needed for pywin32?
+#
+import site
 import os.path
 from PyQt5.QtCore import (
     Qt,
