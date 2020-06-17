@@ -46,6 +46,15 @@ from mu.debugger.runner import run as run_debugger
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
 
+def excepthook(*exc_args):
+    """
+    Log exception and exit cleanly.
+    """
+    logging.error("Unrecoverable error", exc_info=(exc_args))
+    sys.__excepthook__(*exc_args)
+    sys.exit(1)
+
+
 def setup_logging():
     """
     Configure logging.
@@ -91,20 +100,12 @@ def setup_modes(editor, view):
     }
 
     # Check if pgzero is available (without importing it)
+    # FIXME: this would need to change for mode-specific virtual environments
     if any([m for m in pkgutil.iter_modules() if "pgzero" in m]):
         modes["pygamezero"] = PyGameZeroMode(editor, view)
 
     # return available modes
     return modes
-
-
-def excepthook(*exc_args):
-    """
-    Log exception and exit cleanly.
-    """
-    logging.error("Unrecoverable error", exc_info=(exc_args))
-    sys.__excepthook__(*exc_args)
-    sys.exit(1)
 
 
 def run():
