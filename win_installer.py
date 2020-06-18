@@ -51,7 +51,7 @@ import yarg
 # The pynsist requirement spec that will be used to install pynsist in
 # the temporary packaging virtual environment.
 
-PYNSIST_REQ = "pynsist==2.3"
+PYNSIST_REQ = "pynsist"
 
 # The pynsist configuration file template that will be used. Of note,
 # with regards to pynsist dependency collection and preparation:

@@ -21,6 +21,12 @@ with open(os.path.join(base_dir, "CHANGES.rst"), encoding="utf8") as f:
 
 
 install_requires = [
+    #
+    # The core 'install_requires' should only be things
+    # which are needed for the main editor to function.
+    # Anything which is used by a mode should listed
+    # below under modes
+    #
     'PyQt5==5.13.2;"arm" not in platform_machine',
     'QScintilla==2.11.3;"arm" not in platform_machine',
     'PyQtChart==5.13.1;"arm" not in platform_machine',
@@ -30,14 +36,9 @@ install_requires = [
     # though. Regarding these packages' versions, please refer to:
     # http://flake8.pycqa.org/en/latest/faq.html#why-does-flake8-use-ranges-for-its-dependencies
     "flake8 >= 3.8.3",
-    "pyserial==3.4",
-    "qtconsole==4.7.4",
-    "pgzero==1.2",
     "appdirs>=1.4.3",
     "semver>=2.8.0",
-    "nudatus>=0.0.3",
     'black>=19.10b0;python_version > "3.5"',
-    "Flask==1.1.2",
     #
     # Include virtualenv and related support for pre-3.8
     # The embedded Python download we use doesn't include
@@ -54,6 +55,19 @@ install_requires = [
 
 
 extras_require = {
+    #
+    # The 'modes' extras should include anything needed by
+    # any mode. If this gets traction, we could add these as
+    # something within the mode file itself which gets installed
+    # on demand
+    #
+    "modes" : [
+        "pgzero",
+        "Flask==1.1.2",
+        "pyserial==3.4",
+        "qtconsole==4.7.4",
+        "nudatus>=0.0.3",
+    ],
     "tests": [
         "pytest",
         "pytest-cov",
@@ -83,6 +97,7 @@ extras_require["dev"] = (
     extras_require["tests"]
     + extras_require["docs"]
     + extras_require["package"]
+    + extras_require["modes"]
 )
 
 extras_require["all"] = list(

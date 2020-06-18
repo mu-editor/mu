@@ -667,7 +667,6 @@ class Window(QMainWindow):
     def add_python3_runner(
         self,
         interpreter,
-        pythonpath,
         script_name,
         working_directory,
         interactive=False,
@@ -712,9 +711,20 @@ class Window(QMainWindow):
             | Qt.RightDockWidgetArea
         )
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
+        logger.info("About to start_process: %r, %r, %r, %r, %r, %r, %r, %r",
+            interpreter,
+            script_name,
+            working_directory,
+            interactive,
+            debugger,
+            command_args,
+            envars,
+            python_args
+        )
+
         self.process_runner.start_process(
             interpreter,
-            pythonpath,
+            "",
             script_name,
             working_directory,
             interactive,
@@ -911,13 +921,13 @@ class Window(QMainWindow):
         else:
             return {}
 
-    def sync_packages(self, to_remove, to_add, venv_python):
+    def sync_packages(self, to_remove, to_add, venv):
         """
         Display a modal dialog that indicates the status of the add/remove
         package management operation.
         """
         package_box = PackageDialog(self)
-        package_box.setup(to_remove, to_add, venv_python)
+        package_box.setup(to_remove, to_add, venv)
         package_box.exec()
 
     def show_message(self, message, information=None, icon=None):

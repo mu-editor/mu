@@ -343,13 +343,13 @@ class PackageDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def setup(self, to_remove, to_add, venv_python):
+    def setup(self, to_remove, to_add, venv):
         """
         Create the UI for the dialog.
         """
         self.to_remove = to_remove
         self.to_add = to_add
-        self.venv_python = venv_python
+        self.venv = venv
         self.pkg_dirs = {}  # To hold locations of to-be-removed packages.
         self.process = None
         # Basic layout.
@@ -394,8 +394,8 @@ class PackageDialog(QDialog):
         self.process.setProcessChannelMode(QProcess.MergedChannels)
         self.process.readyRead.connect(self.read_process)
         self.process.finished.connect(self.finished)
-        logger.info("{} {}".format(self.venv_python, " ".join(args)))
-        self.process.start(self.venv_python, args)
+        logger.info("{} {}".format(self.venv.interpreter, " ".join(args)))
+        self.process.start(self.venv.interpreter, args)
 
     def finished(self):
         """

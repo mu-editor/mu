@@ -1,10 +1,9 @@
+import os
 import sys
 import logging
+import subprocess
 
 from PyQt5.QtCore import QProcess, QProcessEnvironment
-
-import virtualenv
-from virtualenv.config.cli.parser import VirtualEnvOptions
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +24,7 @@ class VirtualEnvironment(object):
     def __init__(self, dirpath):
         self.path = dirpath
         self.name = os.path.basename(self.path)
+        self.interpreter = None
 
     def run_python(self, *args, pythonpath=None):
         """
@@ -48,14 +48,29 @@ class VirtualEnvironment(object):
         else:
             env.remove("PYTHONPATH")
         process.setProcessEnvironment(env)
-        process.start(interpreter, args)
+        process.start(self.interpreter, args)
         if not process.waitForStarted():
             raise RuntimeError("Could not start new subprocess.")
-        if not process.waitForFinished():
+        if not process.waitForFinished(180000):
+            #
+            # Allow up to three minutes for some operations (eg installing
+            # all the baseline packages)
+            #
             raise RuntimeError("Could not complete new subprocess.")
         result = process.readAll().data().decode("utf-8")
         logger.info("Process results:\n%s", result)
         return result
+
+    def find_interpreter(self):
+        if sys.platform == "win32":
+            self.interpreter = os.path.join(self.path, "Scripts", "python.exe")
+        else:
+            # For Linux/OSX.
+            self.interpreter = os.path.join(self.path, "bin", "python")
+        if not os.path.isfile(self.interpreter):
+            message = "No interpreter found where expected at %s" % self.interpreter
+            logger.error(message)
+            raise RuntimeError(message)
 
     def ensure(self):
         """Ensure that a virtual environment exists, creating it if needed
@@ -77,12 +92,16 @@ class VirtualEnvironment(object):
         else:
             logger.debug("Directory %s already exists", self.path)
 
+        if not self.interpreter:
+            self.find_interpreter()
+
     def create(self):
         """
         Create a new virtualenv at the referenced path.
         """
         logger.info("Creating virtualenv: {}".format(self.path))
         logger.info("Virtualenv name: {}".format(self.name))
+        logger.info("create#1")
 
         #
         # The virtualenv creator expects to find a DLLs directory
@@ -98,23 +117,15 @@ class VirtualEnvironment(object):
             )
             os.mkdir(DLLs_dirpath)
 
-        # Create the virtualenv
-        options = VirtualEnvOptions()
-        options.system_site_packages = True
-        virtualenv.cli_run([path], options)
+        #
+        # Using subprocess.run rather than virtualenv.cli_run because
+        # the latter appears to suppress logging for our process!
+        #
+        subprocess.run([sys.executable, "-m", "virtualenv", self.path], check=True)
         # Set the path to the interpreter
-        if sys.platform == "win32":
-            self.interpreter = os.path.join(path, "Scripts", "python.exe")
-        else:
-            # For Linux/OSX.
-            self.interpreter = os.path.join(path, "bin", "python")
-        if not os.path.isfile(self.interpreter):
-            message = "No interpreter found where expected at %s" % self.interpreter
-            logger.error(message)
-            raise RuntimeError(message)
-
+        self.find_interpreter()
         # Upgrade pip
-        self.pip("install", "--upgrade", "pip")
+        logger.debug(self.pip("install", "--upgrade", "pip"))
         self.install_baseline_packages()
         self.install_jupyter_kernel()
 
@@ -136,17 +147,23 @@ class VirtualEnvironment(object):
 
     def install_baseline_packages(self):
         logger.info("Installing baseline packages")
-        for package in self.baseline_packages():
-            logger.debug("Installing %s", package)
-            self.pip("install", "--upgrade", "%s%s" % package)
+        #
+        # Give pip all the packages at once as its dependency
+        # walker should do a more efficient job of installing
+        # everything needed
+        # FIXME -- not doing this for now as it takes so long that
+        # the QProcess times out!
+        #
+        packages = ["%s%s" % p for p in self.baseline_packages]
+        self.pip("install", "--upgrade", *packages)
 
     def install_user_packages(self, packages):
-        logger.info("Installing user packages: %s", ", ".join(packages)
+        logger.info("Installing user packages: %s", ", ".join(packages))
         for package in packages:
             self.pip("install", "--upgrade", package)
 
     def remove_user_packages(self, packages):
-        logger.info("Removing user packages: %s", ", ".join(packages)
+        logger.info("Removing user packages: %s", ", ".join(packages))
         for package in packages:
             self.pip("uninstall", package)
 
@@ -164,13 +181,13 @@ class VirtualEnvironment(object):
         #
         # Using list rather than set to preserve seach order
         #
-        path = []
+        paths = []
         for p in [l.strip() for l in result.split("\n")]:
-            if p not in path:
-                path.append(p)
+            if p not in paths:
+                paths.append(p)
         for p in sys.path:
-            if p not in path:
-                path.append(p)
+            if p not in paths:
+                paths.append(p)
         return os.pathsep.join(paths)
 
     def installed_packages(self):
@@ -180,14 +197,28 @@ class VirtualEnvironment(object):
         """
         logger.info("Discovering installed third party modules in venv.")
 
+        #
+        # FIXME: Basically we need a way to distinguish between installed
+        # baseline packages and user-added packages. The baseline_packages
+        # in this class (or, later, from modes) are just the top-level classes:
+        # flask, pgzero etc. But they bring in many others further down. So:
+        # we either need to keep track of what's installed as part of the
+        # baseline install; or to keep track of what's installed by users.
+        # And then we have to hold those in the settings file
+        # The latter is probably easier.
+        #
+
+        baseline_packages = ["mu-editor"] + [name for name, version in self.baseline_packages]
+        user_packages = []
+
         result = self.run_python(
             "-m", "pip", "freeze"
         )
         packages = result.splitlines()
         logger.info(packages)
-        for p in packages:
-            name, _, version = p.partition("==")
-            if name and name != "mu-editor":
-                yield name
-                installed.append(name)
+        for package in packages:
+            name, _, version = package.partition("==")
+            if name not in baseline_packages:
+                user_packages.append(name)
 
+        return baseline_packages, user_packages

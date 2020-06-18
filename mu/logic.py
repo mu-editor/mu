@@ -931,7 +931,7 @@ class Editor:
 
     def get_dialog_directory(self, default=None):
         """
-        Return the directory folder in which a load/save dialog box should
+        Return the directory folder which a load/save dialog box should
         open into. In order of precedence this function will return:
 
         0) If not None, the value of default.
@@ -1210,9 +1210,9 @@ class Editor:
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
             "zoom_level": self._view.zoom_position,
-            "venv_name": self.venv_name,
-            "venv_python": self.venv_python,
-            "venv_python_path": self.venv_python_path,
+            "venv_name": self.venv.name,
+            "venv_python": self.venv.interpreter,
+            "venv_python_path": self.venv.full_pythonpath(),
             "window": {
                 "x": self._view.x(),
                 "y": self._view.y(),
@@ -1243,10 +1243,10 @@ class Editor:
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
         }
-        packages = installed_packages(self.venv_python)
+        baseline_packages, user_packages = self.venv.installed_packages()
         with open(LOG_FILE, "r", encoding="utf8") as logfile:
             new_settings = self._view.show_admin(
-                logfile.read(), settings, "\n".join(packages)
+                logfile.read(), settings, "\n".join(user_packages)
             )
         if new_settings:
             self.envars = extract_envars(new_settings["envars"])
@@ -1268,7 +1268,7 @@ class Editor:
                 for p in new_settings["packages"].lower().split("\n")
                 if p.strip()
             ]
-            old_packages = [p.lower() for p in packages]
+            old_packages = [p.lower() for p in user_packages]
             self.sync_package_state(old_packages, new_packages)
         else:
             logger.info("No admin settings changed.")
@@ -1291,7 +1291,7 @@ class Editor:
             logger.info("To add: {}".format(to_add))
             logger.info("To remove: {}".format(to_remove))
             logger.info("Virtualenv: {}".format(VENV_DIR))
-            self._view.sync_packages(to_remove, to_add, self.venv_python)
+            self._view.sync_packages(to_remove, to_add, self.venv)
 
     def select_mode(self, event=None):
         """

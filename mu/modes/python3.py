@@ -48,6 +48,7 @@ class KernelRunner(QObject):
         target current working directory, any user-defined envars and the
         path for the currently active virtualenv's site-packages.
         """
+        logger.debug("About to create KernelRunner for %s, %s, %s, %s", kernel_name, cwd, envars, pythonpath)
         super().__init__()
         self.kernel_name = kernel_name
         self.cwd = cwd
@@ -59,6 +60,7 @@ class KernelRunner(QObject):
         Create the expected context, start the kernel, obtain a client and
         emit a signal when both are started.
         """
+        logger.debug("About to start kernel")
         logger.info(sys.path)
         os.chdir(self.cwd)  # Ensure the kernel runs with the expected CWD.
         # Add user defined envars to os.environ so they can be picked up by
@@ -71,9 +73,9 @@ class KernelRunner(QObject):
             os.environ[k] = v
         # Ensure the expected paths are in PYTHONPATH of the subprocess so the
         # kernel and Mu-installed third party applications can be found.
-        if "PYTHONPATH" not in os.environ:
+        if "PYTHONPATH" not in os.environ and self.pythonpath:
             os.environ["PYTHONPATH"] = self.pythonpath
-        logger.info("REPL PYTHONPATH: {}".format(os.environ["PYTHONPATH"]))
+        logger.info("REPL PYTHONPATH: {}".format(os.environ.get("PYTHONPATH", "")))
         self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.kernel_name = self.kernel_name
         self.repl_kernel_manager.start_kernel()
@@ -196,11 +198,16 @@ class PythonMode(BaseMode):
                 self.editor.save_tab_to_file(tab)
             envars = self.editor.envars
             cwd = os.path.dirname(tab.path)
+            logger.info("About to run script: %s", dict(interpreter=self.editor.venv.interpreter,
+                script_name=tab.path,
+                working_directory=cwd,
+                interactive=True,
+                envars=envars
+            ))
             self.runner = self.view.add_python3_runner(
-                self.editor.venv_python,
-                self.editor.venv_python_path,
-                tab.path,
-                cwd,
+                interpreter=self.editor.venv.interpreter,
+                script_name=tab.path,
+                working_directory=cwd,
                 interactive=True,
                 envars=envars,
             )
@@ -258,10 +265,10 @@ class PythonMode(BaseMode):
         self.set_buttons(repl=False)
         self.kernel_thread = QThread()
         self.kernel_runner = KernelRunner(
-            kernel_name=self.editor.venv_name,
+            kernel_name=self.editor.venv.name,
             cwd=self.workspace_dir(),
             envars=self.editor.envars,
-            pythonpath=self.editor.venv_python_path,
+            pythonpath='' ## self.editor.venv.full_pythonpath()
         )
         self.kernel_runner.moveToThread(self.kernel_thread)
         self.kernel_runner.kernel_started.connect(self.on_kernel_start)
