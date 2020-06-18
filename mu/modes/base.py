@@ -259,12 +259,15 @@ class MicroPythonMode(BaseMode):
             pid = port.productIdentifier()
             vid = port.vendorIdentifier()
             # Look for the port VID & PID in the list of known board IDs
+            logger.debug("PID/VID: %s / %s", pid, vid)
             if (vid, pid) in self.valid_boards or (
                 vid,
                 None,
             ) in self.valid_boards:
+                logger.debug("Valid boards")
                 port_name = port.portName()
                 serial_number = port.serialNumber()
+                logger.debug("Port / Serial: %s / %s", port_name, serial_number)
                 if with_logging:
                     logger.info("Found device on port: {}".format(port_name))
                     logger.info("Serial number: {}".format(serial_number))
