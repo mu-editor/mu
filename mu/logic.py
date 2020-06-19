@@ -771,7 +771,9 @@ class Editor:
                     self._view.set_zoom()
 
                 if "venv_path" in old_session:
-                    self.venv = virtual_environment.VirtualEnvironment(old_session['venv_path'])
+                    self.venv = virtual_environment.VirtualEnvironment(
+                        old_session["venv_path"]
+                    )
                     self.venv.ensure()
 
                 old_window = old_session.get("window", {})

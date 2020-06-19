@@ -267,7 +267,9 @@ class MicroPythonMode(BaseMode):
                 logger.debug("Valid boards")
                 port_name = port.portName()
                 serial_number = port.serialNumber()
-                logger.debug("Port / Serial: %s / %s", port_name, serial_number)
+                logger.debug(
+                    "Port / Serial: %s / %s", port_name, serial_number
+                )
                 if with_logging:
                     logger.info("Found device on port: {}".format(port_name))
                     logger.info("Serial number: {}".format(serial_number))

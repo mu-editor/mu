@@ -61,7 +61,7 @@ extras_require = {
     # something within the mode file itself which gets installed
     # on demand
     #
-    "modes" : [
+    "modes": [
         "pgzero",
         "Flask==1.1.2",
         "pyserial==3.4",

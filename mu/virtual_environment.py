@@ -1,11 +1,13 @@
 import os
 import sys
+import glob
 import logging
 import subprocess
 
 from PyQt5.QtCore import QProcess, QProcessEnvironment
 
 logger = logging.getLogger(__name__)
+
 
 class VirtualEnvironment(object):
 
@@ -21,8 +23,9 @@ class VirtualEnvironment(object):
         ("nudatus", ">=0.0.3"),
     ]
 
-    def __init__(self, dirpath):
+    def __init__(self, dirpath, baseline_wheels_dirpath):
         self.path = dirpath
+        self.baseline_wheels_dirpath = baseline_wheels_dirpath
         self.name = os.path.basename(self.path)
         self.interpreter = None
 
@@ -68,7 +71,9 @@ class VirtualEnvironment(object):
             # For Linux/OSX.
             self.interpreter = os.path.join(self.path, "bin", "python")
         if not os.path.isfile(self.interpreter):
-            message = "No interpreter found where expected at %s" % self.interpreter
+            message = (
+                "No interpreter found where expected at %s" % self.interpreter
+            )
             logger.error(message)
             raise RuntimeError(message)
 
@@ -101,7 +106,6 @@ class VirtualEnvironment(object):
         """
         logger.info("Creating virtualenv: {}".format(self.path))
         logger.info("Virtualenv name: {}".format(self.name))
-        logger.info("create#1")
 
         #
         # The virtualenv creator expects to find a DLLs directory
@@ -121,7 +125,9 @@ class VirtualEnvironment(object):
         # Using subprocess.run rather than virtualenv.cli_run because
         # the latter appears to suppress logging for our process!
         #
-        subprocess.run([sys.executable, "-m", "virtualenv", self.path], check=True)
+        subprocess.run(
+            [sys.executable, "-m", "virtualenv", self.path], check=True
+        )
         # Set the path to the interpreter
         self.find_interpreter()
         # Upgrade pip
@@ -142,20 +148,27 @@ class VirtualEnvironment(object):
             "--name",
             self.name,
             "--display-name",
-            '"Python/Mu ({})"'.format(self.name)
+            '"Python/Mu ({})"'.format(self.name),
         )
 
     def install_baseline_packages(self):
         logger.info("Installing baseline packages")
-        #
-        # Give pip all the packages at once as its dependency
-        # walker should do a more efficient job of installing
-        # everything needed
-        # FIXME -- not doing this for now as it takes so long that
-        # the QProcess times out!
-        #
-        packages = ["%s%s" % p for p in self.baseline_packages]
-        self.pip("install", "--upgrade", *packages)
+        if os.path.isdir(self.baseline_wheels_dirpath):
+            logger.info("Found baseline wheels at %s", self.baseline_wheels_dirpath)
+            for wheel in glob.glob(
+                os.path.join(self.baseline_dirpath, "*.whl")
+            ):
+                logger.debug("Install wheel %s", os.path.basename(wheel))
+                self.pip("install", "--upgrade", wheel)
+        else:
+            logger.info("No baseline wheels found at %s; installing from PyPI", self.baseline_wheels_dirpath)
+            #
+            # Give pip all the packages at once as its dependency
+            # walker should do a more efficient job of installing
+            # everything needed
+            #
+            packages = ["%s%s" % p for p in self.baseline_packages]
+            self.pip("install", "--upgrade", *packages)
 
     def install_user_packages(self, packages):
         logger.info("Installing user packages: %s", ", ".join(packages))
@@ -208,12 +221,12 @@ class VirtualEnvironment(object):
         # The latter is probably easier.
         #
 
-        baseline_packages = ["mu-editor"] + [name for name, version in self.baseline_packages]
+        baseline_packages = ["mu-editor"] + [
+            name for name, version in self.baseline_packages
+        ]
         user_packages = []
 
-        result = self.run_python(
-            "-m", "pip", "freeze"
-        )
+        result = self.run_python("-m", "pip", "freeze")
         packages = result.splitlines()
         logger.info(packages)
         for package in packages:

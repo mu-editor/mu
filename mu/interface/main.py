@@ -711,7 +711,8 @@ class Window(QMainWindow):
             | Qt.RightDockWidgetArea
         )
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
-        logger.info("About to start_process: %r, %r, %r, %r, %r, %r, %r, %r",
+        logger.info(
+            "About to start_process: %r, %r, %r, %r, %r, %r, %r, %r",
             interpreter,
             script_name,
             working_directory,
@@ -719,7 +720,7 @@ class Window(QMainWindow):
             debugger,
             command_args,
             envars,
-            python_args
+            python_args,
         )
 
         self.process_runner.start_process(
