@@ -6,6 +6,10 @@ import subprocess
 
 from PyQt5.QtCore import QProcess, QProcessEnvironment
 
+from . import wheels
+
+wheels_dirpath = os.path.dirname(wheels.__file__)
+
 logger = logging.getLogger(__name__)
 
 
@@ -23,9 +27,8 @@ class VirtualEnvironment(object):
         ("nudatus", ">=0.0.3"),
     ]
 
-    def __init__(self, dirpath, baseline_wheels_dirpath):
+    def __init__(self, dirpath):
         self.path = dirpath
-        self.baseline_wheels_dirpath = baseline_wheels_dirpath
         self.name = os.path.basename(self.path)
         self.interpreter = None
 
@@ -92,7 +95,7 @@ class VirtualEnvironment(object):
         # a directory is a virtual environment
         #
         # elif not ...:
-        #   message = "Directory %s exists but is not a virtual environment" % self.path
+        #   message = "Directory %s exists but is not a venv" % self.path
         #
         else:
             logger.debug("Directory %s already exists", self.path)
@@ -152,23 +155,35 @@ class VirtualEnvironment(object):
         )
 
     def install_baseline_packages(self):
+        """Install all packages needed for non-core activity
+
+        Each mode needs one or more packages to be able to run: pygame zero
+        mode needs pgzero and its dependencies; web mode needs Flask and so on.
+        We intend to ship with all the necessary wheels for those packages so
+        no network access is needed. But if the wheels aren't found, because
+        we're not running from an installer, then just pip install in the
+        usual way.
+
+        --upgrade is currently used with a thought to upgrade-releases of Mu
+        """
         logger.info("Installing baseline packages")
-        if os.path.isdir(self.baseline_wheels_dirpath):
-            logger.info("Found baseline wheels at %s", self.baseline_wheels_dirpath)
-            for wheel in glob.glob(
-                os.path.join(self.baseline_dirpath, "*.whl")
-            ):
+        if os.path.isdir(wheels_dirpath):
+            logger.info("Found baseline wheels at %s", wheels_dirpath)
+            for wheel in glob.glob(os.path.join(wheels_dirpath, "*.whl")):
                 logger.debug("Install wheel %s", os.path.basename(wheel))
                 self.pip("install", "--upgrade", wheel)
         else:
-            logger.info("No baseline wheels found at %s; installing from PyPI", self.baseline_wheels_dirpath)
+            logger.info(
+                "No baseline wheels found at %s; installing from PyPI",
+                wheels_dirpath,
+            )
             #
             # Give pip all the packages at once as its dependency
             # walker should do a more efficient job of installing
             # everything needed
             #
             packages = ["%s%s" % p for p in self.baseline_packages]
-            self.pip("install", "--upgrade", *packages)
+            self.pip("install", *packages)
 
     def install_user_packages(self, packages):
         logger.info("Installing user packages: %s", ", ".join(packages))
@@ -195,7 +210,7 @@ class VirtualEnvironment(object):
         # Using list rather than set to preserve seach order
         #
         paths = []
-        for p in [l.strip() for l in result.split("\n")]:
+        for p in [line.strip() for line in result.split("\n")]:
             if p not in paths:
                 paths.append(p)
         for p in sys.path:
@@ -205,7 +220,7 @@ class VirtualEnvironment(object):
 
     def installed_packages(self):
         """
-        List all the third party modules installed by the user in the virtualenv
+        List all the third party modules installed by the user in the venv
         containing the referenced Python interpreter.
         """
         logger.info("Discovering installed third party modules in venv.")

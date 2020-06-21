@@ -33,7 +33,7 @@ import shutil
 
 import appdirs
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QLocale, QProcess, QProcessEnvironment
+from PyQt5.QtCore import QLocale
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
 

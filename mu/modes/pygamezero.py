@@ -146,7 +146,6 @@ class PyGameZeroMode(BaseMode):
 
             self.runner = self.view.add_python3_runner(
                 interpreter=self.editor.venv.interpreter,
-                ## self.editor.venv_python_path,
                 script_name=tab.path,
                 working_directory=cwd,
                 interactive=False,

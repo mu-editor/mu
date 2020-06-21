@@ -280,7 +280,7 @@ class PythonMode(BaseMode):
             kernel_name=self.editor.venv.name,
             cwd=self.workspace_dir(),
             envars=self.editor.envars,
-            pythonpath="",  ## self.editor.venv.full_pythonpath()
+            pythonpath="",
         )
         self.kernel_runner.moveToThread(self.kernel_thread)
         self.kernel_runner.kernel_started.connect(self.on_kernel_start)

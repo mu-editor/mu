@@ -80,3 +80,4 @@ target/
 
 # Virtual Environment
 .venv/
+/mu/wheels/*.whl

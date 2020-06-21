@@ -47,6 +47,7 @@ import zipfile
 import requests
 import yarg
 
+import mu.wheels
 
 # The pynsist requirement spec that will be used to install pynsist in
 # the temporary packaging virtual environment.
@@ -89,7 +90,6 @@ packages=
     {packages}
 
 files=lib
-    {cwd}\\wheels
 
 [Build]
 installer_name={installer_name}
@@ -104,6 +104,13 @@ TKINTER_ASSETS_URLS = {
     "32": URL + "0.3/pynsist_tkinter_3.6_32bit.zip",
     "64": URL + "0.3/pynsist_tkinter_3.6_64bit.zip",
 }
+mode_dependencies = [
+    "flask",
+    "pgzero",
+    "pyserial",
+    "qtconsole",
+    "nudatus",
+]
 
 
 def subprocess_run(args):
@@ -209,7 +216,6 @@ def create_pynsist_cfg(python, repo_root, filename, encoding="latin1"):
     mu_package_name = mu_about["__title__"]
     mu_version = mu_about["__version__"]
     mu_author = mu_about["__author__"]
-    cwd = os.path.dirname(os.path.abspath(__file__))
 
     icon_file = os.path.join(repo_root, "package", "icons", "win_icon.ico")
     license_file = os.path.join(repo_root, "LICENSE")
@@ -236,7 +242,6 @@ def create_pynsist_cfg(python, repo_root, filename, encoding="latin1"):
         pypi_wheels="\n    ".join(wheels),
         packages="\n    ".join(packages),
         installer_name=installer_exe,
-        cwd=cwd,
     )
     with open(filename, "wt", encoding=encoding) as f:
         f.write(pynsist_cfg_payload)
@@ -269,6 +274,18 @@ def unzip_file(filename, target_directory):
         z.extractall(target_directory)
 
 
+def download_mode_wheels(target_directory):
+    """Download the wheels to be shipped with the installer
+
+    If any file is an sdist the corresponding wheel is built and
+    the sdist is removed.
+
+    These wheels will be used the first time mu starts up to populate the
+    virtual environment from which which all user code will be run
+    """
+    subprocess_run([sys.executable, "-m", "mu.wheels"])
+
+
 def run(bitness, repo_root):
     """
     Given a certain bitness and the Mu's repository root directory, generate
@@ -288,6 +305,9 @@ def run(bitness, repo_root):
 
         print("Installing mu with", venv_python)
         subprocess_run([venv_python, "-m", "pip", "install", repo_root])
+
+        print("Downloading wheels for modes")
+        mu.wheels.download(os.path.dirname(mu.wheels.__file__))
 
         pynsist_cfg = os.path.join(work_dir, "pynsist.cfg")
         print("Creating pynsist configuration file", pynsist_cfg)
