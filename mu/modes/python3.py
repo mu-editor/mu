@@ -209,7 +209,7 @@ class PythonMode(BaseMode):
             logger.info(
                 "About to run script: %s",
                 dict(
-                    interpreter=self.editor.venv.interpreter,
+                    interpreter=self.venv.interpreter,
                     script_name=tab.path,
                     working_directory=cwd,
                     interactive=True,
@@ -217,7 +217,7 @@ class PythonMode(BaseMode):
                 ),
             )
             self.runner = self.view.add_python3_runner(
-                interpreter=self.editor.venv.interpreter,
+                interpreter=self.venv.interpreter,
                 script_name=tab.path,
                 working_directory=cwd,
                 interactive=True,
@@ -277,7 +277,7 @@ class PythonMode(BaseMode):
         self.set_buttons(repl=False)
         self.kernel_thread = QThread()
         self.kernel_runner = KernelRunner(
-            kernel_name=self.editor.venv.name,
+            kernel_name=self.venv.name,
             cwd=self.workspace_dir(),
             envars=self.editor.envars,
             pythonpath="",

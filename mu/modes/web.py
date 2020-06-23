@@ -172,8 +172,7 @@ class WebMode(BaseMode):
             args = ["-m", "flask", "run"]
             cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(
-                self.venv_python,
-                self.venv_python_path,
+                self.venv.interpreter,
                 "",
                 cwd,
                 interactive=False,

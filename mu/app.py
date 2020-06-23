@@ -90,19 +90,20 @@ def setup_modes(editor, view):
     *PREMATURE OPTIMIZATION ALERT* This may become more complex in future so
     splitting things out here to contain the mess. ;-)
     """
+    venv = editor.venv
     modes = {
-        "python": PythonMode(editor, view),
-        "circuitpython": CircuitPythonMode(editor, view),
-        "microbit": MicrobitMode(editor, view),
-        "esp": ESPMode(editor, view),
-        "web": WebMode(editor, view),
-        "debugger": DebugMode(editor, view),
+        "python": PythonMode(editor, view, venv),
+        "circuitpython": CircuitPythonMode(editor, view, venv),
+        "microbit": MicrobitMode(editor, view, venv),
+        "esp": ESPMode(editor, view, venv),
+        "web": WebMode(editor, view, venv),
+        "debugger": DebugMode(editor, view, venv),
     }
 
     # Check if pgzero is available (without importing it)
     # FIXME: this would need to change for mode-specific virtual environments
     if any([m for m in pkgutil.iter_modules() if "pgzero" in m]):
-        modes["pygamezero"] = PyGameZeroMode(editor, view)
+        modes["pygamezero"] = PyGameZeroMode(editor, view, venv)
 
     # return available modes
     return modes

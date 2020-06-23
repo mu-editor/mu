@@ -145,7 +145,7 @@ class PyGameZeroMode(BaseMode):
             cwd = os.path.dirname(tab.path)
 
             self.runner = self.view.add_python3_runner(
-                interpreter=self.editor.venv.interpreter,
+                interpreter=self.venv.interpreter,
                 script_name=tab.path,
                 working_directory=cwd,
                 interactive=False,
