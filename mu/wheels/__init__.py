@@ -13,10 +13,9 @@ mode_packages = [
     ("qtconsole", "==4.7.4"),
     ("nudatus", ">=0.0.3"),
 ]
-wheels_dirpath = os.path.dirname(__file__)
+WHEELS_DIRPATH = os.path.dirname(__file__)
 
-
-def download(dirpath):
+def download(dirpath=WHEELS_DIRPATH):
     #
     # Download the wheels needed for modes
     #
@@ -27,7 +26,7 @@ def download(dirpath):
                 "-m",
                 "pip",
                 "download",
-                "--dest",
+                "--destination-directory",
                 dirpath,
                 "%s%s" % package,
             ],
@@ -46,7 +45,7 @@ def download(dirpath):
                     "pip",
                     "wheel",
                     "--wheel-dir",
-                    wheels_dirpath,
+                    dirpath,
                     filepath,
                 ],
                 check=True,
