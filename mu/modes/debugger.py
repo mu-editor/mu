@@ -112,7 +112,7 @@ class DebugMode(BaseMode):
             cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(
                 self.venv.interpreter,
-                "", ## self.editor.venv_python_path,
+                "",  ## self.editor.venv_python_path,
                 tab.path,
                 cwd,
                 debugger=True,

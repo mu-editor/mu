@@ -4,6 +4,10 @@ import glob
 import logging
 import subprocess
 
+import encodings
+python36_zip = os.path.dirname(encodings.__path__[0])
+del encodings
+
 from PyQt5.QtCore import QProcess, QProcessEnvironment
 
 from . import wheels
@@ -31,8 +35,11 @@ class VirtualEnvironment(object):
         self.path = dirpath
         self.name = os.path.basename(self.path)
         self.interpreter = None
+        logging.debug(
+            "Starting virtual environment %s at %s", self.name, self.path
+        )
 
-    def run_python(self, *args, pythonpath=None):
+    def run_python(self, *args, pythonpath=python36_zip):
         """
         Run the referenced Python interpreter with the passed in args and
         PYTHONPATH. This is a **BLOCKING** call to the subprocess and should
@@ -64,7 +71,7 @@ class VirtualEnvironment(object):
             #
             raise RuntimeError("Could not complete new subprocess.")
         result = process.readAll().data().decode("utf-8")
-        logger.info("Process results:\n%s", result)
+        logger.debug("Process results:\n%r", result)
         return result
 
     def find_interpreter(self):
@@ -79,6 +86,7 @@ class VirtualEnvironment(object):
             )
             logger.error(message)
             raise RuntimeError(message)
+        logger.info("Interpreter found at %s", self.interpreter)
 
     def ensure(self):
         """Ensure that a virtual environment exists, creating it if needed
@@ -128,8 +136,10 @@ class VirtualEnvironment(object):
         # Using subprocess.run rather than virtualenv.cli_run because
         # the latter appears to suppress logging for our process!
         #
+        env = dict(os.environ)
+        from pprint import pprint; pprint(env)
         subprocess.run(
-            [sys.executable, "-m", "virtualenv", self.path], check=True
+            [sys.executable, "-m", "virtualenv", self.path], check=True, env=env
         )
         # Set the path to the interpreter
         self.find_interpreter()
@@ -166,24 +176,38 @@ class VirtualEnvironment(object):
 
         --upgrade is currently used with a thought to upgrade-releases of Mu
         """
+        ##"pip install --force-reinstall --ignore-installed --upgrade --find-links=mu\wheels pgzero"
         logger.info("Installing baseline packages")
-        if os.path.isdir(wheels_dirpath):
-            logger.info("Found baseline wheels at %s", wheels_dirpath)
-            for wheel in glob.glob(os.path.join(wheels_dirpath, "*.whl")):
-                logger.debug("Install wheel %s", os.path.basename(wheel))
-                self.pip("install", "--upgrade", wheel)
-        else:
-            logger.info(
-                "No baseline wheels found at %s; installing from PyPI",
-                wheels_dirpath,
-            )
-            #
-            # Give pip all the packages at once as its dependency
-            # walker should do a more efficient job of installing
-            # everything needed
-            #
-            packages = ["%s%s" % p for p in self.baseline_packages]
-            self.pip("install", *packages)
+        logger.info(
+            "%s %s",
+            wheels_dirpath,
+            "exists" if os.path.isdir(wheels_dirpath) else "does not exist",
+        )
+        baseline_packages = ["%s%s" % p for p in self.baseline_packages]
+        #
+        # This command should install the baseline packages, picking up the
+        # precompiled wheels where they exist (typically from the installer)
+        # and downloading from PyPI where they don't
+        #
+        self.pip("install", "--find-links", wheels_dirpath, *baseline_packages)
+
+        # ~ if os.path.isdir(wheels_dirpath):
+        # ~ logger.info("Found baseline wheels at %s", wheels_dirpath)
+        # ~ for wheel in glob.glob(os.path.join(wheels_dirpath, "*.whl")):
+        # ~ logger.debug("Install wheel %s", os.path.basename(wheel))
+        # ~ self.pip("install", "--upgrade", wheel)
+        # ~ else:
+        # ~ logger.info(
+        # ~ "No baseline wheels found at %s; installing from PyPI",
+        # ~ wheels_dirpath,
+        # ~ )
+        # ~ #
+        # ~ # Give pip all the packages at once as its dependency
+        # ~ # walker should do a more efficient job of installing
+        # ~ # everything needed
+        # ~ #
+        # ~ packages = ["%s%s" % p for p in self.baseline_packages]
+        # ~ self.pip("install", *packages)
 
     def install_user_packages(self, packages):
         logger.info("Installing user packages: %s", ", ".join(packages))
