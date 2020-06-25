@@ -47,8 +47,6 @@ import zipfile
 import requests
 import yarg
 
-import mu.wheels
-
 # The pynsist requirement spec that will be used to install pynsist in
 # the temporary packaging virtual environment.
 
@@ -118,6 +116,7 @@ def subprocess_run(args):
     Wrapper around subprocess.run: when the sub-process exits with a non-zero
     return code, prints out a message and exits with the same code.
     """
+    print("About to suprocess_run", args)
     cp = subprocess.run(args)
     try:
         cp.check_returncode()
@@ -190,8 +189,15 @@ def pypi_wheels_in(requirements):
 def package_name(requirement):
     """
     Returns the name component of a `name==version` formated requirement.
+    NB Mu itself can come from pip freeze as mu-editor @ file:///...
     """
-    return requirement.partition("==")[0]
+    separators = ["==", "@"]
+    for sep in separators:
+        if sep in requirement:
+            name, _, version = requirement.partition(sep)
+            return name.strip()
+    else:
+        return requirement
 
 
 def packages_from(requirements, wheels):
@@ -220,6 +226,13 @@ def create_pynsist_cfg(python, repo_root, filename, encoding="latin1"):
     icon_file = os.path.join(repo_root, "package", "icons", "win_icon.ico")
     license_file = os.path.join(repo_root, "LICENSE")
 
+    #
+    # Seems that the Mu package name is "mu-editor @ file:///C:/work-in-progress/mu"
+    #
+    print("mu_package_name=", mu_package_name)
+    requirements = []
+    for line in pip_freeze(python, encoding=encoding):
+        print("Package:", package_name(line))
     requirements = [
         # Those from pip freeze except the Mu package itself.
         line
@@ -274,18 +287,6 @@ def unzip_file(filename, target_directory):
         z.extractall(target_directory)
 
 
-def download_mode_wheels(target_directory):
-    """Download the wheels to be shipped with the installer
-
-    If any file is an sdist the corresponding wheel is built and
-    the sdist is removed.
-
-    These wheels will be used the first time mu starts up to populate the
-    virtual environment from which which all user code will be run
-    """
-    subprocess_run([sys.executable, "-m", "mu.wheels"])
-
-
 def run(bitness, repo_root):
     """
     Given a certain bitness and the Mu's repository root directory, generate
@@ -294,20 +295,25 @@ def run(bitness, repo_root):
     """
     with tempfile.TemporaryDirectory(prefix="mu-pynsist-") as work_dir:
         print("Temporary working directory at", work_dir)
+        #
+        # Create and switch to the temporary directory so we don't get
+        # interference from the *local* mu package
+        #
+        os.chdir(work_dir)
 
         print("Creating the packaging virtual environment.")
         venv_python = create_packaging_venv(work_dir)
 
-        print("Updating pip in the virtual environment", venv_python)
+        print("Updating pip & wheel in the virtual environment", venv_python)
         subprocess_run(
-            [venv_python, "-m", "pip", "install", "--upgrade", "pip"]
+            [venv_python, "-m", "pip", "install", "--upgrade", "pip", "wheel"]
         )
 
         print("Installing mu with", venv_python)
         subprocess_run([venv_python, "-m", "pip", "install", repo_root])
 
-        print("Downloading wheels for modes")
-        mu.wheels.download(os.path.dirname(mu.wheels.__file__))
+        print("Downloading wheels for modes into the venv mu package")
+        subprocess_run([venv_python, "-m", "mu.wheels"])
 
         pynsist_cfg = os.path.join(work_dir, "pynsist.cfg")
         print("Creating pynsist configuration file", pynsist_cfg)

@@ -24,12 +24,16 @@ install_requires = [
     #
     # The core 'install_requires' should only be things
     # which are needed for the main editor to function.
-    # Anything which is used by a mode should listed
-    # below under modes
     #
     'PyQt5==5.13.2;"arm" not in platform_machine',
     'QScintilla==2.11.3;"arm" not in platform_machine',
     'PyQtChart==5.13.1;"arm" not in platform_machine',
+    #
+    # FIXME: Maybe should be in a mode?
+    # qtconsole, pyserial
+    #
+    "qtconsole==4.7.4",
+    "pyserial==3.4",
     # `flake8` is actually a testing/packaging dependency that, among other
     # packages, brings in `pycodestyle` and `pyflakes` which are runtime
     # dependencies. For the sake of "locality", it is being declared here,
@@ -55,19 +59,6 @@ install_requires = [
 
 
 extras_require = {
-    #
-    # The 'modes' extras should include anything needed by
-    # any mode. If this gets traction, we could add these as
-    # something within the mode file itself which gets installed
-    # on demand
-    #
-    "modes": [
-        "pgzero",
-        "Flask==1.1.2",
-        "pyserial==3.4",
-        "qtconsole==4.7.4",
-        "nudatus>=0.0.3",
-    ],
     "tests": [
         "pytest",
         "pytest-cov",
@@ -97,7 +88,6 @@ extras_require["dev"] = (
     extras_require["tests"]
     + extras_require["docs"]
     + extras_require["package"]
-    + extras_require["modes"]
 )
 
 extras_require["all"] = list(
@@ -122,6 +112,7 @@ setup(
         "mu.debugger",
         "mu.interface",
         "mu.modes.api",
+        "mu.wheels",
     ],
     install_requires=install_requires,
     extras_require=extras_require,
