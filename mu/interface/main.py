@@ -61,6 +61,7 @@ from mu.interface.panes import (
     PythonProcessPane,
     JupyterREPLPane,
     MicroPythonREPLPane,
+    MicroPythonFileSystemPane,
     FileSystemPane,
     PlotterPane,
 )
@@ -578,6 +579,44 @@ class Window(QMainWindow):
         file_manager.on_get_fail.connect(self.fs_pane.on_get_fail)
         self.connect_zoom(self.fs_pane)
         return self.fs_pane
+
+
+    def add_micropython_filesystem(self, home, file_manager, board_name="board"):
+        """
+        Adds MicroPython file system pane to the application.
+        """
+        self.fs_pane = MicroPythonFileSystemPane(home)
+
+        @self.fs_pane.open_file.connect
+        def on_open_file(file):
+            # Bubble the signal up
+            self.open_file.emit(file)
+
+        self.fs = QDockWidget(_("Filesystem on ") + board_name)
+        self.fs.setWidget(self.fs_pane)
+        self.fs.setFeatures(QDockWidget.DockWidgetMovable)
+        self.fs.setAllowedAreas(Qt.BottomDockWidgetArea)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.fs)
+        self.fs_pane.setFocus()
+        file_manager.on_list_files.connect(self.fs_pane.on_tree)
+        self.fs_pane.list_files.connect(file_manager.tree)
+        self.fs_pane.mpy_fs.put.connect(file_manager.put)
+        self.fs_pane.mpy_fs.delete.connect(file_manager.delete)
+        self.fs_pane.mpy_fs.list_files.connect(file_manager.tree)
+        self.fs_pane.local_fs.get.connect(file_manager.get)
+        self.fs_pane.local_fs.list_files.connect(file_manager.tree)
+        file_manager.on_put_file.connect(self.fs_pane.mpy_fs.on_put)
+        file_manager.on_delete_file.connect(
+            self.fs_pane.mpy_fs.on_delete
+        )
+        file_manager.on_get_file.connect(self.fs_pane.local_fs.on_get)
+        file_manager.on_list_fail.connect(self.fs_pane.on_tree_fail)
+        file_manager.on_put_fail.connect(self.fs_pane.on_put_fail)
+        file_manager.on_delete_fail.connect(self.fs_pane.on_delete_fail)
+        file_manager.on_get_fail.connect(self.fs_pane.on_get_fail)
+        self.connect_zoom(self.fs_pane)
+        return self.fs_pane
+
 
     def add_micropython_repl(self, port, name, force_interrupt=True):
         """

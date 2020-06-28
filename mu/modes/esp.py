@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-from mu.modes.base import MicroPythonMode, FileManager
+from mu.modes.base import MicroPythonMode, MicroPythonFileManager
 from mu.modes.api import ESP_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QThread
@@ -226,7 +226,7 @@ class ESPMode(MicroPythonMode):
             self.view.show_message(message, information)
             return
         self.file_manager_thread = QThread(self)
-        self.file_manager = FileManager(device_port)
+        self.file_manager = MicroPythonFileManager(device_port)
         self.file_manager.moveToThread(self.file_manager_thread)
         self.file_manager_thread.started.connect(self.file_manager.on_start)
 
@@ -236,7 +236,7 @@ class ESPMode(MicroPythonMode):
             path = os.path.dirname(os.path.abspath(self.view.current_tab.path))
         else:
             path = self.workspace_dir()
-        self.fs = self.view.add_filesystem(
+        self.fs = self.view.add_micropython_filesystem(
             path, self.file_manager, _("ESP board")
         )
         self.fs.set_message.connect(self.editor.show_status_message)
