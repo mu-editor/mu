@@ -46,6 +46,8 @@ from PyQt5.QtWidgets import (
     QMenu,
     QApplication,
     QTreeView,
+    QTreeWidget,
+    QTreeWidgetItem,
 )
 from PyQt5.QtGui import (
     QKeySequence,
@@ -633,6 +635,338 @@ class LocalFileList(MuFileList):
         elif action == write_to_main_action:
             path = os.path.join(self.home, local_filename)
             self.put.emit(path, "main.py")
+
+
+class MuFileTree(QTreeWidget):
+    """
+    Contains shared methods for the two types of file listing used in Mu.
+    """
+
+    disable = pyqtSignal()
+    list_files = pyqtSignal()
+    set_message = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.setHeaderHidden(True)
+
+    def show_confirm_overwrite_dialog(self):
+        """
+        Display a dialog to check if an existing file should be overwritten.
+
+        Returns a boolean indication of the user's decision.
+        """
+        msg = QMessageBox(self)
+        msg.setIcon(QMessageBox.Information)
+        msg.setText(_("File already exists; overwrite it?"))
+        msg.setWindowTitle(_("File already exists"))
+        msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        return msg.exec_() == QMessageBox.Ok
+
+
+class MicroPythonDeviceFileTree(MuFileTree):
+    """
+    Represents a tree of files on a MicroPython device.
+    """
+
+    put = pyqtSignal(str, str)
+    delete = pyqtSignal(str)
+
+    def __init__(self, home):
+        super().__init__()
+        self.home = home
+        self.setDragDropMode(QListWidget.DragDrop)
+
+    def dropEvent(self, event):
+        source = event.source()
+        if isinstance(source, LocalFileList):
+            # Make drop path
+            drop_path = []
+
+            target = self.itemAt(event.pos())
+
+            target_item = None
+            if target is not None:
+                if target.childCount() != 0:
+                    drop_path.insert(0, target.text(0))
+                    if target_item is None:
+                        target_item = target
+                while target.parent() is not None:
+                    target = target.parent()
+                    drop_path.insert(0, target.text(0))
+                    if target_item is None:
+                        target_item = target
+
+            target_path = "/".join(drop_path)
+
+            # Check file exist
+            file_exists = False
+            if target_item is None:
+                file_exists = self.findItems(
+                    source.currentItem().text(), Qt.MatchExactly
+                )
+            else:
+                for i in range(target_item.childCount()):
+                    if source.currentItem().text() == target_item.child(
+                        i
+                    ).text(0):
+                        file_exists = True
+
+            # Copy file
+            if (not file_exists) or (
+                file_exists and self.show_confirm_overwrite_dialog()
+            ):
+                self.disable.emit()
+                local_filename = os.path.join(
+                    self.home, source.currentItem().text()
+                )
+
+                msg = _("Copying '{}' to device.").format(local_filename)
+                logger.info(msg)
+                self.set_message.emit(msg)
+                self.put.emit(local_filename, target_path)
+
+    def on_put(self, device_file):
+        """
+        Fired when the put event is completed for the given filename.
+        """
+        self.list_files.emit()
+        # msg = _("'{}' successfully copied to device.").format(device_file)
+        # self.set_message.emit(msg)
+
+    def contextMenuEvent(self, event):
+        menu = QMenu(self)
+        delete_action = menu.addAction(_("Delete (cannot be undone)"))
+        action = menu.exec_(self.mapToGlobal(event.pos()))
+        if action == delete_action:
+
+            # device_filename = self.currentItem().text(0)
+            # Make drop path
+            drop_path = []
+            target = self.currentItem()
+            filename = target.text(0)
+            if target.childCount() != 0:
+                self.set_message.emit(_("Can't delete folder."))
+                return
+
+            self.disable.emit()
+            while target.parent() is not None:
+                target = target.parent()
+                drop_path.insert(0, target.text(0))
+            target_path = "/".join(drop_path)
+            device_filename = target_path + "/" + filename
+
+            logger.info("Deleting {}".format(device_filename))
+            msg = _("Deleting '{}' from device.").format(device_filename)
+            logger.info(msg)
+            self.set_message.emit(msg)
+            self.delete.emit(device_filename)
+
+    def on_delete(self, device_file):
+        """
+        Fired when the delete event is completed for the given filename.
+        """
+        self.list_files.emit()
+        # msg = _("'{}' successfully deleted from device.").format(device_file)
+        # self.set_message.emit(msg)
+
+
+class MicroPythonFileSystemPane(QFrame):
+    """
+    Contains two QListWidgets representing the Mpy device and the user's
+    code directory. Users transfer files by dragging and dropping.
+    Highlighted files can be selected for deletion.
+    """
+
+    set_message = pyqtSignal(str)
+    set_warning = pyqtSignal(str)
+    list_files = pyqtSignal()
+    open_file = pyqtSignal(str)
+
+    def __init__(self, home):
+        super().__init__()
+        self.home = home
+        self.font = Font().load()
+        mpy_fs = MicroPythonDeviceFileTree(home)
+        local_fs = MicroPythonLocalFileList(home)
+
+        @local_fs.open_file.connect
+        def on_open_file(file):
+            # Bubble the signal up
+            self.open_file.emit(file)
+
+        layout = QGridLayout()
+        self.setLayout(layout)
+        mpy_label = QLabel()
+        mpy_label.setText(_("Files on your device:"))
+        local_label = QLabel()
+        local_label.setText(_("Files on your computer:"))
+        self.mpy_label = mpy_label
+        self.local_label = local_label
+        self.mpy_fs = mpy_fs
+        self.local_fs = local_fs
+        self.set_font_size()
+        layout.addWidget(mpy_label, 0, 0)
+        layout.addWidget(local_label, 0, 1)
+        layout.addWidget(mpy_fs, 1, 0)
+        layout.addWidget(local_fs, 1, 1)
+        self.mpy_fs.disable.connect(self.disable)
+        self.mpy_fs.set_message.connect(self.show_message)
+        self.local_fs.disable.connect(self.disable)
+        self.local_fs.set_message.connect(self.show_message)
+
+    def disable(self):
+        """
+        Stops interaction with the list widgets.
+        """
+        self.mpy_fs.setDisabled(True)
+        self.local_fs.setDisabled(True)
+        self.mpy_fs.setAcceptDrops(False)
+        self.local_fs.setAcceptDrops(False)
+
+    def enable(self):
+        """
+        Allows interaction with the list widgets.
+        """
+        self.mpy_fs.setDisabled(False)
+        self.local_fs.setDisabled(False)
+        self.mpy_fs.setAcceptDrops(True)
+        self.local_fs.setAcceptDrops(True)
+
+    def show_message(self, message):
+        """
+        Emits the set_message signal.
+        """
+        self.set_message.emit(message)
+
+    def show_warning(self, message):
+        """
+        Emits the set_warning signal.
+        """
+        self.set_warning.emit(message)
+
+    def on_tree(self, mpy_files):
+        """
+        Displays a tree of the files on the ESP32.
+
+        Since tree of files is always the final event in any interaction
+        between Mu and the ESP32, this enables the controls again
+        for further interactions to take place.
+        """
+        self.mpy_fs.clear()
+        self.local_fs.clear()
+
+        items = []
+        for item in mpy_files:
+            item_parts = item.split("/")
+            item_parts.pop(0)
+
+            entry = QTreeWidgetItem(None, [item_parts[0]])
+            items_text = [i.text(0) for i in items]
+            if entry.text(0) not in items_text:
+                parent_item = entry
+            else:
+                parent_index = items_text.index(entry.text(0))
+                parent_item = items[parent_index]
+
+            if len(item_parts) > 1:
+                for i in item_parts[1:]:
+                    child_item = QTreeWidgetItem(None, [i])
+                    child_list_text = [
+                        parent_item.child(i).text(0)
+                        for i in range(parent_item.childCount())
+                    ]
+
+                    if child_item.text(0) in child_list_text:
+                        child_index = child_list_text.index(child_item.text(0))
+                        parent_item = parent_item.child(child_index)
+                    else:
+                        parent_item.addChild(child_item)
+                        parent_item = child_item
+
+            items.append(entry) if entry.text(0) not in items_text else None
+
+        self.mpy_fs.addTopLevelItems(items)
+
+        local_files = [
+            f
+            for f in os.listdir(self.home)
+            if os.path.isfile(os.path.join(self.home, f))
+        ]
+        local_files.sort()
+        for f in local_files:
+            self.local_fs.addItem(f)
+        self.enable()
+
+    def on_tree_fail(self):
+        """
+        Fired when tree of  files fails.
+        """
+        self.show_warning(
+            _(
+                "There was a problem getting the tree of files on "
+                "the device. Please check Mu's logs for "
+                "technical information. Alternatively, try "
+                "unplugging/plugging-in your device and/or "
+                "restarting Mu."
+            )
+        )
+        self.disable()
+
+    def on_put_fail(self, filename):
+        """
+        Fired when the referenced file cannot be copied onto the device.
+        """
+        self.show_warning(
+            _(
+                "There was a problem copying the file '{}' onto "
+                "the device. Please check Mu's logs for "
+                "more information."
+            ).format(filename)
+        )
+
+    def on_delete_fail(self, filename):
+        """
+        Fired when a deletion on the device for the given file failed.
+        """
+        self.show_warning(
+            _(
+                "There was a problem deleting '{}' from the "
+                "device. Please check Mu's logs for "
+                "more information."
+            ).format(filename)
+        )
+
+    def on_get_fail(self, filename):
+        """
+        Fired when getting the referenced file on the device failed.
+        """
+        self.show_warning(
+            _(
+                "There was a problem getting '{}' from the "
+                "device. Please check Mu's logs for "
+                "more information."
+            ).format(filename)
+        )
+
+    def set_theme(self, theme):
+        pass
+
+    def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
+        """
+        Sets the font size for all the textual elements in this pane.
+        """
+        self.font.setPointSize(new_size)
+        self.mpy_label.setFont(self.font)
+        self.local_label.setFont(self.font)
+        self.mpy_fs.setFont(self.font)
+        self.local_fs.setFont(self.font)
+
+    def set_zoom(self, size):
+        """
+        Set the current zoom level given the "t-shirt" size.
+        """
+        self.set_font_size(PANE_ZOOM_SIZES[size])
 
 
 class FileSystemPane(QFrame):
@@ -1501,3 +1835,48 @@ class PlotterPane(QChartView):
             self.chart.setTheme(QChart.ChartThemeDark)
         else:
             self.chart.setTheme(QChart.ChartThemeHighContrast)
+
+class MicroPythonLocalFileList(LocalFileList):
+    """
+    Override dropEvent method for drag and drop between QListWidget
+    and QTreeWidget.
+    """
+
+    def dropEvent(self, event):
+        source = event.source()
+
+        if source.currentItem().childCount() != 0:
+            self.set_message.emit(_("File only"))
+            return
+
+        if isinstance(source, MicroPythonDeviceFileTree):
+            file_exists = self.findItems(
+                source.currentItem().text(0), Qt.MatchExactly
+            )
+            if (
+                not file_exists
+                or file_exists
+                and self.show_confirm_overwrite_dialog()
+            ):
+                self.disable.emit()
+
+                # Make source path
+                src_path = []
+                src = source.currentItem()
+                while src.parent() is not None:
+                    src = src.parent()
+                    src_path.insert(0, src.text(0))
+
+                src_path = "/".join(src_path)
+
+                mpy_path_filename = (
+                    src_path + "/" + source.currentItem().text(0)
+                )
+                mpy_filename = source.currentItem().text(0)
+                local_filename = os.path.join(self.home, mpy_filename)
+                msg = _(
+                    "Getting '{}' from ESP32. " "Copying to '{}'."
+                ).format(mpy_path_filename, local_filename)
+                logger.info(msg)
+                self.set_message.emit(msg)
+                self.get.emit(mpy_path_filename, local_filename)
