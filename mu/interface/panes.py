@@ -209,7 +209,6 @@ class MicroPythonREPLPane(QTextEdit):
         pass
 
     def send(self, msg):
-        logger.debug("MicroPython REPL, writing to serial: {}".format(msg))
         self.serial.write(msg)
 
     def keyPressEvent(self, data):
@@ -358,9 +357,6 @@ class MicroPythonREPLPane(QTextEdit):
         Updates the self.device_cursor_position to match that of the device
         for every input received.
         """
-        logger.debug(
-            "MicroPython REPL, received through serial: {}".format(data)
-        )
         i = 0
         data = self.decoder.decode(data)
         if len(self.unprocessed_input) > 0:
