@@ -782,14 +782,14 @@ def test_MicroPythonREPLPane_process_bytes_partial_reception():
     # Receive: \x1B
     bs = b"\x1B"
     rp.process_bytes(bs)
-    assert rp.unprocessed_input == b"\x1B"
+    assert rp.unprocessed_input == "\x1B"
     assert rp.toPlainText() == "Hello world!"
     assert rp.textCursor().position() == 5
     assert rp.device_cursor_position == 5
     # Receive [4C - 4 times right
     bs = b"[4C"
     rp.process_bytes(bs)
-    assert rp.unprocessed_input == b""
+    assert rp.unprocessed_input == ""
     assert rp.toPlainText() == "Hello world!"
     assert rp.textCursor().position() == 9
     assert rp.device_cursor_position == 9
@@ -809,14 +809,14 @@ def test_MicroPythonREPLPane_process_bytes_partial_reception2():
     # Receive: \x1B
     bs = b"\x1B["
     rp.process_bytes(bs)
-    assert rp.unprocessed_input == b"\x1B["
+    assert rp.unprocessed_input == "\x1B["
     assert rp.toPlainText() == "Hello world!"
     assert rp.textCursor().position() == 5
     assert rp.device_cursor_position == 5
     # Receive 4C - 4 times right
     bs = b"4C"
     rp.process_bytes(bs)
-    assert rp.unprocessed_input == b""
+    assert rp.unprocessed_input == ""
     assert rp.toPlainText() == "Hello world!"
     assert rp.textCursor().position() == 9
     assert rp.device_cursor_position == 9

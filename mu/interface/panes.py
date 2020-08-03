@@ -26,6 +26,8 @@ import signal
 import string
 import bisect
 import os.path
+import codecs
+
 from PyQt5.QtCore import (
     Qt,
     QProcess,
@@ -174,6 +176,7 @@ class MicroPythonREPLPane(QTextEdit):
         self.setObjectName("replpane")
         self.set_theme(theme)
         self.unprocessed_input = b""  # used by process_bytes
+        self.decoder = codecs.getincrementaldecoder("utf8")()
 
     def paste(self):
         """
@@ -359,10 +362,11 @@ class MicroPythonREPLPane(QTextEdit):
             "MicroPython REPL, received through serial: {}".format(data)
         )
         i = 0
+        data = self.decoder.decode(data)
         if len(self.unprocessed_input) > 0:
             # Prepend bytes from last time, that wasn't processed
             data = self.unprocessed_input + data
-            self.unprocessed_input = b""
+            self.unprocessed_input = ""
 
         # Reset cursor. E.g. if doing a selection, the qt cursor and
         # device cursor will not match, we reset it here to make sure
@@ -372,21 +376,21 @@ class MicroPythonREPLPane(QTextEdit):
         tc = self.textCursor()
 
         while i < len(data):
-            if data[i] == 8:  # \b
+            if ord(data[i]) == 8:  # \b
                 tc.movePosition(QTextCursor.Left)
                 self.device_cursor_position = tc.position()
-            elif data[i] == 13:  # \r
+            elif ord(data[i]) == 13:  # \r
                 # Carriage return. Do nothing, we handle newlines when
                 # reading \n
                 pass
-            elif data[i] == 27:
+            elif ord(data[i]) == 27:
                 # Escape
-                if len(data) > i + 1 and data[i + 1] == 91:
+                if len(data) > i + 1 and ord(data[i + 1]) == 91:
                     # VT100 cursor detected: <Esc>[
                     regex = (
                         r"\x1B\[(?P<count>[\d]*)(;?[\d]*)*(?P<action>[A-Za-z])"
                     )
-                    match = re.search(regex, data[i:].decode("utf-8"))
+                    match = re.search(regex, data[i:])
                     if match:
                         # move to (almost) after control seq
                         # (will ++ at end of loop)
@@ -430,17 +434,17 @@ class MicroPythonREPLPane(QTextEdit):
                     # bytes are received to determine what to do
                     self.unprocessed_input = data[i:]
                     break
-            elif data[i] == 10:  # \n - newline
+            elif ord(data[i]) == 10:  # \n - newline
                 tc.movePosition(QTextCursor.End)
                 self.device_cursor_position = tc.position() + 1
                 self.setTextCursor(tc)
-                self.insertPlainText(chr(data[i]))
+                self.insertPlainText(data[i])
             else:
                 # Char received, with VT100 that should be interpreted
                 # as overwrite the char in front of the cursor
                 tc.deleteChar()
                 self.device_cursor_position = tc.position() + 1
-                self.insertPlainText(chr(data[i]))
+                self.insertPlainText(data[i])
             self.setTextCursor(tc)
             i += 1
         # Scroll textarea if necessary to see cursor
