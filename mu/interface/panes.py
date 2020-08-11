@@ -177,6 +177,9 @@ class MicroPythonREPLPane(QTextEdit):
         self.set_theme(theme)
         self.unprocessed_input = b""  # used by process_bytes
         self.decoder = codecs.getincrementaldecoder("utf8")()
+        self.vt100_regex = re.compile(
+            r"\x1B\[(?P<count>[\d]*)(;?[\d]*)*(?P<action>[A-Za-z])"
+        )
 
     def paste(self):
         """
@@ -372,21 +375,18 @@ class MicroPythonREPLPane(QTextEdit):
         tc = self.textCursor()
 
         while i < len(data):
-            if ord(data[i]) == 8:  # \b
+            if data[i] == "\b":
                 tc.movePosition(QTextCursor.Left)
                 self.device_cursor_position = tc.position()
-            elif ord(data[i]) == 13:  # \r
+            elif data[i] == "\r":
                 # Carriage return. Do nothing, we handle newlines when
                 # reading \n
                 pass
-            elif ord(data[i]) == 27:
+            elif data[i] == "\x1b":
                 # Escape
-                if len(data) > i + 1 and ord(data[i + 1]) == 91:
+                if len(data) > i + 1 and data[i + 1] == "[":
                     # VT100 cursor detected: <Esc>[
-                    regex = (
-                        r"\x1B\[(?P<count>[\d]*)(;?[\d]*)*(?P<action>[A-Za-z])"
-                    )
-                    match = re.search(regex, data[i:])
+                    match = self.vt100_regex.search(data[i:])
                     if match:
                         # move to (almost) after control seq
                         # (will ++ at end of loop)
@@ -430,7 +430,7 @@ class MicroPythonREPLPane(QTextEdit):
                     # bytes are received to determine what to do
                     self.unprocessed_input = data[i:]
                     break
-            elif ord(data[i]) == 10:  # \n - newline
+            elif data[i] == "\n":
                 tc.movePosition(QTextCursor.End)
                 self.device_cursor_position = tc.position() + 1
                 self.setTextCursor(tc)
