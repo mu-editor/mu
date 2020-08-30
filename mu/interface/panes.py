@@ -785,7 +785,6 @@ class PythonProcessPane(QTextEdit):
                 env.insert(name, value)
         logger.info("Working directory: {}".format(working_directory))
         self.process.setWorkingDirectory(working_directory)
-        self.process.setProcessEnvironment(env)
         self.process.readyRead.connect(self.try_read_from_stdout)
         self.process.finished.connect(self.finished)
         logger.info("Python path: {}".format(sys.path))
@@ -795,6 +794,14 @@ class PythonProcessPane(QTextEdit):
             mu_dir = os.path.abspath(parent_dir)
             runner = os.path.join(mu_dir, "mu-debug.py")
             args = [runner, self.script] + command_args
+            #
+            # The runtime virtualenvironment doesn't include Mu
+            # itself (by design). But the debugger needs mu in
+            # order to run, so we temporarily set the PYTHONPATH
+            # to point to Mu's own directory
+            #
+            env.insert("PYTHONPATH", mu_dir)
+            self.process.setProcessEnvironment(env)
             self.process.start(interpreter, args)
         else:
             args = []
@@ -808,6 +815,7 @@ class PythonProcessPane(QTextEdit):
             if python_args:
                 args = python_args + args
             logger.info("Args: {}".format(args))
+            self.process.setProcessEnvironment(env)
             self.process.start(interpreter, args)
             self.running = True
 
