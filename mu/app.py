@@ -98,12 +98,8 @@ def setup_modes(editor, view):
         "esp": ESPMode(editor, view, venv),
         "web": WebMode(editor, view, venv),
         "debugger": DebugMode(editor, view, venv),
+        "pygamezero" : PyGameZeroMode(editor, view, venv)
     }
-
-    # Check if pgzero is available (without importing it)
-    # FIXME: this would need to change for mode-specific virtual environments
-    if any([m for m in pkgutil.iter_modules() if "pgzero" in m]):
-        modes["pygamezero"] = PyGameZeroMode(editor, view, venv)
 
     # return available modes
     return modes
