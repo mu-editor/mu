@@ -102,6 +102,9 @@ TKINTER_ASSETS_URLS = {
     "32": URL + "0.3/pynsist_tkinter_3.6_32bit.zip",
     "64": URL + "0.3/pynsist_tkinter_3.6_64bit.zip",
 }
+PYTHON_URL = "https://www.python.org/ftp/python/"
+
+STDLIB_PACKAGES = {"venv", "ensurepip"}
 mode_dependencies = [
     "flask",
     "pgzero",
@@ -287,6 +290,24 @@ def unzip_file(filename, target_directory):
         z.extractall(target_directory)
 
 
+def vendor_in_from_python(package_name, destination_dir):
+    """
+    From the current Python environment, vendor in a stdlib package
+    which is not present in the embedded zip
+
+    FIXME: ideally this should actually involve copying a version
+    which matches the version of embedded Python we're using. Maybe
+    download the current .zip?
+    """
+    package = __import__(package_name)
+    for path in package.__path__:
+        shutil.copytree(
+            path,
+            os.path.join(destination_dir, package_name),
+            dirs_exist_ok=True,
+        )
+
+
 def run(bitness, repo_root):
     """
     Given a certain bitness and the Mu's repository root directory, generate
@@ -295,6 +316,7 @@ def run(bitness, repo_root):
     """
     with tempfile.TemporaryDirectory(prefix="mu-pynsist-") as work_dir:
         print("Temporary working directory at", work_dir)
+        os.startfile(work_dir)
         #
         # Create and switch to the temporary directory so we don't get
         # interference from the *local* mu package
@@ -325,6 +347,11 @@ def run(bitness, repo_root):
 
         print("Unzipping tkinter assets to", work_dir)
         unzip_file(filename, work_dir)
+
+        print("Copying across stdlib packages...")
+        for package in STDLIB_PACKAGES:
+            print("Vendoring in", package)
+            vendor_in_from_python(package, work_dir)
 
         print("Installing pynsist.")
         subprocess_run([venv_python, "-m", "pip", "install", PYNSIST_REQ])

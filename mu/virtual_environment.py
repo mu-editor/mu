@@ -5,6 +5,7 @@ import logging
 import subprocess
 
 import encodings
+
 python36_zip = os.path.dirname(encodings.__path__[0])
 del encodings
 
@@ -123,23 +124,25 @@ class VirtualEnvironment(object):
         # next to the executable's directory as there is in the
         # full distribution
         #
-        source_dir = os.path.dirname(os.path.abspath(sys.executable))
-        DLLs_dirpath = os.path.join(source_dir, "DLLs")
-        if not os.path.exists(DLLs_dirpath):
-            logger.debug(
-                "No DLLs directory at %s; creating it for virtualenv",
-                DLLs_dirpath,
-            )
-            os.mkdir(DLLs_dirpath)
+        # ~ source_dir = os.path.dirname(os.path.abspath(sys.executable))
+        # ~ DLLs_dirpath = os.path.join(source_dir, "DLLs")
+        # ~ if not os.path.exists(DLLs_dirpath):
+        # ~ logger.debug(
+        # ~ "No DLLs directory at %s; creating it for virtualenv",
+        # ~ DLLs_dirpath,
+        # ~ )
+        # ~ os.mkdir(DLLs_dirpath)
 
         #
         # Using subprocess.run rather than virtualenv.cli_run because
         # the latter appears to suppress logging for our process!
         #
         env = dict(os.environ)
-        from pprint import pprint; pprint(env)
+        from pprint import pprint
+
+        pprint(env)
         subprocess.run(
-            [sys.executable, "-m", "virtualenv", self.path], check=True, env=env
+            [sys.executable, "-m", "venv", self.path], check=True, env=env
         )
         # Set the path to the interpreter
         self.find_interpreter()

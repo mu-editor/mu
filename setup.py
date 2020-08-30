@@ -44,14 +44,6 @@ install_requires = [
     "semver>=2.8.0",
     'black>=19.10b0;python_version > "3.5"',
     #
-    # Include virtualenv and related support for pre-3.8
-    # The embedded Python download we use doesn't include
-    # the stdlib venv.
-    #
-    "virtualenv",
-    "importlib_metadata",
-    "importlib_resources",
-    #
     # Needed for packaging
     #
     "wheel",
