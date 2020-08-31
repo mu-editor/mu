@@ -58,7 +58,7 @@ from PyQt5.QtGui import (
     QStandardItem,
 )
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
-from mu import language_code
+from ..i18n import language_code
 from mu.interface.themes import Font
 from mu.interface.themes import DEFAULT_FONT_SIZE
 

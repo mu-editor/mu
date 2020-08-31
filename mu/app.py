@@ -29,7 +29,8 @@ import sys
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
-from mu import __version__, language_code
+from . import i18n
+from mu import __version__
 from mu.logic import Editor, LOG_FILE, LOG_DIR, ENCODING
 from mu.interface import Window
 from mu.resources import load_pixmap, load_icon
@@ -103,7 +104,6 @@ def setup_modes(editor, view):
     # return available modes
     return modes
 
-
 def run():
     """
     Creates all the top-level assets for the application, sets things up and
@@ -119,7 +119,7 @@ def run():
     logging.info("\n\n-----------------\n\nStarting Mu {}".format(__version__))
     logging.info(platform.uname())
     logging.info("Python path: {}".format(sys.path))
-    logging.info("Language code: {}".format(language_code))
+    logging.info("Language code: {}".format(i18n.language_code))
 
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)

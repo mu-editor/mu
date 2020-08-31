@@ -37,9 +37,10 @@ from PyQt5.QtCore import QLocale
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
 
-from mu.resources import path
-from mu.debugger.utils import is_breakpoint_line
-from mu import __version__
+from . import i18n
+from .resources import path
+from .debugger.utils import is_breakpoint_line
+from . import __version__
 from . import virtual_environment
 
 # The user's home directory.
@@ -1171,10 +1172,9 @@ class Editor:
         """
         Display browser based help about Mu.
         """
-        language_code = QLocale.system().name()[:2]
         major_version = ".".join(__version__.split(".")[:2])
         url = "https://codewith.mu/{}/help/{}".format(
-            language_code, major_version
+            i18n.language_code[:2], major_version
         )
         logger.info("Showing help at %r.", url)
         webbrowser.open_new(url)
