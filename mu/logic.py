@@ -37,11 +37,11 @@ from PyQt5.QtCore import QLocale
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
 
+from . import __version__
 from . import i18n
+from . import virtual_environment
 from .resources import path
 from .debugger.utils import is_breakpoint_line
-from . import __version__
-from . import virtual_environment
 
 # The user's home directory.
 HOME_DIRECTORY = os.path.expanduser("~")
