@@ -140,14 +140,13 @@ class VirtualEnvironment(object):
         env = dict(os.environ)
         from pprint import pprint
 
-        pprint(env)
         subprocess.run(
             [sys.executable, "-m", "venv", self.path], check=True, env=env
         )
         # Set the path to the interpreter
         self.find_interpreter()
-        # Upgrade pip
-        logger.debug(self.pip("install", "--upgrade", "pip"))
+        # Don't upgrade pip yet; we might not have internet access
+        #~ logger.debug(self.pip("install", "--upgrade", "pip"))
         self.install_baseline_packages()
         self.install_jupyter_kernel()
 

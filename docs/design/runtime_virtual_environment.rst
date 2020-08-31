@@ -53,6 +53,17 @@ might help solve some of the other issues. After a few merges to get some
 changes in, especially those by @tmontes to the installer, we started PR#1072
 https://github.com/mu-editor/mu/pull/1072.
 
+There is now a `virtual_environment.py` module which initially brings together
+various pieces of code which were scattered around the codebase and adds
+support for creating and installing into a virtual environment. The various
+places where the user code is run (mostly within the `modes` package, but including
+inside `panes.py`) have been updated to use this virtual environment logic.
+Possible future work might involve adding a "run process" method to the class
+itself.
+
+As far as possible this should remove the need to hack up special `PYTHONPATH`,
+`*.pth` and `site.py` logic.
+
 Implemented via:
 ~~~~~~~~~~~~~~~~
 
