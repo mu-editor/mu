@@ -190,9 +190,11 @@ class VirtualEnvironment(object):
         # For dev purposes (where we might not have the wheels) bomb
         # out if there are no wheels and suggest how to get them there...
         #
-        wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, '*.whl'))
+        wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
         if not wheel_filepaths:
-            raise RuntimeError("No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath)
+            raise RuntimeError(
+                "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
+            )
         self.pip("install", *wheel_filepaths)
 
     def install_user_packages(self, packages):
