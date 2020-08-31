@@ -2,6 +2,7 @@ import os
 import gettext
 
 from PyQt5.QtCore import QLocale
+
 # DEBUG/TRANSLATE: override the language code here (e.g. to Chinese).
 # language_code = 'zh'
 language_code = QLocale.system().name()

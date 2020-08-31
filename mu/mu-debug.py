@@ -15,6 +15,7 @@ if sys.platform == "win32" and "pythonw.exe" in sys.executable:
     if os.path.exists(path_to_add):
         sys.path.append(path_to_add)
 
+
 def debug():
     """
     Create a debug runner in a new process.

@@ -23,7 +23,6 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
 import platform
-import pkgutil
 import sys
 
 from PyQt5.QtCore import QTimer, Qt
@@ -98,11 +97,12 @@ def setup_modes(editor, view):
         "esp": ESPMode(editor, view, venv),
         "web": WebMode(editor, view, venv),
         "debugger": DebugMode(editor, view, venv),
-        "pygamezero" : PyGameZeroMode(editor, view, venv)
+        "pygamezero": PyGameZeroMode(editor, view, venv),
     }
 
     # return available modes
     return modes
+
 
 def run():
     """
@@ -174,5 +174,3 @@ def run():
 
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
-
-

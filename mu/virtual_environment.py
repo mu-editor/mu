@@ -1,6 +1,5 @@
 import os
 import sys
-import glob
 import logging
 import subprocess
 
@@ -90,8 +89,7 @@ class VirtualEnvironment(object):
         logger.info("Interpreter found at %s", self.interpreter)
 
     def ensure(self):
-        """Ensure that a virtual environment exists, creating it if needed
-        """
+        """Ensure that a virtual environment exists, creating it if needed"""
         if not os.path.exists(self.path):
             logger.debug("%s does not exist; creating", self.path)
             self.create()
@@ -138,7 +136,6 @@ class VirtualEnvironment(object):
         # the latter appears to suppress logging for our process!
         #
         env = dict(os.environ)
-        from pprint import pprint
 
         subprocess.run(
             [sys.executable, "-m", "venv", self.path], check=True, env=env
@@ -146,7 +143,7 @@ class VirtualEnvironment(object):
         # Set the path to the interpreter
         self.find_interpreter()
         # Don't upgrade pip yet; we might not have internet access
-        #~ logger.debug(self.pip("install", "--upgrade", "pip"))
+        # ~ logger.debug(self.pip("install", "--upgrade", "pip"))
         self.install_baseline_packages()
         self.install_jupyter_kernel()
 
@@ -178,7 +175,6 @@ class VirtualEnvironment(object):
 
         --upgrade is currently used with a thought to upgrade-releases of Mu
         """
-        ##"pip install --force-reinstall --ignore-installed --upgrade --find-links=mu\wheels pgzero"
         logger.info("Installing baseline packages")
         logger.info(
             "%s %s",

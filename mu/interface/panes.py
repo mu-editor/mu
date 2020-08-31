@@ -801,7 +801,9 @@ class PythonProcessPane(QTextEdit):
             # order to run, so we temporarily set the PYTHONPATH
             # to point to Mu's own directory
             #
-            env.insert("PYTHONPATH", os.path.abspath(os.path.join(mu_dir, "..")))
+            env.insert(
+                "PYTHONPATH", os.path.abspath(os.path.join(mu_dir, ".."))
+            )
             self.process.setProcessEnvironment(env)
             self.process.start(interpreter, args)
         else:

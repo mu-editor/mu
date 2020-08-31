@@ -230,7 +230,8 @@ def create_pynsist_cfg(python, repo_root, filename, encoding="latin1"):
     license_file = os.path.join(repo_root, "LICENSE")
 
     #
-    # Seems that the Mu package name is "mu-editor @ file:///C:/work-in-progress/mu"
+    # Seems that the Mu package name is
+    # "mu-editor @ file:///C:/work-in-progress/mu"
     #
     print("mu_package_name=", mu_package_name)
     requirements = []
