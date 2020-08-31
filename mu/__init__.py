@@ -1,13 +1,13 @@
 import gettext
 import os
 
-from PyQt5.QtCore import QLocale
+## FIXME -- from PyQt5.QtCore import QLocale
 
 
 # Configure locale and language
 # Define where the translation assets are to be found.
 localedir = os.path.abspath(os.path.join(os.path.dirname(__file__), "locale"))
-language_code = QLocale.system().name()
+language_code = "en" ## FIXME -- QLocale.system().name()
 # DEBUG/TRANSLATE: override the language code here (e.g. to Chinese).
 # language_code = 'zh'
 gettext.translation(
