@@ -33,6 +33,7 @@ class DebugMode(BaseMode):
     """
 
     name = _("Graphical Debugger")
+    short_name = "debugger"
     description = _("Debug your Python 3 code.")
     icon = "python"
     runner = None

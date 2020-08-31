@@ -148,8 +148,7 @@ def flake8(*flake8_args):
 
 @export
 def tidy():
-    """Tidy code with the 'black' formatter.
-    """
+    """Tidy code with the 'black' formatter."""
     print("\nTidy")
     for target in [
         "setup.py",
@@ -168,8 +167,7 @@ def tidy():
 
 @export
 def check():
-    """Run all the checkers and tests
-    """
+    """Run all the checkers and tests"""
     print("\nCheck")
     funcs = [clean, tidy, flake8, coverage]
     for func in funcs:
@@ -181,8 +179,7 @@ def check():
 
 @export
 def clean():
-    """Reset the project and remove auto-generated assets
-    """
+    """Reset the project and remove auto-generated assets"""
     print("\nClean")
     _rmtree("build")
     _rmtree("dist")
@@ -196,8 +193,7 @@ def clean():
 
 @export
 def translate():
-    """Translate
-    """
+    """Translate"""
     if not os.path.exists(PYGETTEXT):
         raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
 
@@ -212,8 +208,7 @@ def translate():
 
 @export
 def translateall():
-    """Translate All The Things
-    """
+    """Translate All The Things"""
     if not os.path.exists(PYGETTEXT):
         raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
 
@@ -237,8 +232,7 @@ def translateall():
 
 @export
 def run():
-    """Run Mu from within a virtual environment
-    """
+    """Run Mu from within a virtual environment"""
     clean()
     if not os.environ.get("VIRTUAL_ENV"):
         raise RuntimeError(
@@ -249,8 +243,7 @@ def run():
 
 @export
 def dist():
-    """Generate a source distribution and a binary wheel
-    """
+    """Generate a source distribution and a binary wheel"""
     check()
     print("Checks pass; good to package")
     return subprocess.run(
@@ -260,8 +253,7 @@ def dist():
 
 @export
 def publish_test():
-    """Upload to a test PyPI
-    """
+    """Upload to a test PyPI"""
     dist()
     print("Packaging complete; upload to PyPI")
     return subprocess.run(
@@ -271,8 +263,7 @@ def publish_test():
 
 @export
 def publish_live():
-    """Upload to PyPI
-    """
+    """Upload to PyPI"""
     dist()
     print("Packaging complete; upload to PyPI")
     return subprocess.run(["twine", "upload", "--sign", "dist/*"]).returncode
@@ -280,8 +271,7 @@ def publish_live():
 
 @export
 def win32():
-    """Build 32-bit Windows installer
-    """
+    """Build 32-bit Windows installer"""
     check()
     print("Building 32-bit Windows installer")
     return subprocess.run(
@@ -291,8 +281,7 @@ def win32():
 
 @export
 def win64():
-    """Build 64-bit Windows installer
-    """
+    """Build 64-bit Windows installer"""
     check()
     print("Building 64-bit Windows installer")
     return subprocess.run(
@@ -302,8 +291,7 @@ def win64():
 
 @export
 def docs():
-    """Build the docs
-    """
+    """Build the docs"""
     cwd = os.getcwd()
     os.chdir("docs")
     try:
@@ -316,8 +304,7 @@ def docs():
 
 @export
 def help():
-    """Display all commands with their description in alphabetical order
-    """
+    """Display all commands with their description in alphabetical order"""
     module_doc = sys.modules["__main__"].__doc__ or "check"
     print(module_doc + "\n" + "=" * len(module_doc) + "\n")
 

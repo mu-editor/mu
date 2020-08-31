@@ -87,6 +87,7 @@ def command_buffer(debugger):
                 debugger.commands.put(command_data)
         else:
             # If recv() returns None, the socket is closed.
+            logger.debug("Closing debugger socket.")
             break
     debugger.commands.put(("close", {}))
 
