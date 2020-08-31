@@ -71,8 +71,6 @@ EXPANDED_IMPORT = (
     "accelerometer, display, uart, spi, panic, pin13, "
     "pin12, pin11, pin10, compass"
 )
-# Port number for debugger.
-DEBUGGER_PORT = 31415
 # Default images to copy over for use in PyGameZero demo apps.
 DEFAULT_IMAGES = [
     "alien.png",

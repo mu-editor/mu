@@ -792,6 +792,7 @@ class PythonProcessPane(QTextEdit):
             # Start the mu-debug runner for the script.
             parent_dir = os.path.join(os.path.dirname(__file__), "..")
             mu_dir = os.path.abspath(parent_dir)
+            logger.info("mu_dir: %s", mu_dir)
             runner = os.path.join(mu_dir, "mu-debug.py")
             args = [runner, self.script] + command_args
             #
@@ -800,7 +801,7 @@ class PythonProcessPane(QTextEdit):
             # order to run, so we temporarily set the PYTHONPATH
             # to point to Mu's own directory
             #
-            env.insert("PYTHONPATH", mu_dir)
+            env.insert("PYTHONPATH", os.path.abspath(os.path.join(mu_dir, "..")))
             self.process.setProcessEnvironment(env)
             self.process.start(interpreter, args)
         else:

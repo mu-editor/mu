@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import os.path
 from mu.modes.base import BaseMode
-from mu.logic import DEBUGGER_PORT
+from . import DEBUGGER_PORT
 from mu.debugger.client import Debugger
 from mu.debugger.utils import is_breakpoint_line
 

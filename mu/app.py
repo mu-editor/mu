@@ -30,7 +30,7 @@ from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
 from mu import __version__, language_code
-from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
+from mu.logic import Editor, LOG_FILE, LOG_DIR, ENCODING
 from mu.interface import Window
 from mu.resources import load_pixmap, load_icon
 from mu.modes import (
@@ -42,7 +42,6 @@ from mu.modes import (
     ESPMode,
     WebMode,
 )
-from mu.debugger.runner import run as run_debugger
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
 
@@ -177,17 +176,3 @@ def run():
     sys.exit(app.exec_())
 
 
-def debug():
-    """
-    Create a debug runner in a new process.
-
-    This is what the Mu debugger will drive. Uses the filename and associated
-    args found in sys.argv.
-    """
-    if len(sys.argv) > 1:
-        filename = os.path.normcase(os.path.abspath(sys.argv[1]))
-        args = sys.argv[2:]
-        run_debugger("localhost", DEBUGGER_PORT, filename, args)
-    else:
-        # See https://github.com/mu-editor/mu/issues/743
-        print("Debugger requires a Python script filename to run.")
