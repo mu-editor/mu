@@ -789,11 +789,11 @@ class PythonProcessPane(QTextEdit):
         self.process.finished.connect(self.finished)
         logger.info("Python path: {}".format(sys.path))
         if debugger:
-            # Start the mu-debug runner for the script.
+            # Start the mu_debug runner for the script.
             parent_dir = os.path.join(os.path.dirname(__file__), "..")
             mu_dir = os.path.abspath(parent_dir)
             logger.info("mu_dir: %s", mu_dir)
-            runner = os.path.join(mu_dir, "mu-debug.py")
+            runner = os.path.join(mu_dir, "mu_debug.py")
             args = [runner, self.script] + command_args
             #
             # The runtime virtualenvironment doesn't include Mu

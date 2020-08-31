@@ -187,25 +187,13 @@ class VirtualEnvironment(object):
         # precompiled wheels where they exist (typically from the installer)
         # and downloading from PyPI where they don't
         #
-        self.pip("install", "--find-links", wheels_dirpath, *baseline_packages)
-
-        # ~ if os.path.isdir(wheels_dirpath):
-        # ~ logger.info("Found baseline wheels at %s", wheels_dirpath)
-        # ~ for wheel in glob.glob(os.path.join(wheels_dirpath, "*.whl")):
-        # ~ logger.debug("Install wheel %s", os.path.basename(wheel))
-        # ~ self.pip("install", "--upgrade", wheel)
-        # ~ else:
-        # ~ logger.info(
-        # ~ "No baseline wheels found at %s; installing from PyPI",
-        # ~ wheels_dirpath,
-        # ~ )
-        # ~ #
-        # ~ # Give pip all the packages at once as its dependency
-        # ~ # walker should do a more efficient job of installing
-        # ~ # everything needed
-        # ~ #
-        # ~ packages = ["%s%s" % p for p in self.baseline_packages]
-        # ~ self.pip("install", *packages)
+        # For dev purposes (where we might not have the wheels) bomb
+        # out if there are no wheels and suggest how to get them there...
+        #
+        wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, '*.whl'))
+        if not wheel_filepaths:
+            raise RuntimeError("No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath)
+        self.pip("install", *wheel_filepaths)
 
     def install_user_packages(self, packages):
         logger.info("Installing user packages: %s", ", ".join(packages))

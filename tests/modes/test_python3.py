@@ -6,7 +6,7 @@ import sys
 import os
 from mu.modes.python3 import PythonMode, KernelRunner
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
-from mu.logic import MODULE_DIR
+#~ from mu.logic import MODULE_DIR
 from unittest import mock
 
 
@@ -36,7 +36,7 @@ def test_kernel_runner_start_kernel():
         kr.start_kernel()
     mock_os.chdir.assert_called_once_with("/a/path/to/mu_code")
     assert mock_os.environ["name"] == "value"
-    expected_paths = sys.path + [MODULE_DIR]
+    #~ expected_paths = sys.path + [MODULE_DIR]
     assert mock_os.environ["PYTHONPATH"] == os.pathsep.join(expected_paths)
     assert kr.repl_kernel_manager == mock_kernel_manager
     mock_kernel_manager_class.assert_called_once_with()
@@ -71,7 +71,7 @@ def test_kernel_runner_start_kernel_pythonpath_exists():
         kr.start_kernel()
     mock_os.chdir.assert_called_once_with("/a/path/to/mu_code")
     assert mock_os.environ["name"] == "value"
-    expected_paths = ["foo"] + [MODULE_DIR]
+    expected_paths = ["foo"] ## + [MODULE_DIR]
     assert mock_os.environ["PYTHONPATH"] == os.pathsep.join(expected_paths)
     assert kr.repl_kernel_manager == mock_kernel_manager
     mock_kernel_manager_class.assert_called_once_with()

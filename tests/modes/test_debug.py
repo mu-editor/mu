@@ -2,7 +2,7 @@
 """
 Tests for the debug mode.
 """
-from mu.logic import DEBUGGER_PORT
+from mu.debugger.config import DEBUGGER_PORT
 from mu.modes.debugger import DebugMode
 from unittest import mock
 

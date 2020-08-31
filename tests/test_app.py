@@ -5,9 +5,11 @@ Tests for the app script.
 import sys
 import os.path
 from unittest import mock
-from mu.app import excepthook, run, setup_logging, debug, setup_modes
-from mu.logic import LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
+from mu.app import excepthook, run, setup_logging, setup_modes
+from mu.debugger.config import DEBUGGER_PORT
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
+from mu.logic import LOG_FILE, LOG_DIR, ENCODING
+from mu.mu_debug import debug
 
 
 class DumSig:
