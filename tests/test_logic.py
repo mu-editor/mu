@@ -67,7 +67,8 @@ def _generate_python_files(contents, dirpath):
 
 @contextlib.contextmanager
 def generate_python_files(contents, dirpath=None):
-    """Create a temp directory and populate it with .py files, then remove it
+    """
+    Create a temp directory and populate it with .py files, then remove it.
     """
     dirpath = dirpath or tempfile.mkdtemp(prefix="mu-")
     yield list(_generate_python_files(contents, dirpath))
@@ -76,7 +77,8 @@ def generate_python_files(contents, dirpath=None):
 
 @contextlib.contextmanager
 def generate_python_file(text="", dirpath=None):
-    """Create a temp directory and populate it with on .py file, then remove it
+    """
+    Create a temp directory and populate it with on .py file, then remove it.
     """
     dirpath = dirpath or tempfile.mkdtemp(prefix="mu-")
     for filepath in _generate_python_files([text], dirpath):
@@ -158,8 +160,7 @@ def generate_session(
 
 
 def mocked_view(text, path, newline):
-    """Create a mocked view with path, newline and text
-    """
+    """Create a mocked view with path, newline and text"""
     view = mock.MagicMock()
     view.current_tab = mock.MagicMock()
     view.current_tab.path = path
@@ -877,7 +878,14 @@ def test_devicelist_add_device_in_sorted_order(
     assert dl[1] == microbit_com1
 
     xyz_device = mu.logic.Device(
-        0x123B, 0x333A, "COM1", 123456, "ARM", "ESP Mode", "esp", "xyz",
+        0x123B,
+        0x333A,
+        "COM1",
+        123456,
+        "ARM",
+        "ESP Mode",
+        "esp",
+        "xyz",
     )
     dl.add_device(xyz_device)
     assert dl[2] == xyz_device
@@ -3151,8 +3159,7 @@ def test_logic_independent_import_app():
 
 
 def test_read_newline_no_text():
-    """If the file being loaded is empty, use the platform default newline
-    """
+    """If the file being loaded is empty, use the platform default newline"""
     with generate_python_file() as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3160,8 +3167,7 @@ def test_read_newline_no_text():
 
 
 def test_read_newline_all_unix():
-    """If the file being loaded has only the Unix convention, use that
-    """
+    """If the file being loaded has only the Unix convention, use that"""
     with generate_python_file("abc\ndef") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3169,8 +3175,7 @@ def test_read_newline_all_unix():
 
 
 def test_read_newline_all_windows():
-    """If the file being loaded has only the Windows convention, use that
-    """
+    """If the file being loaded has only the Windows convention, use that"""
     with generate_python_file("abc\r\ndef") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3178,8 +3183,7 @@ def test_read_newline_all_windows():
 
 
 def test_read_newline_most_unix():
-    """If the file being loaded has mostly the Unix convention, use that
-    """
+    """If the file being loaded has mostly the Unix convention, use that"""
     with generate_python_file("\nabc\r\ndef\n") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3187,8 +3191,7 @@ def test_read_newline_most_unix():
 
 
 def test_read_newline_most_windows():
-    """If the file being loaded has mostly the Windows convention, use that
-    """
+    """If the file being loaded has mostly the Windows convention, use that"""
     with generate_python_file("\r\nabc\ndef\r\n") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3254,8 +3257,7 @@ UNICODE_TEST_STRING = BYTES_TEST_STRING.decode("iso-8859-1")
 # - fallback to the platform default (locale.getpreferredencoding())
 #
 def test_read_utf8bom():
-    """Successfully decode from utf-8 encoded with BOM
-    """
+    """Successfully decode from utf-8 encoded with BOM"""
     with generate_python_file() as filepath:
         with open(filepath, "w", encoding="utf-8-sig") as f:
             f.write(UNICODE_TEST_STRING)
@@ -3264,8 +3266,7 @@ def test_read_utf8bom():
 
 
 def test_read_utf16bebom():
-    """Successfully decode from utf-16 BE encoded with BOM
-    """
+    """Successfully decode from utf-16 BE encoded with BOM"""
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
             f.write(codecs.BOM_UTF16_BE)
@@ -3275,8 +3276,7 @@ def test_read_utf16bebom():
 
 
 def test_read_utf16lebom():
-    """Successfully decode from utf-16 LE encoded with BOM
-    """
+    """Successfully decode from utf-16 LE encoded with BOM"""
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
             f.write(codecs.BOM_UTF16_LE)
@@ -3286,8 +3286,7 @@ def test_read_utf16lebom():
 
 
 def test_read_encoding_cookie():
-    """Successfully decode from iso-8859-1 with an encoding cookie
-    """
+    """Successfully decode from iso-8859-1 with an encoding cookie"""
     encoding_cookie = ENCODING_COOKIE.replace(mu.logic.ENCODING, "iso-8859-1")
     test_string = encoding_cookie + UNICODE_TEST_STRING
     with generate_python_file() as filepath:
@@ -3298,8 +3297,7 @@ def test_read_encoding_cookie():
 
 
 def test_read_encoding_mu_default():
-    """Successfully decode from the mu default
-    """
+    """Successfully decode from the mu default"""
     test_string = UNICODE_TEST_STRING.encode(mu.logic.ENCODING)
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
@@ -3309,8 +3307,7 @@ def test_read_encoding_mu_default():
 
 
 def test_read_encoding_default():
-    """Successfully decode from the default locale
-    """
+    """Successfully decode from the default locale"""
     test_string = UNICODE_TEST_STRING.encode(locale.getpreferredencoding())
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
@@ -3320,8 +3317,7 @@ def test_read_encoding_default():
 
 
 def test_read_encoding_unsuccessful():
-    """Fail to decode encoded text
-    """
+    """Fail to decode encoded text"""
     #
     # Have to work quite hard to produce text which will definitely
     # fail to decode since UTF-8 and cp1252 (the default on this
