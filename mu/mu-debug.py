@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
-from mu.debugger import DEBUGGER_PORT
+from mu.debugger.config import DEBUGGER_PORT
 from mu.debugger.runner import run as run_debugger
 
 if sys.platform == "win32" and "pythonw.exe" in sys.executable:

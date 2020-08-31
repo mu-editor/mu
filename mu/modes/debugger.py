@@ -17,11 +17,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import os.path
-from mu.modes.base import BaseMode
-from . import DEBUGGER_PORT
-from mu.debugger.client import Debugger
-from mu.debugger.utils import is_breakpoint_line
+import os
+
+from .base import BaseMode
+from ..debugger.config import DEBUGGER_PORT
+from ..debugger.client import Debugger
+from ..debugger.utils import is_breakpoint_line
 
 
 logger = logging.getLogger(__name__)
