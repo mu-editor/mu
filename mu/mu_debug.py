@@ -2,7 +2,7 @@
 import os
 import sys
 from mu.debugger.config import DEBUGGER_PORT
-from mu.debugger.runner import run as run_debugger
+import mu.debugger.runner
 
 if sys.platform == "win32" and "pythonw.exe" in sys.executable:
     # Add the python**.zip path to sys.path if running from the version of Mu
@@ -16,21 +16,18 @@ if sys.platform == "win32" and "pythonw.exe" in sys.executable:
         sys.path.append(path_to_add)
 
 
-def debug():
+def debug(filename=None, *args):
     """
     Create a debug runner in a new process.
 
     This is what the Mu debugger will drive. Uses the filename and associated
     args found in sys.argv.
     """
-    if len(sys.argv) > 1:
-        filename = os.path.normcase(os.path.abspath(sys.argv[1]))
-        args = sys.argv[2:]
-        run_debugger("localhost", DEBUGGER_PORT, filename, args)
-    else:
-        # See https://github.com/mu-editor/mu/issues/743
+    if filename is None:
         print("Debugger requires a Python script filename to run.")
-
+    else:
+        filepath = os.path.normcase(os.path.abspath(filename))
+        mu.debugger.runner.run("localhost", DEBUGGER_PORT, filepath, *args)
 
 if __name__ == "__main__":
-    debug()
+    debug(*sys.argv[1:])

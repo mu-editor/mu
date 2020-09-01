@@ -145,17 +145,15 @@ def test_debug():
     Ensure the debugger is run with the expected arguments given the filename
     and other arguments passed in via sys.argv.
     """
-    mock_sys = mock.MagicMock()
-    mock_sys.argv = [None, "foo.py", "foo", "bar", "baz"]
+    args = ["foo", "bar", "baz"]
+    filename = "foo.py"
+    expected_filename = os.path.normcase(os.path.abspath(filename))
     mock_runner = mock.MagicMock()
-    with mock.patch("mu.app.sys", mock_sys), mock.patch(
-        "mu.debugger.runner.run", mock_runner
-    ):
-        mu_debug.debug()
-    expected_filename = os.path.normcase(os.path.abspath("foo.py"))
-    mock_runner.assert_called_once_with(
-        "localhost", DEBUGGER_PORT, expected_filename, ["foo", "bar", "baz"]
-    )
+    with mock.patch("mu.debugger.runner.run", mock_runner):
+        mu_debug.debug(filename, args)
+        mock_runner.assert_called_once_with(
+            "localhost", DEBUGGER_PORT, expected_filename, ["foo", "bar", "baz"]
+        )
 
 
 def test_debug_no_args():
@@ -163,12 +161,8 @@ def test_debug_no_args():
     If the debugger is accidentally started with no filename and/or associated
     args, then emit a friendly message to indicate the problem.
     """
-    mock_sys = mock.MagicMock()
-    mock_sys.argv = [None]
+    expected_msg = "Debugger requires a Python script filename to run."
     mock_print = mock.MagicMock()
-    with mock.patch("mu.app.sys", mock_sys), mock.patch(
-        "builtins.print", mock_print
-    ):
-        debug()
-    msg = "Debugger requires a Python script filename to run."
-    mock_print.assert_called_once_with(msg)
+    with mock.patch("builtins.print", mock_print):
+        mu_debug.debug()
+        mock_print.assert_called_once_with(expected_msg)
