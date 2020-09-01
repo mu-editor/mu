@@ -1,14 +1,13 @@
 * Debian needs `apt install python3-venv
-*
 
 REMAINING ISSUES:
 
 * [SOLVED] pygame zero mode not available as the logic tries to import pgzero to determine
   available modes, but it's not available yet because of the venv
-* Debugger not working -- @ntoll on the case -- apparently the path to the
+* [SOLVED] Debugger not working -- @ntoll on the case -- apparently the path to the
   filename from the view tab -- in panes.py:start_process around line 800,
   where the debugger is started, need to add mu_dir as PYTHONPATH
-* Should we pip install --upgrade after creating the venv? (What about users
+* [SOLVED] Should we pip install --upgrade after creating the venv? (What about users
   without internet access)
 * REPL doesn't work -- some kind of asyncio issue:
 2020-08-30 15:58:38,004 - tornado.application:763(_run_callback) ERROR: Exception in callback functools.partial(<function ThreadedZMQSocketChannel.__init__.<locals>.setup_stream at 0x0000024392372A60>)
@@ -26,7 +25,7 @@ Traceback (most recent call last):
   File "C:\Users\Tim.Golden\AppData\Local\Programs\Python\Python38\lib\asyncio\events.py", line 501, in add_reader
     raise NotImplementedError
 NotImplementedError
-* Test devices (microbit / ESP / CPy -- @ntoll to look)
+* 
 
 LATER:
 
