@@ -56,6 +56,7 @@ class WebMode(BaseMode):
     """
 
     name = _("Web")
+    short_name = "web"
     description = _('Build simple websites with the "Flask" web framework.')
     icon = "web"
     runner = None

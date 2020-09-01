@@ -150,9 +150,9 @@ class MicroPythonREPLPane(QTextEdit):
     The device MUST be flashed with MicroPython for this to work.
     """
 
-    def __init__(self, serial, theme="day", parent=None):
+    def __init__(self, connection, theme="day", parent=None):
         super().__init__(parent)
-        self.serial = serial
+        self.connection = connection
         self.setFont(Font().load())
         self.setAcceptRichText(False)
         self.setReadOnly(False)
@@ -164,14 +164,14 @@ class MicroPythonREPLPane(QTextEdit):
 
     def paste(self):
         """
-        Grabs clipboard contents then sends down the serial port.
+        Grabs clipboard contents then sends to the REPL.
         """
         clipboard = QApplication.clipboard()
         if clipboard and clipboard.text():
             to_paste = (
                 clipboard.text().replace("\n", "\r").replace("\r\r", "\r")
             )
-            self.serial.write(bytes(to_paste, "utf8"))
+            self.connection.write(bytes(to_paste, "utf8"))
 
     def context_menu(self):
         """
@@ -241,9 +241,9 @@ class MicroPythonREPLPane(QTextEdit):
             elif key == Qt.Key_V:
                 self.paste()
                 msg = b""
-        self.serial.write(msg)
+        self.connection.write(msg)
 
-    def process_bytes(self, data):
+    def process_tty_data(self, data):
         """
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
@@ -325,39 +325,6 @@ class MicroPythonREPLPane(QTextEdit):
         Set the current zoom level given the "t-shirt" size.
         """
         self.set_font_size(PANE_ZOOM_SIZES[size])
-
-    def send_commands(self, commands):
-        """
-        Send commands to the REPL via raw mode.
-        """
-        raw_on = [  # Sequence of commands to get into raw mode.
-            b"\x02",
-            b"\r\x03",
-            b"\r\x03",
-            b"\r\x03",
-            b"\r\x01",
-        ]
-        newline = [b'print("\\n")\r']
-        commands = [c.encode("utf-8") + b"\r" for c in commands]
-        commands.append(b"\r")
-        commands.append(b"\x04")
-        raw_off = [b"\x02"]
-        command_sequence = raw_on + newline + commands + raw_off
-        logger.info(command_sequence)
-        self.execute(command_sequence)
-
-    def execute(self, commands):
-        """
-        Execute a series of commands over a period of time (scheduling
-        remaining commands to be run in the next iteration of the event loop).
-        """
-        if commands:
-            command = commands[0]
-            logger.info("Sending command {}".format(command))
-            self.serial.write(command)
-            remainder = commands[1:]
-            remaining_task = lambda commands=remainder: self.execute(commands)
-            QTimer.singleShot(2, remaining_task)
 
 
 class MuFileList(QListWidget):
@@ -1250,7 +1217,7 @@ class PlotterPane(QChartView):
         self.setChart(self.chart)
         self.setRenderHint(QPainter.Antialiasing)
 
-    def process_bytes(self, data):
+    def process_tty_data(self, data):
         """
         Takes raw bytes and, if a valid tuple is detected, adds the data to
         the plotter.
@@ -1296,7 +1263,7 @@ class PlotterPane(QChartView):
         self.input_buffer = []
         if lines[-1]:
             # Append any bytes that are not yet at the end of a line, for
-            # processing next time we read data from self.serial.
+            # processing next time we read data from self.connection.
             self.input_buffer.append(lines[-1])
 
     def add_data(self, values):

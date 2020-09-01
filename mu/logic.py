@@ -587,36 +587,181 @@ class MuFlakeCodeReporter:
             )
 
 
-class REPL:
+class Device:
     """
-    Read, Evaluate, Print, Loop.
-
-    Represents the REPL. Since the logic for the REPL is simply a USB/serial
-    based widget this class only contains a reference to the associated port.
+    Device object, containing both information about the connected device,
+    the port it's connected through and the mode it works with.
     """
 
-    def __init__(self, port):
-        if os.name == "posix":
-            # If we're on Linux or OSX reference the port is like this...
-            self.port = "/dev/{}".format(port)
-        elif os.name == "nt":
-            # On Windows simply return the port (e.g. COM0).
-            self.port = port
+    def __init__(
+        self,
+        vid,
+        pid,
+        port,
+        serial_number,
+        manufacturer,
+        long_mode_name,
+        short_mode_name,
+        board_name=None,
+    ):
+        self.vid = vid
+        self.pid = pid
+        self.port = port
+        self.serial_number = serial_number
+        self.manufacturer = manufacturer
+        self.long_mode_name = long_mode_name
+        self.short_mode_name = short_mode_name
+        self.board_name = board_name
+
+    @property
+    def name(self):
+        """
+        Returns the device name.
+        """
+        if self.board_name:
+            return self.board_name
         else:
-            # No idea how to deal with other OS's so fail.
-            raise NotImplementedError("OS not supported.")
-        logger.info("Created new REPL object with port: {}".format(self.port))
+            return self.long_mode_name
+
+    def __eq__(self, other):
+        """
+        Equality on devices. Comparison on vid, pid, and serial_number,
+        and most importantly also matches on which port the device is
+        connected to. That is, if two identical devices are connected
+        to separate ports they are considered different.
+        """
+        return (
+            isinstance(other, self.__class__)
+            and self.pid == other.pid
+            and self.vid == other.vid
+            and self.port == other.port
+            and self.serial_number == other.serial_number
+        )
+
+    def __ne__(self, other):
+        """
+        Inequality of devices is the negation of equality
+        """
+        return not self.__eq__(other)
+
+    def __lt__(self, other):
+        """
+        Alphabetical ordering according to device name
+        """
+        return self.name < other.name
+
+    def __gt__(self, other):
+        """
+        Alphabetical ordering according to device name
+        """
+        return self.name > other.name
+
+    def __le__(self, other):
+        """
+        Alphabetical ordering according to device name
+        """
+        return self.name <= other.name
+
+    def __ge__(self, other):
+        """
+        Alphabetical ordering according to device name
+        """
+        return self.name >= other.name
+
+    def __str__(self):
+        """
+        String representation of devices includes name, port, and VID/PID
+        """
+        s = "{} on {} (VID: 0x{:04X}, PID: 0x{:04X})"
+        return s.format(self.name, self.port, self.vid, self.pid)
+
+    def __hash__(self):
+        """
+        Hash is the hash of the string representation, includes the same
+        elements in the hash as in equality testing.
+        """
+        return hash(str(self))
 
 
-class Editor:
+class DeviceList(QtCore.QAbstractListModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._devices = list()
+
+    def __iter__(self):
+        """
+        Enables iteration over the list of devices
+        """
+        return iter(self._devices)
+
+    def __getitem__(self, i):
+        """
+        Enable [] operator
+        """
+        return self._devices[i]
+
+    def __len__(self):
+        """
+        Number of devices
+        """
+        return len(self._devices)
+
+    def rowCount(self, parent):
+        """
+        Number of devices
+        """
+        return len(self._devices)
+
+    def data(self, index, role):
+        """
+        Reimplements QAbstractListModel.data(): returns data for the
+        specified index and role. In this case only implmented for
+        ToolTipRole and DisplayRole
+        """
+        device = self._devices[index.row()]
+        if role == QtCore.Qt.ToolTipRole:
+            return str(device)
+        elif role == QtCore.Qt.DisplayRole:
+            return device.name
+
+    def add_device(self, new_device):
+        """
+        Add a new device to the device list, maintains alphabetical ordering
+        """
+        parent = QtCore.QModelIndex()
+        # Find position to insert sorted
+        position = 0
+        for i, device in enumerate(self._devices):
+            if new_device > device:
+                position = i + 1
+        # Insert
+        self.beginInsertRows(parent, position, position)
+        self._devices.insert(position, new_device)
+        self.endInsertRows()
+
+    def remove_device(self, device):
+        """
+        Remove the given device from the device list
+        """
+        parent = QtCore.QModelIndex()
+        position = self._devices.index(device)
+        self.beginRemoveRows(parent, position, position)
+        self._devices.remove(device)
+        self.endRemoveRows()
+
+
+class Editor(QObject):
     """
     Application logic for the editor itself.
     """
 
-    def __init__(self, view, status_bar=None):
+    device_connected = pyqtSignal("PyQt_PyObject")
+    device_disconnected = pyqtSignal("PyQt_PyObject")
+
+    def __init__(self, view):
+        super().__init__()
         logger.info("Setting up editor.")
         self._view = view
-        self._status_bar = status_bar
         self.fs = None
         self.theme = "day"
         self.mode = "python"
@@ -624,7 +769,10 @@ class Editor:
         self.envars = []  # See restore session and show_admin
         self.minify = False
         self.microbit_runtime = ""
-        self.connected_devices = set()
+        self.connected_devices = DeviceList(parent=self)
+        self.device_connected.connect(self.connected_devices.add_device)
+        self.device_disconnected.connect(self.connected_devices.remove_device)
+        self.current_device = None
         self.find = ""
         self.replace = ""
         self.current_path = ""  # Directory of last loaded file.
@@ -695,6 +843,27 @@ class Editor:
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
+
+    def connect_to_status_bar(self, status_bar):
+        """
+        Connect the editor with the Window-statusbar.
+        Should be called after Editor.setup(), to ensure modes are initialized
+        """
+        # Connect to logs
+        status_bar.connect_logs(self.show_admin, "Ctrl+Shift+D")
+        # Show connection messages in status_bar
+        self.device_connected.connect(status_bar.device_connected)
+        # Connect device list with device_selector
+        device_selector = status_bar.device_selector
+        device_selector.selector.setModel(self.connected_devices)
+        # Connect device events to device selector in status bar
+        self.device_connected.connect(device_selector.device_connected)
+        self.device_disconnected.connect(device_selector.device_disconnected)
+        device_selector.device_changed.connect(self.device_changed)
+        # Connect device_changed to modes
+        if self.modes:
+            for mode in self.modes.values():
+                device_selector.device_changed.connect(mode.device_changed)
 
     def restore_session(self, paths=None):
         """
@@ -912,13 +1081,13 @@ class Editor:
             self._view.show_message(message, info)
         else:
             if file_mode and self.mode != file_mode:
-                device_name = self.modes[file_mode].name
-                message = _("Is this a {} file?").format(device_name)
+                mode_name = self.modes[file_mode].name
+                message = _("Is this a {} file?").format(mode_name)
                 info = _(
                     "It looks like this could be a {} file.\n\n"
                     "Would you like to change Mu to the {}"
                     "mode?"
-                ).format(device_name, device_name)
+                ).format(mode_name, mode_name)
                 if (
                     self._view.show_confirmation(
                         message, info, icon="Question"
@@ -1324,8 +1493,12 @@ class Editor:
         if hasattr(old_mode, "remove_plotter"):
             if old_mode.plotter:
                 old_mode.remove_plotter()
+        # Deactivate old mode
+        self.modes[self.mode].deactivate()
         # Re-assign to new mode.
         self.mode = mode
+        # Activate new mode
+        self.modes[mode].activate()
         # Update buttons.
         self._view.change_mode(self.modes[mode])
         button_bar = self._view.button_bar
@@ -1393,47 +1566,83 @@ class Editor:
         devices = []
         device_types = set()
         # Detect connected devices.
-        for name, mode in self.modes.items():
-            if hasattr(mode, "find_device"):
-                # The mode can detect an attached device.
-                port, serial = mode.find_device(with_logging=False)
-                if port:
-                    devices.append((name, port))
-                    device_types.add(name)
+        for mode_name, mode in self.modes.items():
+            if hasattr(mode, "find_devices"):
+                # The mode can detect attached devices.
+                detected = mode.find_devices(with_logging=False)
+                if detected:
+                    device_types.add(mode_name)
+                    devices.extend(detected)
         # Remove no-longer connected devices.
-        to_remove = []
         for connected in self.connected_devices:
             if connected not in devices:
-                to_remove.append(connected)
-        for device in to_remove:
-            self.connected_devices.remove(device)
+                self.device_disconnected.emit(connected)
+                logger.info(
+                    (
+                        "{} device connected on port: {}"
+                        "(VID: 0x{:04X}, PID: 0x{:04X}, manufacturer {})"
+                    ).format(
+                        connected.short_mode_name,
+                        connected.port,
+                        connected.vid,
+                        connected.pid,
+                        connected.manufacturer,
+                    )
+                )
         # Add newly connected devices.
         for device in devices:
             if device not in self.connected_devices:
-                self.connected_devices.add(device)
-                mode_name = device[0]
-                device_name = self.modes[mode_name].name
-                msg = _("Detected new {} device.").format(device_name)
-                self.show_status_message(msg)
-                # Only ask to switch mode if a single device type is connected
-                # and we're not already trying to select a new mode via the
-                # dialog. Cannot change mode if a script is already being run
-                # by the current mode.
-                m = self.modes[self.mode]
-                running = hasattr(m, "runner") and m.runner
-                if (
-                    len(device_types) == 1
-                    and self.mode != mode_name
-                    and not self.selecting_mode
-                ) and not running:
-                    msg_body = _(
-                        "Would you like to change Mu to the {} " "mode?"
-                    ).format(device_name)
-                    change_confirmation = self._view.show_confirmation(
-                        msg, msg_body, icon="Question"
+                self.device_connected.emit(device)
+                logger.info(
+                    (
+                        "{} device connected on port: {}"
+                        "(VID: 0x{:04X}, PID: 0x{:04X}, manufacturer: '{}')"
+                    ).format(
+                        device.short_mode_name,
+                        device.port,
+                        device.vid,
+                        device.pid,
+                        device.manufacturer,
                     )
-                    if change_confirmation == QMessageBox.Ok:
-                        self.change_mode(mode_name)
+                )
+
+    def ask_to_change_mode(self, new_mode, mode_name, heading):
+        """
+        Open a dialog asking the user, whether to change mode from
+        mode_name to new_mode. The dialog can be customized by the
+        heading-parameter.
+        """
+        # Only ask to switch mode if we're not already trying to
+        # select a new mode via the dialog. Cannot change mode if
+        # a script is already being run by the current mode.
+        m = self.modes[self.mode]
+        running = hasattr(m, "runner") and m.runner
+        if (self.mode != new_mode and not self.selecting_mode) and not running:
+            msg_body = _(
+                "Would you like to change Mu to the {} " "mode?"
+            ).format(mode_name)
+            change_confirmation = self._view.show_confirmation(
+                heading, msg_body, icon="Question"
+            )
+            print(change_confirmation)
+            if change_confirmation == QMessageBox.Ok:
+                self.change_mode(new_mode)
+
+    def device_changed(self, device):
+        """
+        Slot for receiving signals that the current device has changed.
+        If the device change requires mode change, the user will be
+        asked through a dialog.
+        """
+        if device:
+            if self.current_device is None:
+                heading = _("Detected new {} device.").format(device.name)
+            else:
+                heading = _("Device changed to {}.").format(device.name)
+            self.ask_to_change_mode(
+                device.short_mode_name, device.long_mode_name, heading
+            )
+        self.current_device = device
 
     def show_status_message(self, message, duration=5):
         """
