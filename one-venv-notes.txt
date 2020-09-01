@@ -9,6 +9,9 @@ REMAINING ISSUES:
   where the debugger is started, need to add mu_dir as PYTHONPATH
 * [SOLVED] Should we pip install --upgrade after creating the venv? (What about users
   without internet access)
+* Distinguish user-installed from mode-installed packages -- when creating the venv do an 
+  immediate pip freeze and store in the settings file. Then, when generating list of installed
+  packages, tag the mode-installed ones as "INSTALLED BY MU" or similar
 * REPL doesn't work -- some kind of asyncio issue:
 2020-08-30 15:58:38,004 - tornado.application:763(_run_callback) ERROR: Exception in callback functools.partial(<function ThreadedZMQSocketChannel.__init__.<locals>.setup_stream at 0x0000024392372A60>)
 Traceback (most recent call last):
