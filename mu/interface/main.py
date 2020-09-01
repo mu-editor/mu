@@ -20,7 +20,7 @@ import sys
 import logging
 import os.path
 import serial
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QIODevice
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
     QToolBar,
     QAction,
