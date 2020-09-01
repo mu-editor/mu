@@ -7,9 +7,11 @@ import os.path
 from unittest import mock
 from mu.app import excepthook, run, setup_logging, setup_modes
 from mu.debugger.config import DEBUGGER_PORT
+import mu.debugger.runner
+#~ from mu.debugger import runner as debugger_runner
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 from mu.logic import LOG_FILE, LOG_DIR, ENCODING
-from mu.mu_debug import debug
+from mu import mu_debug
 
 
 class DumSig:
@@ -147,9 +149,9 @@ def test_debug():
     mock_sys.argv = [None, "foo.py", "foo", "bar", "baz"]
     mock_runner = mock.MagicMock()
     with mock.patch("mu.app.sys", mock_sys), mock.patch(
-        "mu.app.run_debugger", mock_runner
+        "mu.debugger.runner.run", mock_runner
     ):
-        debug()
+        mu_debug.debug()
     expected_filename = os.path.normcase(os.path.abspath("foo.py"))
     mock_runner.assert_called_once_with(
         "localhost", DEBUGGER_PORT, expected_filename, ["foo", "bar", "baz"]
