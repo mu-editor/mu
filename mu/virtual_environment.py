@@ -118,26 +118,7 @@ class VirtualEnvironment(object):
         logger.info("Creating virtualenv: {}".format(self.path))
         logger.info("Virtualenv name: {}".format(self.name))
 
-        #
-        # The virtualenv creator expects to find a DLLs directory
-        # next to the executable's directory as there is in the
-        # full distribution
-        #
-        # ~ source_dir = os.path.dirname(os.path.abspath(sys.executable))
-        # ~ DLLs_dirpath = os.path.join(source_dir, "DLLs")
-        # ~ if not os.path.exists(DLLs_dirpath):
-        # ~ logger.debug(
-        # ~ "No DLLs directory at %s; creating it for virtualenv",
-        # ~ DLLs_dirpath,
-        # ~ )
-        # ~ os.mkdir(DLLs_dirpath)
-
-        #
-        # Using subprocess.run rather than virtualenv.cli_run because
-        # the latter appears to suppress logging for our process!
-        #
         env = dict(os.environ)
-
         subprocess.run(
             [sys.executable, "-m", "venv", self.path], check=True, env=env
         )
@@ -182,11 +163,9 @@ class VirtualEnvironment(object):
             wheels_dirpath,
             "exists" if os.path.isdir(wheels_dirpath) else "does not exist",
         )
-        baseline_packages = ["%s%s" % p for p in self.baseline_packages]
         #
         # This command should install the baseline packages, picking up the
-        # precompiled wheels where they exist (typically from the installer)
-        # and downloading from PyPI where they don't
+        # precompiled wheels from the wheels path
         #
         # For dev purposes (where we might not have the wheels) bomb
         # out if there are no wheels and suggest how to get them there...
