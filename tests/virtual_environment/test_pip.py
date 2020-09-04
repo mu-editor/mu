@@ -169,3 +169,16 @@ def test_pip_uninstall_single_package_with_flag_value():
         expected_args = (pip_executable, "uninstall", "--switch", "30", package_name)
         assert mock_run.call_args.args == expected_args
 
+#
+# pip freeze
+#
+def test_pip_freeze():
+    """Ensure that pip freeze gives
+    "pip freeze"
+    """
+    pip_executable = "pip-" + random_string() + ".exe"
+    pip = mu.virtual_environment.Pip(pip_executable)
+    with patch.object(subprocess, "run") as mock_run:
+        pip.freeze()
+        expected_args = (pip_executable, "freeze")
+        assert mock_run.call_args.args == expected_args

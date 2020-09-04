@@ -28,17 +28,36 @@ class Pip(object):
     def __init__(self, pip_executable):
         self.pip_executable = pip_executable
 
-    def run(self, *args, **kwargs):
-        raise NotImplementedError
+    def run(self, command, *args, **kwargs):
+        #
+        # Any keyword args are treated as command-line switches
+        # As a special case, a value of None indicates that the flag
+        # takes no parameters.
+        #
+        params = [command]
+        for k, v in kwargs.items():
+            switch = k.replace("_", "-")
+            params.append("--" + switch)
+            if v is not None:
+                params.append(str(v))
+        params.extend(args)
+
+        subprocess.run(self.pip_executable, *params)
 
     def install(self, packages, **kwargs):
-        raise NotImplementedError
+        if isinstance(packages, str):
+            self.run("install", packages, **kwargs)
+        else:
+            self.run("install", *packages, **kwargs)
 
     def uninstall(self, packages, **kwargs):
-        raise NotImplementedError
+        if isinstance(packages, str):
+            self.run("uninstall", packages, **kwargs)
+        else:
+            self.run("uninstall", *packages, **kwargs)
 
     def freeze(self):
-        raise NotImplementedError
+        self.run("freeze")
 
 
 class VirtualEnvironment(object):
