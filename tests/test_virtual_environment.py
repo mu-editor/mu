@@ -20,6 +20,7 @@ import os
 import contextlib
 import glob
 import pathlib
+import random
 import shutil
 import subprocess
 import tempfile
@@ -155,3 +156,46 @@ def test_jupyter_kernel_installed(patched, venv_name):
         expected_jupyter_args = ("-m", "ipykernel", "install")
         assert expected_jupyter_args == run_python.call_args.args[:len(expected_jupyter_args)]
 
+
+def test_install_user_packages(patched, venv_name):
+    """Ensure that, given a list of packages, we pip install them
+
+    (Ideally we'd do this by testing the finished result, not caring
+    what sequence of pip invocations got us there, but that's expensive)
+    """
+    packages = [uuid.uuid1().hex for _ in range(random.randint(1, 10))]
+    with patch.object(VE, "pip") as run_pip:
+        venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+        venv.install_user_packages(packages)
+        #
+        # For each package we should have called our pip runner with
+        # install as the first parameter and the package name as the
+        # last. There may be switches (eg --upgrade) but we don't want
+        # to be sensitive to those
+        #
+        assert run_pip.call_count == len(packages)
+        for (call_args, package) in zip(run_pip.call_args_list, packages):
+            assert call_args.args[0] == "install"
+            assert call_args.args[-1] == package
+
+
+def test_remove_user_packages(patched, venv_name):
+    """Ensure that, given a list of packages, we pip uninstall them
+
+    (Ideally we'd do this by testing the finished result, not caring
+    what sequence of pip invocations got us there, but that's expensive)
+    """
+    packages = [uuid.uuid1().hex for _ in range(random.randint(1, 10))]
+    with patch.object(VE, "pip") as run_pip:
+        venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+        venv.remove_user_packages(packages)
+        #
+        # For each package we should have called our pip runner with
+        # install as the first parameter and the package name as the
+        # last. There may be switches but we don't want to be sensitive
+        # to those
+        #
+        assert run_pip.call_count == len(packages)
+        for (call_args, package) in zip(run_pip.call_args_list, packages):
+            assert call_args.args[0] == "uninstall"
+            assert call_args.args[-1] == package
