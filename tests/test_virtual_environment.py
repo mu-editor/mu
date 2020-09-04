@@ -35,6 +35,9 @@ WHEEL_FILENAME = "arrr-1.0.2-py3-none-any.whl"
 
 @pytest.fixture
 def venv_name():
+    """Use a random venv name each time, at least partly to expose any
+    hidden assumptions about the name of the venv directory
+    """
     return uuid.uuid1().hex
 
 
@@ -46,7 +49,6 @@ def patched():
     """
     with patch.object(subprocess, "run") as subprocess_run, \
       patch.object(VE, "run_python") as run_python, \
-      patch.object(VE, "install_jupyter_kernel"), \
       patch.object(VE, "find_interpreter"):
         yield subprocess_run, run_python
 
@@ -124,11 +126,32 @@ def test_base_packages_installed(patched, venv_name):
     from wheels
     """
     _, run_python = patched
-    venv = mu.virtual_environment.VirtualEnvironment(venv_name)
-    venv.create()
     #
-    # Check that we're calling `pip install` with all the wheels in our wheelhouse
+    # Make sure the juypter kernel install doesn't interfere
     #
-    expected_python_args = ("-m", "pip", "install") + tuple(glob.glob(os.path.join(mu.virtual_environment.wheels_dirpath, "*.whl")))
-    assert expected_python_args == run_python.call_args.args
+    with patch.object(VE, "install_jupyter_kernel"):
+        venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+        venv.create()
+        #
+        # Check that we're calling `pip install` with all the wheels in our wheelhouse
+        #
+        expected_python_args = ("-m", "pip", "install") + tuple(glob.glob(os.path.join(mu.virtual_environment.wheels_dirpath, "*.whl")))
+        assert expected_python_args == run_python.call_args.args
+
+
+def test_jupyter_kernel_installed(patched, venv_name):
+    """Ensure that, when the venv is installed, the Jupyter kernel is installed
+    """
+    _, run_python = patched
+    #
+    # Make sure the baseline package install doesn't interfere
+    #
+    with patch.object(VE, "install_baseline_packages"):
+        venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+        venv.create()
+        #
+        # Check that we're calling `ipykernel install`
+        #
+        expected_jupyter_args = ("-m", "ipykernel", "install")
+        assert expected_jupyter_args == run_python.call_args.args[:len(expected_jupyter_args)]
 
