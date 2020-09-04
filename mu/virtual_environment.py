@@ -18,6 +18,29 @@ wheels_dirpath = os.path.dirname(wheels.__file__)
 logger = logging.getLogger(__name__)
 
 
+class Pip(object):
+    """Proxy for various pip commands
+
+    While this is a fairly useful abstraction in its own right, it's at
+    least initially to assist in testing, so we can mock out various
+    commands
+    """
+    def __init__(self, pip_executable):
+        self.pip_executable = pip_executable
+
+    def run(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def install(self, packages, **kwargs):
+        raise NotImplementedError
+
+    def uninstall(self, packages, **kwargs):
+        raise NotImplementedError
+
+    def freeze(self):
+        raise NotImplementedError
+
+
 class VirtualEnvironment(object):
 
     #
@@ -233,7 +256,7 @@ class VirtualEnvironment(object):
         ]
         user_packages = []
 
-        result = self.run_python("-m", "pip", "freeze")
+        result = self.pip("freeze")
         packages = result.splitlines()
         logger.info(packages)
         for package in packages:
