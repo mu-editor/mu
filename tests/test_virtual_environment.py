@@ -199,3 +199,26 @@ def test_remove_user_packages(patched, venv_name):
         for (call_args, package) in zip(run_pip.call_args_list, packages):
             assert call_args.args[0] == "uninstall"
             assert call_args.args[-1] == package
+
+
+def test_installed_packages(patched, venv_name):
+    """Ensure that we receive a list of package names in the venv
+
+    NB For now we're just checking that we return whatever pip freeze
+    returns only suitably stripped of versioning and other tags.
+
+    When we've sorted out how this is going to work, we can determine
+    which are pre-installed and which are user-installed
+    """
+    baseline_packages = ['a', 'b', 'c']
+    user_packages = ['d', 'e', 'f']
+    all_packages = baseline_packages + user_packages
+    random.shuffle(all_packages)
+
+    with patch.object(VE, "baseline_packages", baseline_packages):
+        with patch.object(VE, "pip") as run_pip:
+            run_pip.return_value = all_packages
+            venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+            baseline_result, user_result = venv.installed_packages()
+            assert set(baseline_result) == set(baseline_packages)
+            assert set(user_result) == set(user_packages)
