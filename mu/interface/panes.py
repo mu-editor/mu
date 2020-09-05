@@ -212,7 +212,7 @@ class MicroPythonREPLPane(QTextEdit):
         pass
 
     def send(self, msg):
-        self.serial.write(msg)
+        self.connection.write(msg)
 
     def keyPressEvent(self, data):
         """

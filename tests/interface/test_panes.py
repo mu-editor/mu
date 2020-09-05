@@ -195,7 +195,6 @@ def test_MicroPythonREPLPane_keyPressEvent_return():
     mock_serial.write.assert_called_once_with(mu.interface.panes.VT100_RETURN)
 
 
-
 def test_MicroPythonREPLPane_keyPressEvent_delete():
     """
     Ensure delete in the REPL is handled correctly.
@@ -207,7 +206,9 @@ def test_MicroPythonREPLPane_keyPressEvent_delete():
     data.text = mock.MagicMock(return_value="")
     data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(mu.interface.panes.VT100_DELETE)
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_DELETE
+    )
 
 
 def test_MicroPythonREPLPane_keyPressEvent_up():
@@ -221,7 +222,9 @@ def test_MicroPythonREPLPane_keyPressEvent_up():
     data.text = mock.MagicMock(return_value="")
     data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(mu.interface.panes.VT100_UP)
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_UP
+    )
 
 
 def test_MicroPythonREPLPane_keyPressEvent_down():
@@ -235,7 +238,9 @@ def test_MicroPythonREPLPane_keyPressEvent_down():
     data.text = mock.MagicMock(return_value="")
     data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(mu.interface.panes.VT100_DOWN)
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_DOWN
+    )
 
 
 def test_MicroPythonREPLPane_keyPressEvent_right():
@@ -249,7 +254,9 @@ def test_MicroPythonREPLPane_keyPressEvent_right():
     data.text = mock.MagicMock(return_value="")
     data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(mu.interface.panes.VT100_RIGHT)
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_RIGHT
+    )
 
 
 def test_MicroPythonREPLPane_keyPressEvent_left():
@@ -263,7 +270,9 @@ def test_MicroPythonREPLPane_keyPressEvent_left():
     data.text = mock.MagicMock(return_value="")
     data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(mu.interface.panes.VT100_LEFT)
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_LEFT
+    )
 
 
 @mock.patch("PyQt5.QtWidgets.QTextEdit.keyPressEvent")
@@ -336,7 +345,6 @@ def test_MicroPythonREPLPane_keyPressEvent_left_with_selection(a, b):
     rp.move_cursor_to = mock.MagicMock()
     rp.keyPressEvent(data)
     rp.move_cursor_to.assert_called_once_with(20)
->>>>>>> 4d4b5cb... First batch of test cases
 
 
 def test_MicroPythonREPLPane_keyPressEvent_home():
@@ -350,7 +358,9 @@ def test_MicroPythonREPLPane_keyPressEvent_home():
     data.text = mock.MagicMock(return_value="")
     data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(mu.interface.panes.VT100_HOME)
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_HOME
+    )
 
 
 def test_MicroPythonREPLPane_keyPressEvent_end():
@@ -364,7 +374,9 @@ def test_MicroPythonREPLPane_keyPressEvent_end():
     data.text = mock.MagicMock(return_value="")
     data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(mu.interface.panes.VT100_END)
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_END
+    )
 
 
 def test_MicroPythonREPLPane_keyPressEvent_CTRL_C_Darwin():
@@ -419,7 +431,7 @@ def test_MicroPythonREPLPane_keyPressEvent_ctrl_passthrough_windows():
     Ensure backspaces in the REPL are handled correctly.
     """
     mock_repl_connection = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_M)
     data.text = mock.MagicMock(return_value="a")
@@ -434,8 +446,8 @@ def test_MicroPythonREPLPane_set_qtcursor_to_devicecursor():
     Test that set_qtcursor_to_devicecursor updates the
     Qt cursor, if the self.device_cursor_position has changed
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.setPlainText("Hello world!")
     rp.device_cursor_position = 10
     rp.set_qtcursor_to_devicecursor()
@@ -447,8 +459,8 @@ def test_MicroPythonREPLPane_set_devicecursor_to_qtcursor():
     Test that set_devicecursor_to_qtcursor calls
     move_cursor_to with the appropriate number of steps
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.move_cursor_to = mock.MagicMock()
     rp.setPlainText("Hello world!")
     # Move Qt cursor 10 steps forward
@@ -464,8 +476,8 @@ def test_MicroPythonREPLPane_set_move_cursor_to_right():
     Test that move_cursor_to sends the appropriate
     number of steps, when moving to the right.
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.send = mock.MagicMock()
     rp.setPlainText("Hello world!")
     rp.move_cursor_to(10)
@@ -477,8 +489,8 @@ def test_MicroPythonREPLPane_set_move_cursor_to_left():
     Test that move_cursor_to sends the appropriate
     number of steps, when moving to the left.
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.setPlainText("Hello world!")
     rp.device_cursor_position = 10
     rp.send = mock.MagicMock()
@@ -490,8 +502,8 @@ def test_MicroPythonREPLPane_delete_selection():
     """
     Test that delete_selection sends the appropriate number of backspaces
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.send = mock.MagicMock()
     rp.move_cursor_to = mock.MagicMock()
     rp.setPlainText("Hello world!")
@@ -513,8 +525,8 @@ def test_MicroPythonREPLPane_delete_selection_w_no_selection():
     """
     Test that delete_election returns false on no selection
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.setPlainText("Hello world!")
     assert not rp.delete_selection()
 
@@ -524,8 +536,8 @@ def test_MicroPythonREPLPane_mouseReleasedEvent_no_selection():
     Test that when no selection is made, a mouse click updates
     the device cursor to the new location of the cursor in Qt
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.set_devicecursor_to_qtcursor = mock.MagicMock()
     rp.setPlainText("Hello world!")
     # Simulate mouse click
@@ -546,8 +558,8 @@ def test_MicroPythonREPLPane_mouseReleasedEvent_with_selection():
     Test that when a selection is made in Qt, the cursor movement is
     not send to the device.
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.set_devicecursor_to_qtcursor = mock.MagicMock()
     rp.setPlainText("Hello world!")
     tc = rp.textCursor()
@@ -569,26 +581,26 @@ def test_MicroPythonREPLPane_mouseReleasedEvent_with_selection():
     rp.set_devicecursor_to_qtcursor.assert_not_called()
 
 
-def test_MicroPythonREPLPane_process_bytes():
+def test_MicroPythonREPLPane_process_tty_data():
     """
     Ensure bytes coming from the device to the application are processed as
     expected. Backspace is enacted, carriage-return is ignored, newline moves
     the cursor position to the end of the line before enacted and all others
     are simply inserted.
     """
-    mock_serial = mock.MagicMock()
+    mock_repl_connection = mock.MagicMock()
     mock_tc = mock.MagicMock()
     mock_tc.movePosition = mock.MagicMock(
         side_effect=[True, False, True, True]
     )
     mock_tc.deleteChar = mock.MagicMock(return_value=None)
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.textCursor = mock.MagicMock(return_value=mock_tc)
     rp.setTextCursor = mock.MagicMock(return_value=None)
     rp.insertPlainText = mock.MagicMock(return_value=None)
     rp.ensureCursorVisible = mock.MagicMock(return_value=None)
     bs = bytes([8, 13, 10, 65])  # \b, \r, \n, 'A'
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     assert mock_tc.movePosition.call_count == 2
     assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Left
     assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.End
@@ -598,18 +610,18 @@ def test_MicroPythonREPLPane_process_bytes():
     rp.ensureCursorVisible.assert_called_once_with()
 
 
-def test_MicroPythonREPLPane_process_bytes_VT100():
+def test_MicroPythonREPLPane_process_tty_data_VT100():
     """
     Ensure bytes coming from the device to the application are processed as
     expected. In this case, make sure VT100 related codes are handled
     properly.
     """
-    mock_serial = mock.MagicMock()
+    mock_repl_connection = mock.MagicMock()
     mock_tc = mock.MagicMock()
     mock_tc.movePosition = mock.MagicMock(return_value=False)
     mock_tc.removeSelectedText = mock.MagicMock()
     mock_tc.deleteChar = mock.MagicMock(return_value=None)
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.textCursor = mock.MagicMock(return_value=mock_tc)
     rp.setTextCursor = mock.MagicMock(return_value=None)
     rp.insertPlainText = mock.MagicMock(return_value=None)
@@ -637,7 +649,7 @@ def test_MicroPythonREPLPane_process_bytes_VT100():
             ord("K"),  # <Esc>[K     (VT100 DELETE to end of line)
         ]
     )
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     assert mock_tc.movePosition.call_count == 5
     assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Up
     assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Down
@@ -654,12 +666,12 @@ def test_MicroPythonREPLPane_process_bytes_VT100():
     rp.ensureCursorVisible.assert_called_once_with()
 
 
-def test_MicroPythonREPLPane_process_bytes_backspace():
+def test_MicroPythonREPLPane_process_tty_data_backspace():
     """
     Ensure backspace's are interpreted correctly
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.setPlainText("Hello world!")
     # Move cursor to between 'l' and 'd'
     rp.device_cursor_position = 10
@@ -670,171 +682,171 @@ def test_MicroPythonREPLPane_process_bytes_backspace():
     #         d!      - send the two chars 'd!' again
     #         \b\b    - move cursor back where it were)
     bs = b"\b\x1b[Kd!\b\b"
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     assert rp.toPlainText() == "Hello word!"
     assert rp.textCursor().position() == 9
     assert rp.device_cursor_position == 9
 
 
-def test_MicroPythonREPLPane_process_bytes_carriage_return():
+def test_MicroPythonREPLPane_process_tty_data_carriage_return():
     """
     Ensure carriage return's are not handled (will be handled on \n)
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.setPlainText("Hello world!")
     # Move cursor to between 'l' and 'd'
     rp.device_cursor_position = 10
     rp.set_qtcursor_to_devicecursor()
     # Receive carriage return \r
     bs = b"\r"
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     assert rp.toPlainText() == "Hello world!"
     assert rp.textCursor().position() == 10
     assert rp.device_cursor_position == 10
 
 
-def test_MicroPythonREPLPane_process_bytes_newline():
+def test_MicroPythonREPLPane_process_tty_data_newline():
     """
     Ensure newline are interpreted correctly (move to end of line,
     then insert new line)
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.setPlainText("Hello world!")
     # Move cursor to between 'l' and 'd'
     rp.device_cursor_position = 10
     rp.set_qtcursor_to_devicecursor()
     # Receive new line \n
     bs = b"\n"
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     assert rp.toPlainText() == "Hello world!\n"
     assert rp.textCursor().position() == 13
     assert rp.device_cursor_position == 13
 
 
-def test_MicroPythonREPLPane_process_bytes_printed_chars():
+def test_MicroPythonREPLPane_process_tty_data_printed_chars():
     """
     Ensure printed characters are handled correctly, in this case
     overwriting what comes after (as if Insert was pushed)
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.setPlainText("Hello world!")
     # Move cursor to after first 'o'
     rp.device_cursor_position = 5
     rp.set_qtcursor_to_devicecursor()
     # Receive ' foobar!'
     bs = b" foobar!"
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     assert rp.toPlainText() == "Hello foobar!"
     assert rp.textCursor().position() == 13
     assert rp.device_cursor_position == 13
 
 
-def test_MicroPythonREPLPane_process_bytes_vt100_cursor_left():
+def test_MicroPythonREPLPane_process_tty_data_vt100_cursor_left():
     """
     Ensure left cursor movement of several steps works correctly
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.setPlainText("Hello world!")
     # Move cursor to after first 'o'
     rp.device_cursor_position = 5
     rp.set_qtcursor_to_devicecursor()
     # Receive: move 4 times left
     bs = b"\x1B[4D"
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     assert rp.toPlainText() == "Hello world!"
     assert rp.textCursor().position() == 1
     assert rp.device_cursor_position == 1
 
 
-def test_MicroPythonREPLPane_process_bytes_vt100_cursor_right():
+def test_MicroPythonREPLPane_process_tty_data_vt100_cursor_right():
     """
     Ensure right cursor movement of several steps works correctly
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.setPlainText("Hello world!")
     # Move cursor to after first 'o'
     rp.device_cursor_position = 5
     rp.set_qtcursor_to_devicecursor()
     # Receive: move 4 times right
     bs = b"\x1B[4C"
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     assert rp.toPlainText() == "Hello world!"
     assert rp.textCursor().position() == 9
     assert rp.device_cursor_position == 9
 
 
-def test_MicroPythonREPLPane_process_bytes_partial_reception():
+def test_MicroPythonREPLPane_process_tty_data_partial_reception():
     """
     Ensure that when partially received multibyte commands are
     received they are handled properly
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.setPlainText("Hello world!")
     # Move cursor to after first 'o'
     rp.device_cursor_position = 5
     rp.set_qtcursor_to_devicecursor()
     # Receive: \x1B
     bs = b"\x1B"
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     assert rp.unprocessed_input == "\x1B"
     assert rp.toPlainText() == "Hello world!"
     assert rp.textCursor().position() == 5
     assert rp.device_cursor_position == 5
     # Receive [4C - 4 times right
     bs = b"[4C"
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     assert rp.unprocessed_input == ""
     assert rp.toPlainText() == "Hello world!"
     assert rp.textCursor().position() == 9
     assert rp.device_cursor_position == 9
 
 
-def test_MicroPythonREPLPane_process_bytes_partial_reception2():
+def test_MicroPythonREPLPane_process_tty_data_partial_reception2():
     """
     Ensure that when partially received multibyte commands are
     received they are handled properly
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.setPlainText("Hello world!")
     # Move cursor to after first 'o'
     rp.device_cursor_position = 5
     rp.set_qtcursor_to_devicecursor()
     # Receive: \x1B
     bs = b"\x1B["
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     assert rp.unprocessed_input == "\x1B["
     assert rp.toPlainText() == "Hello world!"
     assert rp.textCursor().position() == 5
     assert rp.device_cursor_position == 5
     # Receive 4C - 4 times right
     bs = b"4C"
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     assert rp.unprocessed_input == ""
     assert rp.toPlainText() == "Hello world!"
     assert rp.textCursor().position() == 9
     assert rp.device_cursor_position == 9
 
 
-def test_MicroPythonREPLPane_process_bytes_unsupported_vt100_command():
+def test_MicroPythonREPLPane_process_tty_data_unsupported_vt100_command():
     """
     Ensure nothing is done, when receiving an unsupported VT100 command
     """
-    mock_serial = mock.MagicMock()
-    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.setPlainText("Hello world!")
     # Move cursor to after first 'o'
     rp.device_cursor_position = 5
     rp.set_qtcursor_to_devicecursor()
     # Receive: \x1B[4X - unknown command X
     bs = b"\x1B[4X"
-    rp.process_bytes(bs)
+    rp.process_tty_data(bs)
     # Do nothing
     assert rp.unprocessed_input == b""
     assert rp.toPlainText() == "Hello world!"
