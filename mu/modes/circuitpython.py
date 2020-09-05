@@ -49,6 +49,9 @@ class CircuitPythonMode(MicroPythonMode):
         (0x1B4F, 0x8D23, None, "SparkFun SAMD21 Dev Breakout"),
         (0x1209, 0x2017, None, "Mini SAM M4"),
         (0x1209, 0x7102, None, "Mini SAM M0"),
+        (0x04D8, 0xEC72, None, "XinaBox CC03"),
+        (0x04D8, 0xEC75, None, "XinaBox CS11"),
+        (0x04D8, 0xED5E, None, "XinaBox CW03"),
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
