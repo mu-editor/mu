@@ -55,6 +55,7 @@ class CircuitPythonMode(MicroPythonMode):
         (0x3171, 0x0101, None, "8086.net Commander"),
         (0x04D8, 0xED94, None, "PyCubed"),
         (0x04D8, 0xEDBE, None, "SAM32"),
+        (0x1D50, 0x60E8, None, "PewPew Game Console"),
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
