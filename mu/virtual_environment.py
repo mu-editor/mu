@@ -42,23 +42,72 @@ class Pip(object):
                 params.append(str(v))
         params.extend(args)
 
-        subprocess.run(self.pip_executable, *params)
+        p = subprocess.run([self.pip_executable] + params, capture_output=True)
+        return p.stdout
 
     def install(self, packages, **kwargs):
+        """Use pip to install a package or packages
+
+        If the first parameter is a string one package is installed; otherwise
+        it is assumed to be an iterable of package names.
+
+        Any kwargs are passed as command-line switches. A value of None
+        indicates a switch without a value (eg --upgrade)
+        """
         if isinstance(packages, str):
-            self.run("install", packages, **kwargs)
+            return self.run("install", packages, **kwargs)
         else:
-            self.run("install", *packages, **kwargs)
+            return self.run("install", *packages, **kwargs)
 
     def uninstall(self, packages, **kwargs):
+        """Use pip to uninstall a package or packages
+
+        If the first parameter is a string one package is uninstalled; otherwise
+        it is assumed to be an iterable of package names.
+
+        Any kwargs are passed as command-line switches. A value of None
+        indicates a switch without a value (eg --upgrade)
+        """
         if isinstance(packages, str):
-            self.run("uninstall", packages, **kwargs)
+            return self.run("uninstall", packages, **kwargs)
         else:
-            self.run("uninstall", *packages, **kwargs)
+            return self.run("uninstall", *packages, **kwargs)
 
     def freeze(self):
-        self.run("freeze")
+        """Use pip to return a list of installed packages
 
+        NB this is fairly trivial but is pulled out principally for
+        testing purposes
+        """
+        return self.run("freeze")
+
+    def list(self):
+        """Use pip to return a list of installed packages
+
+        NB this is fairly trivial but is pulled out principally for
+        testing purposes
+        """
+        return self.run("list")
+
+    def installed_packages(self):
+        """Yield tuples of (package_name, version)
+
+        pip list gives a more consistent view of name/version
+        than pip freeze which uses different annotations for
+        file-installed wheels and editable (-e) installs
+        """
+        lines = self.list().decode("utf-8").splitlines()
+        print("lines:", lines)
+        iterlines = iter(lines)
+        #
+        # The first two lines are headers
+        #
+        next(iterlines)
+        next(iterlines)
+        for line in iterlines:
+            print("line:", line)
+            name, version, location = line.split()
+            yield name, version
 
 class VirtualEnvironment(object):
 
