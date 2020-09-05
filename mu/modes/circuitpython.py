@@ -52,6 +52,7 @@ class CircuitPythonMode(MicroPythonMode):
         (0x04D8, 0xEC72, None, "XinaBox CC03"),
         (0x04D8, 0xEC75, None, "XinaBox CS11"),
         (0x04D8, 0xED5E, None, "XinaBox CW03"),
+        (0x3171, 0x0101, None, "8086.net Commander"),
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
