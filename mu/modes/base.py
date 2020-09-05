@@ -385,6 +385,7 @@ class MicroPythonMode(BaseMode):
     valid_boards = BOARD_IDS
     force_interrupt = True
     connection = None
+    baudrate = 115200
 
     def compatible_board(self, port):
         """
@@ -497,7 +498,9 @@ class MicroPythonMode(BaseMode):
         if device:
             try:
                 if not self.connection:
-                    self.connection = REPLConnection(device.port)
+                    self.connection = REPLConnection(
+                        device.port, self.baudrate
+                    )
                     self.connection.open()
                     if self.force_interrupt:
                         self.connection.send_interrupt()
@@ -546,7 +549,9 @@ class MicroPythonMode(BaseMode):
         if device:
             try:
                 if not self.connection:
-                    self.connection = REPLConnection(device.port)
+                    self.connection = REPLConnection(
+                        device.port, self.baudrate
+                    )
                     self.connection.open()
                 self.view.add_micropython_plotter(
                     self.name, self.connection, self.on_data_flood
