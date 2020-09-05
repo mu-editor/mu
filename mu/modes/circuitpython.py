@@ -57,6 +57,7 @@ class CircuitPythonMode(MicroPythonMode):
         (0x04D8, 0xED94, None, "PyCubed"),
         (0x04D8, 0xEDBE, None, "SAM32"),
         (0x1D50, 0x60E8, None, "PewPew Game Console"),
+        (0x2886, 0x802D, None, "Seeed Wio Terminal"),
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
