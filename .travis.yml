@@ -16,9 +16,10 @@ matrix:
       sudo: required
       language: python
       python: 3.7
-    # To maximise compatibility pick earliest image, OS X 10.12
     - os: osx
-      osx_image: xcode8.3
+      # match xcode version with earliest supported by current PyQt 
+      # (earliest to maximize compatibility)
+      osx_image: xcode9.3
       sudo: required
       language: generic
       python: 3.6

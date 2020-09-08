@@ -17,7 +17,7 @@ def test_path():
         r.assert_called_once_with(mu.resources.__name__, "images/foo")
 
 
-def test_load_icon():
+def test_load_icon(qtapp):
     """
     Check the load_icon function returns the expected QIcon object.
     """
@@ -25,7 +25,7 @@ def test_load_icon():
     assert isinstance(result, QIcon)
 
 
-def test_load_pixmap():
+def test_load_pixmap(qtapp):
     """
     Check the load_pixmap function returns the expected QPixmap object.
     """

@@ -33,6 +33,7 @@ class ESPMode(MicroPythonMode):
     """
 
     name = _("ESP MicroPython")
+    short_name = "esp"
     description = _("Write MicroPython on ESP8266/ESP32 boards.")
     icon = "esp"
     fs = None
@@ -41,10 +42,11 @@ class ESPMode(MicroPythonMode):
     # the same USB / serial chips (which actually define the Vendor ID and
     # Product ID for the connected devices.
     valid_boards = [
-        # VID  , PID
-        (0x1A86, 0x7523),  # HL-340
-        (0x10C4, 0xEA60),  # CP210x
-        (0x0403, 0x6015),  # Sparkfun ESP32 VID, PID
+        # VID  , PID,    Manufacturer string, Device name
+        (0x1A86, 0x7523, None, "HL-340"),
+        (0x10C4, 0xEA60, None, "CP210x"),
+        (0x0403, 0x6015, None, "Sparkfun ESP32 Thing"),
+        (0x0403, 0x6001, "M5STACK Inc.", "M5Stack ESP32 device"),
     ]
 
     def actions(self):
@@ -173,8 +175,8 @@ class ESPMode(MicroPythonMode):
         python_script = tab.text().split("\n")
         if not self.repl:
             self.toggle_repl(None)
-        if self.repl:
-            self.view.repl_pane.send_commands(python_script)
+        if self.repl and self.connection:
+            self.connection.send_commands(python_script)
 
     def toggle_files(self, event):
         """
@@ -209,10 +211,10 @@ class ESPMode(MicroPythonMode):
         """
 
         # Find serial port the ESP8266/ESP32 is connected to
-        device_port, serial_number = self.find_device()
+        device = self.editor.current_device
 
         # Check for MicroPython device
-        if not device_port:
+        if not device:
             message = _("Could not find an attached ESP8266/ESP32.")
             information = _(
                 "Please make sure the device is plugged "
@@ -226,7 +228,7 @@ class ESPMode(MicroPythonMode):
             self.view.show_message(message, information)
             return
         self.file_manager_thread = QThread(self)
-        self.file_manager = FileManager(device_port)
+        self.file_manager = FileManager(device.port)
         self.file_manager.moveToThread(self.file_manager_thread)
         self.file_manager_thread.started.connect(self.file_manager.on_start)
 
@@ -259,3 +261,20 @@ class ESPMode(MicroPythonMode):
         """
         self.set_buttons(files=True)
         super().on_data_flood()
+
+    def deactivate(self):
+        """
+        Invoked whenever the mode is deactivated.
+        """
+        super().deactivate()
+        if self.fs:
+            self.remove_fs()
+
+    def device_changed(self, new_device):
+        """
+        Invoked when the user changes device.
+        """
+        super().device_changed(new_device)
+        if self.fs:
+            self.remove_fs()
+            self.add_fs()

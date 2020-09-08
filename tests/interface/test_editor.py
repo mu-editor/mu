@@ -12,7 +12,7 @@ from PyQt5.QtGui import QDropEvent
 import pytest
 
 
-def test_pythonlexer_keywords():
+def test_pythonlexer_keywords(qtapp):
     """
     Ensure both types of expected keywords are returned from the PythonLexer
     class.
@@ -26,7 +26,7 @@ def test_pythonlexer_keywords():
     assert lexer.keywords(3) is None
 
 
-def test_csslexer_description_comments():
+def test_csslexer_description_comments(qtapp):
     """
     Ensure that if a Comment enum is passed in, the string "Comment" is
     returned. This is due to a bug in the base QsciLexerCSS class.
@@ -35,7 +35,7 @@ def test_csslexer_description_comments():
     assert "Comment" == lexer.description(lexer.Comment)
 
 
-def test_csslexer_description_other():
+def test_csslexer_description_other(qtapp):
     """
     Ensure that if a Comment enum is passed in, the string "Comment" is
     returned. This is due to a bug in the base QsciLexerCSS class.
@@ -47,7 +47,7 @@ def test_csslexer_description_other():
         assert "foo" == lexer.description(lexer.Value)
 
 
-def test_EditorPane_init_python():
+def test_EditorPane_init_python(qtapp):
     """
     Ensure everything is set and configured given a path and text passed into
     a new instance of the EditorPane. Python file.
@@ -73,7 +73,7 @@ def test_EditorPane_init_python():
         assert isinstance(editor.lexer, mu.interface.editor.PythonLexer)
 
 
-def test_EditorPane_init_html():
+def test_EditorPane_init_html(qtapp):
     """
     Ensure everything is set and configured given a path and text passed into
     a new instance of the EditorPane. HTML file.
@@ -99,7 +99,7 @@ def test_EditorPane_init_html():
         assert isinstance(editor.lexer, mu.interface.editor.QsciLexerHTML)
 
 
-def test_EditorPane_init_css():
+def test_EditorPane_init_css(qtapp):
     """
     Ensure everything is set and configured given a path and text passed into
     a new instance of the EditorPane. CSS file.
@@ -125,7 +125,7 @@ def test_EditorPane_init_css():
         assert isinstance(editor.lexer, mu.interface.editor.QsciLexerCSS)
 
 
-def test_EditorPane_configure():
+def test_EditorPane_configure(qtapp):
     """
     Check the expected configuration takes place. NOTE - this is checking the
     expected attributes are configured, not what the actual configuration
@@ -192,7 +192,7 @@ def test_EditorPane_configure():
     assert ep.set_zoom.call_count == 1
 
 
-def test_Editor_connect_margin():
+def test_Editor_connect_margin(qtapp):
     """
     Ensure that the passed in function is connected to the marginClick event.
     """
@@ -203,7 +203,7 @@ def test_Editor_connect_margin():
     assert ep.marginClicked.connect.call_count == 1
 
 
-def test_Editor_connect_margin_ignores_margin_4():
+def test_Editor_connect_margin_ignores_margin_4(qtapp):
     """
     Ensure that the margin click handler is not called if margin 4 is clicked.
     """
@@ -217,7 +217,7 @@ def test_Editor_connect_margin_ignores_margin_4():
     assert mock_fn.call_count == 0
 
 
-def test_Editor_connect_margin_1_works():
+def test_Editor_connect_margin_1_works(qtapp):
     """
     Ensure that the margin click handler is called if margin 1 is clicked.
     """
@@ -238,7 +238,7 @@ def test_Editor_connect_margin_1_works():
     # to fail intermittently on macOS.
 
 
-def test_EditorPane_set_theme():
+def test_EditorPane_set_theme(qtapp):
     """
     Check all the expected configuration calls are made to ensure the widget's
     theme is updated.
@@ -256,7 +256,7 @@ def test_EditorPane_set_theme():
         mock_api.prepare.assert_called_once_with()
 
 
-def test_EditorPane_set_zoom():
+def test_EditorPane_set_zoom(qtapp):
     """
     Ensure the t-shirt size is turned into a call to parent's zoomTo.
     """
@@ -266,7 +266,7 @@ def test_EditorPane_set_zoom():
     ep.zoomTo.assert_called_once_with(8)
 
 
-def test_EditorPane_label():
+def test_EditorPane_label(qtapp):
     """
     Ensure the correct label is returned given a set of states:
 
@@ -285,7 +285,7 @@ def test_EditorPane_label():
     assert ep.title == "bar.py •"
 
 
-def test_EditorPane_reset_annotations():
+def test_EditorPane_reset_annotations(qtapp):
     """
     Ensure annotation state is reset.
     """
@@ -301,7 +301,7 @@ def test_EditorPane_reset_annotations():
     ep.reset_check_indicators.assert_called_once_with()
 
 
-def test_EditorPane_reset_check_indicators():
+def test_EditorPane_reset_check_indicators(qtapp):
     """
     Ensure code check indicators are reset.
     """
@@ -338,7 +338,7 @@ def test_EditorPane_reset_check_indicators():
         assert ep.check_indicators[indicator]["markers"] == {}
 
 
-def test_EditorPane_reset_search_indicators():
+def test_EditorPane_reset_search_indicators(qtapp):
     """
     Ensure search indicators are reset.
     """
@@ -362,7 +362,7 @@ def test_EditorPane_reset_search_indicators():
         assert ep.search_indicators[indicator]["positions"] == []
 
 
-def test_EditorPane_annotate_code():
+def test_EditorPane_annotate_code(qtapp):
     """
     Given a dict containing representations of feedback on the code contained
     within the EditorPane instance, ensure the correct indicators and markers
@@ -409,7 +409,7 @@ def test_EditorPane_annotate_code():
     ep.ensureLineVisible.assert_called_once_with(17)  # first problem visible
 
 
-def test_EditorPane_debugger_at_line():
+def test_EditorPane_debugger_at_line(qtapp):
     """
     Ensure the right calls are made to highlight the referenced line with the
     DEBUG_INDICATOR.
@@ -428,7 +428,7 @@ def test_EditorPane_debugger_at_line():
     ep.ensureLineVisible.assert_called_once_with(99)
 
 
-def test_EditorPane_debugger_at_line_windows_line_endings():
+def test_EditorPane_debugger_at_line_windows_line_endings(qtapp):
     """
     Ensure the right calls are made to highlight the referenced line with the
     DEBUG_INDICATOR.
@@ -447,7 +447,7 @@ def test_EditorPane_debugger_at_line_windows_line_endings():
     ep.ensureLineVisible.assert_called_once_with(99)
 
 
-def test_EditorPane_reset_debugger_highlight():
+def test_EditorPane_reset_debugger_highlight(qtapp):
     """
     Ensure all DEBUG_INDICATORs are removed from the editor.
     """
@@ -466,7 +466,7 @@ def test_EditorPane_reset_debugger_highlight():
     )
 
 
-def test_EditorPane_show_annotations():
+def test_EditorPane_show_annotations(qtapp):
     """
     Ensure the annotations are shown in "sentence" case and with an arrow to
     indicate the line to which they refer.
@@ -489,7 +489,7 @@ def test_EditorPane_show_annotations():
     )
 
 
-def test_EditorPane_find_next_match():
+def test_EditorPane_find_next_match(qtapp):
     """
     Ensures that the expected arg values are passed through to QsciScintilla
     for highlighting matched text.
@@ -527,7 +527,7 @@ def _ranges_in_text(text, search_for):
             yield n_line, match.start(), n_line, match.end()
 
 
-def test_EditorPane_highlight_selected_matches_no_selection():
+def test_EditorPane_highlight_selected_matches_no_selection(qtapp):
     """
     Ensure that if the current selection is empty then all highlights
     are cleared.
@@ -544,7 +544,7 @@ def test_EditorPane_highlight_selected_matches_no_selection():
     assert ep.search_indicators["selection"]["positions"] == []
 
 
-def test_EditorPane_highlight_selected_spans_two_or_more_lines():
+def test_EditorPane_highlight_selected_spans_two_or_more_lines(qtapp):
     """
     Ensure that if the current selection spans two or more lines then all
     highlights are cleared.
@@ -561,7 +561,7 @@ def test_EditorPane_highlight_selected_spans_two_or_more_lines():
     assert ep.search_indicators["selection"]["positions"] == []
 
 
-def test_EditorPane_highlight_selected_matches_multi_word():
+def test_EditorPane_highlight_selected_matches_multi_word(qtapp):
     """
     Ensure that if the current selection is not a single word then don't cause
     a search/highlight call.
@@ -589,7 +589,9 @@ def test_EditorPane_highlight_selected_matches_multi_word():
         ("résumé bar résumé baz résumé", "résumé"),
     ],
 )
-def test_EditorPane_highlight_selected_matches_with_match(text, search_for):
+def test_EditorPane_highlight_selected_matches_with_match(
+    qtapp, text, search_for
+):
     """
     Ensure that if the current selection is a single word then it causes the
     expected search/highlight call.
@@ -624,7 +626,7 @@ def test_EditorPane_highlight_selected_matches_with_match(text, search_for):
     assert ep.search_indicators["selection"]["positions"] == expected_ranges
 
 
-def test_EditorPane_highlight_selected_matches_incomplete_word():
+def test_EditorPane_highlight_selected_matches_incomplete_word(qtapp):
     """
     Ensure that if the current selection is not a complete word
     then no ranges are highlighted.
@@ -644,7 +646,7 @@ def test_EditorPane_highlight_selected_matches_incomplete_word():
     assert ep.search_indicators["selection"]["positions"] == []
 
 
-def test_EditorPane_highlight_selected_matches_cursor_remains():
+def test_EditorPane_highlight_selected_matches_cursor_remains(qtapp):
     """
     Ensure that if a selection is made, the text cursor remains in the
     same place after any matching terms have been highlighted.
@@ -674,7 +676,7 @@ def test_EditorPane_highlight_selected_matches_cursor_remains():
     assert ep.getCursorPosition() == (line1, index1 - select_n_chars)
 
 
-def test_EditorPane_selection_change_listener():
+def test_EditorPane_selection_change_listener(qtapp):
     """
     Enusure that is there is a change to the selected text then controll is
     passed to highlight_selected_matches.
@@ -690,7 +692,7 @@ def test_EditorPane_selection_change_listener():
     assert ep.highlight_selected_matches.call_count == 1
 
 
-def test_EditorPane_drop_event():
+def test_EditorPane_drop_event(qtapp):
     """
     If there's a drop event associated with files, cause them to be passed into
     Mu's existing file loading code.
@@ -715,7 +717,7 @@ def test_EditorPane_drop_event():
     assert m.call_count == 3
 
 
-def test_EditorPane_drop_event_not_file():
+def test_EditorPane_drop_event_not_file(qtapp):
     """
     If the drop event isn't for files (for example, it may be for dragging and
     dropping text into the editor), then pass the handling up to QScintilla.
@@ -729,7 +731,7 @@ def test_EditorPane_drop_event_not_file():
         mock_de.assert_called_once_with(event)
 
 
-def test_EditorPane_toggle_line_starts_with_hash():
+def test_EditorPane_toggle_line_starts_with_hash(qtapp):
     """
     If the line starts with a hash ("#") immediately followed by code, then
     uncomment it.
@@ -746,7 +748,7 @@ def test_EditorPane_toggle_line_starts_with_hash():
     assert ep.toggle_line("    #foo") == "    foo"
 
 
-def test_EditorPane_toggle_line_starts_with_hash_space():
+def test_EditorPane_toggle_line_starts_with_hash_space(qtapp):
     """
     If the line starts with a PEP-8 compliant hash followed by a space ("# ")
     then uncomment it.
@@ -765,7 +767,7 @@ def test_EditorPane_toggle_line_starts_with_hash_space():
     assert ep.toggle_line("    # foo") == "    foo"
 
 
-def test_EditorPane_toggle_line_preserves_embedded_comment():
+def test_EditorPane_toggle_line_preserves_embedded_comment(qtapp):
     """
     If the line being un-commented has a trailing comment, only the first
     comment marker should be removed.
@@ -774,7 +776,7 @@ def test_EditorPane_toggle_line_preserves_embedded_comment():
     assert ep.toggle_line("    # foo # comment") == "    foo # comment"
 
 
-def test_EditorPane_toggle_line_normal_line():
+def test_EditorPane_toggle_line_normal_line(qtapp):
     """
     If the line is an uncommented line of text, then comment it with hash-space
     ("# ").
@@ -791,7 +793,7 @@ def test_EditorPane_toggle_line_normal_line():
     assert ep.toggle_line("    foo") == "#     foo"
 
 
-def test_EditorPane_toggle_line_whitespace_line():
+def test_EditorPane_toggle_line_whitespace_line(qtapp):
     """
     If the line is simply empty or contains only whitespace, then ignore it and
     return as-is.
@@ -800,7 +802,7 @@ def test_EditorPane_toggle_line_whitespace_line():
     assert ep.toggle_line("    ") == "    "
 
 
-def test_EditorPane_toggle_line_preserves_multi_comment():
+def test_EditorPane_toggle_line_preserves_multi_comment(qtapp):
     """
     If the line starts with two or more "#" together, then return it as-is.
     """
@@ -810,7 +812,7 @@ def test_EditorPane_toggle_line_preserves_multi_comment():
     assert ep.toggle_line("    ### triplet") == "    ### triplet"
 
 
-def test_EditorPane_toggle_comments_no_selection():
+def test_EditorPane_toggle_comments_no_selection(qtapp):
     """
     If no text is selected, toggle the line currently containing the cursor.
     """
@@ -827,7 +829,7 @@ def test_EditorPane_toggle_comments_no_selection():
     ep.replaceSelectedText.assert_called_once_with("# foo")
 
 
-def test_EditorPane_toggle_comments_selected_normal_lines():
+def test_EditorPane_toggle_comments_selected_normal_lines(qtapp):
     """
     Check normal lines of code are properly commented and subsequently
     highlighted.
@@ -843,7 +845,7 @@ def test_EditorPane_toggle_comments_selected_normal_lines():
     ep.setSelection.assert_called_once_with(0, 0, 2, 4)
 
 
-def test_EditorPane_toggle_comments_selected_hash_comment_lines():
+def test_EditorPane_toggle_comments_selected_hash_comment_lines(qtapp):
     """
     Check commented lines starting with "#" are now uncommented.
     """
@@ -858,7 +860,7 @@ def test_EditorPane_toggle_comments_selected_hash_comment_lines():
     ep.setSelection.assert_called_once_with(0, 0, 2, 2)
 
 
-def test_EditorPane_toggle_comments_selected_hash_space_comment_lines():
+def test_EditorPane_toggle_comments_selected_hash_space_comment_lines(qtapp):
     """
     Check commented lines starting with "# " are now uncommented.
     """
@@ -873,7 +875,7 @@ def test_EditorPane_toggle_comments_selected_hash_space_comment_lines():
     ep.setSelection.assert_called_once_with(0, 0, 2, 2)
 
 
-def test_EditorPane_toggle_comments_selected_spaces_before_comment_mark():
+def test_EditorPane_toggle_comments_selected_spaces_before_comment_mark(qtapp):
     """
     Check commented lines starting with "# " are now uncommented and on the
     last line selection ends at "baz" when there are spaces before the comment
@@ -890,7 +892,7 @@ def test_EditorPane_toggle_comments_selected_spaces_before_comment_mark():
     ep.setSelection.assert_called_once_with(0, 0, 2, 4)
 
 
-def test_EditorPane_toggle_comments_selected_spaces_after_comment_mark():
+def test_EditorPane_toggle_comments_selected_spaces_after_comment_mark(qtapp):
     """
     Check commented lines starting with "# " are now uncommented and on the
     last line selection ends at "baz" when there are spaces between the comment
@@ -907,7 +909,7 @@ def test_EditorPane_toggle_comments_selected_spaces_after_comment_mark():
     ep.setSelection.assert_called_once_with(0, 0, 2, 4)
 
 
-def test_EditorPane_toggle_comments_selection_follows_len_change():
+def test_EditorPane_toggle_comments_selection_follows_len_change(qtapp):
     """
     Check commented lines starting with "# " are now uncommented one level and
     selection adjustment doesn't assume lines starting with "# " had comment
@@ -924,9 +926,8 @@ def test_EditorPane_toggle_comments_selection_follows_len_change():
     ep.setSelection.assert_called_once_with(0, 0, 2, 4)
 
 
-def test_EditorPane_wheelEvent():
-    """
-    """
+def test_EditorPane_wheelEvent(qtapp):
+    """"""
     ep = mu.interface.editor.EditorPane(None, "baz")
     mock_app = mock.MagicMock()
     mock_app.keyboardModifiers.return_value = []
@@ -937,9 +938,8 @@ def test_EditorPane_wheelEvent():
         mw.assert_called_once_with(None)
 
 
-def test_EditorPane_wheelEvent_with_modifier_ignored():
-    """
-    """
+def test_EditorPane_wheelEvent_with_modifier_ignored(qtapp):
+    """"""
     ep = mu.interface.editor.EditorPane(None, "baz")
     mock_app = mock.MagicMock()
     mock_app.keyboardModifiers.return_value = ["CTRL"]
