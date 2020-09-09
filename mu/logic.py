@@ -1612,7 +1612,7 @@ class Editor(QObject):
                 self.device_disconnected.emit(connected)
                 logger.info(
                     (
-                        "{} device connected on port: {}"
+                        "{} device disconnected on port: {}"
                         "(VID: 0x{:04X}, PID: 0x{:04X}, manufacturer {})"
                     ).format(
                         connected.short_mode_name,

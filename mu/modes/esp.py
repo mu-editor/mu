@@ -38,15 +38,25 @@ class ESPMode(MicroPythonMode):
     icon = "esp"
     fs = None
 
-    # There are many boards which use ESP microcontrollers but they often use
-    # the same USB / serial chips (which actually define the Vendor ID and
-    # Product ID for the connected devices.
+    # The below list defines the supported devices, however, many
+    # devices are using the exact same FTDI USB-interface, with vendor
+    # ID 0x403 without reporting their own VID/PID
+
+    # In some instances we can recognize the device not on VID/PID,
+    # but on manufacturer ID, that's what the third column is for.
+    # These more specific device specifications, should be listed
+    # before the generic FTDI VID/PID's
     valid_boards = [
         # VID  , PID,    Manufacturer string, Device name
         (0x1A86, 0x7523, None, "HL-340"),
         (0x10C4, 0xEA60, None, "CP210x"),
-        (0x0403, 0x6015, None, "Sparkfun ESP32 Thing"),
         (0x0403, 0x6001, "M5STACK Inc.", "M5Stack ESP32 device"),
+        (0x0403, 0x6001, None, None),  # FT232/FT245 (XinaBox CW01, CW02)
+        (0x0403, 0x6010, None, None),  # FT2232C/D/L/HL/Q (ESP-WROVER-KIT)
+        (0x0403, 0x6011, None, None),  # FT4232
+        (0x0403, 0x6014, None, None),  # FT232H
+        (0x0403, 0x6015, None, None),  # FT X-Series (Sparkfun ESP32)
+        (0x0403, 0x601C, None, None),  # FT4222H
     ]
 
     def actions(self):

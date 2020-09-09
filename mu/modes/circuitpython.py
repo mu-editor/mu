@@ -45,10 +45,20 @@ class CircuitPythonMode(MicroPythonMode):
         (0x1209, 0xBAB1, None, "Electronic Cats Meow Meow"),
         (0x1209, 0xBAB2, None, "Electronic Cats CatWAN USBStick"),
         (0x1209, 0xBAB3, None, "Electronic Cats Bast Pro Mini M0"),
+        (0x1209, 0xBAB6, None, "Electronic Cats Escornabot Makech"),
         (0x1B4F, 0x8D22, None, "SparkFun SAMD21 Mini Breakout"),
         (0x1B4F, 0x8D23, None, "SparkFun SAMD21 Dev Breakout"),
         (0x1209, 0x2017, None, "Mini SAM M4"),
         (0x1209, 0x7102, None, "Mini SAM M0"),
+        (0x04D8, 0xEC72, None, "XinaBox CC03"),
+        (0x04D8, 0xEC75, None, "XinaBox CS11"),
+        (0x04D8, 0xED5E, None, "XinaBox CW03"),
+        (0x3171, 0x0101, None, "8086.net Commander"),
+        (0x04D8, 0xED94, None, "PyCubed"),
+        (0x04D8, 0xEDBE, None, "SAM32"),
+        (0x1D50, 0x60E8, None, "PewPew Game Console"),
+        (0x2886, 0x802D, None, "Seeed Wio Terminal"),
+        (0x1B4F, 0x0016, None, "Sparkfun Thing Plus - SAMD51"),
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
