@@ -6,16 +6,30 @@ matrix:
       sudo: required
       language: python
       python: 3.5
+      services:
+        - xvfb
     - os: linux
       dist: xenial 
       sudo: required
       language: python
       python: 3.6
+      services:
+        - xvfb
     - os: linux
       dist: xenial
       sudo: required
       language: python
       python: 3.7
+      services:
+        - xvfb
+    - os: linux
+      dist: xenial
+      arch: arm64
+      sudo: required
+      language: python
+      python: 3.5
+      services:
+        - xvfb
     - os: osx
       # match xcode version with earliest supported by current PyQt 
       # (earliest to maximize compatibility)
@@ -40,11 +54,12 @@ before_install:
   # Check everything was correctly installed
   - echo $PATH
   - python --version
-  - python -c "import struct; print(struct.calcsize('P') * 8)"
+  - python -c "import platform, struct; print(platform.machine(), struct.calcsize('P') * 8)"
   - python -c "import sys; print(sys.executable)"
   - python -m pip --version
   - pip --version
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then virtualenv venv --python=python3; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_CPU_ARCH" != "arm64" ]; then virtualenv venv --python=python3; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then virtualenv venv --python=python3 --system-site-packages; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then source venv/bin/activate; fi
 
 install:
@@ -55,8 +70,8 @@ install:
 
 script:
   # For Linux run only the tests on 3.5 and the full checker elsewhere, all need the "X Virtual Framebuffer"
-  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" = "3.5" ]; then xvfb-run make coverage; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" != "3.5" ]; then xvfb-run make check; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" = "3.5" ]; then make coverage; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" != "3.5" ]; then make check; fi
   - make clean
 
   # Run the tests on macOS and package it: "make macos" runs checks+tests first.
