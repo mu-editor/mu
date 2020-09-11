@@ -63,6 +63,13 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then source venv/bin/activate; fi
 
 install:
+  # Installing PyQt5 dependencies via apt for arm64 arch
+  - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then sudo apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg libxmlsec1-dev libxml2 libxml2-dev; fi
+  # Installing PyGame and numpy from PiWheels and set up extra-index-url
+  - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then wget https://www.piwheels.org/simple/pygame/pygame-1.9.6-cp35-cp35m-linux_armv7l.whl -O pygame-1.9.6-cp35-cp35m-linux_aarch64.whl && pip install pygame-1.9.6-cp35-cp35m-linux_aarch64.whl; fi
+  - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then wget https://www.piwheels.org/simple/numpy/numpy-1.18.5-cp35-cp35m-linux_armv7l.whl -O numpy-1.18.5-cp35-cp35m-linux_aarch64.whl && pip install numpy-1.18.5-cp35-cp35m-linux_aarch64.whl; fi
+  # piwheels doesn't yet support Requires-Python metadata: https://github.com/piwheels/piwheels/issues/208
+  #- if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then pip config set global.extra-index-url https://www.piwheels.org/simple; fi
   # Install Mu and its dependencies
   - pip install .[dev]
   # Check everything was correctly installed
