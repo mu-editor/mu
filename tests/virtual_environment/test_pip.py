@@ -33,7 +33,7 @@ def test_pip_creation():
     """
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
-    assert pip.pip_executable == pip_executable
+    assert pip.executable == pip_executable
 
 def test_pip_run():
     """Ensure we are calling out to pip with whatever parameters
@@ -82,19 +82,19 @@ def test_pip_install_single_package_with_flag():
     package_name = rstring()
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(subprocess, "run") as mock_run:
-        pip.install(package_name, switch=None)
+        pip.install(package_name, switch=True)
         expected_args = [pip_executable, "install", "--switch", package_name],
         assert mock_run.call_args.args == expected_args
 
 def test_pip_install_several_packages_with_flag():
-    """Ensure that installing a single package with switch=None
+    """Ensure that installing a single package with switch=True
     "pip install --upgrade <package>"
     """
     pip_executable = "pip-" + rstring() + ".exe"
     package_names = [rstring() for _ in range(random.randint(1, 5))]
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(subprocess, "run") as mock_run:
-        pip.install(package_names, switch=None)
+        pip.install(package_names, switch=True)
         expected_args = ([pip_executable, "install", "--switch"] + package_names,)
         assert mock_run.call_args.args == expected_args
 
@@ -146,19 +146,19 @@ def test_pip_uninstall_single_package_with_flag():
     package_name = rstring()
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(subprocess, "run") as mock_run:
-        pip.uninstall(package_name, switch=None)
+        pip.uninstall(package_name, switch=True)
         expected_args = [pip_executable, "uninstall", "--switch", package_name],
         assert mock_run.call_args.args == expected_args
 
 def test_pip_uninstall_several_packages_with_flag():
-    """Ensure that uninstalling a single package with switch=None
+    """Ensure that uninstalling a single package with switch=True
     "pip uninstall --upgrade <package>"
     """
     pip_executable = "pip-" + rstring() + ".exe"
     package_names = [rstring() for _ in range(random.randint(1, 5))]
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(subprocess, "run") as mock_run:
-        pip.uninstall(package_names, switch=None)
+        pip.uninstall(package_names, switch=True)
         expected_args = ([pip_executable, "uninstall", "--switch"] + package_names,)
         assert mock_run.call_args.args == expected_args
 

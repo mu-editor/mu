@@ -26,7 +26,7 @@ class Pip(object):
     commands
     """
     def __init__(self, pip_executable):
-        self.pip_executable = pip_executable
+        self.executable = pip_executable
 
     def run(self, command, *args, **kwargs):
         #
@@ -37,12 +37,14 @@ class Pip(object):
         params = [command]
         for k, v in kwargs.items():
             switch = k.replace("_", "-")
+            if v is False:
+                switch = "no-" + switch
             params.append("--" + switch)
-            if v is not None:
+            if v is not True and v is not False:
                 params.append(str(v))
         params.extend(args)
 
-        p = subprocess.run([self.pip_executable] + params, capture_output=True)
+        p = subprocess.run([self.executable] + params, capture_output=True)
         return p.stdout
 
     def install(self, packages, **kwargs):
@@ -97,7 +99,6 @@ class Pip(object):
         file-installed wheels and editable (-e) installs
         """
         lines = self.list().decode("utf-8").splitlines()
-        print("lines:", lines)
         iterlines = iter(lines)
         #
         # The first two lines are headers
@@ -105,7 +106,6 @@ class Pip(object):
         next(iterlines)
         next(iterlines)
         for line in iterlines:
-            print("line:", line)
             name, version, location = line.split()
             yield name, version
 
@@ -126,7 +126,14 @@ class VirtualEnvironment(object):
     def __init__(self, dirpath):
         self.path = dirpath
         self.name = os.path.basename(self.path)
-        self.interpreter = None
+        self._is_windows = sys.platform == "win32"
+        self._bin_directory = os.path.join(self.path, "scripts" if self._is_windows else "bin")
+        self._bin_extension = ".exe" if self._is_windows else ""
+        #
+        # Pip and the interpreter will be set up when the virtualenv is ensured
+        #
+        self.interpreter = os.path.join(self._bin_directory, "python" + self._bin_extension)
+        self.pip = Pip(os.path.join(self._bin_directory, "pip" + self._bin_extension))
         logging.debug(
             "Starting virtual environment %s at %s", self.name, self.path
         )
@@ -167,18 +174,11 @@ class VirtualEnvironment(object):
         return result
 
     def find_interpreter(self):
-        if sys.platform == "win32":
-            self.interpreter = os.path.join(self.path, "Scripts", "python.exe")
-        else:
-            # For Linux/OSX.
-            self.interpreter = os.path.join(self.path, "bin", "python")
-        if not os.path.isfile(self.interpreter):
-            message = (
-                "No interpreter found where expected at %s" % self.interpreter
-            )
-            logger.error(message)
-            raise RuntimeError(message)
-        logger.info("Interpreter found at %s", self.interpreter)
+        #
+        # This no longer has any real purpose but we're leaving it here
+        # so as not to break too many things
+        #
+        pass
 
     def ensure(self):
         """Ensure that a virtual environment exists, creating it if needed"""
@@ -189,18 +189,35 @@ class VirtualEnvironment(object):
             message = "%s exists but is not a directory" % self.path
             logger.error(message)
             raise RuntimeError(message)
+
         #
         # There doesn't seem to be a canonical way of checking whether
         # a directory is a virtual environment
         #
-        # elif not ...:
-        #   message = "Directory %s exists but is not a venv" % self.path
-        #
+        elif not os.path.isfile(os.path.join(self.path, "pyvenv.cfg")):
+            message = "Directory %s exists but is not a venv" % self.path
+            logger.error(message)
+            raise RuntimeError(message)
         else:
             logger.debug("Directory %s already exists", self.path)
 
-        if not self.interpreter:
-            self.find_interpreter()
+        if os.path.isfile(self.interpreter):
+            logger.info("Interpreter found at %s", self.interpreter)
+        else:
+            message = (
+                "No interpreter found where expected at %s" % self.interpreter
+            )
+            logger.error(message)
+            raise RuntimeError(message)
+
+        if os.path.isfile(self.pip.executable):
+            logger.info("Pip found at %s", self.pip.executable)
+        else:
+            message = (
+                "Pip not found where expected at %s" % self.pip.executable
+            )
+            logger.error(message)
+            raise RuntimeError(message)
 
     def create(self):
         """
@@ -220,8 +237,8 @@ class VirtualEnvironment(object):
         self.install_baseline_packages()
         self.install_jupyter_kernel()
 
-    def pip(self, *args):
-        return self.run_python("-m", "pip", *args)
+    #~ def pip(self, *args):
+        #~ return self.run_python("-m", "pip", *args)
 
     def install_jupyter_kernel(self):
         logger.info("Installing Jupyter Kernel")
@@ -266,17 +283,17 @@ class VirtualEnvironment(object):
             raise RuntimeError(
                 "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
             )
-        self.pip("install", *wheel_filepaths)
+        self.pip.install(wheel_filepaths)
 
     def install_user_packages(self, packages):
         logger.info("Installing user packages: %s", ", ".join(packages))
         for package in packages:
-            self.pip("install", "--upgrade", package)
+            self.pip.install(package, upgrade=True)
 
     def remove_user_packages(self, packages):
         logger.info("Removing user packages: %s", ", ".join(packages))
         for package in packages:
-            self.pip("uninstall", package)
+            self.pip.uninstall(package)
 
     def full_pythonpath(self):
         """
@@ -323,13 +340,10 @@ class VirtualEnvironment(object):
             name for name, version in self.baseline_packages
         ]
         user_packages = []
-
-        result = self.pip("freeze")
-        packages = result.splitlines()
-        logger.info(packages)
-        for package in packages:
-            name, _, version = package.partition("==")
-            if name not in baseline_packages:
-                user_packages.append(name)
+        p = self.pip.installed_packages()
+        for package, version in p: ## self.pip.installed_packages():
+            logger.info(package)
+            if package not in baseline_packages:
+                user_packages.append(package)
 
         return baseline_packages, user_packages
