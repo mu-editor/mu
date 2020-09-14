@@ -245,6 +245,7 @@ def adafruit_feather():
     return adafruit_feather
 
 
+@pytest.mark.skip(reason="Probably no longer needed with virtual environment")
 def test_installed_packages_dist_info():
     """
     Ensure module meta-data is processed properly to give a return value of a
@@ -279,6 +280,7 @@ def test_installed_packages_dist_info():
         assert result == ["bar", "foo"]  # ordered result.
 
 
+@pytest.mark.skip(reason="Probably no longer needed with virtual environment")
 def test_installed_packages_egg_info():
     """
     Ensure module meta-data is processed properly to give a return value of a
@@ -313,6 +315,7 @@ def test_installed_packages_egg_info():
         assert result == ["bar", "foo"]  # ordered result.
 
 
+@pytest.mark.skip(reason="Probably no longer needed with virtual environment")
 def test_installed_packages_errors():
     """
     If there's an error opening the expected metadata file, then just ignore
