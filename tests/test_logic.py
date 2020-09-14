@@ -2377,6 +2377,7 @@ def test_quit_save_window_geometry():
     assert session["window"] == {"x": 100, "y": 200, "w": 300, "h": 400}
 
 
+@pytest.mark.skip(reason="Probably no longer needed with virtual environment")
 def test_quit_cleans_temporary_pth_file_on_windows():
     """
     If the platform is Windows and Mu is running as installed by the official
@@ -2422,6 +2423,7 @@ def test_quit_cleans_temporary_pth_file_on_windows():
     mock_os_remove.assert_called_once_with(expected_path)
 
 
+@pytest.mark.skip(reason="Probably no longer needed with virtual environment")
 def test_quit_unable_to_clean_temporary_pth_file_on_windows():
     """
     If the platform is Windows and Mu is running as installed by the official
@@ -2551,10 +2553,10 @@ def test_show_admin():
     }
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    mock_ip = mock.MagicMock(return_value=["Foo", "bar"])
+    mock_ip = mock.MagicMock(return_value=[[], ["Foo", "bar"]])
     with mock.patch("builtins.open", mock_open), mock.patch(
         "os.path.isfile", return_value=True
-    ), mock.patch("mu.logic.installed_packages", mock_ip):
+    ), mock.patch("mu.virtual_environment.VirtualEnvironment.installed_packages", mock_ip):
         ed.show_admin(None)
         mock_open.assert_called_once_with(
             mu.logic.LOG_FILE, "r", encoding="utf8"
