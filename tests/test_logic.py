@@ -934,9 +934,8 @@ def test_editor_init():
         assert e.replace == ""
         assert e.global_replace is False
         assert e.selecting_mode is False
-        assert mkd.call_count == 2
+        assert mkd.call_count == 1
         assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
-        assert mkd.call_args_list[1][0][0] == mu.logic.MODULE_DIR
 
 
 def test_editor_setup():
