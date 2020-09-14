@@ -2583,10 +2583,10 @@ def test_show_admin_no_change():
     new_settings = {}
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    mock_ip = mock.MagicMock(return_value=["foo", "bar"])
+    mock_ip = mock.MagicMock(return_value=[[], ["Foo", "bar"]])
     with mock.patch("builtins.open", mock_open), mock.patch(
         "os.path.isfile", return_value=True
-    ), mock.patch("mu.logic.installed_packages", mock_ip):
+    ), mock.patch("mu.virtual_environment.VirtualEnvironment.installed_packages", mock_ip):
         ed.show_admin(None)
         assert ed.sync_package_state.call_count == 0
 
