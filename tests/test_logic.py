@@ -2643,7 +2643,7 @@ def test_sync_package_state():
     new_packages = ["bar", "baz"]
     ed.sync_package_state(old_packages, new_packages)
     view.sync_packages.assert_called_once_with(
-        {"foo"}, {"baz"}, mu.logic.MODULE_DIR
+        {"foo"}, {"baz"}, ed.venv
     )
 
 
