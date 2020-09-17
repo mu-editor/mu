@@ -47,7 +47,7 @@ install_requires = [
 
 extras_require = {
     "tests": [
-        "pytest",
+        "pytest>=4.6",
         "pytest-cov",
         "pytest-random-order>=1.0.0",
         "pytest-faulthandler",
