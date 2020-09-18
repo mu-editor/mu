@@ -302,7 +302,7 @@ class ESPFirmwareFlasherWidget(QWidget):
         self.btnExec.setEnabled(False)
         form_set = QGridLayout()
         form_set.addWidget(device_selector_label, 0, 0)
-        form_set.addWidget(self.device_selector, 0, 1)
+        form_set.addWidget(self.device_selector, 0, 1, 1, 3)
         form_set.addWidget(device_type_label, 1, 0)
         form_set.addWidget(self.device_type, 1, 1)
         form_set.addWidget(firmware_label, 2, 0)
