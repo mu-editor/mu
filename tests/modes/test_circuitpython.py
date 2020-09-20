@@ -22,7 +22,8 @@ def test_circuitpython_mode():
     assert am.editor == editor
     assert am.view == view
 
-    actions = am.actions()
+    with mock.patch("mu.modes.circuitpython.CHARTS", True):
+        actions = am.actions()
     assert len(actions) == 2
     assert actions[0]["name"] == "serial"
     assert actions[0]["handler"] == am.toggle_repl
