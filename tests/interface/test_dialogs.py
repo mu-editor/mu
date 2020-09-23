@@ -226,6 +226,26 @@ def test_ESPFirmwareFlasherWidget_update_firmware(microbit):
     espff.update_firmware()
 
 
+def test_ESPFirmwareFlasherWidget_update_firmware_no_deviec():
+    """
+    Ensure that we don't try to flash, when no device is connected.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    mm = ESPMode(editor, view)
+    modes = mock.MagicMock()
+    device_list = mu.logic.DeviceList(modes)
+    espff = mu.interface.dialogs.ESPFirmwareFlasherWidget()
+    with mock.patch("os.path.exists", return_value=True):
+        espff.setup(mm, device_list)
+
+    espff.run_esptool = mock.MagicMock()
+    espff.device_type.setCurrentIndex(0)
+    espff.update_firmware()
+
+    espff.run_esptool.assert_not_called()
+
+
 def test_ESPFirmwareFlasherWidget_esptool_error(microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher

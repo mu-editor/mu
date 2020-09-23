@@ -323,6 +323,7 @@ class ESPFirmwareFlasherWidget(QWidget):
         self.txtFolder.textChanged.connect(self.firmware_path_changed)
         self.btnFolder.clicked.connect(self.show_folder_dialog)
         self.btnExec.clicked.connect(self.update_firmware)
+        self.device_selector.device_changed.connect(self.toggle_exec_button)
 
         self.mode = mode
 
@@ -348,6 +349,8 @@ class ESPFirmwareFlasherWidget(QWidget):
             self.mode.toggle_files(None)
 
         device = self.device_selector.selected_device()
+        if device is None:
+            return
 
         esptool = MODULE_DIR + "/esptool.py"
         erase_command = 'python "{}" --port {} erase_flash'.format(
@@ -424,7 +427,13 @@ class ESPFirmwareFlasherWidget(QWidget):
         self.log_text_area.setTextCursor(cursor)
 
     def firmware_path_changed(self):
-        if len(self.txtFolder.text()) > 0:
+        self.toggle_exec_button()
+
+    def toggle_exec_button(self):
+        if (
+            len(self.txtFolder.text()) > 0
+            and self.device_selector.selected_device() is not None
+        ):
             self.btnExec.setEnabled(True)
         else:
             self.btnExec.setEnabled(False)

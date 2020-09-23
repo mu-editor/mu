@@ -184,6 +184,10 @@ QPushButton:pressed {
     background: #111;
 }
 
+QPushButton:disabled {
+    background:#aaa;
+}
+
 QAbstractScrollArea::corner {
     border-top: 1px solid #555;    /* Border */
     border-left: 1px solid #555;   /* Border */
