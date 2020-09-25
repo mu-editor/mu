@@ -37,7 +37,7 @@ def test_ModeItem_init():
     mock_icon.assert_called_once_with(icon)
 
 
-def test_ModeSelector_setup(qtapp):
+def test_ModeSelector_setup():
     """
     Ensure the ModeSelector dialog is setup properly given a list of modes.
 
@@ -64,7 +64,7 @@ def test_ModeSelector_setup(qtapp):
     assert mock_item.call_count == 3
 
 
-def test_ModeSelector_select_and_accept(qtapp):
+def test_ModeSelector_select_and_accept():
     """
     Ensure the accept slot is fired when this event handler is called.
     """
@@ -75,7 +75,7 @@ def test_ModeSelector_select_and_accept(qtapp):
     ms.accept.assert_called_once_with()
 
 
-def test_ModeSelector_get_mode(qtapp):
+def test_ModeSelector_get_mode():
     """
     Ensure that the ModeSelector will correctly return a selected mode (or
     raise the expected exception if cancelled).
@@ -94,7 +94,7 @@ def test_ModeSelector_get_mode(qtapp):
         ms.get_mode()
 
 
-def test_LogWidget_setup(qtapp):
+def test_LogWidget_setup():
     """
     Ensure the log widget displays the referenced log file string in the
     expected way.
@@ -106,7 +106,7 @@ def test_LogWidget_setup(qtapp):
     assert lw.log_text_area.isReadOnly()
 
 
-def test_EnvironmentVariablesWidget_setup(qtapp):
+def test_EnvironmentVariablesWidget_setup():
     """
     Ensure the widget for editing user defined environment variables displays
     the referenced string in the expected way.
@@ -118,7 +118,7 @@ def test_EnvironmentVariablesWidget_setup(qtapp):
     assert not evw.text_area.isReadOnly()
 
 
-def test_MicrobitSettingsWidget_setup(qtapp):
+def test_MicrobitSettingsWidget_setup():
     """
     Ensure the widget for editing settings related to the BBC microbit
     displays the referenced settings data in the expected way.
@@ -131,7 +131,7 @@ def test_MicrobitSettingsWidget_setup(qtapp):
     assert mbsw.runtime_path.text() == "/foo/bar"
 
 
-def test_PackagesWidget_setup(qtapp):
+def test_PackagesWidget_setup():
     """
     Ensure the widget for editing settings related to third party packages
     displays the referenced data in the expected way.
@@ -142,7 +142,7 @@ def test_PackagesWidget_setup(qtapp):
     assert pw.text_area.toPlainText() == packages
 
 
-def test_AdminDialog_setup(qtapp):
+def test_AdminDialog_setup():
     """
     Ensure the admin dialog is setup properly given the content of a log
     file and envars.
@@ -164,7 +164,7 @@ def test_AdminDialog_setup(qtapp):
     assert s == settings
 
 
-def test_FindReplaceDialog_setup(qtapp):
+def test_FindReplaceDialog_setup():
     """
     Ensure the find/replace dialog is setup properly given only the theme
     as an argument.
@@ -176,7 +176,7 @@ def test_FindReplaceDialog_setup(qtapp):
     assert frd.replace_flag() is False
 
 
-def test_FindReplaceDialog_setup_with_args(qtapp):
+def test_FindReplaceDialog_setup_with_args():
     """
     Ensure the find/replace dialog is setup properly given only the theme
     as an argument.
@@ -191,7 +191,7 @@ def test_FindReplaceDialog_setup_with_args(qtapp):
     assert frd.replace_flag()
 
 
-def test_PackageDialog_setup(qtapp):
+def test_PackageDialog_setup():
     """
     Ensure the PackageDialog is set up correctly and kicks off the process of
     removing and adding packages.
@@ -209,7 +209,7 @@ def test_PackageDialog_setup(qtapp):
     assert pd.pkg_dirs == {}
 
 
-def test_PackageDialog_remove_packages(qtapp):
+def test_PackageDialog_remove_packages():
     """
     Ensure the pkg_dirs of to-be-removed packages is correctly filled and the
     remove_package method is scheduled.
@@ -237,7 +237,7 @@ def test_PackageDialog_remove_packages(qtapp):
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-def test_PackageDialog_remove_package_dist_info(qtapp):
+def test_PackageDialog_remove_package_dist_info():
     """
     Ensures that if there are packages remaining to be deleted, then the next
     one is deleted as expected.
@@ -265,7 +265,7 @@ def test_PackageDialog_remove_package_dist_info(qtapp):
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-def test_PackageDialog_remove_package_dist_info_cannot_delete(qtapp):
+def test_PackageDialog_remove_package_dist_info_cannot_delete():
     """
     Ensures that if there are packages remaining to be deleted, then the next
     one is deleted and any failures are logged.
@@ -297,7 +297,7 @@ def test_PackageDialog_remove_package_dist_info_cannot_delete(qtapp):
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-def test_PackageDialog_remove_package_egg_info(qtapp):
+def test_PackageDialog_remove_package_egg_info():
     """
     Ensures that if there are packages remaining to be deleted, then the next
     one is deleted as expected.
@@ -325,7 +325,7 @@ def test_PackageDialog_remove_package_egg_info(qtapp):
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-def test_PackageDialog_remove_package_egg_info_cannot_delete(qtapp):
+def test_PackageDialog_remove_package_egg_info_cannot_delete():
     """
     Ensures that if there are packages remaining to be deleted, then the next
     one is deleted and any failures are logged.
@@ -357,7 +357,7 @@ def test_PackageDialog_remove_package_egg_info_cannot_delete(qtapp):
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-def test_PackageDialog_remove_package_egg_info_cannot_open_record(qtapp):
+def test_PackageDialog_remove_package_egg_info_cannot_open_record():
     """
     If the installed-files.txt file is not available (sometimes the case), then
     simply raise an exception and communicate this to the user.
@@ -384,7 +384,7 @@ def test_PackageDialog_remove_package_egg_info_cannot_open_record(qtapp):
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-def test_PackageDialog_remove_package_end_state(qtapp):
+def test_PackageDialog_remove_package_end_state():
     """
     If there are no more packages to remove and there's nothing to be done for
     adding packages, then ensure all directories that do not contain files are
@@ -412,7 +412,7 @@ def test_PackageDialog_remove_package_end_state(qtapp):
     pd.end_state.assert_called_once_with()
 
 
-def test_PackageDialog_end_state(qtapp):
+def test_PackageDialog_end_state():
     """
     Ensure the expected end-state is correctly cofigured (for when all tasks
     relating to third party packages have finished).
@@ -425,7 +425,7 @@ def test_PackageDialog_end_state(qtapp):
     pd.button_box.button().setEnabled.assert_called_once_with(True)
 
 
-def test_PackageDialog_run_pip(qtapp):
+def test_PackageDialog_run_pip():
     """
     Ensure the expected package to be installed is done so via the expected
     correct call to "pip" in a new process (as per the recommended way to
@@ -451,7 +451,7 @@ def test_PackageDialog_run_pip(qtapp):
         pd.process.start.assert_called_once_with(sys.executable, args)
 
 
-def test_PackageDialog_finished_with_more_to_remove(qtapp):
+def test_PackageDialog_finished_with_more_to_remove():
     """
     When the pip process is finished, check if there are more packages to
     install and run again.
@@ -465,7 +465,7 @@ def test_PackageDialog_finished_with_more_to_remove(qtapp):
     pd.run_pip.assert_called_once_with()
 
 
-def test_PackageDialog_finished_to_end_state(qtapp):
+def test_PackageDialog_finished_to_end_state():
     """
     When the pip process is finished, if there are no more packages to install
     and there's no more activity for removing packages, move to the end state.
@@ -478,7 +478,7 @@ def test_PackageDialog_finished_to_end_state(qtapp):
     pd.end_state.assert_called_once_with()
 
 
-def test_PackageDialog_read_process(qtapp):
+def test_PackageDialog_read_process():
     """
     Ensure any data from the subprocess running "pip" is read and appended to
     the text area.
@@ -494,7 +494,7 @@ def test_PackageDialog_read_process(qtapp):
         mock_timer.singleShot.assert_called_once_with(2, pd.read_process)
 
 
-def test_PackageDialog_append_data(qtapp):
+def test_PackageDialog_append_data():
     """
     Ensure that when data is appended, it's added to the end of the text area!
     """
