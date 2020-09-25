@@ -1828,7 +1828,7 @@ def test_Window_toggle_comments(qtapp):
     mock_tab.toggle_comments.assert_called_once_with()
 
 
-def test_Window_show_hide_device_selector():
+def test_Window_show_hide_device_selector(qtapp):
     """
     Ensure that the device_selector is shown as expected.
     """
@@ -1845,7 +1845,7 @@ def test_Window_show_hide_device_selector():
     assert not (window.status_bar.device_selector.isHidden())
 
 
-def test_device_selector_device_changed_to_none():
+def test_device_selector_device_changed_to_none(qtapp):
     """
     Check that when device changes to index out of range,
     the device selector emits None on the device_changed signal
@@ -1892,7 +1892,7 @@ def adafruit_feather():
     return adafruit_feather
 
 
-def test_device_selector_device_changed(microbit, adafruit_feather):
+def test_device_selector_device_changed(qtapp, microbit, adafruit_feather):
     """
     Test that device_changed signals are emitted, when the user
     changes device.
@@ -1907,7 +1907,7 @@ def test_device_selector_device_changed(microbit, adafruit_feather):
     device_selector.device_changed.emit.assert_called_with(adafruit_feather)
 
 
-def test_DeviceSelector_device_connected(microbit):
+def test_DeviceSelector_device_connected(qtapp, microbit):
     """
     Test that _update_view is called when a device connects
     """
@@ -1917,7 +1917,7 @@ def test_DeviceSelector_device_connected(microbit):
     device_selector._update_view.assert_called_once_with()
 
 
-def test_DeviceSelector_device_disconnected(microbit):
+def test_DeviceSelector_device_disconnected(qtapp, microbit):
     """
     Test that _update_view is called when a device disconnects
     """
@@ -1927,7 +1927,7 @@ def test_DeviceSelector_device_disconnected(microbit):
     device_selector._update_view.assert_called_once_with()
 
 
-def test_DeviceSelector_update_view_selector_hidden_on_1_device():
+def test_DeviceSelector_update_view_selector_hidden_on_1_device(qtapp):
     """
     Test that _update_view hides the combobox selector when only
     one device connected
@@ -1942,7 +1942,7 @@ def test_DeviceSelector_update_view_selector_hidden_on_1_device():
     assert device_selector.selector.isHidden()
 
 
-def test_DeviceSelector_update_view_selector_shown_on_2_devices():
+def test_DeviceSelector_update_view_selector_shown_on_2_devices(qtapp):
     """
     Test that _update_view displays the combobox selector when two
     devices connected
@@ -1957,7 +1957,7 @@ def test_DeviceSelector_update_view_selector_shown_on_2_devices():
     assert not device_selector.selector.isHidden()
 
 
-def test_DeviceSelector_update_view_check_disconnected_icon():
+def test_DeviceSelector_update_view_check_disconnected_icon(qtapp):
     """
     Test that _update_view displays the disconnected icon when
     no device connected
@@ -1972,7 +1972,7 @@ def test_DeviceSelector_update_view_check_disconnected_icon():
     )
 
 
-def test_DeviceSelector_update_view_check_connected_icon():
+def test_DeviceSelector_update_view_check_connected_icon(qtapp):
     """
     Test that _update_view displays the connected icon when
     one device connected
@@ -2073,7 +2073,7 @@ def test_StatusBar_set_mode(qtapp):
     sb.mode_label.setText.assert_called_once_with(mode)
 
 
-def test_StatusBar_device_connected_microbit(microbit):
+def test_StatusBar_device_connected_microbit(qtapp, microbit):
     """
     Test that a message is displayed when a new device is connected
     (with no board_name set)
@@ -2084,7 +2084,7 @@ def test_StatusBar_device_connected_microbit(microbit):
     assert sb.set_message.call_count == 1
 
 
-def test_StatusBar_device_connected_adafruit_feather(adafruit_feather):
+def test_StatusBar_device_connected_adafruit_feather(qtapp, adafruit_feather):
     """
     Test that a message is displayed when a new device is connected
     (with board_name set)

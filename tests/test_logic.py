@@ -960,7 +960,7 @@ def test_editor_setup():
     view.set_usb_checker.assert_called_once_with(1, e.check_usb)
 
 
-def test_editor_connect_to_status_bar():
+def test_editor_connect_to_status_bar(qtapp):
     """
     Check that the Window status bar is connected appropriately
     to Editor-pane and to modes
