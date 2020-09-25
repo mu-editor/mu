@@ -26,7 +26,7 @@ def test_PANE_ZOOM_SIZES():
     assert len(expected_sizes) == len(mu.interface.panes.PANE_ZOOM_SIZES)
 
 
-def test_MicroPythonREPLPane_paste(qtapp):
+def test_MicroPythonREPLPane_paste():
     """
     Pasting into the REPL should send bytes via the serial connection.
     """
@@ -43,7 +43,7 @@ def test_MicroPythonREPLPane_paste(qtapp):
     )
 
 
-def test_MicroPythonREPLPane_paste_handle_unix_newlines(qtapp):
+def test_MicroPythonREPLPane_paste_handle_unix_newlines():
     """
     Pasting into the REPL should handle '\n' properly.
 
@@ -62,7 +62,7 @@ def test_MicroPythonREPLPane_paste_handle_unix_newlines(qtapp):
     )
 
 
-def test_MicroPythonREPLPane_paste_handle_windows_newlines(qtapp):
+def test_MicroPythonREPLPane_paste_handle_windows_newlines():
     """
     Pasting into the REPL should handle '\r\n' properly.
 
@@ -81,7 +81,7 @@ def test_MicroPythonREPLPane_paste_handle_windows_newlines(qtapp):
     )
 
 
-def test_MicroPythonREPLPane_paste_only_works_if_something_to_paste(qtapp):
+def test_MicroPythonREPLPane_paste_only_works_if_something_to_paste():
     """
     Pasting into the REPL should send bytes via the serial connection.
     """
@@ -96,7 +96,7 @@ def test_MicroPythonREPLPane_paste_only_works_if_something_to_paste(qtapp):
     assert mock_repl_connection.write.call_count == 0
 
 
-def test_MicroPythonREPLPane_context_menu(qtapp):
+def test_MicroPythonREPLPane_context_menu():
     """
     Ensure the context menu for the REPL is configured correctly for non-OSX
     platforms.
@@ -123,7 +123,7 @@ def test_MicroPythonREPLPane_context_menu(qtapp):
     assert mock_qmenu.exec_.call_count == 1
 
 
-def test_MicroPythonREPLPane_context_menu_darwin(qtapp):
+def test_MicroPythonREPLPane_context_menu_darwin():
     """
     Ensure the context menu for the REPL is configured correctly for non-OSX
     platforms.
@@ -150,7 +150,7 @@ def test_MicroPythonREPLPane_context_menu_darwin(qtapp):
     assert mock_qmenu.exec_.call_count == 1
 
 
-def test_MicroPythonREPLPane_keyPressEvent(qtapp):
+def test_MicroPythonREPLPane_keyPressEvent():
     """
     Ensure key presses in the REPL are handled correctly.
     """
@@ -164,7 +164,7 @@ def test_MicroPythonREPLPane_keyPressEvent(qtapp):
     mock_repl_connection.write.assert_called_once_with(bytes("a", "utf-8"))
 
 
-def test_MicroPythonREPLPane_keyPressEvent_backspace(qtapp):
+def test_MicroPythonREPLPane_keyPressEvent_backspace():
     """
     Ensure backspaces in the REPL are handled correctly.
     """
@@ -178,7 +178,7 @@ def test_MicroPythonREPLPane_keyPressEvent_backspace(qtapp):
     mock_repl_connection.write.assert_called_once_with(b"\b")
 
 
-def test_MicroPythonREPLPane_keyPressEvent_delete(qtapp):
+def test_MicroPythonREPLPane_keyPressEvent_delete():
     """
     Ensure delete in the REPL is handled correctly.
     """
@@ -192,7 +192,7 @@ def test_MicroPythonREPLPane_keyPressEvent_delete(qtapp):
     mock_repl_connection.write.assert_called_once_with(b"\x1B[\x33\x7E")
 
 
-def test_MicroPythonREPLPane_keyPressEvent_up(qtapp):
+def test_MicroPythonREPLPane_keyPressEvent_up():
     """
     Ensure up arrows in the REPL are handled correctly.
     """
@@ -206,7 +206,7 @@ def test_MicroPythonREPLPane_keyPressEvent_up(qtapp):
     mock_repl_connection.write.assert_called_once_with(b"\x1B[A")
 
 
-def test_MicroPythonREPLPane_keyPressEvent_down(qtapp):
+def test_MicroPythonREPLPane_keyPressEvent_down():
     """
     Ensure down arrows in the REPL are handled correctly.
     """
@@ -220,7 +220,7 @@ def test_MicroPythonREPLPane_keyPressEvent_down(qtapp):
     mock_repl_connection.write.assert_called_once_with(b"\x1B[B")
 
 
-def test_MicroPythonREPLPane_keyPressEvent_right(qtapp):
+def test_MicroPythonREPLPane_keyPressEvent_right():
     """
     Ensure right arrows in the REPL are handled correctly.
     """
@@ -234,7 +234,7 @@ def test_MicroPythonREPLPane_keyPressEvent_right(qtapp):
     mock_repl_connection.write.assert_called_once_with(b"\x1B[C")
 
 
-def test_MicroPythonREPLPane_keyPressEvent_left(qtapp):
+def test_MicroPythonREPLPane_keyPressEvent_left():
     """
     Ensure left arrows in the REPL are handled correctly.
     """
@@ -248,7 +248,7 @@ def test_MicroPythonREPLPane_keyPressEvent_left(qtapp):
     mock_repl_connection.write.assert_called_once_with(b"\x1B[D")
 
 
-def test_MicroPythonREPLPane_keyPressEvent_home(qtapp):
+def test_MicroPythonREPLPane_keyPressEvent_home():
     """
     Ensure home key in the REPL is handled correctly.
     """
@@ -262,7 +262,7 @@ def test_MicroPythonREPLPane_keyPressEvent_home(qtapp):
     mock_repl_connection.write.assert_called_once_with(b"\x1B[H")
 
 
-def test_MicroPythonREPLPane_keyPressEvent_end(qtapp):
+def test_MicroPythonREPLPane_keyPressEvent_end():
     """
     Ensure end key in the REPL is handled correctly.
     """
@@ -276,7 +276,7 @@ def test_MicroPythonREPLPane_keyPressEvent_end(qtapp):
     mock_repl_connection.write.assert_called_once_with(b"\x1B[F")
 
 
-def test_MicroPythonREPLPane_keyPressEvent_CTRL_C_Darwin(qtapp):
+def test_MicroPythonREPLPane_keyPressEvent_CTRL_C_Darwin():
     """
     Ensure end key in the REPL is handled correctly.
     """
@@ -291,7 +291,7 @@ def test_MicroPythonREPLPane_keyPressEvent_CTRL_C_Darwin(qtapp):
     rp.copy.assert_called_once_with()
 
 
-def test_MicroPythonREPLPane_keyPressEvent_CTRL_V_Darwin(qtapp):
+def test_MicroPythonREPLPane_keyPressEvent_CTRL_V_Darwin():
     """
     Ensure end key in the REPL is handled correctly.
     """
@@ -306,7 +306,7 @@ def test_MicroPythonREPLPane_keyPressEvent_CTRL_V_Darwin(qtapp):
     rp.paste.assert_called_once_with()
 
 
-def test_MicroPythonREPLPane_keyPressEvent_meta(qtapp):
+def test_MicroPythonREPLPane_keyPressEvent_meta():
     """
     Ensure backspaces in the REPL are handled correctly.
     """
@@ -324,7 +324,7 @@ def test_MicroPythonREPLPane_keyPressEvent_meta(qtapp):
     mock_repl_connection.write.assert_called_once_with(bytes([expected]))
 
 
-def test_MicroPythonREPLPane_process_tty_data(qtapp):
+def test_MicroPythonREPLPane_process_tty_data():
     """
     Ensure bytes coming from the device to the application are processed as
     expected. Backspace is enacted, carriage-return is ignored, newline moves
@@ -360,7 +360,7 @@ def test_MicroPythonREPLPane_process_tty_data(qtapp):
     rp.ensureCursorVisible.assert_called_once_with()
 
 
-def test_MicroPythonREPLPane_process_tty_data_VT100(qtapp):
+def test_MicroPythonREPLPane_process_tty_data_VT100():
     """
     Ensure bytes coming from the device to the application are processed as
     expected. In this case, make sure VT100 related codes are handled properly.
@@ -423,7 +423,7 @@ def test_MicroPythonREPLPane_process_tty_data_VT100(qtapp):
     rp.ensureCursorVisible.assert_called_once_with()
 
 
-def test_MicroPythonREPLPane_clear(qtapp):
+def test_MicroPythonREPLPane_clear():
     """
     Ensure setText is called with an empty string.
     """
@@ -434,7 +434,7 @@ def test_MicroPythonREPLPane_clear(qtapp):
     rp.setText.assert_called_once_with("")
 
 
-def test_MicroPythonREPLPane_set_font_size(qtapp):
+def test_MicroPythonREPLPane_set_font_size():
     """
     Ensure the font is updated to the expected point size.
     """
@@ -448,7 +448,7 @@ def test_MicroPythonREPLPane_set_font_size(qtapp):
     rp.setFont.assert_called_once_with(mock_font)
 
 
-def test_MicroPythonREPLPane_set_zoom(qtapp):
+def test_MicroPythonREPLPane_set_zoom():
     """
     Ensure the font size is correctly set from the t-shirt size.
     """
@@ -460,7 +460,7 @@ def test_MicroPythonREPLPane_set_zoom(qtapp):
     rp.set_font_size.assert_called_once_with(expected)
 
 
-def test_MuFileList_show_confirm_overwrite_dialog(qtapp):
+def test_MuFileList_show_confirm_overwrite_dialog():
     """
     Ensure the user is notified of an existing file.
     """
@@ -481,7 +481,7 @@ def test_MuFileList_show_confirm_overwrite_dialog(qtapp):
     mock_qmb.setIcon.assert_called_once_with(QMessageBox.Information)
 
 
-def test_MicroPythonDeviceFileList_init(qtapp):
+def test_MicroPythonDeviceFileList_init():
     """
     Check the widget references the user's home and allows drag and drop.
     """
@@ -490,7 +490,7 @@ def test_MicroPythonDeviceFileList_init(qtapp):
     assert mfs.dragDropMode() == mfs.DragDrop
 
 
-def test_MicroPythonDeviceFileList_dropEvent(qtapp):
+def test_MicroPythonDeviceFileList_dropEvent():
     """
     Ensure a valid drop event is handled as expected.
     """
@@ -511,7 +511,7 @@ def test_MicroPythonDeviceFileList_dropEvent(qtapp):
     mfs.put.emit.assert_called_once_with(fn)
 
 
-def test_MicroPythonDeviceFileList_dropEvent_wrong_source(qtapp):
+def test_MicroPythonDeviceFileList_dropEvent_wrong_source():
     """
     Ensure that only drop events whose origins are LocalFileList objects are
     handled.
@@ -525,7 +525,7 @@ def test_MicroPythonDeviceFileList_dropEvent_wrong_source(qtapp):
     assert mfs.findItems.call_count == 0
 
 
-def test_MicroPythonDeviceFileList_on_put(qtapp):
+def test_MicroPythonDeviceFileList_on_put():
     """
     A message and list_files signal should be emitted.
     """
@@ -538,7 +538,7 @@ def test_MicroPythonDeviceFileList_on_put(qtapp):
     mfs.list_files.emit.assert_called_once_with()
 
 
-def test_MicroPythonDeviceFileList_contextMenuEvent(qtapp):
+def test_MicroPythonDeviceFileList_contextMenuEvent():
     """
     Ensure that the menu displayed when a file on the micro:bit is
     right-clicked works as expected when activated.
@@ -563,7 +563,7 @@ def test_MicroPythonDeviceFileList_contextMenuEvent(qtapp):
     mfs.delete.emit.assert_called_once_with("foo.py")
 
 
-def test_MicroPythonFileList_on_delete(qtapp):
+def test_MicroPythonFileList_on_delete():
     """
     On delete should emit a message and list_files signal.
     """
@@ -576,7 +576,7 @@ def test_MicroPythonFileList_on_delete(qtapp):
     mfs.list_files.emit.assert_called_once_with()
 
 
-def test_LocalFileList_init(qtapp):
+def test_LocalFileList_init():
     """
     Ensure the class instantiates with the expected state.
     """
@@ -585,7 +585,7 @@ def test_LocalFileList_init(qtapp):
     assert lfl.dragDropMode() == lfl.DragDrop
 
 
-def test_LocalFileList_dropEvent(qtapp):
+def test_LocalFileList_dropEvent():
     """
     Ensure a valid drop event is handled as expected.
     """
@@ -607,7 +607,7 @@ def test_LocalFileList_dropEvent(qtapp):
     lfs.get.emit.assert_called_once_with("foo.py", fn)
 
 
-def test_LocalFileList_dropEvent_wrong_source(qtapp):
+def test_LocalFileList_dropEvent_wrong_source():
     """
     Ensure that only drop events whose origins are LocalFileList objects are
     handled.
@@ -621,7 +621,7 @@ def test_LocalFileList_dropEvent_wrong_source(qtapp):
     assert lfs.findItems.call_count == 0
 
 
-def test_LocalFileList_on_get(qtapp):
+def test_LocalFileList_on_get():
     """
     On get should emit two signals: a message and list_files.
     """
@@ -637,7 +637,7 @@ def test_LocalFileList_on_get(qtapp):
     lfs.list_files.emit.assert_called_once_with()
 
 
-def test_LocalFileList_contextMenuEvent(qtapp):
+def test_LocalFileList_contextMenuEvent():
     """
     Ensure that the menu displayed when a local file is
     right-clicked works as expected when activated.
@@ -663,7 +663,7 @@ def test_LocalFileList_contextMenuEvent(qtapp):
     mock_open.assert_called_once_with(os.path.join("homepath", "foo.py"))
 
 
-def test_LocalFileList_contextMenuEvent_external(qtapp):
+def test_LocalFileList_contextMenuEvent_external():
     """
     Ensure that the menu displayed when a local file is
     right-clicked works as expected when activated.
@@ -688,7 +688,7 @@ def test_LocalFileList_contextMenuEvent_external(qtapp):
     assert mock_open.call_count == 0
 
 
-def test_FileSystemPane_init(qtapp):
+def test_FileSystemPane_init():
     """
     Check things are set up as expected.
     """
@@ -719,7 +719,7 @@ def test_FileSystemPane_init(qtapp):
         )
 
 
-def test_FileSystemPane_disable(qtapp):
+def test_FileSystemPane_disable():
     """
     The child list widgets are disabled correctly.
     """
@@ -733,7 +733,7 @@ def test_FileSystemPane_disable(qtapp):
     fsp.local_fs.setAcceptDrops.assert_called_once_with(False)
 
 
-def test_FileSystemPane_enable(qtapp):
+def test_FileSystemPane_enable():
     """
     The child list widgets are enabled correctly.
     """
@@ -747,7 +747,7 @@ def test_FileSystemPane_enable(qtapp):
     fsp.local_fs.setAcceptDrops.assert_called_once_with(True)
 
 
-def test_FileSystemPane_set_theme(qtapp):
+def test_FileSystemPane_set_theme():
     """
     Setting theme doesn't error
     """
@@ -755,7 +755,7 @@ def test_FileSystemPane_set_theme(qtapp):
     fsp.set_theme("test")
 
 
-def test_FileSystemPane_show_message(qtapp):
+def test_FileSystemPane_show_message():
     """
     Ensure the expected message signal is emitted.
     """
@@ -765,7 +765,7 @@ def test_FileSystemPane_show_message(qtapp):
     fsp.set_message.emit.assert_called_once_with("Hello")
 
 
-def test_FileSystemPane_show_warning(qtapp):
+def test_FileSystemPane_show_warning():
     """
     Ensure the expected warning signal is emitted.
     """
@@ -775,7 +775,7 @@ def test_FileSystemPane_show_warning(qtapp):
     fsp.set_warning.emit.assert_called_once_with("Hello")
 
 
-def test_FileSystemPane_on_ls(qtapp):
+def test_FileSystemPane_on_ls():
     """
     When lists of files have been obtained from the micro:bit and local
     filesystem, make sure they're properly processed by the on_ls event
@@ -800,7 +800,7 @@ def test_FileSystemPane_on_ls(qtapp):
     fsp.enable.assert_called_once_with()
 
 
-def test_FileSystemPane_on_ls_fail(qtapp):
+def test_FileSystemPane_on_ls_fail():
     """
     A warning is emitted and the widget disabled if listing files fails.
     """
@@ -812,7 +812,7 @@ def test_FileSystemPane_on_ls_fail(qtapp):
     fsp.disable.assert_called_once_with()
 
 
-def test_FileSystem_Pane_on_put_fail(qtapp):
+def test_FileSystem_Pane_on_put_fail():
     """
     A warning is emitted if putting files on the micro:bit fails.
     """
@@ -822,7 +822,7 @@ def test_FileSystem_Pane_on_put_fail(qtapp):
     assert fsp.show_warning.call_count == 1
 
 
-def test_FileSystem_Pane_on_delete_fail(qtapp):
+def test_FileSystem_Pane_on_delete_fail():
     """
     A warning is emitted if deleting files on the micro:bit fails.
     """
@@ -832,7 +832,7 @@ def test_FileSystem_Pane_on_delete_fail(qtapp):
     assert fsp.show_warning.call_count == 1
 
 
-def test_FileSystem_Pane_on_get_fail(qtapp):
+def test_FileSystem_Pane_on_get_fail():
     """
     A warning is emitted if getting files from the micro:bit fails.
     """
@@ -842,7 +842,7 @@ def test_FileSystem_Pane_on_get_fail(qtapp):
     assert fsp.show_warning.call_count == 1
 
 
-def test_FileSystemPane_set_font_size(qtapp):
+def test_FileSystemPane_set_font_size():
     """
     Ensure the right size is set as the point size and the text based UI child
     widgets are updated.
@@ -861,7 +861,7 @@ def test_FileSystemPane_set_font_size(qtapp):
     fsp.local_fs.setFont.assert_called_once_with(fsp.font)
 
 
-def test_FileSystemPane_open_file(qtapp):
+def test_FileSystemPane_open_file():
     """
     FileSystemPane should propogate the open_file signal
     """
@@ -873,7 +873,7 @@ def test_FileSystemPane_open_file(qtapp):
     mock_open_emit.assert_called_once_with("test")
 
 
-def test_JupyterREPLPane_init(qtapp):
+def test_JupyterREPLPane_init():
     """
     Ensure the widget is setup with the correct defaults.
     """
@@ -881,7 +881,7 @@ def test_JupyterREPLPane_init(qtapp):
     assert jw.console_height == 10
 
 
-def test_JupyterREPLPane_append_plain_text(qtapp):
+def test_JupyterREPLPane_append_plain_text():
     """
     Ensure signal and expected bytes are emitted when _append_plain_text is
     called.
@@ -892,7 +892,7 @@ def test_JupyterREPLPane_append_plain_text(qtapp):
     jw.on_append_text.emit.assert_called_once_with("hello".encode("utf-8"))
 
 
-def test_JupyterREPLPane_set_font_size(qtapp):
+def test_JupyterREPLPane_set_font_size():
     """
     Check the new point size is succesfully applied.
     """
@@ -901,7 +901,7 @@ def test_JupyterREPLPane_set_font_size(qtapp):
     assert jw.font.pointSize() == 16
 
 
-def test_JupyterREPLPane_set_zoom(qtapp):
+def test_JupyterREPLPane_set_zoom():
     """
     Ensure the expected font point size is set from the zoom size.
     """
@@ -913,7 +913,7 @@ def test_JupyterREPLPane_set_zoom(qtapp):
     )
 
 
-def test_JupyterREPLPane_set_theme_day(qtapp):
+def test_JupyterREPLPane_set_theme_day():
     """
     Make sure the theme is correctly set for day.
     """
@@ -923,7 +923,7 @@ def test_JupyterREPLPane_set_theme_day(qtapp):
     jw.set_default_style.assert_called_once_with()
 
 
-def test_JupyterREPLPane_set_theme_night(qtapp):
+def test_JupyterREPLPane_set_theme_night():
     """
     Make sure the theme is correctly set for night.
     """
@@ -933,7 +933,7 @@ def test_JupyterREPLPane_set_theme_night(qtapp):
     jw.set_default_style.assert_called_once_with(colors="nocolor")
 
 
-def test_JupyterREPLPane_set_theme_contrast(qtapp):
+def test_JupyterREPLPane_set_theme_contrast():
     """
     Make sure the theme is correctly set for high contrast.
     """
@@ -943,7 +943,7 @@ def test_JupyterREPLPane_set_theme_contrast(qtapp):
     jw.set_default_style.assert_called_once_with(colors="nocolor")
 
 
-def test_JupyterREPLPane_setFocus(qtapp):
+def test_JupyterREPLPane_setFocus():
     """
     Ensures setFocus actually occurs to the _control containing the REPL.
     """
@@ -953,7 +953,7 @@ def test_JupyterREPLPane_setFocus(qtapp):
     jw._control.setFocus.assert_called_once_with()
 
 
-def test_PythonProcessPane_init(qtapp):
+def test_PythonProcessPane_init():
     """
     Check the font, input_buffer and other initial state is set as expected.
     """
@@ -968,7 +968,7 @@ def test_PythonProcessPane_init(qtapp):
     assert ppp.reading_stdout is False
 
 
-def test_PythonProcessPane_start_process(qtapp):
+def test_PythonProcessPane_start_process():
     """
     Ensure the default arguments for starting a new process work as expected.
     Interactive mode is True, no debugger flag nor additional arguments.
@@ -996,7 +996,7 @@ def test_PythonProcessPane_start_process(qtapp):
     assert ppp.running is True
 
 
-def test_PythonProcessPane_start_process_command_args(qtapp):
+def test_PythonProcessPane_start_process_command_args():
     """
     Ensure that the new process is passed the expected comand line args.
     """
@@ -1014,7 +1014,7 @@ def test_PythonProcessPane_start_process_command_args(qtapp):
     ppp.process.start.assert_called_once_with(runner, expected_args)
 
 
-def test_PythonProcessPane_start_process_debugger(qtapp):
+def test_PythonProcessPane_start_process_debugger():
     """
     Ensure starting a new process with the debugger flag set to True uses the
     debug runner to execute the script.
@@ -1037,7 +1037,7 @@ def test_PythonProcessPane_start_process_debugger(qtapp):
     ppp.process.start.assert_called_once_with(python_exec, expected_args)
 
 
-def test_PythonProcessPane_start_process_not_interactive(qtapp):
+def test_PythonProcessPane_start_process_not_interactive():
     """
     Ensure that if the interactive flag is unset, the "-i" flag passed into
     the Python process is missing.
@@ -1058,7 +1058,7 @@ def test_PythonProcessPane_start_process_not_interactive(qtapp):
     ppp.process.start.assert_called_once_with(runner, expected_args)
 
 
-def test_PythonProcessPane_start_process_windows_path(qtapp):
+def test_PythonProcessPane_start_process_windows_path():
     """
     If running on Windows via the installer ensure that the expected paths
     find their way into a temporary mu.pth file.
@@ -1107,7 +1107,7 @@ def test_PythonProcessPane_start_process_windows_path(qtapp):
         assert e + "\n" in added_paths
 
 
-def test_PythonProcessPane_start_process_windows_path_no_user_site(qtapp):
+def test_PythonProcessPane_start_process_windows_path_no_user_site():
     """
     If running on Windows via the installer ensure that the Mu logs the
     fact it's unable to use the temporary mu.pth file because there is no
@@ -1143,7 +1143,7 @@ def test_PythonProcessPane_start_process_windows_path_no_user_site(qtapp):
     assert expected in logs
 
 
-def test_PythonProcessPane_start_process_windows_path_with_exception(qtapp):
+def test_PythonProcessPane_start_process_windows_path_with_exception():
     """
     If running on Windows via the installer ensure that the expected paths
     find their way into a temporary mu.pth file.
@@ -1181,7 +1181,7 @@ def test_PythonProcessPane_start_process_windows_path_with_exception(qtapp):
     assert expected in logs
 
 
-def test_PythonProcessPane_start_process_user_enviroment_variables(qtapp):
+def test_PythonProcessPane_start_process_user_enviroment_variables():
     """
     Ensure that if environment variables are set, they are set in the context
     of the new child Python process.
@@ -1240,7 +1240,7 @@ def test_PythonProcessPane_start_process_user_enviroment_variables(qtapp):
     )
 
 
-def test_PythonProcessPane_start_process_custom_runner(qtapp):
+def test_PythonProcessPane_start_process_custom_runner():
     """
     Ensure that if the runner is set, it is used as the command to start the
     new child Python process.
@@ -1264,7 +1264,7 @@ def test_PythonProcessPane_start_process_custom_runner(qtapp):
     ppp.process.start.assert_called_once_with("foo", expected_args)
 
 
-def test_PythonProcessPane_start_process_custom_python_args(qtapp):
+def test_PythonProcessPane_start_process_custom_python_args():
     """
     Ensure that if there are arguments to be passed into the Python runtime
     starting the child process, these are passed on correctly.
@@ -1285,7 +1285,7 @@ def test_PythonProcessPane_start_process_custom_python_args(qtapp):
     ppp.process.start.assert_called_once_with(runner, expected_args)
 
 
-def test_PythonProcessPane_finished(qtapp):
+def test_PythonProcessPane_finished():
     """
     Check the functionality to handle the process finishing is correct.
     """
@@ -1303,7 +1303,7 @@ def test_PythonProcessPane_finished(qtapp):
     ppp.setTextCursor.assert_called_once_with(ppp.textCursor())
 
 
-def test_PythonProcessPane_context_menu(qtapp):
+def test_PythonProcessPane_context_menu():
     """
     Ensure the context menu for the REPL is configured correctly for non-OSX
     platforms.
@@ -1329,7 +1329,7 @@ def test_PythonProcessPane_context_menu(qtapp):
     assert mock_qmenu.exec_.call_count == 1
 
 
-def test_PythonProcessPane_context_menu_darwin(qtapp):
+def test_PythonProcessPane_context_menu_darwin():
     """
     Ensure the context menu for the REPL is configured correctly for non-OSX
     platforms.
@@ -1355,7 +1355,7 @@ def test_PythonProcessPane_context_menu_darwin(qtapp):
     assert mock_qmenu.exec_.call_count == 1
 
 
-def test_PythonProcessPane_paste(qtapp):
+def test_PythonProcessPane_paste():
     """
     Ensure pasted text is handed off to the parse_paste method.
     """
@@ -1371,7 +1371,7 @@ def test_PythonProcessPane_paste(qtapp):
     ppp.parse_paste.assert_called_once_with("Hello")
 
 
-def test_PythonProcessPane_paste_normalize_windows_newlines(qtapp):
+def test_PythonProcessPane_paste_normalize_windows_newlines():
     """
     Ensure that pasted text containing Windows style line-ends is normalised
     to '\n'.
@@ -1388,7 +1388,7 @@ def test_PythonProcessPane_paste_normalize_windows_newlines(qtapp):
     ppp.parse_paste.assert_called_once_with("h\ni")
 
 
-def test_PythonProcessPane_parse_paste(qtapp):
+def test_PythonProcessPane_parse_paste():
     """
     Given some text ensure that the first character is correctly handled and
     the remaining text to be processed is scheduled to be parsed in the future.
@@ -1407,7 +1407,7 @@ def test_PythonProcessPane_parse_paste(qtapp):
     assert mock_timer.singleShot.call_count == 1
 
 
-def test_PythonProcessPane_parse_paste_non_ascii(qtapp):
+def test_PythonProcessPane_parse_paste_non_ascii():
     """
     Given some non-ascii yet printable text, ensure that the first character is
     correctly handled and the remaining text to be processed is scheduled to be
@@ -1422,7 +1422,7 @@ def test_PythonProcessPane_parse_paste_non_ascii(qtapp):
     assert mock_timer.singleShot.call_count == 1
 
 
-def test_PythonProcessPane_parse_paste_newline(qtapp):
+def test_PythonProcessPane_parse_paste_newline():
     """
     As above, but ensure the correct handling of a newline character.
     """
@@ -1435,7 +1435,7 @@ def test_PythonProcessPane_parse_paste_newline(qtapp):
     assert mock_timer.singleShot.call_count == 1
 
 
-def test_PythonProcessPane_parse_paste_final_character(qtapp):
+def test_PythonProcessPane_parse_paste_final_character():
     """
     As above, but ensure that if there a no more remaining characters to parse
     in the pasted text, then don't schedule any more recursive calls.
@@ -1449,7 +1449,7 @@ def test_PythonProcessPane_parse_paste_final_character(qtapp):
     assert mock_timer.singleShot.call_count == 0
 
 
-def test_PythonProcessPane_keyPressEvent_a(qtapp):
+def test_PythonProcessPane_keyPressEvent_a():
     """
     A character is typed and passed into parse_input in the expected manner.
     """
@@ -1463,7 +1463,7 @@ def test_PythonProcessPane_keyPressEvent_a(qtapp):
     ppp.parse_input.assert_called_once_with(Qt.Key_A, "a", None)
 
 
-def test_PythonProcessPane_on_process_halt(qtapp):
+def test_PythonProcessPane_on_process_halt():
     """
     Ensure the output from the halted process is dumped to the UI.
     """
@@ -1480,7 +1480,7 @@ def test_PythonProcessPane_on_process_halt(qtapp):
     ppp.set_start_of_current_line.assert_called_once_with()
 
 
-def test_PythonProcessPane_on_process_halt_badly_formed_bytes(qtapp):
+def test_PythonProcessPane_on_process_halt_badly_formed_bytes():
     """
     If the bytes read from the child process's stdout starts with a badly
     formed unicode character (e.g. a fragment of a multi-byte character such as
@@ -1500,7 +1500,7 @@ def test_PythonProcessPane_on_process_halt_badly_formed_bytes(qtapp):
     ppp.set_start_of_current_line.assert_called_once_with()
 
 
-def test_PythonProcessPane_parse_input_a(qtapp):
+def test_PythonProcessPane_parse_input_a():
     """
     Ensure a regular printable character is inserted into the text area.
     """
@@ -1513,7 +1513,7 @@ def test_PythonProcessPane_parse_input_a(qtapp):
     ppp.insert.assert_called_once_with(b"a")
 
 
-def test_PythonProcessPane_parse_input_non_ascii(qtapp):
+def test_PythonProcessPane_parse_input_non_ascii():
     """
     Ensure a non-ascii printable character is inserted into the text area.
     """
@@ -1526,7 +1526,7 @@ def test_PythonProcessPane_parse_input_non_ascii(qtapp):
     ppp.insert.assert_called_once_with("Å".encode("utf-8"))
 
 
-def test_PythonProcessPane_parse_input_ctrl_c(qtapp):
+def test_PythonProcessPane_parse_input_ctrl_c():
     """
     Control-C (SIGINT / KeyboardInterrupt) character is typed.
     """
@@ -1548,7 +1548,7 @@ def test_PythonProcessPane_parse_input_ctrl_c(qtapp):
     mock_timer.singleShot.assert_called_once_with(1, ppp.on_process_halt)
 
 
-def test_PythonProcessPane_parse_input_ctrl_d(qtapp):
+def test_PythonProcessPane_parse_input_ctrl_d():
     """
     Control-D (Kill process) character is typed.
     """
@@ -1568,7 +1568,7 @@ def test_PythonProcessPane_parse_input_ctrl_d(qtapp):
     mock_timer.singleShot.assert_called_once_with(1, ppp.on_process_halt)
 
 
-def test_PythonProcessPane_parse_input_ctrl_c_after_process_finished(qtapp):
+def test_PythonProcessPane_parse_input_ctrl_c_after_process_finished():
     """
     Control-C (SIGINT / KeyboardInterrupt) character is typed.
     """
@@ -1587,7 +1587,7 @@ def test_PythonProcessPane_parse_input_ctrl_c_after_process_finished(qtapp):
     assert mock_kill.call_count == 0
 
 
-def test_PythonProcessPane_parse_input_ctrl_d_after_process_finished(qtapp):
+def test_PythonProcessPane_parse_input_ctrl_d_after_process_finished():
     """
     Control-D (Kill process) character is typed.
     """
@@ -1604,7 +1604,7 @@ def test_PythonProcessPane_parse_input_ctrl_d_after_process_finished(qtapp):
         assert ppp.process.kill.call_count == 0
 
 
-def test_PythonProcessPane_parse_input_up_arrow(qtapp):
+def test_PythonProcessPane_parse_input_up_arrow():
     """
     Up Arrow causes the input line to be replaced with movement back in
     command history.
@@ -1618,7 +1618,7 @@ def test_PythonProcessPane_parse_input_up_arrow(qtapp):
     assert ppp.history_back.call_count == 1
 
 
-def test_PythonProcessPane_parse_input_down_arrow(qtapp):
+def test_PythonProcessPane_parse_input_down_arrow():
     """
     Down Arrow causes the input line to be replaced with movement forward
     through command line.
@@ -1632,7 +1632,7 @@ def test_PythonProcessPane_parse_input_down_arrow(qtapp):
     assert ppp.history_forward.call_count == 1
 
 
-def test_PythonProcessPane_parse_input_right_arrow(qtapp):
+def test_PythonProcessPane_parse_input_right_arrow():
     """
     Right Arrow causes the cursor to move to the right one place.
     """
@@ -1648,7 +1648,7 @@ def test_PythonProcessPane_parse_input_right_arrow(qtapp):
     ppp.setTextCursor.assert_called_once_with(mock_cursor)
 
 
-def test_PythonProcessPane_parse_input_left_arrow(qtapp):
+def test_PythonProcessPane_parse_input_left_arrow():
     """
     Left Arrow causes the cursor to move to the left one place if not at the
     start of the input line.
@@ -1667,7 +1667,7 @@ def test_PythonProcessPane_parse_input_left_arrow(qtapp):
     ppp.setTextCursor.assert_called_once_with(mock_cursor)
 
 
-def test_PythonProcessPane_parse_input_left_arrow_at_start_of_line(qtapp):
+def test_PythonProcessPane_parse_input_left_arrow_at_start_of_line():
     """
     Left Arrow doesn't do anything if the current cursor position is at the
     start of the input line.
@@ -1686,7 +1686,7 @@ def test_PythonProcessPane_parse_input_left_arrow_at_start_of_line(qtapp):
     assert ppp.setTextCursor.call_count == 0
 
 
-def test_PythonProcessPane_parse_input_home(qtapp):
+def test_PythonProcessPane_parse_input_home():
     """
     Home moves cursor to the start of the input line.
     """
@@ -1705,7 +1705,7 @@ def test_PythonProcessPane_parse_input_home(qtapp):
     ppp.setTextCursor.assert_called_once_with(mock_cursor)
 
 
-def test_PythonProcessPane_parse_input_end(qtapp):
+def test_PythonProcessPane_parse_input_end():
     """
     End moves cursor to the end of the input line.
     """
@@ -1721,7 +1721,7 @@ def test_PythonProcessPane_parse_input_end(qtapp):
     ppp.setTextCursor.assert_called_once_with(mock_cursor)
 
 
-def test_PythonProcessPane_parse_input_paste(qtapp):
+def test_PythonProcessPane_parse_input_paste():
     """
     Control-Shift-V (paste) character causes a paste to happen.
     """
@@ -1734,7 +1734,7 @@ def test_PythonProcessPane_parse_input_paste(qtapp):
     ppp.paste.assert_called_once_with()
 
 
-def test_PythonProcessPane_parse_input_copy(qtapp):
+def test_PythonProcessPane_parse_input_copy():
     """
     Control-Shift-C (copy) character causes copy to happen.
     """
@@ -1747,7 +1747,7 @@ def test_PythonProcessPane_parse_input_copy(qtapp):
     ppp.copy.assert_called_once_with()
 
 
-def test_PythonProcessPane_parse_input_backspace(qtapp):
+def test_PythonProcessPane_parse_input_backspace():
     """
     Backspace call causes a backspace from the character at the cursor
     position.
@@ -1761,7 +1761,7 @@ def test_PythonProcessPane_parse_input_backspace(qtapp):
     ppp.backspace.assert_called_once_with()
 
 
-def test_PythonProcessPane_parse_input_delete(qtapp):
+def test_PythonProcessPane_parse_input_delete():
     """
     Delete deletes the character to the right of the cursor position.
     """
@@ -1774,7 +1774,7 @@ def test_PythonProcessPane_parse_input_delete(qtapp):
     ppp.delete.assert_called_once_with()
 
 
-def test_PythonProcessPane_parse_input_newline(qtapp):
+def test_PythonProcessPane_parse_input_newline():
     """
     Newline causes the input line to be written to the child process's stdin.
     """
@@ -1797,9 +1797,7 @@ def test_PythonProcessPane_parse_input_newline(qtapp):
     assert ppp.start_of_current_line == 4  # len('abc\n')
 
 
-def test_PythonProcessPane_parse_input_newline_ignore_empty_input_in_history(
-    qtapp,
-):
+def test_PythonProcessPane_parse_input_newline_ignore_empty_input_in_history():
     """
     Newline causes the input line to be written to the child process's stdin,
     but if the resulting line is either empty or only contains whitespace, do
@@ -1818,7 +1816,7 @@ def test_PythonProcessPane_parse_input_newline_ignore_empty_input_in_history(
     assert ppp.history_position == 0
 
 
-def test_PythonProcessPane_parse_input_newline_with_cursor_midline(qtapp):
+def test_PythonProcessPane_parse_input_newline_with_cursor_midline():
     """
     Ensure that when the cursor is placed in the middle of a line and enter is
     pressed the whole line is sent to std_in.
@@ -1831,7 +1829,7 @@ def test_PythonProcessPane_parse_input_newline_with_cursor_midline(qtapp):
     ppp.write_to_stdin.assert_called_with(b"abc\n")
 
 
-def test_PythonProcessPane_set_start_of_current_line(qtapp):
+def test_PythonProcessPane_set_start_of_current_line():
     """
     Ensure the start of the current line is set to the current length of the
     text in the editor pane.
@@ -1842,7 +1840,7 @@ def test_PythonProcessPane_set_start_of_current_line(qtapp):
     assert ppp.start_of_current_line == len("Hello𠜎")
 
 
-def test_PythonProcessPane_history_back(qtapp):
+def test_PythonProcessPane_history_back():
     """
     Ensure the current input line is replaced by the next item back in time
     from the current history position.
@@ -1857,7 +1855,7 @@ def test_PythonProcessPane_history_back(qtapp):
     assert ppp.history_position == -1
 
 
-def test_PythonProcessPane_history_back_at_first_item(qtapp):
+def test_PythonProcessPane_history_back_at_first_item():
     """
     Ensure the current input line is replaced by the next item back in time
     from the current history position.
@@ -1872,7 +1870,7 @@ def test_PythonProcessPane_history_back_at_first_item(qtapp):
     assert ppp.history_position == -3
 
 
-def test_PythonProcessPane_history_forward(qtapp):
+def test_PythonProcessPane_history_forward():
     """
     Ensure the current input line is replaced by the next item forward in time
     from the current history position.
@@ -1887,7 +1885,7 @@ def test_PythonProcessPane_history_forward(qtapp):
     assert ppp.history_position == -2
 
 
-def test_PythonProcessPane_history_forward_at_last_item(qtapp):
+def test_PythonProcessPane_history_forward_at_last_item():
     """
     Ensure the current input line is cleared if the history position was at
     the most recent item.
@@ -1904,7 +1902,7 @@ def test_PythonProcessPane_history_forward_at_last_item(qtapp):
     assert ppp.history_position == 0
 
 
-def test_PythonProcessPane_try_read_from_stdout_not_started(qtapp):
+def test_PythonProcessPane_try_read_from_stdout_not_started():
     """
     If the process pane is NOT already reading from STDOUT then ensure it
     starts to.
@@ -1916,7 +1914,7 @@ def test_PythonProcessPane_try_read_from_stdout_not_started(qtapp):
     ppp.read_from_stdout.assert_called_once_with()
 
 
-def test_PythonProcessPane_try_read_from_stdout_has_started(qtapp):
+def test_PythonProcessPane_try_read_from_stdout_has_started():
     """
     If the process pane is already reading from STDOUT then ensure it
     doesn't keep trying.
@@ -1929,7 +1927,7 @@ def test_PythonProcessPane_try_read_from_stdout_has_started(qtapp):
     assert ppp.read_from_stdout.call_count == 0
 
 
-def test_PythonProcessPane_read_from_stdout(qtapp):
+def test_PythonProcessPane_read_from_stdout():
     """
     Ensure incoming bytes from sub-process's stout are processed correctly.
     """
@@ -1949,7 +1947,7 @@ def test_PythonProcessPane_read_from_stdout(qtapp):
     mock_timer.singleShot.assert_called_once_with(2, ppp.read_from_stdout)
 
 
-def test_PythonProcessPane_read_from_stdout_with_stdout_buffer(qtapp):
+def test_PythonProcessPane_read_from_stdout_with_stdout_buffer():
     """
     Ensure incoming bytes from sub-process's stdout are processed correctly if
     there was a split between reads in a multi-byte character (such as "𠜎").
@@ -1974,7 +1972,7 @@ def test_PythonProcessPane_read_from_stdout_with_stdout_buffer(qtapp):
     assert ppp.stdout_buffer == b""
 
 
-def test_PythonProcessPane_read_from_stdout_with_unicode_error(qtapp):
+def test_PythonProcessPane_read_from_stdout_with_unicode_error():
     """
     Ensure incoming bytes from sub-process's stdout are processed correctly if
     there was a split between reads in a multi-byte character (such as "𠜎").
@@ -1999,7 +1997,7 @@ def test_PythonProcessPane_read_from_stdout_with_unicode_error(qtapp):
     assert ppp.stdout_buffer == msg[:7]
 
 
-def test_PythonProcessPane_read_from_stdout_no_data(qtapp):
+def test_PythonProcessPane_read_from_stdout_no_data():
     """
     If no data is returned, ensure the reading_stdout flag is reset to False.
     """
@@ -2011,7 +2009,7 @@ def test_PythonProcessPane_read_from_stdout_no_data(qtapp):
     assert ppp.reading_stdout is False
 
 
-def test_PythonProcessPane_write_to_stdin(qtapp):
+def test_PythonProcessPane_write_to_stdin():
     """
     Ensure input from the user is written to the child process.
     """
@@ -2021,7 +2019,7 @@ def test_PythonProcessPane_write_to_stdin(qtapp):
     ppp.process.write.assert_called_once_with(b"hello")
 
 
-def test_PythonProcessPane_append(qtapp):
+def test_PythonProcessPane_append():
     """
     Ensure the referenced byte_stream is added to the textual content of the
     QTextEdit.
@@ -2035,7 +2033,7 @@ def test_PythonProcessPane_append(qtapp):
     assert mock_cursor.movePosition.call_count == 2
 
 
-def test_PythonProcessPane_insert_within_input_line(qtapp):
+def test_PythonProcessPane_insert_within_input_line():
     """
     Ensure text is inserted at the end of the document if the current cursor
     position is not within the bounds of the input line.
@@ -2051,7 +2049,7 @@ def test_PythonProcessPane_insert_within_input_line(qtapp):
     mock_cursor.insertText.assert_called_once_with("hello")
 
 
-def test_PythonProcessPane_insert(qtapp):
+def test_PythonProcessPane_insert():
     """
     Ensure text is inserted at the current cursor position.
     """
@@ -2066,7 +2064,7 @@ def test_PythonProcessPane_insert(qtapp):
     mock_cursor.insertText.assert_called_once_with("hello")
 
 
-def test_PythonProcessPane_backspace(qtapp):
+def test_PythonProcessPane_backspace():
     """
     Make sure that removing a character to the left of the current cursor
     position works as expected.
@@ -2083,7 +2081,7 @@ def test_PythonProcessPane_backspace(qtapp):
     ppp.setTextCursor.assert_called_once_with(mock_cursor)
 
 
-def test_PythonProcessPane_backspace_at_start_of_input_line(qtapp):
+def test_PythonProcessPane_backspace_at_start_of_input_line():
     """
     Make sure that removing a character will not work if the cursor is at the
     left-hand boundary of the input line.
@@ -2098,7 +2096,7 @@ def test_PythonProcessPane_backspace_at_start_of_input_line(qtapp):
     assert mock_cursor.deletePreviousChar.call_count == 0
 
 
-def test_PythonProcessPane_delete(qtapp):
+def test_PythonProcessPane_delete():
     """
     Make sure that removing a character to the right of the current cursor
     position works as expected.
@@ -2115,7 +2113,7 @@ def test_PythonProcessPane_delete(qtapp):
     ppp.setTextCursor.assert_called_once_with(mock_cursor)
 
 
-def test_PythonProcessPane_delete_at_start_of_input_line(qtapp):
+def test_PythonProcessPane_delete_at_start_of_input_line():
     """
     Make sure that removing a character will not work if the cursor is at the
     left-hand boundary of the input line.
@@ -2130,7 +2128,7 @@ def test_PythonProcessPane_delete_at_start_of_input_line(qtapp):
     assert mock_cursor.deleteChar.call_count == 0
 
 
-def test_PythonProcessPane_clear_input_line(qtapp):
+def test_PythonProcessPane_clear_input_line():
     """
     Ensure the input line is cleared back to the start of the input line.
     """
@@ -2146,7 +2144,7 @@ def test_PythonProcessPane_clear_input_line(qtapp):
     ppp.setTextCursor.assert_called_once_with(mock_cursor)
 
 
-def test_PythonProcessPane_replace_input_line(qtapp):
+def test_PythonProcessPane_replace_input_line():
     """
     Ensure that the input line is cleared and then the replacement text is
     appended to the text area.
@@ -2159,7 +2157,7 @@ def test_PythonProcessPane_replace_input_line(qtapp):
     ppp.append.assert_called_once_with("hello")
 
 
-def test_PythonProcessPane_set_font_size(qtapp):
+def test_PythonProcessPane_set_font_size():
     """
     Ensure the font size is set to the expected point size.
     """
@@ -2172,7 +2170,7 @@ def test_PythonProcessPane_set_font_size(qtapp):
     ppp.setFont.assert_called_once_with(mock_font)
 
 
-def test_PythonProcessPane_set_zoom(qtapp):
+def test_PythonProcessPane_set_zoom():
     """
     Ensure the expected point size is set from the given "t-shirt" size.
     """
@@ -2183,7 +2181,7 @@ def test_PythonProcessPane_set_zoom(qtapp):
     ppp.set_font_size.assert_called_once_with(expected)
 
 
-def test_PythonProcessPane_set_theme(qtapp):
+def test_PythonProcessPane_set_theme():
     """
     Setting the theme shouldn't do anything
     """
@@ -2191,13 +2189,13 @@ def test_PythonProcessPane_set_theme(qtapp):
     ppp.set_theme("test")
 
 
-def test_DebugInspectorItem(qtapp):
+def test_DebugInspectorItem():
     item = mu.interface.panes.DebugInspectorItem("test")
     assert item.text() == "test"
     assert not item.isEditable()
 
 
-def test_DebugInspector_set_font_size(qtapp):
+def test_DebugInspector_set_font_size():
     """
     Check the correct stylesheet values are being set.
     """
@@ -2209,7 +2207,7 @@ def test_DebugInspector_set_font_size(qtapp):
     assert "font-family: Monospace;" in style
 
 
-def test_DebugInspector_set_zoom(qtapp):
+def test_DebugInspector_set_zoom():
     """
     Ensure the expected point size is set from the given "t-shirt" size.
     """
@@ -2220,7 +2218,7 @@ def test_DebugInspector_set_zoom(qtapp):
     di.set_font_size.assert_called_once_with(expected)
 
 
-def test_DebugInspector_set_theme(qtapp):
+def test_DebugInspector_set_theme():
     """
     Setting the theme shouldn't do anything
     """
@@ -2228,7 +2226,7 @@ def test_DebugInspector_set_theme(qtapp):
     di.set_theme("test")
 
 
-def test_PlotterPane_init(qtapp):
+def test_PlotterPane_init():
     """
     Ensure the plotter pane is created in the expected manner.
     """
@@ -2246,7 +2244,7 @@ def test_PlotterPane_init(qtapp):
     assert isinstance(pp.axis_y, QValueAxis)
 
 
-def test_PlotterPane_process_tty_data(qtapp):
+def test_PlotterPane_process_tty_data():
     """
     If a byte representation of a Python tuple containing numeric values,
     starting at the beginning of a new line and terminating with a new line is
@@ -2259,7 +2257,7 @@ def test_PlotterPane_process_tty_data(qtapp):
     pp.add_data.assert_called_once_with((1, 2.3, 4))
 
 
-def test_PlotterPane_process_tty_data_guards_against_data_flood(qtapp):
+def test_PlotterPane_process_tty_data_guards_against_data_flood():
     """
     If the process_tty_data method gets data of more than 1024 bytes
     then trigger a data_flood signal and ensure the plotter no longer
@@ -2281,7 +2279,7 @@ def test_PlotterPane_process_tty_data_guards_against_data_flood(qtapp):
     assert pp.add_data.call_count == 0
 
 
-def test_PlotterPane_process_tty_data_tuple_not_numeric(qtapp):
+def test_PlotterPane_process_tty_data_tuple_not_numeric():
     """
     If a byte representation of a tuple is received but it doesn't contain
     numeric values, then the add_data method MUST NOT be called.
@@ -2292,7 +2290,7 @@ def test_PlotterPane_process_tty_data_tuple_not_numeric(qtapp):
     assert pp.add_data.call_count == 0
 
 
-def test_PlotterPane_process_tty_data_overrun_input_buffer(qtapp):
+def test_PlotterPane_process_tty_data_overrun_input_buffer():
     """
     If the incoming bytes are not complete, ensure the input_buffer caches them
     until the newline is detected.
@@ -2311,7 +2309,7 @@ def test_PlotterPane_process_tty_data_overrun_input_buffer(qtapp):
     pp.add_data.assert_called_once_with((1, 2.3, 4))
 
 
-def test_PlotterPane_add_data(qtapp):
+def test_PlotterPane_add_data():
     """
     Given a tuple with a single value, ensure it is logged and correctly added
     to the chart.
@@ -2327,7 +2325,7 @@ def test_PlotterPane_add_data(qtapp):
     mock_line_series.append.call_args_list[99][0] == (99, 1)
 
 
-def test_PlotterPane_add_data_adjust_values_up(qtapp):
+def test_PlotterPane_add_data_adjust_values_up():
     """
     If more values than have been encountered before are added to the incoming
     data then increase the number of QLineSeries instances.
@@ -2344,7 +2342,7 @@ def test_PlotterPane_add_data_adjust_values_up(qtapp):
     assert len(pp.data) == 4
 
 
-def test_PlotterPane_add_data_adjust_values_down(qtapp):
+def test_PlotterPane_add_data_adjust_values_down():
     """
     If less values are encountered, before they are added to the incoming
     data then decrease the number of QLineSeries instances.
@@ -2361,7 +2359,7 @@ def test_PlotterPane_add_data_adjust_values_down(qtapp):
     assert pp.chart.removeSeries.call_count == 2
 
 
-def test_PlotterPane_add_data_re_scale_up(qtapp):
+def test_PlotterPane_add_data_re_scale_up():
     """
     If the y axis contains data greater than the current range, then ensure
     the range is doubled.
@@ -2375,7 +2373,7 @@ def test_PlotterPane_add_data_re_scale_up(qtapp):
     pp.axis_y.setRange.assert_called_once_with(-2000, 2000)
 
 
-def test_PlotterPane_add_data_re_scale_down(qtapp):
+def test_PlotterPane_add_data_re_scale_down():
     """
     If the y axis contains data less than half of the current range, then
     ensure the range is halved.
@@ -2390,7 +2388,7 @@ def test_PlotterPane_add_data_re_scale_down(qtapp):
     pp.axis_y.setRange.assert_called_once_with(-2000, 2000)
 
 
-def test_PlotterPane_set_label_format_to_float_when_range_small(qtapp):
+def test_PlotterPane_set_label_format_to_float_when_range_small():
     """
     If the max_y is 5 or less, make sure the label format is set to being a
     float with two decimal places.
@@ -2406,7 +2404,7 @@ def test_PlotterPane_set_label_format_to_float_when_range_small(qtapp):
     pp.axis_y.setLabelFormat.assert_called_once_with("%2.2f")
 
 
-def test_PlotterPane_set_label_format_to_int_when_range_large(qtapp):
+def test_PlotterPane_set_label_format_to_int_when_range_large():
     """
     If the max_y is 5 or less, make sure the label format is set to being a
     float with two decimal places.
@@ -2422,7 +2420,7 @@ def test_PlotterPane_set_label_format_to_int_when_range_large(qtapp):
     pp.axis_y.setLabelFormat.assert_called_once_with("%d")
 
 
-def test_PlotterPane_set_theme(qtapp):
+def test_PlotterPane_set_theme():
     """
     Ensure the themes for the chart relate correctly to the theme names used
     by Mu.

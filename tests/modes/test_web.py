@@ -48,7 +48,7 @@ def test_web_api():
     assert result == SHARED_APIS + PYTHON3_APIS + FLASK_APIS
 
 
-def test_run_toggle_on(qtapp):
+def test_run_toggle_on():
     """
     Check the handler for running the local server starts the sub-process and
     updates the UI state.
@@ -72,7 +72,7 @@ def test_run_toggle_on(qtapp):
     wm.set_buttons.assert_called_once_with(modes=False)
 
 
-def test_run_toggle_off(qtapp):
+def test_run_toggle_off():
     """
     Check the handler for toggling the local server stops the process and
     reverts the UI state.

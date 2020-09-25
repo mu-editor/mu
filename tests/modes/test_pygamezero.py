@@ -49,7 +49,7 @@ def test_pgzero_api():
     assert result == SHARED_APIS + PYTHON3_APIS + PI_APIS + PYGAMEZERO_APIS
 
 
-def test_pgzero_play_toggle_on(qtapp):
+def test_pgzero_play_toggle_on():
     """
     Check the handler for clicking play starts the new process and updates the
     UI state.
@@ -89,7 +89,7 @@ def test_pgzero_play_toggle_on_cancelled():
     assert slot.setIcon.call_count == 0
 
 
-def test_pgzero_play_toggle_off(qtapp):
+def test_pgzero_play_toggle_off():
     """
     Check the handler for clicking play stops the process and reverts the UI
     state.
