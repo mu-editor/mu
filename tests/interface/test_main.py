@@ -15,7 +15,7 @@ import mu.interface.editor
 import sys
 
 
-def test_ButtonBar_init(qtapp):
+def test_ButtonBar_init():
     """
     Ensure everything is set and configured given a new instance of the
     ButtonBar.
@@ -49,7 +49,7 @@ def test_ButtonBar_init(qtapp):
         assert mock_reset.call_count == 1
 
 
-def test_ButtonBar_reset(qtapp):
+def test_ButtonBar_reset():
     """
     Ensure reset clears the slots and actions.
     """
@@ -63,7 +63,7 @@ def test_ButtonBar_reset(qtapp):
         mock_clear.assert_called_once_with()
 
 
-def test_ButtonBar_change_mode(qtapp):
+def test_ButtonBar_change_mode():
     """
     Ensure the expected actions are added to the button bar when the mode is
     changed.
@@ -92,7 +92,7 @@ def test_ButtonBar_change_mode(qtapp):
         assert mock_add_separator.call_count == 5
 
 
-def test_ButtonBar_set_responsive_mode(qtapp):
+def test_ButtonBar_set_responsive_mode():
     """
     Does the button bar shrink in compact mode and grow out of it?
     """
@@ -114,7 +114,7 @@ def test_ButtonBar_set_responsive_mode(qtapp):
         bb.setStyleSheet.assert_called_with(style)
 
 
-def test_ButtonBar_add_action(qtapp):
+def test_ButtonBar_add_action():
     """
     Check the appropriately referenced QAction is created by a call to
     addAction.
@@ -127,7 +127,7 @@ def test_ButtonBar_add_action(qtapp):
     assert isinstance(bb.slots["save"], QAction)
 
 
-def test_ButtonBar_connect(qtapp):
+def test_ButtonBar_connect():
     """
     Check the named slot is connected to the slot handler.
     """
@@ -143,7 +143,7 @@ def test_ButtonBar_connect(qtapp):
     slot.setShortcut.assert_called_once_with(QKeySequence("Ctrl+S"))
 
 
-def test_FileTabs_init(qtapp):
+def test_FileTabs_init():
     """
     Ensure a FileTabs instance is initialised as expected.
     """
@@ -160,7 +160,7 @@ def test_FileTabs_init(qtapp):
         mcc.connect.assert_called_once_with(qtw.change_tab)
 
 
-def test_FileTabs_removeTab_cancel(qtapp):
+def test_FileTabs_removeTab_cancel():
     """
     Ensure removeTab asks the user for confirmation if there is a modification
     to the tab. If "cancel" is selected, the parent removeTab is NOT called.
@@ -187,7 +187,7 @@ def test_FileTabs_removeTab_cancel(qtapp):
         assert mock_tab.isModified.call_count == 1
 
 
-def test_FileTabs_removeTab_ok(qtapp):
+def test_FileTabs_removeTab_ok():
     """
     Ensure removeTab asks the user for confirmation if there is a modification
     to the tab. If user responds with "OK", the parent removeTab IS called.
@@ -214,7 +214,7 @@ def test_FileTabs_removeTab_ok(qtapp):
         assert mock_tab.isModified.call_count == 1
 
 
-def test_FileTabs_change_tab(qtapp):
+def test_FileTabs_change_tab():
     """
     Ensure change_tab updates the title of the application window with the
     label from the currently selected file.
@@ -230,7 +230,7 @@ def test_FileTabs_change_tab(qtapp):
     mock_window.update_title.assert_called_once_with(mock_tab.title)
 
 
-def test_FileTabs_change_tab_no_tabs(qtapp):
+def test_FileTabs_change_tab_no_tabs():
     """
     If there are no tabs left, ensure change_tab updates the title of the
     application window with the default value (None).
@@ -243,7 +243,7 @@ def test_FileTabs_change_tab_no_tabs(qtapp):
     mock_window.update_title.assert_called_once_with(None)
 
 
-def test_FileTabs_addTab(qtapp):
+def test_FileTabs_addTab():
     """
     Expect tabs to be added with the right label and a button
     """
@@ -319,7 +319,7 @@ def test_FileTabs_addTab(qtapp):
     assert mock_label.setPixmap.call_count == 3
 
 
-def test_Window_attributes(qtapp):
+def test_Window_attributes():
     """
     Expect the title and icon to be set correctly.
     """
@@ -330,7 +330,7 @@ def test_Window_attributes(qtapp):
     assert w.zooms == ("xs", "s", "m", "l", "xl", "xxl", "xxxl")
 
 
-def test_Window_wheelEvent_zoom_in(qtapp):
+def test_Window_wheelEvent_zoom_in():
     """
     If the CTRL+scroll in a positive direction, zoom in.
     """
@@ -348,7 +348,7 @@ def test_Window_wheelEvent_zoom_in(qtapp):
         mock_event.ignore.assert_called_once_with()
 
 
-def test_Window_wheelEvent_zoom_out(qtapp):
+def test_Window_wheelEvent_zoom_out():
     """
     If the CTRL+scroll in a negative direction, zoom out.
     """
@@ -366,7 +366,7 @@ def test_Window_wheelEvent_zoom_out(qtapp):
         mock_event.ignore.assert_called_once_with()
 
 
-def test_Window_resizeEvent(qtapp):
+def test_Window_resizeEvent():
     """
     Ensure resize events are passed along to the button bar.
     """
@@ -381,7 +381,7 @@ def test_Window_resizeEvent(qtapp):
     w.button_bar.set_responsive_mode.assert_called_with(1024, 768)
 
 
-def test_Window_select_mode_selected(qtapp):
+def test_Window_select_mode_selected():
     """
     Handle the selection of a new mode.
     """
@@ -399,7 +399,7 @@ def test_Window_select_mode_selected(qtapp):
         mock_selector.exec.assert_called_once_with()
 
 
-def test_Window_select_mode_cancelled(qtapp):
+def test_Window_select_mode_cancelled():
     """
     Handle the selection of a new mode.
     """
@@ -415,7 +415,7 @@ def test_Window_select_mode_cancelled(qtapp):
         assert result is None
 
 
-def test_Window_change_mode(qtapp):
+def test_Window_change_mode():
     """
     Ensure the change of mode is made by the button_bar.
     """
@@ -435,7 +435,7 @@ def test_Window_change_mode(qtapp):
     tab2.set_api.assert_called_once_with(api)
 
 
-def test_Window_set_zoom(qtapp):
+def test_Window_set_zoom():
     """
     Ensure the correct signal is emitted.
     """
@@ -445,7 +445,7 @@ def test_Window_set_zoom(qtapp):
     w._zoom_in.emit.assert_called_once_with("m")
 
 
-def test_Window_zoom_in(qtapp):
+def test_Window_zoom_in():
     """
     Ensure the correct signal is emitted.
     """
@@ -455,7 +455,7 @@ def test_Window_zoom_in(qtapp):
     w._zoom_in.emit.assert_called_once_with("l")
 
 
-def test_Window_zoom_out(qtapp):
+def test_Window_zoom_out():
     """
     Ensure the correct signal is emitted.
     """
@@ -465,7 +465,7 @@ def test_Window_zoom_out(qtapp):
     w._zoom_out.emit.assert_called_once_with("s")
 
 
-def test_Window_connect_zoom(qtapp):
+def test_Window_connect_zoom():
     """
     Ensure the zoom in/out signals are connected to the passed in widget's
     zoomIn and zoomOut handlers.
@@ -483,7 +483,7 @@ def test_Window_connect_zoom(qtapp):
     assert w._zoom_out.connect.called_once_with(widget.zoomOut)
 
 
-def test_Window_current_tab(qtapp):
+def test_Window_current_tab():
     """
     Ensure the correct tab is extracted from Window.tabs.
     """
@@ -493,7 +493,7 @@ def test_Window_current_tab(qtapp):
     assert w.current_tab == "foo"
 
 
-def test_Window_set_read_only(qtapp):
+def test_Window_set_read_only():
     """
     Ensure all the tabs have the setReadOnly method set to the boolean passed
     into set_read_only.
@@ -510,7 +510,7 @@ def test_Window_set_read_only(qtapp):
     tab2.setReadOnly.assert_called_once_with(True)
 
 
-def test_Window_get_load_path_no_previous(qtapp):
+def test_Window_get_load_path_no_previous():
     """
     Ensure the QFileDialog is called with the expected arguments and the
     resulting path is returned.
@@ -531,7 +531,7 @@ def test_Window_get_load_path_no_previous(qtapp):
     )
 
 
-def test_Window_get_load_path_with_previous(qtapp):
+def test_Window_get_load_path_with_previous():
     """
     Ensure the QFileDialog is called with the expected arguments and the
     resulting path is returned.
@@ -553,7 +553,7 @@ def test_Window_get_load_path_with_previous(qtapp):
     )
 
 
-def test_Window_get_load_path_force_path(qtapp):
+def test_Window_get_load_path_force_path():
     """
     Ensure the QFileDialog is called with the expected arguments and the
     resulting path is returned.
@@ -575,7 +575,7 @@ def test_Window_get_load_path_force_path(qtapp):
     )
 
 
-def test_Window_get_save_path(qtapp):
+def test_Window_get_save_path():
     """
     Ensure the QFileDialog is called with the expected arguments and the
     resulting path is returned.
@@ -598,7 +598,7 @@ def test_Window_get_save_path(qtapp):
     assert returned_path == path
 
 
-def test_Window_get_microbit_path(qtapp):
+def test_Window_get_microbit_path():
     """
     Ensures the QFileDialog is called with the expected arguments and the
     resulting path is returned.
@@ -618,7 +618,7 @@ def test_Window_get_microbit_path(qtapp):
     )
 
 
-def test_Window_add_tab(qtapp):
+def test_Window_add_tab():
     """
     Ensure adding a tab works as expected and the expected on_modified handler
     is created.
@@ -664,7 +664,7 @@ def test_Window_add_tab(qtapp):
     w.tabs.setTabText.assert_called_once_with(new_tab_index, ep.label)
 
 
-def test_Window_focus_tab(qtapp):
+def test_Window_focus_tab():
     """
     Given a tab instance, ensure it has focus.
     """
@@ -677,7 +677,7 @@ def test_Window_focus_tab(qtapp):
     tab.setFocus.assert_called_once_with()
 
 
-def test_Window_tab_count(qtapp):
+def test_Window_tab_count():
     """
     Ensure the number from Window.tabs.count() is returned.
     """
@@ -688,7 +688,7 @@ def test_Window_tab_count(qtapp):
     w.tabs.count.assert_called_once_with()
 
 
-def test_Window_widgets(qtapp):
+def test_Window_widgets():
     """
     Ensure a list derived from calls to Window.tabs.widget(i) is returned.
     """
@@ -703,7 +703,7 @@ def test_Window_widgets(qtapp):
     w.tabs.count.assert_called_once_with()
 
 
-def test_Window_modified(qtapp):
+def test_Window_modified():
     """
     Ensure the window's modified attribute is derived from the modified state
     of its tabs.
@@ -722,7 +722,7 @@ def test_Window_modified(qtapp):
     assert w.modified
 
 
-def test_Window_on_stdout_write(qtapp):
+def test_Window_on_stdout_write():
     """
     Ensure the data_received signal is emitted with the data.
     """
@@ -732,7 +732,7 @@ def test_Window_on_stdout_write(qtapp):
     w.data_received.emit.assert_called_once_with(b"hello")
 
 
-def test_Window_add_filesystem(qtapp):
+def test_Window_add_filesystem():
     """
     Ensure the expected settings are updated when adding a file system pane.
     """
@@ -797,7 +797,7 @@ def test_Window_add_filesystem(qtapp):
     w.connect_zoom.assert_called_once_with(mock_fs)
 
 
-def test_Window_add_filesystem_open_signal(qtapp):
+def test_Window_add_filesystem_open_signal():
     w = mu.interface.main.Window()
     w.open_file = mock.MagicMock()
     mock_open_emit = mock.MagicMock()
@@ -807,7 +807,7 @@ def test_Window_add_filesystem_open_signal(qtapp):
     mock_open_emit.assert_called_once_with("test")
 
 
-def test_Window_add_micropython_repl(qtapp):
+def test_Window_add_micropython_repl():
     """
     Ensure the expected object is instantiated and add_repl is called for a
     MicroPython based REPL.
@@ -828,7 +828,7 @@ def test_Window_add_micropython_repl(qtapp):
     w.add_repl.assert_called_once_with(mock_repl, "Test REPL")
 
 
-def test_Window_add_micropython_plotter(qtapp):
+def test_Window_add_micropython_plotter():
     """
     Ensure the expected object is instantiated and add_plotter is called for
     a MicroPython based plotter.
@@ -854,7 +854,7 @@ def test_Window_add_micropython_plotter(qtapp):
     w.add_plotter.assert_called_once_with(mock_plotter, "MicroPython Plotter")
 
 
-def test_Window_add_python3_plotter(qtapp):
+def test_Window_add_python3_plotter():
     """
     Ensure the plotter is created correctly when in Python 3 mode.
     """
@@ -876,7 +876,7 @@ def test_Window_add_python3_plotter(qtapp):
     w.add_plotter.assert_called_once_with(mock_plotter, "Python3 data tuple")
 
 
-def test_Window_add_jupyter_repl(qtapp):
+def test_Window_add_jupyter_repl():
     """
     Ensure the expected object is instantiated and add_repl is called for a
     Jupyter based REPL.
@@ -898,7 +898,7 @@ def test_Window_add_jupyter_repl(qtapp):
     w.add_repl.assert_called_once_with(mock_pane, "Python3 (Jupyter)")
 
 
-def test_Window_add_repl(qtapp):
+def test_Window_add_repl():
     """
     Ensure the expected settings are updated.
     """
@@ -918,7 +918,7 @@ def test_Window_add_repl(qtapp):
     w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
 
 
-def test_Window_add_plotter(qtapp):
+def test_Window_add_plotter():
     """
     Ensure the expected settings are updated.
     """
@@ -936,7 +936,7 @@ def test_Window_add_plotter(qtapp):
     w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
 
 
-def test_Window_add_python3_runner(qtapp):
+def test_Window_add_python3_runner():
     """
     Ensure a Python 3 runner (to capture stdin/out/err) is displayed correctly.
     """
@@ -961,7 +961,7 @@ def test_Window_add_python3_runner(qtapp):
     w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
 
 
-def test_Window_add_debug_inspector(qtapp):
+def test_Window_add_debug_inspector():
     """
     Ensure a debug inspector (to display local variables) is displayed
     correctly.
@@ -993,7 +993,7 @@ def test_Window_add_debug_inspector(qtapp):
     w.addDockWidget.assert_called_once_with(Qt.RightDockWidgetArea, mock_dock)
 
 
-def test_Window_update_debug_inspector(qtapp):
+def test_Window_update_debug_inspector():
     """
     Given a representation of the local objects in the debug runner's call
     stack. Ensure the debug inspector's model is populated in the correct way
@@ -1022,7 +1022,7 @@ def test_Window_update_debug_inspector(qtapp):
     assert mock_standard_item.call_count == 22
 
 
-def test_Window_update_debug_inspector_with_exception(qtapp):
+def test_Window_update_debug_inspector_with_exception():
     """
     If an exception is encountered when working out the type of the value,
     make sure it just reverts to the repr of the object.
@@ -1040,7 +1040,7 @@ def test_Window_update_debug_inspector_with_exception(qtapp):
     assert mock_standard_item.call_count == 2
 
 
-def test_Window_remove_filesystem(qtapp):
+def test_Window_remove_filesystem():
     """
     Check all the necessary calls to remove / reset the file system pane are
     made.
@@ -1056,7 +1056,7 @@ def test_Window_remove_filesystem(qtapp):
     assert w.fs is None
 
 
-def test_Window_remove_repl(qtapp):
+def test_Window_remove_repl():
     """
     Check all the necessary calls to remove / reset the REPL are made.
     """
@@ -1071,7 +1071,7 @@ def test_Window_remove_repl(qtapp):
     assert w.repl is None
 
 
-def test_Window_remove_plotter(qtapp):
+def test_Window_remove_plotter():
     """
     Check all the necessary calls to remove / reset the plotter are made.
     """
@@ -1086,7 +1086,7 @@ def test_Window_remove_plotter(qtapp):
     assert w.plotter is None
 
 
-def test_Window_remove_python_runner(qtapp):
+def test_Window_remove_python_runner():
     """
     Check all the necessary calls to remove / reset the Python3 runner are
     made.
@@ -1103,7 +1103,7 @@ def test_Window_remove_python_runner(qtapp):
     assert w.runner is None
 
 
-def test_Window_remove_debug_inspector(qtapp):
+def test_Window_remove_debug_inspector():
     """
     Check all the necessary calls to remove / reset the debug inspector are
     made.
@@ -1123,7 +1123,7 @@ def test_Window_remove_debug_inspector(qtapp):
     mock_inspector.deleteLater.assert_called_once_with()
 
 
-def test_Window_set_theme(qtapp):
+def test_Window_set_theme():
     """
     Check the theme is correctly applied to the window.
     """
@@ -1195,7 +1195,7 @@ def test_Window_set_theme(qtapp):
     w.plotter_pane.set_theme.assert_called_once_with("day")
 
 
-def test_Window_set_checker_icon(qtapp):
+def test_Window_set_checker_icon():
     w = mu.interface.main.Window()
     w.button_bar = mock.MagicMock()
     w.button_bar.slots = {"check": mock.MagicMock()}
@@ -1221,7 +1221,7 @@ def test_Window_set_checker_icon(qtapp):
     assert w.button_bar.slots["check"].setIcon.call_count == 2
 
 
-def test_Window_show_admin(qtapp):
+def test_Window_show_admin():
     """
     Ensure the modal widget for showing the admin features is correctly
     configured.
@@ -1241,7 +1241,7 @@ def test_Window_show_admin(qtapp):
         assert result == "this is the expected result"
 
 
-def test_Window_show_admin_cancelled(qtapp):
+def test_Window_show_admin_cancelled():
     """
     If the modal dialog for the admin functions is cancelled, ensure an
     empty dictionary (indicating a "falsey" no change) is returned.
@@ -1261,7 +1261,7 @@ def test_Window_show_admin_cancelled(qtapp):
         assert result == {}
 
 
-def test_Window_sync_packages(qtapp):
+def test_Window_sync_packages():
     """
     Ensure the expected modal dialog indicating progress of third party package
     add/removal is displayed with the expected settings.
@@ -1278,7 +1278,7 @@ def test_Window_sync_packages(qtapp):
         dialog.exec.assert_called_once_with()
 
 
-def test_Window_show_message(qtapp):
+def test_Window_show_message():
     """
     Ensure the show_message method configures a QMessageBox in the expected
     manner.
@@ -1304,7 +1304,7 @@ def test_Window_show_message(qtapp):
     mock_qmb.exec.assert_called_once_with()
 
 
-def test_Window_show_message_default(qtapp):
+def test_Window_show_message_default():
     """
     Ensure the show_message method configures a QMessageBox in the expected
     manner with default args.
@@ -1328,7 +1328,7 @@ def test_Window_show_message_default(qtapp):
     mock_qmb.exec.assert_called_once_with()
 
 
-def test_Window_show_confirmation(qtapp):
+def test_Window_show_confirmation():
     """
     Ensure the show_confirmation method configures a QMessageBox in the
     expected manner.
@@ -1362,7 +1362,7 @@ def test_Window_show_confirmation(qtapp):
     mock_qmb.exec.assert_called_once_with()
 
 
-def test_Window_show_confirmation_default(qtapp):
+def test_Window_show_confirmation_default():
     """
     Ensure the show_confirmation method configures a QMessageBox in the
     expected manner with default args.
@@ -1394,7 +1394,7 @@ def test_Window_show_confirmation_default(qtapp):
     mock_qmb.exec.assert_called_once_with()
 
 
-def test_Window_update_title(qtapp):
+def test_Window_update_title():
     """
     Ensure a passed in title results in the correct call to setWindowTitle.
     """
@@ -1419,7 +1419,7 @@ def _qdesktopwidget_mock(width, height):
     return mock.MagicMock(return_value=mock_sg)
 
 
-def test_Window_autosize_window(qtapp):
+def test_Window_autosize_window():
     """
     Check the correct calculations take place and methods are called so the
     window is resized and positioned correctly.
@@ -1442,7 +1442,7 @@ def test_Window_autosize_window(qtapp):
     w.move.assert_called_once_with(x, y)
 
 
-def test_Window_reset_annotations(qtapp):
+def test_Window_reset_annotations():
     """
     Ensure the current tab has its annotations reset.
     """
@@ -1454,7 +1454,7 @@ def test_Window_reset_annotations(qtapp):
     tab.reset_annotations.assert_called_once_with()
 
 
-def test_Window_annotate_code(qtapp):
+def test_Window_annotate_code():
     """
     Ensure the current tab is annotated with the passed in feedback.
     """
@@ -1467,7 +1467,7 @@ def test_Window_annotate_code(qtapp):
     tab.annotate_code.assert_called_once_with(feedback, "error")
 
 
-def test_Window_show_annotations(qtapp):
+def test_Window_show_annotations():
     """
     Ensure the current tab displays its annotations.
     """
@@ -1479,7 +1479,7 @@ def test_Window_show_annotations(qtapp):
     tab.show_annotations.assert_called_once_with()
 
 
-def test_Window_setup(qtapp):
+def test_Window_setup():
     """
     Ensures the various default attributes of the window are set to the
     expected value.
@@ -1534,7 +1534,7 @@ def test_Window_setup(qtapp):
     assert w.size_window.call_count == 0
 
 
-def test_Window_set_usb_checker(qtapp):
+def test_Window_set_usb_checker():
     """
     Ensure the callback for checking for connected devices is set as expected.
     """
@@ -1549,7 +1549,7 @@ def test_Window_set_usb_checker(qtapp):
         w.usb_checker.start.assert_called_once_with(1000)
 
 
-def test_Window_set_timer(qtapp):
+def test_Window_set_timer():
     """
     Ensure a repeating timer with the referenced callback is created.
     """
@@ -1564,7 +1564,7 @@ def test_Window_set_timer(qtapp):
         w.timer.start.assert_called_once_with(5 * 1000)
 
 
-def test_Window_stop_timer(qtapp):
+def test_Window_stop_timer():
     """
     Ensure the timer is stopped and destroyed.
     """
@@ -1576,7 +1576,7 @@ def test_Window_stop_timer(qtapp):
     mock_timer.stop.assert_called_once_with()
 
 
-def test_Window_connect_tab_rename(qtapp):
+def test_Window_connect_tab_rename():
     """
     Ensure the referenced handler and shortcuts are set up to fire when
     the tab is double-clicked.
@@ -1595,7 +1595,7 @@ def test_Window_connect_tab_rename(qtapp):
     mock_shortcut().activated.connect.assert_called_once_with(mock_handler)
 
 
-def test_Window_open_directory_from_os_windows(qtapp):
+def test_Window_open_directory_from_os_windows():
     """
     Ensure the file explorer for Windows is called for the expected path.
     """
@@ -1609,7 +1609,7 @@ def test_Window_open_directory_from_os_windows(qtapp):
         mock_os.startfile.assert_called_once_with(path)
 
 
-def test_Window_open_directory_from_os_darwin(qtapp):
+def test_Window_open_directory_from_os_darwin():
     """
     Ensure the file explorer for OSX is called for the expected path.
     """
@@ -1623,7 +1623,7 @@ def test_Window_open_directory_from_os_darwin(qtapp):
         mock_system.assert_called_once_with('open "{}"'.format(path))
 
 
-def test_Window_open_directory_from_os_freedesktop(qtapp):
+def test_Window_open_directory_from_os_freedesktop():
     """
     Ensure the file explorer for FreeDesktop (Linux) is called for the
     expected path.
@@ -1638,7 +1638,7 @@ def test_Window_open_directory_from_os_freedesktop(qtapp):
         mock_system.assert_called_once_with('xdg-open "{}"'.format(path))
 
 
-def test_Window_open_file_event(qtapp):
+def test_Window_open_file_event():
     """
     Ensure the open_file event is emitted when a tab's open_file is
     triggered.
@@ -1667,7 +1667,7 @@ def test_Window_open_file_event(qtapp):
     mock_emit.assert_called_once_with("/foo/bar.py")
 
 
-def test_Window_connect_find_replace(qtapp):
+def test_Window_connect_find_replace():
     """
     Ensure a shortcut is created with teh expected shortcut and handler
     function.
@@ -1687,7 +1687,7 @@ def test_Window_connect_find_replace(qtapp):
     shortcut.activated.connect.assert_called_once_with(mock_handler)
 
 
-def test_Window_show_find_replace(qtapp):
+def test_Window_show_find_replace():
     """
     The find/replace dialog is setup with the right arguments and, if
     successfully closed, returns the expected result.
@@ -1705,7 +1705,7 @@ def test_Window_show_find_replace(qtapp):
     assert result == ("foo", "bar", True)
 
 
-def test_Window_replace_text_not_current_tab(qtapp):
+def test_Window_replace_text_not_current_tab():
     """
     If there is currently no open tab in which to search, return 0 (to indicate
     no changes have been made).
@@ -1716,7 +1716,7 @@ def test_Window_replace_text_not_current_tab(qtapp):
     assert w.replace_text("foo", "bar", False) == 0
 
 
-def test_Window_replace_text_not_global_found(qtapp):
+def test_Window_replace_text_not_global_found():
     """
     If the text to be replaced is found in the source, and the global_replace
     flag is false, return 1 (to indicate the number of changes made).
@@ -1730,7 +1730,7 @@ def test_Window_replace_text_not_global_found(qtapp):
     mock_tab.replace.assert_called_once_with("bar")
 
 
-def test_Window_replace_text_not_global_missing(qtapp):
+def test_Window_replace_text_not_global_missing():
     """
     If the text to be replaced is missing in the source, and the global_replace
     flag is false, return 0 (to indicate no change made).
@@ -1743,7 +1743,7 @@ def test_Window_replace_text_not_global_missing(qtapp):
     assert w.replace_text("foo", "bar", False) == 0
 
 
-def test_Window_replace_text_global_found(qtapp):
+def test_Window_replace_text_global_found():
     """
     If the text to be replaced is found several times in the source, and the
     global_replace flag is true, return X (to indicate X changes made) -- where
@@ -1759,7 +1759,7 @@ def test_Window_replace_text_global_found(qtapp):
     assert mock_tab.replace.call_count == 2
 
 
-def test_Window_replace_text_global_missing(qtapp):
+def test_Window_replace_text_global_missing():
     """
     If the text to be replaced is missing in the source, and the global_replace
     flag is true, return 0 (to indicate no change made).
@@ -1772,7 +1772,7 @@ def test_Window_replace_text_global_missing(qtapp):
     assert w.replace_text("foo", "bar", True) == 0
 
 
-def test_Window_highlight_text(qtapp):
+def test_Window_highlight_text():
     """
     Given target_text, highlights the first instance via Scintilla's findFirst
     method.
@@ -1786,7 +1786,7 @@ def test_Window_highlight_text(qtapp):
     mock_tab.findFirst.assert_called_once_with("foo", True, True, False, True)
 
 
-def test_Window_highlight_text_no_tab(qtapp):
+def test_Window_highlight_text_no_tab():
     """
     If there's no current tab, just return False.
     """
@@ -1796,7 +1796,7 @@ def test_Window_highlight_text_no_tab(qtapp):
     assert w.highlight_text("foo") is False
 
 
-def test_Window_connect_toggle_comments(qtapp):
+def test_Window_connect_toggle_comments():
     """
     Ensure the passed in handler is connected to a shortcut triggered by the
     shortcut.
@@ -1816,7 +1816,7 @@ def test_Window_connect_toggle_comments(qtapp):
     shortcut.activated.connect.assert_called_once_with(mock_handler)
 
 
-def test_Window_toggle_comments(qtapp):
+def test_Window_toggle_comments():
     """
     If there's a current tab, call its toggle_comments method.
     """
@@ -1990,7 +1990,7 @@ def test_DeviceSelector_update_view_check_connected_icon():
     )
 
 
-def test_StatusBar_init(qtapp):
+def test_StatusBar_init():
     """
     Ensure the status bar is set up as expected.
     """
@@ -2007,7 +2007,7 @@ def test_StatusBar_init(qtapp):
     assert sb.logs_label
 
 
-def test_StatusBar_connect_logs(qtapp):
+def test_StatusBar_connect_logs():
     """
     Ensure the event handler / shortcut for viewing logs is correctly set.
     """
@@ -2027,7 +2027,7 @@ def test_StatusBar_connect_logs(qtapp):
     mock_shortcut().activated.connect.assert_called_once_with(handler)
 
 
-def test_StatusBar_connect_mode(qtapp):
+def test_StatusBar_connect_mode():
     """
     Ensure the event handler / shortcut for selecting the new mode is
     correctly set.
@@ -2048,7 +2048,7 @@ def test_StatusBar_connect_mode(qtapp):
     mock_shortcut().activated.connect.assert_called_once_with(handler)
 
 
-def test_StatusBar_set_message(qtapp):
+def test_StatusBar_set_message():
     """
     Ensure the default pause for displaying a message in the status bar is
     used.
@@ -2062,7 +2062,7 @@ def test_StatusBar_set_message(qtapp):
     sb.showMessage.assert_called_once_with("Hello", 1000)
 
 
-def test_StatusBar_set_mode(qtapp):
+def test_StatusBar_set_mode():
     """
     Ensure the mode displayed in the status bar is correctly updated.
     """
