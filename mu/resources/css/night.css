@@ -118,6 +118,11 @@ QStatusBar QLabel {
     margin: 0;
 }
 
+#DeviceSelector QComboBox {
+    padding: 4px 25px 4px 3px;
+    margin: 2px;
+}
+
 #AdministrationLabel:hover, #AdministrationLabel:focus {
     background: #444;
 }
@@ -277,4 +282,20 @@ QTreeView::branch:has-children:open {
 
 QTreeView::branch:has-children:closed {
     image: url(images:scroll-right.png);
+}
+
+QComboBox {
+    padding: 2px;
+    border: 1px solid #6b6b6b;
+}
+
+QComboBox::drop-down {
+    border: 0;
+    width: 15px;
+    image: unset;
+    padding-right: 2px;
+}
+
+QComboBox::down-arrow {
+    image: url(images:dropdown-arrow-night.png);
 }

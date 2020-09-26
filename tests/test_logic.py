@@ -18,7 +18,7 @@ import uuid
 import pytest
 import mu.logic
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtCore import pyqtSignal, QObject, Qt
 
 from mu import __version__
 
@@ -67,7 +67,8 @@ def _generate_python_files(contents, dirpath):
 
 @contextlib.contextmanager
 def generate_python_files(contents, dirpath=None):
-    """Create a temp directory and populate it with .py files, then remove it
+    """
+    Create a temp directory and populate it with .py files, then remove it.
     """
     dirpath = dirpath or tempfile.mkdtemp(prefix="mu-")
     yield list(_generate_python_files(contents, dirpath))
@@ -76,7 +77,8 @@ def generate_python_files(contents, dirpath=None):
 
 @contextlib.contextmanager
 def generate_python_file(text="", dirpath=None):
-    """Create a temp directory and populate it with on .py file, then remove it
+    """
+    Create a temp directory and populate it with on .py file, then remove it.
     """
     dirpath = dirpath or tempfile.mkdtemp(prefix="mu-")
     for filepath in _generate_python_files([text], dirpath):
@@ -158,8 +160,7 @@ def generate_session(
 
 
 def mocked_view(text, path, newline):
-    """Create a mocked view with path, newline and text
-    """
+    """Create a mocked view with path, newline and text"""
     view = mock.MagicMock()
     view.current_tab = mock.MagicMock()
     view.current_tab.path = path
@@ -197,6 +198,51 @@ def test_CONSTANTS():
     assert mu.logic.HOME_DIRECTORY
     assert mu.logic.DATA_DIR
     assert mu.logic.WORKSPACE_NAME
+
+
+@pytest.fixture
+def microbit_com1():
+    microbit = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM1",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
+    )
+    return microbit
+
+
+@pytest.fixture
+def microbit_com2():
+    microbit = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM2",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
+    )
+    return microbit
+
+
+@pytest.fixture
+def adafruit_feather():
+    adafruit_feather = mu.logic.Device(
+        0x239A,
+        0x800B,
+        "COM1",
+        123456,
+        "ARM",
+        "CircuitPython",
+        "circuitpython",
+        "Adafruit Feather",
+    )
+    return adafruit_feather
 
 
 def test_installed_packages_dist_info():
@@ -731,31 +777,134 @@ def test_MuFlakeCodeReporter_flake_un_matched():
     assert r.log[0]["message"] == "something went wrong"
 
 
-def test_REPL_posix():
-    """
-    The port is set correctly in a posix environment.
-    """
-    with mock.patch("os.name", "posix"):
-        r = mu.logic.REPL("ttyACM0")
-        assert r.port == "/dev/ttyACM0"
+def test_device__init(adafruit_feather):
+    assert adafruit_feather.vid == 0x239A
+    assert adafruit_feather.pid == 0x800B
+    assert adafruit_feather.port == "COM1"
+    assert adafruit_feather.serial_number == 123456
+    assert adafruit_feather.manufacturer == "ARM"
+    assert adafruit_feather.long_mode_name == "CircuitPython"
+    assert adafruit_feather.short_mode_name == "circuitpython"
+    assert adafruit_feather.board_name == "Adafruit Feather"
 
 
-def test_REPL_nt():
-    """
-    The port is set correctly in an nt (Windows) environment.
-    """
-    with mock.patch("os.name", "nt"):
-        r = mu.logic.REPL("COM0")
-        assert r.port == "COM0"
+def test_device_name(microbit_com1, adafruit_feather):
+    assert microbit_com1.name == "BBC micro:bit"
+    assert adafruit_feather.name == "Adafruit Feather"
 
 
-def test_REPL_unsupported():
-    """
-    A NotImplementedError is raised on an unsupported OS.
-    """
-    with mock.patch("os.name", "SPARC"):
-        with pytest.raises(NotImplementedError):
-            mu.logic.REPL("tty0")
+def test_device_equality(microbit_com1):
+    assert microbit_com1 == microbit_com1
+
+
+def test_device_inequality(microbit_com1, microbit_com2):
+    assert microbit_com1 != microbit_com2
+
+
+def test_device_ordering_lt(microbit_com1, adafruit_feather):
+    assert adafruit_feather < microbit_com1
+
+
+def test_device_ordering_gt(microbit_com1, adafruit_feather):
+    assert microbit_com1 > adafruit_feather
+
+
+def test_device_ordering_le(microbit_com1, adafruit_feather):
+    assert adafruit_feather <= microbit_com1
+
+
+def test_device_ordering_ge(microbit_com1, adafruit_feather):
+    assert microbit_com1 >= adafruit_feather
+
+
+def test_device_to_string(adafruit_feather):
+    assert (
+        str(adafruit_feather)
+        == "Adafruit Feather on COM1 (VID: 0x239A, PID: 0x800B)"
+    )
+
+
+def test_device_hash(microbit_com1, microbit_com2):
+    assert hash(microbit_com1) == hash(microbit_com1)
+    assert hash(microbit_com1) != hash(microbit_com2)
+
+
+def test_devicelist_index(microbit_com1):
+    dl = mu.logic.DeviceList()
+    dl.add_device(microbit_com1)
+    assert dl[0] == microbit_com1
+
+
+def test_devicelist_length(microbit_com1, microbit_com2):
+    dl = mu.logic.DeviceList()
+    assert len(dl) == 0
+    dl.add_device(microbit_com1)
+    assert len(dl) == 1
+    dl.add_device(microbit_com2)
+    assert len(dl) == 2
+
+
+def test_devicelist_rowCount(microbit_com1, microbit_com2):
+    dl = mu.logic.DeviceList()
+    assert dl.rowCount(None) == 0
+    dl.add_device(microbit_com1)
+    assert dl.rowCount(None) == 1
+    dl.add_device(microbit_com2)
+    assert dl.rowCount(None) == 2
+
+
+def test_devicelist_data(microbit_com1, adafruit_feather):
+    dl = mu.logic.DeviceList()
+    dl.add_device(microbit_com1)
+    dl.add_device(adafruit_feather)
+    tooltip = dl.data(dl.index(0), Qt.ToolTipRole)
+    display = dl.data(dl.index(0), Qt.DisplayRole)
+    assert display == adafruit_feather.name
+    assert tooltip == str(adafruit_feather)
+    tooltip = dl.data(dl.index(1), Qt.ToolTipRole)
+    display = dl.data(dl.index(1), Qt.DisplayRole)
+    assert display == microbit_com1.name
+    assert tooltip == str(microbit_com1)
+
+
+def test_devicelist_add_device_in_sorted_order(
+    microbit_com1, adafruit_feather
+):
+    dl = mu.logic.DeviceList()
+    dl.add_device(microbit_com1)
+    assert dl[0] == microbit_com1
+    dl.add_device(adafruit_feather)
+    assert dl[0] == adafruit_feather
+    assert dl[1] == microbit_com1
+
+    xyz_device = mu.logic.Device(
+        0x123B,
+        0x333A,
+        "COM1",
+        123456,
+        "ARM",
+        "ESP Mode",
+        "esp",
+        "xyz",
+    )
+    dl.add_device(xyz_device)
+    assert dl[2] == xyz_device
+
+
+def test_devicelist_remove_device(microbit_com1, adafruit_feather):
+    dl = mu.logic.DeviceList()
+    dl.add_device(microbit_com1)
+    assert len(dl) == 1
+    dl.remove_device(microbit_com1)
+    assert len(dl) == 0
+
+    dl.add_device(microbit_com1)
+    dl.add_device(adafruit_feather)
+    assert len(dl) == 2
+    dl.remove_device(adafruit_feather)
+    assert len(dl) == 1
+    dl.remove_device(microbit_com1)
+    assert len(dl) == 0
 
 
 def test_editor_init():
@@ -777,7 +926,7 @@ def test_editor_init():
         assert e.envars == []
         assert e.minify is False
         assert e.microbit_runtime == ""
-        assert e.connected_devices == set()
+        # assert e.connected_devices == set()
         assert e.find == ""
         assert e.replace == ""
         assert e.global_replace is False
@@ -809,6 +958,29 @@ def test_editor_setup():
         assert mock_shutil_copytree.call_count == 2
     assert e.modes == mock_modes
     view.set_usb_checker.assert_called_once_with(1, e.check_usb)
+
+
+def test_editor_connect_to_status_bar():
+    """
+    Check that the Window status bar is connected appropriately
+    to Editor-pane and to modes
+    """
+    view = mock.MagicMock()
+    e = mu.logic.Editor(view)
+    mock_python_mode = mock.MagicMock()
+    mock_esp_mode = mock.MagicMock()
+    mock_python_mode.workspace_dir.return_value = "foo"
+    mock_modes = {"python": mock_python_mode, "esp": mock_esp_mode}
+    mock_device_selector = mock.MagicMock()
+    with mock.patch("os.path.exists", return_value=False), mock.patch(
+        "os.makedirs", return_value=None
+    ), mock.patch("shutil.copy"), mock.patch("shutil.copytree"):
+        e.setup(mock_modes)
+        sb = mu.interface.main.StatusBar()
+        sb.device_selector = mock_device_selector
+        e.connect_to_status_bar(sb)
+        # Check device_changed signal is connected to both editor and modes
+        assert sb.device_selector.device_changed.connect.call_count == 3
 
 
 def test_editor_restore_session_existing_runtime():
@@ -2611,7 +2783,7 @@ def test_autosave():
     )
 
 
-def test_check_usb():
+def test_check_usb(microbit_com1):
     """
     Ensure the check_usb callback actually checks for connected USB devices.
     """
@@ -2622,22 +2794,54 @@ def test_check_usb():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None)
+    mode_py.find_devices.return_value = []
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345")
+    mode_mb.find_devices.return_value = [microbit_com1]
     ed.modes = {"microbit": mode_mb, "python": mode_py}
-    ed.show_status_message = mock.MagicMock()
+    ed.device_connected = mock.MagicMock()
     ed.check_usb()
-    expected = "Detected new BBC micro:bit device."
-    ed.show_status_message.assert_called_with(expected)
+    ed.device_connected.emit.assert_called_with(microbit_com1)
+
+
+def test_check_usb_remove_disconnected_devices(microbit_com1):
+    """
+    Ensure that if a device is no longer connected, it is removed from
+    the set of connected devices.
+    """
+    view = mock.MagicMock()
+    ed = mu.logic.Editor(view)
+    # No modes, so no devices should be detected
+    ed.modes = {}
+    ed.show_status_message = mock.MagicMock()
+    ed.connected_devices.add_device(microbit_com1)
+    ed.check_usb()
+    assert len(ed.connected_devices) == 0
+
+
+def test_ask_to_change_mode_confirm():
+    """
+    Ensure the ask_to_change_mode calls change_mode, if user confirms.
+    """
+    view = mock.MagicMock()
+    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
+    ed = mu.logic.Editor(view)
+    ed.change_mode = mock.MagicMock()
+    mode_py = mock.MagicMock()
+    mode_py.name = "Python3"
+    mode_py.runner = None
+    mode_mb = mock.MagicMock()
+    mode_mb.name = "BBC micro:bit"
+    ed.modes = {"microbit": mode_mb, "python": mode_py}
+    ed.ask_to_change_mode("microbit", "python", "New device detected")
     assert view.show_confirmation.called
     ed.change_mode.assert_called_once_with("microbit")
 
 
-def test_check_usb_change_mode_cancel():
+def test_ask_to_change_mode_cancel(adafruit_feather):
     """
-    Ensure the check_usb doesn't change mode if confirmation cancelled by user.
+    Ensure the ask_to_change_mode doesn't change mode if confirmation cancelled
+    by user.
     """
     view = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
@@ -2646,22 +2850,18 @@ def test_check_usb_change_mode_cancel():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None)
     mode_cp = mock.MagicMock()
     mode_cp.name = "CircuitPlayground"
-    mode_cp.find_device.return_value = ("/dev/ttyUSB1", "12345")
     ed.modes = {"circuitplayground": mode_cp, "python": mode_py}
-    ed.show_status_message = mock.MagicMock()
-    ed.check_usb()
-    expected = "Detected new CircuitPlayground device."
-    ed.show_status_message.assert_called_with(expected)
+    ed.ask_to_change_mode(mode_cp, mode_py, "New device detected")
     assert view.show_confirmation.called
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_already_in_mode():
+def test_ask_to_change_mode_already_in_mode(microbit_com1):
     """
-    Ensure the check_usb doesn't ask to change mode if already selected.
+    Ensure the ask_to_change_mode doesn't ask to change mode if already
+    selected.
     """
     view = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
@@ -2669,21 +2869,21 @@ def test_check_usb_already_in_mode():
     ed.change_mode = mock.MagicMock()
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345")
+    mode_mb.find_devices.return_value = [microbit_com1]
     mode_cp = mock.MagicMock()
-    mode_cp.find_device.return_value = (None, None)
+    mode_cp.find_devices.return_value = []
     ed.modes = {"microbit": mode_mb, "circuitplayground": mode_cp}
     ed.mode = "microbit"
     ed.show_status_message = mock.MagicMock()
-    ed.check_usb()
+    ed.ask_to_change_mode(mode_mb, mode_mb, "New device detected")
     view.show_confirmation.assert_not_called()
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_currently_running_code():
+def test_ask_to_change_mode_currently_running_code(microbit_com1):
     """
-    Ensure the check_usb doesn't ask to change mode if the current mode is
-    running code.
+    Ensure the ask_to_check_mode doesn't ask to change mode if the current mode
+    is running code.
     """
     view = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
@@ -2692,55 +2892,21 @@ def test_check_usb_currently_running_code():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = True
-    mode_py.find_device.return_value = (None, None)
+    mode_py.find_device.return_value = []
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345")
+    mode_mb.find_devices.return_value = [microbit_com1]
     ed.modes = {"microbit": mode_mb, "python": mode_py}
     ed.show_status_message = mock.MagicMock()
-    ed.check_usb()
+    ed.ask_to_change_mode(mode_mb, mode_py, "New device detected")
     view.show_confirmation.assert_not_called()
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_multiple_devices():
+def test_ask_to_change_mode_when_selecting_mode_is_silent(adafruit_feather):
     """
-    Ensure the check_usb doesn't ask to change mode if multiple devices found.
-    """
-    view = mock.MagicMock()
-    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
-    ed = mu.logic.Editor(view)
-    ed.change_mode = mock.MagicMock()
-    mode_py = mock.MagicMock()
-    mode_py.name = "Python3"
-    mode_py.runner = None
-    mode_py.find_device.return_value = (None, None)
-    mode_mb = mock.MagicMock()
-    mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345")
-    mode_cp = mock.MagicMock()
-    mode_cp.name = "CircuitPlayground"
-    mode_cp.find_device.return_value = ("/dev/ttyUSB1", "54321")
-    ed.modes = {
-        "microbit": mode_mb,
-        "circuitplayground": mode_cp,
-        "python": mode_py,
-    }
-    ed.show_status_message = mock.MagicMock()
-    ed.check_usb()
-    expected_mb = mock.call("Detected new BBC micro:bit device.")
-    expected_cp = mock.call("Detected new CircuitPlayground device.")
-    ed.show_status_message.assert_has_calls(
-        (expected_mb, expected_cp), any_order=True
-    )
-    view.show_confirmation.assert_not_called()
-    ed.change_mode.assert_not_called()
-
-
-def test_check_usb_when_selecting_mode_is_silent():
-    """
-    Ensure the check_usb doesn't ask to change mode if the user has the mode
-    selection dialog active (indicated by the selecting_mode flag.
+    Ensure ask_to_change_mode doesn't ask to change mode if the user has
+    the mode selection dialog active (indicated by the selecting_mode flag).
     """
     view = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
@@ -2749,32 +2915,31 @@ def test_check_usb_when_selecting_mode_is_silent():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None)
+    mode_py.find_devices.return_value = []
     mode_cp = mock.MagicMock()
     mode_cp.name = "CircuitPlayground"
-    mode_cp.find_device.return_value = ("/dev/ttyUSB1", "12345")
+    mode_cp.find_devices.return_value = [adafruit_feather]
     ed.modes = {"circuitplayground": mode_cp, "python": mode_py}
-    ed.show_status_message = mock.MagicMock()
     ed.selecting_mode = True
-    ed.check_usb()
-    expected = "Detected new CircuitPlayground device."
-    ed.show_status_message.assert_called_with(expected)
+    ed.ask_to_change_mode(mode_cp, mode_py, "New device detected")
     assert view.show_confirmation.call_count == 0
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_remove_disconnected_devices():
-    """
-    Ensure that if a device is no longer connected, it is removed from
-    the set of connected devices.
-    """
+def test_device_changed(microbit_com1, adafruit_feather):
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    ed.modes = {}
-    ed.show_status_message = mock.MagicMock()
-    ed.connected_devices = {("microbit", "/dev/ttyACM1")}
-    ed.check_usb()
-    assert len(ed.connected_devices) == 0
+    ed.ask_to_change_mode = mock.MagicMock()
+    ed.device_changed(adafruit_feather)
+    ed.ask_to_change_mode.assert_called_once_with(
+        "circuitpython",
+        "CircuitPython",
+        "Detected new Adafruit Feather device.",
+    )
+    assert ed.current_device == adafruit_feather
+    ed.device_changed(microbit_com1)
+    assert ed.ask_to_change_mode.call_count == 2
+    assert ed.current_device == microbit_com1
 
 
 def test_show_status_message():
@@ -2994,8 +3159,7 @@ def test_logic_independent_import_app():
 
 
 def test_read_newline_no_text():
-    """If the file being loaded is empty, use the platform default newline
-    """
+    """If the file being loaded is empty, use the platform default newline"""
     with generate_python_file() as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3003,8 +3167,7 @@ def test_read_newline_no_text():
 
 
 def test_read_newline_all_unix():
-    """If the file being loaded has only the Unix convention, use that
-    """
+    """If the file being loaded has only the Unix convention, use that"""
     with generate_python_file("abc\ndef") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3012,8 +3175,7 @@ def test_read_newline_all_unix():
 
 
 def test_read_newline_all_windows():
-    """If the file being loaded has only the Windows convention, use that
-    """
+    """If the file being loaded has only the Windows convention, use that"""
     with generate_python_file("abc\r\ndef") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3021,8 +3183,7 @@ def test_read_newline_all_windows():
 
 
 def test_read_newline_most_unix():
-    """If the file being loaded has mostly the Unix convention, use that
-    """
+    """If the file being loaded has mostly the Unix convention, use that"""
     with generate_python_file("\nabc\r\ndef\n") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3030,8 +3191,7 @@ def test_read_newline_most_unix():
 
 
 def test_read_newline_most_windows():
-    """If the file being loaded has mostly the Windows convention, use that
-    """
+    """If the file being loaded has mostly the Windows convention, use that"""
     with generate_python_file("\r\nabc\ndef\r\n") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3097,8 +3257,7 @@ UNICODE_TEST_STRING = BYTES_TEST_STRING.decode("iso-8859-1")
 # - fallback to the platform default (locale.getpreferredencoding())
 #
 def test_read_utf8bom():
-    """Successfully decode from utf-8 encoded with BOM
-    """
+    """Successfully decode from utf-8 encoded with BOM"""
     with generate_python_file() as filepath:
         with open(filepath, "w", encoding="utf-8-sig") as f:
             f.write(UNICODE_TEST_STRING)
@@ -3107,8 +3266,7 @@ def test_read_utf8bom():
 
 
 def test_read_utf16bebom():
-    """Successfully decode from utf-16 BE encoded with BOM
-    """
+    """Successfully decode from utf-16 BE encoded with BOM"""
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
             f.write(codecs.BOM_UTF16_BE)
@@ -3118,8 +3276,7 @@ def test_read_utf16bebom():
 
 
 def test_read_utf16lebom():
-    """Successfully decode from utf-16 LE encoded with BOM
-    """
+    """Successfully decode from utf-16 LE encoded with BOM"""
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
             f.write(codecs.BOM_UTF16_LE)
@@ -3129,8 +3286,7 @@ def test_read_utf16lebom():
 
 
 def test_read_encoding_cookie():
-    """Successfully decode from iso-8859-1 with an encoding cookie
-    """
+    """Successfully decode from iso-8859-1 with an encoding cookie"""
     encoding_cookie = ENCODING_COOKIE.replace(mu.logic.ENCODING, "iso-8859-1")
     test_string = encoding_cookie + UNICODE_TEST_STRING
     with generate_python_file() as filepath:
@@ -3141,8 +3297,7 @@ def test_read_encoding_cookie():
 
 
 def test_read_encoding_mu_default():
-    """Successfully decode from the mu default
-    """
+    """Successfully decode from the mu default"""
     test_string = UNICODE_TEST_STRING.encode(mu.logic.ENCODING)
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
@@ -3152,8 +3307,7 @@ def test_read_encoding_mu_default():
 
 
 def test_read_encoding_default():
-    """Successfully decode from the default locale
-    """
+    """Successfully decode from the default locale"""
     test_string = UNICODE_TEST_STRING.encode(locale.getpreferredencoding())
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
@@ -3163,8 +3317,7 @@ def test_read_encoding_default():
 
 
 def test_read_encoding_unsuccessful():
-    """Fail to decode encoded text
-    """
+    """Fail to decode encoded text"""
     #
     # Have to work quite hard to produce text which will definitely
     # fail to decode since UTF-8 and cp1252 (the default on this
@@ -3473,3 +3626,94 @@ def test_tidy_code_invalid_python():
     ed = mu.logic.Editor(mock_view)
     ed.tidy_code()
     assert mock_view.show_message.call_count == 1
+
+
+def test_device_init(microbit_com1):
+    """
+    Test that all properties are set properly and can be read.
+    """
+    assert microbit_com1.vid == 0x0D28
+    assert microbit_com1.pid == 0x0204
+    assert microbit_com1.port == "COM1"
+    assert microbit_com1.serial_number == 123456
+    assert microbit_com1.long_mode_name == "BBC micro:bit"
+    assert microbit_com1.short_mode_name == "microbit"
+
+
+def test_device_with_no_board_name_is_mode_name(microbit_com1):
+    """
+    Test that when no board name is given, the board name is the same
+    as the mode name.
+    """
+    assert microbit_com1.name == "BBC micro:bit"
+
+
+def test_com1_equality(microbit_com1):
+    """
+    Test that two separate Device-objects representing the same device
+    are recognized as equal.
+    """
+    identical_microbit_com1 = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM1",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
+    )
+    assert microbit_com1 == identical_microbit_com1
+
+
+def test_com1_not_equal_on_different_ports(microbit_com1):
+    """
+    Test that if two otherwise identical devices differ on the port, they
+    are not recognized as being equal.
+    """
+    microbit_com2 = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM2",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
+    )
+    assert microbit_com1 != microbit_com2
+
+
+def test_com1_hash_equality(microbit_com1):
+    """
+    Test that hash function returns the same for two identical Device-objects.
+    """
+    identical_microbit_com1 = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM1",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
+    )
+    assert hash(microbit_com1) == hash(identical_microbit_com1)
+
+
+def test_com1_hash_not_equal_on_different_ports(microbit_com1):
+    """
+    Test that the hash function differs, when two otherwise identical
+    devices are connected to two different ports.
+    """
+    microbit_com2 = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM2",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
+    )
+    assert hash(microbit_com1) != hash(microbit_com2)
