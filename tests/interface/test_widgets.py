@@ -46,7 +46,7 @@ def adafruit_feather():
     return adafruit_feather
 
 
-def test_device_selector_device_changed_to_none(qtapp):
+def test_device_selector_device_changed_to_none():
     """
     Check that when device changes to index out of range,
     the device selector emits None on the device_changed signal
@@ -57,7 +57,7 @@ def test_device_selector_device_changed_to_none(qtapp):
     device_selector.device_changed.emit.assert_called_once_with(None)
 
 
-def test_device_selector_selected_device_w_no_devices(qtapp):
+def test_device_selector_selected_device_w_no_devices():
     """
     Test that device_changed signals are emitted, when the user
     changes device.
@@ -69,7 +69,7 @@ def test_device_selector_selected_device_w_no_devices(qtapp):
     assert device is None
 
 
-def test_device_selector_device_changed(qtapp, microbit, adafruit_feather):
+def test_device_selector_device_changed(microbit, adafruit_feather):
     """
     Test that device_changed signals are emitted, when the user
     changes device.
@@ -84,7 +84,7 @@ def test_device_selector_device_changed(qtapp, microbit, adafruit_feather):
     device_selector.device_changed.emit.assert_called_with(adafruit_feather)
 
 
-def test_DeviceSelector_device_connected(qtapp, microbit):
+def test_DeviceSelector_device_connected(microbit):
     """
     Test that _update_view is called when a device connects
     """
@@ -94,7 +94,7 @@ def test_DeviceSelector_device_connected(qtapp, microbit):
     device_selector._update_view.assert_called_once_with()
 
 
-def test_DeviceSelector_device_disconnected(qtapp, microbit):
+def test_DeviceSelector_device_disconnected(microbit):
     """
     Test that _update_view is called when a device disconnects
     """
@@ -104,7 +104,7 @@ def test_DeviceSelector_device_disconnected(qtapp, microbit):
     device_selector._update_view.assert_called_once_with()
 
 
-def test_DeviceSelector_update_view_selector_hidden_on_1_device(qtapp):
+def test_DeviceSelector_update_view_selector_hidden_on_1_device():
     """
     Test that _update_view hides the combobox selector when only
     one device connected
@@ -119,7 +119,7 @@ def test_DeviceSelector_update_view_selector_hidden_on_1_device(qtapp):
     assert device_selector.selector.isHidden()
 
 
-def test_DeviceSelector_update_view_selector_shown_on_2_devices(qtapp):
+def test_DeviceSelector_update_view_selector_shown_on_2_devices():
     """
     Test that _update_view displays the combobox selector when two
     devices connected
@@ -135,7 +135,7 @@ def test_DeviceSelector_update_view_selector_shown_on_2_devices(qtapp):
     assert device_selector.status_label.isHidden()
 
 
-def test_DeviceSelector_update_view_check_disconnected_icon(qtapp):
+def test_DeviceSelector_update_view_check_disconnected_icon():
     """
     Test that _update_view displays the disconnected icon when
     no device connected
@@ -150,7 +150,7 @@ def test_DeviceSelector_update_view_check_disconnected_icon(qtapp):
     )
 
 
-def test_DeviceSelector_update_view_check_connected_icon(qtapp):
+def test_DeviceSelector_update_view_check_connected_icon():
     """
     Test that _update_view displays the connected icon when
     one device connected
