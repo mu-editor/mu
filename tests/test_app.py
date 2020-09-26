@@ -68,7 +68,7 @@ def test_setup_logging():
         assert sys.excepthook == excepthook
 
 
-def test_run(qtapp):
+def test_run():
     """
     Ensure the run function sets things up in the expected way.
 
