@@ -9,6 +9,7 @@ import mu.interface.dialogs
 from PyQt5.QtWidgets import QDialog, QWidget, QDialogButtonBox
 from unittest import mock
 from mu.modes import PythonMode, CircuitPythonMode, MicrobitMode, DebugMode
+from mu import virtual_environment
 
 
 def test_ModeItem_init():
@@ -439,12 +440,10 @@ def test_PackageDialog_run_pip(qtapp):
     us "pip").
     """
     pd = mu.interface.dialogs.PackageDialog()
-    pd.to_add = {"foo"}
-    pd.module_dir = "bar"
+    venv = virtual_environment.VirtualEnvironment(".")
     mock_process = mock.MagicMock()
     with mock.patch("mu.interface.dialogs.QProcess", mock_process):
-        pd.run_pip()
-        assert pd.to_add == set()
+        pd.setup({}, {"foo"}, venv)
         pd.process.readyRead.connect.assert_called_once_with(pd.read_process)
         pd.process.finished.connect.assert_called_once_with(pd.finished)
         args = [
@@ -452,10 +451,8 @@ def test_PackageDialog_run_pip(qtapp):
             "pip",  # called pip
             "install",  # to install
             "foo",  # a package called "foo"
-            "--target",  # and the target directory for package assets is...
-            "bar",  # ...this directory
         ]
-        pd.process.start.assert_called_once_with(sys.executable, args)
+        pd.process.start.assert_called_once_with(venv.interpreter, args)
 
 
 def test_PackageDialog_finished_with_more_to_remove(qtapp):
@@ -464,9 +461,10 @@ def test_PackageDialog_finished_with_more_to_remove(qtapp):
     install and run again.
     """
     pd = mu.interface.dialogs.PackageDialog()
-    pd.to_add = {"foo"}
     pd.run_pip = mock.MagicMock()
     pd.process = mock.MagicMock()
+    venv = virtual_environment.VirtualEnvironment(".")
+    pd.setup({}, {"foo"}, venv)
     pd.finished()
     assert pd.process is None
     pd.run_pip.assert_called_once_with()

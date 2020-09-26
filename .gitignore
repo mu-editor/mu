@@ -84,3 +84,4 @@ target/
 /apply-pr.cmd
 /fresh-run.cmd
 /fresh-venv.cmd
+/test.cmd

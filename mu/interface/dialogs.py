@@ -340,6 +340,8 @@ class PackageDialog(QDialog):
     currently run by pip.
     """
 
+    text_changed = pyqtSignal(str)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -350,7 +352,6 @@ class PackageDialog(QDialog):
         self.to_remove = to_remove
         self.to_add = to_add
         self.venv = venv
-        self.pkg_dirs = {}  # To hold locations of to-be-removed packages.
         self.process = None
         # Basic layout.
         self.setMinimumSize(600, 400)
@@ -369,6 +370,11 @@ class PackageDialog(QDialog):
         widget_layout.addWidget(self.button_box)
         # Kick off processing of packages.
         self.commands = []
+        #
+        # FIXME move the run_pip QProcess functionality into the virtual
+        # environment object, at which point this can become a series of
+        # packages to add/remove
+        #
         if self.to_remove:
             self.commands.append(
                 ["-m", "pip", "uninstall", "-y"] + list(self.to_remove)

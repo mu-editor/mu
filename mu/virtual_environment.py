@@ -5,7 +5,6 @@ import logging
 import subprocess
 
 import encodings
-
 python36_zip = os.path.dirname(encodings.__path__[0])
 del encodings
 
@@ -17,6 +16,49 @@ wheels_dirpath = os.path.dirname(wheels.__file__)
 
 logger = logging.getLogger(__name__)
 
+def _subprocess_run(command, *args):
+    """Run a process via the subprocess module
+
+    Return the combined output decoded as utf-8
+    """
+    p = subprocess.run([command] + list(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return p.stdout.decode("utf-8")
+
+#~ def _qprocess_run(command, *args, messages_queue=None):
+    #~ """Run a process via QProcess
+
+    #~ Accept keyword args referring to the slots (eg readyRead, finished)
+    #~ Return the combined output decoded as utf-8
+    #~ """
+    #~ process = QProcess(qparent)
+    #~ process.setProcessChannelMode(QProcess.MergedChannels)
+    #~ for k, v in kwargs.items():
+        #~ logger.debug("Connecting %s to %k" % (v, k))
+        #~ slot = getattr(process, k)
+        #~ slot.connect(v)
+    #~ logger.info("{} {}".format(command, " ".join(args)))
+    #~ def _finished(process):
+
+    #~ if messages_queue:
+        #~ def readyRead(process):
+            #~ while True:
+                #~ data = self.process.readAll()
+                #~ if data:
+                    #~ messages_queue.append(data.data().decode("utf-8"))
+
+            #~ self.append_data()
+            #~ QTimer.singleShot(2, self.read_process)
+
+    #~ process.start(command, args)
+    #~ if not process.waitForStarted():
+        #~ raise RuntimeError("Could not start new subprocess.")
+    #~ if not process.waitForFinished(180000):
+        #~ #
+        #~ # Allow up to three minutes for some operations (eg installing
+        #~ # all the baseline packages)
+        #~ #
+        #~ raise RuntimeError("Could not complete new subprocess.")
+    #~ return process.readAll().data().decode("utf-8")
 
 class Pip(object):
     """Proxy for various pip commands
@@ -44,8 +86,7 @@ class Pip(object):
                 params.append(str(v))
         params.extend(args)
 
-        p = subprocess.run([self.executable] + params, capture_output=True)
-        return p.stdout
+        return _subprocess_run(self.executable, *params)
 
     def install(self, packages, **kwargs):
         """Use pip to install a package or packages
@@ -106,7 +147,10 @@ class Pip(object):
         next(iterlines)
         next(iterlines)
         for line in iterlines:
-            name, version, location = line.split()
+            #
+            # Some lines have a third location element
+            #
+            name, version = line.split()[:2]
             yield name, version
 
 class VirtualEnvironment(object):
