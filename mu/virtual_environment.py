@@ -1,5 +1,6 @@
 import os
 import sys
+import functools
 import glob
 import logging
 import subprocess
@@ -8,7 +9,7 @@ import encodings
 python36_zip = os.path.dirname(encodings.__path__[0])
 del encodings
 
-from PyQt5.QtCore import QProcess, QProcessEnvironment
+from PyQt5.QtCore import QObject, QProcess, QThread, pyqtSignal, QTimer, QProcessEnvironment
 
 from . import wheels
 
@@ -24,41 +25,85 @@ def _subprocess_run(command, *args):
     p = subprocess.run([command] + list(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return p.stdout.decode("utf-8")
 
-#~ def _qprocess_run(command, *args, messages_queue=None):
-    #~ """Run a process via QProcess
+class Process(QObject):
+    """Use the QProcess mechanism to run a subprocess asynchronously
 
-    #~ Accept keyword args referring to the slots (eg readyRead, finished)
-    #~ Return the combined output decoded as utf-8
-    #~ """
-    #~ process = QProcess(qparent)
-    #~ process.setProcessChannelMode(QProcess.MergedChannels)
-    #~ for k, v in kwargs.items():
-        #~ logger.debug("Connecting %s to %k" % (v, k))
-        #~ slot = getattr(process, k)
-        #~ slot.connect(v)
-    #~ logger.info("{} {}".format(command, " ".join(args)))
-    #~ def _finished(process):
+    This will interact well with Qt Gui objects, eg by connecting the
+    `output` signals to an `QTextEdit.append` method and the `started`
+    and `finished` signals to a `QPushButton.setEnabled`.
 
-    #~ if messages_queue:
-        #~ def readyRead(process):
-            #~ while True:
-                #~ data = self.process.readAll()
-                #~ if data:
-                    #~ messages_queue.append(data.data().decode("utf-8"))
+    eg::
+        import sys
+        from PyQt5.QtCore import *
+        from PyQt5.QtWidgets import *
 
-            #~ self.append_data()
-            #~ QTimer.singleShot(2, self.read_process)
+        class Example(QMainWindow):
 
-    #~ process.start(command, args)
-    #~ if not process.waitForStarted():
-        #~ raise RuntimeError("Could not start new subprocess.")
-    #~ if not process.waitForFinished(180000):
-        #~ #
-        #~ # Allow up to three minutes for some operations (eg installing
-        #~ # all the baseline packages)
-        #~ #
-        #~ raise RuntimeError("Could not complete new subprocess.")
-    #~ return process.readAll().data().decode("utf-8")
+            def __init__(self):
+                super().__init__()
+                textEdit = QTextEdit()
+
+                self.setCentralWidget(textEdit)
+                self.setGeometry(300, 300, 350, 250)
+                self.setWindowTitle('Main window')
+                self.show()
+
+                self.process = Process()
+                self.process.output.connect(textEdit.append)
+                self.process.run(sys.executable, ["-u", "-m", "pip", "list"])
+
+        def main():
+            app = QApplication(sys.argv)
+            ex = Example()
+            sys.exit(app.exec_())
+    """
+
+    started = pyqtSignal()
+    output = pyqtSignal(str)
+    finished = pyqtSignal()
+
+    def __init__(self):
+        super().__init__()
+        #
+        # Always run unbuffered and with UTF-8 IO encoding
+        #
+        self.environment = QProcessEnvironment.systemEnvironment()
+        self.environment.insert("PYTHONUNBUFFERED", "1")
+        self.environment.insert("PYTHONIOENCODING", "utf-8")
+
+    def run(self, command, args, **envvars):
+        """Run the process with the command and args
+        """
+        self.process = QProcess(self)
+        environment = QProcessEnvironment(self.environment)
+        for k, v in envvars.items():
+            environment.insert(k, v)
+        self.process.setProcessEnvironment(environment)
+        self.process.setProcessChannelMode(QProcess.MergedChannels)
+        self.process.readyRead.connect(self._readyRead)
+        self.process.started.connect(self._started)
+        self.process.finished.connect(self._finished)
+        QTimer.singleShot(100, functools.partial(self.process.start, command, args))
+        #
+        # return self so it's easy to do `process.run(...).wait()`
+        #
+        return self
+
+    def wait(self, wait_for_s=30.0):
+        return self.process.waitForFinished(1000 * wait_for_s)
+
+    def data(self):
+        return self.process.readAll().data().decode("utf-8")
+
+    def _started(self):
+        self.started.emit()
+
+    def _readyRead(self):
+        self.output.emit(self.data().strip())
+
+    def _finished(self):
+        self.finished.emit()
+
 
 class Pip(object):
     """Proxy for various pip commands
@@ -69,12 +114,18 @@ class Pip(object):
     """
     def __init__(self, pip_executable):
         self.executable = pip_executable
+        self.process = Process()
 
     def run(self, command, *args, **kwargs):
+        """Run a command with args, treating kwargs as Posix switches
+
+        eg run("python", version=True)
+        run("python", "-c", "import sys; print(sys.executable)")
+        """
         #
         # Any keyword args are treated as command-line switches
-        # As a special case, a value of None indicates that the flag
-        # takes no parameters.
+        # As a special case, a boolean value indicates that the flag
+        # is a yes/no switch
         #
         params = [command]
         for k, v in kwargs.items():
@@ -85,8 +136,8 @@ class Pip(object):
             if v is not True and v is not False:
                 params.append(str(v))
         params.extend(args)
-
-        return _subprocess_run(self.executable, *params)
+        self.process.run(self.executable, params).wait()
+        return self.process.data()
 
     def install(self, packages, **kwargs):
         """Use pip to install a package or packages
@@ -178,44 +229,46 @@ class VirtualEnvironment(object):
         #
         self.interpreter = os.path.join(self._bin_directory, "python" + self._bin_extension)
         self.pip = Pip(os.path.join(self._bin_directory, "pip" + self._bin_extension))
+        self.process = Process()
         logging.debug(
             "Starting virtual environment %s at %s", self.name, self.path
         )
 
-    def run_python(self, *args, pythonpath=python36_zip):
+    def run_python(
+        self, *args,
+        started_slot=None, output_slot=None, finished_slot=None
+    ): ## FIXME -- do we need pythonpath?, pythonpath=python36_zip):
+        """Run the referenced Python interpreter with the passed in args
+
+        If slots are supplied for the starting, output or finished signals
+        they will be used; otherwise it will be assume that this running
+        headless and the process will be run synchronously and output collected
+        will be returned when the process is complete
         """
-        Run the referenced Python interpreter with the passed in args and
-        PYTHONPATH. This is a **BLOCKING** call to the subprocess and should
-        only be used for quick Python commands needed for pip, venv and other
-        related tasks to work.
-        """
-        logger.info(
-            "Starting new sub-process with: {} {} (PYTHONPATH={})".format(
-                self.interpreter, args, pythonpath
-            )
-        )
-        process = QProcess()
-        process.setProcessChannelMode(QProcess.MergedChannels)
-        env = QProcessEnvironment.systemEnvironment()
-        env.insert("PYTHONUNBUFFERED", "1")
-        env.insert("PYTHONIOENCODING", "utf-8")
-        if pythonpath:
-            env.insert("PYTHONPATH", pythonpath)
-        else:
-            env.remove("PYTHONPATH")
-        process.setProcessEnvironment(env)
-        process.start(self.interpreter, args)
-        if not process.waitForStarted():
-            raise RuntimeError("Could not start new subprocess.")
-        if not process.waitForFinished(180000):
-            #
-            # Allow up to three minutes for some operations (eg installing
-            # all the baseline packages)
-            #
-            raise RuntimeError("Could not complete new subprocess.")
-        result = process.readAll().data().decode("utf-8")
-        logger.debug("Process results:\n%r", result)
-        return result
+        #~ logger.info(
+            #~ "Starting new sub-process with: {} {} (PYTHONPATH={})".format(
+                #~ self.interpreter, args, pythonpath
+            #~ )
+        #~ )
+        if started_slot:
+            self.process.started.connect(started_slot)
+        if output_slot:
+            self.process.output.connect(output_slot)
+        if finished_slot:
+            self.process.finished.connect(finished_slot)
+
+        self.process.run(self.interpreter, args)
+
+        #
+        # If no finished slot is given, wait up to three minutes for some
+        # operations to complete (eg installing all the baseline packages)
+        # And then return the collected output
+        #
+        if not finished_slot:
+            self.process.wait(180)
+            result = self.process.data()
+            logger.debug("Process results:\n%r", result)
+            return result
 
     def find_interpreter(self):
         #
@@ -275,14 +328,8 @@ class VirtualEnvironment(object):
             [sys.executable, "-m", "venv", self.path], check=True, env=env
         )
         # Set the path to the interpreter
-        self.find_interpreter()
-        # Don't upgrade pip yet; we might not have internet access
-        # ~ logger.debug(self.pip("install", "--upgrade", "pip"))
         self.install_baseline_packages()
         self.install_jupyter_kernel()
-
-    #~ def pip(self, *args):
-        #~ return self.run_python("-m", "pip", *args)
 
     def install_jupyter_kernel(self):
         logger.info("Installing Jupyter Kernel")

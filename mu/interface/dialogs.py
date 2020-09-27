@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-from PyQt5.QtCore import QSize, QProcess, QTimer
+from PyQt5.QtCore import QSize, QProcess, QTimer, pyqtSignal
 from PyQt5.QtWidgets import (
     QVBoxLayout,
     QListWidget,

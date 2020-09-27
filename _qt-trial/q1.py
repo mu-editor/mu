@@ -18,8 +18,33 @@ from PyQt5.QtCore import QObject, QProcess, QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import QMainWindow, QTextEdit, QApplication
 
 class Process(QObject):
+    """
 
+    eg::
+        class Example(QMainWindow):
+
+            def __init__(self):
+                super().__init__()
+                textEdit = QTextEdit()
+
+                self.setCentralWidget(textEdit)
+                self.setGeometry(300, 300, 350, 250)
+                self.setWindowTitle('Main window')
+                self.show()
+
+                self.process = Process()
+                self.process.output.connect(textEdit.append)
+                self.process.run(sys.executable, ["-u", "-m", "pip", "list"])
+
+        def main():
+            app = QApplication(sys.argv)
+            ex = Example()
+            sys.exit(app.exec_())
+    """
+
+    started = pyqtSignal()
     output = pyqtSignal(str)
+    finished = pyqtSignal()
 
     def __init__(self):
         super().__init__()
@@ -33,7 +58,7 @@ class Process(QObject):
         QTimer.singleShot(100, functools.partial(self.process.start, command, args))
 
     def _started(self):
-        self.output.emit("Started")
+        self.started.emit()
 
     def _readyRead(self):
         text = self.process.readAll().data().decode("utf-8").strip()
@@ -41,7 +66,7 @@ class Process(QObject):
         self.output.emit(text)
 
     def _finished(self):
-        self.output.emit("Finished")
+        self.finished.emit()
 
 class Example(QMainWindow):
 
