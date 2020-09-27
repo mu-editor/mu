@@ -2320,9 +2320,7 @@ def test_PlotterPane_add_data():
     pp.add_data((1,))
     assert (1,) in pp.raw_data
     mock_line_series.clear.assert_called_once_with()
-    for i in range(99):
-        mock_line_series.append.call_args_list[i][0] == (i, 0)
-    mock_line_series.append.call_args_list[99][0] == (99, 1)
+    mock_line_series.append.call_args_list[0][0] == (0, 1)
 
 
 def test_PlotterPane_add_data_adjust_values_up():
@@ -2370,7 +2368,7 @@ def test_PlotterPane_add_data_re_scale_up():
     pp.series = [mock_line_series]
     pp.add_data((1001,))
     assert pp.max_y == 2000
-    pp.axis_y.setRange.assert_called_once_with(-2000, 2000)
+    pp.axis_y.setRange.assert_called_once_with(0, 2000)
 
 
 def test_PlotterPane_add_data_re_scale_down():
@@ -2385,7 +2383,37 @@ def test_PlotterPane_add_data_re_scale_down():
     pp.series = [mock_line_series]
     pp.add_data((1999,))
     assert pp.max_y == 2000
-    pp.axis_y.setRange.assert_called_once_with(-2000, 2000)
+    pp.axis_y.setRange.assert_called_once_with(0, 2000)
+
+
+def test_PlotterPane_add_data_re_scale_min_up():
+    """
+    If the y axis contains (negative) data smaller than the current
+    minimum, then ensure the negative range is doubled.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.axis_y = mock.MagicMock()
+    mock_line_series = mock.MagicMock()
+    pp.series = [mock_line_series]
+    pp.add_data((-1001,))
+    assert pp.min_y == -2000
+    pp.axis_y.setRange.assert_called_once_with(-2000, 0)
+
+
+def test_PlotterPane_add_data_re_scale_min_down():
+    """
+    If the y axis contains (negative) data less than half of the
+    current minimum, then ensure the negative range is halved.
+
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.min_y = -4000
+    pp.axis_y = mock.MagicMock()
+    mock_line_series = mock.MagicMock()
+    pp.series = [mock_line_series]
+    pp.add_data((-1999,))
+    assert pp.min_y == -2000
+    pp.axis_y.setRange.assert_called_once_with(-2000, 0)
 
 
 def test_PlotterPane_set_label_format_to_float_when_range_small():
@@ -2400,7 +2428,7 @@ def test_PlotterPane_set_label_format_to_float_when_range_small():
     pp.series = [mock_line_series]
     pp.add_data((1,))
     assert pp.max_y == 1
-    pp.axis_y.setRange.assert_called_once_with(-1, 1)
+    pp.axis_y.setRange.assert_called_once_with(0, 1)
     pp.axis_y.setLabelFormat.assert_called_once_with("%2.2f")
 
 
@@ -2414,9 +2442,9 @@ def test_PlotterPane_set_label_format_to_int_when_range_large():
     pp.axis_y = mock.MagicMock()
     mock_line_series = mock.MagicMock()
     pp.series = [mock_line_series]
-    pp.add_data((10,))
-    assert pp.max_y == 10
-    pp.axis_y.setRange.assert_called_once_with(-10, 10)
+    pp.add_data((20,))
+    assert pp.max_y == 25
+    pp.axis_y.setRange.assert_called_once_with(0, 25)
     pp.axis_y.setLabelFormat.assert_called_once_with("%d")
 
 
