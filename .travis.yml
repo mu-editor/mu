@@ -48,10 +48,6 @@ before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libxkbcommon-x11-0; fi
   # Use a new virtual environment with system packages for arm64
   - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then deactivate && virtualenv venv --python=python3 --system-site-packages && source venv/bin/activate; fi
-  - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then pip config set global.extra-index-url https://www.piwheels.org/simple; fi
-  - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then pip config set global.platform "linux_armv7l"; fi
-  - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then pip config set global.target "$(python3 -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"; fi
-  - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then pip config set global.only-binary ":all:"; fi
   # Python 3 installation required
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv install $TRAVIS_OSX_PY_VER; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv global $TRAVIS_OSX_PY_VER; fi
@@ -68,8 +64,9 @@ before_install:
   - pip freeze
 
 install:
-  # Installing PyQt5 dependencies via apt for arm64 arch
+  # In arm64 install PyQt5 dependencies via apt, numpy and pygame via piwheels
   - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then sudo apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg libxmlsec1-dev libxml2 libxml2-dev; fi
+  - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then pip install numpy pygame --extra-index-url="https://www.piwheels.org/simple" --platform="linux_armv7l" --only-binary=":all:" --target="$(python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"; fi
   # Install Mu and its dependencies
   - pip install .[dev]
   # Check everything was correctly installed
