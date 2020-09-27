@@ -375,13 +375,15 @@ class PackageDialog(QDialog):
         # environment object, at which point this can become a series of
         # packages to add/remove
         #
-        if self.to_remove:
-            self.commands.append(
-                ["-m", "pip", "uninstall", "-y"] + list(self.to_remove)
-            )
-        if self.to_add:
-            self.commands.append(["-m", "pip", "install"] + list(self.to_add))
-        self.run_pip()
+        self.venv.remove_user_packages(list(self.to_remove), output_slot=self.text_area.append)
+        self.venv.install_user_packages(list(self.to_add))
+        #~ if self.to_remove:
+            #~ self.commands.append(
+                #~ ["-m", "pip", "uninstall", "-y"] + list(self.to_remove)
+            #~ )
+        #~ if self.to_add:
+            #~ self.commands.append(["-m", "pip", "install"] + list(self.to_add))
+        #~ self.run_pip()
 
     def end_state(self):
         """
@@ -396,12 +398,13 @@ class PackageDialog(QDialog):
         text area.
         """
         args = self.commands.pop()
-        self.process = QProcess(self)
-        self.process.setProcessChannelMode(QProcess.MergedChannels)
-        self.process.readyRead.connect(self.read_process)
-        self.process.finished.connect(self.finished)
-        logger.info("{} {}".format(self.venv.interpreter, " ".join(args)))
-        self.process.start(self.venv.interpreter, args)
+        self.venv.run_python(args, output_slot=self.read_process, finished_slot=self.finished)
+        #~ self.process = QProcess(self)
+        #~ self.process.setProcessChannelMode(QProcess.MergedChannels)
+        #~ self.process.readyRead.connect(self.read_process)
+        #~ self.process.finished.connect(self.finished)
+        #~ logger.info("{} {}".format(self.venv.interpreter, " ".join(args)))
+        #~ self.process.start(self.venv.interpreter, args)
 
     def finished(self):
         """
@@ -414,20 +417,24 @@ class PackageDialog(QDialog):
         else:
             self.end_state()
 
-    def read_process(self):
+    def read_process(self, data):
         """
         Read data from the child process and append it to the text area. Try
         to keep reading until there's no more data from the process.
         """
-        data = self.process.readAll()
         if data:
-            self.append_data(data.data().decode("utf-8"))
+            self.text_area.append(msg)
+            #~ self.append_data(data)
             QTimer.singleShot(2, self.read_process)
 
     def append_data(self, msg):
         """
         Add data to the end of the text area.
         """
+        #
+        # FIXME: still needed?
+        #
+        self.text_area.append(msg)
         cursor = self.text_area.textCursor()
         cursor.movePosition(QTextCursor.End)
         cursor.insertText(msg)

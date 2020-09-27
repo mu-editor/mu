@@ -71,7 +71,7 @@ class Process(QObject):
         self.environment.insert("PYTHONUNBUFFERED", "1")
         self.environment.insert("PYTHONIOENCODING", "utf-8")
 
-    def run(self, command, args, **envvars):
+    def _set_up_run(self, **envvars):
         """Run the process with the command and args
         """
         self.process = QProcess(self)
@@ -80,17 +80,23 @@ class Process(QObject):
             environment.insert(k, v)
         self.process.setProcessEnvironment(environment)
         self.process.setProcessChannelMode(QProcess.MergedChannels)
+
+    def run_headless(self, command, args, **envvars):
+        self._set_up_run(**envvars)
+        self.process.start(command, args)
+        self.wait()
+        return self.data()
+
+    def run(self, command, args, **envvars):
+        self._set_up_run(**envvars)
         self.process.readyRead.connect(self._readyRead)
         self.process.started.connect(self._started)
         self.process.finished.connect(self._finished)
         QTimer.singleShot(100, functools.partial(self.process.start, command, args))
-        #
-        # return self so it's easy to do `process.run(...).wait()`
-        #
-        return self
 
     def wait(self, wait_for_s=30.0):
-        return self.process.waitForFinished(1000 * wait_for_s)
+        if not self.process.waitForFinished(1000 * wait_for_s):
+            raise RuntimeError("Some error occurred")
 
     def data(self):
         return self.process.readAll().data().decode("utf-8")
@@ -116,7 +122,7 @@ class Pip(object):
         self.executable = pip_executable
         self.process = Process()
 
-    def run(self, command, *args, **kwargs):
+    def run(self, command, *args, output_slot=None, **kwargs):
         """Run a command with args, treating kwargs as Posix switches
 
         eg run("python", version=True)
@@ -136,10 +142,14 @@ class Pip(object):
             if v is not True and v is not False:
                 params.append(str(v))
         params.extend(args)
-        self.process.run(self.executable, params).wait()
-        return self.process.data()
 
-    def install(self, packages, **kwargs):
+        if output_slot is None:
+            return self.process.run_headless(self.executable, params)
+        else:
+            self.process.output.connect(output_slot)
+            self.process.run(self.executable, params)
+
+    def install(self, packages, output_slot=None, **kwargs):
         """Use pip to install a package or packages
 
         If the first parameter is a string one package is installed; otherwise
@@ -149,11 +159,11 @@ class Pip(object):
         indicates a switch without a value (eg --upgrade)
         """
         if isinstance(packages, str):
-            return self.run("install", packages, **kwargs)
+            return self.run("install", packages, output_slot=output_slot, **kwargs)
         else:
-            return self.run("install", *packages, **kwargs)
+            return self.run("install", *packages, output_slot=output_slot, **kwargs)
 
-    def uninstall(self, packages, **kwargs):
+    def uninstall(self, packages, output_slot=None, **kwargs):
         """Use pip to uninstall a package or packages
 
         If the first parameter is a string one package is uninstalled; otherwise
@@ -163,9 +173,9 @@ class Pip(object):
         indicates a switch without a value (eg --upgrade)
         """
         if isinstance(packages, str):
-            return self.run("uninstall", packages, **kwargs)
+            return self.run("uninstall", packages, output_slot=output_slot, yes=True, **kwargs)
         else:
-            return self.run("uninstall", *packages, **kwargs)
+            return self.run("uninstall", *packages, output_slot=output_slot, yes=True, **kwargs)
 
     def freeze(self):
         """Use pip to return a list of installed packages
@@ -190,7 +200,7 @@ class Pip(object):
         than pip freeze which uses different annotations for
         file-installed wheels and editable (-e) installs
         """
-        lines = self.list().decode("utf-8").splitlines()
+        lines = self.list().splitlines()
         iterlines = iter(lines)
         #
         # The first two lines are headers
@@ -257,18 +267,11 @@ class VirtualEnvironment(object):
         if finished_slot:
             self.process.finished.connect(finished_slot)
 
-        self.process.run(self.interpreter, args)
+        if output_slot:
+            self.process.run(self.interpreter, args)
+        else:
+            return self.process.run_headless(self.interpreter, args)
 
-        #
-        # If no finished slot is given, wait up to three minutes for some
-        # operations to complete (eg installing all the baseline packages)
-        # And then return the collected output
-        #
-        if not finished_slot:
-            self.process.wait(180)
-            result = self.process.data()
-            logger.debug("Process results:\n%r", result)
-            return result
 
     def find_interpreter(self):
         #
@@ -376,15 +379,15 @@ class VirtualEnvironment(object):
             )
         self.pip.install(wheel_filepaths)
 
-    def install_user_packages(self, packages):
+    def install_user_packages(self, packages, started_slot=None, output_slot=None, finished_slot=None):
         logger.info("Installing user packages: %s", ", ".join(packages))
         for package in packages:
-            self.pip.install(package, upgrade=True)
+            self.pip.install(package, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, upgrade=True)
 
-    def remove_user_packages(self, packages):
+    def remove_user_packages(self, packages, started_slot=None, output_slot=None, finished_slot=None):
         logger.info("Removing user packages: %s", ", ".join(packages))
         for package in packages:
-            self.pip.uninstall(package)
+            self.pip.uninstall(package, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot)
 
     def full_pythonpath(self):
         """
