@@ -39,19 +39,6 @@ SOFT_REBOOT = b"\x04"  # CTRL-C
 logger = logging.getLogger(__name__)
 
 
-# List of supported board USB IDs.  Each board is a tuple of unique USB vendor
-# ID, USB product ID.
-BOARD_IDS = [
-    # VID  , PID   , manufact., device name
-    (0x0D28, 0x0204, None, "micro:bit"),
-    (0x239A, 0x800B, None, "Adafruit Feather M0"),  # CDC only
-    (0x239A, 0x8016, None, "Adafruit Feather M0"),  # CDC + MSC
-    (0x239A, 0x8014, None, "Adafruit Metro M0"),
-    (0x239A, 0x8019, None, "Circuit Playground Express M0"),
-    (0x239A, 0x8015, None, "Circuit Playground M0 (prototype)"),
-    (0x239A, 0x801B, None, "Adafruit Feather M0 Express"),
-]
-
 # Cache module names for filename shadow checking later.
 MODULE_NAMES = set([name for _, name, _ in pkgutil.iter_modules()])
 MODULE_NAMES.add("sys")
@@ -382,7 +369,7 @@ class MicroPythonMode(BaseMode):
     Includes functionality that works with a USB serial based REPL.
     """
 
-    valid_boards = BOARD_IDS
+    valid_boards = []
     force_interrupt = True
     connection = None
 
