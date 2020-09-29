@@ -38,7 +38,6 @@ from PyQt5.QtWidgets import (
     QTabBar,
     QPushButton,
     QHBoxLayout,
-    QComboBox,
 )
 from PyQt5.QtGui import QKeySequence, QStandardItemModel
 from mu import __version__
@@ -64,6 +63,7 @@ from mu.interface.panes import (
     PlotterPane,
 )
 from mu.interface.editor import EditorPane
+from mu.interface.widgets import DeviceSelector
 from mu.resources import load_icon, load_pixmap
 
 
@@ -522,6 +522,7 @@ class Window(QMainWindow):
         self.fs_pane.microbit_fs.delete.connect(file_manager.delete)
         self.fs_pane.microbit_fs.list_files.connect(file_manager.ls)
         self.fs_pane.local_fs.get.connect(file_manager.get)
+        self.fs_pane.local_fs.put.connect(file_manager.put)
         self.fs_pane.local_fs.list_files.connect(file_manager.ls)
         file_manager.on_put_file.connect(self.fs_pane.microbit_fs.on_put)
         file_manager.on_delete_file.connect(self.fs_pane.microbit_fs.on_delete)
@@ -849,14 +850,14 @@ class Window(QMainWindow):
 
         timer.start(500)
 
-    def show_admin(self, log, settings, packages):
+    def show_admin(self, log, settings, packages, mode, device_list):
         """
         Display the administrative dialog with referenced content of the log
         and settings. Return a dictionary of the settings that may have been
         changed by the admin dialog.
         """
         admin_box = AdminDialog(self)
-        admin_box.setup(log, settings, packages)
+        admin_box.setup(log, settings, packages, mode, device_list)
         result = admin_box.exec()
         if result:
             return admin_box.settings()
@@ -1172,91 +1173,6 @@ class Window(QMainWindow):
         Hides the device selector in the status bar
         """
         self.status_bar.device_selector.setHidden(True)
-
-
-class DeviceSelector(QWidget):
-    """
-    Allow users to see status of connected devices (connected/disconnected),
-    and select between devices, when multiple are connected.
-
-    Emits the device_changed signal when a user selects a different device.
-    """
-
-    device_changed = pyqtSignal("PyQt_PyObject")
-
-    def __init__(self, parent=None):
-        """
-        Initialize the DeviceSelector
-        """
-        super().__init__(parent)
-
-        self.setObjectName("DeviceSelector")
-        layout = QHBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(layout)
-        self.device_changed.connect(self._update_view)
-
-        # Device selection combobox
-        self.selector = QComboBox()
-        self.selector.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-        self.selector.setHidden(True)
-        self.selector.currentIndexChanged.connect(self._device_changed)
-        layout.addWidget(self.selector)
-
-        # Status indicator icon
-        self.connected_icon = load_pixmap("chip-connected").scaledToHeight(24)
-        self.disconnected_icon = load_pixmap(
-            "chip-disconnected"
-        ).scaledToHeight(24)
-        self.connection_status = QLabel()
-        self.connection_status.setPixmap(self.disconnected_icon)
-        layout.addWidget(self.connection_status)
-
-    def _device_changed(self, i):
-        """
-        Called when the device is changed by user or programmatically.
-        Updates the current device and emits the device_changed signal.
-        """
-        if i < 0:
-            device = None
-        else:
-            devices = self.selector.model()
-            device = devices[i]
-        self.device_changed.emit(device)
-
-    def device_connected(self, device):
-        """
-        Update the view when new devices are connected.
-        """
-        self._update_view()
-
-    def device_disconnected(self, device):
-        """
-        Update the view when devices are disconnected.
-        """
-        self._update_view()
-
-    def _update_view(self):
-        """
-        Update icon and show/hide combobox-selector, when devices
-        connects/disconnects
-        """
-        num_devices = self.selector.count()
-        # Hide/show menu
-        if num_devices <= 1:
-            self.selector.setHidden(True)
-        else:
-            self.selector.setHidden(False)
-        # Set icon and tooltip
-        if num_devices == 0:
-            self.connection_status.setPixmap(self.disconnected_icon)
-            self.connection_status.setToolTip(_("No device connected."))
-        else:
-            self.connection_status.setPixmap(self.connected_icon)
-            model = self.selector.model()
-            ix = model.index(self.selector.currentIndex(), 0)
-            tooltip = self.selector.model().data(ix, Qt.ToolTipRole)
-            self.connection_status.setToolTip(tooltip)
 
 
 class StatusBar(QStatusBar):

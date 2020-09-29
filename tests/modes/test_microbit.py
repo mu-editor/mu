@@ -81,7 +81,8 @@ def test_microbit_mode():
     assert mm.editor == editor
     assert mm.view == view
 
-    actions = mm.actions()
+    with mock.patch("mu.modes.microbit.CHARTS", True):
+        actions = mm.actions()
     assert len(actions) == 4
     assert actions[0]["name"] == "flash"
     assert actions[0]["handler"] == mm.flash

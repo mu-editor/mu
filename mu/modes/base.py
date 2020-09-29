@@ -39,19 +39,6 @@ SOFT_REBOOT = b"\x04"  # CTRL-C
 logger = logging.getLogger(__name__)
 
 
-# List of supported board USB IDs.  Each board is a tuple of unique USB vendor
-# ID, USB product ID.
-BOARD_IDS = [
-    # VID  , PID   , manufact., device name
-    (0x0D28, 0x0204, None, "micro:bit"),
-    (0x239A, 0x800B, None, "Adafruit Feather M0"),  # CDC only
-    (0x239A, 0x8016, None, "Adafruit Feather M0"),  # CDC + MSC
-    (0x239A, 0x8014, None, "Adafruit Metro M0"),
-    (0x239A, 0x8019, None, "Circuit Playground Express M0"),
-    (0x239A, 0x8015, None, "Circuit Playground M0 (prototype)"),
-    (0x239A, 0x801B, None, "Adafruit Feather M0 Express"),
-]
-
 # Cache module names for filename shadow checking later.
 MODULE_NAMES = set([name for _, name, _ in pkgutil.iter_modules()])
 MODULE_NAMES.add("sys")
@@ -383,9 +370,10 @@ class MicroPythonMode(BaseMode):
     Includes functionality that works with a USB serial based REPL.
     """
 
-    valid_boards = BOARD_IDS
+    valid_boards = []
     force_interrupt = True
     connection = None
+    baudrate = 115200
 
     def compatible_board(self, port):
         """
@@ -498,7 +486,9 @@ class MicroPythonMode(BaseMode):
         if device:
             try:
                 if not self.connection:
-                    self.connection = REPLConnection(device.port)
+                    self.connection = REPLConnection(
+                        device.port, self.baudrate
+                    )
                     self.connection.open()
                     if self.force_interrupt:
                         self.connection.send_interrupt()
@@ -547,7 +537,9 @@ class MicroPythonMode(BaseMode):
         if device:
             try:
                 if not self.connection:
-                    self.connection = REPLConnection(device.port)
+                    self.connection = REPLConnection(
+                        device.port, self.baudrate
+                    )
                     self.connection.open()
                 self.view.add_micropython_plotter(
                     self.name, self.connection, self.on_data_flood
@@ -696,14 +688,14 @@ class FileManager(QObject):
             logger.error(ex)
             self.on_get_fail.emit(device_filename)
 
-    def put(self, local_filename):
+    def put(self, local_filename, target=None):
         """
         Put the referenced local file onto the filesystem on the micro:bit.
         Emit the name of the file on the micro:bit when complete, or emit
         a failure signal.
         """
         try:
-            microfs.put(local_filename, target=None, serial=self.serial)
+            microfs.put(local_filename, target=target, serial=self.serial)
             self.on_put_file.emit(os.path.basename(local_filename))
         except Exception as ex:
             logger.error(ex)

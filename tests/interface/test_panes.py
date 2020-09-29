@@ -3,17 +3,19 @@
 Tests for the user interface elements of Mu.
 """
 from PyQt5.QtWidgets import QMessageBox, QLabel
-from PyQt5.QtChart import QChart, QLineSeries, QValueAxis
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QTextCursor
+from PyQt5.QtCore import Qt, QEvent, QPointF
+from PyQt5.QtGui import QTextCursor, QMouseEvent
+from collections import deque
 from unittest import mock
+
 import sys
 import os
 import signal
+import pytest
+
 import mu
-import platform
-from collections import deque
 import mu.interface.panes
+from mu.interface.panes import CHARTS
 
 
 def test_PANE_ZOOM_SIZES():
@@ -159,7 +161,7 @@ def test_MicroPythonREPLPane_keyPressEvent():
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_A)
     data.text = mock.MagicMock(return_value="a")
-    data.modifiers = mock.MagicMock(return_value=None)
+    data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
     mock_repl_connection.write.assert_called_once_with(bytes("a", "utf-8"))
 
@@ -172,10 +174,26 @@ def test_MicroPythonREPLPane_keyPressEvent_backspace():
     rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_Backspace)
-    data.text = mock.MagicMock(return_value="\b")
-    data.modifiers = mock.MagicMock(return_value=None)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(b"\b")
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_BACKSPACE
+    )
+
+
+def test_MicroPythonREPLPane_keyPressEvent_return():
+    """
+    Ensure backspaces in the REPL are handled correctly.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Return)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
+    rp.keyPressEvent(data)
+    mock_serial.write.assert_called_once_with(mu.interface.panes.VT100_RETURN)
 
 
 def test_MicroPythonREPLPane_keyPressEvent_delete():
@@ -186,10 +204,12 @@ def test_MicroPythonREPLPane_keyPressEvent_delete():
     rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_Delete)
-    data.text = mock.MagicMock(return_value="\b")
-    data.modifiers = mock.MagicMock(return_value=None)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(b"\x1B[\x33\x7E")
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_DELETE
+    )
 
 
 def test_MicroPythonREPLPane_keyPressEvent_up():
@@ -200,10 +220,12 @@ def test_MicroPythonREPLPane_keyPressEvent_up():
     rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_Up)
-    data.text = mock.MagicMock(return_value="1b")
-    data.modifiers = mock.MagicMock(return_value=None)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(b"\x1B[A")
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_UP
+    )
 
 
 def test_MicroPythonREPLPane_keyPressEvent_down():
@@ -214,10 +236,12 @@ def test_MicroPythonREPLPane_keyPressEvent_down():
     rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_Down)
-    data.text = mock.MagicMock(return_value="1b")
-    data.modifiers = mock.MagicMock(return_value=None)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(b"\x1B[B")
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_DOWN
+    )
 
 
 def test_MicroPythonREPLPane_keyPressEvent_right():
@@ -228,10 +252,12 @@ def test_MicroPythonREPLPane_keyPressEvent_right():
     rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_Right)
-    data.text = mock.MagicMock(return_value="1b")
-    data.modifiers = mock.MagicMock(return_value=None)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(b"\x1B[C")
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_RIGHT
+    )
 
 
 def test_MicroPythonREPLPane_keyPressEvent_left():
@@ -242,10 +268,84 @@ def test_MicroPythonREPLPane_keyPressEvent_left():
     rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_Left)
-    data.text = mock.MagicMock(return_value="1b")
-    data.modifiers = mock.MagicMock(return_value=None)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(b"\x1B[D")
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_LEFT
+    )
+
+
+@mock.patch("PyQt5.QtWidgets.QTextEdit.keyPressEvent")
+def test_MicroPythonREPLPane_keyPressEvent_shift_right(
+    mock_super_keyPressEvent,
+):
+    """
+    Ensure right arrows with shift in the REPL are passed through to
+    the super class, to perform a selection.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Right)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.ShiftModifier)
+    rp.keyPressEvent(data)
+    mock_super_keyPressEvent.assert_called_once_with(data)
+
+
+@mock.patch("PyQt5.QtWidgets.QTextEdit.keyPressEvent")
+def test_MicroPythonREPLPane_keyPressEvent_shift_left(
+    mock_super_keyPressEvent,
+):
+    """
+    Ensure left arrows with shift in the REPL are passed through to
+    the super class, to perform a selection.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Left)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.ShiftModifier)
+    rp.keyPressEvent(data)
+    mock_super_keyPressEvent.assert_called_once_with(data)
+
+
+@mock.patch("PyQt5.QtGui.QTextCursor.hasSelection", return_value=True)
+@mock.patch("PyQt5.QtGui.QTextCursor.selectionEnd", return_value=30)
+def test_MicroPythonREPLPane_keyPressEvent_right_with_selection(a, b):
+    """
+    Ensure right arrows in the REPL when a selection is made, moves the cursor
+    to the end of the selection.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Right)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
+    rp.move_cursor_to = mock.MagicMock()
+    rp.keyPressEvent(data)
+    rp.move_cursor_to.assert_called_once_with(30)
+
+
+@mock.patch("PyQt5.QtGui.QTextCursor.hasSelection", return_value=True)
+@mock.patch("PyQt5.QtGui.QTextCursor.selectionStart", return_value=20)
+def test_MicroPythonREPLPane_keyPressEvent_left_with_selection(a, b):
+    """
+    Ensure left arrows in the REPL when a selection is made, moves the cursor
+    to the start of the selection.
+    """
+    mock_serial = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_serial)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_Left)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
+    rp.move_cursor_to = mock.MagicMock()
+    rp.keyPressEvent(data)
+    rp.move_cursor_to.assert_called_once_with(20)
 
 
 def test_MicroPythonREPLPane_keyPressEvent_home():
@@ -256,10 +356,12 @@ def test_MicroPythonREPLPane_keyPressEvent_home():
     rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_Home)
-    data.text = mock.MagicMock(return_value="1b")
-    data.modifiers = mock.MagicMock(return_value=None)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(b"\x1B[H")
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_HOME
+    )
 
 
 def test_MicroPythonREPLPane_keyPressEvent_end():
@@ -270,10 +372,12 @@ def test_MicroPythonREPLPane_keyPressEvent_end():
     rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_End)
-    data.text = mock.MagicMock(return_value="1b")
-    data.modifiers = mock.MagicMock(return_value=None)
+    data.text = mock.MagicMock(return_value="")
+    data.modifiers = mock.MagicMock(return_value=Qt.NoModifier)
     rp.keyPressEvent(data)
-    mock_repl_connection.write.assert_called_once_with(b"\x1B[F")
+    mock_repl_connection.write.assert_called_once_with(
+        mu.interface.panes.VT100_END
+    )
 
 
 def test_MicroPythonREPLPane_keyPressEvent_CTRL_C_Darwin():
@@ -285,7 +389,7 @@ def test_MicroPythonREPLPane_keyPressEvent_CTRL_C_Darwin():
     rp.copy = mock.MagicMock()
     data = mock.MagicMock()
     data.key = mock.MagicMock(return_value=Qt.Key_C)
-    data.text = mock.MagicMock(return_value="1b")
+    data.text = mock.MagicMock(return_value="")
     data.modifiers.return_value = Qt.ControlModifier | Qt.ShiftModifier
     rp.keyPressEvent(data)
     rp.copy.assert_called_once_with()
@@ -300,13 +404,14 @@ def test_MicroPythonREPLPane_keyPressEvent_CTRL_V_Darwin():
     rp.paste = mock.MagicMock()
     data = mock.MagicMock()
     data.key = mock.MagicMock(return_value=Qt.Key_V)
-    data.text = mock.MagicMock(return_value="1b")
+    data.text = mock.MagicMock(return_value="")
     data.modifiers.return_value = Qt.ControlModifier | Qt.ShiftModifier
     rp.keyPressEvent(data)
     rp.paste.assert_called_once_with()
 
 
-def test_MicroPythonREPLPane_keyPressEvent_meta():
+@mock.patch("platform.system", mock.MagicMock(return_value="Darwin"))
+def test_MicroPythonREPLPane_keyPressEvent_ctrl_passthrough_darwin():
     """
     Ensure backspaces in the REPL are handled correctly.
     """
@@ -315,13 +420,166 @@ def test_MicroPythonREPLPane_keyPressEvent_meta():
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_M)
     data.text = mock.MagicMock(return_value="a")
-    if platform.system() == "Darwin":
-        data.modifiers = mock.MagicMock(return_value=Qt.MetaModifier)
-    else:
-        data.modifiers = mock.MagicMock(return_value=Qt.ControlModifier)
+    data.modifiers = mock.MagicMock(return_value=Qt.MetaModifier)
     rp.keyPressEvent(data)
     expected = 1 + Qt.Key_M - Qt.Key_A
     mock_repl_connection.write.assert_called_once_with(bytes([expected]))
+
+
+@mock.patch("platform.system", mock.MagicMock(return_value="Windows"))
+def test_MicroPythonREPLPane_keyPressEvent_ctrl_passthrough_windows():
+    """
+    Ensure backspaces in the REPL are handled correctly.
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    data = mock.MagicMock
+    data.key = mock.MagicMock(return_value=Qt.Key_M)
+    data.text = mock.MagicMock(return_value="a")
+    data.modifiers = mock.MagicMock(return_value=Qt.ControlModifier)
+    rp.keyPressEvent(data)
+    expected = 1 + Qt.Key_M - Qt.Key_A
+    mock_repl_connection.write.assert_called_once_with(bytes([expected]))
+
+
+def test_MicroPythonREPLPane_set_qtcursor_to_devicecursor():
+    """
+    Test that set_qtcursor_to_devicecursor updates the
+    Qt cursor, if the self.device_cursor_position has changed
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    rp.device_cursor_position = 10
+    rp.set_qtcursor_to_devicecursor()
+    assert rp.textCursor().position() == 10
+
+
+def test_MicroPythonREPLPane_set_devicecursor_to_qtcursor():
+    """
+    Test that set_devicecursor_to_qtcursor calls
+    move_cursor_to with the appropriate number of steps
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.move_cursor_to = mock.MagicMock()
+    rp.setPlainText("Hello world!")
+    # Move Qt cursor 10 steps forward
+    tc = rp.textCursor()
+    tc.setPosition(tc.position() + 10)
+    rp.setTextCursor(tc)
+    rp.set_devicecursor_to_qtcursor()
+    rp.move_cursor_to.assert_called_once_with(10)
+
+
+def test_MicroPythonREPLPane_set_move_cursor_to_right():
+    """
+    Test that move_cursor_to sends the appropriate
+    number of steps, when moving to the right.
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.send = mock.MagicMock()
+    rp.setPlainText("Hello world!")
+    rp.move_cursor_to(10)
+    rp.send.assert_called_once_with(mu.interface.panes.VT100_RIGHT * 10)
+
+
+def test_MicroPythonREPLPane_set_move_cursor_to_left():
+    """
+    Test that move_cursor_to sends the appropriate
+    number of steps, when moving to the left.
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    rp.device_cursor_position = 10
+    rp.send = mock.MagicMock()
+    rp.move_cursor_to(0)
+    rp.send.assert_called_once_with(mu.interface.panes.VT100_LEFT * 10)
+
+
+def test_MicroPythonREPLPane_delete_selection():
+    """
+    Test that delete_selection sends the appropriate number of backspaces
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.send = mock.MagicMock()
+    rp.move_cursor_to = mock.MagicMock()
+    rp.setPlainText("Hello world!")
+    tc = rp.textCursor()
+    # Make a selection, with the cursor placed
+    # at selectionStart and anchor at selectionEnd
+    tc.setPosition(rp.textCursor().position() + 10)
+    tc.setPosition(0, mode=QTextCursor.KeepAnchor)
+    rp.setTextCursor(tc)
+    # Try to delete the selection
+    assert rp.delete_selection()
+    # Check that cursor is moved to end and then
+    # backspace called 10 times
+    rp.move_cursor_to.assert_called_once_with(tc.selectionEnd())
+    rp.send.assert_called_once_with(mu.interface.panes.VT100_BACKSPACE * 10)
+
+
+def test_MicroPythonREPLPane_delete_selection_w_no_selection():
+    """
+    Test that delete_election returns false on no selection
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    assert not rp.delete_selection()
+
+
+def test_MicroPythonREPLPane_mouseReleasedEvent_no_selection():
+    """
+    Test that when no selection is made, a mouse click updates
+    the device cursor to the new location of the cursor in Qt
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.set_devicecursor_to_qtcursor = mock.MagicMock()
+    rp.setPlainText("Hello world!")
+    # Simulate mouse click
+    mouseEvent = QMouseEvent(
+        QEvent.MouseButtonRelease,
+        QPointF(0.0, 0.0),
+        Qt.LeftButton,
+        Qt.LeftButton,
+        Qt.NoModifier,
+    )
+    rp.mouseReleaseEvent(mouseEvent)
+    # Check set_devicecursor_to_qtcursor was called
+    rp.set_devicecursor_to_qtcursor.assert_called_once_with()
+
+
+def test_MicroPythonREPLPane_mouseReleasedEvent_with_selection():
+    """
+    Test that when a selection is made in Qt, the cursor movement is
+    not send to the device.
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.set_devicecursor_to_qtcursor = mock.MagicMock()
+    rp.setPlainText("Hello world!")
+    tc = rp.textCursor()
+    # Make a selection, with the cursor placed
+    # at selectionStart and anchor at selectionEnd
+    tc.setPosition(rp.textCursor().position() + 10)
+    tc.setPosition(0, mode=QTextCursor.KeepAnchor)
+    rp.setTextCursor(tc)
+    # Simulate mouse click
+    mouseEvent = QMouseEvent(
+        QEvent.MouseButtonRelease,
+        QPointF(0.0, 0.0),
+        Qt.LeftButton,
+        Qt.LeftButton,
+        Qt.NoModifier,
+    )
+    rp.mouseReleaseEvent(mouseEvent)
+    # Check set_devicecursor_to_qtcursor was not called
+    rp.set_devicecursor_to_qtcursor.assert_not_called()
 
 
 def test_MicroPythonREPLPane_process_tty_data():
@@ -344,16 +602,9 @@ def test_MicroPythonREPLPane_process_tty_data():
     rp.ensureCursorVisible = mock.MagicMock(return_value=None)
     bs = bytes([8, 13, 10, 65])  # \b, \r, \n, 'A'
     rp.process_tty_data(bs)
-    rp.textCursor.assert_called_once_with()
-    assert mock_tc.movePosition.call_count == 4
-    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
-    assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Down
-    assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Left
-    assert mock_tc.movePosition.call_args_list[3][0][0] == QTextCursor.End
-    assert rp.setTextCursor.call_count == 3
-    assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
-    assert rp.setTextCursor.call_args_list[1][0][0] == mock_tc
-    assert rp.setTextCursor.call_args_list[2][0][0] == mock_tc
+    assert mock_tc.movePosition.call_count == 2
+    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Left
+    assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.End
     assert rp.insertPlainText.call_count == 2
     assert rp.insertPlainText.call_args_list[0][0][0] == chr(10)
     assert rp.insertPlainText.call_args_list[1][0][0] == chr(65)
@@ -363,7 +614,8 @@ def test_MicroPythonREPLPane_process_tty_data():
 def test_MicroPythonREPLPane_process_tty_data_VT100():
     """
     Ensure bytes coming from the device to the application are processed as
-    expected. In this case, make sure VT100 related codes are handled properly.
+    expected. In this case, make sure VT100 related codes are handled
+    properly.
     """
     mock_repl_connection = mock.MagicMock()
     mock_tc = mock.MagicMock()
@@ -380,47 +632,227 @@ def test_MicroPythonREPLPane_process_tty_data_VT100():
             27,
             91,
             ord("1"),
-            ord("A"),  # <Esc>[1A
+            ord("A"),  # <Esc>[1A    (VT100 UP)
             27,
             91,
             ord("1"),
-            ord("B"),  # <Esc>[1B
+            ord("B"),  # <Esc>[1B    (VT100 DOWN)
             27,
             91,
             ord("1"),
-            ord("C"),  # <Esc>[1C
+            ord("C"),  # <Esc>[1C    (VT100 RIGHT)
             27,
             91,
             ord("1"),
-            ord("D"),  # <Esc>[1D
+            ord("D"),  # <Esc>[1D    (VT100 LEFT)
             27,
             91,
-            ord("K"),  # <Esc>[K
+            ord("K"),  # <Esc>[K     (VT100 DELETE to end of line)
         ]
     )
     rp.process_tty_data(bs)
-    rp.textCursor.assert_called_once_with()
-    assert mock_tc.movePosition.call_count == 6
-    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Down
-    assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Up
-    assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Down
-    assert mock_tc.movePosition.call_args_list[3][0][0] == QTextCursor.Right
-    assert mock_tc.movePosition.call_args_list[4][0][0] == QTextCursor.Left
+    assert mock_tc.movePosition.call_count == 5
+    assert mock_tc.movePosition.call_args_list[0][0][0] == QTextCursor.Up
+    assert mock_tc.movePosition.call_args_list[1][0][0] == QTextCursor.Down
+    assert mock_tc.movePosition.call_args_list[2][0][0] == QTextCursor.Right
+    assert mock_tc.movePosition.call_args_list[3][0][0] == QTextCursor.Left
     assert (
-        mock_tc.movePosition.call_args_list[5][0][0] == QTextCursor.EndOfLine
+        mock_tc.movePosition.call_args_list[4][0][0] == QTextCursor.EndOfLine
     )
     assert (
-        mock_tc.movePosition.call_args_list[5][1]["mode"]
+        mock_tc.movePosition.call_args_list[4][1]["mode"]
         == QTextCursor.KeepAnchor
     )
-    assert rp.setTextCursor.call_count == 5
-    assert rp.setTextCursor.call_args_list[0][0][0] == mock_tc
-    assert rp.setTextCursor.call_args_list[1][0][0] == mock_tc
-    assert rp.setTextCursor.call_args_list[2][0][0] == mock_tc
-    assert rp.setTextCursor.call_args_list[3][0][0] == mock_tc
-    assert rp.setTextCursor.call_args_list[4][0][0] == mock_tc
     mock_tc.removeSelectedText.assert_called_once_with()
     rp.ensureCursorVisible.assert_called_once_with()
+
+
+def test_MicroPythonREPLPane_process_tty_data_backspace():
+    """
+    Ensure backspace's are interpreted correctly
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    # Move cursor to between 'l' and 'd'
+    rp.device_cursor_position = 10
+    rp.set_qtcursor_to_devicecursor()
+    # Receive backspace \b
+    # (VT100: \b      - one char back,
+    #         \x1b[Kd - delete to end of line
+    #         d!      - send the two chars 'd!' again
+    #         \b\b    - move cursor back where it were)
+    bs = b"\b\x1b[Kd!\b\b"
+    rp.process_tty_data(bs)
+    assert rp.toPlainText() == "Hello word!"
+    assert rp.textCursor().position() == 9
+    assert rp.device_cursor_position == 9
+
+
+def test_MicroPythonREPLPane_process_tty_data_carriage_return():
+    """
+    Ensure carriage return's are not handled (will be handled on \n)
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    # Move cursor to between 'l' and 'd'
+    rp.device_cursor_position = 10
+    rp.set_qtcursor_to_devicecursor()
+    # Receive carriage return \r
+    bs = b"\r"
+    rp.process_tty_data(bs)
+    assert rp.toPlainText() == "Hello world!"
+    assert rp.textCursor().position() == 10
+    assert rp.device_cursor_position == 10
+
+
+def test_MicroPythonREPLPane_process_tty_data_newline():
+    """
+    Ensure newline are interpreted correctly (move to end of line,
+    then insert new line)
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    # Move cursor to between 'l' and 'd'
+    rp.device_cursor_position = 10
+    rp.set_qtcursor_to_devicecursor()
+    # Receive new line \n
+    bs = b"\n"
+    rp.process_tty_data(bs)
+    assert rp.toPlainText() == "Hello world!\n"
+    assert rp.textCursor().position() == 13
+    assert rp.device_cursor_position == 13
+
+
+def test_MicroPythonREPLPane_process_tty_data_printed_chars():
+    """
+    Ensure printed characters are handled correctly, in this case
+    overwriting what comes after (as if Insert was pushed)
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    # Move cursor to after first 'o'
+    rp.device_cursor_position = 5
+    rp.set_qtcursor_to_devicecursor()
+    # Receive ' foobar!'
+    bs = b" foobar!"
+    rp.process_tty_data(bs)
+    assert rp.toPlainText() == "Hello foobar!"
+    assert rp.textCursor().position() == 13
+    assert rp.device_cursor_position == 13
+
+
+def test_MicroPythonREPLPane_process_tty_data_vt100_cursor_left():
+    """
+    Ensure left cursor movement of several steps works correctly
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    # Move cursor to after first 'o'
+    rp.device_cursor_position = 5
+    rp.set_qtcursor_to_devicecursor()
+    # Receive: move 4 times left
+    bs = b"\x1B[4D"
+    rp.process_tty_data(bs)
+    assert rp.toPlainText() == "Hello world!"
+    assert rp.textCursor().position() == 1
+    assert rp.device_cursor_position == 1
+
+
+def test_MicroPythonREPLPane_process_tty_data_vt100_cursor_right():
+    """
+    Ensure right cursor movement of several steps works correctly
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    # Move cursor to after first 'o'
+    rp.device_cursor_position = 5
+    rp.set_qtcursor_to_devicecursor()
+    # Receive: move 4 times right
+    bs = b"\x1B[4C"
+    rp.process_tty_data(bs)
+    assert rp.toPlainText() == "Hello world!"
+    assert rp.textCursor().position() == 9
+    assert rp.device_cursor_position == 9
+
+
+def test_MicroPythonREPLPane_process_tty_data_partial_reception():
+    """
+    Ensure that when partially received multibyte commands are
+    received they are handled properly
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    # Move cursor to after first 'o'
+    rp.device_cursor_position = 5
+    rp.set_qtcursor_to_devicecursor()
+    # Receive: \x1B
+    bs = b"\x1B"
+    rp.process_tty_data(bs)
+    assert rp.unprocessed_input == "\x1B"
+    assert rp.toPlainText() == "Hello world!"
+    assert rp.textCursor().position() == 5
+    assert rp.device_cursor_position == 5
+    # Receive [4C - 4 times right
+    bs = b"[4C"
+    rp.process_tty_data(bs)
+    assert rp.unprocessed_input == ""
+    assert rp.toPlainText() == "Hello world!"
+    assert rp.textCursor().position() == 9
+    assert rp.device_cursor_position == 9
+
+
+def test_MicroPythonREPLPane_process_tty_data_partial_reception2():
+    """
+    Ensure that when partially received multibyte commands are
+    received they are handled properly
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    # Move cursor to after first 'o'
+    rp.device_cursor_position = 5
+    rp.set_qtcursor_to_devicecursor()
+    # Receive: \x1B
+    bs = b"\x1B["
+    rp.process_tty_data(bs)
+    assert rp.unprocessed_input == "\x1B["
+    assert rp.toPlainText() == "Hello world!"
+    assert rp.textCursor().position() == 5
+    assert rp.device_cursor_position == 5
+    # Receive 4C - 4 times right
+    bs = b"4C"
+    rp.process_tty_data(bs)
+    assert rp.unprocessed_input == ""
+    assert rp.toPlainText() == "Hello world!"
+    assert rp.textCursor().position() == 9
+    assert rp.device_cursor_position == 9
+
+
+def test_MicroPythonREPLPane_process_tty_data_unsupported_vt100_command():
+    """
+    Ensure nothing is done, when receiving an unsupported VT100 command
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    # Move cursor to after first 'o'
+    rp.device_cursor_position = 5
+    rp.set_qtcursor_to_devicecursor()
+    # Receive: \x1B[4X - unknown command X
+    bs = b"\x1B[4X"
+    rp.process_tty_data(bs)
+    # Do nothing
+    assert rp.unprocessed_input == b""
+    assert rp.toPlainText() == "Hello world!"
+    assert rp.textCursor().position() == 5
+    assert rp.device_cursor_position == 5
 
 
 def test_MicroPythonREPLPane_clear():
@@ -645,7 +1077,12 @@ def test_LocalFileList_contextMenuEvent():
     mock_menu = mock.MagicMock()
     mock_action_first = mock.MagicMock()
     mock_action_second = mock.MagicMock()
-    mock_menu.addAction.side_effect = [mock_action_first, mock_action_second]
+    mock_action_third = mock.MagicMock()
+    mock_menu.addAction.side_effect = [
+        mock_action_first,
+        mock_action_second,
+        mock_action_third,
+    ]
     mock_menu.exec_.return_value = mock_action_first
     mfs = mu.interface.panes.LocalFileList("homepath")
     mock_open = mock.MagicMock()
@@ -686,6 +1123,38 @@ def test_LocalFileList_contextMenuEvent_external():
         mfs.contextMenuEvent(mock_event)
     assert mfs.set_message.emit.call_count == 1
     assert mock_open.call_count == 0
+
+
+def test_LocalFileList_contextMenuEvent_write_to_mainpy():
+    """
+    Ensure that the filesystem put-signal is emitted when a local file
+    is right-clicked and the appropriate menu item activated by a
+    user.
+    """
+    mock_menu = mock.MagicMock()
+    mock_action_first = mock.MagicMock()
+    mock_action_second = mock.MagicMock()
+    mock_action_third = mock.MagicMock()
+    mock_menu.addAction.side_effect = [
+        mock_action_first,
+        mock_action_second,
+        mock_action_third,
+    ]
+    mock_menu.exec_.return_value = mock_action_second
+    mfs = mu.interface.panes.LocalFileList("homepath")
+    mfs.put = mock.MagicMock()
+    mock_current = mock.MagicMock()
+    mock_current.text.return_value = "foo.py"
+    mfs.currentItem = mock.MagicMock(return_value=mock_current)
+    mfs.set_message = mock.MagicMock()
+    mfs.mapToGlobal = mock.MagicMock()
+    mock_event = mock.MagicMock()
+    with mock.patch("mu.interface.panes.QMenu", return_value=mock_menu):
+        mfs.contextMenuEvent(mock_event)
+    assert mfs.set_message.emit.call_count == 0
+    mfs.put.emit.assert_called_once_with(
+        os.path.join("homepath", "foo.py"), "main.py"
+    )
 
 
 def test_FileSystemPane_init():
@@ -2226,6 +2695,7 @@ def test_DebugInspector_set_theme():
     di.set_theme("test")
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_init():
     """
     Ensure the plotter pane is created in the expected manner.
@@ -2238,12 +2708,13 @@ def test_PlotterPane_init():
     assert len(pp.data) == 1
     assert isinstance(pp.data[0], deque)
     assert len(pp.series) == 1
-    assert isinstance(pp.series[0], QLineSeries)
-    assert isinstance(pp.chart, QChart)
-    assert isinstance(pp.axis_x, QValueAxis)
-    assert isinstance(pp.axis_y, QValueAxis)
+    assert isinstance(pp.series[0], mu.interface.panes.QLineSeries)
+    assert isinstance(pp.chart, mu.interface.panes.QChart)
+    assert isinstance(pp.axis_x, mu.interface.panes.QValueAxis)
+    assert isinstance(pp.axis_y, mu.interface.panes.QValueAxis)
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_process_tty_data():
     """
     If a byte representation of a Python tuple containing numeric values,
@@ -2257,6 +2728,7 @@ def test_PlotterPane_process_tty_data():
     pp.add_data.assert_called_once_with((1, 2.3, 4))
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_process_tty_data_guards_against_data_flood():
     """
     If the process_tty_data method gets data of more than 1024 bytes
@@ -2279,6 +2751,7 @@ def test_PlotterPane_process_tty_data_guards_against_data_flood():
     assert pp.add_data.call_count == 0
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_process_tty_data_tuple_not_numeric():
     """
     If a byte representation of a tuple is received but it doesn't contain
@@ -2290,6 +2763,7 @@ def test_PlotterPane_process_tty_data_tuple_not_numeric():
     assert pp.add_data.call_count == 0
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_process_tty_data_overrun_input_buffer():
     """
     If the incoming bytes are not complete, ensure the input_buffer caches them
@@ -2309,6 +2783,7 @@ def test_PlotterPane_process_tty_data_overrun_input_buffer():
     pp.add_data.assert_called_once_with((1, 2.3, 4))
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_add_data():
     """
     Given a tuple with a single value, ensure it is logged and correctly added
@@ -2320,11 +2795,10 @@ def test_PlotterPane_add_data():
     pp.add_data((1,))
     assert (1,) in pp.raw_data
     mock_line_series.clear.assert_called_once_with()
-    for i in range(99):
-        mock_line_series.append.call_args_list[i][0] == (i, 0)
-    mock_line_series.append.call_args_list[99][0] == (99, 1)
+    mock_line_series.append.call_args_list[0][0] == (0, 1)
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_add_data_adjust_values_up():
     """
     If more values than have been encountered before are added to the incoming
@@ -2342,6 +2816,7 @@ def test_PlotterPane_add_data_adjust_values_up():
     assert len(pp.data) == 4
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_add_data_adjust_values_down():
     """
     If less values are encountered, before they are added to the incoming
@@ -2359,6 +2834,7 @@ def test_PlotterPane_add_data_adjust_values_down():
     assert pp.chart.removeSeries.call_count == 2
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_add_data_re_scale_up():
     """
     If the y axis contains data greater than the current range, then ensure
@@ -2370,9 +2846,10 @@ def test_PlotterPane_add_data_re_scale_up():
     pp.series = [mock_line_series]
     pp.add_data((1001,))
     assert pp.max_y == 2000
-    pp.axis_y.setRange.assert_called_once_with(-2000, 2000)
+    pp.axis_y.setRange.assert_called_once_with(0, 2000)
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_add_data_re_scale_down():
     """
     If the y axis contains data less than half of the current range, then
@@ -2385,9 +2862,40 @@ def test_PlotterPane_add_data_re_scale_down():
     pp.series = [mock_line_series]
     pp.add_data((1999,))
     assert pp.max_y == 2000
-    pp.axis_y.setRange.assert_called_once_with(-2000, 2000)
+    pp.axis_y.setRange.assert_called_once_with(0, 2000)
 
 
+def test_PlotterPane_add_data_re_scale_min_up():
+    """
+    If the y axis contains (negative) data smaller than the current
+    minimum, then ensure the negative range is doubled.
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.axis_y = mock.MagicMock()
+    mock_line_series = mock.MagicMock()
+    pp.series = [mock_line_series]
+    pp.add_data((-1001,))
+    assert pp.min_y == -2000
+    pp.axis_y.setRange.assert_called_once_with(-2000, 0)
+
+
+def test_PlotterPane_add_data_re_scale_min_down():
+    """
+    If the y axis contains (negative) data less than half of the
+    current minimum, then ensure the negative range is halved.
+
+    """
+    pp = mu.interface.panes.PlotterPane()
+    pp.min_y = -4000
+    pp.axis_y = mock.MagicMock()
+    mock_line_series = mock.MagicMock()
+    pp.series = [mock_line_series]
+    pp.add_data((-1999,))
+    assert pp.min_y == -2000
+    pp.axis_y.setRange.assert_called_once_with(-2000, 0)
+
+
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_set_label_format_to_float_when_range_small():
     """
     If the max_y is 5 or less, make sure the label format is set to being a
@@ -2400,10 +2908,11 @@ def test_PlotterPane_set_label_format_to_float_when_range_small():
     pp.series = [mock_line_series]
     pp.add_data((1,))
     assert pp.max_y == 1
-    pp.axis_y.setRange.assert_called_once_with(-1, 1)
+    pp.axis_y.setRange.assert_called_once_with(0, 1)
     pp.axis_y.setLabelFormat.assert_called_once_with("%2.2f")
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_set_label_format_to_int_when_range_large():
     """
     If the max_y is 5 or less, make sure the label format is set to being a
@@ -2414,12 +2923,13 @@ def test_PlotterPane_set_label_format_to_int_when_range_large():
     pp.axis_y = mock.MagicMock()
     mock_line_series = mock.MagicMock()
     pp.series = [mock_line_series]
-    pp.add_data((10,))
-    assert pp.max_y == 10
-    pp.axis_y.setRange.assert_called_once_with(-10, 10)
+    pp.add_data((20,))
+    assert pp.max_y == 25
+    pp.axis_y.setRange.assert_called_once_with(0, 25)
     pp.axis_y.setLabelFormat.assert_called_once_with("%d")
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_set_theme():
     """
     Ensure the themes for the chart relate correctly to the theme names used
@@ -2428,10 +2938,16 @@ def test_PlotterPane_set_theme():
     pp = mu.interface.panes.PlotterPane()
     pp.chart = mock.MagicMock()
     pp.set_theme("day")
-    pp.chart.setTheme.assert_called_once_with(QChart.ChartThemeLight)
+    pp.chart.setTheme.assert_called_once_with(
+        mu.interface.panes.QChart.ChartThemeLight
+    )
     pp.chart.setTheme.reset_mock()
     pp.set_theme("night")
-    pp.chart.setTheme.assert_called_once_with(QChart.ChartThemeDark)
+    pp.chart.setTheme.assert_called_once_with(
+        mu.interface.panes.QChart.ChartThemeDark
+    )
     pp.chart.setTheme.reset_mock()
     pp.set_theme("contrast")
-    pp.chart.setTheme.assert_called_once_with(QChart.ChartThemeHighContrast)
+    pp.chart.setTheme.assert_called_once_with(
+        mu.interface.panes.QChart.ChartThemeHighContrast
+    )
