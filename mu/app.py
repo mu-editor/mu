@@ -19,6 +19,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import argparse
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
@@ -44,6 +45,25 @@ from mu.modes import (
 )
 from mu.debugger.runner import run as run_debugger
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
+
+
+def get_args():
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--mode",
+            help="Use this mode only.")
+
+    parser.add_argument("--files-dir",
+            help="Directory for work files")
+
+    parser.add_argument("--serial-port",
+            help="Serial port device for REPL (and maybe code upload)")
+
+    args = parser.parse_args()
+
+    return args
+
 
 
 def setup_logging():
@@ -112,15 +132,19 @@ def run():
     Creates all the top-level assets for the application, sets things up and
     then runs the application. Specific tasks include:
 
+    - parse command line args
     - set up logging
     - create an application object
     - create an editor window and status bar
     - display a splash screen while starting
     - close the splash screen after startup timer ends
     """
+    args = get_args()
+
     setup_logging()
     logging.info("\n\n-----------------\n\nStarting Mu {}".format(__version__))
     logging.info(platform.uname())
+    logging.info("Command line args: {}".format(args))
     logging.info("Python path: {}".format(sys.path))
     logging.info("Language code: {}".format(language_code))
 
