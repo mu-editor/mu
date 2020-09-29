@@ -129,8 +129,8 @@ def test_run():
         assert len(qa.mock_calls) == 8
         assert qsp.call_count == 1
         assert len(qsp.mock_calls) == 2
-        assert timer.call_count == 1
-        assert len(timer.mock_calls) == 4
+        assert timer.call_count == 2
+        assert len(timer.mock_calls) == 7
         assert ed.call_count == 1
         assert len(ed.mock_calls) == 4
         assert win.call_count == 1

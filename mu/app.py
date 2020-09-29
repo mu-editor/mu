@@ -136,6 +136,25 @@ def run():
     # unless this flag is set
     app.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
+    # Display a friendly "splash" icon.
+    splash = QSplashScreen(load_pixmap("splash-screen"))
+    # splash.setWindowFlags(Qt.WindowStaysOnTopHint)
+    splash.show()
+
+    # Hide the splash icon.
+    raise_splash = QTimer()
+    raise_splash.timeout.connect(lambda: splash.raise_())
+    raise_splash.start(10)
+
+    # Hide the splash icon.
+    splash_be_gone = QTimer()
+    def remove_splash():
+        splash.finish(editor_window)
+        raise_splash.stop()
+    splash_be_gone.timeout.connect(remove_splash)
+    splash_be_gone.setSingleShot(True)
+    splash_be_gone.start(2000)
+
     # Create the "window" we'll be looking at.
     editor_window = Window()
 
@@ -163,16 +182,6 @@ def run():
     editor_window.connect_find_replace(editor.find_replace, "Ctrl+F")
     editor_window.connect_toggle_comments(editor.toggle_comments, "Ctrl+K")
     editor.connect_to_status_bar(editor_window.status_bar)
-
-    # Display a friendly "splash" icon.
-    splash = QSplashScreen(load_pixmap("splash-screen"))
-    splash.show()
-
-    # Hide the splash icon.
-    splash_be_gone = QTimer()
-    splash_be_gone.timeout.connect(lambda: splash.finish(editor_window))
-    splash_be_gone.setSingleShot(True)
-    splash_be_gone.start(2000)
 
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
