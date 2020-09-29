@@ -141,7 +141,8 @@ def run():
     # splash.setWindowFlags(Qt.WindowStaysOnTopHint)
     splash.show()
 
-    # Hide the splash icon.
+    # Make sure the splash screen stays on top while
+    # the mode selection dialog might open
     raise_splash = QTimer()
     raise_splash.timeout.connect(lambda: splash.raise_())
     raise_splash.start(10)
