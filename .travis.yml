@@ -30,6 +30,8 @@ matrix:
       python: 3.5
       services:
         - xvfb
+      env:
+        - QT_QPA_PLATFORM="offscreen"
     - os: osx
       # match xcode version with earliest supported by current PyQt 
       # (earliest to maximize compatibility)
