@@ -650,7 +650,7 @@ class Device:
         if self.board_name:
             return self.board_name
         else:
-            return self.long_mode_name
+            return self.long_mode_name + " device"
 
     def __eq__(self, other):
         """
@@ -713,8 +713,12 @@ class Device:
 
 
 class DeviceList(QtCore.QAbstractListModel):
-    def __init__(self, parent=None):
+    device_connected = pyqtSignal("PyQt_PyObject")
+    device_disconnected = pyqtSignal("PyQt_PyObject")
+
+    def __init__(self, modes, parent=None):
         super().__init__(parent)
+        self.modes = modes
         self._devices = list()
 
     def __iter__(self):
@@ -778,14 +782,63 @@ class DeviceList(QtCore.QAbstractListModel):
         self._devices.remove(device)
         self.endRemoveRows()
 
+    def check_usb(self):
+        """
+        Ensure connected USB devices are polled. If there's a change and a new
+        recognised device is attached, inform the user via a status message.
+        If a single device is found and Mu is in a different mode ask the user
+        if they'd like to change mode.
+        """
+        devices = []
+        device_types = set()
+        # Detect connected devices.
+        for mode_name, mode in self.modes.items():
+            if hasattr(mode, "find_devices"):
+                # The mode can detect attached devices.
+                detected = mode.find_devices(with_logging=False)
+                if detected:
+                    device_types.add(mode_name)
+                    devices.extend(detected)
+        # Remove no-longer connected devices.
+        for device in self:
+            if device not in devices:
+                self.remove_device(device)
+                self.device_disconnected.emit(device)
+                logger.info(
+                    (
+                        "{} device disconnected on port: {}"
+                        "(VID: 0x{:04X}, PID: 0x{:04X}, manufacturer {})"
+                    ).format(
+                        device.short_mode_name,
+                        device.port,
+                        device.vid,
+                        device.pid,
+                        device.manufacturer,
+                    )
+                )
+        # Add newly connected devices.
+        for device in devices:
+            if device not in self:
+                self.add_device(device)
+                self.device_connected.emit(device)
+                logger.info(
+                    (
+                        "{} device connected on port: {}"
+                        "(VID: 0x{:04X}, PID: 0x{:04X}, manufacturer: '{}')"
+                    ).format(
+                        device.short_mode_name,
+                        device.port,
+                        device.vid,
+                        device.pid,
+                        device.manufacturer,
+                    )
+                )
+
 
 class Editor(QObject):
     """
     Application logic for the editor itself.
     """
-
-    device_connected = pyqtSignal("PyQt_PyObject")
-    device_disconnected = pyqtSignal("PyQt_PyObject")
 
     def __init__(self, view):
         super().__init__()
@@ -794,13 +847,11 @@ class Editor(QObject):
         self.fs = None
         self.theme = "day"
         self.mode = "python"
-        self.modes = {}  # See set_modes.
+        self.modes = {}
         self.envars = []  # See restore session and show_admin
         self.minify = False
         self.microbit_runtime = ""
-        self.connected_devices = DeviceList(parent=self)
-        self.device_connected.connect(self.connected_devices.add_device)
-        self.device_disconnected.connect(self.connected_devices.remove_device)
+        self.connected_devices = DeviceList(self.modes, parent=self)
         self.current_device = None
         self.find = ""
         self.replace = ""
@@ -829,6 +880,7 @@ class Editor(QObject):
         directory.
         """
         self.modes = modes
+        self.connected_devices.modes = modes
         logger.info("Available modes: {}".format(", ".join(self.modes.keys())))
         # Ensure there is a workspace directory.
         wd = self.modes["python"].workspace_dir()
@@ -872,7 +924,7 @@ class Editor(QObject):
             # Copy all the static directories.
         # Start the timer to poll every second for an attached or removed
         # USB device.
-        self._view.set_usb_checker(1, self.check_usb)
+        self._view.set_usb_checker(1, self.connected_devices.check_usb)
 
     def connect_to_status_bar(self, status_bar):
         """
@@ -882,15 +934,14 @@ class Editor(QObject):
         # Connect to logs
         status_bar.connect_logs(self.show_admin, "Ctrl+Shift+D")
         # Show connection messages in status_bar
-        self.device_connected.connect(status_bar.device_connected)
-        # Connect device list with device_selector
+        self.connected_devices.device_connected.connect(
+            status_bar.device_connected
+        )
+        # Connect to device list
         device_selector = status_bar.device_selector
-        device_selector.selector.setModel(self.connected_devices)
-        # Connect device events to device selector in status bar
-        self.device_connected.connect(device_selector.device_connected)
-        self.device_disconnected.connect(device_selector.device_disconnected)
+        status_bar.device_selector.set_device_list(self.connected_devices)
+        # Propagate device_changed events
         device_selector.device_changed.connect(self.device_changed)
-        # Connect device_changed to modes
         if self.modes:
             for mode in self.modes.values():
                 device_selector.device_changed.connect(mode.device_changed)
@@ -1449,7 +1500,11 @@ class Editor(QObject):
         packages = installed_packages()
         with open(LOG_FILE, "r", encoding="utf8") as logfile:
             new_settings = self._view.show_admin(
-                logfile.read(), settings, "\n".join(packages)
+                logfile.read(),
+                settings,
+                "\n".join(packages),
+                self.modes[self.mode],
+                self.connected_devices,
             )
         if new_settings:
             self.envars = extract_envars(new_settings["envars"])
@@ -1588,56 +1643,6 @@ class Editor(QObject):
                         "Autosave detected and saved "
                         "changes in {}.".format(tab.path)
                     )
-
-    def check_usb(self):
-        """
-        Ensure connected USB devices are polled. If there's a change and a new
-        recognised device is attached, inform the user via a status message.
-        If a single device is found and Mu is in a different mode ask the user
-        if they'd like to change mode.
-        """
-        devices = []
-        device_types = set()
-        # Detect connected devices.
-        for mode_name, mode in self.modes.items():
-            if hasattr(mode, "find_devices"):
-                # The mode can detect attached devices.
-                detected = mode.find_devices(with_logging=False)
-                if detected:
-                    device_types.add(mode_name)
-                    devices.extend(detected)
-        # Remove no-longer connected devices.
-        for connected in self.connected_devices:
-            if connected not in devices:
-                self.device_disconnected.emit(connected)
-                logger.info(
-                    (
-                        "{} device disconnected on port: {}"
-                        "(VID: 0x{:04X}, PID: 0x{:04X}, manufacturer {})"
-                    ).format(
-                        connected.short_mode_name,
-                        connected.port,
-                        connected.vid,
-                        connected.pid,
-                        connected.manufacturer,
-                    )
-                )
-        # Add newly connected devices.
-        for device in devices:
-            if device not in self.connected_devices:
-                self.device_connected.emit(device)
-                logger.info(
-                    (
-                        "{} device connected on port: {}"
-                        "(VID: 0x{:04X}, PID: 0x{:04X}, manufacturer: '{}')"
-                    ).format(
-                        device.short_mode_name,
-                        device.port,
-                        device.vid,
-                        device.pid,
-                        device.manufacturer,
-                    )
-                )
 
     def ask_to_change_mode(self, new_mode, mode_name, heading):
         """

@@ -97,7 +97,7 @@ class MicrobitMode(MicroPythonMode):
     # supporting more than one board, thus None is returned.
     #
     #               VID,     PID,   manufact., device name
-    valid_boards = [(0x0D28, 0x0204, None, None)]
+    valid_boards = [(0x0D28, 0x0204, None, "BBC micro:bit")]
 
     valid_serial_numbers = [9900, 9901]  # Serial numbers of supported boards.
 

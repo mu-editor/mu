@@ -184,6 +184,10 @@ QPushButton:pressed {
     background: #111;
 }
 
+QPushButton:disabled {
+    background:#aaa;
+}
+
 QAbstractScrollArea::corner {
     border-top: 1px solid #555;    /* Border */
     border-left: 1px solid #555;   /* Border */
@@ -306,4 +310,14 @@ QComboBox::drop-down {
 
 QComboBox::down-arrow {
     image: url(images:dropdown-arrow-contrast.png);
+}
+
+QGroupBox {
+    border: 1px solid white;
+    margin-top: 1ex; /* leave space at the top for the title */
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 8px;
 }
