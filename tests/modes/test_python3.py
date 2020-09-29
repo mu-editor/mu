@@ -117,7 +117,8 @@ def test_python_mode():
     assert pm.editor == editor
     assert pm.view == view
 
-    actions = pm.actions()
+    with mock.patch("mu.modes.python3.CHARTS", True):
+        actions = pm.actions()
     assert len(actions) == 4
     assert actions[0]["name"] == "run"
     assert actions[0]["handler"] == pm.run_toggle
@@ -127,6 +128,31 @@ def test_python_mode():
     assert actions[2]["handler"] == pm.toggle_repl
     assert actions[3]["name"] == "plotter"
     assert actions[3]["handler"] == pm.toggle_plotter
+
+
+def test_python_mode_no_charts():
+    """
+    If QCharts is not available, ensure the plotter feature is not available.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    assert pm.name == "Python 3"
+    assert pm.description is not None
+    assert pm.icon == "python"
+    assert pm.is_debugger is False
+    assert pm.editor == editor
+    assert pm.view == view
+
+    with mock.patch("mu.modes.python3.CHARTS", False):
+        actions = pm.actions()
+    assert len(actions) == 3
+    assert actions[0]["name"] == "run"
+    assert actions[0]["handler"] == pm.run_toggle
+    assert actions[1]["name"] == "debug"
+    assert actions[1]["handler"] == pm.debug
+    assert actions[2]["name"] == "repl"
+    assert actions[2]["handler"] == pm.toggle_repl
 
 
 def test_python_api():
