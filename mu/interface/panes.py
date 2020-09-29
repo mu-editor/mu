@@ -1373,19 +1373,23 @@ class PlotterPane(QChartView):
         # Holds the raw actionable data detected while plotting.
         self.raw_data = []
         self.setObjectName("plotterpane")
+        # Number of datapoints to show (caps at self.max_x)
+        self.num_datapoints = 0
+        self.lookback = 500
         self.max_x = 100  # Maximum value along x axis
         self.max_y = 1000  # Maximum value +/- along y axis
+        self.min_y = -1000
         self.flooded = False  # Flag to indicate if data flooding is happening.
 
         # Holds deques for each slot of incoming data (assumes 1 to start with)
-        self.data = [deque([0] * self.max_x)]
+        self.data = [deque([0] * self.lookback)]
         # Holds line series for each slot of incoming data (assumes 1 to start
         # with).
         self.series = [QLineSeries()]
 
         # Ranges used for the Y axis (up to 1000, after which we just double
         # the range).
-        self.y_ranges = [1, 5, 10, 25, 50, 100, 250, 500, 1000]
+        self.y_ranges = [0, 1, 5, 10, 25, 50, 100, 250, 500, 1000]
 
         # Set up the chart with sensible defaults.
         self.chart = QChart()
@@ -1394,7 +1398,7 @@ class PlotterPane(QChartView):
         self.axis_x = QValueAxis()
         self.axis_y = QValueAxis()
         self.axis_x.setRange(0, self.max_x)
-        self.axis_y.setRange(-self.max_y, self.max_y)
+        self.axis_y.setRange(self.min_y, self.max_y)
         self.axis_x.setLabelFormat("time")
         self.axis_y.setLabelFormat("%d")
         self.chart.setAxisX(self.axis_x, self.series[0])
@@ -1472,7 +1476,7 @@ class PlotterPane(QChartView):
                     self.chart.setAxisX(self.axis_x, new_series)
                     self.chart.setAxisY(self.axis_y, new_series)
                     self.series.append(new_series)
-                    self.data.append(deque([0] * self.max_x))
+                    self.data.append(deque([0] * self.lookback))
             else:
                 # Remove old line series.
                 for old_series in self.series[value_len:]:
@@ -1483,11 +1487,14 @@ class PlotterPane(QChartView):
         # Add the incoming values to the data to be displayed, and compute
         # max range.
         max_ranges = []
+        min_ranges = []
         for i, value in enumerate(values):
             self.data[i].appendleft(value)
-            max_ranges.append(max([max(self.data[i]), abs(min(self.data[i]))]))
-            if len(self.data[i]) > self.max_x:
+            max_ranges.append(max(self.data[i]))
+            min_ranges.append(min(self.data[i]))
+            if len(self.data[i]) > self.lookback:
                 self.data[i].pop()
+            self.num_datapoints = min(self.num_datapoints + 1, self.max_x)
 
         # Re-scale y-axis.
         max_y_range = max(max_ranges)
@@ -1498,10 +1505,20 @@ class PlotterPane(QChartView):
             self.max_y += self.max_y
         elif max_y_range < self.max_y / 2:
             self.max_y = self.max_y / 2
-        self.axis_y.setRange(-self.max_y, self.max_y)
+
+        min_y_range = min(min_ranges)
+        y_range = bisect.bisect_left(self.y_ranges, abs(min_y_range))
+        if y_range < len(self.y_ranges):
+            self.min_y = -self.y_ranges[y_range]
+        elif min_y_range < self.min_y:
+            self.min_y += self.min_y
+        elif min_y_range > self.min_y / 2:
+            self.min_y = self.min_y / 2
+
+        self.axis_y.setRange(self.min_y, self.max_y)
 
         # Ensure floats are used to label y axis if the range is small.
-        if self.max_y <= 5:
+        if self.max_y - self.min_y <= 10:
             self.axis_y.setLabelFormat("%2.2f")
         else:
             self.axis_y.setLabelFormat("%d")
@@ -1510,8 +1527,8 @@ class PlotterPane(QChartView):
         for i, line_series in enumerate(self.series):
             line_series.clear()
             xy_vals = []
-            for j in range(self.max_x):
-                val = self.data[i][self.max_x - 1 - j]
+            for j in range(self.num_datapoints):
+                val = self.data[i][self.num_datapoints - 1 - j]
                 xy_vals.append((j, val))
             for point in xy_vals:
                 line_series.append(*point)
