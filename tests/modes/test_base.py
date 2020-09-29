@@ -758,7 +758,7 @@ def test_FileManager_on_start():
     with mock.patch("mu.modes.base.Serial") as mock_serial:
         fm.on_start()
         mock_serial.assert_called_once_with(
-            "/dev/ttyUSB0", 115200, timeout=1, parity="N"
+            "/dev/ttyUSB0", 115200, timeout=2, parity="N"
         )
     fm.ls.assert_called_once_with()
 
@@ -776,7 +776,7 @@ def test_FileManager_on_start_fails():
     with mock.patch("mu.modes.base.Serial", mock_serial):
         fm.on_start()
         mock_serial.assert_called_once_with(
-            "/dev/ttyUSB0", 115200, timeout=1, parity="N"
+            "/dev/ttyUSB0", 115200, timeout=2, parity="N"
         )
     fm.on_list_fail.emit.assert_called_once_with()
 
