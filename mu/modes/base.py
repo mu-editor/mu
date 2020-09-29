@@ -695,14 +695,14 @@ class FileManager(QObject):
             logger.error(ex)
             self.on_get_fail.emit(device_filename)
 
-    def put(self, local_filename):
+    def put(self, local_filename, target=None):
         """
         Put the referenced local file onto the filesystem on the micro:bit.
         Emit the name of the file on the micro:bit when complete, or emit
         a failure signal.
         """
         try:
-            microfs.put(local_filename, target=None, serial=self.serial)
+            microfs.put(local_filename, target=target, serial=self.serial)
             self.on_put_file.emit(os.path.basename(local_filename))
         except Exception as ex:
             logger.error(ex)
