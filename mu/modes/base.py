@@ -45,16 +45,13 @@ MODULE_NAMES.add("sys")
 MODULE_NAMES.add("builtins")
 
 
-def get_default_workspace():
+def get_settings():
     """
-    Return the location on the filesystem for opening and closing files.
+    Return the JSON settings as a dictionary, which maybe empty if
+    the `settings.json` file is not found or if it can not be parsed.
+    """
 
-    The default is to use a directory in the users home folder, however
-    in some network systems this in inaccessible. This allows a key in the
-    settings file to be used to set a custom path.
-    """
     sp = get_settings_path()
-    workspace_dir = os.path.join(HOME_DIRECTORY, WORKSPACE_NAME)
     settings = {}
     try:
         with open(sp) as f:
@@ -63,15 +60,29 @@ def get_default_workspace():
         logger.error("Settings file {} does not exist.".format(sp))
     except ValueError:
         logger.error("Settings file {} could not be parsed.".format(sp))
-    else:
-        if "workspace" in settings:
-            if os.path.isdir(settings["workspace"]):
-                workspace_dir = settings["workspace"]
-            else:
-                logger.error(
-                    "Workspace value in the settings file is not a valid"
-                    "directory: {}".format(settings["workspace"])
-                )
+
+    return settings
+
+
+def get_default_workspace():
+    """
+    Return the location on the filesystem for opening and closing files.
+
+    The default is to use a directory in the users home folder, however
+    in some network systems this in inaccessible. This allows a key in the
+    settings file to be used to set a custom path.
+    """
+    workspace_dir = os.path.join(HOME_DIRECTORY, WORKSPACE_NAME)
+    settings = get_settings()
+
+    if "workspace" in settings:
+        if os.path.isdir(settings["workspace"]):
+            workspace_dir = settings["workspace"]
+        else:
+            logger.error(
+                "Workspace value in the settings file is not a valid"
+                "directory: {}".format(settings["workspace"])
+            )
     return workspace_dir
 
 
@@ -648,6 +659,7 @@ class FileManager(QObject):
         """
         super().__init__()
         self.port = port
+        self.settings = get_settings()
 
     def on_start(self):
         """
@@ -656,7 +668,7 @@ class FileManager(QObject):
         """
         # Create a new serial connection.
         try:
-            self.serial = Serial(self.port, 115200, timeout=1, parity="N")
+            self.serial = Serial(self.port, 115200, timeout=self.settings.get("serial_timeout", 1), parity="N")
             self.ls()
         except Exception as ex:
             logger.exception(ex)
