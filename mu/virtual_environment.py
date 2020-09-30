@@ -133,7 +133,7 @@ class Pip(object):
         # As a special case, a boolean value indicates that the flag
         # is a yes/no switch
         #
-        params = [command]
+        params = [command, "--disable-pip-version-check"]
         for k, v in kwargs.items():
             switch = k.replace("_", "-")
             if v is False:
