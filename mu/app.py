@@ -136,26 +136,6 @@ def run():
     # unless this flag is set
     app.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
-    # Display a friendly "splash" icon.
-    splash = QSplashScreen(load_pixmap("splash-screen"))
-    # splash.setWindowFlags(Qt.WindowStaysOnTopHint)
-    splash.show()
-
-    # Make sure the splash screen stays on top while
-    # the mode selection dialog might open
-    raise_splash = QTimer()
-    raise_splash.timeout.connect(lambda: splash.raise_())
-    raise_splash.start(10)
-
-    # Hide the splash icon.
-    splash_be_gone = QTimer()
-    def remove_splash():
-        splash.finish(editor_window)
-        raise_splash.stop()
-    splash_be_gone.timeout.connect(remove_splash)
-    splash_be_gone.setSingleShot(True)
-    splash_be_gone.start(2000)
-
     # Create the "window" we'll be looking at.
     editor_window = Window()
 
@@ -167,6 +147,26 @@ def run():
             app.setStyleSheet(NIGHT_STYLE)
         else:
             app.setStyleSheet(DAY_STYLE)
+
+    # Display a friendly "splash" icon.
+    splash = QSplashScreen(load_pixmap("splash-screen"))
+    splash.show()
+
+    # Make sure the splash screen stays on top while
+    # the mode selection dialog might open
+    raise_splash = QTimer()
+    raise_splash.timeout.connect(lambda: splash.raise_())
+    raise_splash.start(10)
+
+    # Hide the splash icon.
+    def remove_splash():
+        splash.finish(editor_window)
+        raise_splash.stop()
+
+    splash_be_gone = QTimer()
+    splash_be_gone.timeout.connect(remove_splash)
+    splash_be_gone.setSingleShot(True)
+    splash_be_gone.start(2000)
 
     # Make sure all windows have the Mu icon as a fallback
     app.setWindowIcon(load_icon(editor_window.icon))
