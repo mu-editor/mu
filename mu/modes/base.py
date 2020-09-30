@@ -668,7 +668,7 @@ class FileManager(QObject):
         """
         # Create a new serial connection.
         try:
-            self.serial = Serial(self.port, 115200, timeout=self.settings.get("serial_timeout", 1), parity="N")
+            self.serial = Serial(self.port, 115200, timeout=self.settings.get("serial_timeout", 2), parity="N")
             self.ls()
         except Exception as ex:
             logger.exception(ex)
