@@ -23,6 +23,8 @@ from mu.logic import DEBUGGER_PORT
 from mu.debugger.client import Debugger
 from mu.debugger.utils import is_breakpoint_line
 
+from PyQt5.QtCore import QTimer
+
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +41,12 @@ class DebugMode(BaseMode):
     runner = None
     is_debugger = True
     save_timeout = 0  # No need to auto-save when in read-only debug mode.
+
+    def __init__(self, editor, view):
+        super().__init__(editor, view)
+        self._button_disable_timer = QTimer()
+        self._button_disable_timer.setSingleShot(True)
+        self._button_disable_timer.timeout.connect(self.disable_buttons)
 
     def actions(self):
         """
@@ -148,16 +156,44 @@ class DebugMode(BaseMode):
         """
         Called when the debugged Python process is finished.
         """
-        buttons = {
-            action["name"]: False
-            for action in self.actions()
-            if action["name"] != "stop"
-        }
-        self.set_buttons(**buttons)
+        self.disable_buttons()
         self.editor.show_status_message(_("Your script has finished running."))
         for tab in self.view.widgets:
             tab.setSelection(0, 0, 0, 0)
             tab.reset_debugger_highlight()
+
+    def _enable_buttons(self, *, enable):
+        """
+        Enable/disable all debug control buttons except 'stop'.
+        """
+        buttons = {
+            action["name"]: enable
+            for action in self.actions()
+            if action["name"] != "stop"
+        }
+        self.set_buttons(**buttons)
+
+    def disable_buttons(self):
+        """
+        Disable all debug control buttons except 'stop'.
+        """
+        self._enable_buttons(enable=False)
+
+    def disable_buttons_later(self, *, milliseconds=100):
+        """
+        Set a timer to disable all debug control buttons except 'stop'.
+        """
+        self._button_disable_timer.start(milliseconds)
+
+    def enable_buttons(self):
+        """
+        Enable all debug control buttons except 'stop': if the timer started
+        in `disable_buttons_later` is active, stops it and does nothing else.
+        """
+        if self._button_disable_timer.isActive():
+            self._button_disable_timer.stop()
+            return
+        self._enable_buttons(enable=True)
 
     def button_stop(self, event):
         """
@@ -169,6 +205,7 @@ class DebugMode(BaseMode):
         """
         Button clicked to continue running the script.
         """
+        self.disable_buttons_later()
         self.view.current_tab.reset_debugger_highlight()
         self.debugger.do_run()
 
@@ -176,6 +213,7 @@ class DebugMode(BaseMode):
         """
         Button clicked to step over the current line of code.
         """
+        self.disable_buttons_later()
         self.view.current_tab.reset_debugger_highlight()
         self.debugger.do_next()
 
@@ -183,6 +221,7 @@ class DebugMode(BaseMode):
         """
         Button clicked to step into the current block of code.
         """
+        self.disable_buttons_later()
         self.view.current_tab.reset_debugger_highlight()
         self.debugger.do_step()
 
@@ -190,6 +229,7 @@ class DebugMode(BaseMode):
         """
         Button clicked to step out of the current block of code.
         """
+        self.disable_buttons_later()
         self.view.current_tab.reset_debugger_highlight()
         self.debugger.do_return()
 
@@ -276,6 +316,7 @@ class DebugMode(BaseMode):
         """
         Handle when the debugger has moved to the referenced line in the file.
         """
+        self.enable_buttons()
         ignored = ["bdb.py"]  # Files the debugger should ignore.
         if os.path.basename(filename) in ignored:
             self.debugger.do_return()
