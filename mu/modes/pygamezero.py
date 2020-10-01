@@ -32,6 +32,7 @@ class PyGameZeroMode(BaseMode):
     """
 
     name = _("Pygame Zero")
+    short_name = "pygamezero"
     description = _("Make games with Pygame Zero.")
     icon = "pygamezero"
     runner = None

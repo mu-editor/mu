@@ -103,6 +103,7 @@ class PythonMode(BaseMode):
     """
 
     name = _("Python 3")
+    short_name = "python"
     description = _("Create code using standard Python 3.")
     icon = "python"
     runner = None
@@ -279,12 +280,12 @@ class PythonMode(BaseMode):
         """
         Toggles the plotter on and off.
         """
-        if self.plotter is None:
-            logger.info("Toggle plotter on.")
-            self.add_plotter()
-        else:
+        if self.plotter:
             logger.info("Toggle plotter off.")
             self.remove_plotter()
+        else:
+            logger.info("Toggle plotter on.")
+            self.add_plotter()
 
     def add_plotter(self):
         """

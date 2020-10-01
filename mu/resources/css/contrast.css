@@ -123,6 +123,11 @@ QStatusBar QLabel {
     margin: 0;
 }
 
+#DeviceSelector QComboBox {
+    padding: 4px 25px 4px 3px;
+    margin: 2px;
+}
+
 #AdministrationLabel:hover, #AdministrationLabel:focus {
     background: #666;
 }
@@ -177,6 +182,10 @@ QPushButton:hover {
 
 QPushButton:pressed {
     background: #111;
+}
+
+QPushButton:disabled {
+    background:#aaa;
 }
 
 QAbstractScrollArea::corner {
@@ -285,4 +294,30 @@ QTreeView::branch:has-children:open {
 
 QTreeView::branch:has-children:closed {
     image: url(images:scroll-right.png);
+}
+
+QComboBox {
+    padding: 2px;
+    border: 1px solid white;
+}
+
+QComboBox::drop-down {
+    border: 0;
+    width: 15px;
+    image: unset;
+    padding-right: 2px;
+}
+
+QComboBox::down-arrow {
+    image: url(images:dropdown-arrow-contrast.png);
+}
+
+QGroupBox {
+    border: 1px solid white;
+    margin-top: 1ex; /* leave space at the top for the title */
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 8px;
 }

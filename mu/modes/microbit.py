@@ -85,6 +85,7 @@ class MicrobitMode(MicroPythonMode):
     """
 
     name = _("BBC micro:bit")
+    short_name = "microbit"
     description = _("Write MicroPython for the BBC micro:bit.")
     icon = "microbit"
     fs = None  #: Reference to filesystem navigator.
@@ -92,7 +93,11 @@ class MicrobitMode(MicroPythonMode):
     flash_timer = None
     file_extensions = ["hex"]
 
-    valid_boards = [(0x0D28, 0x0204)]  # micro:bit USB VID, PID
+    # Device name should only be supplied for modes
+    # supporting more than one board, thus None is returned.
+    #
+    #               VID,     PID,   manufact., device name
+    valid_boards = [(0x0D28, 0x0204, None, "BBC micro:bit")]
 
     valid_serial_numbers = [9900, 9901]  # Serial numbers of supported boards.
 
@@ -222,15 +227,13 @@ class MicrobitMode(MicroPythonMode):
         # Next step: find the microbit port and serial number.
         path_to_microbit = uflash.find_microbit()
         logger.info("Path to micro:bit: {}".format(path_to_microbit))
-        port = None
-        serial_number = None
-        try:
-            port, serial_number = self.find_device()
+        if self.editor.current_device:
+            port = self.editor.current_device.port
+            serial_number = self.editor.current_device.serial_number
             logger.info("Serial port: {}".format(port))
             logger.info("Device serial number: {}".format(serial_number))
-        except Exception as ex:
-            logger.warning("Unable to make serial connection to micro:bit.")
-            logger.warning(ex)
+        else:
+            port = None
         # Determine the location of the BBC micro:bit. If it can't be found
         # fall back to asking the user to locate it.
         if path_to_microbit is None:
@@ -554,8 +557,8 @@ class MicrobitMode(MicroPythonMode):
         Add the file system navigator to the UI.
         """
         # Check for micro:bit
-        port, serial_number = self.find_device()
-        if not port:
+        device = self.editor.current_device
+        if device is None:
             message = _("Could not find an attached BBC micro:bit.")
             information = _(
                 "Please make sure the device is plugged "
@@ -569,7 +572,7 @@ class MicrobitMode(MicroPythonMode):
             self.view.show_message(message, information)
             return
         self.file_manager_thread = QThread(self)
-        self.file_manager = FileManager(port)
+        self.file_manager = FileManager(device.port)
         self.file_manager.moveToThread(self.file_manager_thread)
         self.file_manager_thread.started.connect(self.file_manager.on_start)
         self.fs = self.view.add_filesystem(
@@ -613,3 +616,20 @@ class MicrobitMode(MicroPythonMode):
             return text, sniff_newline_convention(text)
         else:
             return None, None
+
+    def deactivate(self):
+        """
+        Invoked whenever the mode is deactivated.
+        """
+        super().deactivate()
+        if self.fs:
+            self.remove_fs()
+
+    def device_changed(self, new_device):
+        """
+        Invoked when the user changes device.
+        """
+        super().device_changed(new_device)
+        if self.fs:
+            self.remove_fs()
+            self.add_fs()
