@@ -559,11 +559,12 @@ class FindReplaceDialog(QDialog):
 
 class PackageDialog(QDialog):
     """
-    Display a dialog to indicate the status of the packaging related changes
-    currently run by pip.
-    """
+    Display the output of the pip commands needed to remove or install packages
 
-    #~ text_changed = pyqtSignal(str)
+    Because the QProcess mechanism we're using is asynchronous, we have to
+    manage the pip requests via `pip_queue`. When one request is signalled
+    as finished we start the next.
+    """
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -590,68 +591,43 @@ class PackageDialog(QDialog):
         self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
         self.button_box.accepted.connect(self.accept)
         widget_layout.addWidget(self.button_box)
-        #
-        # FIXME move the run_pip QProcess functionality into the virtual
-        # environment object, at which point this can become a series of
-        # packages to add/remove
-        #
-        output_slot = self.text_area.appendPlainText
-        finished_slot = self.finished
-        self.venv.remove_user_packages(list(self.to_remove), output_slot=output_slot, finished_slot=finished_slot)
-        self.venv.install_user_packages(list(self.to_add), output_slot=output_slot, finished_slot=finished_slot)
 
-    def finished(self):
+        self.pip_queue = []
+        if to_add:
+            self.pip_queue.append(("install", to_add))
+        if to_remove:
+            self.pip_queue.append(("remove", to_remove))
+        QTimer.singleShot(2, self.next_pip_command)
+
+    def next_pip_command(self):
+        """Run the next pip command, finishing if there is none"""
+        if self.pip_queue:
+            command, packages = self.pip_queue.pop()
+            self.run_pip(command, packages)
+        else:
+            self.finish()
+
+    def finish(self):
         """
         Set the UI to a valid end state.
         """
-        self.append_data("\nFINISHED")
+        self.text_area.appendPlainText("\nFINISHED")
         self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
 
-    def run_pip(self):
+    def run_pip(self, command, packages):
         """
         Run a pip command in a subprocess and pipe the output to the dialog's
         text area.
         """
-        #~ args = self.commands.pop()
-        #~ self.venv.run_python(args, output_slot=self.read_process, finished_slot=self.finished)
-        #~ self.process = QProcess(self)
-        #~ self.process.setProcessChannelMode(QProcess.MergedChannels)
-        #~ self.process.readyRead.connect(self.read_process)
-        #~ self.process.finished.connect(self.finished)
-        #~ logger.info("{} {}".format(self.venv.interpreter, " ".join(args)))
-        #~ self.process.start(self.venv.interpreter, args)
+        if command == "remove":
+            pip_fn = self.venv.remove_user_packages
+        elif command == "install":
+            pip_fn = self.venv.install_user_packages
+        else:
+            raise RuntimeError("Invalid pip command: %s %s" % (command, packages))
 
-    #~ def finished(self):
-        #~ """
-        #~ Called when the subprocess that uses pip to install a package is
-        #~ finished.
-        #~ """
-        #~ if self.commands:
-            #~ self.process = None
-            #~ self.run_pip()
-        #~ else:
-            #~ self.end_state()
-
-    def read_process(self, data):
-        """
-        Read data from the child process and append it to the text area. Try
-        to keep reading until there's no more data from the process.
-        """
-        #~ if data:
-            #~ self.text_area.append(msg)
-            #~ self.append_data(data)
-            #~ QTimer.singleShot(2, self.read_process)
-
-    def append_data(self, msg):
-        """
-        Add data to the end of the text area.
-        """
-        #
-        # FIXME: still needed?
-        #
-        #~ self.text_area.append(msg)
-        #~ cursor = self.text_area.textCursor()
-        #~ cursor.movePosition(QTextCursor.End)
-        #~ cursor.insertText(msg)
-        #~ cursor.movePosition(QTextCursor.End)
-        #~ self.text_area.setTextCursor(cursor)
+        pip_fn(
+            packages,
+            output_slot=self.text_area.appendPlainText,
+            finished_slot=self.next_pip_command
+        )

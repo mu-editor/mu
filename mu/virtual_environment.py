@@ -115,7 +115,7 @@ class Pip(object):
         self.executable = pip_executable
         self.process = Process()
 
-    def run(self, command, *args, output_slot=None, **kwargs):
+    def run(self, command, *args, started_slot=None, output_slot=None, finished_slot=None, **kwargs):
         """Run a command with args, treating kwargs as Posix switches
 
         eg run("python", version=True)
@@ -139,7 +139,9 @@ class Pip(object):
         if output_slot is None:
             return self.process.run_headless(self.executable, params)
         else:
+            if started_slot: self.process.started.connect(started_slot)
             self.process.output.connect(output_slot)
+            if finished_slot: self.process.finished.connect(finished_slot)
             self.process.run(self.executable, params)
 
     def install(self, packages, started_slot=None, output_slot=None, finished_slot=None, **kwargs):
@@ -166,9 +168,9 @@ class Pip(object):
         indicates a switch without a value (eg --upgrade)
         """
         if isinstance(packages, str):
-            return self.run("uninstall", packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, **kwargs)
+            return self.run("uninstall", packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, yes=True, **kwargs)
         else:
-            return self.run("uninstall", *packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, **kwargs)
+            return self.run("uninstall", *packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, yes=True, **kwargs)
 
     def freeze(self):
         """Use pip to return a list of installed packages
@@ -383,13 +385,11 @@ class VirtualEnvironment(object):
 
     def install_user_packages(self, packages, started_slot=None, output_slot=None, finished_slot=None):
         logger.info("Installing user packages: %s", ", ".join(packages))
-        for package in packages:
-            self.pip.install(package, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, upgrade=True)
+        self.pip.install(packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, upgrade=True)
 
     def remove_user_packages(self, packages, started_slot=None, output_slot=None, finished_slot=None):
         logger.info("Removing user packages: %s", ", ".join(packages))
-        for package in packages:
-            self.pip.uninstall(package, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot)
+        self.pip.uninstall(packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot)
 
     def full_pythonpath(self):
         """

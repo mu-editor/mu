@@ -43,8 +43,8 @@ class DebugMode(BaseMode):
     is_debugger = True
     save_timeout = 0  # No need to auto-save when in read-only debug mode.
 
-    def __init__(self, editor, view):
-        super().__init__(editor, view)
+    def __init__(self, editor, view, venv):
+        super().__init__(editor, view, venv)
         self._button_disable_timer = QTimer()
         self._button_disable_timer.setSingleShot(True)
         self._button_disable_timer.timeout.connect(self.disable_buttons)
