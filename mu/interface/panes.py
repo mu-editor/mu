@@ -613,7 +613,9 @@ class LocalFileList(MuFileList):
         if ext == ".py" or ext == ".hex":
             open_internal_action = menu.addAction(_("Open in Mu"))
         if ext == ".py":
-            write_to_main_action = menu.addAction( _("Write to main.py on device") )
+            write_to_main_action = menu.addAction(
+                _("Write to main.py on device")
+            )
         # Open outside Mu (things get meta if Mu is the default application)
         open_action = menu.addAction(_("Open"))
         action = menu.exec_(self.mapToGlobal(event.pos()))

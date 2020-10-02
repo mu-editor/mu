@@ -670,3 +670,31 @@ def test_debug_on_exception():
     dm.debug_on_exception("Exception", "Exception information")
     dm.debugger.do_run.assert_called_once_with()
     assert view.current_tab.reset_debugger_highlight.call_count == 1
+
+
+def test_enable_buttons_before_delayed_disable_buttons():
+    """
+    Calling `enable_buttons` before the disable button timer fires i) cancels
+    that timer and, ii) does not call the code that actually enables buttons.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    dm = DebugMode(editor, view)
+
+    # Mocked active timer.
+    timer_mock = mock.MagicMock()
+    timer_mock.isActive.return_value = True
+    dm._button_disable_timer = timer_mock
+
+    # Mocked underlying _enable_buttons method.
+    real_enable_method_mock = mock.MagicMock()
+    dm._enable_buttons = real_enable_method_mock
+
+    # Call enable_buttons to check behaviour.
+    dm.enable_buttons()
+
+    # Timer should have been stopped.
+    timer_mock.stop.assert_called_once_with()
+
+    # Underlying _enable_buttons method should not have been called.
+    assert real_enable_method_mock.call_count == 0
