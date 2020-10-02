@@ -1465,6 +1465,7 @@ class Editor(QObject):
             "microbit_runtime": self.microbit_runtime,
         }
         baseline_packages, user_packages = self.venv.installed_packages()
+        packages = user_packages
         with open(LOG_FILE, "r", encoding="utf8") as logfile:
             new_settings = self._view.show_admin(
                 logfile.read(),

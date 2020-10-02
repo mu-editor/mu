@@ -42,7 +42,9 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QTextCursor
 from mu.resources import load_icon
-from mu.logic import MODULE_DIR
+## FIXME: take this out for now as it's only used by the esptool
+##        but need to talk to @dybber who added it
+## from mu.logic import MODULE_DIR
 from mu.interface.widgets import DeviceSelector
 
 logger = logging.getLogger(__name__)
@@ -561,7 +563,7 @@ class PackageDialog(QDialog):
     currently run by pip.
     """
 
-    text_changed = pyqtSignal(str)
+    #~ text_changed = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -573,7 +575,6 @@ class PackageDialog(QDialog):
         self.to_remove = to_remove
         self.to_add = to_add
         self.venv = venv
-        self.process = None
         # Basic layout.
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_("Third Party Package Status"))
@@ -589,24 +590,17 @@ class PackageDialog(QDialog):
         self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
         self.button_box.accepted.connect(self.accept)
         widget_layout.addWidget(self.button_box)
-        # Kick off processing of packages.
-        self.commands = []
         #
         # FIXME move the run_pip QProcess functionality into the virtual
         # environment object, at which point this can become a series of
         # packages to add/remove
         #
-        self.venv.remove_user_packages(list(self.to_remove), output_slot=self.text_area.append)
-        self.venv.install_user_packages(list(self.to_add))
-        #~ if self.to_remove:
-            #~ self.commands.append(
-                #~ ["-m", "pip", "uninstall", "-y"] + list(self.to_remove)
-            #~ )
-        #~ if self.to_add:
-            #~ self.commands.append(["-m", "pip", "install"] + list(self.to_add))
-        #~ self.run_pip()
+        output_slot = self.text_area.appendPlainText
+        finished_slot = self.finished
+        self.venv.remove_user_packages(list(self.to_remove), output_slot=output_slot, finished_slot=finished_slot)
+        self.venv.install_user_packages(list(self.to_add), output_slot=output_slot, finished_slot=finished_slot)
 
-    def end_state(self):
+    def finished(self):
         """
         Set the UI to a valid end state.
         """
@@ -618,8 +612,8 @@ class PackageDialog(QDialog):
         Run a pip command in a subprocess and pipe the output to the dialog's
         text area.
         """
-        args = self.commands.pop()
-        self.venv.run_python(args, output_slot=self.read_process, finished_slot=self.finished)
+        #~ args = self.commands.pop()
+        #~ self.venv.run_python(args, output_slot=self.read_process, finished_slot=self.finished)
         #~ self.process = QProcess(self)
         #~ self.process.setProcessChannelMode(QProcess.MergedChannels)
         #~ self.process.readyRead.connect(self.read_process)
@@ -627,26 +621,26 @@ class PackageDialog(QDialog):
         #~ logger.info("{} {}".format(self.venv.interpreter, " ".join(args)))
         #~ self.process.start(self.venv.interpreter, args)
 
-    def finished(self):
-        """
-        Called when the subprocess that uses pip to install a package is
-        finished.
-        """
-        if self.commands:
-            self.process = None
-            self.run_pip()
-        else:
-            self.end_state()
+    #~ def finished(self):
+        #~ """
+        #~ Called when the subprocess that uses pip to install a package is
+        #~ finished.
+        #~ """
+        #~ if self.commands:
+            #~ self.process = None
+            #~ self.run_pip()
+        #~ else:
+            #~ self.end_state()
 
     def read_process(self, data):
         """
         Read data from the child process and append it to the text area. Try
         to keep reading until there's no more data from the process.
         """
-        if data:
-            self.text_area.append(msg)
+        #~ if data:
+            #~ self.text_area.append(msg)
             #~ self.append_data(data)
-            QTimer.singleShot(2, self.read_process)
+            #~ QTimer.singleShot(2, self.read_process)
 
     def append_data(self, msg):
         """
@@ -655,9 +649,9 @@ class PackageDialog(QDialog):
         #
         # FIXME: still needed?
         #
-        self.text_area.append(msg)
-        cursor = self.text_area.textCursor()
-        cursor.movePosition(QTextCursor.End)
-        cursor.insertText(msg)
-        cursor.movePosition(QTextCursor.End)
-        self.text_area.setTextCursor(cursor)
+        #~ self.text_area.append(msg)
+        #~ cursor = self.text_area.textCursor()
+        #~ cursor.movePosition(QTextCursor.End)
+        #~ cursor.insertText(msg)
+        #~ cursor.movePosition(QTextCursor.End)
+        #~ self.text_area.setTextCursor(cursor)

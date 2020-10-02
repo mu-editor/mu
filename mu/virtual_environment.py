@@ -2,6 +2,7 @@ import os
 import sys
 import functools
 import glob
+import json
 import logging
 import subprocess
 
@@ -16,14 +17,6 @@ from . import wheels
 wheels_dirpath = os.path.dirname(wheels.__file__)
 
 logger = logging.getLogger(__name__)
-
-def _subprocess_run(command, *args):
-    """Run a process via the subprocess module
-
-    Return the combined output decoded as utf-8
-    """
-    p = subprocess.run([command] + list(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    return p.stdout.decode("utf-8")
 
 class Process(QObject):
     """Use the QProcess mechanism to run a subprocess asynchronously
@@ -149,7 +142,7 @@ class Pip(object):
             self.process.output.connect(output_slot)
             self.process.run(self.executable, params)
 
-    def install(self, packages, output_slot=None, **kwargs):
+    def install(self, packages, started_slot=None, output_slot=None, finished_slot=None, **kwargs):
         """Use pip to install a package or packages
 
         If the first parameter is a string one package is installed; otherwise
@@ -159,11 +152,11 @@ class Pip(object):
         indicates a switch without a value (eg --upgrade)
         """
         if isinstance(packages, str):
-            return self.run("install", packages, output_slot=output_slot, **kwargs)
+            return self.run("install", packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, **kwargs)
         else:
-            return self.run("install", *packages, output_slot=output_slot, **kwargs)
+            return self.run("install", *packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, **kwargs)
 
-    def uninstall(self, packages, output_slot=None, **kwargs):
+    def uninstall(self, packages, started_slot=None, output_slot=None, finished_slot=None, **kwargs):
         """Use pip to uninstall a package or packages
 
         If the first parameter is a string one package is uninstalled; otherwise
@@ -173,9 +166,9 @@ class Pip(object):
         indicates a switch without a value (eg --upgrade)
         """
         if isinstance(packages, str):
-            return self.run("uninstall", packages, output_slot=output_slot, yes=True, **kwargs)
+            return self.run("uninstall", packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, **kwargs)
         else:
-            return self.run("uninstall", *packages, output_slot=output_slot, yes=True, **kwargs)
+            return self.run("uninstall", *packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, **kwargs)
 
     def freeze(self):
         """Use pip to return a list of installed packages
@@ -216,17 +209,7 @@ class Pip(object):
 
 class VirtualEnvironment(object):
 
-    #
-    # FIXME: For now, hardcode the baseline packages here; later on, we
-    # can probably have them exported by each mode
-    #
-    baseline_packages = [
-        ("pgzero", ""),
-        ("Flask", "==1.1.2"),
-        ("pyserial", "==3.4"),
-        ("qtconsole", "==4.7.4"),
-        ("nudatus", ">=0.0.3"),
-    ]
+    BASELINE_PACKAGES_FILEPATH = "baseline_packages.json"
 
     def __init__(self, dirpath):
         self.path = dirpath
@@ -332,6 +315,7 @@ class VirtualEnvironment(object):
         )
         # Set the path to the interpreter
         self.install_baseline_packages()
+        self.register_baseline_packages()
         self.install_jupyter_kernel()
 
     def install_jupyter_kernel(self):
@@ -378,6 +362,24 @@ class VirtualEnvironment(object):
                 "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
             )
         self.pip.install(wheel_filepaths)
+
+    def register_baseline_packages(self):
+        """Keep track of the baseline packages installed into the empty venv
+        """
+        #
+        # FIXME: This should go into settings. For now, though, just put it somewhere
+        #
+        with open(self.BASELINE_PACKAGES_FILEPATH, "w", encoding="utf-8") as f:
+            json.dump(list(self.pip.installed_packages()), f)
+
+    def baseline_packages(self):
+        """Return the list of baseline packages
+        """
+        #
+        # FIXME: This should come out of settings. For now though...
+        #
+        with open(self.BASELINE_PACKAGES_FILEPATH, encoding="utf-8") as f:
+            return json.load(f)
 
     def install_user_packages(self, packages, started_slot=None, output_slot=None, finished_slot=None):
         logger.info("Installing user packages: %s", ", ".join(packages))
@@ -430,9 +432,7 @@ class VirtualEnvironment(object):
         # The latter is probably easier.
         #
 
-        baseline_packages = ["mu-editor"] + [
-            name for name, version in self.baseline_packages
-        ]
+        baseline_packages = [name for name, version in self.baseline_packages()]
         user_packages = []
         p = self.pip.installed_packages()
         for package, version in p: ## self.pip.installed_packages():
