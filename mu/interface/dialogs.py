@@ -633,6 +633,5 @@ class PackageDialog(QDialog):
 
         pip_fn(
             packages,
-            output_slot=self.text_area.appendPlainText,
-            finished_slot=self.next_pip_command,
+            slots=self.venv.Slots(output=self.text_area.appendPlainText, finished=self.next_pip_command)
         )

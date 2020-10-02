@@ -1,5 +1,6 @@
 import os
 import sys
+from collections import namedtuple
 import functools
 import glob
 import json
@@ -63,6 +64,7 @@ class Process(QObject):
     started = pyqtSignal()
     output = pyqtSignal(str)
     finished = pyqtSignal()
+    Slots = namedtuple("Slots", ["started", "output", "finished"], defaults=(None, None, None))
 
     def __init__(self):
         super().__init__()
@@ -113,7 +115,6 @@ class Process(QObject):
     def _finished(self):
         self.finished.emit()
 
-
 class Pip(object):
     """Proxy for various pip commands
 
@@ -130,9 +131,7 @@ class Pip(object):
         self,
         command,
         *args,
-        started_slot=None,
-        output_slot=None,
-        finished_slot=None,
+        slots=Process.Slots(),
         **kwargs
     ):
         """Run a command with args, treating kwargs as Posix switches
@@ -155,22 +154,20 @@ class Pip(object):
                 params.append(str(v))
         params.extend(args)
 
-        if output_slot is None:
+        if slots.output is None:
             return self.process.run_headless(self.executable, params)
         else:
-            if started_slot:
-                self.process.started.connect(started_slot)
-            self.process.output.connect(output_slot)
-            if finished_slot:
-                self.process.finished.connect(finished_slot)
+            if slots.started:
+                self.process.started.connect(slots.started)
+            self.process.output.connect(slots.output)
+            if slots.finished:
+                self.process.finished.connect(slots.finished)
             self.process.run(self.executable, params)
 
     def install(
         self,
         packages,
-        started_slot=None,
-        output_slot=None,
-        finished_slot=None,
+        slots=Process.Slots(),
         **kwargs
     ):
         """Use pip to install a package or packages
@@ -185,27 +182,21 @@ class Pip(object):
             return self.run(
                 "install",
                 packages,
-                started_slot=started_slot,
-                output_slot=output_slot,
-                finished_slot=finished_slot,
+                slots,
                 **kwargs
             )
         else:
             return self.run(
                 "install",
                 *packages,
-                started_slot=started_slot,
-                output_slot=output_slot,
-                finished_slot=finished_slot,
+                slots,
                 **kwargs
             )
 
     def uninstall(
         self,
         packages,
-        started_slot=None,
-        output_slot=None,
-        finished_slot=None,
+        slots=Process.Slots(),
         **kwargs
     ):
         """Use pip to uninstall a package or packages
@@ -220,9 +211,7 @@ class Pip(object):
             return self.run(
                 "uninstall",
                 packages,
-                started_slot=started_slot,
-                output_slot=output_slot,
-                finished_slot=finished_slot,
+                slots=slots,
                 yes=True,
                 **kwargs
             )
@@ -230,9 +219,7 @@ class Pip(object):
             return self.run(
                 "uninstall",
                 *packages,
-                started_slot=started_slot,
-                output_slot=output_slot,
-                finished_slot=finished_slot,
+                slots=slots,
                 yes=True,
                 **kwargs
             )
@@ -278,6 +265,7 @@ class Pip(object):
 class VirtualEnvironment(object):
 
     BASELINE_PACKAGES_FILEPATH = "baseline_packages.json"
+    Slots = Process.Slots
 
     def __init__(self, dirpath):
         self.path = dirpath
@@ -302,7 +290,7 @@ class VirtualEnvironment(object):
         )
 
     def run_python(
-        self, *args, started_slot=None, output_slot=None, finished_slot=None
+        self, *args, slots=Process.Slots()
     ):  ## FIXME -- do we need pythonpath?, pythonpath=python36_zip):
         """Run the referenced Python interpreter with the passed in args
 
@@ -316,14 +304,13 @@ class VirtualEnvironment(object):
         # ~ self.interpreter, args, pythonpath
         # ~ )
         # ~ )
-        if started_slot:
-            self.process.started.connect(started_slot)
-        if output_slot:
-            self.process.output.connect(output_slot)
-        if finished_slot:
-            self.process.finished.connect(finished_slot)
 
-        if output_slot:
+        if slots.output:
+            if slots.started:
+                self.process.started.connect(slots.started)
+            self.process.output.connect(slots.output)
+            if slots.finished:
+                self.process.finished.connect(slots.finished)
             self.process.run(self.interpreter, args)
         else:
             return self.process.run_headless(self.interpreter, args)
@@ -449,29 +436,29 @@ class VirtualEnvironment(object):
         # FIXME: This should come out of settings. For now though...
         #
         with open(self.BASELINE_PACKAGES_FILEPATH, encoding="utf-8") as f:
-            return json.load(f)
+            try:
+                return json.load(f)
+            except json.decoder.JSONDecodeError:
+                logger.exception("Unable to read baseline packages")
+                return []
 
     def install_user_packages(
-        self, packages, started_slot=None, output_slot=None, finished_slot=None
+        self, packages, slots=Process.Slots()
     ):
         logger.info("Installing user packages: %s", ", ".join(packages))
         self.pip.install(
             packages,
-            started_slot=started_slot,
-            output_slot=output_slot,
-            finished_slot=finished_slot,
+            slots=slots,
             upgrade=True,
         )
 
     def remove_user_packages(
-        self, packages, started_slot=None, output_slot=None, finished_slot=None
+        self, packages, slots=Process.Slots()
     ):
         logger.info("Removing user packages: %s", ", ".join(packages))
         self.pip.uninstall(
             packages,
-            started_slot=started_slot,
-            output_slot=output_slot,
-            finished_slot=finished_slot,
+            slots=slots,
         )
 
     def full_pythonpath(self):
