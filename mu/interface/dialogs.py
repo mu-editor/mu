@@ -592,6 +592,11 @@ class PackageDialog(QDialog):
         self.button_box.accepted.connect(self.accept)
         widget_layout.addWidget(self.button_box)
 
+        #
+        # Set up the commands to be issues to pip. Since we'll be popping
+        # from the list (as LIFO) we'll add the installs first so the
+        # removes are the first to happen
+        #
         self.pip_queue = []
         if to_add:
             self.pip_queue.append(("install", to_add))
