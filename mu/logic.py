@@ -1472,7 +1472,7 @@ class Editor(QObject):
                 settings,
                 "\n".join(packages),
                 self.modes[self.mode],
-                self.connected_devices
+                self.connected_devices,
             )
         if new_settings:
             self.envars = extract_envars(new_settings["envars"])

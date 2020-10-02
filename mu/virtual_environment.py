@@ -7,16 +7,25 @@ import logging
 import subprocess
 
 import encodings
+
 python36_zip = os.path.dirname(encodings.__path__[0])
 del encodings
 
-from PyQt5.QtCore import QObject, QProcess, QThread, pyqtSignal, QTimer, QProcessEnvironment
+from PyQt5.QtCore import (
+    QObject,
+    QProcess,
+    QThread,
+    pyqtSignal,
+    QTimer,
+    QProcessEnvironment,
+)
 
 from . import wheels
 
 wheels_dirpath = os.path.dirname(wheels.__file__)
 
 logger = logging.getLogger(__name__)
+
 
 class Process(QObject):
     """Use the QProcess mechanism to run a subprocess asynchronously
@@ -65,8 +74,7 @@ class Process(QObject):
         self.environment.insert("PYTHONIOENCODING", "utf-8")
 
     def _set_up_run(self, **envvars):
-        """Run the process with the command and args
-        """
+        """Run the process with the command and args"""
         self.process = QProcess(self)
         environment = QProcessEnvironment(self.environment)
         for k, v in envvars.items():
@@ -85,7 +93,9 @@ class Process(QObject):
         self.process.readyRead.connect(self._readyRead)
         self.process.started.connect(self._started)
         self.process.finished.connect(self._finished)
-        QTimer.singleShot(100, functools.partial(self.process.start, command, args))
+        QTimer.singleShot(
+            100, functools.partial(self.process.start, command, args)
+        )
 
     def wait(self, wait_for_s=30.0):
         if not self.process.waitForFinished(1000 * wait_for_s):
@@ -111,11 +121,20 @@ class Pip(object):
     least initially to assist in testing, so we can mock out various
     commands
     """
+
     def __init__(self, pip_executable):
         self.executable = pip_executable
         self.process = Process()
 
-    def run(self, command, *args, started_slot=None, output_slot=None, finished_slot=None, **kwargs):
+    def run(
+        self,
+        command,
+        *args,
+        started_slot=None,
+        output_slot=None,
+        finished_slot=None,
+        **kwargs
+    ):
         """Run a command with args, treating kwargs as Posix switches
 
         eg run("python", version=True)
@@ -139,12 +158,21 @@ class Pip(object):
         if output_slot is None:
             return self.process.run_headless(self.executable, params)
         else:
-            if started_slot: self.process.started.connect(started_slot)
+            if started_slot:
+                self.process.started.connect(started_slot)
             self.process.output.connect(output_slot)
-            if finished_slot: self.process.finished.connect(finished_slot)
+            if finished_slot:
+                self.process.finished.connect(finished_slot)
             self.process.run(self.executable, params)
 
-    def install(self, packages, started_slot=None, output_slot=None, finished_slot=None, **kwargs):
+    def install(
+        self,
+        packages,
+        started_slot=None,
+        output_slot=None,
+        finished_slot=None,
+        **kwargs
+    ):
         """Use pip to install a package or packages
 
         If the first parameter is a string one package is installed; otherwise
@@ -154,11 +182,32 @@ class Pip(object):
         indicates a switch without a value (eg --upgrade)
         """
         if isinstance(packages, str):
-            return self.run("install", packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, **kwargs)
+            return self.run(
+                "install",
+                packages,
+                started_slot=started_slot,
+                output_slot=output_slot,
+                finished_slot=finished_slot,
+                **kwargs
+            )
         else:
-            return self.run("install", *packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, **kwargs)
+            return self.run(
+                "install",
+                *packages,
+                started_slot=started_slot,
+                output_slot=output_slot,
+                finished_slot=finished_slot,
+                **kwargs
+            )
 
-    def uninstall(self, packages, started_slot=None, output_slot=None, finished_slot=None, **kwargs):
+    def uninstall(
+        self,
+        packages,
+        started_slot=None,
+        output_slot=None,
+        finished_slot=None,
+        **kwargs
+    ):
         """Use pip to uninstall a package or packages
 
         If the first parameter is a string one package is uninstalled; otherwise
@@ -168,9 +217,25 @@ class Pip(object):
         indicates a switch without a value (eg --upgrade)
         """
         if isinstance(packages, str):
-            return self.run("uninstall", packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, yes=True, **kwargs)
+            return self.run(
+                "uninstall",
+                packages,
+                started_slot=started_slot,
+                output_slot=output_slot,
+                finished_slot=finished_slot,
+                yes=True,
+                **kwargs
+            )
         else:
-            return self.run("uninstall", *packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, yes=True, **kwargs)
+            return self.run(
+                "uninstall",
+                *packages,
+                started_slot=started_slot,
+                output_slot=output_slot,
+                finished_slot=finished_slot,
+                yes=True,
+                **kwargs
+            )
 
     def freeze(self):
         """Use pip to return a list of installed packages
@@ -209,6 +274,7 @@ class Pip(object):
             name, version = line.split()[:2]
             yield name, version
 
+
 class VirtualEnvironment(object):
 
     BASELINE_PACKAGES_FILEPATH = "baseline_packages.json"
@@ -217,22 +283,27 @@ class VirtualEnvironment(object):
         self.path = dirpath
         self.name = os.path.basename(self.path)
         self._is_windows = sys.platform == "win32"
-        self._bin_directory = os.path.join(self.path, "scripts" if self._is_windows else "bin")
+        self._bin_directory = os.path.join(
+            self.path, "scripts" if self._is_windows else "bin"
+        )
         self._bin_extension = ".exe" if self._is_windows else ""
         #
         # Pip and the interpreter will be set up when the virtualenv is ensured
         #
-        self.interpreter = os.path.join(self._bin_directory, "python" + self._bin_extension)
-        self.pip = Pip(os.path.join(self._bin_directory, "pip" + self._bin_extension))
+        self.interpreter = os.path.join(
+            self._bin_directory, "python" + self._bin_extension
+        )
+        self.pip = Pip(
+            os.path.join(self._bin_directory, "pip" + self._bin_extension)
+        )
         self.process = Process()
         logging.debug(
             "Starting virtual environment %s at %s", self.name, self.path
         )
 
     def run_python(
-        self, *args,
-        started_slot=None, output_slot=None, finished_slot=None
-    ): ## FIXME -- do we need pythonpath?, pythonpath=python36_zip):
+        self, *args, started_slot=None, output_slot=None, finished_slot=None
+    ):  ## FIXME -- do we need pythonpath?, pythonpath=python36_zip):
         """Run the referenced Python interpreter with the passed in args
 
         If slots are supplied for the starting, output or finished signals
@@ -240,11 +311,11 @@ class VirtualEnvironment(object):
         headless and the process will be run synchronously and output collected
         will be returned when the process is complete
         """
-        #~ logger.info(
-            #~ "Starting new sub-process with: {} {} (PYTHONPATH={})".format(
-                #~ self.interpreter, args, pythonpath
-            #~ )
-        #~ )
+        # ~ logger.info(
+        # ~ "Starting new sub-process with: {} {} (PYTHONPATH={})".format(
+        # ~ self.interpreter, args, pythonpath
+        # ~ )
+        # ~ )
         if started_slot:
             self.process.started.connect(started_slot)
         if output_slot:
@@ -256,7 +327,6 @@ class VirtualEnvironment(object):
             self.process.run(self.interpreter, args)
         else:
             return self.process.run_headless(self.interpreter, args)
-
 
     def find_interpreter(self):
         #
@@ -366,8 +436,7 @@ class VirtualEnvironment(object):
         self.pip.install(wheel_filepaths)
 
     def register_baseline_packages(self):
-        """Keep track of the baseline packages installed into the empty venv
-        """
+        """Keep track of the baseline packages installed into the empty venv"""
         #
         # FIXME: This should go into settings. For now, though, just put it somewhere
         #
@@ -375,21 +444,35 @@ class VirtualEnvironment(object):
             json.dump(list(self.pip.installed_packages()), f)
 
     def baseline_packages(self):
-        """Return the list of baseline packages
-        """
+        """Return the list of baseline packages"""
         #
         # FIXME: This should come out of settings. For now though...
         #
         with open(self.BASELINE_PACKAGES_FILEPATH, encoding="utf-8") as f:
             return json.load(f)
 
-    def install_user_packages(self, packages, started_slot=None, output_slot=None, finished_slot=None):
+    def install_user_packages(
+        self, packages, started_slot=None, output_slot=None, finished_slot=None
+    ):
         logger.info("Installing user packages: %s", ", ".join(packages))
-        self.pip.install(packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot, upgrade=True)
+        self.pip.install(
+            packages,
+            started_slot=started_slot,
+            output_slot=output_slot,
+            finished_slot=finished_slot,
+            upgrade=True,
+        )
 
-    def remove_user_packages(self, packages, started_slot=None, output_slot=None, finished_slot=None):
+    def remove_user_packages(
+        self, packages, started_slot=None, output_slot=None, finished_slot=None
+    ):
         logger.info("Removing user packages: %s", ", ".join(packages))
-        self.pip.uninstall(packages, started_slot=started_slot, output_slot=output_slot, finished_slot=finished_slot)
+        self.pip.uninstall(
+            packages,
+            started_slot=started_slot,
+            output_slot=output_slot,
+            finished_slot=finished_slot,
+        )
 
     def full_pythonpath(self):
         """
@@ -432,10 +515,12 @@ class VirtualEnvironment(object):
         # The latter is probably easier.
         #
 
-        baseline_packages = [name for name, version in self.baseline_packages()]
+        baseline_packages = [
+            name for name, version in self.baseline_packages()
+        ]
         user_packages = []
         p = self.pip.installed_packages()
-        for package, version in p: ## self.pip.installed_packages():
+        for package, version in p:  ## self.pip.installed_packages():
             logger.info(package)
             if package not in baseline_packages:
                 user_packages.append(package)

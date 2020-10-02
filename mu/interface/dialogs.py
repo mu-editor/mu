@@ -42,6 +42,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QTextCursor
 from mu.resources import load_icon
+
 ## FIXME: take this out for now as it's only used by the esptool
 ##        but need to talk to @dybber who added it
 ## from mu.logic import MODULE_DIR
@@ -558,8 +559,7 @@ class FindReplaceDialog(QDialog):
 
 
 class PackageDialog(QDialog):
-    """
-    Display the output of the pip commands needed to remove or install packages
+    """Display the output of the pip commands needed to remove or install packages
 
     Because the QProcess mechanism we're using is asynchronous, we have to
     manage the pip requests via `pip_queue`. When one request is signalled
@@ -573,8 +573,6 @@ class PackageDialog(QDialog):
         """
         Create the UI for the dialog.
         """
-        self.to_remove = to_remove
-        self.to_add = to_add
         self.venv = venv
         # Basic layout.
         self.setMinimumSize(600, 400)
@@ -629,10 +627,12 @@ class PackageDialog(QDialog):
         elif command == "install":
             pip_fn = self.venv.install_user_packages
         else:
-            raise RuntimeError("Invalid pip command: %s %s" % (command, packages))
+            raise RuntimeError(
+                "Invalid pip command: %s %s" % (command, packages)
+            )
 
         pip_fn(
             packages,
             output_slot=self.text_area.appendPlainText,
-            finished_slot=self.next_pip_command
+            finished_slot=self.next_pip_command,
         )

@@ -245,7 +245,6 @@ def adafruit_feather():
     return adafruit_feather
 
 
-
 @pytest.fixture
 def esp_device():
     esp_device = mu.logic.Device(
@@ -259,6 +258,7 @@ def esp_device():
         # No board_name specified
     )
     return esp_device
+
 
 @pytest.mark.skip(reason="Probably no longer needed with virtual environment")
 def test_installed_packages_dist_info():
@@ -2584,7 +2584,9 @@ def test_show_admin():
     mock_ip = mock.MagicMock(return_value=[[], ["Foo", "bar"]])
     with mock.patch("builtins.open", mock_open), mock.patch(
         "os.path.isfile", return_value=True
-    ), mock.patch("mu.virtual_environment.VirtualEnvironment.installed_packages", mock_ip):
+    ), mock.patch(
+        "mu.virtual_environment.VirtualEnvironment.installed_packages", mock_ip
+    ):
         ed.show_admin(None)
         mock_open.assert_called_once_with(
             mu.logic.LOG_FILE, "r", encoding="utf8"
@@ -2615,7 +2617,9 @@ def test_show_admin_no_change():
     mock_ip = mock.MagicMock(return_value=[[], ["Foo", "bar"]])
     with mock.patch("builtins.open", mock_open), mock.patch(
         "os.path.isfile", return_value=True
-    ), mock.patch("mu.virtual_environment.VirtualEnvironment.installed_packages", mock_ip):
+    ), mock.patch(
+        "mu.virtual_environment.VirtualEnvironment.installed_packages", mock_ip
+    ):
         ed.show_admin(None)
         assert ed.sync_package_state.call_count == 0
 
@@ -2648,7 +2652,9 @@ def test_show_admin_missing_microbit_runtime():
     mock_ip = mock.MagicMock(return_value=[[], ["Foo", "bar"]])
     with mock.patch("builtins.open", mock_open), mock.patch(
         "os.path.isfile", return_value=False
-    ), mock.patch("mu.virtual_environment.VirtualEnvironment.installed_packages", mock_ip):
+    ), mock.patch(
+        "mu.virtual_environment.VirtualEnvironment.installed_packages", mock_ip
+    ):
         ed.show_admin(None)
         mock_open.assert_called_once_with(
             mu.logic.LOG_FILE, "r", encoding="utf8"
@@ -2672,9 +2678,7 @@ def test_sync_package_state():
     old_packages = ["foo", "bar"]
     new_packages = ["bar", "baz"]
     ed.sync_package_state(old_packages, new_packages)
-    view.sync_packages.assert_called_once_with(
-        {"foo"}, {"baz"}, ed.venv
-    )
+    view.sync_packages.assert_called_once_with({"foo"}, {"baz"}, ed.venv)
 
 
 def test_select_mode():

@@ -29,5 +29,6 @@ def debug(filename=None, *args):
         filepath = os.path.normcase(os.path.abspath(filename))
         mu.debugger.runner.run("localhost", DEBUGGER_PORT, filepath, *args)
 
+
 if __name__ == "__main__":
     debug(*sys.argv[1:])

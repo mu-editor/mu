@@ -29,11 +29,13 @@ import uuid
 
 import pytest
 import mu.virtual_environment
+
 VE = mu.virtual_environment.VirtualEnvironment
 PIP = mu.virtual_environment.Pip
 
 HERE = os.path.dirname(__file__)
 WHEEL_FILENAME = "arrr-1.0.2-py3-none-any.whl"
+
 
 @pytest.fixture
 def venv_name():
@@ -49,17 +51,18 @@ def patched():
     the expensive parts and pass them into the test so we can detect
     how they've been called
     """
-    with patch.object(subprocess, "run") as subprocess_run, \
-      patch.object(VE, "run_python") as run_python, \
-      patch.object(VE, "find_interpreter"):
+    with patch.object(subprocess, "run") as subprocess_run, patch.object(
+        VE, "run_python"
+    ) as run_python, patch.object(VE, "find_interpreter"):
         yield subprocess_run, run_python
+
 
 @pytest.fixture
 def pipped():
-    """Use a patched version of pip
-    """
+    """Use a patched version of pip"""
     with patch("mu.virtual_environment.Pip") as pip:
         yield pip
+
 
 def test_create_virtual_environment_on_disk(tmp_path):
     """Ensure that we're actually creating a working virtual environment
@@ -67,10 +70,15 @@ def test_create_virtual_environment_on_disk(tmp_path):
     """
     wheels_dirpath = tmp_path / "wheels"
     wheels_dirpath.mkdir()
-    shutil.copyfile(os.path.join(HERE, "wheels", WHEEL_FILENAME), wheels_dirpath / WHEEL_FILENAME)
+    shutil.copyfile(
+        os.path.join(HERE, "wheels", WHEEL_FILENAME),
+        wheels_dirpath / WHEEL_FILENAME,
+    )
     venv_name = uuid.uuid1().hex
     venv_dirpath = tmp_path / venv_name
-    with patch.object(mu.virtual_environment, "wheels_dirpath", wheels_dirpath):
+    with patch.object(
+        mu.virtual_environment, "wheels_dirpath", wheels_dirpath
+    ):
         venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
         venv.create()
         venv_site_packages = venv_dirpath / "lib" / "site-packages"
@@ -108,13 +116,17 @@ def test_create_virtual_environment_on_disk(tmp_path):
         #
         venv.find_interpreter()
         bin = "scripts" if sys.platform == "win32" else "bin"
-        assert pathlib.Path(venv.interpreter) == venv_dirpath / bin / "python.exe"
+        assert (
+            pathlib.Path(venv.interpreter) == venv_dirpath / bin / "python.exe"
+        )
 
         #
         # Check that our test wheel has been installed to a single module
         #
         expected_result = str(venv_site_packages / "arrr.py")
-        result = venv.run_python("-c", "import arrr; print(arrr.__file__)").strip()
+        result = venv.run_python(
+            "-c", "import arrr; print(arrr.__file__)"
+        ).strip()
         assert result == expected_result
 
 
@@ -129,8 +141,7 @@ def test_create_virtual_environment_path(patched, tmp_path, venv_name):
 
 
 def test_create_virtual_environment_name_obj(patched, venv_name):
-    """Ensure a virtual environment object has a name.
-    """
+    """Ensure a virtual environment object has a name."""
     venv = mu.virtual_environment.VirtualEnvironment(venv_name)
     assert venv.name == venv_name
 
@@ -147,15 +158,16 @@ def test_base_packages_installed(patched, venv_name):
             #
             # Check that we're calling `pip install` with all the wheels in our wheelhouse
             #
-            expected_args = glob.glob(os.path.join(mu.virtual_environment.wheels_dirpath, "*.whl"))
+            expected_args = glob.glob(
+                os.path.join(mu.virtual_environment.wheels_dirpath, "*.whl")
+            )
             venv = mu.virtual_environment.VirtualEnvironment(venv_name)
             venv.create()
             mock_pip_install.assert_called_once_with(expected_args)
 
 
 def test_jupyter_kernel_installed(patched, venv_name):
-    """Ensure that, when the venv is installed, the Jupyter kernel is installed
-    """
+    """Ensure that, when the venv is installed, the Jupyter kernel is installed"""
     _, run_python = patched
     #
     # Make sure the baseline package install doesn't interfere
@@ -167,7 +179,10 @@ def test_jupyter_kernel_installed(patched, venv_name):
         # Check that we're calling `ipykernel install`
         #
         expected_jupyter_args = ("-m", "ipykernel", "install")
-        assert expected_jupyter_args == run_python.call_args.args[:len(expected_jupyter_args)]
+        assert (
+            expected_jupyter_args
+            == run_python.call_args.args[: len(expected_jupyter_args)]
+        )
 
 
 def test_install_user_packages(patched, venv_name):
@@ -187,7 +202,9 @@ def test_install_user_packages(patched, venv_name):
         # to be sensitive to those
         #
         assert mock_pip_install.call_count == len(packages)
-        for (call_args, package) in zip(mock_pip_install.call_args_list, packages):
+        for (call_args, package) in zip(
+            mock_pip_install.call_args_list, packages
+        ):
             assert call_args.args[-1] == package
 
 
@@ -208,7 +225,9 @@ def test_remove_user_packages(patched, venv_name):
         # to those
         #
         assert mock_pip_uninstall.call_count == len(packages)
-        for (call_args, package) in zip(mock_pip_uninstall.call_args_list, packages):
+        for (call_args, package) in zip(
+            mock_pip_uninstall.call_args_list, packages
+        ):
             assert call_args.args[-1] == package
 
 
@@ -221,15 +240,19 @@ def test_installed_packages(patched, venv_name):
     When we've sorted out how this is going to work, we can determine
     which are pre-installed and which are user-installed
     """
-    baseline_packages = [('a', 1), ('b', 2), ('c', 3)]
-    user_packages = [('d', 4), ('e', 5), ('f', 6)]
-    all_packages = [('mu-editor', 0)] + baseline_packages + user_packages
+    baseline_packages = [("a", 1), ("b", 2), ("c", 3)]
+    user_packages = [("d", 4), ("e", 5), ("f", 6)]
+    all_packages = [("mu-editor", 0)] + baseline_packages + user_packages
     random.shuffle(all_packages)
 
     with patch.object(VE, "baseline_packages", baseline_packages):
-        with patch.object(PIP, "installed_packages") as mock_pip_installed_packages:
+        with patch.object(
+            PIP, "installed_packages"
+        ) as mock_pip_installed_packages:
             mock_pip_installed_packages.return_value = all_packages
             venv = mu.virtual_environment.VirtualEnvironment(venv_name)
             baseline_result, user_result = venv.installed_packages()
-            assert set(baseline_result) == set(['mu-editor'] + [name for name, _ in baseline_packages])
+            assert set(baseline_result) == set(
+                ["mu-editor"] + [name for name, _ in baseline_packages]
+            )
             assert set(user_result) == set(name for name, _ in user_packages)

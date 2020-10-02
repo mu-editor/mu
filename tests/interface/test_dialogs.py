@@ -393,7 +393,9 @@ def test_PackageDialog_setup():
     assert pd.pkg_dirs == {}
 
 
-@pytest.mark.skip(reason="Superseded probably by ntoll's previous work on venv")
+@pytest.mark.skip(
+    reason="Superseded probably by ntoll's previous work on venv"
+)
 def test_PackageDialog_remove_packages():
     """
     Ensure the pkg_dirs of to-be-removed packages is correctly filled and the
@@ -422,7 +424,9 @@ def test_PackageDialog_remove_packages():
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-@pytest.mark.skip(reason="Superseded probably by ntoll's previous work on venv")
+@pytest.mark.skip(
+    reason="Superseded probably by ntoll's previous work on venv"
+)
 def test_PackageDialog_remove_package_dist_info():
     """
     Ensures that if there are packages remaining to be deleted, then the next
@@ -451,7 +455,9 @@ def test_PackageDialog_remove_package_dist_info():
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-@pytest.mark.skip(reason="Superseded probably by ntoll's previous work on venv")
+@pytest.mark.skip(
+    reason="Superseded probably by ntoll's previous work on venv"
+)
 def test_PackageDialog_remove_package_dist_info_cannot_delete():
     """
     Ensures that if there are packages remaining to be deleted, then the next
@@ -484,7 +490,9 @@ def test_PackageDialog_remove_package_dist_info_cannot_delete():
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-@pytest.mark.skip(reason="Superseded probably by ntoll's previous work on venv")
+@pytest.mark.skip(
+    reason="Superseded probably by ntoll's previous work on venv"
+)
 def test_PackageDialog_remove_package_egg_info():
     """
     Ensures that if there are packages remaining to be deleted, then the next
@@ -513,7 +521,9 @@ def test_PackageDialog_remove_package_egg_info():
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-@pytest.mark.skip(reason="Superseded probably by ntoll's previous work on venv")
+@pytest.mark.skip(
+    reason="Superseded probably by ntoll's previous work on venv"
+)
 def test_PackageDialog_remove_package_egg_info_cannot_delete():
     """
     Ensures that if there are packages remaining to be deleted, then the next
@@ -546,7 +556,9 @@ def test_PackageDialog_remove_package_egg_info_cannot_delete():
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-@pytest.mark.skip(reason="Superseded probably by ntoll's previous work on venv")
+@pytest.mark.skip(
+    reason="Superseded probably by ntoll's previous work on venv"
+)
 def test_PackageDialog_remove_package_egg_info_cannot_open_record():
     """
     If the installed-files.txt file is not available (sometimes the case), then
@@ -574,7 +586,9 @@ def test_PackageDialog_remove_package_egg_info_cannot_open_record():
         mock_qtimer.singleShot.assert_called_once_with(2, pd.remove_package)
 
 
-@pytest.mark.skip(reason="Superseded probably by ntoll's previous work on venv")
+@pytest.mark.skip(
+    reason="Superseded probably by ntoll's previous work on venv"
+)
 def test_PackageDialog_remove_package_end_state():
     """
     If there are no more packages to remove and there's nothing to be done for

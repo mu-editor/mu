@@ -8,7 +8,8 @@ from unittest import mock
 from mu.app import excepthook, run, setup_logging, setup_modes
 from mu.debugger.config import DEBUGGER_PORT
 import mu.debugger.runner
-#~ from mu.debugger import runner as debugger_runner
+
+# ~ from mu.debugger import runner as debugger_runner
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 from mu.logic import LOG_FILE, LOG_DIR, ENCODING
 from mu import mu_debug
@@ -152,7 +153,10 @@ def test_debug():
     with mock.patch("mu.debugger.runner.run", mock_runner):
         mu_debug.debug(filename, args)
         mock_runner.assert_called_once_with(
-            "localhost", DEBUGGER_PORT, expected_filename, ["foo", "bar", "baz"]
+            "localhost",
+            DEBUGGER_PORT,
+            expected_filename,
+            ["foo", "bar", "baz"],
         )
 
 
