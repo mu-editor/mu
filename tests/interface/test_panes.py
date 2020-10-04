@@ -2865,6 +2865,7 @@ def test_PlotterPane_add_data_re_scale_down():
     pp.axis_y.setRange.assert_called_once_with(0, 2000)
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_add_data_re_scale_min_up():
     """
     If the y axis contains (negative) data smaller than the current
@@ -2879,6 +2880,7 @@ def test_PlotterPane_add_data_re_scale_min_up():
     pp.axis_y.setRange.assert_called_once_with(-2000, 0)
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_PlotterPane_add_data_re_scale_min_down():
     """
     If the y axis contains (negative) data less than half of the
