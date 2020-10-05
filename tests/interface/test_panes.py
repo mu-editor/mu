@@ -611,6 +611,34 @@ def test_MicroPythonREPLPane_process_tty_data():
     rp.ensureCursorVisible.assert_called_once_with()
 
 
+def test_MicroPythonREPLPane_process_tty_data_multibyte_sequence():
+    """
+    Ensure multibyte unicode characters are correctly parsed, even
+    over multiple invocations of process_tty_data
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.insertPlainText = mock.MagicMock(return_value=None)
+
+    # Copyright symbol: ©
+    rp.process_tty_data(b"\xc2")
+    rp.process_tty_data(b"\xa9")
+
+    assert rp.insertPlainText.call_args_list[0][0][0] == "©"
+
+
+def test_MicroPythonREPLPane_process_tty_data_handle_malformed_unicode():
+    """
+    Ensure no exception is raised due to malformed unicode sequences
+    from the device
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.process_tty_data(b"foo \xd8 bar")
+
+    # test passes if no exception is raised
+
+
 def test_MicroPythonREPLPane_process_tty_data_VT100():
     """
     Ensure bytes coming from the device to the application are processed as
