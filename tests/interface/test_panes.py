@@ -620,7 +620,7 @@ def test_MicroPythonREPLPane_process_tty_data_multibyte_sequence():
     rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
     rp.insertPlainText = mock.MagicMock(return_value=None)
 
-    # Copyright symbol: ©
+    # Copyright symbol: © (0xC2A9)
     rp.process_tty_data(b"\xc2")
     rp.process_tty_data(b"\xa9")
 
@@ -634,9 +634,13 @@ def test_MicroPythonREPLPane_process_tty_data_handle_malformed_unicode():
     """
     mock_repl_connection = mock.MagicMock()
     rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.insertPlainText = mock.MagicMock(return_value=None)
+
     rp.process_tty_data(b"foo \xd8 bar")
 
-    # test passes if no exception is raised
+    # Test that malformed input are correctly replaced with the standard
+    # unicode replacement character (�, U+FFFD)
+    assert rp.insertPlainText.call_args_list[4][0][0] == u"\uFFFD"
 
 
 def test_MicroPythonREPLPane_process_tty_data_VT100():
