@@ -16,19 +16,19 @@ def test_pyboard_mode():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pbm = PyboardMode(editor, view)
-    assert pbm.name == 'Pyboard MicroPython'
+    assert pbm.name == "Pyboard MicroPython"
     assert pbm.description is not None
-    assert pbm.icon == 'pyboard'
+    assert pbm.icon == "pyboard"
     assert pbm.editor == editor
     assert pbm.view == view
 
     actions = pbm.actions()
     assert len(actions) == 2
-    assert actions[0]['name'] == 'serial'
-    assert actions[0]['handler'] == pbm.toggle_repl
-    assert actions[1]['name'] == 'plotter'
-    assert actions[1]['handler'] == pbm.toggle_plotter
-    assert 'code' not in pbm.module_names
+    assert actions[0]["name"] == "serial"
+    assert actions[0]["handler"] == pbm.toggle_repl
+    assert actions[1]["name"] == "plotter"
+    assert actions[1]["handler"] == pbm.toggle_plotter
+    assert "code" not in pbm.module_names
 
 
 def test_pyboard_mode_no_charts():
@@ -38,11 +38,11 @@ def test_pyboard_mode_no_charts():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pbm = PyboardMode(editor, view)
-    with mock.patch('mu.modes.pyboard.CHARTS', False):
+    with mock.patch("mu.modes.pyboard.CHARTS", False):
         actions = pbm.actions()
         assert len(actions) == 1
-        assert actions[0]['name'] == 'serial'
-        assert actions[0]['handler'] == pbm.toggle_repl
+        assert actions[0]["name"] == "serial"
+        assert actions[0]["handler"] == pbm.toggle_repl
 
 
 def test_workspace_dir_posix_exists():
@@ -53,12 +53,13 @@ def test_workspace_dir_posix_exists():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pbm = PyboardMode(editor, view)
-    with open('tests/modes/mount_exists.txt', 'rb') as fixture_file:
+    with open("tests/modes/mount_exists.txt", "rb") as fixture_file:
         fixture = fixture_file.read()
-        with mock.patch('os.name', 'posix'):
-            with mock.patch('mu.modes.pyboard.check_output',
-                            return_value=fixture):
-                assert pbm.workspace_dir() == '/media/PYBFLASH'
+        with mock.patch("os.name", "posix"):
+            with mock.patch(
+                "mu.modes.pyboard.check_output", return_value=fixture
+            ):
+                assert pbm.workspace_dir() == "/media/PYBFLASH"
 
 
 def test_workspace_dir_posix_no_mount_command():
@@ -70,15 +71,16 @@ def test_workspace_dir_posix_no_mount_command():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pbm = PyboardMode(editor, view)
-    with open('tests/modes/mount_exists.txt', 'rb') as fixture_file:
+    with open("tests/modes/mount_exists.txt", "rb") as fixture_file:
         fixture = fixture_file.read()
     mock_check = mock.MagicMock(side_effect=[FileNotFoundError, fixture])
-    with mock.patch('os.name', 'posix'), \
-            mock.patch('mu.modes.pyboard.check_output', mock_check):
-        assert pbm.workspace_dir() == '/media/PYBFLASH'
+    with mock.patch("os.name", "posix"), mock.patch(
+        "mu.modes.pyboard.check_output", mock_check
+    ):
+        assert pbm.workspace_dir() == "/media/PYBFLASH"
         assert mock_check.call_count == 2
-        assert mock_check.call_args_list[0][0][0] == 'mount'
-        assert mock_check.call_args_list[1][0][0] == '/sbin/mount'
+        assert mock_check.call_args_list[0][0][0] == "mount"
+        assert mock_check.call_args_list[1][0][0] == "/sbin/mount"
 
 
 def test_workspace_dir_posix_missing():
@@ -89,15 +91,16 @@ def test_workspace_dir_posix_missing():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pbm = PyboardMode(editor, view)
-    with open('tests/modes/mount_missing.txt', 'rb') as fixture_file:
+    with open("tests/modes/mount_missing.txt", "rb") as fixture_file:
         fixture = fixture_file.read()
-        with mock.patch('os.name', 'posix'):
-            with mock.patch('mu.modes.pyboard.check_output',
-                            return_value=fixture),\
-                    mock.patch('mu.modes.pyboard.'
-                               'MicroPythonMode.workspace_dir') as mpm:
-                mpm.return_value = 'foo'
-                assert pbm.workspace_dir() == 'foo'
+        with mock.patch("os.name", "posix"):
+            with mock.patch(
+                "mu.modes.pyboard.check_output", return_value=fixture
+            ), mock.patch(
+                "mu.modes.pyboard." "MicroPythonMode.workspace_dir"
+            ) as mpm:
+                mpm.return_value = "foo"
+                assert pbm.workspace_dir() == "foo"
 
 
 def test_workspace_dir_nt_exists():
@@ -112,13 +115,14 @@ def test_workspace_dir_nt_exists():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pbm = PyboardMode(editor, view)
-    with mock.patch('os.name', 'nt'):
-        with mock.patch('os.path.exists', return_value=True):
-            return_value = ctypes.create_unicode_buffer('PYBFLASH')
-            with mock.patch('ctypes.create_unicode_buffer',
-                            return_value=return_value):
+    with mock.patch("os.name", "nt"):
+        with mock.patch("os.path.exists", return_value=True):
+            return_value = ctypes.create_unicode_buffer("PYBFLASH")
+            with mock.patch(
+                "ctypes.create_unicode_buffer", return_value=return_value
+            ):
                 ctypes.windll = mock_windll
-                assert pbm.workspace_dir() == 'A:\\'
+                assert pbm.workspace_dir() == "A:\\"
 
 
 def test_workspace_dir_nt_missing():
@@ -133,16 +137,17 @@ def test_workspace_dir_nt_missing():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pbm = PyboardMode(editor, view)
-    with mock.patch('os.name', 'nt'):
-        with mock.patch('os.path.exists', return_value=True):
+    with mock.patch("os.name", "nt"):
+        with mock.patch("os.path.exists", return_value=True):
             return_value = ctypes.create_unicode_buffer(1024)
-            with mock.patch('ctypes.create_unicode_buffer',
-                            return_value=return_value), \
-                    mock.patch('mu.modes.pyboard.'
-                               'MicroPythonMode.workspace_dir') as mpm:
-                mpm.return_value = 'foo'
+            with mock.patch(
+                "ctypes.create_unicode_buffer", return_value=return_value
+            ), mock.patch(
+                "mu.modes.pyboard." "MicroPythonMode.workspace_dir"
+            ) as mpm:
+                mpm.return_value = "foo"
                 ctypes.windll = mock_windll
-                assert pbm.workspace_dir() == 'foo'
+                assert pbm.workspace_dir() == "foo"
 
 
 def test_workspace_dir_unknown_os():
@@ -152,7 +157,7 @@ def test_workspace_dir_unknown_os():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pbm = PyboardMode(editor, view)
-    with mock.patch('os.name', 'foo'):
+    with mock.patch("os.name", "foo"):
         with pytest.raises(NotImplementedError) as ex:
             pbm.workspace_dir()
     assert ex.value.args[0] == 'OS "foo" not supported.'
