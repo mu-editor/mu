@@ -22,7 +22,8 @@ def test_pyboard_mode():
     assert pbm.editor == editor
     assert pbm.view == view
 
-    actions = pbm.actions()
+    with mock.patch("mu.modes.pyboard.CHARTS", True):
+        actions = pbm.actions()
     assert len(actions) == 2
     assert actions[0]["name"] == "serial"
     assert actions[0]["handler"] == pbm.toggle_repl
