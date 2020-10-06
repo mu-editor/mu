@@ -970,7 +970,7 @@ class Editor(QObject):
                 logger.debug(old_session)
                 if "theme" in old_session:
                     self.theme = old_session["theme"]
-                    self._view.set_theme(self.theme)
+                self._view.set_theme(self.theme)
                 if "mode" in old_session:
                     old_mode = old_session["mode"]
                     if old_mode in self.modes:

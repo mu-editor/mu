@@ -148,6 +148,26 @@ def run():
         else:
             app.setStyleSheet(DAY_STYLE)
 
+    # Display a friendly "splash" icon.
+    splash = QSplashScreen(load_pixmap("splash-screen"))
+    splash.show()
+
+    # Make sure the splash screen stays on top while
+    # the mode selection dialog might open
+    raise_splash = QTimer()
+    raise_splash.timeout.connect(lambda: splash.raise_())
+    raise_splash.start(10)
+
+    # Hide the splash icon.
+    def remove_splash():
+        splash.finish(editor_window)
+        raise_splash.stop()
+
+    splash_be_gone = QTimer()
+    splash_be_gone.timeout.connect(remove_splash)
+    splash_be_gone.setSingleShot(True)
+    splash_be_gone.start(2000)
+
     # Make sure all windows have the Mu icon as a fallback
     app.setWindowIcon(load_icon(editor_window.icon))
     # Create the "editor" that'll control the "window".
@@ -163,16 +183,6 @@ def run():
     editor_window.connect_find_replace(editor.find_replace, "Ctrl+F")
     editor_window.connect_toggle_comments(editor.toggle_comments, "Ctrl+K")
     editor.connect_to_status_bar(editor_window.status_bar)
-
-    # Display a friendly "splash" icon.
-    splash = QSplashScreen(load_pixmap("splash-screen"))
-    splash.show()
-
-    # Hide the splash icon.
-    splash_be_gone = QTimer()
-    splash_be_gone.timeout.connect(lambda: splash.finish(editor_window))
-    splash_be_gone.setSingleShot(True)
-    splash_be_gone.start(2000)
 
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
