@@ -176,7 +176,7 @@ class MicroPythonREPLPane(QTextEdit):
         self.setObjectName("replpane")
         self.set_theme(theme)
         self.unprocessed_input = b""  # used by process_bytes
-        self.decoder = codecs.getincrementaldecoder("utf8")()
+        self.decoder = codecs.getincrementaldecoder("utf8")("replace")
         self.vt100_regex = re.compile(
             r"\x1B\[(?P<count>[\d]*)(;?[\d]*)*(?P<action>[A-Za-z])"
         )
