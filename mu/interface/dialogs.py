@@ -478,8 +478,8 @@ class AdminDialog(MuDialog):
     variables, third party packages etc...).
     """
 
-    def __init__(self, parent=None, venv=None):
-        super().__init__(parent, venv)
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
     def setup(self, log, settings, packages, mode, device_list):
         self.setMinimumSize(600, 400)
@@ -495,19 +495,19 @@ class AdminDialog(MuDialog):
         button_box.rejected.connect(self.reject)
         widget_layout.addWidget(button_box)
         # Tabs
-        self.log_widget = LogWidget()
+        self.log_widget = LogWidget(self)
         self.log_widget.setup(log)
         self.tabs.addTab(self.log_widget, _("Current Log"))
-        self.envar_widget = EnvironmentVariablesWidget()
+        self.envar_widget = EnvironmentVariablesWidget(self)
         self.envar_widget.setup(settings.get("envars", ""))
         self.tabs.addTab(self.envar_widget, _("Python3 Environment"))
         self.log_widget.log_text_area.setFocus()
-        self.microbit_widget = MicrobitSettingsWidget()
+        self.microbit_widget = MicrobitSettingsWidget(self)
         self.microbit_widget.setup(
             settings.get("minify", False), settings.get("microbit_runtime", "")
         )
         self.tabs.addTab(self.microbit_widget, _("BBC micro:bit Settings"))
-        self.package_widget = PackagesWidget()
+        self.package_widget = PackagesWidget(self)
         self.package_widget.setup(packages)
         self.tabs.addTab(self.package_widget, _("Third Party Packages"))
         if mode.short_name == "esp":
@@ -597,8 +597,8 @@ class PackageDialog(MuDialog):
     as finished we start the next.
     """
 
-    def __init__(self, parent=None, venv=None):
-        super().__init__(parent, venv)
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
     def setup(self, to_remove, to_add):
         """

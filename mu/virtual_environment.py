@@ -84,10 +84,10 @@ class Process(QObject):
         self.process.setProcessEnvironment(environment)
         self.process.setProcessChannelMode(QProcess.MergedChannels)
 
-    def run_headless(self, command, args, **envvars):
+    def run_blocking(self, command, args, wait_for_s=30.0, **envvars):
         self._set_up_run(**envvars)
         self.process.start(command, args)
-        self.wait()
+        self.wait(wait_for_s=wait_for_s)
         return self.data()
 
     def run(self, command, args, **envvars):
@@ -131,6 +131,7 @@ class Pip(object):
         self,
         command,
         *args,
+        wait_for_s=30.0,
         slots=Process.Slots(),
         **kwargs
     ):
@@ -155,7 +156,7 @@ class Pip(object):
         params.extend(args)
 
         if slots.output is None:
-            return self.process.run_headless(self.executable, params)
+            return self.process.run_blocking(self.executable, params, wait_for_s=wait_for_s)
         else:
             if slots.started:
                 self.process.started.connect(slots.started)
@@ -182,14 +183,16 @@ class Pip(object):
             return self.run(
                 "install",
                 packages,
-                slots,
+                wait_for_s=180.0,
+                slots=slots,
                 **kwargs
             )
         else:
             return self.run(
                 "install",
                 *packages,
-                slots,
+                wait_for_s=180.0,
+                slots=slots,
                 **kwargs
             )
 
@@ -211,6 +214,7 @@ class Pip(object):
             return self.run(
                 "uninstall",
                 packages,
+                wait_for_s=180.0,
                 slots=slots,
                 yes=True,
                 **kwargs
@@ -219,6 +223,7 @@ class Pip(object):
             return self.run(
                 "uninstall",
                 *packages,
+                wait_for_s=180.0,
                 slots=slots,
                 yes=True,
                 **kwargs
@@ -306,14 +311,15 @@ class VirtualEnvironment(object):
         # ~ )
 
         if slots.output:
-            if slots.started:
-                self.process.started.connect(slots.started)
+            self.process.started.connect(slots.started)
+            #~ if slots.started:
+                #~ self.process.started.connect(slots.started)
             self.process.output.connect(slots.output)
             if slots.finished:
                 self.process.finished.connect(slots.finished)
             self.process.run(self.interpreter, args)
         else:
-            return self.process.run_headless(self.interpreter, args)
+            return self.process.run_blocking(self.interpreter, args)
 
     def find_interpreter(self):
         #
