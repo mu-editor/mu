@@ -102,7 +102,7 @@ def test_create_virtual_environment_on_disk(tmp_path):
         # Check that we have an installed version of pip
         #
         expected_pip_filepath = venv_site_packages / "pip"
-        pip_output = venv.pip.run("--version").decode("utf-8")
+        pip_output = venv.pip.run("--version")
         #
         # Awkwardly the case of the filename returned as part of the version
         # string might not match the case of the expected pip filepath above
@@ -154,16 +154,18 @@ def test_base_packages_installed(patched, venv_name):
     # Make sure the juypter kernel install doesn't interfere
     #
     with patch.object(VE, "install_jupyter_kernel"):
-        with patch.object(PIP, "install") as mock_pip_install:
-            #
-            # Check that we're calling `pip install` with all the wheels in our wheelhouse
-            #
-            expected_args = glob.glob(
-                os.path.join(mu.virtual_environment.wheels_dirpath, "*.whl")
-            )
-            venv = mu.virtual_environment.VirtualEnvironment(venv_name)
-            venv.create()
-            mock_pip_install.assert_called_once_with(expected_args)
+        with patch.object(VE, "register_baseline_packages"):
+            with patch.object(PIP, "install") as mock_pip_install:
+                #
+                # Check that we're calling `pip install` with all the wheels in
+                # our wheelhouse
+                #
+                expected_args = glob.glob(
+                    os.path.join(mu.virtual_environment.wheels_dirpath, "*.whl")
+                )
+                venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+                venv.create()
+                mock_pip_install.assert_called_once_with(expected_args)
 
 
 def test_jupyter_kernel_installed(patched, venv_name):
@@ -173,16 +175,17 @@ def test_jupyter_kernel_installed(patched, venv_name):
     # Make sure the baseline package install doesn't interfere
     #
     with patch.object(VE, "install_baseline_packages"):
-        venv = mu.virtual_environment.VirtualEnvironment(venv_name)
-        venv.create()
-        #
-        # Check that we're calling `ipykernel install`
-        #
-        expected_jupyter_args = ("-m", "ipykernel", "install")
-        assert (
-            expected_jupyter_args
-            == run_python.call_args.args[: len(expected_jupyter_args)]
-        )
+        with patch.object(VE, "register_baseline_packages"):
+            venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+            venv.create()
+            #
+            # Check that we're calling `ipykernel install`
+            #
+            expected_jupyter_args = ("-m", "ipykernel", "install")
+            assert (
+                expected_jupyter_args
+                == run_python.call_args.args[: len(expected_jupyter_args)]
+            )
 
 
 def test_install_user_packages(patched, venv_name):
@@ -196,16 +199,10 @@ def test_install_user_packages(patched, venv_name):
         venv = mu.virtual_environment.VirtualEnvironment(venv_name)
         venv.install_user_packages(packages)
         #
-        # For each package we should have called our pip runner with
-        # install as the first parameter and the package name as the
-        # last. There may be switches (eg --upgrade) but we don't want
-        # to be sensitive to those
+        # We call pip with the entire list of packages
         #
-        assert mock_pip_install.call_count == len(packages)
-        for (call_args, package) in zip(
-            mock_pip_install.call_args_list, packages
-        ):
-            assert call_args.args[-1] == package
+        args0 = mock_pip_install.call_args.args[0]
+        assert args0 == packages
 
 
 def test_remove_user_packages(patched, venv_name):
@@ -219,16 +216,10 @@ def test_remove_user_packages(patched, venv_name):
         venv = mu.virtual_environment.VirtualEnvironment(venv_name)
         venv.remove_user_packages(packages)
         #
-        # For each package we should have called our pip runner with
-        # install as the first parameter and the package name as the
-        # last. There may be switches but we don't want to be sensitive
-        # to those
+        # We call pip with the entire list of packages
         #
-        assert mock_pip_uninstall.call_count == len(packages)
-        for (call_args, package) in zip(
-            mock_pip_uninstall.call_args_list, packages
-        ):
-            assert call_args.args[-1] == package
+        args0 = mock_pip_uninstall.call_args.args[0]
+        assert args0 == packages
 
 
 def test_installed_packages(patched, venv_name):
@@ -240,16 +231,15 @@ def test_installed_packages(patched, venv_name):
     When we've sorted out how this is going to work, we can determine
     which are pre-installed and which are user-installed
     """
-    baseline_packages = [("a", 1), ("b", 2), ("c", 3)]
+    baseline_packages = [("mu-editor", 0)] + [("a", 1), ("b", 2), ("c", 3)]
     user_packages = [("d", 4), ("e", 5), ("f", 6)]
-    all_packages = [("mu-editor", 0)] + baseline_packages + user_packages
+    all_packages =  baseline_packages + user_packages
     random.shuffle(all_packages)
 
-    with patch.object(VE, "baseline_packages", baseline_packages):
+    with patch.object(VE, "baseline_packages", return_value=baseline_packages):
         with patch.object(
-            PIP, "installed_packages"
-        ) as mock_pip_installed_packages:
-            mock_pip_installed_packages.return_value = all_packages
+            PIP, "installed", return_value=all_packages
+        ) as mock_pip_installed:
             venv = mu.virtual_environment.VirtualEnvironment(venv_name)
             baseline_result, user_result = venv.installed_packages()
             assert set(baseline_result) == set(

@@ -2242,8 +2242,7 @@ def test_quit_save_tabs_with_paths():
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
-    args, kwargs = mock_save_session.call_args
-    session = args[0]
+    [session] = mock_save_session.call_args.args
     assert os.path.abspath("foo.py") in session["paths"]
 
 
@@ -2266,8 +2265,7 @@ def test_quit_save_theme():
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
-    args, kwargs = mock_save_session.call_args
-    session = args[0]
+    [session] = mock_save_session.call_args.args
     assert session["theme"] == "night"
 
 
@@ -2292,8 +2290,7 @@ def test_quit_save_envars():
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
-    args, kwargs = mock_save_session.call_args
-    session = args[0]
+    [session] = mock_save_session.call_args.args
     assert session["envars"] == [["name1", "value1"], ["name2", "value2"]]
 
 
@@ -2317,7 +2314,7 @@ def test_quit_save_zoom_level():
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
-    [session], kwargs = mock_save_session.call_args
+    [session] = mock_save_session.call_args.args
     #
     # FIXME: not clear where this is set. Default?
     #
@@ -2344,7 +2341,7 @@ def test_quit_save_window_geometry():
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
-    [session], kwargs = mock_save_session.call_args
+    [session] = mock_save_session.call_args.args
     #
     # FIXME: not clear where this is set. Default?
     #
@@ -2534,7 +2531,7 @@ def test_show_admin():
     ), mock.patch(
         "mu.virtual_environment.VirtualEnvironment.installed_packages", mock_ip
     ):
-        ed.show_admin(None)
+        ed.show_admin()
         mock_open.assert_called_once_with(
             mu.logic.LOG_FILE, "r", encoding="utf8"
         )

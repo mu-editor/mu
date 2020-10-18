@@ -100,7 +100,12 @@ class Process(QObject):
         )
 
     def wait(self, wait_for_s=30.0):
-        if not self.process.waitForFinished(1000 * wait_for_s):
+        finished = self.process.waitForFinished(1000 * wait_for_s)
+        #
+        # If finished is False, it could be be because of an error
+        # or because we've already finished before starting to wait!
+        #
+        if not finished and self.process.exitStatus() == self.process.CrashExit:
             raise RuntimeError("Some error occurred")
 
     def data(self):
@@ -155,8 +160,11 @@ class Pip(object):
                 params.append(str(v))
         params.extend(args)
 
+        print("About to run", self.executable, params, "waiting for s", wait_for_s)
         if slots.output is None:
-            return self.process.run_blocking(self.executable, params, wait_for_s=wait_for_s)
+            result = self.process.run_blocking(self.executable, params, wait_for_s=wait_for_s)
+            print("result:", result)
+            return result
         else:
             if slots.started:
                 self.process.started.connect(slots.started)
@@ -245,7 +253,7 @@ class Pip(object):
         """
         return self.run("list")
 
-    def installed_packages(self):
+    def installed(self):
         """Yield tuples of (package_name, version)
 
         pip list gives a more consistent view of name/version
@@ -253,6 +261,7 @@ class Pip(object):
         file-installed wheels and editable (-e) installs
         """
         lines = self.list().splitlines()
+        print("lines:", lines)
         iterlines = iter(lines)
         #
         # The first two lines are headers
@@ -433,8 +442,9 @@ class VirtualEnvironment(object):
         #
         # FIXME: This should go into settings. For now, though, just put it somewhere
         #
+        packages = list(self.pip.installed())
         with open(self.BASELINE_PACKAGES_FILEPATH, "w", encoding="utf-8") as f:
-            json.dump(list(self.pip.installed_packages()), f)
+            json.dump(packages, f)
 
     def baseline_packages(self):
         """Return the list of baseline packages"""
@@ -512,8 +522,8 @@ class VirtualEnvironment(object):
             name for name, version in self.baseline_packages()
         ]
         user_packages = []
-        p = self.pip.installed_packages()
-        for package, version in p:  ## self.pip.installed_packages():
+        p = self.pip.installed()
+        for package, version in p:  ## self.pip.installed():
             logger.info(package)
             if package not in baseline_packages:
                 user_packages.append(package)

@@ -248,12 +248,9 @@ def test_installed_packages():
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(subprocess, "run"):
-        with patch.object(Pip, "freeze") as mock_freeze:
-            mock_freeze.return_value = pip_freeze_output.encode("utf-8")
-            with patch.object(Pip, "list") as mock_list:
-                mock_list.return_value = pip_list_output.encode("utf-8")
-
-                installed_packages = set(pip.installed_packages())
+        with patch.object(Pip, "freeze", return_value=pip_freeze_output) as mock_freeze:
+            with patch.object(Pip, "list", return_value=pip_list_output) as mock_list:
+                installed_packages = set(pip.installed())
                 expected_packages = set(
                     (name, version) for (name, version, location) in packages
                 )
