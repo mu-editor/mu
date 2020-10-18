@@ -317,6 +317,10 @@ class Window(QMainWindow):
     load_theme = pyqtSignal(str)
     previous_folder = None
 
+    def __init__(self, venv, parent=None):
+        super().__init__(parent)
+        self.venv = venv
+
     def wheelEvent(self, event):
         """
         Trap a CTRL-scroll event so the user is able to zoom in and out.
@@ -864,13 +868,13 @@ class Window(QMainWindow):
         else:
             return {}
 
-    def sync_packages(self, to_remove, to_add, venv):
+    def sync_packages(self, to_remove, to_add):
         """
         Display a modal dialog that indicates the status of the add/remove
         package management operation.
         """
         package_box = PackageDialog(self)
-        package_box.setup(to_remove, to_add, venv)
+        package_box.setup(to_remove, to_add)
         package_box.exec()
 
     def show_message(self, message, information=None, icon=None):

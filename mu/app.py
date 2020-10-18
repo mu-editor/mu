@@ -29,11 +29,12 @@ from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
 from . import i18n
-from mu import __version__
-from mu.logic import Editor, LOG_FILE, LOG_DIR, ENCODING
-from mu.interface import Window
-from mu.resources import load_pixmap, load_icon
-from mu.modes import (
+from . import virtual_environment
+from . import __version__
+from .logic import Editor, LOG_FILE, LOG_DIR, ENCODING, VENV_DIR
+from .interface import Window
+from .resources import load_pixmap, load_icon
+from .modes import (
     PythonMode,
     CircuitPythonMode,
     MicrobitMode,
@@ -42,7 +43,7 @@ from mu.modes import (
     ESPMode,
     WebMode,
 )
-from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
+from .interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 
 
 def excepthook(*exc_args):
@@ -89,19 +90,15 @@ def setup_modes(editor, view):
     *PREMATURE OPTIMIZATION ALERT* This may become more complex in future so
     splitting things out here to contain the mess. ;-)
     """
-    venv = editor.venv
-    modes = {
-        "python": PythonMode(editor, view, venv),
-        "circuitpython": CircuitPythonMode(editor, view, venv),
-        "microbit": MicrobitMode(editor, view, venv),
-        "esp": ESPMode(editor, view, venv),
-        "web": WebMode(editor, view, venv),
-        "debugger": DebugMode(editor, view, venv),
-        "pygamezero": PyGameZeroMode(editor, view, venv),
+    return {
+        "python": PythonMode(editor, view),
+        "circuitpython": CircuitPythonMode(editor, view),
+        "microbit": MicrobitMode(editor, view),
+        "esp": ESPMode(editor, view),
+        "web": WebMode(editor, view),
+        "debugger": DebugMode(editor, view),
+        "pygamezero": PyGameZeroMode(editor, view),
     }
-
-    # return available modes
-    return modes
 
 
 def run():
@@ -133,8 +130,15 @@ def run():
     # unless this flag is set
     app.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
+    #
+    # Set up a new or existing virtual environment for the
+    # Mu runtime
+    #
+    venv = virtual_environment.VirtualEnvironment(VENV_DIR)
+    venv.ensure()
+
     # Create the "window" we'll be looking at.
-    editor_window = Window()
+    editor_window = Window(venv=venv)
 
     @editor_window.load_theme.connect
     def load_theme(theme):

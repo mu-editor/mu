@@ -52,6 +52,22 @@ from mu.interface.widgets import DeviceSelector
 logger = logging.getLogger(__name__)
 
 
+class MuWidget(QWidget):
+    """Base class for Mu widgets
+    """
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.venv = parent.venv
+
+
+class MuDialog(QDialog):
+    """Base class for Mu dialogs
+    """
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.venv = parent.venv
+
+
 class ModeItem(QListWidgetItem):
     """
     Represents an available mode listed for selection.
@@ -67,7 +83,7 @@ class ModeItem(QListWidgetItem):
         self.setIcon(load_icon(self.icon))
 
 
-class ModeSelector(QDialog):
+class ModeSelector(MuDialog):
     """
     Defines a UI for selecting the mode for Mu.
     """
@@ -129,13 +145,6 @@ class ModeSelector(QDialog):
             return self.mode_list.currentItem().icon
         else:
             raise RuntimeError("Mode change cancelled.")
-
-class MuWidget(QWidget):
-    """Base class for Mu widgets
-    """
-    def __init__(self, venv=None):
-        super.__init__(self)
-        self.venv = venv
 
 
 class LogWidget(MuWidget):
@@ -463,17 +472,16 @@ class ESPFirmwareFlasherWidget(MuWidget):
             self.btnExec.setEnabled(False)
 
 
-class AdminDialog(QDialog):
+class AdminDialog(MuDialog):
     """
     Displays administrative related information and settings (logs, environment
     variables, third party packages etc...).
     """
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent=None, venv=None):
+        super().__init__(parent, venv)
 
-    def setup(self, log, settings, packages, mode, device_list, venv):
-        self.venv = venv
+    def setup(self, log, settings, packages, mode, device_list):
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_("Mu Administration"))
         widget_layout = QVBoxLayout()
@@ -503,7 +511,7 @@ class AdminDialog(QDialog):
         self.package_widget.setup(packages)
         self.tabs.addTab(self.package_widget, _("Third Party Packages"))
         if mode.short_name == "esp":
-            self.esp_widget = ESPFirmwareFlasherWidget(venv=self.venv)
+            self.esp_widget = ESPFirmwareFlasherWidget()
             self.esp_widget.setup(mode, device_list)
             self.tabs.addTab(self.esp_widget, _("ESP Firmware flasher"))
 
@@ -521,7 +529,7 @@ class AdminDialog(QDialog):
         }
 
 
-class FindReplaceDialog(QDialog):
+class FindReplaceDialog(MuDialog):
     """
     Display a dialog for getting:
 
@@ -581,7 +589,7 @@ class FindReplaceDialog(QDialog):
         return self.replace_all_flag.isChecked()
 
 
-class PackageDialog(QDialog):
+class PackageDialog(MuDialog):
     """Display the output of the pip commands needed to remove or install packages
 
     Because the QProcess mechanism we're using is asynchronous, we have to
@@ -589,14 +597,13 @@ class PackageDialog(QDialog):
     as finished we start the next.
     """
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent=None, venv=None):
+        super().__init__(parent, venv)
 
-    def setup(self, to_remove, to_add, venv):
+    def setup(self, to_remove, to_add):
         """
         Create the UI for the dialog.
         """
-        self.venv = venv
         # Basic layout.
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_("Third Party Package Status"))

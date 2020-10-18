@@ -219,10 +219,10 @@ class BaseMode(QObject):
     module_names = MODULE_NAMES
     code_template = _("# Write your code here :-)")
 
-    def __init__(self, editor, view, venv):
+    def __init__(self, editor, view):
         self.editor = editor
         self.view = view
-        self.venv = venv
+        self.venv = editor.venv
         super().__init__()
 
     def stop(self):
