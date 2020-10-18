@@ -412,6 +412,14 @@ def extract_envars(raw):
     return result
 
 
+def save_session(session):
+    session_path = get_session_path()
+    with open(session_path, "w") as out:
+        logger.debug("Session: {}".format(session))
+        logger.debug("Saving session to: {}".format(session_path))
+        json.dump(session, out, indent=2)
+
+
 def check_flake(filename, code, builtins=None):
     """
     Given a filename and some code to be checked, uses the PyFlakesmodule to
@@ -815,6 +823,7 @@ class Editor(QObject):
         super().__init__()
         logger.info("Setting up editor.")
         self._view = view
+        self.venv = self._view.venv
         self.fs = None
         self.theme = "day"
         self.mode = "python"
@@ -832,8 +841,6 @@ class Editor(QObject):
         if not os.path.exists(DATA_DIR):
             logger.debug("Creating directory: {}".format(DATA_DIR))
             os.makedirs(DATA_DIR)
-        self.venv = virtual_environment.VirtualEnvironment(VENV_DIR)
-        self.venv.ensure()
         logger.info("Settings path: {}".format(get_settings_path()))
         logger.info("Session path: {}".format(get_session_path()))
         logger.info("Log directory: {}".format(LOG_DIR))
@@ -991,7 +998,7 @@ class Editor(QObject):
                     self._view.set_zoom()
 
                 if "venv_path" in old_session:
-                    self.venv = virtual_environment.VirtualEnvironment(
+                    self.venv = self._view.venv = virtual_environment.VirtualEnvironment(
                         old_session["venv_path"]
                     )
                     self.venv.ensure()
@@ -1441,11 +1448,7 @@ class Editor(QObject):
                 "h": self._view.height(),
             },
         }
-        session_path = get_session_path()
-        with open(session_path, "w") as out:
-            logger.debug("Session: {}".format(session))
-            logger.debug("Saving session to: {}".format(session_path))
-            json.dump(session, out, indent=2)
+        save_session(session)
         logger.info("Quitting.\n\n")
         sys.exit(0)
 
@@ -1517,7 +1520,7 @@ class Editor(QObject):
             logger.info("To add: {}".format(to_add))
             logger.info("To remove: {}".format(to_remove))
             logger.info("Virtualenv: {}".format(VENV_DIR))
-            self._view.sync_packages(to_remove, to_add, self.venv)
+            self._view.sync_packages(to_remove, to_add)
 
     def select_mode(self, event=None):
         """

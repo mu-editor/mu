@@ -2237,24 +2237,13 @@ def test_quit_save_tabs_with_paths():
     mock_mode.workspace_dir.return_value = "foo/bar"
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit") as mock_exit:
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    args, kwargs = mock_save_session.call_args
+    session = args[0]
     assert os.path.abspath("foo.py") in session["paths"]
 
 
@@ -2272,24 +2261,13 @@ def test_quit_save_theme():
     mock_mode.workspace_dir.return_value = "foo/bar"
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit") as mock_exit:
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    args, kwargs = mock_save_session.call_args
+    session = args[0]
     assert session["theme"] == "night"
 
 
@@ -2309,24 +2287,13 @@ def test_quit_save_envars():
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
     ed.envars = [["name1", "value1"], ["name2", "value2"]]
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit") as mock_exit:
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    args, kwargs = mock_save_session.call_args
+    session = args[0]
     assert session["envars"] == [["name1", "value1"], ["name2", "value2"]]
 
 
@@ -2345,25 +2312,15 @@ def test_quit_save_zoom_level():
     mock_mode.workspace_dir.return_value = "foo/bar"
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
-    ed.envars = [["name1", "value1"], ["name2", "value2"]]
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit") as mock_exit:
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    [session], kwargs = mock_save_session.call_args
+    #
+    # FIXME: not clear where this is set. Default?
+    #
     assert session["zoom_level"] == 2
 
 
@@ -2382,25 +2339,15 @@ def test_quit_save_window_geometry():
     mock_mode.workspace_dir.return_value = "foo/bar"
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
-    ed.envars = [["name1", "value1"], ["name2", "value2"]]
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit") as mock_exit:
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    [session], kwargs = mock_save_session.call_args
+    #
+    # FIXME: not clear where this is set. Default?
+    #
     assert session["window"] == {"x": 100, "y": 200, "w": 300, "h": 400}
 
 
