@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 import logging
 import csv
 import shutil
@@ -43,9 +44,9 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QTextCursor
 from mu.resources import load_icon
 
-## FIXME: take this out for now as it's only used by the esptool
-##        but need to talk to @dybber who added it
-## from mu.logic import MODULE_DIR
+import sys
+import subprocess
+
 from mu.interface.widgets import DeviceSelector
 
 logger = logging.getLogger(__name__)
@@ -129,8 +130,15 @@ class ModeSelector(QDialog):
         else:
             raise RuntimeError("Mode change cancelled.")
 
+class MuWidget(QWidget):
+    """Base class for Mu widgets
+    """
+    def __init__(self, venv=None):
+        super.__init__(self)
+        self.venv = venv
 
-class LogWidget(QWidget):
+
+class LogWidget(MuWidget):
     """
     Used to display Mu's logs.
     """
@@ -153,7 +161,7 @@ class LogWidget(QWidget):
         widget_layout.addWidget(self.log_text_area)
 
 
-class EnvironmentVariablesWidget(QWidget):
+class EnvironmentVariablesWidget(MuWidget):
     """
     Used for editing and displaying environment variables used with Python 3
     mode.
@@ -178,7 +186,7 @@ class EnvironmentVariablesWidget(QWidget):
         widget_layout.addWidget(self.text_area)
 
 
-class MicrobitSettingsWidget(QWidget):
+class MicrobitSettingsWidget(MuWidget):
     """
     Used for configuring how to interact with the micro:bit:
 
@@ -207,7 +215,7 @@ class MicrobitSettingsWidget(QWidget):
         widget_layout.addStretch()
 
 
-class PackagesWidget(QWidget):
+class PackagesWidget(MuWidget):
     """
     Used for editing and displaying 3rd party packages installed via pip to be
     used with Python 3 mode.
@@ -234,7 +242,7 @@ class PackagesWidget(QWidget):
         widget_layout.addWidget(self.text_area)
 
 
-class ESPFirmwareFlasherWidget(QWidget):
+class ESPFirmwareFlasherWidget(MuWidget):
     """
     Used for configuring how to interact with the ESP:
 
@@ -246,8 +254,7 @@ class ESPFirmwareFlasherWidget(QWidget):
         self.setLayout(widget_layout)
 
         # Check whether esptool is installed, show error if not
-        esptool_installed = os.path.exists(MODULE_DIR + "/esptool.py")
-        if not esptool_installed:
+        if not self.esptool_is_installed():
             error_msg = _(
                 "The ESP Firmware flasher requires the esptool' "
                 "package to be installed.\n"
@@ -328,6 +335,21 @@ class ESPFirmwareFlasherWidget(QWidget):
         self.device_selector.device_changed.connect(self.toggle_exec_button)
 
         self.mode = mode
+
+    def esptool_is_installed(self):
+        #
+        # See if the esptool is available
+        #
+        try:
+            #
+            # FIXME: Try to use venv.run_python -- but need to work out error-handling
+            #
+            subprocess.run([self.venv.intepreter, "-m", "esptool", "-h"], check=True)
+        except subprocess.CalledProcessError:
+            return False
+        else:
+            return True
+
 
     def show_folder_dialog(self):
         # open dialog and set to foldername
@@ -450,7 +472,8 @@ class AdminDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def setup(self, log, settings, packages, mode, device_list):
+    def setup(self, log, settings, packages, mode, device_list, venv):
+        self.venv = venv
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_("Mu Administration"))
         widget_layout = QVBoxLayout()
@@ -480,7 +503,7 @@ class AdminDialog(QDialog):
         self.package_widget.setup(packages)
         self.tabs.addTab(self.package_widget, _("Third Party Packages"))
         if mode.short_name == "esp":
-            self.esp_widget = ESPFirmwareFlasherWidget()
+            self.esp_widget = ESPFirmwareFlasherWidget(venv=self.venv)
             self.esp_widget.setup(mode, device_list)
             self.tabs.addTab(self.esp_widget, _("ESP Firmware flasher"))
 
