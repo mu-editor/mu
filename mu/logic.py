@@ -823,7 +823,7 @@ class Editor(QObject):
         super().__init__()
         logger.info("Setting up editor.")
         self._view = view
-        self.venv = self._view.venv
+        self.venv = view.venv
         self.fs = None
         self.theme = "day"
         self.mode = "python"

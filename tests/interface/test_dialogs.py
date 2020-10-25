@@ -54,12 +54,11 @@ def test_ModeSelector_setup():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    venv = mock.MagicMock()
     modes = {
-        "python": PythonMode(editor, view, venv),
-        "circuitpython": CircuitPythonMode(editor, view, venv),
-        "microbit": MicrobitMode(editor, view, venv),
-        "debugger": DebugMode(editor, view, venv),
+        "python": PythonMode(editor, view),
+        "circuitpython": CircuitPythonMode(editor, view),
+        "microbit": MicrobitMode(editor, view),
+        "debugger": DebugMode(editor, view),
     }
     current_mode = "python"
     mock_item = mock.MagicMock()
@@ -78,7 +77,7 @@ def test_ModeSelector_select_and_accept():
     Ensure the accept slot is fired when this event handler is called.
     """
     mock_window = QWidget()
-    ms = mu.interface.dialogs.ModeSelector(mock_window)
+    ms = mu.interface.dialogs.ModeSelector()
     ms.accept = mock.MagicMock()
     ms.select_and_accept()
     ms.accept.assert_called_once_with()
@@ -90,7 +89,7 @@ def test_ModeSelector_get_mode():
     raise the expected exception if cancelled).
     """
     mock_window = QWidget()
-    ms = mu.interface.dialogs.ModeSelector(mock_window)
+    ms = mu.interface.dialogs.ModeSelector()
     ms.result = mock.MagicMock(return_value=QDialog.Accepted)
     item = mock.MagicMock()
     item.icon = "name"
@@ -166,10 +165,8 @@ def microbit():
     return device
 
 
-@pytest.mark.skip(
-    reason="Need to sort out how to test the location of the esptool.py module"
-)
-def test_ESPFirmwareFlasherWidget_setup(microbit):
+@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
+def test_ESPFirmwareFlasherWidget_setup(esptool_is_installed, microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -179,6 +176,8 @@ def test_ESPFirmwareFlasherWidget_setup(microbit):
     device_list = mu.logic.DeviceList(modes)
     device_list.add_device(microbit)
     espff = mu.interface.dialogs.ESPFirmwareFlasherWidget()
+    print("is_installed =>", espff.esptool_is_installed)
+    espff.venv = mock.Mock()
     with mock.patch("os.path.exists", return_value=False):
         espff.setup(mode, device_list)
 
@@ -186,10 +185,8 @@ def test_ESPFirmwareFlasherWidget_setup(microbit):
         espff.setup(mode, device_list)
 
 
-@pytest.mark.skip(
-    reason="Need to sort out how to test the location of the esptool.py module"
-)
-def test_ESPFirmwareFlasherWidget_show_folder_dialog(microbit):
+@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
+def test_ESPFirmwareFlasherWidget_show_folder_dialog(esptool_is_installed, microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -209,10 +206,8 @@ def test_ESPFirmwareFlasherWidget_show_folder_dialog(microbit):
     assert espff.txtFolder.text() == path.replace("/", os.sep)
 
 
-@pytest.mark.skip(
-    reason="Need to sort out how to test the location of the esptool.py module"
-)
-def test_ESPFirmwareFlasherWidget_update_firmware(microbit):
+@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
+def test_ESPFirmwareFlasherWidget_update_firmware(esptool_is_installed, microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -224,6 +219,7 @@ def test_ESPFirmwareFlasherWidget_update_firmware(microbit):
     device_list = mu.logic.DeviceList(modes)
     device_list.add_device(microbit)
     espff = mu.interface.dialogs.ESPFirmwareFlasherWidget()
+    espff.venv = mock.Mock()
     with mock.patch("os.path.exists", return_value=True):
         espff.setup(mm, device_list)
 
@@ -237,10 +233,8 @@ def test_ESPFirmwareFlasherWidget_update_firmware(microbit):
     espff.update_firmware()
 
 
-@pytest.mark.skip(
-    reason="Need to sort out how to test the location of the esptool.py module"
-)
-def test_ESPFirmwareFlasherWidget_update_firmware_no_deviec():
+@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
+def test_ESPFirmwareFlasherWidget_update_firmware_no_device(esptool_is_installed):
     """
     Ensure that we don't try to flash, when no device is connected.
     """
@@ -260,10 +254,8 @@ def test_ESPFirmwareFlasherWidget_update_firmware_no_deviec():
     espff.run_esptool.assert_not_called()
 
 
-@pytest.mark.skip(
-    reason="Need to sort out how to test the location of the esptool.py module"
-)
-def test_ESPFirmwareFlasherWidget_esptool_error(microbit):
+@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
+def test_ESPFirmwareFlasherWidget_esptool_error(esptool_is_installed, microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -278,10 +270,8 @@ def test_ESPFirmwareFlasherWidget_esptool_error(microbit):
     espff.esptool_error(0)
 
 
-@pytest.mark.skip(
-    reason="Need to sort out how to test the location of the esptool.py module"
-)
-def test_ESPFirmwareFlasherWidget_esptool_finished(microbit):
+@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
+def test_ESPFirmwareFlasherWidget_esptool_finished(esptool_is_installed, microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -299,10 +289,8 @@ def test_ESPFirmwareFlasherWidget_esptool_finished(microbit):
     espff.esptool_finished(0, QProcess.CrashExit + 1)
 
 
-@pytest.mark.skip(
-    reason="Need to sort out how to test the location of the esptool.py module"
-)
-def test_ESPFirmwareFlasherWidget_read_process(microbit):
+@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
+def test_ESPFirmwareFlasherWidget_read_process(esptool_is_installed, microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -325,10 +313,8 @@ def test_ESPFirmwareFlasherWidget_read_process(microbit):
     espff.read_process()
 
 
-@pytest.mark.skip(
-    reason="Need to sort out how to test the location of the esptool.py module"
-)
-def test_ESPFirmwareFlasherWidget_firmware_path_changed(microbit):
+@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
+def test_ESPFirmwareFlasherWidget_firmware_path_changed(esptool_is_installed, microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware
     Flasher displays the referenced settings data in the expected way.
@@ -365,12 +351,13 @@ def test_AdminDialog_setup():
     modes = mock.MagicMock()
     device_list = mu.logic.DeviceList(modes)
     ad = mu.interface.dialogs.AdminDialog(mock_window)
-    ad.setup(log, settings, packages, mode, device_list)
-    assert ad.log_widget.log_text_area.toPlainText() == log
-    s = ad.settings()
-    assert s["packages"] == packages
-    del s["packages"]
-    assert s == settings
+    with mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True):
+        ad.setup(log, settings, packages, mode, device_list)
+        assert ad.log_widget.log_text_area.toPlainText() == log
+        s = ad.settings()
+        assert s["packages"] == packages
+        del s["packages"]
+        assert s == settings
 
 
 def test_FindReplaceDialog_setup():

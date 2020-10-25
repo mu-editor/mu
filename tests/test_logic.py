@@ -2524,12 +2524,10 @@ def test_show_admin():
         "packages": "baz\n",
     }
     view.show_admin.return_value = new_settings
+    view.venv.installed_packages.return_value = ([], ['Foo', 'bar'])
     mock_open = mock.mock_open()
-    mock_ip = mock.MagicMock(return_value=[[], ["Foo", "bar"]])
     with mock.patch("builtins.open", mock_open), mock.patch(
         "os.path.isfile", return_value=True
-    ), mock.patch(
-        "mu.virtual_environment.VirtualEnvironment.installed_packages", mock_ip
     ):
         ed.show_admin()
         mock_open.assert_called_once_with(
@@ -2558,11 +2556,9 @@ def test_show_admin_no_change():
     new_settings = {}
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    mock_ip = mock.MagicMock(return_value=[[], ["Foo", "bar"]])
+    view.venv.installed_packages.return_value = ([], ['Foo', 'bar'])
     with mock.patch("builtins.open", mock_open), mock.patch(
         "os.path.isfile", return_value=True
-    ), mock.patch(
-        "mu.virtual_environment.VirtualEnvironment.installed_packages", mock_ip
     ):
         ed.show_admin(None)
         assert ed.sync_package_state.call_count == 0
@@ -2593,11 +2589,9 @@ def test_show_admin_missing_microbit_runtime():
     }
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    mock_ip = mock.MagicMock(return_value=[[], ["Foo", "bar"]])
+    view.venv.installed_packages.return_value = ([], ['Foo', 'bar'])
     with mock.patch("builtins.open", mock_open), mock.patch(
         "os.path.isfile", return_value=False
-    ), mock.patch(
-        "mu.virtual_environment.VirtualEnvironment.installed_packages", mock_ip
     ):
         ed.show_admin(None)
         mock_open.assert_called_once_with(
@@ -2622,7 +2616,7 @@ def test_sync_package_state():
     old_packages = ["foo", "bar"]
     new_packages = ["bar", "baz"]
     ed.sync_package_state(old_packages, new_packages)
-    view.sync_packages.assert_called_once_with({"foo"}, {"baz"}, ed.venv)
+    assert view.sync_packages.call_args.args[:2] == ({"foo"}, {"baz"})
 
 
 def test_select_mode():
@@ -3362,6 +3356,7 @@ def test_handle_open_file():
 
     class Dummy(QObject):
         open_file = pyqtSignal(str)
+        venv = None
 
     view = Dummy()
     edit = mu.logic.Editor(view)

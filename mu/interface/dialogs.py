@@ -55,9 +55,10 @@ logger = logging.getLogger(__name__)
 class MuWidget(QWidget):
     """Base class for Mu widgets
     """
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.venv = parent.venv
+        if hasattr(parent, "venv"):
+            self.venv = parent.venv
 
 
 class MuDialog(QDialog):
@@ -65,7 +66,8 @@ class MuDialog(QDialog):
     """
     def __init__(self, parent):
         super().__init__(parent)
-        self.venv = parent.venv
+        if hasattr(parent, "venv"):
+            self.venv = parent.venv
 
 
 class ModeItem(QListWidgetItem):
@@ -385,21 +387,21 @@ class ESPFirmwareFlasherWidget(MuWidget):
         if device is None:
             return
 
-        esptool = MODULE_DIR + "/esptool.py"
-        erase_command = 'python "{}" --port {} erase_flash'.format(
-            esptool, device.port
+        esptool = "-mesptool"
+        erase_command = '{} "{}" --port {} erase_flash'.format(
+            self.venv.intepreter, esptool, device.port
         )
 
         if self.device_type.currentText() == "ESP32":
             write_command = (
-                'python "{}" --chip esp32 --port {} --baud 460800 '
+                '{} "{}" --chip esp32 --port {} --baud 460800 '
                 'write_flash -z 0x1000 "{}"'
-            ).format(esptool, device.port, self.txtFolder.text())
+            ).format(self.venv.intepreter, esptool, device.port, self.txtFolder.text())
         else:
             write_command = (
-                'python "{}" --chip esp8266 --port {} --baud 460800 '
+                '{} "{}" --chip esp8266 --port {} --baud 460800 '
                 'write_flash --flash_size=detect 0 "{}"'
-            ).format(esptool, device.port, self.txtFolder.text())
+            ).format(self.venv.intepreter, esptool, device.port, self.txtFolder.text())
 
         self.commands = [erase_command, write_command]
         self.run_esptool()
@@ -511,7 +513,7 @@ class AdminDialog(MuDialog):
         self.package_widget.setup(packages)
         self.tabs.addTab(self.package_widget, _("Third Party Packages"))
         if mode.short_name == "esp":
-            self.esp_widget = ESPFirmwareFlasherWidget()
+            self.esp_widget = ESPFirmwareFlasherWidget(self)
             self.esp_widget.setup(mode, device_list)
             self.tabs.addTab(self.esp_widget, _("ESP Firmware flasher"))
 
