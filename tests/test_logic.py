@@ -210,7 +210,7 @@ def microbit_com1():
         "ARM",
         "BBC micro:bit",
         "microbit",
-        None,
+        "BBC micro:bit",
     )
     return microbit
 
@@ -225,7 +225,7 @@ def microbit_com2():
         "ARM",
         "BBC micro:bit",
         "microbit",
-        None,
+        "BBC micro:bit",
     )
     return microbit
 
@@ -243,6 +243,21 @@ def adafruit_feather():
         "Adafruit Feather",
     )
     return adafruit_feather
+
+
+@pytest.fixture
+def esp_device():
+    esp_device = mu.logic.Device(
+        0x0403,
+        0x6015,
+        "COM1",
+        123456,
+        "Sparkfun",
+        "ESP MicroPython",
+        "esp",
+        # No board_name specified
+    )
+    return esp_device
 
 
 def test_installed_packages_dist_info():
@@ -788,8 +803,12 @@ def test_device__init(adafruit_feather):
     assert adafruit_feather.board_name == "Adafruit Feather"
 
 
-def test_device_name(microbit_com1, adafruit_feather):
-    assert microbit_com1.name == "BBC micro:bit"
+def test_device_name(esp_device, adafruit_feather):
+    """
+    Test that devices without a boardname (such as the esp_device),
+    are the long mode name with " device" appended
+    """
+    assert esp_device.name == "ESP MicroPython device"
     assert adafruit_feather.name == "Adafruit Feather"
 
 
@@ -830,13 +849,15 @@ def test_device_hash(microbit_com1, microbit_com2):
 
 
 def test_devicelist_index(microbit_com1):
-    dl = mu.logic.DeviceList()
+    modes = {}
+    dl = mu.logic.DeviceList(modes)
     dl.add_device(microbit_com1)
     assert dl[0] == microbit_com1
 
 
 def test_devicelist_length(microbit_com1, microbit_com2):
-    dl = mu.logic.DeviceList()
+    modes = {}
+    dl = mu.logic.DeviceList(modes)
     assert len(dl) == 0
     dl.add_device(microbit_com1)
     assert len(dl) == 1
@@ -845,7 +866,8 @@ def test_devicelist_length(microbit_com1, microbit_com2):
 
 
 def test_devicelist_rowCount(microbit_com1, microbit_com2):
-    dl = mu.logic.DeviceList()
+    modes = {}
+    dl = mu.logic.DeviceList(modes)
     assert dl.rowCount(None) == 0
     dl.add_device(microbit_com1)
     assert dl.rowCount(None) == 1
@@ -854,7 +876,8 @@ def test_devicelist_rowCount(microbit_com1, microbit_com2):
 
 
 def test_devicelist_data(microbit_com1, adafruit_feather):
-    dl = mu.logic.DeviceList()
+    modes = {}
+    dl = mu.logic.DeviceList(modes)
     dl.add_device(microbit_com1)
     dl.add_device(adafruit_feather)
     tooltip = dl.data(dl.index(0), Qt.ToolTipRole)
@@ -870,7 +893,8 @@ def test_devicelist_data(microbit_com1, adafruit_feather):
 def test_devicelist_add_device_in_sorted_order(
     microbit_com1, adafruit_feather
 ):
-    dl = mu.logic.DeviceList()
+    modes = {}
+    dl = mu.logic.DeviceList(modes)
     dl.add_device(microbit_com1)
     assert dl[0] == microbit_com1
     dl.add_device(adafruit_feather)
@@ -892,7 +916,8 @@ def test_devicelist_add_device_in_sorted_order(
 
 
 def test_devicelist_remove_device(microbit_com1, adafruit_feather):
-    dl = mu.logic.DeviceList()
+    modes = {}
+    dl = mu.logic.DeviceList(modes)
     dl.add_device(microbit_com1)
     assert len(dl) == 1
     dl.remove_device(microbit_com1)
@@ -957,7 +982,9 @@ def test_editor_setup():
         assert mock_shutil_copy.call_count == asset_len
         assert mock_shutil_copytree.call_count == 2
     assert e.modes == mock_modes
-    view.set_usb_checker.assert_called_once_with(1, e.check_usb)
+    view.set_usb_checker.assert_called_once_with(
+        1, e.connected_devices.check_usb
+    )
 
 
 def test_editor_connect_to_status_bar():
@@ -976,7 +1003,7 @@ def test_editor_connect_to_status_bar():
         "os.makedirs", return_value=None
     ), mock.patch("shutil.copy"), mock.patch("shutil.copytree"):
         e.setup(mock_modes)
-        sb = mu.interface.main.StatusBar()
+        sb = mock.MagicMock()
         sb.device_selector = mock_device_selector
         e.connect_to_status_bar(sb)
         # Check device_changed signal is connected to both editor and modes
@@ -2532,6 +2559,7 @@ def test_show_admin():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.modes = {"python": mock.MagicMock()}
     ed.sync_package_state = mock.MagicMock()
     ed.envars = [["name", "value"]]
     ed.minify = True
@@ -2572,6 +2600,7 @@ def test_show_admin_no_change():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.modes = {"python": mock.MagicMock()}
     ed.sync_package_state = mock.MagicMock()
     ed.envars = [["name", "value"]]
     ed.minify = True
@@ -2594,6 +2623,7 @@ def test_show_admin_missing_microbit_runtime():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.modes = {"python": mock.MagicMock()}
     ed.sync_package_state = mock.MagicMock()
     ed.envars = [["name", "value"]]
     ed.minify = True
@@ -2787,10 +2817,6 @@ def test_check_usb(microbit_com1):
     """
     Ensure the check_usb callback actually checks for connected USB devices.
     """
-    view = mock.MagicMock()
-    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
-    ed = mu.logic.Editor(view)
-    ed.change_mode = mock.MagicMock()
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
@@ -2798,10 +2824,11 @@ def test_check_usb(microbit_com1):
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
     mode_mb.find_devices.return_value = [microbit_com1]
-    ed.modes = {"microbit": mode_mb, "python": mode_py}
-    ed.device_connected = mock.MagicMock()
-    ed.check_usb()
-    ed.device_connected.emit.assert_called_with(microbit_com1)
+    modes = {"microbit": mode_mb, "python": mode_py}
+    device_list = mu.logic.DeviceList(modes)
+    device_list.device_connected = mock.MagicMock()
+    device_list.check_usb()
+    device_list.device_connected.emit.assert_called_with(microbit_com1)
 
 
 def test_check_usb_remove_disconnected_devices(microbit_com1):
@@ -2809,14 +2836,12 @@ def test_check_usb_remove_disconnected_devices(microbit_com1):
     Ensure that if a device is no longer connected, it is removed from
     the set of connected devices.
     """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
     # No modes, so no devices should be detected
-    ed.modes = {}
-    ed.show_status_message = mock.MagicMock()
-    ed.connected_devices.add_device(microbit_com1)
-    ed.check_usb()
-    assert len(ed.connected_devices) == 0
+    modes = {}
+    device_list = mu.logic.DeviceList(modes)
+    device_list.add_device(microbit_com1)
+    device_list.check_usb()
+    assert len(device_list) == 0
 
 
 def test_ask_to_change_mode_confirm():
@@ -3640,12 +3665,12 @@ def test_device_init(microbit_com1):
     assert microbit_com1.short_mode_name == "microbit"
 
 
-def test_device_with_no_board_name_is_mode_name(microbit_com1):
+def test_device_with_no_board_name_is_mode_name(esp_device):
     """
     Test that when no board name is given, the board name is the same
     as the mode name.
     """
-    assert microbit_com1.name == "BBC micro:bit"
+    assert esp_device.name == "ESP MicroPython device"
 
 
 def test_com1_equality(microbit_com1):
@@ -3661,7 +3686,7 @@ def test_com1_equality(microbit_com1):
         "ARM",
         "BBC micro:bit",
         "microbit",
-        None,
+        "BBC micro:bit",
     )
     assert microbit_com1 == identical_microbit_com1
 
@@ -3679,7 +3704,7 @@ def test_com1_not_equal_on_different_ports(microbit_com1):
         "ARM",
         "BBC micro:bit",
         "microbit",
-        None,
+        "BBC micro:bit",
     )
     assert microbit_com1 != microbit_com2
 
@@ -3696,7 +3721,7 @@ def test_com1_hash_equality(microbit_com1):
         "ARM",
         "BBC micro:bit",
         "microbit",
-        None,
+        "BBC micro:bit",
     )
     assert hash(microbit_com1) == hash(identical_microbit_com1)
 
@@ -3714,6 +3739,6 @@ def test_com1_hash_not_equal_on_different_ports(microbit_com1):
         "ARM",
         "BBC micro:bit",
         "microbit",
-        None,
+        "BBC micro:bit",
     )
     assert hash(microbit_com1) != hash(microbit_com2)

@@ -39,23 +39,29 @@ SOFT_REBOOT = b"\x04"  # CTRL-C
 logger = logging.getLogger(__name__)
 
 
-# List of supported board USB IDs.  Each board is a tuple of unique USB vendor
-# ID, USB product ID.
-BOARD_IDS = [
-    # VID  , PID   , manufact., device name
-    (0x0D28, 0x0204, None, "micro:bit"),
-    (0x239A, 0x800B, None, "Adafruit Feather M0"),  # CDC only
-    (0x239A, 0x8016, None, "Adafruit Feather M0"),  # CDC + MSC
-    (0x239A, 0x8014, None, "Adafruit Metro M0"),
-    (0x239A, 0x8019, None, "Circuit Playground Express M0"),
-    (0x239A, 0x8015, None, "Circuit Playground M0 (prototype)"),
-    (0x239A, 0x801B, None, "Adafruit Feather M0 Express"),
-]
-
 # Cache module names for filename shadow checking later.
 MODULE_NAMES = set([name for _, name, _ in pkgutil.iter_modules()])
 MODULE_NAMES.add("sys")
 MODULE_NAMES.add("builtins")
+
+
+def get_settings():
+    """
+    Return the JSON settings as a dictionary, which maybe empty if
+    the `settings.json` file is not found or if it can not be parsed.
+    """
+
+    sp = get_settings_path()
+    settings = {}
+    try:
+        with open(sp) as f:
+            settings = json.load(f)
+    except FileNotFoundError:
+        logger.error("Settings file {} does not exist.".format(sp))
+    except ValueError:
+        logger.error("Settings file {} could not be parsed.".format(sp))
+
+    return settings
 
 
 def get_default_workspace():
@@ -66,25 +72,17 @@ def get_default_workspace():
     in some network systems this in inaccessible. This allows a key in the
     settings file to be used to set a custom path.
     """
-    sp = get_settings_path()
     workspace_dir = os.path.join(HOME_DIRECTORY, WORKSPACE_NAME)
-    settings = {}
-    try:
-        with open(sp) as f:
-            settings = json.load(f)
-    except FileNotFoundError:
-        logger.error("Settings file {} does not exist.".format(sp))
-    except ValueError:
-        logger.error("Settings file {} could not be parsed.".format(sp))
-    else:
-        if "workspace" in settings:
-            if os.path.isdir(settings["workspace"]):
-                workspace_dir = settings["workspace"]
-            else:
-                logger.error(
-                    "Workspace value in the settings file is not a valid"
-                    "directory: {}".format(settings["workspace"])
-                )
+    settings = get_settings()
+
+    if "workspace" in settings:
+        if os.path.isdir(settings["workspace"]):
+            workspace_dir = settings["workspace"]
+        else:
+            logger.error(
+                "Workspace value in the settings file is not a valid"
+                "directory: {}".format(settings["workspace"])
+            )
     return workspace_dir
 
 
@@ -382,9 +380,10 @@ class MicroPythonMode(BaseMode):
     Includes functionality that works with a USB serial based REPL.
     """
 
-    valid_boards = BOARD_IDS
+    valid_boards = []
     force_interrupt = True
     connection = None
+    baudrate = 115200
 
     def compatible_board(self, port):
         """
@@ -497,7 +496,9 @@ class MicroPythonMode(BaseMode):
         if device:
             try:
                 if not self.connection:
-                    self.connection = REPLConnection(device.port)
+                    self.connection = REPLConnection(
+                        device.port, self.baudrate
+                    )
                     self.connection.open()
                     if self.force_interrupt:
                         self.connection.send_interrupt()
@@ -546,7 +547,9 @@ class MicroPythonMode(BaseMode):
         if device:
             try:
                 if not self.connection:
-                    self.connection = REPLConnection(device.port)
+                    self.connection = REPLConnection(
+                        device.port, self.baudrate
+                    )
                     self.connection.open()
                 self.view.add_micropython_plotter(
                     self.name, self.connection, self.on_data_flood
@@ -656,6 +659,7 @@ class FileManager(QObject):
         """
         super().__init__()
         self.port = port
+        self.settings = get_settings()
 
     def on_start(self):
         """
@@ -664,7 +668,12 @@ class FileManager(QObject):
         """
         # Create a new serial connection.
         try:
-            self.serial = Serial(self.port, 115200, timeout=1, parity="N")
+            self.serial = Serial(
+                self.port,
+                115200,
+                timeout=self.settings.get("serial_timeout", 2),
+                parity="N",
+            )
             self.ls()
         except Exception as ex:
             logger.exception(ex)
@@ -695,14 +704,14 @@ class FileManager(QObject):
             logger.error(ex)
             self.on_get_fail.emit(device_filename)
 
-    def put(self, local_filename):
+    def put(self, local_filename, target=None):
         """
         Put the referenced local file onto the filesystem on the micro:bit.
         Emit the name of the file on the micro:bit when complete, or emit
         a failure signal.
         """
         try:
-            microfs.put(local_filename, target=None, serial=self.serial)
+            microfs.put(local_filename, target=target, serial=self.serial)
             self.on_put_file.emit(os.path.basename(local_filename))
         except Exception as ex:
             logger.error(ex)

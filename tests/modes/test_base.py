@@ -307,6 +307,7 @@ def test_micropython_mode_find_device_darwin_remove_extraneous_devices():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     mm = MicroPythonMode(editor, view)
+    mm.valid_boards = [(0x0D28, 0x0204, None, "micro:bit")]
     mock_port = mock.MagicMock()
     mock_port.portName = mock.MagicMock(return_value="tty.usbserial-XXX")
     mock_port.productIdentifier = mock.MagicMock(return_value=0x0204)
@@ -757,7 +758,7 @@ def test_FileManager_on_start():
     with mock.patch("mu.modes.base.Serial") as mock_serial:
         fm.on_start()
         mock_serial.assert_called_once_with(
-            "/dev/ttyUSB0", 115200, timeout=1, parity="N"
+            "/dev/ttyUSB0", 115200, timeout=2, parity="N"
         )
     fm.ls.assert_called_once_with()
 
@@ -775,7 +776,7 @@ def test_FileManager_on_start_fails():
     with mock.patch("mu.modes.base.Serial", mock_serial):
         fm.on_start()
         mock_serial.assert_called_once_with(
-            "/dev/ttyUSB0", 115200, timeout=1, parity="N"
+            "/dev/ttyUSB0", 115200, timeout=2, parity="N"
         )
     fm.on_list_fail.emit.assert_called_once_with()
 

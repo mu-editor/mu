@@ -166,10 +166,31 @@ def tidy():
 
 
 @export
+def black():
+    """Check code with the 'black' formatter."""
+    print("\nblack")
+    for target in [
+        "setup.py",
+        "win_installer.py",
+        "make.py",
+        "mu",
+        "package",
+        "tests",
+        "utils",
+    ]:
+        return_code = subprocess.run(
+            [TIDY, "--check", "-l", "79", target]
+        ).returncode
+        if return_code != 0:
+            return return_code
+    return 0
+
+
+@export
 def check():
     """Run all the checkers and tests"""
     print("\nCheck")
-    funcs = [clean, tidy, flake8, coverage]
+    funcs = [clean, black, flake8, coverage]
     for func in funcs:
         return_code = func()
         if return_code != 0:

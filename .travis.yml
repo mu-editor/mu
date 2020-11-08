@@ -6,16 +6,32 @@ matrix:
       sudo: required
       language: python
       python: 3.5
+      services:
+        - xvfb
     - os: linux
       dist: xenial 
       sudo: required
       language: python
       python: 3.6
+      services:
+        - xvfb
     - os: linux
       dist: xenial
       sudo: required
       language: python
       python: 3.7
+      services:
+        - xvfb
+    - os: linux
+      dist: xenial
+      arch: arm64
+      sudo: required
+      language: python
+      python: 3.5
+      services:
+        - xvfb
+      env:
+        - QT_QPA_PLATFORM="offscreen"
     - os: osx
       # match xcode version with earliest supported by current PyQt 
       # (earliest to maximize compatibility)
@@ -32,6 +48,8 @@ before_install:
   # Linux packages needed for Qt to work.
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libxkbcommon-x11-0; fi
+  # Use a new virtual environment with system packages for arm64
+  - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then deactivate && virtualenv venv --python=python3 --system-site-packages && source venv/bin/activate; fi
   # Python 3 installation required
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv install $TRAVIS_OSX_PY_VER; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv global $TRAVIS_OSX_PY_VER; fi
@@ -40,14 +58,17 @@ before_install:
   # Check everything was correctly installed
   - echo $PATH
   - python --version
-  - python -c "import struct; print(struct.calcsize('P') * 8)"
+  - python -c "import platform, struct; print(platform.machine(), struct.calcsize('P') * 8)"
   - python -c "import sys; print(sys.executable)"
   - python -m pip --version
   - pip --version
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then virtualenv venv --python=python3; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then source venv/bin/activate; fi
+  - pip config list
+  - pip freeze
 
 install:
+  # In arm64 install PyQt5 dependencies via apt, numpy and pygame via piwheels
+  - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then sudo apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg libxmlsec1-dev libxml2 libxml2-dev; fi
+  - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then pip install numpy pygame --extra-index-url="https://www.piwheels.org/simple" --platform="linux_armv7l" --only-binary=":all:" --target="$(python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"; fi
   # Install Mu and its dependencies
   - pip install .[dev]
   # Check everything was correctly installed
@@ -55,8 +76,8 @@ install:
 
 script:
   # For Linux run only the tests on 3.5 and the full checker elsewhere, all need the "X Virtual Framebuffer"
-  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" = "3.5" ]; then xvfb-run make coverage; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" != "3.5" ]; then xvfb-run make check; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" = "3.5" ]; then make coverage; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" != "3.5" ]; then make check; fi
   - make clean
 
   # Run the tests on macOS and package it: "make macos" runs checks+tests first.
