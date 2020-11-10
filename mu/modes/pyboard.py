@@ -30,6 +30,7 @@ class PyboardMode(MicroPythonMode):
     """
 
     name = _("Pyboard MicroPython")
+    short_name = "pyboard"
     description = _("Use MicroPython on the Pyboard line of boards")
     icon = "pyboard"
     save_timeout = 0
@@ -38,7 +39,7 @@ class PyboardMode(MicroPythonMode):
     # Currently, all boards build using the STM32 port of MicroPython use the
     # same VID and PID by default for mass storage.
     valid_boards = [
-        (0xF055, 0x9800),  # Pyboard v1, v1.1, etc.
+        (0xF055, 0x9800, None, None),  # Pyboard v1, v1.1, etc.
     ]
     # Modules built into MicroPython must not be used for file names.
     module_names = {
