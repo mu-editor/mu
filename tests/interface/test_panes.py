@@ -1695,7 +1695,7 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
         envars = [["name", "value"]]
         ppp.start_process(
             interpreter,
-            pypath,
+            os.pathsep.join(pypath),
             script_filename,
             "workspace",
             interactive=False,
