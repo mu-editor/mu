@@ -215,9 +215,9 @@ def test_pip_freeze():
     """Ensure that pip.freeze calls pip freeze"""
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(subprocess, "run") as mock_run:
+    with patch.object(pip.process, "run_blocking") as mock_run:
         pip.freeze()
-        expected_args = ([pip_executable, "freeze"],)
+        expected_args = (pip_executable, ["freeze", '--disable-pip-version-check'],)
         assert mock_run.call_args.args == expected_args
 
 
@@ -225,9 +225,9 @@ def test_pip_list():
     """Ensure that pip.list calls pip list"""
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(subprocess, "run") as mock_run:
+    with patch.object(pip.process, "run_blocking") as mock_run:
         pip.list()
-        expected_args = ([pip_executable, "list"],)
+        expected_args = (pip_executable, ["list", '--disable-pip-version-check'],)
         assert mock_run.call_args.args == expected_args
 
 
