@@ -115,6 +115,7 @@ def test_pgzero_run_game():
     """
     editor = mock.MagicMock()
     editor.envars = [["name", "value"]]
+    editor.venv.interpreter = "interpreter"
     view = mock.MagicMock()
     view.current_tab.path = "/foo/bar"
     view.current_tab.isModified.return_value = True
@@ -125,8 +126,9 @@ def test_pgzero_run_game():
     editor.save_tab_to_file.called_once_with(view.current_tab)
     py_args = ["-m", "pgzero"]
     view.add_python3_runner.assert_called_once_with(
-        "/foo/bar",
-        "/foo",
+        interpreter="interpreter",
+        script_name="/foo/bar",
+        working_directory="/foo",
         interactive=False,
         envars=editor.envars,
         python_args=py_args,
