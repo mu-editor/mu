@@ -56,7 +56,7 @@ def test_kernel_runner_start_kernel_pythonpath_exists():
     mock_client = mock.MagicMock()
     mock_kernel_manager.client.return_value = mock_client
     envars = [["name", "value"]]
-    kr = KernelRunner(cwd="/a/path/to/mu_code", envars=envars)
+    kr = KernelRunner(kernel_name=sys.executable, cwd="/a/path/to/mu_code", envars=envars, pythonpath=os.pathsep.join(sys.path))
     kr.kernel_started = mock.MagicMock()
     mock_os = mock.MagicMock()
     mock_os.environ = {"PYTHONPATH": "foo"}
@@ -89,7 +89,8 @@ def test_kernel_runner_stop_kernel():
     signal once it has stopped the client communication channels and shutdown
     the kernel in the quickest way possible.
     """
-    kr = KernelRunner(cwd="/a/path/to/mu_code", envars=[["name", "value"]])
+    envars = [["name", "value"]]
+    kr = KernelRunner(kernel_name=sys.executable, cwd="/a/path/to/mu_code", envars=envars, pythonpath=os.pathsep.join(sys.path))
     kr.repl_kernel_client = mock.MagicMock()
     kr.repl_kernel_manager = mock.MagicMock()
     kr.kernel_finished = mock.MagicMock()
