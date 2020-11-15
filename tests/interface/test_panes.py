@@ -1727,6 +1727,7 @@ def test_PythonProcessPane_start_process_user_enviroment_variables():
     )
 
 
+@pytest.mark.skip(True, reason="Only used by debugger; now refactored")
 def test_PythonProcessPane_start_process_custom_runner():
     """
     Ensure that if the runner is set, it is used as the command to start the
