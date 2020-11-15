@@ -398,6 +398,7 @@ def test_python_add_repl():
     mock_qthread = mock.MagicMock()
     mock_kernel_runner = mock.MagicMock()
     editor = mock.MagicMock()
+    editor.venv.name = "interpreter"
     editor.envars = [["name", "value"]]
     view = mock.MagicMock()
     pm = PythonMode(editor, view)
@@ -409,7 +410,7 @@ def test_python_add_repl():
         pm.add_repl()
     mock_qthread.assert_called_once_with()
     mock_kernel_runner.assert_called_once_with(
-        cwd=pm.workspace_dir(), envars=editor.envars
+        kernel_name="interpreter", pythonpath="", cwd=pm.workspace_dir(), envars=editor.envars
     )
     assert pm.kernel_thread == mock_qthread()
     assert pm.kernel_runner == mock_kernel_runner()
