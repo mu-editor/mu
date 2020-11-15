@@ -57,6 +57,12 @@ extras_require = {
         "pytest-random-order>=1.0.0",
         "pytest-faulthandler",
         "coverage",
+        #
+        # Mode-specific modules needed for testing
+        # TODO -- maybe mode-based tests should be run
+        # under the runtime venv?
+        #
+        "nudatus"
     ],
     "docs": [
         "docutils >= 0.12, < 0.16",  # adding docutils requirement to avoid
