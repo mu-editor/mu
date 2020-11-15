@@ -601,6 +601,7 @@ class PackageDialog(MuDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.pip_queue = []
 
     def setup(self, to_remove, to_add):
         """
@@ -627,7 +628,6 @@ class PackageDialog(MuDialog):
         # from the list (as LIFO) we'll add the installs first so the
         # removes are the first to happen
         #
-        self.pip_queue = []
         if to_add:
             self.pip_queue.append(("install", to_add))
         if to_remove:

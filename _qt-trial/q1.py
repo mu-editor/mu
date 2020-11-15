@@ -72,18 +72,25 @@ class Example(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.abc = 1
         self.process = None
-        textEdit = QTextEdit()
-        self.setCentralWidget(textEdit)
+        self.textEdit = QTextEdit(self)
+        self.textEdit.textChanged.connect(self.text_changed )
+        self.setCentralWidget(self.textEdit)
         self.setGeometry(300, 300, 350, 250)
         self.setWindowTitle('Main window')
         self.show()
 
-        self.process = Process()
-        self.process.output.connect(textEdit.append)
-        self.process.run(sys.executable, ["-u", "-m", "pip", "list"])
+        #~ self.process = Process()
+        #~ self.process.output.connect(textEdit.append)
+        #~ self.process.run(sys.executable, ["-u", "-m", "pip", "list"])
         #~ self.process.run(sys.executable, ["-u", "slowgen.py"])
         #~ self.process.run(sys.executable, ["-u", "slowgen.py"])
+
+    def text_changed(self):
+        print(repr(self.textEdit.parent()))
+        print(self.textEdit.parent().abc)
+        print(self.textEdit.toPlainText())
 
 def main():
     app = QApplication(sys.argv)

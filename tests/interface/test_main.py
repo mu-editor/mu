@@ -953,7 +953,7 @@ def test_Window_add_python3_runner():
     with mock.patch(
         "mu.interface.main.PythonProcessPane", mock_process_class
     ), mock.patch("mu.interface.main.QDockWidget", mock_dock_class):
-        result = w.add_python3_runner(name, path)
+        result = w.add_python3_runner(name, path, ".")
         assert result == mock_process_runner
     assert w.process_runner == mock_process_runner
     assert w.runner == mock_dock
@@ -1271,10 +1271,9 @@ def test_Window_sync_packages():
         w = mu.interface.main.Window()
         to_remove = {"foo"}
         to_add = {"bar"}
-        module_dir = "baz"
-        w.sync_packages(to_remove, to_add, module_dir)
+        w.sync_packages(to_remove, to_add)
         dialog = mock_package_dialog()
-        dialog.setup.assert_called_once_with(to_remove, to_add, module_dir)
+        dialog.setup.assert_called_once_with(to_remove, to_add)
         dialog.exec.assert_called_once_with()
 
 
