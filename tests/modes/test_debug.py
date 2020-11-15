@@ -44,6 +44,7 @@ def test_debug_start():
     """
     editor = mock.MagicMock()
     editor.envars = [["name", "value"]]
+    editor.venv.interpreter = "interpreter"
     view = mock.MagicMock()
     view.current_tab.path = "/foo/bar"
     view.current_tab.isModified.return_value = True
@@ -56,7 +57,7 @@ def test_debug_start():
         dm.start()
     editor.save_tab_to_file.called_once_with(view.current_tab)
     view.add_python3_runner.assert_called_once_with(
-        "/foo/bar", "/foo", debugger=True, envars=[["name", "value"]]
+        "interpreter", "/foo/bar", "/foo", debugger=True, envars=[["name", "value"]]
     )
     mock_runner.process.waitForStarted.assert_called_once_with()
     mock_runner.process.finished.connect.assert_called_once_with(dm.finished)
