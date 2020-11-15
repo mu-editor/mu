@@ -1765,7 +1765,7 @@ def test_PythonProcessPane_start_process_custom_python_args():
         ppp = mu.interface.panes.PythonProcessPane()
         py_args = ["-m", "pgzero"]
         ppp.start_process(
-            sys.executable, "", "script.py", "workspace", python_args=py_args
+            sys.executable, "", "script.py", "workspace", interactive=False, python_args=py_args
         )
     expected_script = os.path.abspath(os.path.normcase("script.py"))
     expected_args = ["-m", "pgzero", expected_script]
