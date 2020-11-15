@@ -243,6 +243,7 @@ def test_python_run_script():
     Ensure that running the script launches the process as expected.
     """
     editor = mock.MagicMock()
+    editor.venv.interpreter = "interpreter"
     editor.envars = [["name", "value"]]
     view = mock.MagicMock()
     view.current_tab.path = "/foo/bar"
@@ -254,7 +255,11 @@ def test_python_run_script():
     pm.run_script()
     editor.save_tab_to_file.assert_called_once_with(view.current_tab)
     view.add_python3_runner.assert_called_once_with(
-        "/foo/bar", "/foo", interactive=True, envars=editor.envars
+        interpreter="interpreter",
+        script_name="/foo/bar",
+        working_directory="/foo",
+        interactive=True,
+        envars=editor.envars
     )
     mock_runner.process.waitForStarted.assert_called_once_with()
     # Check the buttons are set to the correct state when other aspects of the
