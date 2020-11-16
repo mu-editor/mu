@@ -82,7 +82,7 @@ def test_kernel_runner_start_kernel_pythonpath_exists():
         kr.start_kernel()
     mock_os.chdir.assert_called_once_with("/a/path/to/mu_code")
     assert mock_os.environ["name"] == "value"
-    expected_paths = ["foo"]  ## + [MODULE_DIR]
+    expected_paths = ["foo"]
     assert mock_os.environ["PYTHONPATH"] == os.pathsep.join(expected_paths)
     assert kr.repl_kernel_manager == mock_kernel_manager
     mock_kernel_manager_class.assert_called_once_with()

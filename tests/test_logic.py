@@ -2238,7 +2238,7 @@ def test_quit_save_tabs_with_paths():
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
 
-    with mock.patch.object(sys, "exit") as mock_exit:
+    with mock.patch.object(sys, "exit"):
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
@@ -2261,7 +2261,7 @@ def test_quit_save_theme():
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
 
-    with mock.patch.object(sys, "exit") as mock_exit:
+    with mock.patch.object(sys, "exit"):
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
@@ -2286,7 +2286,7 @@ def test_quit_save_envars():
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
     ed.envars = [["name1", "value1"], ["name2", "value2"]]
 
-    with mock.patch.object(sys, "exit") as mock_exit:
+    with mock.patch.object(sys, "exit"):
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
@@ -2310,7 +2310,7 @@ def test_quit_save_zoom_level():
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
 
-    with mock.patch.object(sys, "exit") as mock_exit:
+    with mock.patch.object(sys, "exit"):
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
@@ -2337,7 +2337,7 @@ def test_quit_save_window_geometry():
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
 
-    with mock.patch.object(sys, "exit") as mock_exit:
+    with mock.patch.object(sys, "exit"):
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 

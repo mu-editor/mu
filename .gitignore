@@ -85,3 +85,4 @@ target/
 /fresh-run.cmd
 /fresh-venv.cmd
 /test.cmd
+/baseline_packages.json

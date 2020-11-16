@@ -18,9 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
 import logging
-import csv
-import shutil
-from PyQt5.QtCore import QSize, QProcess, QTimer, Qt, pyqtSignal
+from PyQt5.QtCore import QSize, QProcess, QTimer, Qt
 
 from PyQt5.QtWidgets import (
     QHBoxLayout,
@@ -44,7 +42,6 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QTextCursor
 from mu.resources import load_icon
 
-import sys
 import subprocess
 
 from mu.interface.widgets import DeviceSelector
@@ -353,7 +350,8 @@ class ESPFirmwareFlasherWidget(MuWidget):
         #
         try:
             #
-            # FIXME: Try to use venv.run_python -- but need to work out error-handling
+            # FIXME: Try to use venv.run_python -- but need to work
+            # out error-handling
             #
             subprocess.run(
                 [self.venv.intepreter, "-m", "esptool", "-h"], check=True

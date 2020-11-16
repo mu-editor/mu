@@ -33,7 +33,7 @@ import shutil
 
 import appdirs
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QLocale, QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5 import QtCore
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker

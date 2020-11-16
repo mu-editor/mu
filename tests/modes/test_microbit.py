@@ -831,7 +831,6 @@ def test_flash_without_device():
         assert s.call_count == 0
 
 
-## can_minify
 @pytest.mark.skipif(not can_minify, reason="No minifier available to test")
 def test_flash_script_too_big():
     """

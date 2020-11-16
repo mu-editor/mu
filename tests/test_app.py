@@ -5,9 +5,8 @@ Tests for the app script.
 import sys
 import os.path
 from unittest import mock
-from mu.app import excepthook, run, setup_logging, setup_modes
+from mu.app import excepthook, run, setup_logging
 from mu.debugger.config import DEBUGGER_PORT
-import mu.debugger.runner
 
 # ~ from mu.debugger import runner as debugger_runner
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE

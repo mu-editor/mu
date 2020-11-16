@@ -2,7 +2,6 @@
 """
 Tests for the user interface elements of Mu.
 """
-import sys
 import os
 import pytest
 import mu.interface.dialogs
@@ -76,7 +75,6 @@ def test_ModeSelector_select_and_accept():
     """
     Ensure the accept slot is fired when this event handler is called.
     """
-    mock_window = QWidget()
     ms = mu.interface.dialogs.ModeSelector()
     ms.accept = mock.MagicMock()
     ms.select_and_accept()
@@ -88,7 +86,6 @@ def test_ModeSelector_get_mode():
     Ensure that the ModeSelector will correctly return a selected mode (or
     raise the expected exception if cancelled).
     """
-    mock_window = QWidget()
     ms = mu.interface.dialogs.ModeSelector()
     ms.result = mock.MagicMock(return_value=QDialog.Accepted)
     item = mock.MagicMock()

@@ -17,14 +17,12 @@ to add or remove certain flags, or to use different wheels.
 """
 import sys
 import os
-import contextlib
 import glob
 import pathlib
 import random
 import shutil
 import subprocess
-import tempfile
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import patch
 import uuid
 
 import pytest
@@ -171,7 +169,7 @@ def test_base_packages_installed(patched, venv_name):
 
 
 def test_jupyter_kernel_installed(patched, venv_name):
-    """Ensure that, when the venv is installed, the Jupyter kernel is installed"""
+    """Ensure when the venv is installed the Jupyter kernel is installed"""
     _, run_python = patched
     #
     # Make sure the baseline package install doesn't interfere
@@ -239,9 +237,7 @@ def test_installed_packages(patched, venv_name):
     random.shuffle(all_packages)
 
     with patch.object(VE, "baseline_packages", return_value=baseline_packages):
-        with patch.object(
-            PIP, "installed", return_value=all_packages
-        ) as mock_pip_installed:
+        with patch.object(PIP, "installed", return_value=all_packages):
             venv = mu.virtual_environment.VirtualEnvironment(venv_name)
             baseline_result, user_result = venv.installed_packages()
             assert set(baseline_result) == set(

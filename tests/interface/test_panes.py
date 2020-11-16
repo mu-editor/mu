@@ -1448,7 +1448,6 @@ def test_PythonProcessPane_start_process():
     mock_merge_chans = mock.MagicMock()
     mock_process_class.MergedChannels = mock_merge_chans
     interpreter = sys.executable
-    pythonpath = ""
     working_directory = "workspace"
     script_filename = "script.py"
     script_filepath = os.path.abspath(os.path.normcase(script_filename))

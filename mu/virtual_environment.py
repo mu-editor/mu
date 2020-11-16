@@ -15,7 +15,6 @@ del encodings
 from PyQt5.QtCore import (
     QObject,
     QProcess,
-    QThread,
     pyqtSignal,
     QTimer,
     QProcessEnvironment,
@@ -195,8 +194,8 @@ class Pip(object):
     def uninstall(self, packages, slots=Process.Slots(), **kwargs):
         """Use pip to uninstall a package or packages
 
-        If the first parameter is a string one package is uninstalled; otherwise
-        it is assumed to be an iterable of package names.
+        If the first parameter is a string one package is uninstalled;
+        otherwise it is assumed to be an iterable of package names.
 
         Any kwargs are passed as command-line switches. A value of None
         indicates a switch without a value (eg --upgrade)
@@ -285,9 +284,7 @@ class VirtualEnvironment(object):
             "Starting virtual environment %s at %s", self.name, self.path
         )
 
-    def run_python(
-        self, *args, slots=Process.Slots()
-    ):  ## FIXME -- do we need pythonpath?, pythonpath=python36_zip):
+    def run_python(self, *args, slots=Process.Slots()):
         """Run the referenced Python interpreter with the passed in args
 
         If slots are supplied for the starting, output or finished signals
@@ -295,6 +292,7 @@ class VirtualEnvironment(object):
         headless and the process will be run synchronously and output collected
         will be returned when the process is complete
         """
+        # FIXME -- do we need pythonpath?, pythonpath=python36_zip):
         # ~ logger.info(
         # ~ "Starting new sub-process with: {} {} (PYTHONPATH={})".format(
         # ~ self.interpreter, args, pythonpath
@@ -422,7 +420,8 @@ class VirtualEnvironment(object):
     def register_baseline_packages(self):
         """Keep track of the baseline packages installed into the empty venv"""
         #
-        # FIXME: This should go into settings. For now, though, just put it somewhere
+        # FIXME: This should go into settings.
+        # For now, though, just put it somewhere
         #
         packages = list(self.pip.installed())
         with open(self.BASELINE_PACKAGES_FILEPATH, "w", encoding="utf-8") as f:
@@ -500,8 +499,7 @@ class VirtualEnvironment(object):
             name for name, version in self.baseline_packages()
         ]
         user_packages = []
-        p = self.pip.installed()
-        for package, version in p:  ## self.pip.installed():
+        for package, version in self.pip.installed():
             logger.info(package)
             if package not in baseline_packages:
                 user_packages.append(package)

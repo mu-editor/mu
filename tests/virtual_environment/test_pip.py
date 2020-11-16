@@ -2,19 +2,10 @@
 """
 Tests for the virtual_environment module pip support
 """
-import sys
 import os
-import contextlib
-import glob
-import pathlib
 import random
-import shutil
-import subprocess
-import tempfile
-from unittest.mock import Mock, MagicMock, PropertyMock, patch
-import uuid
+from unittest.mock import patch
 
-import pytest
 import mu.virtual_environment
 
 VE = mu.virtual_environment.VirtualEnvironment
@@ -308,12 +299,8 @@ def test_installed_packages():
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(pip.process, "run_blocking"):
-        with patch.object(
-            Pip, "freeze", return_value=pip_freeze_output
-        ) as mock_freeze:
-            with patch.object(
-                Pip, "list", return_value=pip_list_output
-            ) as mock_list:
+        with patch.object(Pip, "freeze", return_value=pip_freeze_output):
+            with patch.object(Pip, "list", return_value=pip_list_output):
                 installed_packages = set(pip.installed())
                 expected_packages = set(
                     (name, version) for (name, version, location) in packages
