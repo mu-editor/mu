@@ -161,7 +161,9 @@ def test_base_packages_installed(patched, venv_name):
                 # our wheelhouse
                 #
                 expected_args = glob.glob(
-                    os.path.join(mu.virtual_environment.wheels_dirpath, "*.whl")
+                    os.path.join(
+                        mu.virtual_environment.wheels_dirpath, "*.whl"
+                    )
                 )
                 venv = mu.virtual_environment.VirtualEnvironment(venv_name)
                 venv.create()
@@ -233,7 +235,7 @@ def test_installed_packages(patched, venv_name):
     """
     baseline_packages = [("mu-editor", 0)] + [("a", 1), ("b", 2), ("c", 3)]
     user_packages = [("d", 4), ("e", 5), ("f", 6)]
-    all_packages =  baseline_packages + user_packages
+    all_packages = baseline_packages + user_packages
     random.shuffle(all_packages)
 
     with patch.object(VE, "baseline_packages", return_value=baseline_packages):

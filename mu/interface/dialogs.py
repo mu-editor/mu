@@ -53,8 +53,8 @@ logger = logging.getLogger(__name__)
 
 
 class MuWidget(QWidget):
-    """Base class for Mu widgets
-    """
+    """Base class for Mu widgets"""
+
     def __init__(self, parent=None):
         super().__init__(parent)
         if hasattr(parent, "venv"):
@@ -62,8 +62,8 @@ class MuWidget(QWidget):
 
 
 class MuDialog(QDialog):
-    """Base class for Mu dialogs
-    """
+    """Base class for Mu dialogs"""
+
     def __init__(self, parent):
         super().__init__(parent)
         if hasattr(parent, "venv"):
@@ -355,12 +355,13 @@ class ESPFirmwareFlasherWidget(MuWidget):
             #
             # FIXME: Try to use venv.run_python -- but need to work out error-handling
             #
-            subprocess.run([self.venv.intepreter, "-m", "esptool", "-h"], check=True)
+            subprocess.run(
+                [self.venv.intepreter, "-m", "esptool", "-h"], check=True
+            )
         except subprocess.CalledProcessError:
             return False
         else:
             return True
-
 
     def show_folder_dialog(self):
         # open dialog and set to foldername
@@ -396,12 +397,22 @@ class ESPFirmwareFlasherWidget(MuWidget):
             write_command = (
                 '{} "{}" --chip esp32 --port {} --baud 460800 '
                 'write_flash -z 0x1000 "{}"'
-            ).format(self.venv.intepreter, esptool, device.port, self.txtFolder.text())
+            ).format(
+                self.venv.intepreter,
+                esptool,
+                device.port,
+                self.txtFolder.text(),
+            )
         else:
             write_command = (
                 '{} "{}" --chip esp8266 --port {} --baud 460800 '
                 'write_flash --flash_size=detect 0 "{}"'
-            ).format(self.venv.intepreter, esptool, device.port, self.txtFolder.text())
+            ).format(
+                self.venv.intepreter,
+                esptool,
+                device.port,
+                self.txtFolder.text(),
+            )
 
         self.commands = [erase_command, write_command]
         self.run_esptool()
@@ -665,5 +676,8 @@ class PackageDialog(MuDialog):
 
         pip_fn(
             packages,
-            slots=self.venv.Slots(output=self.text_area.appendPlainText, finished=self.next_pip_command)
+            slots=self.venv.Slots(
+                output=self.text_area.appendPlainText,
+                finished=self.next_pip_command,
+            ),
         )

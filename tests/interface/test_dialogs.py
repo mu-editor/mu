@@ -165,7 +165,10 @@ def microbit():
     return device
 
 
-@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
+@mock.patch(
+    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
+    return_value=True,
+)
 def test_ESPFirmwareFlasherWidget_setup(esptool_is_installed, microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
@@ -185,8 +188,13 @@ def test_ESPFirmwareFlasherWidget_setup(esptool_is_installed, microbit):
         espff.setup(mode, device_list)
 
 
-@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
-def test_ESPFirmwareFlasherWidget_show_folder_dialog(esptool_is_installed, microbit):
+@mock.patch(
+    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
+    return_value=True,
+)
+def test_ESPFirmwareFlasherWidget_show_folder_dialog(
+    esptool_is_installed, microbit
+):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -206,8 +214,13 @@ def test_ESPFirmwareFlasherWidget_show_folder_dialog(esptool_is_installed, micro
     assert espff.txtFolder.text() == path.replace("/", os.sep)
 
 
-@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
-def test_ESPFirmwareFlasherWidget_update_firmware(esptool_is_installed, microbit):
+@mock.patch(
+    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
+    return_value=True,
+)
+def test_ESPFirmwareFlasherWidget_update_firmware(
+    esptool_is_installed, microbit
+):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -233,8 +246,13 @@ def test_ESPFirmwareFlasherWidget_update_firmware(esptool_is_installed, microbit
     espff.update_firmware()
 
 
-@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
-def test_ESPFirmwareFlasherWidget_update_firmware_no_device(esptool_is_installed):
+@mock.patch(
+    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
+    return_value=True,
+)
+def test_ESPFirmwareFlasherWidget_update_firmware_no_device(
+    esptool_is_installed,
+):
     """
     Ensure that we don't try to flash, when no device is connected.
     """
@@ -254,8 +272,13 @@ def test_ESPFirmwareFlasherWidget_update_firmware_no_device(esptool_is_installed
     espff.run_esptool.assert_not_called()
 
 
-@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
-def test_ESPFirmwareFlasherWidget_esptool_error(esptool_is_installed, microbit):
+@mock.patch(
+    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
+    return_value=True,
+)
+def test_ESPFirmwareFlasherWidget_esptool_error(
+    esptool_is_installed, microbit
+):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -270,8 +293,13 @@ def test_ESPFirmwareFlasherWidget_esptool_error(esptool_is_installed, microbit):
     espff.esptool_error(0)
 
 
-@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
-def test_ESPFirmwareFlasherWidget_esptool_finished(esptool_is_installed, microbit):
+@mock.patch(
+    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
+    return_value=True,
+)
+def test_ESPFirmwareFlasherWidget_esptool_finished(
+    esptool_is_installed, microbit
+):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -289,7 +317,10 @@ def test_ESPFirmwareFlasherWidget_esptool_finished(esptool_is_installed, microbi
     espff.esptool_finished(0, QProcess.CrashExit + 1)
 
 
-@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
+@mock.patch(
+    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
+    return_value=True,
+)
 def test_ESPFirmwareFlasherWidget_read_process(esptool_is_installed, microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
@@ -313,8 +344,13 @@ def test_ESPFirmwareFlasherWidget_read_process(esptool_is_installed, microbit):
     espff.read_process()
 
 
-@mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True)
-def test_ESPFirmwareFlasherWidget_firmware_path_changed(esptool_is_installed, microbit):
+@mock.patch(
+    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
+    return_value=True,
+)
+def test_ESPFirmwareFlasherWidget_firmware_path_changed(
+    esptool_is_installed, microbit
+):
     """
     Ensure the widget for editing settings related to the ESP Firmware
     Flasher displays the referenced settings data in the expected way.
@@ -351,7 +387,10 @@ def test_AdminDialog_setup():
     modes = mock.MagicMock()
     device_list = mu.logic.DeviceList(modes)
     ad = mu.interface.dialogs.AdminDialog(mock_window)
-    with mock.patch("mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed", return_value=True):
+    with mock.patch(
+        "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
+        return_value=True,
+    ):
         ad.setup(log, settings, packages, mode, device_list)
         assert ad.log_widget.log_text_area.toPlainText() == log
         s = ad.settings()
@@ -647,9 +686,7 @@ def test_PackageDialog_end_state():
     pd.button_box.button().setEnabled.assert_called_once_with(True)
 
 
-@pytest.mark.skip(
-    reason="Superseded probably by virtual environment work"
-)
+@pytest.mark.skip(reason="Superseded probably by virtual environment work")
 def test_PackageDialog_run_pip():
     """
     Ensure the expected package to be installed is done so via the expected
@@ -672,9 +709,7 @@ def test_PackageDialog_run_pip():
         pd.process.start.assert_called_once_with(venv.interpreter, args)
 
 
-@pytest.mark.skip(
-    reason="Superseded probably by virtual environment work"
-)
+@pytest.mark.skip(reason="Superseded probably by virtual environment work")
 def test_PackageDialog_finished_with_more_to_remove():
     """
     When the pip process is finished, check if there are more packages to
@@ -690,9 +725,7 @@ def test_PackageDialog_finished_with_more_to_remove():
     pd.run_pip.assert_called_once_with()
 
 
-@pytest.mark.skip(
-    reason="Superseded probably by virtual environment work"
-)
+@pytest.mark.skip(reason="Superseded probably by virtual environment work")
 def test_PackageDialog_finished_to_end_state():
     """
     When the pip process is finished, if there are no more packages to install
@@ -706,9 +739,7 @@ def test_PackageDialog_finished_to_end_state():
     pd.end_state.assert_called_once_with()
 
 
-@pytest.mark.skip(
-    reason="Superseded probably by virtual environment work"
-)
+@pytest.mark.skip(reason="Superseded probably by virtual environment work")
 def test_PackageDialog_read_process():
     """
     Ensure any data from the subprocess running "pip" is read and appended to
@@ -725,9 +756,7 @@ def test_PackageDialog_read_process():
         mock_timer.singleShot.assert_called_once_with(2, pd.read_process)
 
 
-@pytest.mark.skip(
-    reason="Superseded probably by virtual environment work"
-)
+@pytest.mark.skip(reason="Superseded probably by virtual environment work")
 def test_PackageDialog_append_data():
     """
     Ensure that when data is appended, it's added to the end of the text area!

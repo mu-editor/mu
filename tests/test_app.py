@@ -153,10 +153,7 @@ def test_debug():
     with mock.patch("mu.debugger.runner.run", mock_runner):
         mu_debug.debug(filename, *args)
         mock_runner.assert_called_once_with(
-            "localhost",
-            DEBUGGER_PORT,
-            expected_filename,
-            args
+            "localhost", DEBUGGER_PORT, expected_filename, args
         )
 
 

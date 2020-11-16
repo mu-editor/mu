@@ -64,7 +64,9 @@ class Process(QObject):
     started = pyqtSignal()
     output = pyqtSignal(str)
     finished = pyqtSignal()
-    Slots = namedtuple("Slots", ["started", "output", "finished"], defaults=(None, None, None))
+    Slots = namedtuple(
+        "Slots", ["started", "output", "finished"], defaults=(None, None, None)
+    )
 
     def __init__(self):
         super().__init__()
@@ -105,7 +107,10 @@ class Process(QObject):
         # If finished is False, it could be be because of an error
         # or because we've already finished before starting to wait!
         #
-        if not finished and self.process.exitStatus() == self.process.CrashExit:
+        if (
+            not finished
+            and self.process.exitStatus() == self.process.CrashExit
+        ):
             raise RuntimeError("Some error occurred")
 
     def data(self):
@@ -120,6 +125,7 @@ class Process(QObject):
     def _finished(self):
         self.finished.emit()
 
+
 class Pip(object):
     """Proxy for various pip commands
 
@@ -133,12 +139,7 @@ class Pip(object):
         self.process = Process()
 
     def run(
-        self,
-        command,
-        *args,
-        wait_for_s=30.0,
-        slots=Process.Slots(),
-        **kwargs
+        self, command, *args, wait_for_s=30.0, slots=Process.Slots(), **kwargs
     ):
         """Run a command with args, treating kwargs as Posix switches
 
@@ -161,7 +162,9 @@ class Pip(object):
         params.extend(args)
 
         if slots.output is None:
-            result = self.process.run_blocking(self.executable, params, wait_for_s=wait_for_s)
+            result = self.process.run_blocking(
+                self.executable, params, wait_for_s=wait_for_s
+            )
             return result
         else:
             if slots.started:
@@ -171,12 +174,7 @@ class Pip(object):
                 self.process.finished.connect(slots.finished)
             self.process.run(self.executable, params)
 
-    def install(
-        self,
-        packages,
-        slots=Process.Slots(),
-        **kwargs
-    ):
+    def install(self, packages, slots=Process.Slots(), **kwargs):
         """Use pip to install a package or packages
 
         If the first parameter is a string one package is installed; otherwise
@@ -187,27 +185,14 @@ class Pip(object):
         """
         if isinstance(packages, str):
             return self.run(
-                "install",
-                packages,
-                wait_for_s=180.0,
-                slots=slots,
-                **kwargs
+                "install", packages, wait_for_s=180.0, slots=slots, **kwargs
             )
         else:
             return self.run(
-                "install",
-                *packages,
-                wait_for_s=180.0,
-                slots=slots,
-                **kwargs
+                "install", *packages, wait_for_s=180.0, slots=slots, **kwargs
             )
 
-    def uninstall(
-        self,
-        packages,
-        slots=Process.Slots(),
-        **kwargs
-    ):
+    def uninstall(self, packages, slots=Process.Slots(), **kwargs):
         """Use pip to uninstall a package or packages
 
         If the first parameter is a string one package is uninstalled; otherwise
@@ -318,8 +303,8 @@ class VirtualEnvironment(object):
 
         if slots.output:
             self.process.started.connect(slots.started)
-            #~ if slots.started:
-                #~ self.process.started.connect(slots.started)
+            # ~ if slots.started:
+            # ~ self.process.started.connect(slots.started)
             self.process.output.connect(slots.output)
             if slots.finished:
                 self.process.finished.connect(slots.finished)
@@ -455,9 +440,7 @@ class VirtualEnvironment(object):
                 logger.exception("Unable to read baseline packages")
                 return []
 
-    def install_user_packages(
-        self, packages, slots=Process.Slots()
-    ):
+    def install_user_packages(self, packages, slots=Process.Slots()):
         logger.info("Installing user packages: %s", ", ".join(packages))
         self.pip.install(
             packages,
@@ -465,9 +448,7 @@ class VirtualEnvironment(object):
             upgrade=True,
         )
 
-    def remove_user_packages(
-        self, packages, slots=Process.Slots()
-    ):
+    def remove_user_packages(self, packages, slots=Process.Slots()):
         logger.info("Removing user packages: %s", ", ".join(packages))
         self.pip.uninstall(
             packages,

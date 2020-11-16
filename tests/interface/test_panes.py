@@ -1454,7 +1454,9 @@ def test_PythonProcessPane_start_process():
     script_filepath = os.path.abspath(os.path.normcase(script_filename))
     with mock.patch("mu.interface.panes.QProcess", mock_process_class):
         ppp = mu.interface.panes.PythonProcessPane()
-        ppp.start_process(interpreter, working_directory, script_filename, working_directory)
+        ppp.start_process(
+            interpreter, working_directory, script_filename, working_directory
+        )
     assert mock_process_class.call_count == 1
     assert ppp.process == mock_process
     ppp.process.setProcessChannelMode.assert_called_once_with(mock_merge_chans)
@@ -1484,7 +1486,9 @@ def test_PythonProcessPane_start_process_command_args():
     with mock.patch("mu.interface.panes.QProcess", mock_process_class):
         ppp = mu.interface.panes.PythonProcessPane()
         args = ["foo", "bar"]
-        ppp.start_process(runner, pythonpath, script_filename, "workspace", command_args=args)
+        ppp.start_process(
+            runner, pythonpath, script_filename, "workspace", command_args=args
+        )
     expected_args = ["-i", script_filepath, "foo", "bar"]
     ppp.process.start.assert_called_once_with(runner, expected_args)
 
@@ -1507,7 +1511,12 @@ def test_PythonProcessPane_start_process_debugger():
         ppp = mu.interface.panes.PythonProcessPane()
         args = ["foo", "bar"]
         ppp.start_process(
-            interpreter, pythonpath, script_filename, working_directory, debugger=True, command_args=args
+            interpreter,
+            pythonpath,
+            script_filename,
+            working_directory,
+            debugger=True,
+            command_args=args,
         )
     mu_dir = os.path.dirname(os.path.abspath(mu.__file__))
     runner = os.path.join(mu_dir, "mu_debug.py")
@@ -1533,7 +1542,12 @@ def test_PythonProcessPane_start_process_not_interactive():
         ppp = mu.interface.panes.PythonProcessPane()
         args = ["foo", "bar"]
         ppp.start_process(
-            interpreter, pythonpath, script_filename, "workspace", interactive=False, command_args=args
+            interpreter,
+            pythonpath,
+            script_filename,
+            "workspace",
+            interactive=False,
+            command_args=args,
         )
     expected_args = [script_filepath, "foo", "bar"]
     ppp.process.start.assert_called_once_with(interpreter, expected_args)
@@ -1765,7 +1779,12 @@ def test_PythonProcessPane_start_process_custom_python_args():
         ppp = mu.interface.panes.PythonProcessPane()
         py_args = ["-m", "pgzero"]
         ppp.start_process(
-            sys.executable, "", "script.py", "workspace", interactive=False, python_args=py_args
+            sys.executable,
+            "",
+            "script.py",
+            "workspace",
+            interactive=False,
+            python_args=py_args,
         )
     expected_script = os.path.abspath(os.path.normcase("script.py"))
     expected_args = ["-m", "pgzero", expected_script]

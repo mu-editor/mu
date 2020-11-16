@@ -47,7 +47,10 @@ def test_pip_run():
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(pip.process, "run_blocking") as mock_run:
         pip.run(command, *params)
-        expected_args = (pip_executable, [command, '--disable-pip-version-check'] + list(params))
+        expected_args = (
+            pip_executable,
+            [command, "--disable-pip-version-check"] + list(params),
+        )
         assert mock_run.call_args.args == expected_args
 
 
@@ -65,7 +68,10 @@ def test_pip_install_single_package():
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(pip.process, "run_blocking") as mock_run:
         pip.install(package_name)
-        expected_args = (pip_executable, ["install", '--disable-pip-version-check', package_name],)
+        expected_args = (
+            pip_executable,
+            ["install", "--disable-pip-version-check", package_name],
+        )
         assert mock_run.call_args.args == expected_args
 
 
@@ -78,7 +84,10 @@ def test_pip_install_several_packages():
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(pip.process, "run_blocking") as mock_run:
         pip.install(package_names)
-        expected_args = (pip_executable, ["install", '--disable-pip-version-check'] + package_names,)
+        expected_args = (
+            pip_executable,
+            ["install", "--disable-pip-version-check"] + package_names,
+        )
         assert mock_run.call_args.args == expected_args
 
 
@@ -93,7 +102,12 @@ def test_pip_install_single_package_with_flag():
         pip.install(package_name, switch=True)
         expected_args = (
             pip_executable,
-            ["install", '--disable-pip-version-check', "--switch", package_name],
+            [
+                "install",
+                "--disable-pip-version-check",
+                "--switch",
+                package_name,
+            ],
         )
         assert mock_run.call_args.args == expected_args
 
@@ -109,7 +123,8 @@ def test_pip_install_several_packages_with_flag():
         pip.install(package_names, switch=True)
         expected_args = (
             pip_executable,
-            ["install", '--disable-pip-version-check', "--switch"] + package_names,
+            ["install", "--disable-pip-version-check", "--switch"]
+            + package_names,
         )
         assert mock_run.call_args.args == expected_args
 
@@ -125,7 +140,13 @@ def test_pip_install_single_package_with_flag_value():
         pip.install(package_name, switch=30)
         expected_args = (
             pip_executable,
-            ["install", '--disable-pip-version-check', "--switch", "30", package_name],
+            [
+                "install",
+                "--disable-pip-version-check",
+                "--switch",
+                "30",
+                package_name,
+            ],
         )
         assert mock_run.call_args.args == expected_args
 
@@ -133,6 +154,7 @@ def test_pip_install_single_package_with_flag_value():
 #
 # pip uninstall
 #
+
 
 def test_pip_uninstall_single_package():
     """Ensure that installing a single package results in:
@@ -143,7 +165,15 @@ def test_pip_uninstall_single_package():
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(pip.process, "run_blocking") as mock_run:
         pip.uninstall(package_name)
-        expected_args = (pip_executable, ["uninstall", '--disable-pip-version-check', '--yes', package_name],)
+        expected_args = (
+            pip_executable,
+            [
+                "uninstall",
+                "--disable-pip-version-check",
+                "--yes",
+                package_name,
+            ],
+        )
         assert mock_run.call_args.args == expected_args
 
 
@@ -156,7 +186,11 @@ def test_pip_uninstall_several_packages():
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(pip.process, "run_blocking") as mock_run:
         pip.uninstall(package_names)
-        expected_args = (pip_executable, ["uninstall", '--disable-pip-version-check', '--yes'] + package_names,)
+        expected_args = (
+            pip_executable,
+            ["uninstall", "--disable-pip-version-check", "--yes"]
+            + package_names,
+        )
         assert mock_run.call_args.args == expected_args
 
 
@@ -171,7 +205,13 @@ def test_pip_uninstall_single_package_with_flag():
         pip.uninstall(package_name, switch=True)
         expected_args = (
             pip_executable,
-            ["uninstall", '--disable-pip-version-check', '--yes', "--switch", package_name],
+            [
+                "uninstall",
+                "--disable-pip-version-check",
+                "--yes",
+                "--switch",
+                package_name,
+            ],
         )
         assert mock_run.call_args.args == expected_args
 
@@ -187,7 +227,8 @@ def test_pip_uninstall_several_packages_with_flag():
         pip.uninstall(package_names, switch=True)
         expected_args = (
             pip_executable,
-            ["uninstall", '--disable-pip-version-check', '--yes', "--switch"] + package_names,
+            ["uninstall", "--disable-pip-version-check", "--yes", "--switch"]
+            + package_names,
         )
         assert mock_run.call_args.args == expected_args
 
@@ -203,7 +244,14 @@ def test_pip_uninstall_single_package_with_flag_value():
         pip.uninstall(package_name, switch=30)
         expected_args = (
             pip_executable,
-            ["uninstall", '--disable-pip-version-check', '--yes', "--switch", "30", package_name],
+            [
+                "uninstall",
+                "--disable-pip-version-check",
+                "--yes",
+                "--switch",
+                "30",
+                package_name,
+            ],
         )
         assert mock_run.call_args.args == expected_args
 
@@ -217,7 +265,10 @@ def test_pip_freeze():
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(pip.process, "run_blocking") as mock_run:
         pip.freeze()
-        expected_args = (pip_executable, ["freeze", '--disable-pip-version-check'],)
+        expected_args = (
+            pip_executable,
+            ["freeze", "--disable-pip-version-check"],
+        )
         assert mock_run.call_args.args == expected_args
 
 
@@ -227,7 +278,10 @@ def test_pip_list():
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(pip.process, "run_blocking") as mock_run:
         pip.list()
-        expected_args = (pip_executable, ["list", '--disable-pip-version-check'],)
+        expected_args = (
+            pip_executable,
+            ["list", "--disable-pip-version-check"],
+        )
         assert mock_run.call_args.args == expected_args
 
 
@@ -254,8 +308,12 @@ def test_installed_packages():
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(pip.process, "run_blocking"):
-        with patch.object(Pip, "freeze", return_value=pip_freeze_output) as mock_freeze:
-            with patch.object(Pip, "list", return_value=pip_list_output) as mock_list:
+        with patch.object(
+            Pip, "freeze", return_value=pip_freeze_output
+        ) as mock_freeze:
+            with patch.object(
+                Pip, "list", return_value=pip_list_output
+            ) as mock_list:
                 installed_packages = set(pip.installed())
                 expected_packages = set(
                     (name, version) for (name, version, location) in packages

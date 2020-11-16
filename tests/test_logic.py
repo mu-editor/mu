@@ -2524,7 +2524,7 @@ def test_show_admin():
         "packages": "baz\n",
     }
     view.show_admin.return_value = new_settings
-    view.venv.installed_packages.return_value = ([], ['Foo', 'bar'])
+    view.venv.installed_packages.return_value = ([], ["Foo", "bar"])
     mock_open = mock.mock_open()
     with mock.patch("builtins.open", mock_open), mock.patch(
         "os.path.isfile", return_value=True
@@ -2556,7 +2556,7 @@ def test_show_admin_no_change():
     new_settings = {}
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    view.venv.installed_packages.return_value = ([], ['Foo', 'bar'])
+    view.venv.installed_packages.return_value = ([], ["Foo", "bar"])
     with mock.patch("builtins.open", mock_open), mock.patch(
         "os.path.isfile", return_value=True
     ):
@@ -2589,7 +2589,7 @@ def test_show_admin_missing_microbit_runtime():
     }
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    view.venv.installed_packages.return_value = ([], ['Foo', 'bar'])
+    view.venv.installed_packages.return_value = ([], ["Foo", "bar"])
     with mock.patch("builtins.open", mock_open), mock.patch(
         "os.path.isfile", return_value=False
     ):

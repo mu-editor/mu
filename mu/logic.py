@@ -998,7 +998,9 @@ class Editor(QObject):
                     self._view.set_zoom()
 
                 if "venv_path" in old_session:
-                    self.venv = self._view.venv = virtual_environment.VirtualEnvironment(
+                    self.venv = (
+                        self._view.venv
+                    ) = virtual_environment.VirtualEnvironment(
                         old_session["venv_path"]
                     )
                     self.venv.ensure()

@@ -62,7 +62,7 @@ extras_require = {
         # TODO -- maybe mode-based tests should be run
         # under the runtime venv?
         #
-        "nudatus"
+        "nudatus",
     ],
     "docs": [
         "docutils >= 0.12, < 0.16",  # adding docutils requirement to avoid

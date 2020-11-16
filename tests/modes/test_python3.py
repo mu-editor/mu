@@ -21,7 +21,12 @@ def test_kernel_runner_start_kernel():
     mock_client = mock.MagicMock()
     mock_kernel_manager.client.return_value = mock_client
     envars = [["name", "value"]]
-    kr = KernelRunner(kernel_name=sys.executable, cwd="/a/path/to/mu_code", envars=envars, pythonpath=os.pathsep.join(sys.path))
+    kr = KernelRunner(
+        kernel_name=sys.executable,
+        cwd="/a/path/to/mu_code",
+        envars=envars,
+        pythonpath=os.pathsep.join(sys.path),
+    )
     kr.kernel_started = mock.MagicMock()
     mock_os = mock.MagicMock()
     mock_os.environ = {}
@@ -56,7 +61,12 @@ def test_kernel_runner_start_kernel_pythonpath_exists():
     mock_client = mock.MagicMock()
     mock_kernel_manager.client.return_value = mock_client
     envars = [["name", "value"]]
-    kr = KernelRunner(kernel_name=sys.executable, cwd="/a/path/to/mu_code", envars=envars, pythonpath=os.pathsep.join(sys.path))
+    kr = KernelRunner(
+        kernel_name=sys.executable,
+        cwd="/a/path/to/mu_code",
+        envars=envars,
+        pythonpath=os.pathsep.join(sys.path),
+    )
     kr.kernel_started = mock.MagicMock()
     mock_os = mock.MagicMock()
     mock_os.environ = {"PYTHONPATH": "foo"}
@@ -90,7 +100,12 @@ def test_kernel_runner_stop_kernel():
     the kernel in the quickest way possible.
     """
     envars = [["name", "value"]]
-    kr = KernelRunner(kernel_name=sys.executable, cwd="/a/path/to/mu_code", envars=envars, pythonpath=os.pathsep.join(sys.path))
+    kr = KernelRunner(
+        kernel_name=sys.executable,
+        cwd="/a/path/to/mu_code",
+        envars=envars,
+        pythonpath=os.pathsep.join(sys.path),
+    )
     kr.repl_kernel_client = mock.MagicMock()
     kr.repl_kernel_manager = mock.MagicMock()
     kr.kernel_finished = mock.MagicMock()
@@ -259,7 +274,7 @@ def test_python_run_script():
         script_name="/foo/bar",
         working_directory="/foo",
         interactive=True,
-        envars=editor.envars
+        envars=editor.envars,
     )
     mock_runner.process.waitForStarted.assert_called_once_with()
     # Check the buttons are set to the correct state when other aspects of the
@@ -410,7 +425,10 @@ def test_python_add_repl():
         pm.add_repl()
     mock_qthread.assert_called_once_with()
     mock_kernel_runner.assert_called_once_with(
-        kernel_name="interpreter", pythonpath="", cwd=pm.workspace_dir(), envars=editor.envars
+        kernel_name="interpreter",
+        pythonpath="",
+        cwd=pm.workspace_dir(),
+        envars=editor.envars,
     )
     assert pm.kernel_thread == mock_qthread()
     assert pm.kernel_runner == mock_kernel_runner()
