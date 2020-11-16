@@ -160,10 +160,8 @@ class Pip(object):
                 params.append(str(v))
         params.extend(args)
 
-        print("About to run", self.executable, params, "waiting for s", wait_for_s)
         if slots.output is None:
             result = self.process.run_blocking(self.executable, params, wait_for_s=wait_for_s)
-            print("result:", result)
             return result
         else:
             if slots.started:
@@ -261,7 +259,6 @@ class Pip(object):
         file-installed wheels and editable (-e) installs
         """
         lines = self.list().splitlines()
-        print("lines:", lines)
         iterlines = iter(lines)
         #
         # The first two lines are headers
