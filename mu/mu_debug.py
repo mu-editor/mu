@@ -27,7 +27,7 @@ def debug(filename=None, *args):
         print("Debugger requires a Python script filename to run.")
     else:
         filepath = os.path.normcase(os.path.abspath(filename))
-        mu.debugger.runner.run("localhost", DEBUGGER_PORT, filepath, *args)
+        mu.debugger.runner.run("localhost", DEBUGGER_PORT, filepath, args)
 
 
 if __name__ == "__main__":

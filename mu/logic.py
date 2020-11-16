@@ -1633,7 +1633,6 @@ class Editor(QObject):
             change_confirmation = self._view.show_confirmation(
                 heading, msg_body, icon="Question"
             )
-            print(change_confirmation)
             if change_confirmation == QMessageBox.Ok:
                 self.change_mode(new_mode)
 
