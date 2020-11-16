@@ -146,17 +146,17 @@ def test_debug():
     Ensure the debugger is run with the expected arguments given the filename
     and other arguments passed in via sys.argv.
     """
-    args = ["foo", "bar", "baz"]
+    args = ("foo", "bar", "baz")
     filename = "foo.py"
     expected_filename = os.path.normcase(os.path.abspath(filename))
     mock_runner = mock.MagicMock()
     with mock.patch("mu.debugger.runner.run", mock_runner):
-        mu_debug.debug(filename, args)
+        mu_debug.debug(filename, *args)
         mock_runner.assert_called_once_with(
             "localhost",
             DEBUGGER_PORT,
             expected_filename,
-            ["foo", "bar", "baz"],
+            args
         )
 
 
