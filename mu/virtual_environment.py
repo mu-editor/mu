@@ -64,8 +64,9 @@ class Process(QObject):
     output = pyqtSignal(str)
     finished = pyqtSignal()
     Slots = namedtuple(
-        "Slots", ["started", "output", "finished"], defaults=(None, None, None)
+        "Slots", ["started", "output", "finished"]
     )
+    Slots.__new__.__defaults__ = (None, None, None)
 
     def __init__(self):
         super().__init__()
