@@ -301,11 +301,11 @@ def vendor_in_from_python(package_name, destination_dir):
     download the current .zip?
     """
     package = __import__(package_name)
+    os.makedirs(destination_dir, exist_ok=True)
     for path in package.__path__:
         shutil.copytree(
             path,
-            os.path.join(destination_dir, package_name),
-            dirs_exist_ok=True,
+            os.path.join(destination_dir, package_name)
         )
 
 
