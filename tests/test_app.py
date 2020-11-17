@@ -110,8 +110,8 @@ def test_run():
         assert len(qa.mock_calls) == 8
         assert qsp.call_count == 1
         assert len(qsp.mock_calls) == 2
-        assert timer.call_count == 1
-        assert len(timer.mock_calls) == 4
+        assert timer.call_count == 2
+        assert len(timer.mock_calls) == 7
         assert ed.call_count == 1
         assert len(ed.mock_calls) == 4
         assert win.call_count == 1
@@ -123,6 +123,53 @@ def test_run():
         qa.assert_has_calls([mock.call().setStyleSheet(NIGHT_STYLE)])
         window.load_theme.emit("contrast")
         qa.assert_has_calls([mock.call().setStyleSheet(CONTRAST_STYLE)])
+
+
+def test_close_splash_screen():
+    """
+    Test that the splash screen is closed.
+    """
+
+    # Create a dummy window
+    class Win(mock.MagicMock):
+        load_theme = DumSig()
+        icon = "icon"
+
+    window = Win()
+
+    # Create a dummy timer class
+    class DummyTimer:
+        def __init__(self):
+            self.callback = lambda x: None
+            self.stop = lambda: None
+            self.setSingleShot = lambda x: None
+
+            def set_callback(fun):
+                self.callback = fun
+
+            class Object(object):
+                pass
+
+            self.timeout = Object()
+            self.timeout.connect = set_callback
+
+        def start(self, t):
+            # Just call the callback immediately
+            self.callback()
+
+    # Mock Splash screen
+    splash = mock.MagicMock()
+
+    # Mock QTimer, QApplication, Window, Editor, sys.exit
+    with mock.patch("mu.app.QTimer", new=DummyTimer), mock.patch(
+        "mu.app.Window", window
+    ), mock.patch("mu.app.QApplication"), mock.patch("sys.exit"), mock.patch(
+        "mu.app.Editor"
+    ), mock.patch(
+        "mu.app.QSplashScreen", return_value=splash
+    ):
+        run()
+        assert splash.finish.call_count == 1
 
 
 def test_excepthook():

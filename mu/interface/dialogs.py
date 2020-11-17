@@ -421,7 +421,7 @@ class ESPFirmwareFlasherWidget(MuWidget):
         self.process.readyReadStandardError.connect(self.read_process)
         self.process.readyReadStandardOutput.connect(self.read_process)
         self.process.finished.connect(self.esptool_finished)
-        self.process.errorOccurred.connect(self.esptool_error)
+        self.process.error.connect(self.esptool_error)
 
         command = self.commands.pop(0)
         self.log_text_area.appendPlainText(command + "\n")
@@ -429,7 +429,7 @@ class ESPFirmwareFlasherWidget(MuWidget):
 
     def esptool_error(self, error_num):
         self.log_text_area.appendPlainText(
-            "Error occured: Error {}\n".format(error_num)
+            "Error occurred: Error {}\n".format(error_num)
         )
         self.process = None
 

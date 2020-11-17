@@ -25,9 +25,12 @@ install_requires = [
     # The core 'install_requires' should only be things
     # which are needed for the main editor to function.
     #
-    'PyQt5==5.13.2;"arm" not in platform_machine',
-    'QScintilla==2.11.3;"arm" not in platform_machine',
-    'PyQtChart==5.13.1;"arm" not in platform_machine',
+    "PyQt5==5.13.2"
+    + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+    "QScintilla==2.11.3"
+    + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+    "PyQtChart==5.13.1"
+    + ';"arm" not in platform_machine and "aarch" not in platform_machine',
     #
     # FIXME: Maybe should be in a mode?
     # qtconsole, pyserial
@@ -52,7 +55,7 @@ install_requires = [
 
 extras_require = {
     "tests": [
-        "pytest",
+        "pytest>=4.6",
         "pytest-cov",
         "pytest-random-order>=1.0.0",
         "pytest-faulthandler",
