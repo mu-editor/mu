@@ -62,6 +62,7 @@ class CircuitPythonMode(MicroPythonMode):
         (0x2341, 0x8057, None, "Arduino Nano 33 IoT board"),
         (0x04D8, 0xEAD1, None, "DynOSSAT-EDU-EPS"),
         (0x04D8, 0xEAD2, None, "DynOSSAT-EDU-OBC"),
+        (0x1209, 0x4DDD, None, "ODT CP Sapling M0"),
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
