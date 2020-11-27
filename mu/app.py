@@ -176,13 +176,14 @@ def run():
     # Setup the window.
     editor_window.closeEvent = editor.quit
     editor_window.setup(editor.debug_toggle_breakpoint, editor.theme)
-    # Restore the previous session along with files passed by the os
-    editor.restore_session(sys.argv[1:])
     # Connect the various UI elements in the window to the editor.
     editor_window.connect_tab_rename(editor.rename_tab, "Ctrl+Shift+S")
     editor_window.connect_find_replace(editor.find_replace, "Ctrl+F")
     editor_window.connect_toggle_comments(editor.toggle_comments, "Ctrl+K")
     editor.connect_to_status_bar(editor_window.status_bar)
+
+    # Restore the previous session along with files passed by the os
+    editor.restore_session(sys.argv[1:])
 
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
