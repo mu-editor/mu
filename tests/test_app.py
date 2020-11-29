@@ -126,7 +126,7 @@ def test_run():
         # foo.call_count is instantiating the class
         assert qa.call_count == 1
         # foo.mock_calls are method calls on the object
-        assert len(qa.mock_calls) == 8
+        assert len(qa.mock_calls) == 9
         assert qsp.call_count == 1
         assert len(qsp.mock_calls) == 2
         assert timer.call_count == 2
