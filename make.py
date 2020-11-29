@@ -112,6 +112,7 @@ def test(*pytest_args):
     with a failure value. This forces things to stop if tests fail.
     """
     print("\ntest")
+    os.environ["LANG"] = "en_GB.utf8"
     return subprocess.run([PYTEST] + list(pytest_args)).returncode
 
 
@@ -122,6 +123,7 @@ def coverage():
     Call py.test with coverage turned on
     """
     print("\ncoverage")
+    os.environ["LANG"] = "en_GB.utf8"
     return subprocess.run(
         [
             PYTEST,
