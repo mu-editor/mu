@@ -26,7 +26,7 @@ import platform
 import pkgutil
 import sys
 
-from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtCore import QTimer, Qt, QCoreApplication
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
 from mu import __version__, language_code
@@ -152,10 +152,17 @@ def run():
     splash = QSplashScreen(load_pixmap("splash-screen"))
     splash.show()
 
-    # Make sure the splash screen stays on top while
-    # the mode selection dialog might open
+    def raise_and_process_events():
+        # Make sure the splash screen stays on top while
+        # the mode selection dialog might open
+        splash.raise_()
+
+        # Make sure splash screen reacts to mouse clicks, even when
+        # the event loop is not yet started
+        QCoreApplication.processEvents()
+
     raise_splash = QTimer()
-    raise_splash.timeout.connect(lambda: splash.raise_())
+    raise_splash.timeout.connect(raise_and_process_events)
     raise_splash.start(10)
 
     # Hide the splash icon.
