@@ -130,9 +130,10 @@ class CircuitPythonMode(MicroPythonMode):
                     mount_output = check_output(mount_command).splitlines()
                     mounted_volumes = [x.split()[2] for x in mount_output]
                     for volume in mounted_volumes:
-                        tail =  os.path.split(volume)[-1]
-                        if tail.startswith(b"CIRCUITPY") or \
-                                tail.startswith(b"PYBFLASH"):
+                        tail = os.path.split(volume)[-1]
+                        if tail.startswith(b"CIRCUITPY") or tail.startswith(
+                            b"PYBFLASH"
+                        ):
                             device_dir = volume.decode("utf-8")
                             break
                 except FileNotFoundError:
