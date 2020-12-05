@@ -129,9 +129,9 @@ def run():
     # Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
     # unless this flag is set
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
-    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     if hasattr(Qt, "AA_EnableHighDpiScaling"):
-        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
