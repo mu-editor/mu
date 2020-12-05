@@ -130,7 +130,8 @@ def run():
     # unless this flag is set
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+    if hasattr(Qt, "AA_EnableHighDpiScaling"):
+        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
