@@ -345,21 +345,11 @@ class ESPFirmwareFlasherWidget(MuWidget):
         self.mode = mode
 
     def esptool_is_installed(self):
-        #
-        # See if the esptool is available
-        #
-        try:
-            #
-            # FIXME: Try to use venv.run_python -- but need to work
-            # out error-handling
-            #
-            subprocess.run(
-                [self.venv.intepreter, "-m", "esptool", "-h"], check=True
-            )
-        except subprocess.CalledProcessError:
-            return False
-        else:
-            return True
+        """
+        Is the 'esptool' package installed?
+        """
+        baseline, user_packages = self.venv.installed_packages()
+        return "esptool" in user_packages
 
     def show_folder_dialog(self):
         # open dialog and set to foldername
@@ -387,26 +377,26 @@ class ESPFirmwareFlasherWidget(MuWidget):
             return
 
         esptool = "-mesptool"
-        erase_command = '{} "{}" --port {} erase_flash'.format(
-            self.venv.intepreter, esptool, device.port
+        erase_command = '"{}" "{}" --port {} erase_flash'.format(
+            self.venv.interpreter, esptool, device.port
         )
 
         if self.device_type.currentText() == "ESP32":
             write_command = (
-                '{} "{}" --chip esp32 --port {} --baud 460800 '
+                '"{}" "{}" --chip esp32 --port {} --baud 460800 '
                 'write_flash -z 0x1000 "{}"'
             ).format(
-                self.venv.intepreter,
+                self.venv.interpreter,
                 esptool,
                 device.port,
                 self.txtFolder.text(),
             )
         else:
             write_command = (
-                '{} "{}" --chip esp8266 --port {} --baud 460800 '
+                '"{}" "{}" --chip esp8266 --port {} --baud 460800 '
                 'write_flash --flash_size=detect 0 "{}"'
             ).format(
-                self.venv.intepreter,
+                self.venv.interpreter,
                 esptool,
                 device.port,
                 self.txtFolder.text(),
