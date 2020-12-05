@@ -8,6 +8,7 @@ from unittest import mock
 from mu.app import excepthook, run, setup_logging, debug, setup_modes
 from mu.logic import LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
+from PyQt5.QtCore import Qt
 
 
 class DumSig:
