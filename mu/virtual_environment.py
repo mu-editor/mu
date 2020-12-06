@@ -21,6 +21,7 @@ from PyQt5.QtCore import (
 )
 
 from . import wheels
+from . import config
 
 wheels_dirpath = os.path.dirname(wheels.__file__)
 
@@ -260,7 +261,7 @@ class Pip(object):
 
 class VirtualEnvironment(object):
 
-    BASELINE_PACKAGES_FILEPATH = "baseline_packages.json"
+    BASELINE_PACKAGES_FILEPATH = os.path.join(config.DATA_DIR, "baseline_packages.json")
     Slots = Process.Slots
 
     def __init__(self, dirpath):

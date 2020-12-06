@@ -43,13 +43,12 @@ from . import i18n
 from . import virtual_environment
 from .resources import path
 from .debugger.utils import is_breakpoint_line
+from .config import DATA_DIR
 
 # The user's home directory.
 HOME_DIRECTORY = os.path.expanduser("~")
 # Name of the directory within the home folder to use by default
 WORKSPACE_NAME = "mu_code"
-# The default directory for application data (i.e., configuration).
-DATA_DIR = appdirs.user_data_dir(appname="mu", appauthor="python")
 # The name of the default virtual environment used by Mu.
 VENV_NAME = "mu_venv"
 # The directory containing default virtual environment.
