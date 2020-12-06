@@ -60,7 +60,7 @@ STYLE_REGEX = re.compile(r".*:(\d+):(\d+):\s+(.*)")
 # Regex to match flake8 output.
 FLAKE_REGEX = re.compile(r".*:(\d+):\s+(.*)")
 # Regex to match false positive flake errors if microbit.* is expanded.
-EXPAND_FALSE_POSITIVE = re.compile(r"^'microbit\.(\w+)' imported but unused$")
+EXPAND_FALSE_POSITIVE = re.compile(r"^.*'microbit\.(\w+)' imported but unused$")
 # The text to which "from microbit import \*" should be expanded.
 EXPANDED_IMPORT = (
     "from microbit import pin15, pin2, pin0, pin1, "
