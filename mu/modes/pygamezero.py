@@ -1,5 +1,5 @@
 """
-The PyGameZero mode for the Mu editor.
+The Pygame Zero mode for the Mu editor.
 
 Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
 
@@ -166,7 +166,7 @@ class PyGameZeroMode(BaseMode):
 
     def show_images(self, event):
         """
-        Open the directory containing the image assets used by PyGame Zero.
+        Open the directory containing the image assets used by Pygame Zero.
 
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
@@ -175,7 +175,7 @@ class PyGameZeroMode(BaseMode):
 
     def show_fonts(self, event):
         """
-        Open the directory containing the font assets used by PyGame Zero.
+        Open the directory containing the font assets used by Pygame Zero.
 
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
@@ -184,7 +184,7 @@ class PyGameZeroMode(BaseMode):
 
     def show_sounds(self, event):
         """
-        Open the directory containing the sound assets used by PyGame Zero.
+        Open the directory containing the sound assets used by Pygame Zero.
 
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
@@ -193,7 +193,7 @@ class PyGameZeroMode(BaseMode):
 
     def show_music(self, event):
         """
-        Open the directory containing the music assets used by PyGame Zero.
+        Open the directory containing the music assets used by Pygame Zero.
 
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.

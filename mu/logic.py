@@ -72,7 +72,7 @@ EXPANDED_IMPORT = (
 )
 # Port number for debugger.
 DEBUGGER_PORT = 31415
-# Default images to copy over for use in PyGameZero demo apps.
+# Default images to copy over for use in Pygame Zero demo apps.
 DEFAULT_IMAGES = [
     "alien.png",
     "alien_hurt.png",
@@ -82,7 +82,7 @@ DEFAULT_IMAGES = [
     "cat4.png",
     "splat.png",
 ]
-# Default sound effects to copy over for use in PyGameZero demo apps.
+# Default sound effects to copy over for use in Pygame Zero demo apps.
 DEFAULT_SOUNDS = [
     "eep.wav",
     "meow1.wav",
@@ -887,7 +887,7 @@ class Editor(QObject):
         if not os.path.exists(wd):
             logger.debug("Creating directory: {}".format(wd))
             os.makedirs(wd)
-        # Ensure PyGameZero assets are copied over.
+        # Ensure Pygame Zero assets are copied over.
         images_path = os.path.join(wd, "images")
         fonts_path = os.path.join(wd, "fonts")
         sounds_path = os.path.join(wd, "sounds")
