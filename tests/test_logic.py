@@ -3174,8 +3174,8 @@ def test_find_replace_find_matched():
 
 def test_find_again_find_matched():
     """
-    If the user just supplies a find target to find again and it is matched in the
-    code then the expected status message should be shown.
+    If the user just supplies a find target to find again and it is matched in
+    the code then the expected status message should be shown.
     """
     mock_view = mock.MagicMock()
     mock_view.highlight_text.return_value = True
@@ -3214,7 +3214,7 @@ def test_find_again_find_unmatched():
     mock_view = mock.MagicMock()
     mock_view.highlight_text.return_value = False
     ed = mu.logic.Editor(mock_view)
-    ed.find = 'foo'
+    ed.find = "foo"
     ed.show_status_message = mock.MagicMock()
     ed.find_again()
     ed.show_status_message.assert_called_once_with('Could not find "foo".')
