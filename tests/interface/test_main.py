@@ -1686,6 +1686,26 @@ def test_Window_connect_find_replace():
     shortcut.activated.connect.assert_called_once_with(mock_handler)
 
 
+def test_Window_connect_find_again():
+    """
+    Ensure a shortcut is created with the expected shortcut and handler
+    function.
+    """
+    window = mu.interface.main.Window()
+    mock_handler = mock.MagicMock()
+    mock_shortcut = mock.MagicMock()
+    mock_sequence = mock.MagicMock()
+    with mock.patch("mu.interface.main.QShortcut", mock_shortcut), mock.patch(
+        "mu.interface.main.QKeySequence", mock_sequence
+    ):
+        window.connect_find_again(mock_handler, "F3")
+    mock_sequence.assert_called_once_with("F3")
+    ks = mock_sequence("F3")
+    mock_shortcut.assert_called_once_with(ks, window)
+    shortcut = mock_shortcut(ks, window)
+    shortcut.activated.connect.assert_called_once_with(mock_handler)
+
+
 def test_Window_show_find_replace():
     """
     The find/replace dialog is setup with the right arguments and, if

@@ -119,7 +119,7 @@ def test_run():
         assert ed.call_count == 1
         assert len(ed.mock_calls) == 4
         assert win.call_count == 1
-        assert len(win.mock_calls) == 5
+        assert len(win.mock_calls) == 6
         assert ex.call_count == 1
         window.load_theme.emit("day")
         qa.assert_has_calls([mock.call().setStyleSheet(DAY_STYLE)])
