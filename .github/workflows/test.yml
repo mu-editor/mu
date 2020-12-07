@@ -1,0 +1,47 @@
+name: Run tests
+
+on:
+  push:
+    branches: '*'
+  pull_request:
+    branches: '*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-16.04, ubuntu-latest, macos-10.15, macos-11.0, windows-2016, windows-latest]
+        python-version: ['3.6', '3.7']
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    name: Test Py ${{ matrix.python-version }} - ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python info
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -c "import platform, struct; print(platform.machine(), struct.calcsize('P') * 8)"
+          python -c "import sys; print(sys.executable)"
+          python -m pip --version
+          pip --version
+          pip config list
+          pip freeze
+      - name: Prepare Ubuntu
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxkbcommon-x11-0 xvfb
+      - name: Install Mu dependencies
+        run: |
+          pip install .[dev]
+          pip list
+      - name: Run tests
+        if: runner.os == 'Linux'
+        run: xvfb-run make check
+      - name: Run tests
+        if: runner.os != 'Linux'
+        run: python make.py check
