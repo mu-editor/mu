@@ -1095,6 +1095,14 @@ class Window(QMainWindow):
         self.find_replace_shortcut = QShortcut(QKeySequence(shortcut), self)
         self.find_replace_shortcut.activated.connect(handler)
 
+    def connect_find_again(self, handler, shortcut):
+        """
+        Create a keyboard shortcut and associate it with a handler for doing
+        a find again.
+        """
+        self.find_again_shortcut = QShortcut(QKeySequence(shortcut), self)
+        self.find_again_shortcut.activated.connect(handler)
+
     def show_find_replace(self, find, replace, global_replace):
         """
         Display the find/replace dialog. If the dialog's OK button was clicked
