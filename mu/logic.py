@@ -1105,7 +1105,7 @@ class Editor(QObject):
                 return
         name, text, newline, file_mode = None, None, None, None
         try:
-            if path.lower().endswith(".py"):
+            if path.lower().endswith(".py") or path.lower().endswith(".pyw"):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
                 try:
@@ -1204,7 +1204,7 @@ class Editor(QObject):
         extracts a Python script from a hex file.
         """
         # Get all supported extensions from the different modes
-        extensions = ["py"]
+        extensions = ["py", "pyw"]
         for mode_name, mode in self.modes.items():
             if mode.file_extensions:
                 extensions += mode.file_extensions
@@ -1303,7 +1303,7 @@ class Editor(QObject):
         return False.
         """
         logger.info('Checking path "{}" for shadow module.'.format(path))
-        filename = os.path.basename(path).replace(".py", "")
+        filename = os.path.basename(path).replace(".pyw", "").replace(".py", "")
         return filename in self.modes[self.mode].module_names
 
     def save(self, *args, default=None):
@@ -1376,7 +1376,7 @@ class Editor(QObject):
         if tab is None:
             # There is no active text editor so abort.
             return
-        if tab.path and not tab.path.endswith(".py"):
+        if tab.path and not (tab.path.endswith(".py") or tab.path.endswith(".pyw")):
             # Only works on Python files, so abort.
             return
         tab.has_annotations = not tab.has_annotations
@@ -1747,7 +1747,7 @@ class Editor(QObject):
                     "Attempting to rename {} to {}".format(tab.path, new_path)
                 )
                 # The user specified a path to a file.
-                if not os.path.basename(new_path).endswith(".py"):
+                if not (os.path.basename(new_path).endswith(".py") or os.path.basename(new_path).endswith(".pyw")):
                     # No extension given, default to .py
                     new_path += ".py"
                 # Check for duplicate path with currently open tab.
@@ -1831,7 +1831,7 @@ class Editor(QObject):
         if not tab or sys.version_info[:2] < (3, 6):
             return
         # Only works on Python, so abort.
-        if tab.path and not tab.path.endswith(".py"):
+        if tab.path and not (tab.path.endswith(".py") or tab.path.endswith(".pyw")):
             return
         from black import format_str, FileMode, PY36_VERSIONS
 
