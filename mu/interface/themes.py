@@ -22,9 +22,6 @@ from PyQt5.QtGui import QColor, QFontDatabase
 from mu.resources import load_stylesheet, load_font_data
 
 
-logger = logging.getLogger(__name__)
-
-
 # The default font size.
 DEFAULT_FONT_SIZE = 14
 # All editor windows use the same font
