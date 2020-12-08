@@ -847,6 +847,7 @@ class Editor(QObject):
         self.fs = None
         self.theme = "day"
         self.mode = "python"
+        self.python_extensions = [".py", ".pyw"]
         self.modes = {}
         self.envars = []  # See restore session and show_admin
         self.minify = False
@@ -1105,7 +1106,7 @@ class Editor(QObject):
                 return
         name, text, newline, file_mode = None, None, None, None
         try:
-            if path.lower().endswith(".py") or path.lower().endswith(".pyw"):
+            if self.has_python_extension(path):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
                 try:
@@ -1204,11 +1205,12 @@ class Editor(QObject):
         extracts a Python script from a hex file.
         """
         # Get all supported extensions from the different modes
-        extensions = ["py", "pyw"]
+        extensions = [ext.strip("*.") for ext in self.python_extensions]
         for mode_name, mode in self.modes.items():
             if mode.file_extensions:
                 extensions += mode.file_extensions
-        extensions = set([e.lower() for e in extensions])
+        # Sort extensions to get deterministic output
+        extensions = list(sorted(set([e.lower() for e in extensions])))
         extensions = "*.{} *.{}".format(
             " *.".join(extensions), " *.".join(extensions).upper()
         )
@@ -1303,7 +1305,9 @@ class Editor(QObject):
         return False.
         """
         logger.info('Checking path "{}" for shadow module.'.format(path))
-        filename = os.path.basename(path).replace(".pyw", "").replace(".py", "")
+        filename = (
+            os.path.basename(path).replace(".pyw", "").replace(".py", "")
+        )
         return filename in self.modes[self.mode].module_names
 
     def save(self, *args, default=None):
@@ -1376,7 +1380,7 @@ class Editor(QObject):
         if tab is None:
             # There is no active text editor so abort.
             return
-        if tab.path and not (tab.path.endswith(".py") or tab.path.endswith(".pyw")):
+        if tab.path and not self.has_python_extension(tab.path):
             # Only works on Python files, so abort.
             return
         tab.has_annotations = not tab.has_annotations
@@ -1747,7 +1751,7 @@ class Editor(QObject):
                     "Attempting to rename {} to {}".format(tab.path, new_path)
                 )
                 # The user specified a path to a file.
-                if not (os.path.basename(new_path).endswith(".py") or os.path.basename(new_path).endswith(".pyw")):
+                if not self.has_python_extension(os.path.basename(new_path)):
                     # No extension given, default to .py
                     new_path += ".py"
                 # Check for duplicate path with currently open tab.
@@ -1831,7 +1835,7 @@ class Editor(QObject):
         if not tab or sys.version_info[:2] < (3, 6):
             return
         # Only works on Python, so abort.
-        if tab.path and not (tab.path.endswith(".py") or tab.path.endswith(".pyw")):
+        if tab.path and not self.has_python_extension(tab.path):
             return
         from black import format_str, FileMode, PY36_VERSIONS
 
@@ -1859,3 +1863,13 @@ class Editor(QObject):
                 "these problems."
             )
             self._view.show_message(message, information)
+
+    def has_python_extension(self, filename):
+        """
+        Check whether the given filename matches recognized Python extensions.
+        """
+        file_ends = filename.lower().endswith
+        for ext in self.python_extensions:
+            if file_ends(ext):
+                return True
+        return False
