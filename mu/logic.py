@@ -1209,8 +1209,7 @@ class Editor(QObject):
         for mode_name, mode in self.modes.items():
             if mode.file_extensions:
                 extensions += mode.file_extensions
-        # Sort extensions to get deterministic output
-        extensions = list(sorted(set([e.lower() for e in extensions])))
+        extensions = [e.lower() for e in extensions]
         extensions = "*.{} *.{}".format(
             " *.".join(extensions), " *.".join(extensions).upper()
         )
@@ -1305,9 +1304,10 @@ class Editor(QObject):
         return False.
         """
         logger.info('Checking path "{}" for shadow module.'.format(path))
-        filename = (
-            os.path.basename(path).replace(".pyw", "").replace(".py", "")
-        )
+        pyextensions = [".pyw", ".PYW", ".py", ".PY"]
+        filename = os.path.basename(path)
+        for ext in pyextensions:
+            filename = filename.replace(ext, "")
         return filename in self.modes[self.mode].module_names
 
     def save(self, *args, default=None):
@@ -1869,7 +1869,4 @@ class Editor(QObject):
         Check whether the given filename matches recognized Python extensions.
         """
         file_ends = filename.lower().endswith
-        for ext in self.python_extensions:
-            if file_ends(ext):
-                return True
-        return False
+        return any(file_ends(ext) for ext in self.python_extensions)
