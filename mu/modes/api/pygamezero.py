@@ -133,7 +133,9 @@ PYGAMEZERO_APIS = [
     _(
         "music.pause() \nTemporarily stop playback of the music stream.\n\nCall `unpause()` to resume."
     ),
-    _("music.pgzero.constants() \nNames for constants returned by Pygame Zero."),
+    _(
+        "music.pgzero.constants() \nNames for constants returned by Pygame Zero."
+    ),
     _(
         "music.play(name) \nPlay a music file from the music/ directory.\n\nThe music will loop when it finishes playing."
     ),
