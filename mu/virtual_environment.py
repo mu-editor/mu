@@ -64,9 +64,7 @@ class Process(QObject):
     started = pyqtSignal()
     output = pyqtSignal(str)
     finished = pyqtSignal()
-    Slots = namedtuple(
-        "Slots", ["started", "output", "finished"]
-    )
+    Slots = namedtuple("Slots", ["started", "output", "finished"])
     Slots.__new__.__defaults__ = (None, None, None)
 
     def __init__(self):
@@ -261,7 +259,9 @@ class Pip(object):
 
 class VirtualEnvironment(object):
 
-    BASELINE_PACKAGES_FILEPATH = os.path.join(config.DATA_DIR, "baseline_packages.json")
+    BASELINE_PACKAGES_FILEPATH = os.path.join(
+        config.DATA_DIR, "baseline_packages.json"
+    )
     Slots = Process.Slots
 
     def __init__(self, dirpath):
