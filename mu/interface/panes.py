@@ -621,7 +621,7 @@ class LocalFileList(MuFileList):
         action = menu.exec_(self.mapToGlobal(event.pos()))
         if action == open_action:
             # Get the file's path
-            path = os.path.join(self.home, local_filename)
+            path = os.path.abspath(os.path.join(self.home, local_filename))
             logger.info("Opening {}".format(path))
             msg = _("Opening '{}'").format(local_filename)
             logger.info(msg)
