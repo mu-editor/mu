@@ -275,6 +275,10 @@ class VirtualEnvironment(object):
         #
         # Pip and the interpreter will be set up when the virtualenv is ensured
         #
+        #
+        # FIXME -- might need to check the "home" directory from pyvenv.cfg
+        # if there's no Pip in the "local" bin directory
+        #
         self.interpreter = os.path.join(
             self._bin_directory, "python" + self._bin_extension
         )
