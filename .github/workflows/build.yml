@@ -33,19 +33,24 @@ jobs:
         run: |
           pip install .[dev]
           pip list
-      - name: Build Windows
+      - run: mkdir upload
+      - name: Build Windows 32 bit
         if: runner.os == 'Windows'
         run: |
           python make.py win32
+          mv dist/mu-editor_32bit.exe upload/
+      - name: Build Windows 64 bit
+        if: runner.os == 'Windows'
+        run: |
           python make.py win64
+          mv dist/mu-editor_64bit.exe upload/
       - name: Build macOS
         if: runner.os == 'macOS'
         run: |
           make macos
-          mkdir dist
-          mv macOS/mu-editor.app dist/
+          mv macOS/mu-editor.app upload/
       - name: Upload Mu installer
         uses: actions/upload-artifact@v1
         with:
           name: mu-editor-${{ runner.os }}-${{ github.sha }}
-          path: dist
+          path: upload
