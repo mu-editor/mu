@@ -47,5 +47,5 @@ jobs:
       - name: Upload Mu installer
         uses: actions/upload-artifact@v1
         with:
-          name: mu-editor-${{ runner.os }}-${{ github.sha }}.app
+          name: mu-editor-${{ runner.os }}-${{ github.sha }}
           path: dist
