@@ -79,6 +79,10 @@ extras_require = {
         # Windows native packaging (see win_installer.py).
         'requests==2.23.0;platform_system == "Windows"',
         'yarg==0.1.9;platform_system == "Windows"',
+        # Temporarily pin boto3 (briefcase dependency) to fix urllib3  version
+        # conflicts, it can be removed after the dependencies have been updated
+        # https://github.com/mu-editor/mu/issues/1155
+        "boto3==1.15.18",
         # macOS native packaging (see Makefile)
         'briefcase==0.2.9;platform_system == "Darwin"',
     ],
@@ -115,6 +119,7 @@ setup(
         "mu.modes.api",
         "mu.wheels",
     ],
+    python_requires=">=3.5,<3.8",
     install_requires=install_requires,
     extras_require=extras_require,
     include_package_data=True,
@@ -134,6 +139,7 @@ setup(
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Education",
         "Topic :: Games/Entertainment",
         "Topic :: Software Development",

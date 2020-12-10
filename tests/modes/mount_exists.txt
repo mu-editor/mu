@@ -5,3 +5,4 @@ devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmod
 tmpfs on /run type tmpfs (rw,nosuid,relatime,size=787732k,mode=755)
 /dev/mapper/heraclitus--vg-root on / type ext4 (rw,relatime,errors=remount-ro,data=ordered)
 /dev/sdb on /media/ntoll/CIRCUITPY type vfat (rw,nosuid,nodev,relatime,uid=1000,gid=1000,fmask=0022,dmask=0077,codepage=437,iocharset=utf8,shortname=mixed,showexec,utf8,flush,errors=remount-ro,uhelper=udisks2)
+/dev/sdc1 on /media/PYBFLASH type  vfat (rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro)

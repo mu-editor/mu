@@ -1702,7 +1702,7 @@ def test_load_no_current_path():
     ed.load()
     expected = os.path.abspath("old_path")
     view.get_load_path.assert_called_once_with(
-        expected, "*.py *.PY", allow_previous=True
+        expected, "*.py *.pyw *.PY *.PYW", allow_previous=True
     )
 
 
@@ -1727,7 +1727,7 @@ def test_load_no_current_path_no_current_tab():
     ed.load()
     expected = mock_mode.workspace_dir()
     view.get_load_path.assert_called_once_with(
-        expected, "*.py *.PY", allow_previous=True
+        expected, "*.py *.pyw *.PY *.PYW", allow_previous=True
     )
 
 
@@ -1751,7 +1751,7 @@ def test_load_has_current_path_does_not_exist():
     ed.load()
     expected = mock_mode.workspace_dir()
     view.get_load_path.assert_called_once_with(
-        expected, "*.py *.PY", allow_previous=True
+        expected, "*.py *.pyw *.PY *.PYW", allow_previous=True
     )
 
 
@@ -1775,7 +1775,7 @@ def test_load_has_current_path():
     with mock.patch("os.path.isdir", return_value=True):
         ed.load()
     view.get_load_path.assert_called_once_with(
-        "foo", "*.py *.PY", allow_previous=True
+        "foo", "*.py *.pyw *.PY *.PYW", allow_previous=True
     )
 
 
@@ -1798,7 +1798,7 @@ def test_load_has_default_path():
     with mock.patch("os.path.isdir", return_value=True):
         ed.load(default_path="foo")
     view.get_load_path.assert_called_once_with(
-        "foo", "*.py *.PY", allow_previous=False
+        "foo", "*.py *.pyw *.PY *.PYW", allow_previous=False
     )
 
 

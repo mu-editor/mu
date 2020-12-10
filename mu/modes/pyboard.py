@@ -1,5 +1,5 @@
 """
-A mode for working with Circuit Python boards.
+A mode for working with Adafuit's line of Circuit Python boards.
 
 Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
 
@@ -20,73 +20,59 @@ import os
 import ctypes
 from subprocess import check_output
 from mu.modes.base import MicroPythonMode
-from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
+from mu.modes.api import PYBOARD_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
 
 
-class CircuitPythonMode(MicroPythonMode):
+class PyboardMode(MicroPythonMode):
     """
-    Represents the functionality required by the CircuitPython mode.
+    Represents the functionality required by the Pyboard mode.
     """
 
-    name = _("CircuitPython")
-    short_name = "circuitpython"
-    description = _("Write code for boards running CircuitPython.")
-    icon = "circuitpython"
-    save_timeout = 0  #: No auto-save on CP boards. Will restart.
-    connected = True  #: is the board connected.
-    force_interrupt = False  #: NO keyboard interrupt on serial connection.
+    name = _("Pyboard MicroPython")
+    short_name = "pyboard"
+    description = _("Use MicroPython on the Pyboard line of boards")
+    icon = "pyboard"
+    save_timeout = 0
+    connected = True
+    force_interrupt = False
+    # Currently, all boards build using the STM32 port of MicroPython use the
+    # same VID and PID by default for mass storage.
     valid_boards = [
-        (0x2B04, 0xC00C, None, "Particle Argon"),
-        (0x2B04, 0xC00D, None, "Particle Boron"),
-        (0x2B04, 0xC00E, None, "Particle Xenon"),
-        (0x239A, None, None, "Adafruit CircuitPlayground"),
-        # Non-Adafruit boards
-        (0x1209, 0xBAB1, None, "Electronic Cats Meow Meow"),
-        (0x1209, 0xBAB2, None, "Electronic Cats CatWAN USBStick"),
-        (0x1209, 0xBAB3, None, "Electronic Cats Bast Pro Mini M0"),
-        (0x1209, 0xBAB6, None, "Electronic Cats Escornabot Makech"),
-        (0x1B4F, 0x8D22, None, "SparkFun SAMD21 Mini Breakout"),
-        (0x1B4F, 0x8D23, None, "SparkFun SAMD21 Dev Breakout"),
-        (0x1209, 0x2017, None, "Mini SAM M4"),
-        (0x1209, 0x7102, None, "Mini SAM M0"),
-        (0x04D8, 0xEC72, None, "XinaBox CC03"),
-        (0x04D8, 0xEC75, None, "XinaBox CS11"),
-        (0x04D8, 0xED5E, None, "XinaBox CW03"),
-        (0x3171, 0x0101, None, "8086.net Commander"),
-        (0x04D8, 0xED94, None, "PyCubed"),
-        (0x04D8, 0xEDBE, None, "SAM32"),
-        (0x1D50, 0x60E8, None, "PewPew Game Console"),
-        (0x2886, 0x802D, None, "Seeed Wio Terminal"),
-        (0x1B4F, 0x0016, None, "Sparkfun Thing Plus - SAMD51"),
-        (0x2341, 0x8057, None, "Arduino Nano 33 IoT board"),
-        (0x04D8, 0xEAD1, None, "DynOSSAT-EDU-EPS"),
-        (0x04D8, 0xEAD2, None, "DynOSSAT-EDU-OBC"),
-        (0x1209, 0x4DDD, None, "ODT CP Sapling M0"),
-        (0x1209, 0x4DDE, None, "ODT CP Sapling M0 w/ SPI Flash"),
+        (0xF055, 0x9800, None, None),  # Pyboard v1, v1.1, etc.
     ]
-    # Modules built into CircuitPython which mustn't be used as file names
-    # for source code.
+    # Modules built into MicroPython must not be used for file names.
     module_names = {
-        "storage",
-        "os",
-        "touchio",
-        "microcontroller",
-        "bitbangio",
-        "digitalio",
-        "audiobusio",
-        "multiterminal",
-        "nvm",
-        "pulseio",
-        "usb_hid",
-        "analogio",
-        "time",
-        "busio",
-        "random",
-        "audioio",
-        "sys",
+        "array",
+        "cmath",
+        "gc",
         "math",
-        "builtins",
+        "sys",
+        "ubinascii",
+        "ucollections",
+        "uerrno",
+        "uhashlib",
+        "uheapq",
+        "uio",
+        "ujson",
+        "uos",
+        "ure",
+        "uselect",
+        "usocket",
+        "ussl",
+        "ustruct",
+        "utime",
+        "uzlib",
+        "_thread",
+        "btree",
+        "framebuf",
+        "machine",
+        "micropython",
+        "network",
+        "ucryptolib",
+        "uctypes",
+        "pyb",
+        "lcd160cr",
     }
 
     def actions(self):
@@ -101,7 +87,7 @@ class CircuitPythonMode(MicroPythonMode):
                 "description": _("Open a serial connection to your device."),
                 "handler": self.toggle_repl,
                 "shortcut": "CTRL+Shift+U",
-            }
+            },
         ]
         if CHARTS:
             buttons.append(
@@ -122,7 +108,7 @@ class CircuitPythonMode(MicroPythonMode):
         """
         device_dir = None
         # Attempts to find the path on the filesystem that represents the
-        # plugged in CIRCUITPY board.
+        # plugged in Pyboard board.
         if os.name == "posix":
             # We're on Linux or OSX
             for mount_command in ["mount", "/sbin/mount"]:
@@ -130,12 +116,8 @@ class CircuitPythonMode(MicroPythonMode):
                     mount_output = check_output(mount_command).splitlines()
                     mounted_volumes = [x.split()[2] for x in mount_output]
                     for volume in mounted_volumes:
-                        tail = os.path.split(volume)[-1]
-                        if tail.startswith(b"CIRCUITPY") or tail.startswith(
-                            b"PYBFLASH"
-                        ):
+                        if volume.endswith(b"PYBFLASH"):
                             device_dir = volume.decode("utf-8")
-                            break
                 except FileNotFoundError:
                     next
         elif os.name == "nt":
@@ -174,7 +156,7 @@ class CircuitPythonMode(MicroPythonMode):
                     path = "{}:\\".format(disk)
                     if (
                         os.path.exists(path)
-                        and get_volume_name(path) == "CIRCUITPY"
+                        and get_volume_name(path) == "PYBFLASH"
                     ):
                         return path
             finally:
@@ -192,9 +174,9 @@ class CircuitPythonMode(MicroPythonMode):
             # after warning the user.
             wd = super().workspace_dir()
             if self.connected:
-                m = _("Could not find an attached CircuitPython device.")
+                m = _("Could not find an attached PyBoard device.")
                 info = _(
-                    "Python files for CircuitPython devices"
+                    "Python files for PyBoard MicroPython devices"
                     " are stored on the device. Therefore, to edit"
                     " these files you need to have the device plugged in."
                     " Until you plug in a device, Mu will use the"
@@ -210,4 +192,4 @@ class CircuitPythonMode(MicroPythonMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return SHARED_APIS + ADAFRUIT_APIS
+        return SHARED_APIS + PYBOARD_APIS
