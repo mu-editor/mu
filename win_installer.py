@@ -317,7 +317,6 @@ def run(bitness, repo_root):
     """
     with tempfile.TemporaryDirectory(prefix="mu-pynsist-") as work_dir:
         print("Temporary working directory at", work_dir)
-        os.startfile(work_dir)
         #
         # Create and switch to the temporary directory so we don't get
         # interference from the *local* mu package
