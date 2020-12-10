@@ -139,7 +139,7 @@ def run():
     # FIXME -- look at the possiblity of tying ensure completion
     # into Splash screen finish below...
     #
-    #~ venv.ensure()
+    venv.ensure()
 
     # Create the "window" we'll be looking at.
     editor_window = Window(venv=venv)
@@ -156,8 +156,29 @@ def run():
     # Display a friendly "splash" icon.
     splash = QSplashScreen(load_pixmap("splash-screen"))
     splash.show()
-    venv.ensure()
+
+    def raise_and_process_events():
+        # Make sure the splash screen stays on top while
+        # the mode selection dialog might open
+        splash.raise_()
+
+        # Make sure splash screen reacts to mouse clicks, even when
+        # the event loop is not yet started
+        QCoreApplication.processEvents()
+
+    raise_splash = QTimer()
+    raise_splash.timeout.connect(raise_and_process_events)
+    raise_splash.start(10)
+
+    # Hide the splash icon.
+    def remove_splash():
     splash.finish(editor_window)
+        raise_splash.stop()
+
+    splash_be_gone = QTimer()
+    splash_be_gone.timeout.connect(remove_splash)
+    splash_be_gone.setSingleShot(True)
+    splash_be_gone.start(2000)
 
     # Make sure all windows have the Mu icon as a fallback
     app.setWindowIcon(load_icon(editor_window.icon))
