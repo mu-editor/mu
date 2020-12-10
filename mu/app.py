@@ -174,7 +174,7 @@ def run():
 
     # Hide the splash icon.
     def remove_splash():
-    splash.finish(editor_window)
+        splash.finish(editor_window)
         raise_splash.stop()
 
     splash_be_gone = QTimer()
