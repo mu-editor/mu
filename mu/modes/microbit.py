@@ -153,6 +153,49 @@ class MicrobitMode(MicroPythonMode):
         """
         return SHARED_APIS + MICROBIT_APIS
 
+    def minify_if_needed(self, python_script_bytes):
+        """
+        Minify the script if is too large to fit in flash via uFlash appended
+        method.
+        Raises exceptions if minification fails or cannot be performed.
+        """
+        if len(python_script_bytes) < uflash._MAX_SIZE:
+            # Script will fit without issues, no need to minify
+            return python_script_bytes
+        if not self.editor.minify:
+            raise Exception(
+                _("Your script is too long and code minification is disabled")
+            )
+        if not can_minify:
+            raise Exception(
+                _("Your script is too long and the minifier isn't available")
+            )
+
+        original_length = len(python_script_bytes)
+        script = python_script_bytes.decode("utf-8")
+        try:
+            mangled = nudatus.mangle(script).encode("utf-8")
+        except TokenError as e:
+            msg, (line, col) = e.args
+            logger.debug("Minify failed")
+            logger.exception(e)
+            raise Exception(
+                "{}\n".format(_("Problem minifying script"))
+                + "{} [{}:{}]".format(msg, line, col)
+            )
+        saved = original_length - len(mangled)
+        percent = saved / original_length * 100
+        logger.debug(
+            "Script minified, {} bytes ({:.2f}%) saved:".format(saved, percent)
+        )
+        logger.debug(mangled)
+        if len(mangled) >= uflash._MAX_SIZE:
+            logger.debug("Script still too long after minification")
+            raise Exception(
+                _("Our minifier tried but your script is too long!")
+            )
+        return mangled
+
     def flash(self):
         """
         Takes the currently active tab, compiles the Python script therein into
@@ -175,52 +218,13 @@ class MicrobitMode(MicroPythonMode):
         python_script = tab.text().encode("utf-8")
         logger.debug("Python script:")
         logger.debug(python_script)
-        # Check minification status.
-        minify = False
-        if uflash.get_minifier():
-            minify = self.editor.minify
-        # Attempt and handle minification.
-        if len(python_script) >= uflash._MAX_SIZE:
-            message = _('Unable to flash "{}"').format(tab.label)
-            if minify and can_minify:
-                orginal = len(python_script)
-                script = python_script.decode("utf-8")
-                try:
-                    mangled = nudatus.mangle(script).encode("utf-8")
-                except TokenError as e:
-                    msg, (line, col) = e.args
-                    logger.debug("Minify failed")
-                    logger.exception(e)
-                    message = _("Problem with script")
-                    information = _("{} [{}:{}]").format(msg, line, col)
-                    self.view.show_message(message, information, "Warning")
-                    return
-                saved = orginal - len(mangled)
-                percent = saved / orginal * 100
-                logger.debug(
-                    "Script minified, {} bytes ({:.2f}%) saved:".format(
-                        saved, percent
-                    )
-                )
-                logger.debug(mangled)
-                python_script = mangled
-                if len(python_script) >= 8192:
-                    information = _(
-                        "Our minifier tried but your " "script is too long!"
-                    )
-                    self.view.show_message(message, information, "Warning")
-                    return
-            elif minify and not can_minify:
-                information = _(
-                    "Your script is too long and the minifier"
-                    " isn't available"
-                )
-                self.view.show_message(message, information, "Warning")
-                return
-            else:
-                information = _("Your script is too long!")
-                self.view.show_message(message, information, "Warning")
-                return
+        try:
+            python_script = self.minify_if_needed(python_script)
+        except Exception as e:
+            logger.debug("Could not minify Python script")
+            warn_message = _('Unable to flash "{}"').format(tab.label)
+            self.view.show_message(warn_message, "{}".format(e), "Warning")
+            return
         # By this point, there's a valid Python script in "python_script".
         # Assign this to an attribute for later processing in a different
         # method.
