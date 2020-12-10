@@ -42,8 +42,6 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QTextCursor
 from mu.resources import load_icon
 
-import subprocess
-
 from mu.interface.widgets import DeviceSelector
 
 logger = logging.getLogger(__name__)
