@@ -788,3 +788,19 @@ def test_MuWidgetParentWithoutVenv():
     parent = QWidget()
     mw = mu.interface.dialogs.MuWidget(parent)
     assert not hasattr(mw, "venv")
+
+def test_MuDialogParentWithVenv():
+    """Ensure that the MuDialog can be created with a parent with venv
+    """
+    parent = QDialog()
+    venv = object()
+    parent.venv = venv
+    mw = mu.interface.dialogs.MuDialog(parent)
+    assert mw.venv is venv
+
+def test_MuDialogParentWithoutVenv():
+    """Ensure that the MuDialog can be created with a parent without a venv
+    """
+    parent = QDialog()
+    mw = mu.interface.dialogs.MuDialog(parent)
+    assert not hasattr(mw, "venv")
