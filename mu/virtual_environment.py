@@ -9,8 +9,6 @@ import subprocess
 
 import encodings
 
-from . import wheels
-
 python36_zip = os.path.dirname(encodings.__path__[0])
 del encodings
 
