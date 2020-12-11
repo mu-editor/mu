@@ -1,15 +1,14 @@
-# Travis can building for Linux and macOS
 matrix:
   include:
     - os: linux
-      dist: xenial 
+      dist: xenial
       sudo: required
       language: python
       python: 3.5
       services:
         - xvfb
     - os: linux
-      dist: xenial 
+      dist: xenial
       sudo: required
       language: python
       python: 3.6
@@ -32,29 +31,12 @@ matrix:
         - xvfb
       env:
         - QT_QPA_PLATFORM="offscreen"
-    - os: osx
-      # match xcode version with earliest supported by current PyQt 
-      # (earliest to maximize compatibility)
-      osx_image: xcode9.4
-      sudo: required
-      language: generic
-      env:
-        - TRAVIS_OSX_PY_VER="3.6.5"
 
 before_install:
-  # OS and default Python info
-  - uname -a
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then sw_vers; fi
   # Linux packages needed for Qt to work.
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get update; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libxkbcommon-x11-0; fi
+  - sudo apt-get update && sudo apt-get install libxkbcommon-x11-0
   # Use a new virtual environment with system packages for arm64
   - if [ "$TRAVIS_CPU_ARCH" = "arm64" ]; then deactivate && virtualenv venv --python=python3 --system-site-packages && source venv/bin/activate; fi
-  # Python 3 installation required
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv install $TRAVIS_OSX_PY_VER; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pyenv global $TRAVIS_OSX_PY_VER; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then eval "$(pyenv init -)"; fi
-  - pip install --upgrade pip setuptools
   # Check everything was correctly installed
   - echo $PATH
   - python --version
@@ -75,34 +57,9 @@ install:
   - pip freeze
 
 script:
-  # For Linux run only the tests on 3.5 and the full checker elsewhere, all need the "X Virtual Framebuffer"
-  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" = "3.5" ]; then make coverage; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$TRAVIS_PYTHON_VERSION" != "3.5" ]; then make check; fi
-  - make clean
-
-  # Run the tests on macOS and package it: "make macos" runs checks+tests first.
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then make macos; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir dist; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then zip -r -X -q dist/mu-editor.zip macOS/mu-editor.app; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then du -sk dist/; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv dist/mu-editor.zip dist/mu-editor_$(date '+%Y-%m-%d_%H_%M')_${TRAVIS_BRANCH}_${TRAVIS_COMMIT:0:7}.zip; fi
-
-# Deploy the build version in an S3 bucket
-deploy:
-  provider: s3
-  access_key_id: AKIAJYJV7NN6HVHCX5NQ
-  secret_access_key:
-    secure: QHLfRUdFQX+TejhRBkgNvySkaQOskXji+iduIvKRtzvvhyr3QJHKcMNtO426GRFyKhz6sK3shqn4d5iu/m03gtbv+u1pL9pp0J2GEePzQVP8v24q9Y3oxaXaA7Tm7L2vSIrB7uhJvG5D9H0bVL9my61JvXhvySH47jLvhqHH4F9LdPzby1DXds1Z+R4YNMKE0Z4KmNOhiBHkmKdDcp61fZ91gGiScFIjaXvDb50zdGKjXTQy2t4OtFt4kVbTZWijzxKPCSLZkErfcdNNrCNeMEktk6IEV2KVru9XhDNzzslWwwsR1r2hQI39oVULa3fYXK6W7am8WXVZ6cnJB+yBsNWro3Tp5oiNCWSe6fKDEp+Io+qyhZ+R5PSdzhyRYPUHPCIY/fP/dap/4M/MAO3hZFA3mxjK/vUOc6mtMD/wTE659K4/i7PNYtKFndXXpLpYHHaTis44NLZFIxvs9wWG/ljToYDDK20vG317k5TZUZB/6EipW1DeoO/9qBUxgTdfJypp58kcZNvntUVa4ezf/Bx01ZCMFAk234l7+xAFYI7+m9ITqAPlKWI230Ki5ShzyV+kYcI/GS9cT75iok6+zIWWfyQhKUMDYZ1qb/UDM5Gz9RXoIah0UJTjFd4b3bO6Awdrs2V5Vv2EgMWuKDaHs1s3uONH+PGTluROuqFju/s=
-  bucket: mu-builds
-  region: eu-west-2
-  skip_cleanup: true
-  local-dir: dist/
-  upload-dir: $TRAVIS_OS_NAME
-  acl: public_read
-  on:
-    repo: mu-editor/mu
-    branch: [master]
-    condition: $TRAVIS_OS_NAME = "osx"
+  # Run only the tests on 3.5 and the full checker elsewhere
+  - if [ "$TRAVIS_PYTHON_VERSION" = "3.5" ]; then make coverage; fi
+  - if [ "$TRAVIS_PYTHON_VERSION" != "3.5" ]; then make check; fi
 
 notifications:
   email:
