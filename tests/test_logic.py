@@ -1024,9 +1024,16 @@ def test_editor_restore_session_existing_runtime():
     file_contents = ["", ""]
     ed = mocked_editor(mode)
     with mock.patch("os.path.isfile", return_value=True):
-        with mock.patch("mu.virtual_environment.VirtualEnvironment.ensure") as venv_ensure:
+        with mock.patch(
+            "mu.virtual_environment.VirtualEnvironment.ensure"
+        ) as venv_ensure:
             with generate_session(
-                theme, mode, file_contents, microbit_runtime="/foo", zoom_level=5, venv_path="foo"
+                theme,
+                mode,
+                file_contents,
+                microbit_runtime="/foo",
+                zoom_level=5,
+                venv_path="foo",
             ):
                 ed.restore_session()
 

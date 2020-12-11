@@ -422,7 +422,9 @@ class VirtualEnvironment(object):
         #
         wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
         if not wheel_filepaths:
-            logger.warn("No wheels found in %s; downloading...", wheels_dirpath)
+            logger.warn(
+                "No wheels found in %s; downloading...", wheels_dirpath
+            )
             wheels.download()
             wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
 
