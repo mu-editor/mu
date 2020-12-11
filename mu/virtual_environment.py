@@ -371,7 +371,9 @@ class VirtualEnvironment(object):
 
         env = dict(os.environ)
         subprocess.run(
-            [sys.executable, "-m", "virtualenv", self.path], check=True, env=env
+            [sys.executable, "-m", "virtualenv", self.path],
+            check=True,
+            env=env,
         )
         # Set the path to the interpreter
         self.install_baseline_packages()

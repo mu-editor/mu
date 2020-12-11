@@ -123,7 +123,7 @@ setup(
         "mu.modes.api",
         "mu.wheels",
     ],
-    python_requires=">=3.5,<3.8",
+    python_requires=">=3.5,<3.9",
     install_requires=install_requires,
     extras_require=extras_require,
     include_package_data=True,
