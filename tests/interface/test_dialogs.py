@@ -3,6 +3,7 @@
 Tests for the user interface elements of Mu.
 """
 import os
+
 import pytest
 import mu.interface.dialogs
 from PyQt5.QtWidgets import QDialog, QWidget, QDialogButtonBox
@@ -765,3 +766,25 @@ def test_PackageDialog_append_data():
     assert c.movePosition.call_count == 2
     c.insertText.assert_called_once_with("hello")
     pd.text_area.setTextCursor.assert_called_once_with(c)
+
+def test_MuWidgetNoParent():
+    """Ensure that the MuWidget base class can be created with no parent
+    """
+    mw = mu.interface.dialogs.MuWidget()
+    assert not hasattr(mw, "venv")
+
+def test_MuWidgetParentWithVenv():
+    """Ensure that the MuWidget can be created with a parent with venv
+    """
+    parent = QWidget()
+    venv = object()
+    parent.venv = venv
+    mw = mu.interface.dialogs.MuWidget(parent)
+    assert mw.venv is venv
+
+def test_MuWidgetParentWithoutVenv():
+    """Ensure that the MuWidget can be created with a parent without a venv
+    """
+    parent = QWidget()
+    mw = mu.interface.dialogs.MuWidget(parent)
+    assert not hasattr(mw, "venv")
