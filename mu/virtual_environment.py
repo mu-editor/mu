@@ -9,6 +9,8 @@ import subprocess
 
 import encodings
 
+from . import wheels
+
 python36_zip = os.path.dirname(encodings.__path__[0])
 del encodings
 
@@ -419,6 +421,11 @@ class VirtualEnvironment(object):
         # out if there are no wheels and suggest how to get them there...
         #
         wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+        if not wheel_filepaths:
+            logger.warn("No wheels found in %s; downloading...", wheels_dirpath)
+            wheels.download()
+            wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+
         if not wheel_filepaths:
             raise RuntimeError(
                 "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
