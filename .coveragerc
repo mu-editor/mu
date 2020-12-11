@@ -1,2 +1,2 @@
 [run]
-omit = mu/contrib/*, mu/mu-debug.py, mu/__main__.py
+omit = mu/contrib/*, mu/mu_debug.py, mu/__main__.py
