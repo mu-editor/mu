@@ -33,11 +33,11 @@ jobs:
         run: |
           pip install .[dev]
           pip list
-      - name: Build Windows
-        if: runner.os == 'Windows'
-        run: |
-          python make.py win32
-          python make.py win64
+      #~ - name: Build Windows
+        #~ if: runner.os == 'Windows'
+        #~ run: |
+          #~ python make.py win32
+          #~ python make.py win64
       - name: Build macOS
         if: runner.os == 'macOS'
         run: |
