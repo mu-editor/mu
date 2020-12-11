@@ -47,6 +47,10 @@ install_requires = [
     "semver>=2.8.0",
     'black>=19.10b0;python_version > "3.5"',
     #
+    # Needed for creating the runtime virtual environment
+    #
+    "virtualenv",
+    #
     # Needed for packaging
     #
     "wheel",
