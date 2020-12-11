@@ -17,6 +17,7 @@ import uuid
 
 import pytest
 import mu.logic
+import mu.virtual_environment
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import pyqtSignal, QObject, Qt
 
@@ -98,6 +99,7 @@ def generate_session(
     microbit_runtime=None,
     zoom_level=2,
     window=None,
+    venv_path=None,
     **kwargs
 ):
     """Generate a temporary session file for one test
@@ -145,6 +147,8 @@ def generate_session(
         session_data["zoom_level"] = zoom_level
     if window:
         session_data["window"] = window
+    if venv_path:
+        session_data["venv_path"] = venv_path
     session_data.update(**kwargs)
 
     if filepath is None:
@@ -1020,10 +1024,11 @@ def test_editor_restore_session_existing_runtime():
     file_contents = ["", ""]
     ed = mocked_editor(mode)
     with mock.patch("os.path.isfile", return_value=True):
-        with generate_session(
-            theme, mode, file_contents, microbit_runtime="/foo", zoom_level=5
-        ):
-            ed.restore_session()
+        with mock.patch("mu.virtual_environment.VirtualEnvironment.ensure") as venv_ensure:
+            with generate_session(
+                theme, mode, file_contents, microbit_runtime="/foo", zoom_level=5, venv_path="foo"
+            ):
+                ed.restore_session()
 
     assert ed.theme == theme
     assert ed._view.add_tab.call_count == len(file_contents)
@@ -1032,6 +1037,7 @@ def test_editor_restore_session_existing_runtime():
     assert ed.minify is False
     assert ed.microbit_runtime == "/foo"
     assert ed._view.zoom_position == 5
+    assert venv_ensure.called_with("foo")
 
 
 def test_editor_restore_session_missing_runtime():
