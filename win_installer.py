@@ -199,8 +199,8 @@ def package_name(requirement):
         if sep in requirement:
             name, _, version = requirement.partition(sep)
             return name.strip()
-    else:
-        return requirement
+
+    return requirement
 
 
 def packages_from(requirements, wheels):

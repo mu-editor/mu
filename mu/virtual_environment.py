@@ -247,8 +247,15 @@ class Pip(object):
         #
         # The first two lines are headers
         #
-        next(iterlines)
-        next(iterlines)
+        try:
+            next(iterlines)
+            next(iterlines)
+        #
+        # cf https://lgtm.com/rules/11000086/
+        #
+        except StopIteration:
+            raise RuntimeError("Unable to parse installed packages")
+
         for line in iterlines:
             #
             # Some lines have a third location element
