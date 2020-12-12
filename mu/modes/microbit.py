@@ -211,8 +211,30 @@ class MicrobitMode(MicroPythonMode):
             board_id = int(serial_number[:4], 16)
             logger.info("Serial port: {}".format(port))
             logger.info("Device serial number: {}".format(serial_number))
-            logger.info("Board ID: {}".format(board_id))
+            logger.info("Board ID: 0x{:x}".format(board_id))
         return path_to_microbit, port, board_id
+
+    def get_device_micropython_version(self):
+        """
+        Retrieves the MicroPython version from a micro:bit board.
+        Errors bubble up, so caller must catch them.
+        """
+        version_info = microfs.version()
+        logger.info(version_info)
+        board_info = version_info["version"].split()
+        if board_info[0] == "micro:bit" and board_info[1].startswith("v"):
+            # New style versions, so the correct information will be
+            # in the "release" field.
+            # Check the release is a correct semantic version.
+            semver.parse(version_info["release"])
+            board_version = version_info["release"]
+            logger.info("Board MicroPython: {}".format(board_version))
+        else:
+            # MicroPython was found, but not with an expected version string.
+            # 0.0.1 indicates an old unknown version. This is just a valid
+            # arbitrary flag for semver comparison
+            board_version = "0.0.1"
+        return board_version
 
     def flash(self):
         """
@@ -289,38 +311,19 @@ class MicrobitMode(MicroPythonMode):
         logger.info("Checking target device.")
         # Get the version of MicroPython on the device.
         try:
-            version_info = microfs.version()
-            logger.info(version_info)
-            board_info = version_info["version"].split()
-            if board_info[0] == "micro:bit" and board_info[1].startswith("v"):
-                # New style versions, so the correct information will be
-                # in the "release" field.
-                try:
-                    # Check the release is a correct semantic version.
-                    semver.parse(version_info["release"])
-                    board_version = version_info["release"]
-                except ValueError:
-                    # If it's an invalid semver, set to unknown version to
-                    # force flash.
-                    board_version = "0.0.1"
-            else:
-                # 0.0.1 indicates an old unknown version. This is just a
-                # valid arbitrary flag for semver comparison a couple of
-                # lines below.
-                board_version = "0.0.1"
-            logger.info("Board MicroPython: {}".format(board_version))
+            board_version = self.get_device_micropython_version()
             logger.info(
                 "Mu MicroPython: {}".format(uflash.MICROPYTHON_VERSION)
             )
             # If there's an older version of MicroPython on the device,
             # update it with the one packaged with Mu.
             if semver.compare(board_version, uflash.MICROPYTHON_VERSION) < 0:
+                logger.info("Board MicroPython is older than Mu's MicroPython")
                 force_flash = True
         except Exception:
             # Could not get version of MicroPython. This means either the
             # device has a really old version of MicroPython or is running
-            # something else. In any case, flash MicroPython onto the
-            # device.
+            # something else. In any case, flash MicroPython onto the device.
             logger.warning("Could not detect version of MicroPython.")
             force_flash = True
         # Check use of custom runtime.
