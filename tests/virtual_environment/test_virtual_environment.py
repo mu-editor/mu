@@ -79,7 +79,13 @@ def test_create_virtual_environment_on_disk(tmp_path):
     ):
         venv = mu.virtual_environment.VirtualEnvironment(str(venv_dirpath))
         venv.create()
-        venv_site_packages = venv_dirpath / "lib" / "site-packages"
+        venv_site_packages = pathlib.Path(
+            venv.run_python(
+                "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"
+            ).strip()
+        )
+        print("venv_site_packages:", venv_site_packages)
+        # ~ venv_site_packages = venv_dirpath / "lib" / "site-packages"
 
         #
         # Having a series of unrelated asserts is generally frowned upon
@@ -114,8 +120,8 @@ def test_create_virtual_environment_on_disk(tmp_path):
         #
         venv.find_interpreter()
         bin = "scripts" if sys.platform == "win32" else "bin"
-        assert (
-            pathlib.Path(venv.interpreter) == venv_dirpath / bin / "python.exe"
+        assert os.path.samefile(
+            venv.interpreter, venv_dirpath / bin / "python.exe"
         )
 
         #
@@ -125,7 +131,7 @@ def test_create_virtual_environment_on_disk(tmp_path):
         result = venv.run_python(
             "-c", "import arrr; print(arrr.__file__)"
         ).strip()
-        assert result == expected_result
+        assert os.path.samefile(result, expected_result)
 
 
 def test_create_virtual_environment_path(patched, tmp_path, venv_name):
