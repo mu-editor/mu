@@ -2128,9 +2128,7 @@ def test_show_help():
     ed = mu.logic.Editor(view)
     with mock.patch(
         "mu.logic.webbrowser.open_new", return_value=None
-    ) as wb, mock.patch(
-        "mu.i18n.language_code", "en_GB"
-    ):
+    ) as wb, mock.patch("mu.i18n.language_code", "en_GB"):
         ed.show_help()
         version = ".".join(__version__.split(".")[:2])
         url = "https://codewith.mu/en/help/{}".format(version)
