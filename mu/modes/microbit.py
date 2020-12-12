@@ -100,7 +100,7 @@ class MicrobitMode(MicroPythonMode):
     #               VID,     PID,   manufact., device name
     valid_boards = [(0x0D28, 0x0204, None, "BBC micro:bit")]
 
-    valid_serial_numbers = [9900, 9901]  # Serial numbers of supported boards.
+    valid_board_ids = [0x9900, 0x9901]  # Board IDs of supported boards.
 
     python_script = ""
 
@@ -196,6 +196,24 @@ class MicrobitMode(MicroPythonMode):
             )
         return mangled
 
+    def find_microbit(self):
+        """
+        Finds a micro:bit path, serial port and board ID.
+        """
+        port = None
+        board_id = None
+        path_to_microbit = uflash.find_microbit()
+        logger.info("Path to micro:bit: {}".format(path_to_microbit))
+        if self.editor.current_device:
+            port = self.editor.current_device.port
+            serial_number = self.editor.current_device.serial_number
+            # The board ID are the first 4 hex digits for the USB serial number
+            board_id = int(serial_number[:4], 16)
+            logger.info("Serial port: {}".format(port))
+            logger.info("Device serial number: {}".format(serial_number))
+            logger.info("Board ID: {}".format(board_id))
+        return path_to_microbit, port, board_id
+
     def flash(self):
         """
         Takes the currently active tab, compiles the Python script therein into
@@ -204,7 +222,7 @@ class MicrobitMode(MicroPythonMode):
         WARNING: This method is getting more complex due to several edge
         cases. Ergo, it's a target for refactoring.
         """
-        user_defined_microbit_path = None
+        user_defined_microbit_path = False
         self.python_script = ""
         logger.info("Preparing to flash script.")
         # The first thing to do is check the script is valid and of the
@@ -230,27 +248,15 @@ class MicrobitMode(MicroPythonMode):
         # method.
         self.python_script = python_script
         # Next step: find the microbit port and serial number.
-        path_to_microbit = uflash.find_microbit()
-        logger.info("Path to micro:bit: {}".format(path_to_microbit))
-        if self.editor.current_device:
-            port = self.editor.current_device.port
-            serial_number = self.editor.current_device.serial_number
-            logger.info("Serial port: {}".format(port))
-            logger.info("Device serial number: {}".format(serial_number))
-        else:
-            port = None
-        # Determine the location of the BBC micro:bit. If it can't be found
-        # fall back to asking the user to locate it.
+        path_to_microbit, port, board_id = self.find_microbit()
+        # If micro:bit path wasn't found ask the user to locate it.
         if path_to_microbit is None:
-            # Ask the user to locate the device.
             path_to_microbit = self.view.get_microbit_path(
                 config.HOME_DIRECTORY
             )
-            user_defined_microbit_path = path_to_microbit
+            user_defined_microbit_path = True
             logger.debug(
-                "User defined path to micro:bit: {}".format(
-                    user_defined_microbit_path
-                )
+                "User defined path to micro:bit: {}".format(path_to_microbit)
             )
         # Check the path and that it exists simply because the path maybe based
         # on stale data.
@@ -343,7 +349,6 @@ class MicrobitMode(MicroPythonMode):
                     # so just flash the Python hex with no embedded Python
                     # script, since this will be copied over when the
                     # flashing operation has finished.
-                    model_serial_number = int(serial_number[:4])
                     if rt_hex_path:
                         # If the user has specified a bespoke runtime hex file
                         # assume they know what they're doing and hope for the
@@ -351,7 +356,7 @@ class MicrobitMode(MicroPythonMode):
                         self.flash_thread = DeviceFlasher(
                             [path_to_microbit], b"", rt_hex_path
                         )
-                    elif model_serial_number in self.valid_serial_numbers:
+                    elif board_id in self.valid_board_ids:
                         # The connected board has a serial number that
                         # indicates the MicroPython hex bundled with Mu
                         # supports it. In which case, flash it.

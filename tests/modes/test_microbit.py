@@ -19,15 +19,25 @@ TEST_ROOT = os.path.split(os.path.dirname(__file__))[0]
 
 @pytest.fixture()
 def microbit():
+    # Board ID in Serial Number for micro:bit v1.3 and v1.3B
     return Device(
-        0x0D28, 0x0204, "COM0", "123456", "ARM", "BBC micro:bit", "microbit"
+        0x0D28, 0x0204, "COM0", "9900ABCD", "ARM", "BBC micro:bit", "microbit"
     )
 
 
 @pytest.fixture()
-def microbit_old_firmware():
+def microbit_v1_5():
+    # Board ID in Serial Number for micro:bit v1.5
     return Device(
-        0x0D28, 0x0204, "COM0", "990112345", "ARM", "BBC micro:bit", "microbit"
+        0x0D28, 0x0204, "COM10", "9901ABCD", "ARM", "BBC micro:bit", "microbit"
+    )
+
+
+@pytest.fixture()
+def microbit_incompatible():
+    # Board ID not valid for a micro:bit board
+    return Device(
+        0x0D28, 0x0204, "COM0", "99AA1234", "ARM", "BBC micro:bit", "microbit"
     )
 
 
@@ -327,7 +337,7 @@ def test_flash_with_attached_device_has_latest_firmware_encounters_problem(
         mm.flash_failed.assert_called_once_with(error)
 
 
-def test_flash_with_attached_device_has_old_firmware(microbit_old_firmware):
+def test_flash_with_attached_device_has_old_firmware(microbit):
     """
     If the device has some unknown old firmware, force flash it.
     """
@@ -357,7 +367,7 @@ def test_flash_with_attached_device_has_old_firmware(microbit_old_firmware):
         editor = mock.MagicMock()
         editor.minify = False
         editor.microbit_runtime = ""
-        editor.current_device = microbit_old_firmware
+        editor.current_device = microbit
         mm = MicrobitMode(editor, view)
         mm.copy_main = mock.MagicMock()
         mm.set_buttons = mock.MagicMock()
@@ -416,7 +426,7 @@ def test_flash_force_with_no_micropython(microbit):
         mock_flasher.start.assert_called_once_with()
 
 
-def test_flash_force_with_unsupported_microbit(microbit):
+def test_flash_force_with_unsupported_microbit(microbit_incompatible):
     """
     If Mu is supposed to flash the device, but the device is, in fact, not
     one that's supported by the version of MicroPython built into Mu, then
@@ -442,7 +452,7 @@ def test_flash_force_with_unsupported_microbit(microbit):
         editor = mock.MagicMock()
         editor.microbit_runtime = ""
         editor.minify = False
-        editor.current_device = microbit
+        editor.current_device = microbit_incompatible
         mm = MicrobitMode(editor, view)
         mm.set_buttons = mock.MagicMock()
         mm.flash()
@@ -500,9 +510,7 @@ def test_flash_force_with_attached_device_as_windows(microbit):
         mock_flasher.start.assert_called_once_with()
 
 
-def test_flash_forced_with_attached_device_as_not_windows(
-    microbit_old_firmware,
-):
+def test_flash_forced_with_attached_device_as_not_windows(microbit_v1_5):
     """
     Ensure the expected calls are made to DeviceFlasher and a helpful status
     message is enacted as if not on Windows.
@@ -540,7 +548,7 @@ def test_flash_forced_with_attached_device_as_not_windows(
         editor = mock.MagicMock()
         editor.minify = False
         editor.microbit_runtime = ""
-        editor.current_device = microbit_old_firmware
+        editor.current_device = microbit_v1_5
         mm = MicrobitMode(editor, view)
         mm.set_buttons = mock.MagicMock()
         mm.copy_main = mock.MagicMock()
@@ -560,7 +568,7 @@ def test_flash_forced_with_attached_device_as_not_windows(
         assert mm.python_script == b"foo"
 
 
-def test_flash_with_attached_device_and_custom_runtime():
+def test_flash_with_attached_device_and_custom_runtime(microbit_v1_5):
     """
     Ensure the custom runtime is passed into the DeviceFlasher thread.
     """
@@ -578,6 +586,7 @@ def test_flash_with_attached_device_and_custom_runtime():
         view.show_message = mock.MagicMock()
         editor = mock.MagicMock()
         editor.minify = True
+        editor.current_device = microbit_v1_5
         editor.microbit_runtime = os.path.join("tests", "customhextest.hex")
         mm = MicrobitMode(editor, view)
         mm.flash()
@@ -589,7 +598,7 @@ def test_flash_with_attached_device_and_custom_runtime():
         assert mock_flasher_class.call_count == 1
 
 
-def test_flash_with_attached_known_device_and_forced(microbit_old_firmware):
+def test_flash_with_attached_known_device_and_forced(microbit_v1_5):
     """
     If the runtime must be flashed, and the serial number for the device is
     supported, then flash the built-in MicroPython runtime.
@@ -627,7 +636,7 @@ def test_flash_with_attached_known_device_and_forced(microbit_old_firmware):
         editor = mock.MagicMock()
         editor.minify = False
         editor.microbit_runtime = ""
-        editor.current_device = microbit_old_firmware
+        editor.current_device = microbit_v1_5
         mm = MicrobitMode(editor, view)
         mm.flash()
         assert mock_flasher_class.call_count == 1
@@ -668,7 +677,7 @@ def test_force_flash_no_serial_connection():
         )
 
 
-def test_force_flash_empty_script(microbit_old_firmware):
+def test_force_flash_empty_script(microbit_v1_5):
     """
     If the script to be flashed onto the device is empty, this is a signal to
     force a full flash of the "vanilla" / empty MicroPython runtime onto the
@@ -703,7 +712,7 @@ def test_force_flash_empty_script(microbit_old_firmware):
         editor = mock.MagicMock()
         editor.minify = False
         editor.microbit_runtime = ""
-        editor.current_device = microbit_old_firmware
+        editor.current_device = microbit_v1_5
         mm = MicrobitMode(editor, view)
         mm.flash()
         mock_flasher_class.assert_called_once_with(["bar"], b"", None)
@@ -1011,7 +1020,7 @@ def test_flash_failed():
     mock_timer.stop.assert_called_once_with()
 
 
-def test_flash_minify():
+def test_flash_minify(microbit_v1_5):
     view = mock.MagicMock()
     script = "#" + ("x" * 8193) + "\n"
     view.current_tab.text = mock.MagicMock(return_value=script)
@@ -1019,6 +1028,7 @@ def test_flash_minify():
     view.show_message = mock.MagicMock()
     editor = mock.MagicMock()
     editor.minify = True
+    editor.current_device = microbit_v1_5
     mm = MicrobitMode(editor, view)
     mm.set_buttons = mock.MagicMock()
     with mock.patch("mu.modes.microbit.DeviceFlasher"):
@@ -1036,7 +1046,7 @@ def test_flash_minify():
         )
 
 
-def test_flash_minify_no_minify():
+def test_flash_minify_no_minify(microbit_v1_5):
     view = mock.MagicMock()
     view.current_tab.label = "foo"
     view.show_message = mock.MagicMock()
@@ -1044,6 +1054,7 @@ def test_flash_minify_no_minify():
     view.current_tab.text = mock.MagicMock(return_value=script)
     editor = mock.MagicMock()
     editor.minify = True
+    editor.current_device = microbit_v1_5
     mm = MicrobitMode(editor, view)
     mm.set_buttons = mock.MagicMock()
     with mock.patch("mu.modes.microbit.can_minify", False):
