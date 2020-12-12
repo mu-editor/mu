@@ -22,6 +22,7 @@ from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import pyqtSignal, QObject, Qt
 
 from mu import __version__
+from mu import i18n
 
 SESSION = json.dumps(
     {
@@ -2125,12 +2126,10 @@ def test_show_help():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    qlocalesys = mock.MagicMock()
-    qlocalesys.name.return_value = "en_GB"
     with mock.patch(
         "mu.logic.webbrowser.open_new", return_value=None
     ) as wb, mock.patch(
-        "PyQt5.QtCore.QLocale.system", return_value=qlocalesys
+        "mu.i18n.language_code", "en_GB"
     ):
         ed.show_help()
         version = ".".join(__version__.split(".")[:2])
