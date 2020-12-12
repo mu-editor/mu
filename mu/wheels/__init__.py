@@ -20,7 +20,10 @@ def download(dirpath=WHEELS_DIRPATH):
     #
     # Download the wheels needed for modes
     #
+    print("download:WHEELS_DIRPATH", WHEELS_DIRPATH)
+    print("download:mode_packages", mode_packages)
     for package in mode_packages:
+        print("download:package", package)
         subprocess.run(
             [
                 sys.executable,

@@ -62,16 +62,21 @@ def pipped():
         yield pip
 
 
-def test_create_virtual_environment_on_disk(tmp_path):
-    """Ensure that we're actually creating a working virtual environment
-    on the disk with wheels installed
-    """
-    wheels_dirpath = tmp_path / "wheels"
+def set_up_test_wheels(temp_dirpath):
+    wheels_dirpath = temp_dirpath / "wheels"
     wheels_dirpath.mkdir()
     shutil.copyfile(
         os.path.join(HERE, "wheels", WHEEL_FILENAME),
         wheels_dirpath / WHEEL_FILENAME,
     )
+    return wheels_dirpath
+
+
+def test_create_virtual_environment_on_disk(tmp_path):
+    """Ensure that we're actually creating a working virtual environment
+    on the disk with wheels installed
+    """
+    wheels_dirpath = set_up_test_wheels(tmp_path)
     venv_name = uuid.uuid1().hex
     venv_dirpath = tmp_path / venv_name
     with patch.object(
@@ -149,28 +154,32 @@ def test_create_virtual_environment_name_obj(patched, venv_name):
     assert venv.name == venv_name
 
 
-def test_base_packages_installed(patched, venv_name):
+def test_base_packages_installed(tmp_path, patched, venv_name):
     """Ensure that, when the venv is installed, the base packages are installed
     from wheels
     """
+    wheels_dirpath = set_up_test_wheels(tmp_path)
     #
     # Make sure the juypter kernel install doesn't interfere
     #
     with patch.object(VE, "install_jupyter_kernel"):
         with patch.object(VE, "register_baseline_packages"):
             with patch.object(PIP, "install") as mock_pip_install:
-                #
-                # Check that we're calling `pip install` with all the wheels in
-                # our wheelhouse
-                #
-                expected_args = glob.glob(
-                    os.path.join(
-                        mu.virtual_environment.wheels_dirpath, "*.whl"
+                with patch.object(
+                    mu.virtual_environment, "wheels_dirpath", wheels_dirpath
+                ):
+                    #
+                    # Check that we're calling `pip install` with all the wheels
+                    # in wheelhouse
+                    #
+                    expected_args = glob.glob(
+                        os.path.join(
+                            mu.virtual_environment.wheels_dirpath, "*.whl"
+                        )
                     )
-                )
-                venv = mu.virtual_environment.VirtualEnvironment(venv_name)
-                venv.create()
-                mock_pip_install.assert_called_once_with(expected_args)
+                    venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+                    venv.create()
+                    mock_pip_install.assert_called_once_with(expected_args)
 
 
 def test_jupyter_kernel_installed(patched, venv_name):

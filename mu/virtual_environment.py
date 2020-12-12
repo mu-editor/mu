@@ -433,6 +433,8 @@ class VirtualEnvironment(object):
                 "No wheels found in %s; downloading...", wheels_dirpath
             )
             print("About to download wheels")
+            print("wheels:", repr(wheels))
+            print("wheels.download:", repr(wheels.download))
             wheels.download()
             wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
             print("wheel_filepaths#2", wheel_filepaths)
