@@ -258,168 +258,7 @@ class MicrobitMode(MicroPythonMode):
             logger.debug(
                 "User defined path to micro:bit: {}".format(path_to_microbit)
             )
-        # Check the path and that it exists simply because the path maybe based
-        # on stale data.
-        if path_to_microbit and os.path.exists(path_to_microbit):
-            force_flash = False  # If set to true, fully flash the device.
-            # If there's no port but there's a path_to_microbit, then we're
-            # probably running on Windows with an old device, so force flash.
-            if not port:
-                force_flash = True
-            if not self.python_script.strip():
-                # If the script is empty, this is a signal to simply force a
-                # flash.
-                logger.info("Python script empty. Forcing flash.")
-                force_flash = True
-            logger.info("Checking target device.")
-            # Get the version of MicroPython on the device.
-            try:
-                version_info = microfs.version()
-                logger.info(version_info)
-                board_info = version_info["version"].split()
-                if board_info[0] == "micro:bit" and board_info[1].startswith(
-                    "v"
-                ):
-                    # New style versions, so the correct information will be
-                    # in the "release" field.
-                    try:
-                        # Check the release is a correct semantic version.
-                        semver.parse(version_info["release"])
-                        board_version = version_info["release"]
-                    except ValueError:
-                        # If it's an invalid semver, set to unknown version to
-                        # force flash.
-                        board_version = "0.0.1"
-                else:
-                    # 0.0.1 indicates an old unknown version. This is just a
-                    # valid arbitrary flag for semver comparison a couple of
-                    # lines below.
-                    board_version = "0.0.1"
-                logger.info("Board MicroPython: {}".format(board_version))
-                logger.info(
-                    "Mu MicroPython: {}".format(uflash.MICROPYTHON_VERSION)
-                )
-                # If there's an older version of MicroPython on the device,
-                # update it with the one packaged with Mu.
-                if (
-                    semver.compare(board_version, uflash.MICROPYTHON_VERSION)
-                    < 0
-                ):
-                    force_flash = True
-            except Exception:
-                # Could not get version of MicroPython. This means either the
-                # device has a really old version of MicroPython or is running
-                # something else. In any case, flash MicroPython onto the
-                # device.
-                logger.warning("Could not detect version of MicroPython.")
-                force_flash = True
-            # Check use of custom runtime.
-            rt_hex_path = self.editor.microbit_runtime.strip()
-            message = _('Flashing "{}" onto the micro:bit.').format(tab.label)
-            if rt_hex_path and os.path.exists(rt_hex_path):
-                message = message + _(" Runtime: {}").format(rt_hex_path)
-                force_flash = True  # Using a custom runtime, so flash it.
-            else:
-                rt_hex_path = None
-                self.editor.microbit_runtime = ""
-            # Check for use of user defined path (to save hex onto local
-            # file system.
-            if user_defined_microbit_path:
-                force_flash = True
-            # If we need to flash the device with a clean hex, do so now.
-            if force_flash:
-                logger.info("Flashing new MicroPython runtime onto device")
-                self.editor.show_status_message(message, 10)
-                self.set_buttons(flash=False)
-                if user_defined_microbit_path or not port:
-                    # The user has provided a path to a location on the
-                    # filesystem. In this case save the combined hex/script
-                    # in the specified path_to_microbit.
-                    # Or... Mu has a path to a micro:bit but can't establish
-                    # a serial connection, so use the combined hex/script
-                    # to flash the device.
-                    self.flash_thread = DeviceFlasher(
-                        [path_to_microbit], self.python_script, rt_hex_path
-                    )
-                    # Reset python_script so Mu doesn't try to copy it as the
-                    # main.py file.
-                    self.python_script = ""
-                else:
-                    # We appear to need to flash a connected micro:bit device,
-                    # so just flash the Python hex with no embedded Python
-                    # script, since this will be copied over when the
-                    # flashing operation has finished.
-                    if rt_hex_path:
-                        # If the user has specified a bespoke runtime hex file
-                        # assume they know what they're doing and hope for the
-                        # best.
-                        self.flash_thread = DeviceFlasher(
-                            [path_to_microbit], b"", rt_hex_path
-                        )
-                    elif board_id in self.valid_board_ids:
-                        # The connected board has a serial number that
-                        # indicates the MicroPython hex bundled with Mu
-                        # supports it. In which case, flash it.
-                        self.flash_thread = DeviceFlasher(
-                            [path_to_microbit], b"", None
-                        )
-                    else:
-                        message = _("Unsupported BBC micro:bit.")
-                        information = _(
-                            "Your device is newer than this "
-                            "version of Mu. Please update Mu "
-                            "to the latest version to support "
-                            "this device.\n\n"
-                            "https://codewith.mu/"
-                        )
-                        self.view.show_message(message, information)
-                        return
-                if sys.platform == "win32":
-                    # Windows blocks on write.
-                    self.flash_thread.finished.connect(self.flash_finished)
-                else:
-                    if user_defined_microbit_path:
-                        # Call the flash_finished immediately the thread
-                        # finishes if Mu is writing the hex file to a user
-                        # defined location on the local filesystem.
-                        self.flash_thread.finished.connect(self.flash_finished)
-                    else:
-                        # Other platforms don't block, so schedule the finish
-                        # call for 10 seconds (approximately how long flashing
-                        # the connected device takes).
-                        self.flash_timer = QTimer()
-                        self.flash_timer.timeout.connect(self.flash_finished)
-                        self.flash_timer.setSingleShot(True)
-                        self.flash_timer.start(10000)
-                self.flash_thread.on_flash_fail.connect(self.flash_failed)
-                self.flash_thread.start()
-            else:
-                try:
-                    self.copy_main()
-                except IOError as ioex:
-                    # There was a problem with the serial communication with
-                    # the device, so revert to forced flash... "old style".
-                    # THIS IS A HACK! :-(
-                    logger.warning("Could not copy file to device.")
-                    logger.error(ioex)
-                    logger.info("Falling back to old-style flashing.")
-                    self.flash_thread = DeviceFlasher(
-                        [path_to_microbit], self.python_script, rt_hex_path
-                    )
-                    self.python_script = ""
-                    if sys.platform == "win32":
-                        # Windows blocks on write.
-                        self.flash_thread.finished.connect(self.flash_finished)
-                    else:
-                        self.flash_timer = QTimer()
-                        self.flash_timer.timeout.connect(self.flash_finished)
-                        self.flash_timer.setSingleShot(True)
-                        self.flash_timer.start(10000)
-                    self.flash_thread.on_flash_fail.connect(self.flash_failed)
-                    self.flash_thread.start()
-                except Exception as ex:
-                    self.flash_failed(ex)
-        else:
+        if not path_to_microbit or not os.path.exists(path_to_microbit):
             # Try to be helpful... essentially there is nothing Mu can do but
             # prompt for patience while the device is mounted and/or do the
             # classic "have you tried switching it off and on again?" trick.
@@ -435,6 +274,161 @@ class MicrobitMode(MicroPythonMode):
                 " the device remains unfound."
             )
             self.view.show_message(message, information)
+            return
+        # By this point we have a valid path_to_micobit
+        force_flash = False  # If set to true, fully flash the device.
+        # If there's no port but there's a path_to_microbit, then we're
+        # probably running on Windows with an old device, so force flash.
+        if not port:
+            force_flash = True
+        if not self.python_script.strip():
+            # If the script is empty, this is a signal to simply force a
+            # flash.
+            logger.info("Python script empty. Forcing flash.")
+            force_flash = True
+        logger.info("Checking target device.")
+        # Get the version of MicroPython on the device.
+        try:
+            version_info = microfs.version()
+            logger.info(version_info)
+            board_info = version_info["version"].split()
+            if board_info[0] == "micro:bit" and board_info[1].startswith("v"):
+                # New style versions, so the correct information will be
+                # in the "release" field.
+                try:
+                    # Check the release is a correct semantic version.
+                    semver.parse(version_info["release"])
+                    board_version = version_info["release"]
+                except ValueError:
+                    # If it's an invalid semver, set to unknown version to
+                    # force flash.
+                    board_version = "0.0.1"
+            else:
+                # 0.0.1 indicates an old unknown version. This is just a
+                # valid arbitrary flag for semver comparison a couple of
+                # lines below.
+                board_version = "0.0.1"
+            logger.info("Board MicroPython: {}".format(board_version))
+            logger.info(
+                "Mu MicroPython: {}".format(uflash.MICROPYTHON_VERSION)
+            )
+            # If there's an older version of MicroPython on the device,
+            # update it with the one packaged with Mu.
+            if semver.compare(board_version, uflash.MICROPYTHON_VERSION) < 0:
+                force_flash = True
+        except Exception:
+            # Could not get version of MicroPython. This means either the
+            # device has a really old version of MicroPython or is running
+            # something else. In any case, flash MicroPython onto the
+            # device.
+            logger.warning("Could not detect version of MicroPython.")
+            force_flash = True
+        # Check use of custom runtime.
+        rt_hex_path = self.editor.microbit_runtime.strip()
+        message = _('Flashing "{}" onto the micro:bit.').format(tab.label)
+        if rt_hex_path and os.path.exists(rt_hex_path):
+            message = message + _(" Runtime: {}").format(rt_hex_path)
+            force_flash = True  # Using a custom runtime, so flash it.
+        else:
+            rt_hex_path = None
+            self.editor.microbit_runtime = ""
+        # Check for use of user defined path (to save hex onto local
+        # file system.
+        if user_defined_microbit_path:
+            force_flash = True
+        # If we need to flash the device with a clean hex, do so now.
+        if force_flash:
+            logger.info("Flashing new MicroPython runtime onto device")
+            self.editor.show_status_message(message, 10)
+            self.set_buttons(flash=False)
+            if user_defined_microbit_path or not port:
+                # The user has provided a path to a location on the
+                # filesystem. In this case save the combined hex/script
+                # in the specified path_to_microbit.
+                # Or... Mu has a path to a micro:bit but can't establish
+                # a serial connection, so use the combined hex/script
+                # to flash the device.
+                self.flash_thread = DeviceFlasher(
+                    [path_to_microbit], self.python_script, rt_hex_path
+                )
+                # Reset python_script so Mu doesn't try to copy it as the
+                # main.py file.
+                self.python_script = ""
+            else:
+                # We appear to need to flash a connected micro:bit device,
+                # so just flash the Python hex with no embedded Python
+                # script, since this will be copied over when the
+                # flashing operation has finished.
+                if rt_hex_path:
+                    # If the user has specified a bespoke runtime hex file
+                    # assume they know what they're doing and hope for the
+                    # best.
+                    self.flash_thread = DeviceFlasher(
+                        [path_to_microbit], b"", rt_hex_path
+                    )
+                elif board_id in self.valid_board_ids:
+                    # The connected board has a serial number that
+                    # indicates the MicroPython hex bundled with Mu
+                    # supports it. In which case, flash it.
+                    self.flash_thread = DeviceFlasher(
+                        [path_to_microbit], b"", None
+                    )
+                else:
+                    message = _("Unsupported BBC micro:bit.")
+                    information = _(
+                        "Your device is newer than this "
+                        "version of Mu. Please update Mu "
+                        "to the latest version to support "
+                        "this device.\n\n"
+                        "https://codewith.mu/"
+                    )
+                    self.view.show_message(message, information)
+                    return
+            if sys.platform == "win32":
+                # Windows blocks on write.
+                self.flash_thread.finished.connect(self.flash_finished)
+            else:
+                if user_defined_microbit_path:
+                    # Call the flash_finished immediately the thread
+                    # finishes if Mu is writing the hex file to a user
+                    # defined location on the local filesystem.
+                    self.flash_thread.finished.connect(self.flash_finished)
+                else:
+                    # Other platforms don't block, so schedule the finish
+                    # call for 10 seconds (approximately how long flashing
+                    # the connected device takes).
+                    self.flash_timer = QTimer()
+                    self.flash_timer.timeout.connect(self.flash_finished)
+                    self.flash_timer.setSingleShot(True)
+                    self.flash_timer.start(10000)
+            self.flash_thread.on_flash_fail.connect(self.flash_failed)
+            self.flash_thread.start()
+        else:
+            try:
+                self.copy_main()
+            except IOError as ioex:
+                # There was a problem with the serial communication with
+                # the device, so revert to forced flash... "old style".
+                # THIS IS A HACK! :-(
+                logger.warning("Could not copy file to device.")
+                logger.error(ioex)
+                logger.info("Falling back to old-style flashing.")
+                self.flash_thread = DeviceFlasher(
+                    [path_to_microbit], self.python_script, rt_hex_path
+                )
+                self.python_script = ""
+                if sys.platform == "win32":
+                    # Windows blocks on write.
+                    self.flash_thread.finished.connect(self.flash_finished)
+                else:
+                    self.flash_timer = QTimer()
+                    self.flash_timer.timeout.connect(self.flash_finished)
+                    self.flash_timer.setSingleShot(True)
+                    self.flash_timer.start(10000)
+                self.flash_thread.on_flash_fail.connect(self.flash_failed)
+                self.flash_thread.start()
+            except Exception as ex:
+                self.flash_failed(ex)
 
     def flash_finished(self):
         """
