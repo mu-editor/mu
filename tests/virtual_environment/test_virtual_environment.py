@@ -169,8 +169,8 @@ def test_base_packages_installed(tmp_path, patched, venv_name):
                     mu.virtual_environment, "wheels_dirpath", wheels_dirpath
                 ):
                     #
-                    # Check that we're calling `pip install` with all the wheels
-                    # in wheelhouse
+                    # Check that we're calling `pip install` with all the
+                    # wheels in the wheelhouse
                     #
                     expected_args = glob.glob(
                         os.path.join(
