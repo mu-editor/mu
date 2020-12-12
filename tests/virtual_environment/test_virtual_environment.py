@@ -120,8 +120,9 @@ def test_create_virtual_environment_on_disk(tmp_path):
         #
         venv.find_interpreter()
         bin = "scripts" if sys.platform == "win32" else "bin"
+        bin_extension = ".exe" if sys.platform == "win32" else ""
         assert os.path.samefile(
-            venv.interpreter, venv_dirpath / bin / "python.exe"
+            venv.interpreter, venv_dirpath / bin / ("python" + bin_extension)
         )
 
         #
