@@ -183,10 +183,7 @@ def test_jupyter_kernel_installed(patched, venv_name):
             #
             expected_jupyter_args = ("-m", "ipykernel", "install")
             args, _ = run_python.call_args
-            assert (
-                expected_jupyter_args
-                == args[: len(expected_jupyter_args)]
-            )
+            assert expected_jupyter_args == args[: len(expected_jupyter_args)]
 
 
 def test_install_user_packages(patched, venv_name):

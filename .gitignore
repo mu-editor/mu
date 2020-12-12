@@ -79,7 +79,7 @@ target/
 *.mp4
 
 # Virtual Environment
-.venv/
+.venv*/
 /mu/wheels/*.whl
 /apply-pr.cmd
 /fresh-run.cmd
