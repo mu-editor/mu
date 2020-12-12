@@ -439,8 +439,10 @@ def test_PackageDialog_setup():
         pd.setup(to_remove, to_add)
 
     queue_called_with = pip_queue.append.call_args_list
-    assert queue_called_with[0].args[0] == ("install", to_add)
-    assert queue_called_with[1].args[0] == ("remove", to_remove)
+    [args0], _ = queue_called_with[0]
+    assert args0 == ("install", to_add)
+    [args1], _ = queue_called_with[1]
+    assert args1 == ("remove", to_remove)
     assert pd.button_box.button(QDialogButtonBox.Ok).isEnabled() is False
 
 
