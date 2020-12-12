@@ -22,7 +22,6 @@ from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import pyqtSignal, QObject, Qt
 
 from mu import __version__
-from mu import i18n
 
 SESSION = json.dumps(
     {
