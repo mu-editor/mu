@@ -177,7 +177,6 @@ def test_ESPFirmwareFlasherWidget_setup(esptool_is_installed, microbit):
     device_list = mu.logic.DeviceList(modes)
     device_list.add_device(microbit)
     espff = mu.interface.dialogs.ESPFirmwareFlasherWidget()
-    print("is_installed =>", espff.esptool_is_installed)
     espff.venv = mock.Mock()
     with mock.patch("os.path.exists", return_value=False):
         espff.setup(mode, device_list)

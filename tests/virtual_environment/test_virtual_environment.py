@@ -84,8 +84,6 @@ def test_create_virtual_environment_on_disk(tmp_path):
                 "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"
             ).strip()
         )
-        print("venv_site_packages:", venv_site_packages)
-        # ~ venv_site_packages = venv_dirpath / "lib" / "site-packages"
 
         #
         # Having a series of unrelated asserts is generally frowned upon
