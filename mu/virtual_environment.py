@@ -422,16 +422,20 @@ class VirtualEnvironment(object):
         # This command should install the baseline packages, picking up the
         # precompiled wheels from the wheels path
         #
-        # For dev purposes (where we might not have the wheels) bomb
-        # out if there are no wheels and suggest how to get them there...
+        # For dev purposes (where we might not have the wheels) warn where
+        # the wheels are not already present and download them
         #
+        print("wheels_dirpath:", wheels_dirpath)
         wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+        print("wheel_filepaths#1", wheel_filepaths)
         if not wheel_filepaths:
             logger.warn(
                 "No wheels found in %s; downloading...", wheels_dirpath
             )
+            print("About to download wheels")
             wheels.download()
             wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+            print("wheel_filepaths#2", wheel_filepaths)
 
         if not wheel_filepaths:
             raise RuntimeError(
