@@ -2255,7 +2255,7 @@ def test_quit_save_tabs_with_paths():
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
-    [session] = mock_save_session.call_args.args
+    [session], _ = mock_save_session.call_args
     assert os.path.abspath("foo.py") in session["paths"]
 
 
@@ -2278,7 +2278,7 @@ def test_quit_save_theme():
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
-    [session] = mock_save_session.call_args.args
+    [session], _ = mock_save_session.call_args
     assert session["theme"] == "night"
 
 
@@ -2303,7 +2303,7 @@ def test_quit_save_envars():
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
-    [session] = mock_save_session.call_args.args
+    [session], _ = mock_save_session.call_args
     assert session["envars"] == [["name1", "value1"], ["name2", "value2"]]
 
 
@@ -2327,7 +2327,7 @@ def test_quit_save_zoom_level():
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
-    [session] = mock_save_session.call_args.args
+    [session], _ = mock_save_session.call_args
     #
     # FIXME: not clear where this is set. Default?
     #
@@ -2354,7 +2354,7 @@ def test_quit_save_window_geometry():
         with mock.patch.object(mu.logic, "save_session") as mock_save_session:
             ed.quit()
 
-    [session] = mock_save_session.call_args.args
+    [session], _ = mock_save_session.call_args
     #
     # FIXME: not clear where this is set. Default?
     #
@@ -2629,7 +2629,8 @@ def test_sync_package_state():
     old_packages = ["foo", "bar"]
     new_packages = ["bar", "baz"]
     ed.sync_package_state(old_packages, new_packages)
-    assert view.sync_packages.call_args.args[:2] == ({"foo"}, {"baz"})
+    args, _ = view.sync_packages.call_args
+    assert args[:2] == ({"foo"}, {"baz"})
 
 
 def test_select_mode():
