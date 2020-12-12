@@ -42,7 +42,8 @@ def test_pip_run():
             pip_executable,
             [command, "--disable-pip-version-check"] + list(params),
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 #
@@ -63,7 +64,8 @@ def test_pip_install_single_package():
             pip_executable,
             ["install", "--disable-pip-version-check", package_name],
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 def test_pip_install_several_packages():
@@ -79,7 +81,8 @@ def test_pip_install_several_packages():
             pip_executable,
             ["install", "--disable-pip-version-check"] + package_names,
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 def test_pip_install_single_package_with_flag():
@@ -100,7 +103,8 @@ def test_pip_install_single_package_with_flag():
                 package_name,
             ],
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 def test_pip_install_several_packages_with_flag():
@@ -117,7 +121,8 @@ def test_pip_install_several_packages_with_flag():
             ["install", "--disable-pip-version-check", "--switch"]
             + package_names,
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 def test_pip_install_single_package_with_flag_value():
@@ -139,7 +144,8 @@ def test_pip_install_single_package_with_flag_value():
                 package_name,
             ],
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 #
@@ -165,7 +171,8 @@ def test_pip_uninstall_single_package():
                 package_name,
             ],
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 def test_pip_uninstall_several_packages():
@@ -182,7 +189,8 @@ def test_pip_uninstall_several_packages():
             ["uninstall", "--disable-pip-version-check", "--yes"]
             + package_names,
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 def test_pip_uninstall_single_package_with_flag():
@@ -204,7 +212,8 @@ def test_pip_uninstall_single_package_with_flag():
                 package_name,
             ],
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 def test_pip_uninstall_several_packages_with_flag():
@@ -221,7 +230,8 @@ def test_pip_uninstall_several_packages_with_flag():
             ["uninstall", "--disable-pip-version-check", "--yes", "--switch"]
             + package_names,
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 def test_pip_uninstall_single_package_with_flag_value():
@@ -244,7 +254,8 @@ def test_pip_uninstall_single_package_with_flag_value():
                 package_name,
             ],
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 #
@@ -260,7 +271,8 @@ def test_pip_freeze():
             pip_executable,
             ["freeze", "--disable-pip-version-check"],
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 def test_pip_list():
@@ -273,7 +285,8 @@ def test_pip_list():
             pip_executable,
             ["list", "--disable-pip-version-check"],
         )
-        assert mock_run.call_args.args == expected_args
+        args, _ = mock_run.call_args
+        assert args == expected_args
 
 
 #
