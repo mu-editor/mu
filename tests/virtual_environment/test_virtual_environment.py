@@ -77,7 +77,7 @@ def test_create_virtual_environment_on_disk(tmp_path):
     with patch.object(
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
     ):
-        venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+        venv = mu.virtual_environment.VirtualEnvironment(str(venv_dirpath))
         venv.create()
         venv_site_packages = venv_dirpath / "lib" / "site-packages"
 
@@ -182,9 +182,10 @@ def test_jupyter_kernel_installed(patched, venv_name):
             # Check that we're calling `ipykernel install`
             #
             expected_jupyter_args = ("-m", "ipykernel", "install")
+            args, _ = run_python.call_args
             assert (
                 expected_jupyter_args
-                == run_python.call_args.args[: len(expected_jupyter_args)]
+                == args[: len(expected_jupyter_args)]
             )
 
 
@@ -201,8 +202,8 @@ def test_install_user_packages(patched, venv_name):
         #
         # We call pip with the entire list of packages
         #
-        args0 = mock_pip_install.call_args.args[0]
-        assert args0 == packages
+        args, _ = mock_pip_install.call_args
+        assert args[0] == packages
 
 
 def test_remove_user_packages(patched, venv_name):
@@ -218,8 +219,8 @@ def test_remove_user_packages(patched, venv_name):
         #
         # We call pip with the entire list of packages
         #
-        args0 = mock_pip_uninstall.call_args.args[0]
-        assert args0 == packages
+        args, _ = mock_pip_uninstall.call_args
+        assert args[0] == packages
 
 
 def test_installed_packages(patched, venv_name):
