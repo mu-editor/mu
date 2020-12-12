@@ -371,7 +371,7 @@ class VirtualEnvironment(object):
 
         env = dict(os.environ)
         subprocess.run(
-            [sys.executable, "-m", "virtualenv", self.path],
+            [sys.executable, "-m", "virtualenv", "-q", self.path],
             check=True,
             env=env,
         )
