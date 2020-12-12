@@ -452,7 +452,9 @@ class VirtualEnvironment(object):
         # For now, though, just put it somewhere
         #
         packages = list(self.pip.installed())
-        os.makedirs(os.path.dirpath(self.BASELINE_PACKAGES_FILEPATH))
+        os.makedirs(
+            os.path.dirname(self.BASELINE_PACKAGES_FILEPATH), exist_ok=True
+        )
         with open(self.BASELINE_PACKAGES_FILEPATH, "w", encoding="utf-8") as f:
             json.dump(packages, f)
 
