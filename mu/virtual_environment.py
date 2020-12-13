@@ -264,6 +264,8 @@ class Pip(object):
             yield name, version
 
 
+class VirtualEnvironmentError(Exception): pass
+
 class VirtualEnvironment(object):
 
     BASELINE_PACKAGES_FILEPATH = os.path.join(
@@ -276,6 +278,10 @@ class VirtualEnvironment(object):
         self._is_windows = sys.platform == "win32"
         self._bin_extension = ".exe" if self._is_windows else ""
         self.relocate(dirpath)
+        self.is_ensured = False
+
+    def __str__(self):
+        return "<%s at %s (%s)>" % (self.__class__.__name__, self.path, "Ensured" if self.is_ensured else "Not Ensured")
 
     def relocate(self, dirpath):
         self.path = dirpath
@@ -368,6 +374,8 @@ class VirtualEnvironment(object):
             logger.error(message)
             raise RuntimeError(message)
 
+        self.is_ensured = True
+
     def create(self):
         """
         Create a new virtualenv at the referenced path.
@@ -424,19 +432,13 @@ class VirtualEnvironment(object):
         # For dev purposes (where we might not have the wheels) warn where
         # the wheels are not already present and download them
         #
-        print("wheels_dirpath:", wheels_dirpath)
         wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
-        print("wheel_filepaths#1", wheel_filepaths)
         if not wheel_filepaths:
             logger.warn(
                 "No wheels found in %s; downloading...", wheels_dirpath
             )
-            print("About to download wheels")
-            print("wheels:", repr(wheels))
-            print("wheels.download:", repr(wheels.download))
             wheels.download()
             wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
-            print("wheel_filepaths#2", wheel_filepaths)
 
         if not wheel_filepaths:
             raise RuntimeError(
