@@ -8,6 +8,7 @@ from unittest import mock
 from mu.app import excepthook, run, setup_logging, debug, setup_modes
 from mu.logic import LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
+from PyQt5.QtCore import Qt
 
 
 class DumSig:
@@ -126,7 +127,10 @@ def test_run():
         # foo.call_count is instantiating the class
         assert qa.call_count == 1
         # foo.mock_calls are method calls on the object
-        assert len(qa.mock_calls) == 8
+        if hasattr(Qt, "AA_EnableHighDpiScaling"):
+            assert len(qa.mock_calls) == 9
+        else:
+            assert len(qa.mock_calls) == 8
         assert qsp.call_count == 1
         assert len(qsp.mock_calls) == 2
         assert timer.call_count == 2
