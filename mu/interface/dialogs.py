@@ -317,7 +317,6 @@ class ESPFirmwareFlasherWidget(QWidget):
         form_set = QHBoxLayout()
         form_set.addWidget(self.log_text_area)
         widget_layout.addLayout(form_set)
-        widget_layout.addStretch()
 
         # Connect events
         self.txtFolder.textChanged.connect(self.firmware_path_changed)
