@@ -6,6 +6,7 @@ import sys
 import os
 from mu.modes.python3 import PythonMode, KernelRunner
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
+from mu.virtual_environment import venv
 
 # ~ from mu.logic import MODULE_DIR
 from unittest import mock
@@ -258,7 +259,6 @@ def test_python_run_script():
     Ensure that running the script launches the process as expected.
     """
     editor = mock.MagicMock()
-    editor.venv.interpreter = "interpreter"
     editor.envars = [["name", "value"]]
     view = mock.MagicMock()
     view.current_tab.path = "/foo/bar"
@@ -267,7 +267,9 @@ def test_python_run_script():
     mock_runner = mock.MagicMock()
     view.add_python3_runner.return_value = mock_runner
     pm = PythonMode(editor, view)
-    pm.run_script()
+    with mock.patch.object(venv, "interpreter", "interpreter"):
+        pm.run_script()
+
     editor.save_tab_to_file.assert_called_once_with(view.current_tab)
     view.add_python3_runner.assert_called_once_with(
         interpreter="interpreter",
@@ -413,7 +415,6 @@ def test_python_add_repl():
     mock_qthread = mock.MagicMock()
     mock_kernel_runner = mock.MagicMock()
     editor = mock.MagicMock()
-    editor.venv.name = "interpreter"
     editor.envars = [["name", "value"]]
     view = mock.MagicMock()
     pm = PythonMode(editor, view)
@@ -421,11 +422,11 @@ def test_python_add_repl():
     pm.stop_kernel = mock.MagicMock()
     with mock.patch("mu.modes.python3.QThread", mock_qthread), mock.patch(
         "mu.modes.python3.KernelRunner", mock_kernel_runner
-    ):
+    ), mock.patch.object(venv, "name", "name"):
         pm.add_repl()
     mock_qthread.assert_called_once_with()
     mock_kernel_runner.assert_called_once_with(
-        kernel_name="interpreter",
+        kernel_name="name",
         pythonpath="",
         cwd=pm.workspace_dir(),
         envars=editor.envars,

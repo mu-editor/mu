@@ -17,7 +17,9 @@ import uuid
 
 import pytest
 import mu.logic
-import mu.virtual_environment
+
+# ~ import mu.virtual_environment
+from mu.virtual_environment import venv
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import pyqtSignal, QObject, Qt
 
@@ -1024,9 +1026,7 @@ def test_editor_restore_session_existing_runtime():
     file_contents = ["", ""]
     ed = mocked_editor(mode)
     with mock.patch("os.path.isfile", return_value=True):
-        with mock.patch(
-            "mu.virtual_environment.VirtualEnvironment.ensure"
-        ) as venv_ensure:
+        with mock.patch.object(venv, "relocate") as venv_relocate:
             with generate_session(
                 theme,
                 mode,
@@ -1044,7 +1044,7 @@ def test_editor_restore_session_existing_runtime():
     assert ed.minify is False
     assert ed.microbit_runtime == "/foo"
     assert ed._view.zoom_position == 5
-    assert venv_ensure.called_with("foo")
+    assert venv_relocate.called_with("foo")
 
 
 def test_editor_restore_session_missing_runtime():
@@ -2533,22 +2533,26 @@ def test_show_admin():
         "packages": "baz\n",
     }
     view.show_admin.return_value = new_settings
-    view.venv.installed_packages.return_value = ([], ["Foo", "bar"])
-    mock_open = mock.mock_open()
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.isfile", return_value=True
+    with mock.patch.object(
+        venv, "installed_packages", return_value=([], ["Foo", "bar"])
     ):
-        ed.show_admin()
-        mock_open.assert_called_once_with(
-            mu.logic.LOG_FILE, "r", encoding="utf8"
-        )
-        assert view.show_admin.call_count == 1
-        assert view.show_admin.call_args[0][1] == settings
-        assert ed.envars == [["name", "value"]]
-        assert ed.minify is True
-        assert ed.microbit_runtime == "/foo/bar"
-        # Expect package names to be normalised to lowercase.
-        ed.sync_package_state.assert_called_once_with(["foo", "bar"], ["baz"])
+        mock_open = mock.mock_open()
+        with mock.patch("builtins.open", mock_open), mock.patch(
+            "os.path.isfile", return_value=True
+        ):
+            ed.show_admin()
+            mock_open.assert_called_once_with(
+                mu.logic.LOG_FILE, "r", encoding="utf8"
+            )
+            assert view.show_admin.call_count == 1
+            assert view.show_admin.call_args[0][1] == settings
+            assert ed.envars == [["name", "value"]]
+            assert ed.minify is True
+            assert ed.microbit_runtime == "/foo/bar"
+            # Expect package names to be normalised to lowercase.
+            ed.sync_package_state.assert_called_once_with(
+                ["foo", "bar"], ["baz"]
+            )
 
 
 def test_show_admin_no_change():
@@ -2565,12 +2569,14 @@ def test_show_admin_no_change():
     new_settings = {}
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    view.venv.installed_packages.return_value = ([], ["Foo", "bar"])
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.isfile", return_value=True
+    with mock.patch.object(
+        venv, "installed_packages", return_value=([], ["Foo", "bar"])
     ):
-        ed.show_admin(None)
-        assert ed.sync_package_state.call_count == 0
+        with mock.patch("builtins.open", mock_open), mock.patch(
+            "os.path.isfile", return_value=True
+        ):
+            ed.show_admin(None)
+            assert ed.sync_package_state.call_count == 0
 
 
 def test_show_admin_missing_microbit_runtime():
@@ -2598,21 +2604,25 @@ def test_show_admin_missing_microbit_runtime():
     }
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    view.venv.installed_packages.return_value = ([], ["Foo", "bar"])
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.isfile", return_value=False
+    with mock.patch.object(
+        venv, "installed_packages", return_value=([], ["Foo", "bar"])
     ):
-        ed.show_admin(None)
-        mock_open.assert_called_once_with(
-            mu.logic.LOG_FILE, "r", encoding="utf8"
-        )
-        assert view.show_admin.call_count == 1
-        assert view.show_admin.call_args[0][1] == settings
-        assert ed.envars == [["name", "value"]]
-        assert ed.minify is True
-        assert ed.microbit_runtime == ""
-        assert view.show_message.call_count == 1
-        ed.sync_package_state.assert_called_once_with(["foo", "bar"], ["baz"])
+        with mock.patch("builtins.open", mock_open), mock.patch(
+            "os.path.isfile", return_value=False
+        ):
+            ed.show_admin(None)
+            mock_open.assert_called_once_with(
+                mu.logic.LOG_FILE, "r", encoding="utf8"
+            )
+            assert view.show_admin.call_count == 1
+            assert view.show_admin.call_args[0][1] == settings
+            assert ed.envars == [["name", "value"]]
+            assert ed.minify is True
+            assert ed.microbit_runtime == ""
+            assert view.show_message.call_count == 1
+            ed.sync_package_state.assert_called_once_with(
+                ["foo", "bar"], ["baz"]
+            )
 
 
 def test_sync_package_state():

@@ -41,28 +41,10 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QTextCursor
 from mu.resources import load_icon
-
 from mu.interface.widgets import DeviceSelector
+from mu.virtual_environment import venv
 
 logger = logging.getLogger(__name__)
-
-
-class MuWidget(QWidget):
-    """Base class for Mu widgets"""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        if hasattr(parent, "venv"):
-            self.venv = parent.venv
-
-
-class MuDialog(QDialog):
-    """Base class for Mu dialogs"""
-
-    def __init__(self, parent):
-        super().__init__(parent)
-        if hasattr(parent, "venv"):
-            self.venv = parent.venv
 
 
 class ModeItem(QListWidgetItem):
@@ -80,7 +62,7 @@ class ModeItem(QListWidgetItem):
         self.setIcon(load_icon(self.icon))
 
 
-class ModeSelector(MuDialog):
+class ModeSelector(QDialog):
     """
     Defines a UI for selecting the mode for Mu.
     """
@@ -144,7 +126,7 @@ class ModeSelector(MuDialog):
             raise RuntimeError("Mode change cancelled.")
 
 
-class LogWidget(MuWidget):
+class LogWidget(QWidget):
     """
     Used to display Mu's logs.
     """
@@ -167,7 +149,7 @@ class LogWidget(MuWidget):
         widget_layout.addWidget(self.log_text_area)
 
 
-class EnvironmentVariablesWidget(MuWidget):
+class EnvironmentVariablesWidget(QWidget):
     """
     Used for editing and displaying environment variables used with Python 3
     mode.
@@ -192,7 +174,7 @@ class EnvironmentVariablesWidget(MuWidget):
         widget_layout.addWidget(self.text_area)
 
 
-class MicrobitSettingsWidget(MuWidget):
+class MicrobitSettingsWidget(QWidget):
     """
     Used for configuring how to interact with the micro:bit:
 
@@ -221,7 +203,7 @@ class MicrobitSettingsWidget(MuWidget):
         widget_layout.addStretch()
 
 
-class PackagesWidget(MuWidget):
+class PackagesWidget(QWidget):
     """
     Used for editing and displaying 3rd party packages installed via pip to be
     used with Python 3 mode.
@@ -248,7 +230,7 @@ class PackagesWidget(MuWidget):
         widget_layout.addWidget(self.text_area)
 
 
-class ESPFirmwareFlasherWidget(MuWidget):
+class ESPFirmwareFlasherWidget(QWidget):
     """
     Used for configuring how to interact with the ESP:
 
@@ -346,7 +328,7 @@ class ESPFirmwareFlasherWidget(MuWidget):
         """
         Is the 'esptool' package installed?
         """
-        baseline, user_packages = self.venv.installed_packages()
+        baseline, user_packages = venv.installed_packages()
         return "esptool" in user_packages
 
     def show_folder_dialog(self):
@@ -376,7 +358,7 @@ class ESPFirmwareFlasherWidget(MuWidget):
 
         esptool = "-mesptool"
         erase_command = '"{}" "{}" --port {} erase_flash'.format(
-            self.venv.interpreter, esptool, device.port
+            venv.interpreter, esptool, device.port
         )
 
         if self.device_type.currentText() == "ESP32":
@@ -384,7 +366,7 @@ class ESPFirmwareFlasherWidget(MuWidget):
                 '"{}" "{}" --chip esp32 --port {} --baud 460800 '
                 'write_flash -z 0x1000 "{}"'
             ).format(
-                self.venv.interpreter,
+                venv.interpreter,
                 esptool,
                 device.port,
                 self.txtFolder.text(),
@@ -394,7 +376,7 @@ class ESPFirmwareFlasherWidget(MuWidget):
                 '"{}" "{}" --chip esp8266 --port {} --baud 460800 '
                 'write_flash --flash_size=detect 0 "{}"'
             ).format(
-                self.venv.interpreter,
+                venv.interpreter,
                 esptool,
                 device.port,
                 self.txtFolder.text(),
@@ -471,7 +453,7 @@ class ESPFirmwareFlasherWidget(MuWidget):
             self.btnExec.setEnabled(False)
 
 
-class AdminDialog(MuDialog):
+class AdminDialog(QDialog):
     """
     Displays administrative related information and settings (logs, environment
     variables, third party packages etc...).
@@ -528,7 +510,7 @@ class AdminDialog(MuDialog):
         }
 
 
-class FindReplaceDialog(MuDialog):
+class FindReplaceDialog(QDialog):
     """
     Display a dialog for getting:
 
@@ -588,7 +570,7 @@ class FindReplaceDialog(MuDialog):
         return self.replace_all_flag.isChecked()
 
 
-class PackageDialog(MuDialog):
+class PackageDialog(QDialog):
     """Display the output of the pip commands needed to remove or install packages
 
     Because the QProcess mechanism we're using is asynchronous, we have to
@@ -652,9 +634,9 @@ class PackageDialog(MuDialog):
         text area.
         """
         if command == "remove":
-            pip_fn = self.venv.remove_user_packages
+            pip_fn = venv.remove_user_packages
         elif command == "install":
-            pip_fn = self.venv.install_user_packages
+            pip_fn = venv.install_user_packages
         else:
             raise RuntimeError(
                 "Invalid pip command: %s %s" % (command, packages)
@@ -662,7 +644,7 @@ class PackageDialog(MuDialog):
 
         pip_fn(
             packages,
-            slots=self.venv.Slots(
+            slots=venv.Slots(
                 output=self.text_area.appendPlainText,
                 finished=self.next_pip_command,
             ),

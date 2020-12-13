@@ -40,19 +40,15 @@ from pycodestyle import StyleGuide, Checker
 
 from . import __version__
 from . import i18n
-from . import virtual_environment
 from .resources import path
 from .debugger.utils import is_breakpoint_line
-from .config import DATA_DIR
+from .config import DATA_DIR, VENV_DIR
+from .virtual_environment import venv
 
 # The user's home directory.
 HOME_DIRECTORY = os.path.expanduser("~")
 # Name of the directory within the home folder to use by default
 WORKSPACE_NAME = "mu_code"
-# The name of the default virtual environment used by Mu.
-VENV_NAME = "mu_venv"
-# The directory containing default virtual environment.
-VENV_DIR = os.path.join(DATA_DIR, VENV_NAME)
 # The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.
@@ -822,7 +818,6 @@ class Editor(QObject):
         super().__init__()
         logger.info("Setting up editor.")
         self._view = view
-        self.venv = view.venv
         self.fs = None
         self.theme = "day"
         self.mode = "python"
@@ -998,12 +993,8 @@ class Editor(QObject):
                     self._view.set_zoom()
 
                 if "venv_path" in old_session:
-                    self.venv = (
-                        self._view.venv
-                    ) = virtual_environment.VirtualEnvironment(
-                        old_session["venv_path"]
-                    )
-                    self.venv.ensure()
+                    venv.relocate(old_session["venv_path"])
+                    venv.ensure()
 
                 old_window = old_session.get("window", {})
                 self._view.size_window(**old_window)
@@ -1443,9 +1434,9 @@ class Editor(QObject):
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
             "zoom_level": self._view.zoom_position,
-            "venv_name": self.venv.name,
-            "venv_python": self.venv.interpreter,
-            "venv_python_path": self.venv.full_pythonpath(),
+            "venv_name": venv.name,
+            "venv_python": venv.interpreter,
+            "venv_python_path": venv.full_pythonpath(),
             "window": {
                 "x": self._view.x(),
                 "y": self._view.y(),
@@ -1472,7 +1463,7 @@ class Editor(QObject):
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
         }
-        baseline_packages, user_packages = self.venv.installed_packages()
+        baseline_packages, user_packages = venv.installed_packages()
         packages = user_packages
         with open(LOG_FILE, "r", encoding="utf8") as logfile:
             new_settings = self._view.show_admin(

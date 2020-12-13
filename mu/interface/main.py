@@ -317,9 +317,8 @@ class Window(QMainWindow):
     load_theme = pyqtSignal(str)
     previous_folder = None
 
-    def __init__(self, parent=None, venv=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.venv = venv
 
     def wheelEvent(self, event):
         """

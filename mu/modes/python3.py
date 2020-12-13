@@ -23,6 +23,7 @@ from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from mu.resources import load_icon
 from mu.interface.panes import CHARTS
+from mu.virtual_environment import venv
 from qtconsole.manager import QtKernelManager
 from qtconsole.client import QtKernelClient
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
@@ -210,7 +211,7 @@ class PythonMode(BaseMode):
             logger.info(
                 "About to run script: %s",
                 dict(
-                    interpreter=self.venv.interpreter,
+                    interpreter=venv.interpreter,
                     script_name=tab.path,
                     working_directory=cwd,
                     interactive=True,
@@ -218,7 +219,7 @@ class PythonMode(BaseMode):
                 ),
             )
             self.runner = self.view.add_python3_runner(
-                interpreter=self.venv.interpreter,
+                interpreter=venv.interpreter,
                 script_name=tab.path,
                 working_directory=cwd,
                 interactive=True,
@@ -278,7 +279,7 @@ class PythonMode(BaseMode):
         self.set_buttons(repl=False)
         self.kernel_thread = QThread()
         self.kernel_runner = KernelRunner(
-            kernel_name=self.venv.name,
+            kernel_name=venv.name,
             cwd=self.workspace_dir(),
             envars=self.editor.envars,
             pythonpath="",

@@ -29,9 +29,9 @@ from PyQt5.QtCore import QTimer, Qt, QCoreApplication
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
 from . import i18n
-from . import virtual_environment
+from .virtual_environment import venv
 from . import __version__
-from .logic import Editor, LOG_FILE, LOG_DIR, ENCODING, VENV_DIR
+from .logic import Editor, LOG_FILE, LOG_DIR, ENCODING
 from .interface import Window
 from .resources import load_pixmap, load_icon
 from .modes import (
@@ -133,18 +133,13 @@ def run():
     app.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
     #
-    # Set up a new or existing virtual environment for the
-    # Mu runtime
-    #
-    venv = virtual_environment.VirtualEnvironment(VENV_DIR)
-    #
     # FIXME -- look at the possiblity of tying ensure completion
     # into Splash screen finish below...
     #
     venv.ensure()
 
     # Create the "window" we'll be looking at.
-    editor_window = Window(venv=venv)
+    editor_window = Window()
 
     @editor_window.load_theme.connect
     def load_theme(theme):

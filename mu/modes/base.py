@@ -222,7 +222,6 @@ class BaseMode(QObject):
     def __init__(self, editor, view):
         self.editor = editor
         self.view = view
-        self.venv = editor.venv
         super().__init__()
 
     def stop(self):

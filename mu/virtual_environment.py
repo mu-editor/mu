@@ -76,7 +76,7 @@ class Process(QObject):
         self.environment.insert("PYTHONUNBUFFERED", "1")
         self.environment.insert("PYTHONIOENCODING", "utf-8")
 
-    def _set_up_run(self, **envvars):
+    def _relocate_run(self, **envvars):
         """Run the process with the command and args"""
         self.process = QProcess(self)
         environment = QProcessEnvironment(self.environment)
@@ -86,13 +86,13 @@ class Process(QObject):
         self.process.setProcessChannelMode(QProcess.MergedChannels)
 
     def run_blocking(self, command, args, wait_for_s=30.0, **envvars):
-        self._set_up_run(**envvars)
+        self._relocate_run(**envvars)
         self.process.start(command, args)
         self.wait(wait_for_s=wait_for_s)
         return self.data()
 
     def run(self, command, args, **envvars):
-        self._set_up_run(**envvars)
+        self._relocate_run(**envvars)
         self.process.readyRead.connect(self._readyRead)
         self.process.started.connect(self._started)
         self.process.finished.connect(self._finished)
@@ -272,19 +272,19 @@ class VirtualEnvironment(object):
     Slots = Process.Slots
 
     def __init__(self, dirpath):
+        self.process = Process()
+        self._is_windows = sys.platform == "win32"
+        self._bin_extension = ".exe" if self._is_windows else ""
+        self.relocate(dirpath)
+
+    def relocate(self, dirpath):
         self.path = dirpath
         self.name = os.path.basename(self.path)
-        self._is_windows = sys.platform == "win32"
         self._bin_directory = os.path.join(
             self.path, "scripts" if self._is_windows else "bin"
         )
-        self._bin_extension = ".exe" if self._is_windows else ""
         #
         # Pip and the interpreter will be set up when the virtualenv is ensured
-        #
-        #
-        # FIXME -- might need to check the "home" directory from pyvenv.cfg
-        # if there's no Pip in the "local" bin directory
         #
         self.interpreter = os.path.join(
             self._bin_directory, "python" + self._bin_extension
@@ -292,9 +292,8 @@ class VirtualEnvironment(object):
         self.pip = Pip(
             os.path.join(self._bin_directory, "pip" + self._bin_extension)
         )
-        self.process = Process()
         logging.debug(
-            "Starting virtual environment %s at %s", self.name, self.path
+            "Virtual environment set up %s at %s", self.name, self.path
         )
 
     def run_python(self, *args, slots=Process.Slots()):
@@ -536,3 +535,10 @@ class VirtualEnvironment(object):
                 user_packages.append(package)
 
         return baseline_packages, user_packages
+
+
+#
+# Create a singleton virtual environment to be used throughout
+# the application
+#
+venv = VirtualEnvironment(config.VENV_DIR)
