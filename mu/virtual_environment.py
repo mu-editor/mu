@@ -549,4 +549,5 @@ class VirtualEnvironment(object):
 # Create a singleton virtual environment to be used throughout
 # the application
 #
+print("About to create venv")
 venv = VirtualEnvironment(config.VENV_DIR)

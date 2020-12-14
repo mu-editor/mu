@@ -256,3 +256,21 @@ def test_installed_packages(patched, venv_name):
                 ["mu-editor"] + [name for name, _ in baseline_packages]
             )
             assert set(user_result) == set(name for name, _ in user_packages)
+
+
+def test_venv_is_singleton(venv_name):
+    """Ensure that all imported instances of `venv` are the same
+
+    The virtual environment is created once in the `virtual_environment` module
+    and then imported from each module which needs to use it, acting as a
+    Singleton. But it's possible for different import styles to cause the
+    module to be re-instantiated, so we check whether all instances of `venv`
+    are the same instance
+    """
+    venv = mu.virtual_environment.venv
+    from mu.modes import pygamezero, python3, web, debugger
+    from mu.interface import dialogs
+    from mu import app, logic
+
+    for module in [pygamezero, python3, web, debugger, dialogs, app, logic]:
+        assert module.venv is venv
