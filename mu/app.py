@@ -120,6 +120,13 @@ def run():
     logging.info("Python path: {}".format(sys.path))
     logging.info("Language code: {}".format(i18n.language_code))
 
+    # Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
+    # unless this flag is set
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+    if hasattr(Qt, "AA_EnableHighDpiScaling"):
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
     # By default PyQt uses the script name (run.py)
@@ -128,9 +135,6 @@ def run():
     app.setDesktopFileName("mu.codewith.editor")
     app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
-    # Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
-    # unless this flag is set
-    app.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
     #
     # FIXME -- look at the possiblity of tying ensure completion
