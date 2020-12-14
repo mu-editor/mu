@@ -81,8 +81,4 @@ target/
 # Virtual Environment
 .venv*/
 /mu/wheels/*.whl
-/apply-pr.cmd
-/fresh-run.cmd
-/fresh-venv.cmd
-/test.cmd
 /baseline_packages.json
