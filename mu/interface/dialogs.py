@@ -42,7 +42,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QTextCursor
 from mu.resources import load_icon
 from mu.interface.widgets import DeviceSelector
-from .virtual_environment import venv
+from ..virtual_environment import venv
 
 logger = logging.getLogger(__name__)
 

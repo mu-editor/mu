@@ -264,7 +264,9 @@ class Pip(object):
             yield name, version
 
 
-class VirtualEnvironmentError(Exception): pass
+class VirtualEnvironmentError(Exception):
+    pass
+
 
 class VirtualEnvironment(object):
 
@@ -281,7 +283,11 @@ class VirtualEnvironment(object):
         self.is_ensured = False
 
     def __str__(self):
-        return "<%s at %s (%s)>" % (self.__class__.__name__, self.path, "Ensured" if self.is_ensured else "Not Ensured")
+        return "<%s at %s (%s)>" % (
+            self.__class__.__name__,
+            self.path,
+            "Ensured" if self.is_ensured else "Not Ensured",
+        )
 
     def relocate(self, dirpath):
         self.path = dirpath
