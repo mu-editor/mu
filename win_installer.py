@@ -363,7 +363,7 @@ def run(bitness, repo_root):
         destination_dir = os.path.join(repo_root, "dist")
         print("Copying installer file to", destination_dir)
         os.makedirs(destination_dir, exist_ok=True)
-        shutil.copy(\
+        shutil.copy(
             os.path.join(temp_filepath, "build", "nsis", installer_exe),
             destination_dir,
         )
