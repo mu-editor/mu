@@ -130,7 +130,7 @@ def subprocess_run(args):
 
 def create_packaging_venv(target_directory, name="mu-packaging-venv"):
     """
-    Creates a Python virtual environment in the target_directry, returning
+    Creates a Python virtual environment in the target_directory, returning
     the path to the newly created environment's Python executable.
     """
     fullpath = os.path.join(target_directory, name)
@@ -312,16 +312,19 @@ def run(bitness, repo_root):
     a pynsist configuration file (locking the dependencies set in setup.py),
     download and extract the tkinter related assets, and run pynsist.
     """
-    with tempfile.TemporaryDirectory(prefix="mu-pynsist-") as work_dir:
-        print("Temporary working directory at", work_dir)
-        #
-        # Create and switch to the temporary directory so we don't get
-        # interference from the *local* mu package
-        #
-        os.chdir(work_dir)
+    work_dir = tempfile.TemporaryDirectory(prefix="mu-pynsist-")
+    temp_filepath = work_dir.name
+    print("Temporary working directory at", temp_filepath)
+    #
+    # Create and switch to the temporary directory so we don't get
+    # interference from the *local* mu package
+    #
+    _old_dirpath = os.getcwd()
+    os.chdir(temp_filepath)
 
+    try:
         print("Creating the packaging virtual environment.")
-        venv_python = create_packaging_venv(work_dir)
+        venv_python = create_packaging_venv(temp_filepath)
 
         print("Updating pip & wheel in the virtual environment", venv_python)
         subprocess_run(
@@ -334,21 +337,21 @@ def run(bitness, repo_root):
         print("Downloading wheels for modes into the venv mu package")
         subprocess_run([venv_python, "-m", "mu.wheels"])
 
-        pynsist_cfg = os.path.join(work_dir, "pynsist.cfg")
+        pynsist_cfg = os.path.join(temp_filepath, "pynsist.cfg")
         print("Creating pynsist configuration file", pynsist_cfg)
         installer_exe = create_pynsist_cfg(venv_python, repo_root, pynsist_cfg)
 
         url = TKINTER_ASSETS_URLS[bitness]
         print("Downloading {}bit tkinter assets from {}.".format(bitness, url))
-        filename = download_file(url, work_dir)
+        filename = download_file(url, temp_filepath)
 
-        print("Unzipping tkinter assets to", work_dir)
-        unzip_file(filename, work_dir)
+        print("Unzipping tkinter assets to", temp_filepath)
+        unzip_file(filename, temp_filepath)
 
         print("Copying across stdlib packages...")
         for package in STDLIB_PACKAGES:
             print("Vendoring in", package)
-            vendor_in_from_python(package, work_dir)
+            vendor_in_from_python(package, temp_filepath)
 
         print("Installing pynsist.")
         subprocess_run([venv_python, "-m", "pip", "install", PYNSIST_REQ])
@@ -360,10 +363,14 @@ def run(bitness, repo_root):
         destination_dir = os.path.join(repo_root, "dist")
         print("Copying installer file to", destination_dir)
         os.makedirs(destination_dir, exist_ok=True)
-        shutil.copy(
-            os.path.join(work_dir, "build", "nsis", installer_exe),
+        shutil.copy(\
+            os.path.join(temp_filepath, "build", "nsis", installer_exe),
             destination_dir,
         )
+
+    finally:
+        os.chdir(_old_dirpath)
+        work_dir.cleanup()
 
 
 if __name__ == "__main__":
