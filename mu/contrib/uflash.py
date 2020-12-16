@@ -3,7 +3,7 @@
 This module contains functions for turning a Python script into a .hex file
 and flashing it onto a BBC micro:bit.
 
-Copyright (c) 2015-2018 Nicholas H.Tollervey and others.
+Copyright (c) 2015-2020 Nicholas H.Tollervey and others.
 
 See the LICENSE file for more information, or visit:
 
@@ -305,6 +305,8 @@ def save_hex(hex_file, path):
         raise ValueError("The path to flash must be for a .hex file.")
     with open(path, "wb") as output:
         output.write(hex_file.encode("ascii"))
+        output.flush()
+        os.fsync(output.fileno())
 
 
 def flash(
