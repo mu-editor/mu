@@ -18,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import sys
-import os.path
 import logging
 import semver
 from tokenize import TokenError
@@ -29,7 +27,7 @@ from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from mu.modes.base import MicroPythonMode, FileManager
 from mu.interface.panes import CHARTS
 from .. import config
-from PyQt5.QtCore import QThread, pyqtSignal, QTimer
+from PyQt5.QtCore import QThread, pyqtSignal
 
 # We can run without nudatus
 can_minify = True
@@ -91,7 +89,6 @@ class MicrobitMode(MicroPythonMode):
     icon = "microbit"
     fs = None  #: Reference to filesystem navigator.
     flash_thread = None
-    flash_timer = None
     file_extensions = ["hex"]
 
     # Device name should only be supplied for modes
@@ -387,23 +384,7 @@ class MicrobitMode(MicroPythonMode):
                     )
                     self.view.show_message(message, information)
                     return
-            if sys.platform == "win32":
-                # Windows blocks on write.
-                self.flash_thread.finished.connect(self.flash_finished)
-            else:
-                if user_defined_microbit_path:
-                    # Call the flash_finished immediately the thread
-                    # finishes if Mu is writing the hex file to a user
-                    # defined location on the local filesystem.
-                    self.flash_thread.finished.connect(self.flash_finished)
-                else:
-                    # Other platforms don't block, so schedule the finish
-                    # call for 10 seconds (approximately how long flashing
-                    # the connected device takes).
-                    self.flash_timer = QTimer()
-                    self.flash_timer.timeout.connect(self.flash_finished)
-                    self.flash_timer.setSingleShot(True)
-                    self.flash_timer.start(10000)
+            self.flash_thread.finished.connect(self.flash_finished)
             self.flash_thread.on_flash_fail.connect(self.flash_failed)
             self.flash_thread.start()
         else:
@@ -420,14 +401,7 @@ class MicrobitMode(MicroPythonMode):
                     [path_to_microbit], self.python_script, rt_hex_path
                 )
                 self.python_script = ""
-                if sys.platform == "win32":
-                    # Windows blocks on write.
-                    self.flash_thread.finished.connect(self.flash_finished)
-                else:
-                    self.flash_timer = QTimer()
-                    self.flash_timer.timeout.connect(self.flash_finished)
-                    self.flash_timer.setSingleShot(True)
-                    self.flash_timer.start(10000)
+                self.flash_thread.finished.connect(self.flash_finished)
                 self.flash_thread.on_flash_fail.connect(self.flash_failed)
                 self.flash_thread.start()
             except Exception as ex:
@@ -440,7 +414,6 @@ class MicrobitMode(MicroPythonMode):
         self.set_buttons(flash=True)
         self.editor.show_status_message(_("Finished flashing."))
         self.flash_thread = None
-        self.flash_timer = None
         if self.python_script:
             try:
                 self.copy_main()
@@ -486,9 +459,6 @@ class MicrobitMode(MicroPythonMode):
             " information."
         )
         self.view.show_message(message, information, "Warning")
-        if self.flash_timer:
-            self.flash_timer.stop()
-            self.flash_timer = None
         self.set_buttons(flash=True)
         self.flash_thread = None
 
