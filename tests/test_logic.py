@@ -3620,6 +3620,7 @@ def test_tidy_code_invalid_python():
     assert mock_view.show_message.call_count == 1
 
 
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="Requires Python3.6")
 def test_check_tidy_check_line_too_long():
     """
     Check we detect, then correct, lines longer than MAX_LINE_LENGTH.
@@ -3657,6 +3658,7 @@ def test_check_tidy_check_line_too_long():
     )
 
 
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="Requires Python3.6")
 def test_check_tidy_check_short_line():
     """
     Check that Cidy and Check leave a short line as-is and respect

@@ -42,7 +42,7 @@ from . import __version__
 from . import i18n
 from .resources import path
 from .debugger.utils import is_breakpoint_line
-from .config import DATA_DIR, VENV_DIR
+from .config import DATA_DIR, VENV_DIR, MAX_LINE_LENGTH
 from .virtual_environment import venv
 
 # The user's home directory.
@@ -53,8 +53,6 @@ WORKSPACE_NAME = "mu_code"
 LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.
 LOG_FILE = os.path.join(LOG_DIR, "mu.log")
-# Maximum line length for using both in Check and Tidy
-MAX_LINE_LENGTH = 88
 # Regex to match pycodestyle (PEP8) output.
 STYLE_REGEX = re.compile(r".*:(\d+):(\d+):\s+(.*)")
 # Regex to match flake8 output.

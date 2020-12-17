@@ -10,3 +10,6 @@ VENV_NAME = "mu_venv"
 
 # The directory containing default virtual environment.
 VENV_DIR = os.path.join(DATA_DIR, VENV_NAME)
+
+# Maximum line length for using both in Check and Tidy
+MAX_LINE_LENGTH = 88
