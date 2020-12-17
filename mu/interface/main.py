@@ -317,6 +317,9 @@ class Window(QMainWindow):
     load_theme = pyqtSignal(str)
     previous_folder = None
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
     def wheelEvent(self, event):
         """
         Trap a CTRL-scroll event so the user is able to zoom in and out.
@@ -612,17 +615,18 @@ class Window(QMainWindow):
 
     def add_python3_runner(
         self,
+        interpreter,
         script_name,
         working_directory,
         interactive=False,
         debugger=False,
         command_args=None,
-        runner=None,
         envars=None,
         python_args=None,
     ):
         """
-        Display console output for the referenced Python script.
+        Display console output for the interpreter with the referenced
+        pythonpath running the referenced script.
 
         The script will be run within the workspace_path directory.
 
@@ -637,9 +641,6 @@ class Window(QMainWindow):
         If there is a list of command_args (the default is None) then these
         will be passed as further arguments into the command run in the
         new process.
-
-        If runner is given, this is used as the command to start the Python
-        process.
 
         If envars is given, these will become part of the environment context
         of the new chlid process.
@@ -659,14 +660,27 @@ class Window(QMainWindow):
             | Qt.RightDockWidgetArea
         )
         self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
-        self.process_runner.start_process(
+        logger.info(
+            "About to start_process: %r, %r, %r, %r, %r, %r, %r, %r",
+            interpreter,
             script_name,
             working_directory,
             interactive,
             debugger,
             command_args,
             envars,
-            runner,
+            python_args,
+        )
+
+        self.process_runner.start_process(
+            interpreter,
+            "",
+            script_name,
+            working_directory,
+            interactive,
+            debugger,
+            command_args,
+            envars,
             python_args,
         )
         self.process_runner.setFocus()
@@ -853,13 +867,13 @@ class Window(QMainWindow):
         else:
             return {}
 
-    def sync_packages(self, to_remove, to_add, module_dir):
+    def sync_packages(self, to_remove, to_add):
         """
         Display a modal dialog that indicates the status of the add/remove
         package management operation.
         """
         package_box = PackageDialog(self)
-        package_box.setup(to_remove, to_add, module_dir)
+        package_box.setup(to_remove, to_add)
         package_box.exec()
 
     def show_message(self, message, information=None, icon=None):

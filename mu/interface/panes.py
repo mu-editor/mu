@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-import site
 import os
 import re
 import platform
@@ -57,7 +56,7 @@ from PyQt5.QtGui import (
     QStandardItem,
 )
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
-from mu import language_code
+from ..i18n import language_code
 from mu.interface.themes import Font
 from mu.interface.themes import DEFAULT_FONT_SIZE
 
@@ -830,20 +829,21 @@ class PythonProcessPane(QTextEdit):
 
     def start_process(
         self,
+        interpreter,
+        pythonpath,
         script_name,
         working_directory,
         interactive=True,
         debugger=False,
         command_args=None,
         envars=None,
-        runner=None,
         python_args=None,
     ):
         """
         Start the child Python process.
 
-        Will run the referenced Python script_name within the context of the
-        working directory.
+        Will use the referenced interpreter and pythonpath to run the Python
+        script_name within the context of the working directory.
 
         If interactive is True (the default) the Python process will run in
         interactive mode (dropping the user into the REPL when the script
@@ -858,11 +858,8 @@ class PythonProcessPane(QTextEdit):
         If there is a list of environment variables, these will be part of the
         context of the new child process.
 
-        If runner is given, this is used as the command to start the Python
-        process.
-
         If python_args is given, these are passed as arguments to the Python
-        runtime used to launch the child process.
+        interpreter used to launch the child process.
         """
         if not envars:  # Envars must be a list if not passed a value.
             envars = []
@@ -870,6 +867,7 @@ class PythonProcessPane(QTextEdit):
         if script_name:
             self.script = os.path.abspath(os.path.normcase(script_name))
         logger.info("Running script: {}".format(self.script))
+        logger.info("Using interpreter: {}".format(interpreter))
         if interactive:
             logger.info("Running with interactive mode.")
         if command_args is None:
@@ -889,51 +887,10 @@ class PythonProcessPane(QTextEdit):
             encoding = "{}.utf-8".format(language_code)
             env.insert("LC_ALL", encoding)
             env.insert("LANG", encoding)
-        if sys.platform == "win32" and "pythonw.exe" in sys.executable:
-            # On Windows, if installed via NSIS then Python is always run in
-            # isolated mode via pythonw.exe so none of the expected directories
-            # are on sys.path. To mitigate, Mu attempts to drop a mu.pth file
-            # in a location taken from Windows based settings. This file will
-            # contain the "other" directories to include on the Python path,
-            # such as the working_directory and, if different from the
-            # working_directory, the directory containing the script to run.
-            try:
-                if site.ENABLE_USER_SITE:
-                    # Ensure the USER_SITE directory exists.
-                    os.makedirs(site.getusersitepackages(), exist_ok=True)
-                    site_path = site.USER_SITE
-                    path_file = os.path.join(site_path, "mu.pth")
-                    logger.info("Python paths set via {}".format(path_file))
-                    # Copy current Python paths. Use a set to avoid
-                    # duplications.
-                    paths_to_use = set([os.path.normcase(p) for p in sys.path])
-                    # Add Mu's working directory.
-                    paths_to_use.add(os.path.normcase(working_directory))
-                    # Add the directory containing the script.
-                    paths_to_use.add(
-                        os.path.normcase(os.path.dirname(self.script))
-                    )
-                    # Dropping a mu.pth file containing the paths_to_use
-                    # into USER_SITE will add such paths to sys.path in the
-                    # child process.
-                    with open(path_file, "w") as mu_pth:
-                        for p in paths_to_use:
-                            mu_pth.write(p + "\n")
-                else:
-                    logger.info(
-                        "Unable to set Python paths."
-                        " Python's USER_SITE not enabled."
-                        " Check configuration with administrator."
-                    )
-            except Exception as ex:
-                # Log all possible errors and allow Mu to continue. This is a
-                # "best effort" attempt to add the correct paths to the child
-                # process, but sometimes configuration by sys-admins may cause
-                # this to fail.
-                logger.error("Could not set Python paths with mu.pth file.")
-                logger.error(ex)
+        # Ensure the PYTHONPATH is set correctly.
         if "PYTHONPATH" not in envars:
-            envars.append(("PYTHONPATH", os.pathsep.join(sys.path)))
+            envars.append(("PYTHONPATH", pythonpath))
+        # Mange environment variables that may have been set by the user.
         if envars:
             logger.info(
                 "Running with environment variables: " "{}".format(envars)
@@ -942,25 +899,28 @@ class PythonProcessPane(QTextEdit):
                 env.insert(name, value)
         logger.info("Working directory: {}".format(working_directory))
         self.process.setWorkingDirectory(working_directory)
-        self.process.setProcessEnvironment(env)
         self.process.readyRead.connect(self.try_read_from_stdout)
         self.process.finished.connect(self.finished)
         logger.info("Python path: {}".format(sys.path))
         if debugger:
-            # Start the mu-debug runner for the script.
+            # Start the mu_debug runner for the script.
             parent_dir = os.path.join(os.path.dirname(__file__), "..")
             mu_dir = os.path.abspath(parent_dir)
-            runner = os.path.join(mu_dir, "mu-debug.py")
-            python_exec = sys.executable
+            logger.info("mu_dir: %s", mu_dir)
+            runner = os.path.join(mu_dir, "mu_debug.py")
             args = [runner, self.script] + command_args
-            self.process.start(python_exec, args)
+            #
+            # The runtime virtualenvironment doesn't include Mu
+            # itself (by design). But the debugger needs mu in
+            # order to run, so we temporarily set the PYTHONPATH
+            # to point to Mu's own directory
+            #
+            env.insert(
+                "PYTHONPATH", os.path.abspath(os.path.join(mu_dir, ".."))
+            )
+            self.process.setProcessEnvironment(env)
+            self.process.start(interpreter, args)
         else:
-            if runner:
-                # Use the passed in Python "runner" to run the script.
-                python_exec = runner
-            else:
-                # Use the current system Python to run the script.
-                python_exec = sys.executable
             args = []
             if self.script:
                 if interactive:
@@ -971,9 +931,9 @@ class PythonProcessPane(QTextEdit):
                     args = [self.script] + command_args
             if python_args:
                 args = python_args + args
-            logger.info("Runner: {}".format(python_exec))
             logger.info("Args: {}".format(args))
-            self.process.start(python_exec, args)
+            self.process.setProcessEnvironment(env)
+            self.process.start(interpreter, args)
             self.running = True
 
     def finished(self, code, status):

@@ -17,11 +17,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import sys
 import logging
-import csv
-import shutil
 from PyQt5.QtCore import QSize, QProcess, QTimer, Qt
+
 from PyQt5.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
@@ -43,8 +41,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QTextCursor
 from mu.resources import load_icon
-from mu.logic import MODULE_DIR
 from mu.interface.widgets import DeviceSelector
+from ..virtual_environment import venv
 
 logger = logging.getLogger(__name__)
 
@@ -244,8 +242,7 @@ class ESPFirmwareFlasherWidget(QWidget):
         self.setLayout(widget_layout)
 
         # Check whether esptool is installed, show error if not
-        esptool_installed = os.path.exists(MODULE_DIR + "/esptool.py")
-        if not esptool_installed:
+        if not self.esptool_is_installed():
             error_msg = _(
                 "The ESP Firmware flasher requires the esptool' "
                 "package to be installed.\n"
@@ -326,6 +323,13 @@ class ESPFirmwareFlasherWidget(QWidget):
 
         self.mode = mode
 
+    def esptool_is_installed(self):
+        """
+        Is the 'esptool' package installed?
+        """
+        baseline, user_packages = venv.installed_packages()
+        return "esptool" in user_packages
+
     def show_folder_dialog(self):
         # open dialog and set to foldername
         filename = QFileDialog.getOpenFileName(
@@ -351,21 +355,31 @@ class ESPFirmwareFlasherWidget(QWidget):
         if device is None:
             return
 
-        esptool = MODULE_DIR + "/esptool.py"
-        erase_command = 'python "{}" --port {} erase_flash'.format(
-            esptool, device.port
+        esptool = "-mesptool"
+        erase_command = '"{}" "{}" --port {} erase_flash'.format(
+            venv.interpreter, esptool, device.port
         )
 
         if self.device_type.currentText() == "ESP32":
             write_command = (
-                'python "{}" --chip esp32 --port {} --baud 460800 '
+                '"{}" "{}" --chip esp32 --port {} --baud 460800 '
                 'write_flash -z 0x1000 "{}"'
-            ).format(esptool, device.port, self.txtFolder.text())
+            ).format(
+                venv.interpreter,
+                esptool,
+                device.port,
+                self.txtFolder.text(),
+            )
         else:
             write_command = (
-                'python "{}" --chip esp8266 --port {} --baud 460800 '
+                '"{}" "{}" --chip esp8266 --port {} --baud 460800 '
                 'write_flash --flash_size=detect 0 "{}"'
-            ).format(esptool, device.port, self.txtFolder.text())
+            ).format(
+                venv.interpreter,
+                esptool,
+                device.port,
+                self.txtFolder.text(),
+            )
 
         self.commands = [erase_command, write_command]
         self.run_esptool()
@@ -461,23 +475,23 @@ class AdminDialog(QDialog):
         button_box.rejected.connect(self.reject)
         widget_layout.addWidget(button_box)
         # Tabs
-        self.log_widget = LogWidget()
+        self.log_widget = LogWidget(self)
         self.log_widget.setup(log)
         self.tabs.addTab(self.log_widget, _("Current Log"))
-        self.envar_widget = EnvironmentVariablesWidget()
+        self.envar_widget = EnvironmentVariablesWidget(self)
         self.envar_widget.setup(settings.get("envars", ""))
         self.tabs.addTab(self.envar_widget, _("Python3 Environment"))
         self.log_widget.log_text_area.setFocus()
-        self.microbit_widget = MicrobitSettingsWidget()
+        self.microbit_widget = MicrobitSettingsWidget(self)
         self.microbit_widget.setup(
             settings.get("minify", False), settings.get("microbit_runtime", "")
         )
         self.tabs.addTab(self.microbit_widget, _("BBC micro:bit Settings"))
-        self.package_widget = PackagesWidget()
+        self.package_widget = PackagesWidget(self)
         self.package_widget.setup(packages)
         self.tabs.addTab(self.package_widget, _("Third Party Packages"))
         if mode.short_name == "esp":
-            self.esp_widget = ESPFirmwareFlasherWidget()
+            self.esp_widget = ESPFirmwareFlasherWidget(self)
             self.esp_widget.setup(mode, device_list)
             self.tabs.addTab(self.esp_widget, _("ESP Firmware flasher"))
 
@@ -556,23 +570,21 @@ class FindReplaceDialog(QDialog):
 
 
 class PackageDialog(QDialog):
-    """
-    Display a dialog to indicate the status of the packaging related changes
-    currently run by pip.
+    """Display the output of the pip commands needed to remove or install packages
+
+    Because the QProcess mechanism we're using is asynchronous, we have to
+    manage the pip requests via `pip_queue`. When one request is signalled
+    as finished we start the next.
     """
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.pip_queue = []
 
-    def setup(self, to_remove, to_add, module_dir):
+    def setup(self, to_remove, to_add):
         """
         Create the UI for the dialog.
         """
-        self.to_remove = to_remove
-        self.to_add = to_add
-        self.module_dir = module_dir
-        self.pkg_dirs = {}  # To hold locations of to-be-removed packages.
-        self.process = None
         # Basic layout.
         self.setMinimumSize(600, 400)
         self.setWindowTitle(_("Third Party Package Status"))
@@ -588,166 +600,51 @@ class PackageDialog(QDialog):
         self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
         self.button_box.accepted.connect(self.accept)
         widget_layout.addWidget(self.button_box)
-        # Kick off processing of packages.
-        if self.to_remove:
-            self.remove_packages()
-        if self.to_add:
-            self.run_pip()
 
-    def remove_packages(self):
-        """
-        Work out which packages need to be removed and then kick off their
-        removal.
-        """
-        dirs = [
-            os.path.join(self.module_dir, d)
-            for d in os.listdir(self.module_dir)
-            if d.endswith("dist-info") or d.endswith("egg-info")
-        ]
-        self.pkg_dirs = {}
-        for pkg in self.to_remove:
-            for d in dirs:
-                # Assets on the filesystem use a normalised package name.
-                pkg_name = pkg.replace("-", "_").lower()
-                if os.path.basename(d).lower().startswith(pkg_name + "-"):
-                    self.pkg_dirs[pkg] = d
-        if self.pkg_dirs:
-            # If there are packages to remove, schedule removal.
-            QTimer.singleShot(2, self.remove_package)
+        #
+        # Set up the commands to be issues to pip. Since we'll be popping
+        # from the list (as LIFO) we'll add the installs first so the
+        # removes are the first to happen
+        #
+        if to_add:
+            self.pip_queue.append(("install", to_add))
+        if to_remove:
+            self.pip_queue.append(("remove", to_remove))
+        QTimer.singleShot(2, self.next_pip_command)
 
-    def remove_package(self):
-        """
-        Take a package from the pending packages to be removed, delete all its
-        assets and schedule the removal of the remaining packages. If there are
-        no packages to remove, move to the finished state.
-        """
-        if self.pkg_dirs:
-            package, info = self.pkg_dirs.popitem()
-            if info.endswith("dist-info"):
-                # Modern
-                record = os.path.join(info, "RECORD")
-                with open(record) as f:
-                    files = csv.reader(f)
-                    for row in files:
-                        to_delete = os.path.join(self.module_dir, row[0])
-                        try:
-                            os.remove(to_delete)
-                        except Exception as ex:
-                            logger.error("Unable to remove: " + to_delete)
-                            logger.error(ex)
-                shutil.rmtree(info, ignore_errors=True)
-                # Some modules don't use the module name for the module
-                # directory (they use a lower case variant thereof). E.g.
-                # "Fom" vs. "fom".
-                normal_module = os.path.join(self.module_dir, package)
-                lower_module = os.path.join(self.module_dir, package.lower())
-                shutil.rmtree(normal_module, ignore_errors=True)
-                shutil.rmtree(lower_module, ignore_errors=True)
-                self.append_data("Removed {}\n".format(package))
-            else:
-                # Egg
-                try:
-                    record = os.path.join(info, "installed-files.txt")
-                    with open(record) as f:
-                        files = f.readlines()
-                        for row in files:
-                            to_delete = os.path.join(info, row.strip())
-                            try:
-                                os.remove(to_delete)
-                            except Exception as ex:
-                                logger.error("Unable to remove: " + to_delete)
-                                logger.error(ex)
-                    shutil.rmtree(info, ignore_errors=True)
-                    # Some modules don't use the module name for the module
-                    # directory (they use a lower case variant thereof). E.g.
-                    # "Fom" vs. "fom".
-                    normal_module = os.path.join(self.module_dir, package)
-                    lower_module = os.path.join(
-                        self.module_dir, package.lower()
-                    )
-                    shutil.rmtree(normal_module, ignore_errors=True)
-                    shutil.rmtree(lower_module, ignore_errors=True)
-                    self.append_data("Removed {}\n".format(package))
-                except Exception as ex:
-                    msg = (
-                        "UNABLE TO REMOVE PACKAGE: {} (check the logs for"
-                        " more information.)"
-                    ).format(package)
-                    self.append_data(msg)
-                    logger.error("Unable to remove package: " + package)
-                    logger.error(ex)
-            QTimer.singleShot(2, self.remove_package)
+    def next_pip_command(self):
+        """Run the next pip command, finishing if there is none"""
+        if self.pip_queue:
+            command, packages = self.pip_queue.pop()
+            self.run_pip(command, packages)
         else:
-            # Clean any directories not containing files.
-            dirs = [
-                os.path.join(self.module_dir, d)
-                for d in os.listdir(self.module_dir)
-            ]
-            for d in dirs:
-                keep = False
-                for entry in os.walk(d):
-                    if entry[2]:
-                        keep = True
-                if not keep:
-                    shutil.rmtree(d, ignore_errors=True)
-            # Remove the bin directory (and anything in it) since we don't
-            # use these assets.
-            shutil.rmtree(
-                os.path.join(self.module_dir, "bin"), ignore_errors=True
-            )
-            # Check for end state.
-            if not (self.to_add or self.process):
-                self.end_state()
+            self.finish()
 
-    def end_state(self):
+    def finish(self):
         """
         Set the UI to a valid end state.
         """
-        self.append_data("\nFINISHED")
+        self.text_area.appendPlainText("\nFINISHED")
         self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
 
-    def run_pip(self):
+    def run_pip(self, command, packages):
         """
         Run a pip command in a subprocess and pipe the output to the dialog's
         text area.
         """
-        package = self.to_add.pop()
-        args = ["-m", "pip", "install", package, "--target", self.module_dir]
-        self.process = QProcess(self)
-        self.process.setProcessChannelMode(QProcess.MergedChannels)
-        self.process.readyRead.connect(self.read_process)
-        self.process.finished.connect(self.finished)
-        logger.info("{} {}".format(sys.executable, " ".join(args)))
-        self.process.start(sys.executable, args)
-
-    def finished(self):
-        """
-        Called when the subprocess that uses pip to install a package is
-        finished.
-        """
-        if self.to_add:
-            self.process = None
-            self.run_pip()
+        if command == "remove":
+            pip_fn = venv.remove_user_packages
+        elif command == "install":
+            pip_fn = venv.install_user_packages
         else:
-            if not self.pkg_dirs:
-                self.end_state()
+            raise RuntimeError(
+                "Invalid pip command: %s %s" % (command, packages)
+            )
 
-    def read_process(self):
-        """
-        Read data from the child process and append it to the text area. Try
-        to keep reading until there's no more data from the process.
-        """
-        data = self.process.readAll()
-        if data:
-            self.append_data(data.data().decode("utf-8"))
-            QTimer.singleShot(2, self.read_process)
-
-    def append_data(self, msg):
-        """
-        Add data to the end of the text area.
-        """
-        cursor = self.text_area.textCursor()
-        cursor.movePosition(QTextCursor.End)
-        cursor.insertText(msg)
-        cursor.movePosition(QTextCursor.End)
-        self.text_area.setTextCursor(cursor)
+        pip_fn(
+            packages,
+            slots=venv.Slots(
+                output=self.text_area.appendPlainText,
+                finished=self.next_pip_command,
+            ),
+        )

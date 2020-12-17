@@ -6,7 +6,9 @@ import sys
 import os
 from mu.modes.python3 import PythonMode, KernelRunner
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
-from mu.logic import MODULE_DIR
+from mu.virtual_environment import venv
+
+# ~ from mu.logic import MODULE_DIR
 from unittest import mock
 
 
@@ -20,7 +22,12 @@ def test_kernel_runner_start_kernel():
     mock_client = mock.MagicMock()
     mock_kernel_manager.client.return_value = mock_client
     envars = [["name", "value"]]
-    kr = KernelRunner(cwd="/a/path/to/mu_code", envars=envars)
+    kr = KernelRunner(
+        kernel_name=sys.executable,
+        cwd="/a/path/to/mu_code",
+        envars=envars,
+        pythonpath=os.pathsep.join(sys.path),
+    )
     kr.kernel_started = mock.MagicMock()
     mock_os = mock.MagicMock()
     mock_os.environ = {}
@@ -36,7 +43,7 @@ def test_kernel_runner_start_kernel():
         kr.start_kernel()
     mock_os.chdir.assert_called_once_with("/a/path/to/mu_code")
     assert mock_os.environ["name"] == "value"
-    expected_paths = sys.path + [MODULE_DIR]
+    expected_paths = sys.path
     assert mock_os.environ["PYTHONPATH"] == os.pathsep.join(expected_paths)
     assert kr.repl_kernel_manager == mock_kernel_manager
     mock_kernel_manager_class.assert_called_once_with()
@@ -55,7 +62,12 @@ def test_kernel_runner_start_kernel_pythonpath_exists():
     mock_client = mock.MagicMock()
     mock_kernel_manager.client.return_value = mock_client
     envars = [["name", "value"]]
-    kr = KernelRunner(cwd="/a/path/to/mu_code", envars=envars)
+    kr = KernelRunner(
+        kernel_name=sys.executable,
+        cwd="/a/path/to/mu_code",
+        envars=envars,
+        pythonpath=os.pathsep.join(sys.path),
+    )
     kr.kernel_started = mock.MagicMock()
     mock_os = mock.MagicMock()
     mock_os.environ = {"PYTHONPATH": "foo"}
@@ -71,7 +83,7 @@ def test_kernel_runner_start_kernel_pythonpath_exists():
         kr.start_kernel()
     mock_os.chdir.assert_called_once_with("/a/path/to/mu_code")
     assert mock_os.environ["name"] == "value"
-    expected_paths = ["foo"] + [MODULE_DIR]
+    expected_paths = ["foo"]
     assert mock_os.environ["PYTHONPATH"] == os.pathsep.join(expected_paths)
     assert kr.repl_kernel_manager == mock_kernel_manager
     mock_kernel_manager_class.assert_called_once_with()
@@ -88,7 +100,13 @@ def test_kernel_runner_stop_kernel():
     signal once it has stopped the client communication channels and shutdown
     the kernel in the quickest way possible.
     """
-    kr = KernelRunner(cwd="/a/path/to/mu_code", envars=[["name", "value"]])
+    envars = [["name", "value"]]
+    kr = KernelRunner(
+        kernel_name=sys.executable,
+        cwd="/a/path/to/mu_code",
+        envars=envars,
+        pythonpath=os.pathsep.join(sys.path),
+    )
     kr.repl_kernel_client = mock.MagicMock()
     kr.repl_kernel_manager = mock.MagicMock()
     kr.kernel_finished = mock.MagicMock()
@@ -249,10 +267,16 @@ def test_python_run_script():
     mock_runner = mock.MagicMock()
     view.add_python3_runner.return_value = mock_runner
     pm = PythonMode(editor, view)
-    pm.run_script()
+    with mock.patch.object(venv, "interpreter", "interpreter"):
+        pm.run_script()
+
     editor.save_tab_to_file.assert_called_once_with(view.current_tab)
     view.add_python3_runner.assert_called_once_with(
-        "/foo/bar", "/foo", interactive=True, envars=editor.envars
+        interpreter="interpreter",
+        script_name="/foo/bar",
+        working_directory="/foo",
+        interactive=True,
+        envars=editor.envars,
     )
     mock_runner.process.waitForStarted.assert_called_once_with()
     # Check the buttons are set to the correct state when other aspects of the
@@ -398,11 +422,14 @@ def test_python_add_repl():
     pm.stop_kernel = mock.MagicMock()
     with mock.patch("mu.modes.python3.QThread", mock_qthread), mock.patch(
         "mu.modes.python3.KernelRunner", mock_kernel_runner
-    ):
+    ), mock.patch.object(venv, "name", "name"):
         pm.add_repl()
     mock_qthread.assert_called_once_with()
     mock_kernel_runner.assert_called_once_with(
-        cwd=pm.workspace_dir(), envars=editor.envars
+        kernel_name="name",
+        pythonpath="",
+        cwd=pm.workspace_dir(),
+        envars=editor.envars,
     )
     assert pm.kernel_thread == mock_qthread()
     assert pm.kernel_runner == mock_kernel_runner()

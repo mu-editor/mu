@@ -2,8 +2,9 @@
 """
 Tests for the debug mode.
 """
-from mu.logic import DEBUGGER_PORT
+from mu.debugger.config import DEBUGGER_PORT
 from mu.modes.debugger import DebugMode
+from mu.virtual_environment import venv
 from unittest import mock
 
 
@@ -52,11 +53,17 @@ def test_debug_start():
     mock_debugger = mock.MagicMock()
     mock_debugger_class = mock.MagicMock(return_value=mock_debugger)
     dm = DebugMode(editor, view)
-    with mock.patch("mu.modes.debugger.Debugger", mock_debugger_class):
+    with mock.patch(
+        "mu.modes.debugger.Debugger", mock_debugger_class
+    ), mock.patch.object(venv, "interpreter", "interpreter"):
         dm.start()
     editor.save_tab_to_file.called_once_with(view.current_tab)
     view.add_python3_runner.assert_called_once_with(
-        "/foo/bar", "/foo", debugger=True, envars=[["name", "value"]]
+        "interpreter",
+        "/foo/bar",
+        "/foo",
+        debugger=True,
+        envars=[["name", "value"]],
     )
     mock_runner.process.waitForStarted.assert_called_once_with()
     mock_runner.process.finished.connect.assert_called_once_with(dm.finished)

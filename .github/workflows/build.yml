@@ -19,7 +19,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.6'
+          python-version: '3.7'
       - name: Display Python info
         run: |
           python -c "import sys; print(sys.version)"
@@ -38,12 +38,12 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           python make.py win32
-          mv dist/mu-editor_32bit.exe upload/
+          mv dist/*.exe upload/
       - name: Build Windows 64 bit
         if: runner.os == 'Windows'
         run: |
           python make.py win64
-          mv dist/mu-editor_64bit.exe upload/
+          mv dist/*.exe upload/
       - name: Build macOS
         if: runner.os == 'macOS'
         run: |

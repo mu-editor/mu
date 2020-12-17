@@ -17,6 +17,9 @@ import uuid
 
 import pytest
 import mu.logic
+
+# ~ import mu.virtual_environment
+from mu.virtual_environment import venv
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import pyqtSignal, QObject, Qt
 
@@ -98,6 +101,7 @@ def generate_session(
     microbit_runtime=None,
     zoom_level=2,
     window=None,
+    venv_path=None,
     **kwargs
 ):
     """Generate a temporary session file for one test
@@ -145,6 +149,8 @@ def generate_session(
         session_data["zoom_level"] = zoom_level
     if window:
         session_data["window"] = window
+    if venv_path:
+        session_data["venv_path"] = venv_path
     session_data.update(**kwargs)
 
     if filepath is None:
@@ -260,6 +266,7 @@ def esp_device():
     return esp_device
 
 
+@pytest.mark.skip(reason="Probably no longer needed with virtual environment")
 def test_installed_packages_dist_info():
     """
     Ensure module meta-data is processed properly to give a return value of a
@@ -294,6 +301,7 @@ def test_installed_packages_dist_info():
         assert result == ["bar", "foo"]  # ordered result.
 
 
+@pytest.mark.skip(reason="Probably no longer needed with virtual environment")
 def test_installed_packages_egg_info():
     """
     Ensure module meta-data is processed properly to give a return value of a
@@ -328,6 +336,7 @@ def test_installed_packages_egg_info():
         assert result == ["bar", "foo"]  # ordered result.
 
 
+@pytest.mark.skip(reason="Probably no longer needed with virtual environment")
 def test_installed_packages_errors():
     """
     If there's an error opening the expected metadata file, then just ignore
@@ -956,9 +965,8 @@ def test_editor_init():
         assert e.replace == ""
         assert e.global_replace is False
         assert e.selecting_mode is False
-        assert mkd.call_count == 2
+        assert mkd.call_count == 1
         assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
-        assert mkd.call_args_list[1][0][0] == mu.logic.MODULE_DIR
 
 
 def test_editor_setup():
@@ -1018,10 +1026,16 @@ def test_editor_restore_session_existing_runtime():
     file_contents = ["", ""]
     ed = mocked_editor(mode)
     with mock.patch("os.path.isfile", return_value=True):
-        with generate_session(
-            theme, mode, file_contents, microbit_runtime="/foo", zoom_level=5
-        ):
-            ed.restore_session()
+        with mock.patch.object(venv, "relocate") as venv_relocate:
+            with generate_session(
+                theme,
+                mode,
+                file_contents,
+                microbit_runtime="/foo",
+                zoom_level=5,
+                venv_path="foo",
+            ):
+                ed.restore_session()
 
     assert ed.theme == theme
     assert ed._view.add_tab.call_count == len(file_contents)
@@ -1030,6 +1044,7 @@ def test_editor_restore_session_existing_runtime():
     assert ed.minify is False
     assert ed.microbit_runtime == "/foo"
     assert ed._view.zoom_position == 5
+    assert venv_relocate.called_with("foo")
 
 
 def test_editor_restore_session_missing_runtime():
@@ -2110,13 +2125,9 @@ def test_show_help():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    qlocalesys = mock.MagicMock()
-    qlocalesys.name.return_value = "en_GB"
     with mock.patch(
         "mu.logic.webbrowser.open_new", return_value=None
-    ) as wb, mock.patch(
-        "PyQt5.QtCore.QLocale.system", return_value=qlocalesys
-    ):
+    ) as wb, mock.patch("mu.i18n.language_code", "en_GB"):
         ed.show_help()
         version = ".".join(__version__.split(".")[:2])
         url = "https://codewith.mu/en/help/{}".format(version)
@@ -2235,24 +2246,12 @@ def test_quit_save_tabs_with_paths():
     mock_mode.workspace_dir.return_value = "foo/bar"
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit"):
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    [session], _ = mock_save_session.call_args
     assert os.path.abspath("foo.py") in session["paths"]
 
 
@@ -2270,24 +2269,12 @@ def test_quit_save_theme():
     mock_mode.workspace_dir.return_value = "foo/bar"
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit"):
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    [session], _ = mock_save_session.call_args
     assert session["theme"] == "night"
 
 
@@ -2307,24 +2294,12 @@ def test_quit_save_envars():
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
     ed.envars = [["name1", "value1"], ["name2", "value2"]]
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit"):
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    [session], _ = mock_save_session.call_args
     assert session["envars"] == [["name1", "value1"], ["name2", "value2"]]
 
 
@@ -2343,25 +2318,15 @@ def test_quit_save_zoom_level():
     mock_mode.workspace_dir.return_value = "foo/bar"
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
-    ed.envars = [["name1", "value1"], ["name2", "value2"]]
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit"):
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    [session], _ = mock_save_session.call_args
+    #
+    # FIXME: not clear where this is set. Default?
+    #
     assert session["zoom_level"] == 2
 
 
@@ -2380,28 +2345,19 @@ def test_quit_save_window_geometry():
     mock_mode.workspace_dir.return_value = "foo/bar"
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
-    ed.envars = [["name1", "value1"], ["name2", "value2"]]
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit"):
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    [session], _ = mock_save_session.call_args
+    #
+    # FIXME: not clear where this is set. Default?
+    #
     assert session["window"] == {"x": 100, "y": 200, "w": 300, "h": 400}
 
 
+@pytest.mark.skip(reason="Probably no longer needed with virtual environment")
 def test_quit_cleans_temporary_pth_file_on_windows():
     """
     If the platform is Windows and Mu is running as installed by the official
@@ -2447,6 +2403,7 @@ def test_quit_cleans_temporary_pth_file_on_windows():
     mock_os_remove.assert_called_once_with(expected_path)
 
 
+@pytest.mark.skip(reason="Probably no longer needed with virtual environment")
 def test_quit_unable_to_clean_temporary_pth_file_on_windows():
     """
     If the platform is Windows and Mu is running as installed by the official
@@ -2576,22 +2533,26 @@ def test_show_admin():
         "packages": "baz\n",
     }
     view.show_admin.return_value = new_settings
-    mock_open = mock.mock_open()
-    mock_ip = mock.MagicMock(return_value=["Foo", "bar"])
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.isfile", return_value=True
-    ), mock.patch("mu.logic.installed_packages", mock_ip):
-        ed.show_admin(None)
-        mock_open.assert_called_once_with(
-            mu.logic.LOG_FILE, "r", encoding="utf8"
-        )
-        assert view.show_admin.call_count == 1
-        assert view.show_admin.call_args[0][1] == settings
-        assert ed.envars == [["name", "value"]]
-        assert ed.minify is True
-        assert ed.microbit_runtime == "/foo/bar"
-        # Expect package names to be normalised to lowercase.
-        ed.sync_package_state.assert_called_once_with(["foo", "bar"], ["baz"])
+    with mock.patch.object(
+        venv, "installed_packages", return_value=([], ["Foo", "bar"])
+    ):
+        mock_open = mock.mock_open()
+        with mock.patch("builtins.open", mock_open), mock.patch(
+            "os.path.isfile", return_value=True
+        ):
+            ed.show_admin()
+            mock_open.assert_called_once_with(
+                mu.logic.LOG_FILE, "r", encoding="utf8"
+            )
+            assert view.show_admin.call_count == 1
+            assert view.show_admin.call_args[0][1] == settings
+            assert ed.envars == [["name", "value"]]
+            assert ed.minify is True
+            assert ed.microbit_runtime == "/foo/bar"
+            # Expect package names to be normalised to lowercase.
+            ed.sync_package_state.assert_called_once_with(
+                ["foo", "bar"], ["baz"]
+            )
 
 
 def test_show_admin_no_change():
@@ -2608,12 +2569,14 @@ def test_show_admin_no_change():
     new_settings = {}
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    mock_ip = mock.MagicMock(return_value=["foo", "bar"])
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.isfile", return_value=True
-    ), mock.patch("mu.logic.installed_packages", mock_ip):
-        ed.show_admin(None)
-        assert ed.sync_package_state.call_count == 0
+    with mock.patch.object(
+        venv, "installed_packages", return_value=([], ["Foo", "bar"])
+    ):
+        with mock.patch("builtins.open", mock_open), mock.patch(
+            "os.path.isfile", return_value=True
+        ):
+            ed.show_admin(None)
+            assert ed.sync_package_state.call_count == 0
 
 
 def test_show_admin_missing_microbit_runtime():
@@ -2641,21 +2604,25 @@ def test_show_admin_missing_microbit_runtime():
     }
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    mock_ip = mock.MagicMock(return_value=["foo", "bar"])
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.isfile", return_value=False
-    ), mock.patch("mu.logic.installed_packages", mock_ip):
-        ed.show_admin(None)
-        mock_open.assert_called_once_with(
-            mu.logic.LOG_FILE, "r", encoding="utf8"
-        )
-        assert view.show_admin.call_count == 1
-        assert view.show_admin.call_args[0][1] == settings
-        assert ed.envars == [["name", "value"]]
-        assert ed.minify is True
-        assert ed.microbit_runtime == ""
-        assert view.show_message.call_count == 1
-        ed.sync_package_state.assert_called_once_with(["foo", "bar"], ["baz"])
+    with mock.patch.object(
+        venv, "installed_packages", return_value=([], ["Foo", "bar"])
+    ):
+        with mock.patch("builtins.open", mock_open), mock.patch(
+            "os.path.isfile", return_value=False
+        ):
+            ed.show_admin(None)
+            mock_open.assert_called_once_with(
+                mu.logic.LOG_FILE, "r", encoding="utf8"
+            )
+            assert view.show_admin.call_count == 1
+            assert view.show_admin.call_args[0][1] == settings
+            assert ed.envars == [["name", "value"]]
+            assert ed.minify is True
+            assert ed.microbit_runtime == ""
+            assert view.show_message.call_count == 1
+            ed.sync_package_state.assert_called_once_with(
+                ["foo", "bar"], ["baz"]
+            )
 
 
 def test_sync_package_state():
@@ -2668,9 +2635,8 @@ def test_sync_package_state():
     old_packages = ["foo", "bar"]
     new_packages = ["bar", "baz"]
     ed.sync_package_state(old_packages, new_packages)
-    view.sync_packages.assert_called_once_with(
-        {"foo"}, {"baz"}, mu.logic.MODULE_DIR
-    )
+    args, _ = view.sync_packages.call_args
+    assert args[:2] == ({"foo"}, {"baz"})
 
 
 def test_select_mode():
@@ -3410,6 +3376,7 @@ def test_handle_open_file():
 
     class Dummy(QObject):
         open_file = pyqtSignal(str)
+        venv = None
 
     view = Dummy()
     edit = mu.logic.Editor(view)

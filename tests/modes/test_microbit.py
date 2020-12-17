@@ -6,7 +6,7 @@ import os
 import os.path
 import pytest
 from mu.logic import HOME_DIRECTORY, Device
-from mu.modes.microbit import MicrobitMode, DeviceFlasher
+from mu.modes.microbit import MicrobitMode, DeviceFlasher, can_minify
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from mu.contrib import uflash
 from unittest import mock
@@ -831,6 +831,7 @@ def test_flash_without_device():
         assert s.call_count == 0
 
 
+@pytest.mark.skipif(not can_minify, reason="No minifier available to test")
 def test_flash_script_too_big():
     """
     If the script in the current tab is too big, abort in the expected way.
@@ -842,8 +843,7 @@ def test_flash_script_too_big():
     editor = mock.MagicMock()
     editor.minify = True
     mm = MicrobitMode(editor, view)
-    with mock.patch("mu.modes.microbit.can_minify", True):
-        mm.flash()
+    mm.flash()
     view.show_message.assert_called_once_with(
         'Unable to flash "foo"',
         "Our minifier tried but your " "script is too long!",
