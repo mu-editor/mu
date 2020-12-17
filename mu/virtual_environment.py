@@ -76,7 +76,7 @@ class Process(QObject):
         self.environment.insert("PYTHONUNBUFFERED", "1")
         self.environment.insert("PYTHONIOENCODING", "utf-8")
 
-    def _relocate_run(self, **envvars):
+    def _set_up_run(self, **envvars):
         """Run the process with the command and args"""
         self.process = QProcess(self)
         environment = QProcessEnvironment(self.environment)
@@ -86,13 +86,13 @@ class Process(QObject):
         self.process.setProcessChannelMode(QProcess.MergedChannels)
 
     def run_blocking(self, command, args, wait_for_s=30.0, **envvars):
-        self._relocate_run(**envvars)
+        self._set_up_run(**envvars)
         self.process.start(command, args)
         self.wait(wait_for_s=wait_for_s)
         return self.data()
 
     def run(self, command, args, **envvars):
-        self._relocate_run(**envvars)
+        self._set_up_run(**envvars)
         self.process.readyRead.connect(self._readyRead)
         self.process.started.connect(self._started)
         self.process.finished.connect(self._finished)
@@ -161,11 +161,13 @@ class Pip(object):
         params.extend(args)
 
         if slots.output is None:
+            logger.debug("About to run blocking: %s, %s, %s", self.executable, params, wait_for_s)
             result = self.process.run_blocking(
                 self.executable, params, wait_for_s=wait_for_s
             )
             return result
         else:
+            logger.debug("About to run unblocking: %s, %s, %s", self.executable, params)
             if slots.started:
                 self.process.started.connect(slots.started)
             self.process.output.connect(slots.output)
@@ -182,6 +184,7 @@ class Pip(object):
         Any kwargs are passed as command-line switches. A value of None
         indicates a switch without a value (eg --upgrade)
         """
+        logger.debug("About to pip install: %r", packages)
         if isinstance(packages, str):
             return self.run(
                 "install", packages, wait_for_s=180.0, slots=slots, **kwargs
@@ -200,6 +203,7 @@ class Pip(object):
         Any kwargs are passed as command-line switches. A value of None
         indicates a switch without a value (eg --upgrade)
         """
+        logger.debug("About to pip uninstall: %r", packages)
         if isinstance(packages, str):
             return self.run(
                 "uninstall",
@@ -304,7 +308,7 @@ class VirtualEnvironment(object):
         self.pip = Pip(
             os.path.join(self._bin_directory, "pip" + self._bin_extension)
         )
-        logging.debug(
+        logger.debug(
             "Virtual environment set up %s at %s", self.name, self.path
         )
 
@@ -435,7 +439,7 @@ class VirtualEnvironment(object):
             raise VirtualEnvironmentError(
                 "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
             )
-        self.pip.install(wheel_filepaths)
+        logger.debug(self.pip.install(wheel_filepaths))
 
     def register_baseline_packages(self):
         """Keep track of the baseline packages installed into the empty venv"""
@@ -534,5 +538,4 @@ class VirtualEnvironment(object):
 # Create a singleton virtual environment to be used throughout
 # the application
 #
-print("About to create venv")
 venv = VirtualEnvironment(config.VENV_DIR)
