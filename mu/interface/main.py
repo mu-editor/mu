@@ -674,7 +674,6 @@ class Window(QMainWindow):
 
         self.process_runner.start_process(
             interpreter,
-            "",
             script_name,
             working_directory,
             interactive,

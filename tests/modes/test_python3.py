@@ -23,10 +23,7 @@ def test_kernel_runner_start_kernel():
     mock_kernel_manager.client.return_value = mock_client
     envars = [["name", "value"]]
     kr = KernelRunner(
-        kernel_name=sys.executable,
-        cwd="/a/path/to/mu_code",
-        envars=envars,
-        pythonpath=os.pathsep.join(sys.path),
+        kernel_name=sys.executable, cwd="/a/path/to/mu_code", envars=envars
     )
     kr.kernel_started = mock.MagicMock()
     mock_os = mock.MagicMock()
@@ -43,48 +40,6 @@ def test_kernel_runner_start_kernel():
         kr.start_kernel()
     mock_os.chdir.assert_called_once_with("/a/path/to/mu_code")
     assert mock_os.environ["name"] == "value"
-    expected_paths = sys.path
-    assert mock_os.environ["PYTHONPATH"] == os.pathsep.join(expected_paths)
-    assert kr.repl_kernel_manager == mock_kernel_manager
-    mock_kernel_manager_class.assert_called_once_with()
-    mock_kernel_manager.start_kernel.assert_called_once_with()
-    assert kr.repl_kernel_client == mock_client
-    kr.kernel_started.emit.assert_called_once_with(
-        mock_kernel_manager, mock_client
-    )
-
-
-def test_kernel_runner_start_kernel_pythonpath_exists():
-    """
-    Ensure  that MODULE_DIR is added to the existing PYTHONPATH
-    """
-    mock_kernel_manager = mock.MagicMock()
-    mock_client = mock.MagicMock()
-    mock_kernel_manager.client.return_value = mock_client
-    envars = [["name", "value"]]
-    kr = KernelRunner(
-        kernel_name=sys.executable,
-        cwd="/a/path/to/mu_code",
-        envars=envars,
-        pythonpath=os.pathsep.join(sys.path),
-    )
-    kr.kernel_started = mock.MagicMock()
-    mock_os = mock.MagicMock()
-    mock_os.environ = {"PYTHONPATH": "foo"}
-    mock_os.pathsep = os.pathsep
-    mock_os.path.dirname.return_value = (
-        "/Applications/mu-editor.app" "/Contents/Resources/app/mu"
-    )
-    mock_kernel_manager_class = mock.MagicMock()
-    mock_kernel_manager_class.return_value = mock_kernel_manager
-    with mock.patch("mu.modes.python3.os", mock_os), mock.patch(
-        "mu.modes.python3.QtKernelManager", mock_kernel_manager_class
-    ), mock.patch("sys.platform", "darwin"):
-        kr.start_kernel()
-    mock_os.chdir.assert_called_once_with("/a/path/to/mu_code")
-    assert mock_os.environ["name"] == "value"
-    expected_paths = ["foo"]
-    assert mock_os.environ["PYTHONPATH"] == os.pathsep.join(expected_paths)
     assert kr.repl_kernel_manager == mock_kernel_manager
     mock_kernel_manager_class.assert_called_once_with()
     mock_kernel_manager.start_kernel.assert_called_once_with()
@@ -102,10 +57,7 @@ def test_kernel_runner_stop_kernel():
     """
     envars = [["name", "value"]]
     kr = KernelRunner(
-        kernel_name=sys.executable,
-        cwd="/a/path/to/mu_code",
-        envars=envars,
-        pythonpath=os.pathsep.join(sys.path),
+        kernel_name=sys.executable, cwd="/a/path/to/mu_code", envars=envars
     )
     kr.repl_kernel_client = mock.MagicMock()
     kr.repl_kernel_manager = mock.MagicMock()
@@ -409,7 +361,7 @@ def test_python_toggle_repl():
 
 def test_python_add_repl():
     """
-    Check the REPL's kernal manager is configured correctly before being handed
+    Check the REPL's kernel manager is configured correctly before being handed
     to the Jupyter widget in the view.
     """
     mock_qthread = mock.MagicMock()
@@ -427,7 +379,6 @@ def test_python_add_repl():
     mock_qthread.assert_called_once_with()
     mock_kernel_runner.assert_called_once_with(
         kernel_name="name",
-        pythonpath="",
         cwd=pm.workspace_dir(),
         envars=editor.envars,
     )

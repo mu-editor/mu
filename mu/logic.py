@@ -1436,7 +1436,6 @@ class Editor(QObject):
             "zoom_level": self._view.zoom_position,
             "venv_name": venv.name,
             "venv_python": venv.interpreter,
-            "venv_python_path": venv.full_pythonpath(),
             "window": {
                 "x": self._view.x(),
                 "y": self._view.y(),
