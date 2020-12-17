@@ -43,24 +43,22 @@ class KernelRunner(QObject):
     # Used to build context with user defined envars when running the REPL.
     default_envars = os.environ.copy()
 
-    def __init__(self, kernel_name, cwd, envars, pythonpath):
+    def __init__(self, kernel_name, cwd, envars):
         """
         Initialise the kernel runner with a name of a kernel specification, a
         target current working directory, any user-defined envars and the
         path for the currently active virtualenv's site-packages.
         """
         logger.debug(
-            "About to create KernelRunner for %s, %s, %s, %s",
+            "About to create KernelRunner for %s, %s, %s ",
             kernel_name,
             cwd,
             envars,
-            pythonpath,
         )
         super().__init__()
         self.kernel_name = kernel_name
         self.cwd = cwd
         self.envars = dict(envars)
-        self.pythonpath = pythonpath
 
     def start_kernel(self):
         """
@@ -78,13 +76,7 @@ class KernelRunner(QObject):
         )
         for k, v in self.envars.items():
             os.environ[k] = v
-        # Ensure the expected paths are in PYTHONPATH of the subprocess so the
-        # kernel and Mu-installed third party applications can be found.
-        if "PYTHONPATH" not in os.environ and self.pythonpath:
-            os.environ["PYTHONPATH"] = self.pythonpath
-        logger.info(
-            "REPL PYTHONPATH: {}".format(os.environ.get("PYTHONPATH", ""))
-        )
+
         self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.kernel_name = self.kernel_name
         self.repl_kernel_manager.start_kernel()
@@ -282,7 +274,6 @@ class PythonMode(BaseMode):
             kernel_name=venv.name,
             cwd=self.workspace_dir(),
             envars=self.editor.envars,
-            pythonpath="",
         )
         self.kernel_runner.moveToThread(self.kernel_thread)
         self.kernel_runner.kernel_started.connect(self.on_kernel_start)

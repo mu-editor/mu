@@ -830,7 +830,6 @@ class PythonProcessPane(QTextEdit):
     def start_process(
         self,
         interpreter,
-        pythonpath,
         script_name,
         working_directory,
         interactive=True,
@@ -842,7 +841,7 @@ class PythonProcessPane(QTextEdit):
         """
         Start the child Python process.
 
-        Will use the referenced interpreter and pythonpath to run the Python
+        Will use the referenced interpreter to run the Python
         script_name within the context of the working directory.
 
         If interactive is True (the default) the Python process will run in
@@ -887,10 +886,7 @@ class PythonProcessPane(QTextEdit):
             encoding = "{}.utf-8".format(language_code)
             env.insert("LC_ALL", encoding)
             env.insert("LANG", encoding)
-        # Ensure the PYTHONPATH is set correctly.
-        if "PYTHONPATH" not in envars:
-            envars.append(("PYTHONPATH", pythonpath))
-        # Mange environment variables that may have been set by the user.
+        # Manage environment variables that may have been set by the user.
         if envars:
             logger.info(
                 "Running with environment variables: " "{}".format(envars)
