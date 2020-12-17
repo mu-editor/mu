@@ -3620,6 +3620,66 @@ def test_tidy_code_invalid_python():
     assert mock_view.show_message.call_count == 1
 
 
+def test_check_tidy_check_line_too_long():
+    """
+    Check we detect, then correct, lines longer than MAX_LINE_LENGTH.
+    """
+    mock_view = mock.MagicMock()
+    # a simple to format list running 94 characters long plus newline
+    long_list = "[{}{}]\n".format(*("(1, 2), " * 10, '"0123456789"'))
+    tab = mock_view.current_tab
+    tab.text.return_value = long_list
+    ed = mu.logic.Editor(mock_view)
+    too_long = mu.logic.check_pycodestyle(tab.text.return_value)
+    assert len(too_long) == 1  # One issue found: line too long
+    ed.tidy_code()
+    called_with = tab.SendScintilla.call_args[0][1].decode()
+    tab.text.return_value = called_with
+    ok = mu.logic.check_pycodestyle(tab.text.return_value)
+    assert len(ok) == 0  # No issues
+
+    assert (
+        tab.text.return_value
+        == """[
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    "0123456789",
+]
+"""
+    )
+
+
+def test_check_tidy_check_short_line():
+    """
+    Check that Cidy and Check leave a short line as-is and respect
+    MAX_LINE_LENGTH.
+    """
+    mock_view = mock.MagicMock()
+    # a simple to format list running 94 characters long plus newline
+    long_list = "[{}{}]\n".format(*("(1, 2), " * 10, '"0123456789"'))
+    tab = mock_view.current_tab
+    tab.text.return_value = long_list
+    with mock.patch("mu.logic.MAX_LINE_LENGTH", 94):
+        ed = mu.logic.Editor(mock_view)
+        too_long = mu.logic.check_pycodestyle(tab.text.return_value)
+        assert len(too_long) == 0  # No issues
+        ed.tidy_code()
+        called_with = tab.SendScintilla.call_args[0][1].decode()
+        tab.text.return_value = called_with
+        ok = mu.logic.check_pycodestyle(tab.text.return_value)
+        assert len(ok) == 0  # No issues
+
+    assert tab.text.return_value == long_list
+
+
 def test_device_init(microbit_com1):
     """
     Test that all properties are set properly and can be read.

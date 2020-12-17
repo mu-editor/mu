@@ -53,6 +53,8 @@ WORKSPACE_NAME = "mu_code"
 LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.
 LOG_FILE = os.path.join(LOG_DIR, "mu.log")
+# Maximum line length for using both in Check and Tidy
+MAX_LINE_LENGTH = 88
 # Regex to match pycodestyle (PEP8) output.
 STYLE_REGEX = re.compile(r".*:(\d+):(\d+):\s+(.*)")
 # Regex to match flake8 output.
@@ -481,7 +483,11 @@ def check_pycodestyle(code, config_file=False):
         "W391",
         "W503",
     )
-    style = StyleGuide(parse_argv=False, config_file=config_file)
+    style = StyleGuide(
+        parse_argv=False,
+        config_file=config_file,
+        max_line_length=MAX_LINE_LENGTH,
+    )
 
     # StyleGuide() returns pycodestyle module's own ignore list. That list may
     # be a default list or a custom list provided by the user
@@ -1805,7 +1811,9 @@ class Editor(QObject):
             source_code = tab.text()
             logger.info("Tidy code.")
             logger.info(source_code)
-            filemode = FileMode(target_versions=PY36_VERSIONS, line_length=88)
+            filemode = FileMode(
+                target_versions=PY36_VERSIONS, line_length=MAX_LINE_LENGTH
+            )
             tidy_code = format_str(source_code, mode=filemode)
             # The following bypasses tab.setText which resets the undo history.
             # Doing it this way means the user can use CTRL-Z to undo the
