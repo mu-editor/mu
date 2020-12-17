@@ -161,13 +161,20 @@ class Pip(object):
         params.extend(args)
 
         if slots.output is None:
-            logger.debug("About to run blocking: %s, %s, %s", self.executable, params, wait_for_s)
+            logger.debug(
+                "About to run blocking: %s, %s, %s",
+                self.executable,
+                params,
+                wait_for_s,
+            )
             result = self.process.run_blocking(
                 self.executable, params, wait_for_s=wait_for_s
             )
             return result
         else:
-            logger.debug("About to run unblocking: %s, %s, %s", self.executable, params)
+            logger.debug(
+                "About to run unblocking: %s, %s, %s", self.executable, params
+            )
             if slots.started:
                 self.process.started.connect(slots.started)
             self.process.output.connect(slots.output)

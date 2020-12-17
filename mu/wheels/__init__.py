@@ -4,7 +4,10 @@
 import os
 import sys
 import glob
+import logging
 import subprocess
+
+logger = logging.getLogger(__name__)
 
 mode_packages = [
     #
@@ -65,10 +68,12 @@ def download(dirpath=WHEELS_DIRPATH):
     #
     # FIXME: for now, we need numpy==1.19.3 as there's a Windows bug which
     # prevents us from using >=1.19.4
-    # https://developercommunity.visualstudio.com/content/problem/1207405/fmod-after-an-update-to-windows-2004-is-causing-a.html
+    # https://developercommunity.visualstudio.com/
+    # content/problem/1207405/
+    # fmod-after-an-update-to-windows-2004-is-causing-a.html
     #
-    # We explicitly download 1.19.3 but then pygame pulls in 1.19.4 as one of its
-    # deps
+    # We explicitly download 1.19.3 but then pygame pulls in 1.19.4 as one
+    # of its deps
     #
     # So, for now, we just find and delete the numpy 1.19.4 wheels
     #
