@@ -488,29 +488,6 @@ class VirtualEnvironment(object):
             slots=slots,
         )
 
-    def full_pythonpath(self):
-        """
-        Given an interpreter from a virtualenv, returns a PYTHONPATH containing
-        both the virtualenvs paths and then the paths from Mu's own sys.path.
-        """
-        #
-        # FIXME: not sure where this is used; maybe only Kernel creation?
-        #
-        result = self.run_python(
-            "-c", "import sys; print('\\n'.join(sys.path))"
-        )
-        #
-        # Using list rather than set to preserve seach order
-        #
-        paths = []
-        for p in [line.strip() for line in result.split("\n")]:
-            if p not in paths:
-                paths.append(p)
-        for p in sys.path:
-            if p not in paths:
-                paths.append(p)
-        return os.pathsep.join(paths)
-
     def installed_packages(self):
         """
         List all the third party modules installed by the user in the venv
