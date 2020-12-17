@@ -45,7 +45,6 @@ install_requires = [
     "flake8 >= 3.8.3",
     "appdirs>=1.4.3",
     "semver>=2.8.0",
-    'black>=19.10b0;python_version > "3.5"',
     #
     # Needed for creating the runtime virtual environment
     #
@@ -69,6 +68,7 @@ extras_require = {
         # TODO -- maybe mode-based tests should be run
         # under the runtime venv?
         #
+        'black>=19.10b0;python_version > "3.5"',
         "nudatus",
     ],
     "docs": [
@@ -123,7 +123,7 @@ setup(
         "mu.modes.api",
         "mu.wheels",
     ],
-    python_requires=">=3.5,<3.9",
+    python_requires=">=3.5,<3.8",
     install_requires=install_requires,
     extras_require=extras_require,
     include_package_data=True,

@@ -110,7 +110,7 @@ class Process(QObject):
             not finished
             and self.process.exitStatus() == self.process.CrashExit
         ):
-            raise RuntimeError("Some error occurred")
+            raise VirtualEnvironmentError("Some error occurred")
 
     def data(self):
         return self.process.readAll().data().decode("utf-8")
@@ -254,7 +254,7 @@ class Pip(object):
         # cf https://lgtm.com/rules/11000086/
         #
         except StopIteration:
-            raise RuntimeError("Unable to parse installed packages")
+            raise VirtualEnvironmentError("Unable to parse installed packages")
 
         for line in iterlines:
             #
@@ -316,30 +316,15 @@ class VirtualEnvironment(object):
         headless and the process will be run synchronously and output collected
         will be returned when the process is complete
         """
-        # FIXME -- do we need pythonpath?, pythonpath=python36_zip):
-        # ~ logger.info(
-        # ~ "Starting new sub-process with: {} {} (PYTHONPATH={})".format(
-        # ~ self.interpreter, args, pythonpath
-        # ~ )
-        # ~ )
 
         if slots.output:
             self.process.started.connect(slots.started)
-            # ~ if slots.started:
-            # ~ self.process.started.connect(slots.started)
             self.process.output.connect(slots.output)
             if slots.finished:
                 self.process.finished.connect(slots.finished)
             self.process.run(self.interpreter, args)
         else:
             return self.process.run_blocking(self.interpreter, args)
-
-    def find_interpreter(self):
-        #
-        # This no longer has any real purpose but we're leaving it here
-        # so as not to break too many things
-        #
-        pass
 
     def ensure(self):
         """Ensure that a virtual environment exists, creating it if needed"""
@@ -349,7 +334,7 @@ class VirtualEnvironment(object):
         elif not os.path.isdir(self.path):
             message = "%s exists but is not a directory" % self.path
             logger.error(message)
-            raise RuntimeError(message)
+            raise VirtualEnvironmentError(message)
 
         #
         # There doesn't seem to be a canonical way of checking whether
@@ -358,7 +343,7 @@ class VirtualEnvironment(object):
         elif not os.path.isfile(os.path.join(self.path, "pyvenv.cfg")):
             message = "Directory %s exists but is not a venv" % self.path
             logger.error(message)
-            raise RuntimeError(message)
+            raise VirtualEnvironmentError(message)
         else:
             logger.debug("Directory %s already exists", self.path)
 
@@ -369,7 +354,7 @@ class VirtualEnvironment(object):
                 "No interpreter found where expected at %s" % self.interpreter
             )
             logger.error(message)
-            raise RuntimeError(message)
+            raise VirtualEnvironmentError(message)
 
         if os.path.isfile(self.pip.executable):
             logger.info("Pip found at %s", self.pip.executable)
@@ -378,7 +363,7 @@ class VirtualEnvironment(object):
                 "Pip not found where expected at %s" % self.pip.executable
             )
             logger.error(message)
-            raise RuntimeError(message)
+            raise VirtualEnvironmentError(message)
 
         self.is_ensured = True
 
@@ -447,7 +432,7 @@ class VirtualEnvironment(object):
             wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
 
         if not wheel_filepaths:
-            raise RuntimeError(
+            raise VirtualEnvironmentError(
                 "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
             )
         self.pip.install(wheel_filepaths)

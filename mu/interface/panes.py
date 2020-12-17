@@ -24,10 +24,6 @@ import logging
 import signal
 import string
 import bisect
-
-#
-# Needed for pywin32?
-#
 import os.path
 import codecs
 

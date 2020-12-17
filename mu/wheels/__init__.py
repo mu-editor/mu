@@ -12,6 +12,7 @@ mode_packages = [
     ("pyserial", "==3.4"),
     ("qtconsole", "==4.7.4"),
     ("nudatus", ">=0.0.3"),
+    ("black", ">=19.10b0"),
 ]
 WHEELS_DIRPATH = os.path.dirname(__file__)
 

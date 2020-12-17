@@ -51,7 +51,7 @@ def patched():
     """
     with patch.object(subprocess, "run") as subprocess_run, patch.object(
         VE, "run_python"
-    ) as run_python, patch.object(VE, "find_interpreter"):
+    ) as run_python:
         yield subprocess_run, run_python
 
 
@@ -121,7 +121,6 @@ def test_create_virtual_environment_on_disk(tmp_path):
         #
         # Check that a Python interpreter is found in the bin/scripts directory
         #
-        venv.find_interpreter()
         bin = "scripts" if sys.platform == "win32" else "bin"
         bin_extension = ".exe" if sys.platform == "win32" else ""
         assert os.path.samefile(
