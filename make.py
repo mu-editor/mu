@@ -265,7 +265,8 @@ def run():
 @export
 def dist():
     """Generate a source distribution and a binary wheel"""
-    check()
+    if check() != 0:
+        raise RuntimeError("Check failed")
     print("Checks pass; good to package")
     return subprocess.run(
         [sys.executable, "setup.py", "sdist", "bdist_wheel"]
@@ -293,7 +294,8 @@ def publish_live():
 @export
 def win32():
     """Build 32-bit Windows installer"""
-    check()
+    if check() != 0:
+        raise RuntimeError("Check failed")
     print("Building 32-bit Windows installer")
     return subprocess.run(
         [sys.executable, "win_installer.py", "32", "setup.py"]
@@ -303,7 +305,8 @@ def win32():
 @export
 def win64():
     """Build 64-bit Windows installer"""
-    check()
+    if check() != 0:
+        raise RuntimeError("Check failed")
     print("Building 64-bit Windows installer")
     return subprocess.run(
         [sys.executable, "win_installer.py", "64", "setup.py"]
