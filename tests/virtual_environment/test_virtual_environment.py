@@ -274,9 +274,9 @@ def test_venv_is_singleton(venv_name):
     for module in [pygamezero, python3, web, debugger, dialogs, app, logic]:
         assert module.venv is venv
 
+
 def test_venv_folder_created(venv_name):
-    """When the runtime venv_folder does not exist ensure we create it
-    """
+    """When the runtime venv_folder does not exist ensure we create it"""
     with patch.object(VE, "create") as mock_create:
         #
         # Make sure we're guaranteed to find Python / pip exes
@@ -287,9 +287,9 @@ def test_venv_folder_created(venv_name):
 
     assert mock_create.called
 
+
 def test_venv_folder_already_exists(venv_name):
-    """When the venv_folder does exist as a venv ensure we do not create it
-    """
+    """When the venv_folder does exist as a venv ensure we do not create it"""
     os.mkdir(venv_name)
     open(os.path.join(venv_name, "pyvenv.cfg"), "w").close()
     with patch.object(VE, "create") as mock_create:
@@ -302,13 +302,14 @@ def test_venv_folder_already_exists(venv_name):
 
     assert not mock_create.called
 
+
 def test_venv_folder_already_exists_not_venv(venv_name):
-    """When the venv_folder does exist not as a venv ensure we raise an error
-    """
+    """When the venv_folder does exist not as a venv ensure we raise an error"""
     os.mkdir(venv_name)
     venv = mu.virtual_environment.VirtualEnvironment(venv_name)
     with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
         venv.ensure()
+
 
 def test_venv_folder_already_exists_not_directory(venv_name):
     """When the runtime venv_folder does exist but is not a directory ensure
@@ -319,9 +320,9 @@ def test_venv_folder_already_exists_not_directory(venv_name):
     with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
         venv.ensure()
 
+
 def test_venv_created_no_interpreter(venv_name):
-    """When the venv exists but has no interpreter ensure we raise an exception
-    """
+    """When the venv exists but has no interpreter ensure we raise an exception"""
     os.mkdir(venv_name)
     venv = mu.virtual_environment.VirtualEnvironment(venv_name)
     #
@@ -334,9 +335,9 @@ def test_venv_created_no_interpreter(venv_name):
     with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
         venv.ensure()
 
+
 def test_venv_created_no_pip(venv_name):
-    """When the venv exists but has no pip ensure we raise an exception
-    """
+    """When the venv exists but has no pip ensure we raise an exception"""
     os.mkdir(venv_name)
     venv = mu.virtual_environment.VirtualEnvironment(venv_name)
     #

@@ -293,10 +293,7 @@ class VirtualEnvironment(object):
         self.relocate(dirpath)
 
     def __str__(self):
-        return "<%s at %s>" % (
-            self.__class__.__name__,
-            self.path
-        )
+        return "<%s at %s>" % (self.__class__.__name__, self.path)
 
     def relocate(self, dirpath):
         self.path = dirpath
