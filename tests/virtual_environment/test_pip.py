@@ -356,15 +356,20 @@ def test_installed_packages_no_location():
                 )
                 assert installed_packages == expected_packages
 
+
 def test_pip_list_returns_empty():
     """When pip list command returns empty make sure we raise
-     an exception in installed_packages
+    an exception in installed_packages
     """
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(pip, "list", return_value=""):
-        with pytest.raises(mu.virtual_environment.VirtualEnvironmentError, match="Unable to parse"):
+        with pytest.raises(
+            mu.virtual_environment.VirtualEnvironmentError,
+            match="Unable to parse",
+        ):
             list(pip.installed())
+
 
 def test_pip_list():
     """Ensure that pip.list calls pip list"""

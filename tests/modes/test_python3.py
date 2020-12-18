@@ -8,7 +8,6 @@ from mu.modes.python3 import PythonMode, KernelRunner
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from mu.virtual_environment import venv
 
-# ~ from mu.logic import MODULE_DIR
 from unittest import mock
 
 

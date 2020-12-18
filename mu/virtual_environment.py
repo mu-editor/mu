@@ -296,7 +296,7 @@ class VirtualEnvironment(object):
         return "<%s at %s>" % (self.__class__.__name__, self.path)
 
     def relocate(self, dirpath):
-        self.path = dirpath
+        self.path = str(dirpath)
         self.name = os.path.basename(self.path)
         self._bin_directory = os.path.join(
             self.path, "scripts" if self._is_windows else "bin"
@@ -463,6 +463,7 @@ class VirtualEnvironment(object):
         """Return the list of baseline packages"""
         #
         # FIXME: This should come out of settings. For now though...
+        # cf https://github.com/mu-editor/mu/issues/1185
         #
         with open(self.BASELINE_PACKAGES_FILEPATH, encoding="utf-8") as f:
             try:
