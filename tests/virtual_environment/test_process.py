@@ -2,18 +2,8 @@
 """
 Tests for the QProcess-based Process class
 """
-import os
-import glob
-import pathlib
-import random
-import shutil
-import subprocess
 import sys
-from unittest import mock
-from unittest.mock import patch
 import uuid
-
-import PyQt5.QtCore as qt
 
 import pytest
 from mu import virtual_environment

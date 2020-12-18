@@ -304,7 +304,7 @@ def test_venv_folder_already_exists(venv_name):
 
 
 def test_venv_folder_already_exists_not_venv(venv_name):
-    """When the venv_folder does exist not as a venv ensure we raise an error"""
+    """When venv_folder does exist not as a venv ensure we raise an error"""
     os.mkdir(venv_name)
     venv = mu.virtual_environment.VirtualEnvironment(venv_name)
     with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
@@ -322,7 +322,7 @@ def test_venv_folder_already_exists_not_directory(venv_name):
 
 
 def test_venv_created_no_interpreter(venv_name):
-    """When the venv exists but has no interpreter ensure we raise an exception"""
+    """When venv exists but has no interpreter ensure we raise an exception"""
     os.mkdir(venv_name)
     venv = mu.virtual_environment.VirtualEnvironment(venv_name)
     #
