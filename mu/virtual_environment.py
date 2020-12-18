@@ -291,13 +291,11 @@ class VirtualEnvironment(object):
         self._is_windows = sys.platform == "win32"
         self._bin_extension = ".exe" if self._is_windows else ""
         self.relocate(dirpath)
-        self.is_ensured = False
 
     def __str__(self):
-        return "<%s at %s (%s)>" % (
+        return "<%s at %s>" % (
             self.__class__.__name__,
-            self.path,
-            "Ensured" if self.is_ensured else "Not Ensured",
+            self.path
         )
 
     def relocate(self, dirpath):
@@ -375,8 +373,6 @@ class VirtualEnvironment(object):
             )
             logger.error(message)
             raise VirtualEnvironmentError(message)
-
-        self.is_ensured = True
 
     def create(self):
         """
