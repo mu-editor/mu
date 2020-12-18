@@ -307,7 +307,9 @@ def test_flash_with_attached_device_has_old_firmware(microbit):
         mm.flash()
         assert mm.flash_thread == mock_flasher
         assert editor.show_status_message.call_count == 1
-        mm.set_buttons.assert_called_once_with(flash=False)
+        mm.set_buttons.assert_called_once_with(
+            flash=False, repl=False, files=False, plotter=False
+        )
         mock_flasher_class.assert_called_once_with(["bar"], b"", None)
         mock_flasher.finished.connect.assert_called_once_with(
             mm.flash_finished
@@ -346,7 +348,9 @@ def test_flash_force_with_no_micropython(microbit):
         mm.flash()
         assert mm.flash_thread == mock_flasher
         assert editor.show_status_message.call_count == 1
-        mm.set_buttons.assert_called_once_with(flash=False)
+        mm.set_buttons.assert_called_once_with(
+            flash=False, repl=False, files=False, plotter=False
+        )
         mock_flasher_class.assert_called_once_with(["bar"], b"", "/foo/bar")
         mock_flasher.finished.connect.assert_called_once_with(
             mm.flash_finished
@@ -426,7 +430,9 @@ def test_flash_force_with_attached_device(microbit):
         mm.flash()
         assert mm.flash_thread == mock_flasher
         assert editor.show_status_message.call_count == 1
-        mm.set_buttons.assert_called_once_with(flash=False)
+        mm.set_buttons.assert_called_once_with(
+            flash=False, repl=False, files=False, plotter=False
+        )
         mock_flasher_class.assert_called_once_with(["bar"], b"", "/foo/bar")
         mock_flasher.finished.connect.assert_called_once_with(
             mm.flash_finished
@@ -746,7 +752,9 @@ def test_flash_finished_copy_main():
     mm.set_buttons = mock.MagicMock()
     mm.flash_thread = mock.MagicMock()
     mm.flash_finished()
-    mm.set_buttons.assert_called_once_with(flash=True)
+    mm.set_buttons.assert_called_once_with(
+        flash=True, repl=True, files=True, plotter=True
+    )
     editor.show_status_message.assert_called_once_with("Finished flashing.")
     assert mm.flash_thread is None
     mm.copy_main.assert_called_once_with()
@@ -766,7 +774,9 @@ def test_flash_finished_copy_main_encounters_error():
     mm.set_buttons = mock.MagicMock()
     mm.flash_thread = mock.MagicMock()
     mm.flash_finished()
-    mm.set_buttons.assert_called_once_with(flash=True)
+    mm.set_buttons.assert_called_once_with(
+        flash=True, repl=True, files=True, plotter=True
+    )
     editor.show_status_message.assert_called_once_with("Finished flashing.")
     assert mm.flash_thread is None
     mm.copy_main.assert_called_once_with()
@@ -786,7 +796,9 @@ def test_flash_finished_no_copy():
     mm.set_buttons = mock.MagicMock()
     mm.flash_thread = mock.MagicMock()
     mm.flash_finished()
-    mm.set_buttons.assert_called_once_with(flash=True)
+    mm.set_buttons.assert_called_once_with(
+        flash=True, repl=True, files=True, plotter=True
+    )
     editor.show_status_message.assert_called_once_with("Finished flashing.")
     assert mm.flash_thread is None
     assert mm.copy_main.call_count == 0
@@ -859,7 +871,9 @@ def test_flash_failed():
     mm.flash_thread = mock.MagicMock()
     mm.flash_failed("Boom")
     assert view.show_message.call_count == 1
-    mm.set_buttons.assert_called_once_with(flash=True)
+    mm.set_buttons.assert_called_once_with(
+        flash=True, repl=True, files=True, plotter=True
+    )
     assert mm.flash_thread is None
 
 

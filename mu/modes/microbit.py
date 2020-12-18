@@ -340,7 +340,9 @@ class MicrobitMode(MicroPythonMode):
         if force_flash:
             logger.info("Flashing new MicroPython runtime onto device")
             self.editor.show_status_message(message, 10)
-            self.set_buttons(flash=False)
+            self.set_buttons(
+                flash=False, repl=False, files=False, plotter=False
+            )
             if user_defined_microbit_path or not port:
                 # The user has provided a path to a location on the
                 # filesystem. In this case save the combined hex/script
@@ -383,11 +385,17 @@ class MicrobitMode(MicroPythonMode):
                         "https://codewith.mu/"
                     )
                     self.view.show_message(message, information)
+                    self.set_buttons(
+                        flash=True, repl=True, files=True, plotter=True
+                    )
                     return
             self.flash_thread.finished.connect(self.flash_finished)
             self.flash_thread.on_flash_fail.connect(self.flash_failed)
             self.flash_thread.start()
         else:
+            self.set_buttons(
+                flash=False, repl=False, files=False, plotter=False
+            )
             try:
                 self.copy_main()
             except IOError as ioex:
@@ -406,12 +414,12 @@ class MicrobitMode(MicroPythonMode):
                 self.flash_thread.start()
             except Exception as ex:
                 self.flash_failed(ex)
+            self.set_buttons(flash=True, repl=True, files=True, plotter=True)
 
     def flash_finished(self):
         """
         Called when the thread used to flash the micro:bit has finished.
         """
-        self.set_buttons(flash=True)
         self.editor.show_status_message(_("Finished flashing."))
         self.flash_thread = None
         if self.python_script:
@@ -419,6 +427,7 @@ class MicrobitMode(MicroPythonMode):
                 self.copy_main()
             except Exception as ex:
                 self.flash_failed(ex)
+        self.set_buttons(flash=True, repl=True, files=True, plotter=True)
 
     def copy_main(self):
         """
@@ -459,7 +468,7 @@ class MicrobitMode(MicroPythonMode):
             " information."
         )
         self.view.show_message(message, information, "Warning")
-        self.set_buttons(flash=True)
+        self.set_buttons(flash=True, repl=True, files=True, plotter=True)
         self.flash_thread = None
 
     def toggle_repl(self, event):
