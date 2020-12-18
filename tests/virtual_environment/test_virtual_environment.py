@@ -72,12 +72,11 @@ def set_up_test_wheels(temp_dirpath):
     return wheels_dirpath
 
 
-def test_create_virtual_environment_on_disk(tmp_path):
+def test_create_virtual_environment_on_disk(tmp_path, venv_name):
     """Ensure that we're actually creating a working virtual environment
     on the disk with wheels installed
     """
     wheels_dirpath = set_up_test_wheels(tmp_path)
-    venv_name = uuid.uuid1().hex
     venv_dirpath = tmp_path / venv_name
     with patch.object(
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
@@ -275,56 +274,61 @@ def test_venv_is_singleton(venv_name):
         assert module.venv is venv
 
 
-def test_venv_folder_created(venv_name):
+def test_venv_folder_created(tmp_path, venv_name):
     """When the runtime venv_folder does not exist ensure we create it"""
+    venv_dirpath = tmp_path / venv_name
     with patch.object(VE, "create") as mock_create:
         #
         # Make sure we're guaranteed to find Python / pip exes
         #
         with patch.object(os.path, "isfile", return_value=True):
-            venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+            venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
             venv.ensure()
 
     assert mock_create.called
 
 
-def test_venv_folder_already_exists(venv_name):
+def test_venv_folder_already_exists(tmp_path, venv_name):
     """When the venv_folder does exist as a venv ensure we do not create it"""
-    os.mkdir(venv_name)
-    open(os.path.join(venv_name, "pyvenv.cfg"), "w").close()
+    venv_dirpath = tmp_path / venv_name
+    os.mkdir(venv_dirpath)
+    open(os.path.join(venv_dirpath, "pyvenv.cfg"), "w").close()
     with patch.object(VE, "create") as mock_create:
         #
         # Make sure we're guaranteed to find Python / pip exes
         #
         with patch.object(os.path, "isfile", return_value=True):
-            venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+            venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
             venv.ensure()
 
     assert not mock_create.called
 
 
-def test_venv_folder_already_exists_not_venv(venv_name):
+def test_venv_folder_already_exists_not_venv(tmp_path, venv_name):
     """When venv_folder does exist not as a venv ensure we raise an error"""
-    os.mkdir(venv_name)
-    venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+    venv_dirpath = tmp_path / venv_name
+    os.mkdir(venv_dirpath)
+    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
         venv.ensure()
 
 
-def test_venv_folder_already_exists_not_directory(venv_name):
+def test_venv_folder_already_exists_not_directory(tmp_path, venv_name):
     """When the runtime venv_folder does exist but is not a directory ensure
     we raise an exception
     """
-    open(venv_name, "w").close()
-    venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+    venv_dirpath = tmp_path / venv_name
+    open(venv_dirpath, "w").close()
+    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
         venv.ensure()
 
 
-def test_venv_created_no_interpreter(venv_name):
+def test_venv_created_no_interpreter(tmp_path, venv_name):
     """When venv exists but has no interpreter ensure we raise an exception"""
-    os.mkdir(venv_name)
-    venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+    venv_dirpath = tmp_path / venv_name
+    os.mkdir(venv_dirpath)
+    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     #
     # Create the pip executable so the error is not for that
     #
@@ -336,10 +340,11 @@ def test_venv_created_no_interpreter(venv_name):
         venv.ensure()
 
 
-def test_venv_created_no_pip(venv_name):
+def test_venv_created_no_pip(tmp_path, venv_name):
     """When the venv exists but has no pip ensure we raise an exception"""
-    os.mkdir(venv_name)
-    venv = mu.virtual_environment.VirtualEnvironment(venv_name)
+    venv_dirpath = tmp_path / venv_name
+    os.mkdir(venv_dirpath)
+    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     #
     # Create the interpreter executable so the error is not for that
     #
