@@ -369,17 +369,3 @@ def test_pip_list_returns_empty():
             match="Unable to parse",
         ):
             list(pip.installed())
-
-
-def test_pip_list():
-    """Ensure that pip.list calls pip list"""
-    pip_executable = "pip-" + rstring() + ".exe"
-    pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.list()
-        expected_args = (
-            pip_executable,
-            ["list", "--disable-pip-version-check"],
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args

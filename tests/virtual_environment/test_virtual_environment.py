@@ -47,11 +47,11 @@ def venv_name():
 
 @pytest.fixture
 def venv_dirpath(tmp_path, venv_name):
-    """Generate a temporary venv dirpath
-    """
+    """Generate a temporary venv dirpath"""
     dirpath = tmp_path / venv_name
     dirpath.mkdir()
     return dirpath
+
 
 @pytest.fixture
 def patched():
@@ -78,7 +78,11 @@ def baseline_packages(tmp_path):
     package_name = uuid.uuid1().hex
     package_version = uuid.uuid1().hex
     packages = [[package_name, package_version]]
-    with patch.object(mu.virtual_environment.VirtualEnvironment, "BASELINE_PACKAGES_FILEPATH", baseline_filepath):
+    with patch.object(
+        mu.virtual_environment.VirtualEnvironment,
+        "BASELINE_PACKAGES_FILEPATH",
+        baseline_filepath,
+    ):
         yield baseline_filepath, packages
 
 
@@ -90,7 +94,9 @@ def test_wheels(tmp_path):
         os.path.join(HERE, "wheels", WHEEL_FILENAME),
         wheels_dirpath / WHEEL_FILENAME,
     )
-    with patch.object(mu.virtual_environment, "wheels_dirpath", wheels_dirpath):
+    with patch.object(
+        mu.virtual_environment, "wheels_dirpath", wheels_dirpath
+    ):
         yield wheels_dirpath
 
 
@@ -147,9 +153,7 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     # Check that our test wheel has been installed to a single module
     #
     expected_result = str(venv_site_packages / "arrr.py")
-    result = venv.run_python(
-        "-c", "import arrr; print(arrr.__file__)"
-    ).strip()
+    result = venv.run_python("-c", "import arrr; print(arrr.__file__)").strip()
     assert os.path.samefile(result, expected_result)
 
 
@@ -166,6 +170,7 @@ def test_create_virtual_environment_name_obj(patched, venv_dirpath):
     """Ensure a virtual environment object has a name."""
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     assert venv.name == venv_dirpath.name
+
 
 def test_download_wheels_if_not_present(venv_dirpath, test_wheels):
     """If we try to install baseline package without any wheels
@@ -189,14 +194,13 @@ def test_download_wheels_if_not_present(venv_dirpath, test_wheels):
         except mu.virtual_environment.VirtualEnvironmentError:
             pass
 
-
     assert mock_download.called
+
 
 def test_base_packages_installed(patched, venv_dirpath, test_wheels):
     """Ensure that, when the venv is installed, the base packages are installed
     from wheels
     """
-    wheels_dirpath = test_wheels
     #
     # Make sure the juypter kernel install doesn't interfere
     #
@@ -371,6 +375,7 @@ def test_ensure_interpreter(venv_dirpath):
     ):
         venv.ensure_interpreter()
 
+
 def test_ensure_pip(venv_dirpath):
     """When venv exists but has no interpreter ensure we raise an exception"""
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
@@ -381,9 +386,9 @@ def test_ensure_pip(venv_dirpath):
     ):
         venv.ensure_pip()
 
+
 def test_read_baseline_packages_success(venv_dirpath, baseline_packages):
-    """Ensure that we can read back a list of baseline packages
-    """
+    """Ensure that we can read back a list of baseline packages"""
     baseline_filepath, packages = baseline_packages
     with open(baseline_filepath, "w") as f:
         f.write(json.dumps(packages))
@@ -392,6 +397,7 @@ def test_read_baseline_packages_success(venv_dirpath, baseline_packages):
     expected_output = packages
     output = venv.baseline_packages()
     assert output == expected_output
+
 
 def test_read_baseline_packages_failure(venv_dirpath, baseline_packages):
     """Ensure that if we can't read a list of packages we see an error log
