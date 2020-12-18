@@ -353,15 +353,20 @@ class VirtualEnvironment(object):
         else:
             logger.debug("Directory %s already exists", self.path)
 
+        self.ensure_interpreter()
+        self.ensure_pip()
+
+    def ensure_interpreter(self):
         if os.path.isfile(self.interpreter):
             logger.info("Interpreter found at %s", self.interpreter)
         else:
             message = (
-                "No interpreter found where expected at %s" % self.interpreter
+                "Interpreter not found where expected at %s" % self.interpreter
             )
             logger.error(message)
             raise VirtualEnvironmentError(message)
 
+    def ensure_pip(self):
         if os.path.isfile(self.pip.executable):
             logger.info("Pip found at %s", self.pip.executable)
         else:

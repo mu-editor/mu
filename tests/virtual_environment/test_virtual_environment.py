@@ -277,15 +277,17 @@ def test_venv_is_singleton(venv_name):
 def test_venv_folder_created(tmp_path, venv_name):
     """When the runtime venv_folder does not exist ensure we create it"""
     venv_dirpath = tmp_path / venv_name
-    with patch.object(VE, "create") as mock_create:
-        #
-        # Make sure we're guaranteed to find Python / pip exes
-        #
-        with patch.object(os.path, "isfile", return_value=True):
-            venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
-            venv.ensure()
+    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+    with patch.object(VE, "create") as mock_create, patch.object(
+        VE, "ensure_pip"
+    ) as mock_ensure_pip, patch.object(
+        VE, "ensure_interpreter"
+    ) as mock_ensure_interpreter:
+        venv.ensure()
 
     assert mock_create.called
+    assert mock_ensure_pip.called
+    assert mock_ensure_interpreter.called
 
 
 def test_venv_folder_already_exists(tmp_path, venv_name):
@@ -293,15 +295,17 @@ def test_venv_folder_already_exists(tmp_path, venv_name):
     venv_dirpath = tmp_path / venv_name
     os.mkdir(venv_dirpath)
     open(os.path.join(venv_dirpath, "pyvenv.cfg"), "w").close()
-    with patch.object(VE, "create") as mock_create:
-        #
-        # Make sure we're guaranteed to find Python / pip exes
-        #
-        with patch.object(os.path, "isfile", return_value=True):
-            venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
-            venv.ensure()
+    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+    with patch.object(VE, "create") as mock_create, patch.object(
+        VE, "ensure_pip"
+    ) as mock_ensure_pip, patch.object(
+        VE, "ensure_interpreter"
+    ) as mock_ensure_interpreter:
+        venv.ensure()
 
     assert not mock_create.called
+    assert mock_ensure_pip.called
+    assert mock_ensure_interpreter.called
 
 
 def test_venv_folder_already_exists_not_venv(tmp_path, venv_name):
@@ -324,32 +328,27 @@ def test_venv_folder_already_exists_not_directory(tmp_path, venv_name):
         venv.ensure()
 
 
-def test_venv_created_no_interpreter(tmp_path, venv_name):
+def test_ensure_interpreter(tmp_path, venv_name):
     """When venv exists but has no interpreter ensure we raise an exception"""
     venv_dirpath = tmp_path / venv_name
     os.mkdir(venv_dirpath)
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
-    #
-    # Create the pip executable so the error is not for that
-    #
-    os.makedirs(venv._bin_directory)
-    open(venv.pip.executable, "w").close()
     assert not os.path.isfile(venv.interpreter)
 
-    with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
-        venv.ensure()
+    with pytest.raises(
+        mu.virtual_environment.VirtualEnvironmentError, match="Interpreter"
+    ):
+        venv.ensure_interpreter()
 
 
-def test_venv_created_no_pip(tmp_path, venv_name):
-    """When the venv exists but has no pip ensure we raise an exception"""
+def test_ensure_pip(tmp_path, venv_name):
+    """When venv exists but has no interpreter ensure we raise an exception"""
     venv_dirpath = tmp_path / venv_name
     os.mkdir(venv_dirpath)
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
-    #
-    # Create the interpreter executable so the error is not for that
-    #
-    os.makedirs(venv._bin_directory)
-    open(venv.interpreter, "w").close()
-    assert not os.path.isfile(venv.pip.executable)
-    with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
-        venv.ensure()
+    assert not os.path.isfile(venv.interpreter)
+
+    with pytest.raises(
+        mu.virtual_environment.VirtualEnvironmentError, match="Pip"
+    ):
+        venv.ensure_pip()
