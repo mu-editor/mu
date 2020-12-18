@@ -8,7 +8,6 @@ import uuid
 import pytest
 from mu import virtual_environment
 
-
 def test_creation_environment():
     """Ensure that a process is always unbuffered & io-encoding of UTF-8"""
     p = virtual_environment.Process()
@@ -55,9 +54,6 @@ def test_run_blocking_timeout():
     assert output == expected_output
 
 
-#
-# We have to devise a means of testing within a Qt event loop
-#
 @pytest.mark.skip(
     "We have to devise a means of testing within a Qt event loop"
 )

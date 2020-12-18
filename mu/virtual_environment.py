@@ -302,7 +302,7 @@ class VirtualEnvironment(object):
             self.path, "scripts" if self._is_windows else "bin"
         )
         #
-        # Pip and the interpreter will be set up when the virtualenv is ensured
+        # Pip and the interpreter will be set up when the virtualenv is created
         #
         self.interpreter = os.path.join(
             self._bin_directory, "python" + self._bin_extension
