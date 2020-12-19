@@ -1,5 +1,5 @@
 """
-The mode for working with the BBC micro:bit. Conatains most of the origial
+The mode for working with the BBC micro:bit. Contains most of the origial
 functionality from Mu when it was only a micro:bit related editor.
 
 Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
@@ -235,23 +235,23 @@ class MicrobitMode(MicroPythonMode):
 
     def flash(self):
         """
-        Takes the currently active tab, compiles the Python script therein into
-        a hex file and flashes it all onto the connected device.
+        Performs multiple checks to see if it needs to flash MicroPython
+        into the micro:bit and then sends via serial the Python script from the
+        currently active tab.
+        In some error cases it attaches the code directly into the MicroPython
+        hex and flashes that (this method is much slower and deprecated).
 
         WARNING: This method is getting more complex due to several edge
         cases. Ergo, it's a target for refactoring.
         """
         logger.info("Preparing to flash script.")
-        # The first thing to do is check the script is valid and of the
-        # expected length.
-        # Grab the Python script.
+        # The first thing to do is check the tab and script are valid.
         tab = self.view.current_tab
         if tab is None:
             # There is no active text editor. Exit.
             return
-        # Check the script's contents.
         python_script = tab.text().encode("utf-8")
-        logger.debug("Python script:")
+        logger.debug("Python script from '{}' tab:".format(tab.label))
         logger.debug(python_script)
         try:
             python_script = self.minify_if_needed(python_script)
@@ -260,7 +260,8 @@ class MicrobitMode(MicroPythonMode):
             warn_message = _('Unable to flash "{}"').format(tab.label)
             self.view.show_message(warn_message, "{}".format(e), "Warning")
             return
-        # Next step: find the microbit port and serial number.
+
+        # Next step: find the micro:bit path, port, and board ID.
         path_to_microbit, port, board_id = self.find_microbit()
         # If micro:bit path wasn't found ask the user to locate it.
         user_defined_microbit_path = False
@@ -326,8 +327,7 @@ class MicrobitMode(MicroPythonMode):
                 update_micropython = True
         except Exception:
             # Could not get version of MicroPython. This means either the
-            # device has a really old version of MicroPython or is running
-            # something else. In any case, flash MicroPython onto the device.
+            # device has a really old version or running something else.
             logger.warning("Could not detect version of MicroPython.")
             update_micropython = True
 
@@ -337,19 +337,16 @@ class MicrobitMode(MicroPythonMode):
 
         if update_micropython:
             if board_id in self.valid_board_ids:
-                # The connected board has a serial number that
-                # indicates the MicroPython hex bundled with Mu
-                # supports it. In which case, flash it.
-                self.flash_start(python_script, path_to_microbit, rt_hex_path)
+                # The connected board has a serial number that indicates the
+                # MicroPython hex bundled with Mu supports it, so flash it.
+                self.flash_start(python_script, path_to_microbit, None)
                 return
             else:
                 message = _("Unsupported BBC micro:bit.")
                 information = _(
-                    "Your device is newer than this "
-                    "version of Mu. Please update Mu "
-                    "to the latest version to support "
-                    "this device.\n\n"
-                    "https://codewith.mu/"
+                    "Your device is newer than this version of Mu. Please "
+                    "update Mu to the latest version to support this device."
+                    "\n\nhttps://codewith.mu/"
                 )
                 self.view.show_message(message, information)
                 return
@@ -408,6 +405,7 @@ class MicrobitMode(MicroPythonMode):
         Called when the thread used to flash the micro:bit has finished.
         """
         self.editor.show_status_message(_("Finished flashing."))
+        logger.info("Flashing successful.")
         self.flash_thread = None
         if self.python_script:
             try:
