@@ -311,14 +311,9 @@ class MicrobitMode(MicroPythonMode):
             self.flash_start(python_script, path_to_microbit, rt_hex_path)
             return
 
-        force_flash = False  # If set to true, fully flash the device.
-        if not python_script.strip():
-            # If the script is empty, this is a signal to simply force a
-            # flash.
-            logger.info("Python script empty. Forcing flash.")
-            force_flash = True
-        logger.info("Checking target device.")
         # Get the version of MicroPython on the device.
+        logger.info("Checking target device.")
+        update_micropython = False
         try:
             board_version = self.get_device_micropython_version()
             logger.info(
@@ -328,40 +323,36 @@ class MicrobitMode(MicroPythonMode):
             # update it with the one packaged with Mu.
             if semver.compare(board_version, uflash.MICROPYTHON_VERSION) < 0:
                 logger.info("Board MicroPython is older than Mu's MicroPython")
-                force_flash = True
+                update_micropython = True
         except Exception:
             # Could not get version of MicroPython. This means either the
             # device has a really old version of MicroPython or is running
             # something else. In any case, flash MicroPython onto the device.
             logger.warning("Could not detect version of MicroPython.")
-            force_flash = True
-        # If we need to flash the device with a clean hex, do so now.
-        if force_flash:
-            if user_defined_microbit_path or not port:
-                pass
+            update_micropython = True
+
+        if not python_script.strip():
+            logger.info("Python script empty. Forcing flash.")
+            update_micropython = True
+
+        if update_micropython:
+            if board_id in self.valid_board_ids:
+                # The connected board has a serial number that
+                # indicates the MicroPython hex bundled with Mu
+                # supports it. In which case, flash it.
+                self.flash_start(python_script, path_to_microbit, rt_hex_path)
+                return
             else:
-                if board_id in self.valid_board_ids:
-                    # The connected board has a serial number that
-                    # indicates the MicroPython hex bundled with Mu
-                    # supports it. In which case, flash it.
-                    self.flash_start(
-                        python_script, path_to_microbit, rt_hex_path
-                    )
-                    return
-                else:
-                    message = _("Unsupported BBC micro:bit.")
-                    information = _(
-                        "Your device is newer than this "
-                        "version of Mu. Please update Mu "
-                        "to the latest version to support "
-                        "this device.\n\n"
-                        "https://codewith.mu/"
-                    )
-                    self.view.show_message(message, information)
-                    self.set_buttons(
-                        flash=True, repl=True, files=True, plotter=True
-                    )
-                    return
+                message = _("Unsupported BBC micro:bit.")
+                information = _(
+                    "Your device is newer than this "
+                    "version of Mu. Please update Mu "
+                    "to the latest version to support "
+                    "this device.\n\n"
+                    "https://codewith.mu/"
+                )
+                self.view.show_message(message, information)
+                return
         else:
             self.set_buttons(
                 flash=False, repl=False, files=False, plotter=False
