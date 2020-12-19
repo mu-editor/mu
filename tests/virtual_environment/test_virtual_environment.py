@@ -23,10 +23,18 @@ import pathlib
 import random
 import shutil
 import subprocess
-from unittest.mock import patch
+from unittest import mock
 import uuid
 
+from PyQt5.QtCore import (
+    QObject,
+    QProcess,
+    pyqtSignal,
+    QTimer,
+    QProcessEnvironment,
+)
 import pytest
+
 import mu.virtual_environment
 import mu.wheels
 
@@ -54,12 +62,17 @@ def venv_dirpath(tmp_path, venv_name):
 
 
 @pytest.fixture
+def venv(venv_dirpath):
+    """Generate a temporary venv"""
+    return mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+
+@pytest.fixture
 def patched():
     """Creating a real venv on disk is expensive. Here we patch out
     the expensive parts and pass them into the test so we can detect
     how they've been called
     """
-    with patch.object(subprocess, "run") as subprocess_run, patch.object(
+    with mock.patch.object(subprocess, "run") as subprocess_run, mock.patch.object(
         VE, "run_python"
     ) as run_python:
         yield subprocess_run, run_python
@@ -68,7 +81,7 @@ def patched():
 @pytest.fixture
 def pipped():
     """Use a patched version of pip"""
-    with patch("mu.virtual_environment.Pip") as pip:
+    with mock.patch("mu.virtual_environment.Pip") as pip:
         yield pip
 
 
@@ -78,7 +91,7 @@ def baseline_packages(tmp_path):
     package_name = uuid.uuid1().hex
     package_version = uuid.uuid1().hex
     packages = [[package_name, package_version]]
-    with patch.object(
+    with mock.patch.object(
         mu.virtual_environment.VirtualEnvironment,
         "BASELINE_PACKAGES_FILEPATH",
         baseline_filepath,
@@ -94,7 +107,7 @@ def test_wheels(tmp_path):
         os.path.join(HERE, "wheels", WHEEL_FILENAME),
         wheels_dirpath / WHEEL_FILENAME,
     )
-    with patch.object(
+    with mock.patch.object(
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
     ):
         yield wheels_dirpath
@@ -172,19 +185,18 @@ def test_create_virtual_environment_name_obj(patched, venv_dirpath):
     assert venv.name == venv_dirpath.name
 
 
-def test_download_wheels_if_not_present(venv_dirpath, test_wheels):
+def test_download_wheels_if_not_present(venv, test_wheels):
     """If we try to install baseline package without any wheels
     ensure we try to download them
     """
     wheels_dirpath = test_wheels
     for filepath in wheels_dirpath.glob("*.whl"):
         filepath.unlink()
-    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     assert not glob.glob(os.path.join(wheels_dirpath, "*.whl"))
 
-    with patch.object(
+    with mock.patch.object(
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
-    ), patch.object(mu.wheels, "download") as mock_download:
+    ), mock.patch.object(mu.wheels, "download") as mock_download:
         try:
             venv.install_baseline_packages()
         #
@@ -197,16 +209,16 @@ def test_download_wheels_if_not_present(venv_dirpath, test_wheels):
     assert mock_download.called
 
 
-def test_base_packages_installed(patched, venv_dirpath, test_wheels):
+def test_base_packages_installed(patched, venv, test_wheels):
     """Ensure that, when the venv is installed, the base packages are installed
     from wheels
     """
     #
     # Make sure the juypter kernel install doesn't interfere
     #
-    with patch.object(VE, "install_jupyter_kernel"):
-        with patch.object(VE, "register_baseline_packages"):
-            with patch.object(PIP, "install") as mock_pip_install:
+    with mock.patch.object(VE, "install_jupyter_kernel"):
+        with mock.patch.object(VE, "register_baseline_packages"):
+            with mock.patch.object(PIP, "install") as mock_pip_install:
                 #
                 # Check that we're calling `pip install` with all the
                 # wheels in the wheelhouse
@@ -216,20 +228,18 @@ def test_base_packages_installed(patched, venv_dirpath, test_wheels):
                         mu.virtual_environment.wheels_dirpath, "*.whl"
                     )
                 )
-                venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
                 venv.create()
                 mock_pip_install.assert_called_once_with(expected_args)
 
 
-def test_jupyter_kernel_installed(patched, venv_dirpath):
+def test_jupyter_kernel_installed(patched, venv):
     """Ensure when the venv is installed the Jupyter kernel is installed"""
     _, run_python = patched
     #
     # Make sure the baseline package install doesn't interfere
     #
-    with patch.object(VE, "install_baseline_packages"):
-        with patch.object(VE, "register_baseline_packages"):
-            venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+    with mock.patch.object(VE, "install_baseline_packages"):
+        with mock.patch.object(VE, "register_baseline_packages"):
             venv.create()
             #
             # Check that we're calling `ipykernel install`
@@ -239,15 +249,14 @@ def test_jupyter_kernel_installed(patched, venv_dirpath):
             assert expected_jupyter_args == args[: len(expected_jupyter_args)]
 
 
-def test_install_user_packages(patched, venv_dirpath):
+def test_install_user_packages(patched, venv):
     """Ensure that, given a list of packages, we pip install them
 
     (Ideally we'd do this by testing the finished result, not caring
     what sequence of pip invocations got us there, but that's expensive)
     """
     packages = [uuid.uuid1().hex for _ in range(random.randint(1, 10))]
-    with patch.object(PIP, "install") as mock_pip_install:
-        venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+    with mock.patch.object(PIP, "install") as mock_pip_install:
         venv.install_user_packages(packages)
         #
         # We call pip with the entire list of packages
@@ -256,15 +265,14 @@ def test_install_user_packages(patched, venv_dirpath):
         assert args[0] == packages
 
 
-def test_remove_user_packages(patched, venv_dirpath):
+def test_remove_user_packages(patched, venv):
     """Ensure that, given a list of packages, we pip uninstall them
 
     (Ideally we'd do this by testing the finished result, not caring
     what sequence of pip invocations got us there, but that's expensive)
     """
     packages = [uuid.uuid1().hex for _ in range(random.randint(1, 10))]
-    with patch.object(PIP, "uninstall") as mock_pip_uninstall:
-        venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+    with mock.patch.object(PIP, "uninstall") as mock_pip_uninstall:
         venv.remove_user_packages(packages)
         #
         # We call pip with the entire list of packages
@@ -273,7 +281,7 @@ def test_remove_user_packages(patched, venv_dirpath):
         assert args[0] == packages
 
 
-def test_installed_packages(patched, venv_dirpath):
+def test_installed_packages(patched, venv):
     """Ensure that we receive a list of package names in the venv
 
     NB For now we're just checking that we return whatever pip freeze
@@ -287,9 +295,8 @@ def test_installed_packages(patched, venv_dirpath):
     all_packages = baseline_packages + user_packages
     random.shuffle(all_packages)
 
-    with patch.object(VE, "baseline_packages", return_value=baseline_packages):
-        with patch.object(PIP, "installed", return_value=all_packages):
-            venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+    with mock.patch.object(VE, "baseline_packages", return_value=baseline_packages):
+        with mock.patch.object(PIP, "installed", return_value=all_packages):
             baseline_result, user_result = venv.installed_packages()
             assert set(baseline_result) == set(
                 ["mu-editor"] + [name for name, _ in baseline_packages]
@@ -297,7 +304,7 @@ def test_installed_packages(patched, venv_dirpath):
             assert set(user_result) == set(name for name, _ in user_packages)
 
 
-def test_venv_is_singleton(venv_dirpath):
+def test_venv_is_singleton():
     """Ensure that all imported instances of `venv` are the same
 
     The virtual environment is created once in the `virtual_environment` module
@@ -315,13 +322,12 @@ def test_venv_is_singleton(venv_dirpath):
         assert module.venv is venv
 
 
-def test_venv_folder_created(venv_dirpath):
+def test_venv_folder_created(venv):
     """When the runtime venv_folder does not exist ensure we create it"""
-    venv_dirpath.rmdir()
-    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
-    with patch.object(VE, "create") as mock_create, patch.object(
+    os.rmdir(venv.path)
+    with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
         VE, "ensure_pip"
-    ) as mock_ensure_pip, patch.object(
+    ) as mock_ensure_pip, mock.patch.object(
         VE, "ensure_interpreter"
     ) as mock_ensure_interpreter:
         venv.ensure()
@@ -331,13 +337,12 @@ def test_venv_folder_created(venv_dirpath):
     assert mock_ensure_interpreter.called
 
 
-def test_venv_folder_already_exists(venv_dirpath):
+def test_venv_folder_already_exists(venv):
     """When the venv_folder does exist as a venv ensure we do not create it"""
-    open(os.path.join(venv_dirpath, "pyvenv.cfg"), "w").close()
-    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
-    with patch.object(VE, "create") as mock_create, patch.object(
+    open(os.path.join(venv.path, "pyvenv.cfg"), "w").close()
+    with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
         VE, "ensure_pip"
-    ) as mock_ensure_pip, patch.object(
+    ) as mock_ensure_pip, mock.patch.object(
         VE, "ensure_interpreter"
     ) as mock_ensure_interpreter:
         venv.ensure()
@@ -347,9 +352,8 @@ def test_venv_folder_already_exists(venv_dirpath):
     assert mock_ensure_interpreter.called
 
 
-def test_venv_folder_already_exists_not_venv(venv_dirpath):
+def test_venv_folder_already_exists_not_venv(venv):
     """When venv_folder does exist not as a venv ensure we raise an error"""
-    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
         venv.ensure()
 
@@ -365,9 +369,8 @@ def test_venv_folder_already_exists_not_directory(venv_dirpath):
         venv.ensure()
 
 
-def test_ensure_interpreter(venv_dirpath):
+def test_ensure_interpreter(venv):
     """When venv exists but has no interpreter ensure we raise an exception"""
-    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     assert not os.path.isfile(venv.interpreter)
 
     with pytest.raises(
@@ -376,9 +379,8 @@ def test_ensure_interpreter(venv_dirpath):
         venv.ensure_interpreter()
 
 
-def test_ensure_pip(venv_dirpath):
+def test_ensure_pip(venv):
     """When venv exists but has no interpreter ensure we raise an exception"""
-    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     assert not os.path.isfile(venv.interpreter)
 
     with pytest.raises(
@@ -387,19 +389,18 @@ def test_ensure_pip(venv_dirpath):
         venv.ensure_pip()
 
 
-def test_read_baseline_packages_success(venv_dirpath, baseline_packages):
+def test_read_baseline_packages_success(venv, baseline_packages):
     """Ensure that we can read back a list of baseline packages"""
     baseline_filepath, packages = baseline_packages
     with open(baseline_filepath, "w") as f:
         f.write(json.dumps(packages))
 
-    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     expected_output = packages
     output = venv.baseline_packages()
     assert output == expected_output
 
 
-def test_read_baseline_packages_failure(venv_dirpath, baseline_packages):
+def test_read_baseline_packages_failure(venv, baseline_packages):
     """Ensure that if we can't read a list of packages we see an error log
     and an empty list is returned
     """
@@ -407,7 +408,29 @@ def test_read_baseline_packages_failure(venv_dirpath, baseline_packages):
     with open(baseline_filepath, "w") as f:
         f.write("***")
 
-    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     expected_output = []
     output = venv.baseline_packages()
     assert output == expected_output
+
+def _QTimer_singleshot(delay, partial):
+    return partial.func(*partial.args, **partial.keywords)
+
+def test_run_python_blocking(venv):
+    """Ensure that Python is run synchronously with the args passed"""
+    command = venv.interpreter
+    args = ("-c", "import sys; print(sys.executable)")
+    with mock.patch.object(QTimer, "singleShot", _QTimer_singleshot), mock.patch.object(QProcess, "start") as mocked_start:
+        p = venv.run_python(*args)
+
+    mocked_start.assert_called_with(command, args)
+
+def test_run_python_nonblocking(venv):
+    """Ensure that a QProcess is started with the relevant params"""
+    expected_output = venv.interpreter
+    outputs = []
+    command = venv.interpreter
+    args = ("-c", "import sys; print(sys.executable)")
+    with mock.patch.object(QTimer, "singleShot", _QTimer_singleshot), mock.patch.object(QProcess, "start") as mocked_start:
+        p = venv.run_python(*args, slots=venv.Slots(output=lambda x: x))
+
+    mocked_start.assert_called_with(command, args)

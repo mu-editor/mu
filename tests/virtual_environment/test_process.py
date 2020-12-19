@@ -3,7 +3,17 @@
 Tests for the QProcess-based Process class
 """
 import sys
+from unittest import mock
 import uuid
+
+from PyQt5 import QtCore
+from PyQt5.QtCore import (
+    QObject,
+    QProcess,
+    pyqtSignal,
+    QTimer,
+    QProcessEnvironment,
+)
 
 import pytest
 from mu import virtual_environment
@@ -54,17 +64,16 @@ def test_run_blocking_timeout():
     assert output == expected_output
 
 
-@pytest.mark.skip(
-    "We have to devise a means of testing within a Qt event loop"
-)
+def _QTimer_singleshot(delay, partial):
+    return partial.func(*partial.args, **partial.keywords)
+
 def test_run():
     """Ensure that a QProcess is started with the relevant params"""
-    p = virtual_environment.Process()
     command = sys.executable
     args = ["-c", "import sys; print(sys.executable)"]
-    p.run(command, args)
-    p.wait()
+    with mock.patch.object(QTimer, "singleShot", _QTimer_singleshot), mock.patch.object(QProcess, "start") as mocked_start:
+        p = virtual_environment.Process()
+        p.run(command, args)
 
-    expected_output = sys.executable
-    output = p.data().strip()
-    assert output == expected_output
+    mocked_start.assert_called_with(command, args)
+

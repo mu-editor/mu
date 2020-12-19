@@ -324,11 +324,13 @@ class VirtualEnvironment(object):
         """
 
         if slots.output:
-            self.process.started.connect(slots.started)
+            if slots.started:
+                self.process.started.connect(slots.started)
             self.process.output.connect(slots.output)
             if slots.finished:
                 self.process.finished.connect(slots.finished)
             self.process.run(self.interpreter, args)
+            return self.process
         else:
             return self.process.run_blocking(self.interpreter, args)
 
