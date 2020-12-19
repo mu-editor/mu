@@ -42,7 +42,7 @@ from . import __version__
 from . import i18n
 from .resources import path
 from .debugger.utils import is_breakpoint_line
-from .config import DATA_DIR, VENV_DIR
+from .config import DATA_DIR, VENV_DIR, MAX_LINE_LENGTH
 from .virtual_environment import venv
 
 # The user's home directory.
@@ -481,7 +481,11 @@ def check_pycodestyle(code, config_file=False):
         "W391",
         "W503",
     )
-    style = StyleGuide(parse_argv=False, config_file=config_file)
+    style = StyleGuide(
+        parse_argv=False,
+        config_file=config_file,
+        max_line_length=MAX_LINE_LENGTH,
+    )
 
     # StyleGuide() returns pycodestyle module's own ignore list. That list may
     # be a default list or a custom list provided by the user
@@ -1805,7 +1809,9 @@ class Editor(QObject):
             source_code = tab.text()
             logger.info("Tidy code.")
             logger.info(source_code)
-            filemode = FileMode(target_versions=PY36_VERSIONS, line_length=88)
+            filemode = FileMode(
+                target_versions=PY36_VERSIONS, line_length=MAX_LINE_LENGTH
+            )
             tidy_code = format_str(source_code, mode=filemode)
             # The following bypasses tab.setText which resets the undo history.
             # Doing it this way means the user can use CTRL-Z to undo the
