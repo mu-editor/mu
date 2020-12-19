@@ -241,7 +241,6 @@ class MicrobitMode(MicroPythonMode):
         WARNING: This method is getting more complex due to several edge
         cases. Ergo, it's a target for refactoring.
         """
-        user_defined_microbit_path = False
         logger.info("Preparing to flash script.")
         # The first thing to do is check the script is valid and of the
         # expected length.
@@ -264,6 +263,7 @@ class MicrobitMode(MicroPythonMode):
         # Next step: find the microbit port and serial number.
         path_to_microbit, port, board_id = self.find_microbit()
         # If micro:bit path wasn't found ask the user to locate it.
+        user_defined_microbit_path = False
         if path_to_microbit is None:
             path_to_microbit = self.view.get_microbit_path(
                 config.HOME_DIRECTORY
@@ -289,12 +289,29 @@ class MicrobitMode(MicroPythonMode):
             )
             self.view.show_message(message, information)
             return
-        # By this point we have a valid path_to_micobit
+
+        # Check use of custom runtime.
+        rt_hex_path = self.editor.microbit_runtime.strip()
+        if rt_hex_path and os.path.exists(rt_hex_path):
+            logger.info("Using custom runtime: {}".format(rt_hex_path))
+        else:
+            rt_hex_path = None
+            self.editor.microbit_runtime = ""
+
+        # Old hex-attach flash method when there's no port (likely Windows<8.1
+        # and/or old DAPLink), or when user has selected a PC location.
+        if not port or user_defined_microbit_path:
+            self.flash_start(
+                python_script, path_to_microbit, rt_hex_path, serial_fs=False
+            )
+            return
+        # If the user has specified a bespoke runtime hex file assume they
+        # know what they're doing, always flash it, and hope for the best.
+        if rt_hex_path:
+            self.flash_start(python_script, path_to_microbit, rt_hex_path)
+            return
+
         force_flash = False  # If set to true, fully flash the device.
-        # If there's no port but there's a path_to_microbit, then we're
-        # probably running on Windows with an old device, so force flash.
-        if not port:
-            force_flash = True
         if not python_script.strip():
             # If the script is empty, this is a signal to simply force a
             # flash.
@@ -318,46 +335,12 @@ class MicrobitMode(MicroPythonMode):
             # something else. In any case, flash MicroPython onto the device.
             logger.warning("Could not detect version of MicroPython.")
             force_flash = True
-        # Check use of custom runtime.
-        rt_hex_path = self.editor.microbit_runtime.strip()
-        if rt_hex_path and os.path.exists(rt_hex_path):
-            force_flash = True  # Using a custom runtime, so flash it.
-        else:
-            rt_hex_path = None
-            self.editor.microbit_runtime = ""
-        # Check for use of user defined path (to save hex onto local
-        # file system.
-        if user_defined_microbit_path:
-            force_flash = True
         # If we need to flash the device with a clean hex, do so now.
         if force_flash:
             if user_defined_microbit_path or not port:
-                # The user has provided a path to a location on the
-                # filesystem. In this case save the combined hex/script
-                # in the specified path_to_microbit.
-                # Or... Mu has a path to a micro:bit but can't establish
-                # a serial connection, so use the combined hex/script
-                # to flash the device.
-                self.flash_start(
-                    python_script,
-                    path_to_microbit,
-                    rt_hex_path,
-                    serial_fs=False,
-                )
+                pass
             else:
-                # We appear to need to flash a connected micro:bit device,
-                # so just flash the Python hex with no embedded Python
-                # script, since this will be copied over when the
-                # flashing operation has finished.
-                if rt_hex_path:
-                    # If the user has specified a bespoke runtime hex file
-                    # assume they know what they're doing and hope for the
-                    # best.
-                    self.flash_start(
-                        python_script, path_to_microbit, rt_hex_path
-                    )
-                    return
-                elif board_id in self.valid_board_ids:
+                if board_id in self.valid_board_ids:
                     # The connected board has a serial number that
                     # indicates the MicroPython hex bundled with Mu
                     # supports it. In which case, flash it.

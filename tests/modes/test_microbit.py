@@ -385,7 +385,7 @@ def test_flash_force_with_unsupported_microbit(microbit_incompatible):
     ):
         view = mock.MagicMock()
         # Empty file to force flashing.
-        view.current_tab.text = mock.MagicMock(return_value="")
+        view.current_tab.text = mock.MagicMock(return_value="foo")
         view.show_message = mock.MagicMock()
         editor = mock.MagicMock()
         editor.microbit_runtime = ""
