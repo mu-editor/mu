@@ -300,6 +300,14 @@ class BaseMode(QObject):
         """
         return NotImplemented
 
+    def write_plotter_data_to_csv(self, csv_filepath):
+        """Write any plotter data out to a CSV file when the
+        plotter is closed
+        """
+        with open(csv_filepath, "w", newline="") as csvfile:
+            csv_writer = csv.writer(csvfile)
+            csv_writer.writerows(self.view.plotter_pane.raw_data)
+
     def remove_plotter(self):
         """
         If there's an active plotter, hide it.
@@ -308,16 +316,14 @@ class BaseMode(QObject):
         called 'data_capture' in the workspace directory. The file contains
         CSV data and is named with a timestamp for easy identification.
         """
+        # Save the raw data as CSV
         data_dir = os.path.join(get_default_workspace(), "data_capture")
         if not os.path.exists(data_dir):
             logger.debug("Creating directory: {}".format(data_dir))
             os.makedirs(data_dir)
-        # Save the raw data as CSV
         filename = "{}.csv".format(time.strftime("%Y%m%d-%H%M%S"))
-        f = os.path.join(data_dir, filename)
-        with open(f, "w") as csvfile:
-            csv_writer = csv.writer(csvfile)
-            csv_writer.writerows(self.view.plotter_pane.raw_data)
+        filepath = os.path.join(data_dir, filename)
+        self.write_plotter_data_to_csv(filepath)
         self.view.remove_plotter()
         self.plotter = False
         logger.info("Removing plotter")
