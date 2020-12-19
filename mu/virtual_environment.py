@@ -291,23 +291,18 @@ class VirtualEnvironment(object):
         self._is_windows = sys.platform == "win32"
         self._bin_extension = ".exe" if self._is_windows else ""
         self.relocate(dirpath)
-        self.is_ensured = False
 
     def __str__(self):
-        return "<%s at %s (%s)>" % (
-            self.__class__.__name__,
-            self.path,
-            "Ensured" if self.is_ensured else "Not Ensured",
-        )
+        return "<%s at %s>" % (self.__class__.__name__, self.path)
 
     def relocate(self, dirpath):
-        self.path = dirpath
+        self.path = str(dirpath)
         self.name = os.path.basename(self.path)
         self._bin_directory = os.path.join(
             self.path, "scripts" if self._is_windows else "bin"
         )
         #
-        # Pip and the interpreter will be set up when the virtualenv is ensured
+        # Pip and the interpreter will be set up when the virtualenv is created
         #
         self.interpreter = os.path.join(
             self._bin_directory, "python" + self._bin_extension
@@ -329,11 +324,13 @@ class VirtualEnvironment(object):
         """
 
         if slots.output:
-            self.process.started.connect(slots.started)
+            if slots.started:
+                self.process.started.connect(slots.started)
             self.process.output.connect(slots.output)
             if slots.finished:
                 self.process.finished.connect(slots.finished)
             self.process.run(self.interpreter, args)
+            return self.process
         else:
             return self.process.run_blocking(self.interpreter, args)
 
@@ -358,15 +355,20 @@ class VirtualEnvironment(object):
         else:
             logger.debug("Directory %s already exists", self.path)
 
+        self.ensure_interpreter()
+        self.ensure_pip()
+
+    def ensure_interpreter(self):
         if os.path.isfile(self.interpreter):
             logger.info("Interpreter found at %s", self.interpreter)
         else:
             message = (
-                "No interpreter found where expected at %s" % self.interpreter
+                "Interpreter not found where expected at %s" % self.interpreter
             )
             logger.error(message)
             raise VirtualEnvironmentError(message)
 
+    def ensure_pip(self):
         if os.path.isfile(self.pip.executable):
             logger.info("Pip found at %s", self.pip.executable)
         else:
@@ -375,8 +377,6 @@ class VirtualEnvironment(object):
             )
             logger.error(message)
             raise VirtualEnvironmentError(message)
-
-        self.is_ensured = True
 
     def create(self):
         """
@@ -465,6 +465,7 @@ class VirtualEnvironment(object):
         """Return the list of baseline packages"""
         #
         # FIXME: This should come out of settings. For now though...
+        # cf https://github.com/mu-editor/mu/issues/1185
         #
         with open(self.BASELINE_PACKAGES_FILEPATH, encoding="utf-8") as f:
             try:

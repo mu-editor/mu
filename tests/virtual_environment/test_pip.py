@@ -6,6 +6,8 @@ import os
 import random
 from unittest.mock import patch
 
+import pytest
+
 import mu.virtual_environment
 
 VE = mu.virtual_environment.VirtualEnvironment
@@ -41,6 +43,30 @@ def test_pip_run():
         expected_args = (
             pip_executable,
             [command, "--disable-pip-version-check"] + list(params),
+        )
+        args, _ = mock_run.call_args
+        assert args == expected_args
+
+
+def test_pip_run_with_kwargs():
+    """Ensure we are calling out to pip with whatever keyword parameters"""
+    command = rstring()
+    params = dict(a=1, b=False, c=True, d_e=2)
+    #
+    # All keyword params become "--xxx" switches to the command
+    # Keywords with values are followed by their value
+    # Keywords with the value False become "--no-<keyword>"
+    # Keywords with the value none become standalone switches
+    # Underscores are replaced by dashes
+    #
+    expected_parameters = ["--a", "1", "--no-b", "--c", "--d-e", "2"]
+    pip_executable = "pip-" + rstring() + ".exe"
+    pip = mu.virtual_environment.Pip(pip_executable)
+    with patch.object(pip.process, "run_blocking") as mock_run:
+        pip.run(command, **params)
+        expected_args = (
+            pip_executable,
+            [command, "--disable-pip-version-check"] + expected_parameters,
         )
         args, _ = mock_run.call_args
         assert args == expected_args
@@ -353,3 +379,17 @@ def test_installed_packages_no_location():
                     (name, version) for (name, version, location) in packages
                 )
                 assert installed_packages == expected_packages
+
+
+def test_pip_list_returns_empty():
+    """When pip list command returns empty make sure we raise
+    an exception in installed_packages
+    """
+    pip_executable = "pip-" + rstring() + ".exe"
+    pip = mu.virtual_environment.Pip(pip_executable)
+    with patch.object(pip, "list", return_value=""):
+        with pytest.raises(
+            mu.virtual_environment.VirtualEnvironmentError,
+            match="Unable to parse",
+        ):
+            list(pip.installed())
