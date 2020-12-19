@@ -48,6 +48,30 @@ def test_pip_run():
         assert args == expected_args
 
 
+def test_pip_run_with_kwargs():
+    """Ensure we are calling out to pip with whatever keyword parameters"""
+    command = rstring()
+    params = dict(a=1, b=False, c=True, d_e=2)
+    #
+    # All keyword params become "--xxx" switches to the command
+    # Keywords with values are followed by their value
+    # Keywords with the value False become "--no-<keyword>"
+    # Keywords with the value none become standalone switches
+    # Underscores are replaced by dashes
+    #
+    expected_parameters = ["--a", "1", "--no-b", "--c", "--d-e", "2"]
+    pip_executable = "pip-" + rstring() + ".exe"
+    pip = mu.virtual_environment.Pip(pip_executable)
+    with patch.object(pip.process, "run_blocking") as mock_run:
+        pip.run(command, **params)
+        expected_args = (
+            pip_executable,
+            [command, "--disable-pip-version-check"] + expected_parameters,
+        )
+        args, _ = mock_run.call_args
+        assert args == expected_args
+
+
 #
 # pip install
 #
