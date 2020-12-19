@@ -6,17 +6,10 @@ import sys
 from unittest import mock
 import uuid
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import (
-    QObject,
-    QProcess,
-    pyqtSignal,
-    QTimer,
-    QProcessEnvironment,
-)
+from PyQt5.QtCore import QTimer, QProcess
 
-import pytest
 from mu import virtual_environment
+
 
 def test_creation_environment():
     """Ensure that a process is always unbuffered & io-encoding of UTF-8"""
@@ -67,13 +60,15 @@ def test_run_blocking_timeout():
 def _QTimer_singleshot(delay, partial):
     return partial.func(*partial.args, **partial.keywords)
 
+
 def test_run():
     """Ensure that a QProcess is started with the relevant params"""
     command = sys.executable
     args = ["-c", "import sys; print(sys.executable)"]
-    with mock.patch.object(QTimer, "singleShot", _QTimer_singleshot), mock.patch.object(QProcess, "start") as mocked_start:
+    with mock.patch.object(
+        QTimer, "singleShot", _QTimer_singleshot
+    ), mock.patch.object(QProcess, "start") as mocked_start:
         p = virtual_environment.Process()
         p.run(command, args)
 
     mocked_start.assert_called_with(command, args)
-

@@ -26,13 +26,7 @@ import subprocess
 from unittest import mock
 import uuid
 
-from PyQt5.QtCore import (
-    QObject,
-    QProcess,
-    pyqtSignal,
-    QTimer,
-    QProcessEnvironment,
-)
+from PyQt5.QtCore import QTimer, QProcess
 import pytest
 
 import mu.virtual_environment
@@ -66,15 +60,16 @@ def venv(venv_dirpath):
     """Generate a temporary venv"""
     return mu.virtual_environment.VirtualEnvironment(venv_dirpath)
 
+
 @pytest.fixture
 def patched():
     """Creating a real venv on disk is expensive. Here we patch out
     the expensive parts and pass them into the test so we can detect
     how they've been called
     """
-    with mock.patch.object(subprocess, "run") as subprocess_run, mock.patch.object(
-        VE, "run_python"
-    ) as run_python:
+    with mock.patch.object(
+        subprocess, "run"
+    ) as subprocess_run, mock.patch.object(VE, "run_python") as run_python:
         yield subprocess_run, run_python
 
 
@@ -295,7 +290,9 @@ def test_installed_packages(patched, venv):
     all_packages = baseline_packages + user_packages
     random.shuffle(all_packages)
 
-    with mock.patch.object(VE, "baseline_packages", return_value=baseline_packages):
+    with mock.patch.object(
+        VE, "baseline_packages", return_value=baseline_packages
+    ):
         with mock.patch.object(PIP, "installed", return_value=all_packages):
             baseline_result, user_result = venv.installed_packages()
             assert set(baseline_result) == set(
@@ -412,25 +409,30 @@ def test_read_baseline_packages_failure(venv, baseline_packages):
     output = venv.baseline_packages()
     assert output == expected_output
 
+
 def _QTimer_singleshot(delay, partial):
     return partial.func(*partial.args, **partial.keywords)
+
 
 def test_run_python_blocking(venv):
     """Ensure that Python is run synchronously with the args passed"""
     command = venv.interpreter
     args = ("-c", "import sys; print(sys.executable)")
-    with mock.patch.object(QTimer, "singleShot", _QTimer_singleshot), mock.patch.object(QProcess, "start") as mocked_start:
-        p = venv.run_python(*args)
+    with mock.patch.object(
+        QTimer, "singleShot", _QTimer_singleshot
+    ), mock.patch.object(QProcess, "start") as mocked_start:
+        venv.run_python(*args)
 
     mocked_start.assert_called_with(command, args)
 
+
 def test_run_python_nonblocking(venv):
     """Ensure that a QProcess is started with the relevant params"""
-    expected_output = venv.interpreter
-    outputs = []
     command = venv.interpreter
     args = ("-c", "import sys; print(sys.executable)")
-    with mock.patch.object(QTimer, "singleShot", _QTimer_singleshot), mock.patch.object(QProcess, "start") as mocked_start:
-        p = venv.run_python(*args, slots=venv.Slots(output=lambda x: x))
+    with mock.patch.object(
+        QTimer, "singleShot", _QTimer_singleshot
+    ), mock.patch.object(QProcess, "start") as mocked_start:
+        venv.run_python(*args, slots=venv.Slots(output=lambda x: x))
 
     mocked_start.assert_called_with(command, args)

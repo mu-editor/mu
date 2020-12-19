@@ -2268,7 +2268,6 @@ def test_quit_save_window_geometry():
     assert session["window"] == {"x": 100, "y": 200, "w": 300, "h": 400}
 
 
-
 def test_quit_calls_mode_stop():
     """
     Ensure that the current mode's stop method is called.
