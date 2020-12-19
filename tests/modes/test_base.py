@@ -192,6 +192,23 @@ def test_base_mode_remove_plotter():
     )
 
 
+def test_base_mode_write_csv(tmp_path):
+    """When the plotter is removed the resulting csv should represent
+    the data -- an should not not include interspersed blank lines
+    """
+    csv_filepath = tmp_path / "plotter.csv"
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.plotter_pane.raw_data = [[1, 2, 3], [4, 5, 6]]
+    bm = BaseMode(editor, view)
+    bm.write_plotter_data_to_csv(csv_filepath)
+
+    expected_output = ["1,2,3", "4,5,6"]
+    with open(csv_filepath, "r") as f:
+        output = f.read().splitlines()
+    assert output == expected_output
+
+
 def test_base_on_data_flood():
     """
     Ensure the plotter is removed and a helpful message is displayed to the
