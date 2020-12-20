@@ -69,8 +69,8 @@ Allowing three levels of data: the defaults for each setting type, held in
 a class dictionary; possible overrides at class instantiation [I'm not clear
 where this would be used; it can probably go]; and the .json files.
 
-The `load` function merges into the existing settings. Most commonly this means
-it'll be preceded by a call to `reset`. But it could be used to implement a
+The ``load`` function merges into the existing settings. Most commonly this means
+it'll be preceded by a call to ``reset``. But it could be used to implement a
 cascade of settings, eg where an admin sets site-wide settings which are then
 overridden by user settings.
 
@@ -78,14 +78,14 @@ Amnesia / Read-only / Reset modes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To support the possible "modes" above -- amnesia, read-only etc. there is a
-`readonly` flag on each settings object, preventing it from being written to
-disc; and a `reset` method which will return to default settings. This last
+``readonly`` flag on each settings object, preventing it from being written to
+disc; and a ``reset`` method which will return to default settings. This last
 can be used either to "forget" any loaded or set settings; or before reloading
 from a different file.
 
-So *amnesia mode* is implemented by calling `reset` without `load` and settings `readonly`.
-*Read-only mode* is implemented by calling `reset` followed by `load` and setting `readonly`
-And *reset mode* is implemented by calling `reset` without `load` and *not* setting `readonly`
+So *amnesia mode* is implemented by calling ``reset`` without ``load`` and settings ``readonly``.
+*Read-only mode* is implemented by calling ``reset`` followed by ``load`` and setting ``readonly``
+And *reset mode* is implemented by calling ``reset`` without ``load`` and *not* setting ``readonly``
 
 Implemented via:
 ~~~~~~~~~~~~~~~~
