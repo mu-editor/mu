@@ -3,8 +3,14 @@ import sys
 from collections import namedtuple
 import functools
 import glob
+import json
 import logging
 import subprocess
+
+import encodings
+
+python36_zip = os.path.dirname(encodings.__path__[0])
+del encodings
 
 from PyQt5.QtCore import (
     QObject,
@@ -16,7 +22,6 @@ from PyQt5.QtCore import (
 
 from . import wheels
 from . import config
-from . import settings
 
 wheels_dirpath = os.path.dirname(wheels.__file__)
 
@@ -450,12 +455,24 @@ class VirtualEnvironment(object):
         # For now, though, just put it somewhere
         #
         packages = list(self.pip.installed())
-        with settings.user:
-            settings.user["baseline_packages"] = packages
+        os.makedirs(
+            os.path.dirname(self.BASELINE_PACKAGES_FILEPATH), exist_ok=True
+        )
+        with open(self.BASELINE_PACKAGES_FILEPATH, "w", encoding="utf-8") as f:
+            json.dump(packages, f)
 
     def baseline_packages(self):
         """Return the list of baseline packages"""
-        return settings.user["baseline_packages"]
+        #
+        # FIXME: This should come out of settings. For now though...
+        # cf https://github.com/mu-editor/mu/issues/1185
+        #
+        with open(self.BASELINE_PACKAGES_FILEPATH, encoding="utf-8") as f:
+            try:
+                return json.load(f)
+            except json.decoder.JSONDecodeError:
+                logger.exception("Unable to read baseline packages")
+                return []
 
     def install_user_packages(self, packages, slots=Process.Slots()):
         logger.info("Installing user packages: %s", ", ".join(packages))
