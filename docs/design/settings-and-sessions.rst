@@ -4,7 +4,7 @@ Session & Settings Data
 Decision
 --------
 
-_Draft - to be discussed / agreed_
+*(Draft - to be discussed / agreed)*
 
 Mu maintains two files, automatically saved on exit, to hold user settings
 and session data. The former contains critical parameters without which the
@@ -83,9 +83,9 @@ disc; and a `reset` method which will return to default settings. This last
 can be used either to "forget" any loaded or set settings; or before reloading
 from a different file.
 
-So _amnesia mode_ is implemented by calling `reset` without `load` and settings `readonly`.
-_Read-only mode_ is implemented by calling `reset` followed by `load` and setting `readonly`
-And _reset mode_ is implemented by calling `reset` without `load` and *not* setting `readonly`
+So *amnesia mode* is implemented by calling `reset` without `load` and settings `readonly`.
+*Read-only mode* is implemented by calling `reset` followed by `load` and setting `readonly`
+And *reset mode* is implemented by calling `reset` without `load` and *not* setting `readonly`
 
 Implemented via:
 ~~~~~~~~~~~~~~~~
