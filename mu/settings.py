@@ -53,10 +53,15 @@ class _Settings:
                 json.dump(self._as_dict(), f)
 
     def load(self, filepath):
-        """Reload from a file, merging into existing settings
+        """Load from a file, merging into existing settings
 
         This is intended to be used, eg, when a command-line switch overrides
-        the default location
+        the default location. It'll probably be preceded by a call to `reset`.
+
+        But it could be used to implement a cascade of settings, eg for an
+        admin to set site-wide settings followed by user settings. This might
+        be implemented by, eg, command-line switches specifying more than one
+        settings file
         """
         with open(
             filepath, encoding="utf-8"
@@ -80,6 +85,11 @@ class _SessionSettings(_Settings):
     DEFAULTS = {}
 
 
+#
+# Create global singletons for the user & session settings
+# Load these from their default files and register exit
+# handlers so they are saved when the Mu process exits
+#
 user = _UserSettings()
 user.load(os.path.join(config.DATA_DIR, "settings.json"))
 atexit.register(user.save)

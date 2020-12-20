@@ -57,6 +57,11 @@ disc; and a `reset` method which will return to default settings. This last
 can be used either to "forget" any loaded or set settings; or before reloading
 from a different file.
 
+The `load` function merges into the existing settings. Most commonly this means
+it'll be preceded by a call to `reset`. But it could be used to implement a
+cascade of settings, eg where an admin sets side-wide settings which are then
+overridden by user settings.
+
 Implemented via:
 ~~~~~~~~~~~~~~~~
 
