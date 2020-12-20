@@ -40,16 +40,11 @@ class _Settings:
         self._dict.update(dictalike)
 
     def __repr__(self):
-        return "<%s from %s>" % (
-            self.__class__.__name__,
-            self.filepath
-        )
+        return "<%s from %s>" % (self.__class__.__name__, self.filepath)
 
     def save(self):
         if not self.readonly:
-            with open(
-                self.filepath, "w", encoding="utf-8"
-            ) as f:
+            with open(self.filepath, "w", encoding="utf-8") as f:
                 json.dump(self._as_dict(), f)
 
     def load(self, filepath):
@@ -63,9 +58,7 @@ class _Settings:
         be implemented by, eg, command-line switches specifying more than one
         settings file
         """
-        with open(
-            filepath, encoding="utf-8"
-        ) as f:
+        with open(filepath, encoding="utf-8") as f:
             self.update(json.load(f))
         self.filepath = filepath
 
@@ -74,6 +67,7 @@ class _Settings:
 
     def _as_dict(self):
         return self._dict
+
 
 class _UserSettings(_Settings):
 
