@@ -1,10 +1,12 @@
 """User and Session settings
 """
 
+import atexit
 import os
 import json
 
 from . import config
+
 
 class _Settings:
     """A _Settings object operates like a dictionary, allowing item
@@ -29,17 +31,40 @@ class _Settings:
     def __delitem__(self, item):
         del self._dict[item]
 
+    def update(self, dictalike):
+        self._dict.update(dictalike)
+
     def __repr__(self):
-        return '<%s from %s>' % (self.__class__.__name__, os.path.join(self.dirpath, self.filename))
+        return "<%s from %s>" % (
+            self.__class__.__name__,
+            os.path.join(self.dirpath, self.filename),
+        )
 
     def save(self):
-        with open(os.path.join(self.dirpath, self.filename), "w", encoding="utf-8") as f:
+        with open(
+            os.path.join(self.dirpath, self.filename), "w", encoding="utf-8"
+        ) as f:
             json.dump(self._as_dict(), f)
+
+    def reload(self, filepath):
+        """Reload from a file, deliberately overwriting any existing settings
+
+        This is intended to be used, eg, when a command-line switch overrides
+        the default location
+        """
+        with open(
+            filepath, encoding="utf-8"
+        ) as f:
+            self._dict = dict(json.load(f))
+        self.filepath = filepath
+
 
     @classmethod
     def from_file(cls):
-        with open(os.path.join(cls.dirpath, cls.filename), encoding="utf-8") as f:
-             return cls._from_dict(json.load(f))
+        with open(
+            os.path.join(cls.dirpath, cls.filename), encoding="utf-8"
+        ) as f:
+            return cls._from_dict(json.load(f))
 
     @classmethod
     def _from_dict(cls, d):
@@ -47,15 +72,6 @@ class _Settings:
 
     def _as_dict(self):
         return self._dict
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if not exc_type:
-            self.save()
-        return False
-
 
 class _UserSettings(_Settings):
 
@@ -66,5 +82,12 @@ class _SessionSettings(_Settings):
 
     filename = "session.json"
 
+
 user = _UserSettings.from_file()
 session = _SessionSettings.from_file()
+
+#
+# Ensure User & Session settings are saved when Python exits
+#
+atexit.register(user.save)
+atexit.register(session.save)
