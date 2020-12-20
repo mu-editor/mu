@@ -1,4 +1,10 @@
 """User and Session settings
+
+User settings are common to all sessions opened by the user. Changes to this
+file are likely to prevent the editor from functioning at all.
+
+Session settings represent the latest saved state. This file can be altered
+or reset and the editor will go on functioning, albeit with default options
 """
 
 import atexit
@@ -12,15 +18,14 @@ class _Settings:
     """A _Settings object operates like a dictionary, allowing item
     access to its values. It can be loaded from and saved to a JSON
     file.
-
-    As a context manager, it saves the current state back to JSON on success
     """
 
-    dirpath = config.DATA_DIR
-    filename = "settings.json"
+    DEFAULTS = {}
 
     def __init__(self, **kwargs):
-        self._dict = dict(kwargs)
+        self.reset()
+        self.update(kwargs)
+        self.readonly = False
 
     def __getitem__(self, item):
         return self._dict[item]
@@ -37,17 +42,18 @@ class _Settings:
     def __repr__(self):
         return "<%s from %s>" % (
             self.__class__.__name__,
-            os.path.join(self.dirpath, self.filename),
+            self.filepath
         )
 
     def save(self):
-        with open(
-            os.path.join(self.dirpath, self.filename), "w", encoding="utf-8"
-        ) as f:
-            json.dump(self._as_dict(), f)
+        if not self.readonly:
+            with open(
+                self.filepath, "w", encoding="utf-8"
+            ) as f:
+                json.dump(self._as_dict(), f)
 
-    def reload(self, filepath):
-        """Reload from a file, deliberately overwriting any existing settings
+    def load(self, filepath):
+        """Reload from a file, merging into existing settings
 
         This is intended to be used, eg, when a command-line switch overrides
         the default location
@@ -55,39 +61,29 @@ class _Settings:
         with open(
             filepath, encoding="utf-8"
         ) as f:
-            self._dict = dict(json.load(f))
+            self.update(json.load(f))
         self.filepath = filepath
 
-
-    @classmethod
-    def from_file(cls):
-        with open(
-            os.path.join(cls.dirpath, cls.filename), encoding="utf-8"
-        ) as f:
-            return cls._from_dict(json.load(f))
-
-    @classmethod
-    def _from_dict(cls, d):
-        return cls(**d)
+    def reset(self):
+        self._dict = dict(self.DEFAULTS)
 
     def _as_dict(self):
         return self._dict
 
 class _UserSettings(_Settings):
 
-    filename = "settings.json"
+    DEFAULTS = {}
 
 
 class _SessionSettings(_Settings):
 
-    filename = "session.json"
+    DEFAULTS = {}
 
 
-user = _UserSettings.from_file()
-session = _SessionSettings.from_file()
-
-#
-# Ensure User & Session settings are saved when Python exits
-#
+user = _UserSettings()
+user.load(os.path.join(config.DATA_DIR, "settings.json"))
 atexit.register(user.save)
+
+session = _SessionSettings()
+session.load(os.path.join(config.DATA_DIR, "session.json"))
 atexit.register(session.save)
