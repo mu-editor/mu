@@ -48,6 +48,7 @@ Open questions:
 * Should we implement reset mode (ie the file is not loaded but is written back)? [+0]
 * Should we break out the virtual environment settings (venv location, baseline packages) into its own file? [+1]
 * What levels of config do we need? Defaults? One/multiple settings files? Override at instance level?
+* Do we still need to look in the application directory as well as the data directory? [-0]
 
 Exit Handlers
 ~~~~~~~~~~~~~
@@ -86,6 +87,39 @@ from a different file.
 So *amnesia mode* is implemented by calling ``reset`` without ``load`` and settings ``readonly``.
 *Read-only mode* is implemented by calling ``reset`` followed by ``load`` and setting ``readonly``
 And *reset mode* is implemented by calling ``reset`` without ``load`` and *not* setting ``readonly``
+
+Failure modes
+~~~~~~~~~~~~~
+
+It's critical that we should recover well from not being able to read or to
+write settings files, whether that's a file system failure or invalid JSON.
+Regardless of the approach we should definitely log any exception, or log a
+warning where there's no exception as such but, say, a missing file.
+
+Reading
++++++++
+
+* A failure to find/open a settings file is considered usual: it's expected
+  that, the first time around, a user settings file won't exist to be read.
+  The loader will log a warning and carry on as though it had found it empty
+* A failure to read the JSON from a settings file is more complicated. For
+  pragmatic purposes, the intention is here is: log a warning; quarantine the
+  file; and carry on as though it had been found empty. That way the editor
+  continues to work, albeit in "reset" mode, and the failing file is available
+  for debugging.
+
+  Not quite clear: should we automatically enter read-only mode in this situation?
+
+Writing
++++++++
+
+* A failure to open a settings file to write to is more problematic, and there's
+  not very much we can do. Log the exception (eg AccessDenied or whatever).
+  Perhaps -- given that the text won't be great -- pushign the JSON output to
+  the logs as debug might give some manual fallback.
+* A failure to *write* JSON is less probable -- although it does happen during
+  testing where the JSON lib attempts to serialise a Mock object. Here, we can't
+  really do more than log the exception and fail gracefully.
 
 Implemented via:
 ~~~~~~~~~~~~~~~~

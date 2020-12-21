@@ -43,6 +43,7 @@ from . import i18n
 from .resources import path
 from .debugger.utils import is_breakpoint_line
 from .config import DATA_DIR, VENV_DIR, MAX_LINE_LENGTH
+from . import settings
 from .virtual_environment import venv
 
 # The user's home directory.
@@ -408,11 +409,8 @@ def extract_envars(raw):
 
 
 def save_session(session):
-    session_path = get_session_path()
-    with open(session_path, "w") as out:
-        logger.debug("Session: {}".format(session))
-        logger.debug("Saving session to: {}".format(session_path))
-        json.dump(session, out, indent=2)
+    settings.session.update(session)
+    settings.session.save()
 
 
 def check_flake(filename, code, builtins=None):
