@@ -620,13 +620,27 @@ def test_check_pycodestyle():
     """
     Ensure the expected result if generated from the PEP8 style validator.
     """
-    code = "import foo\n\n\n\n\n\ndef bar():\n    pass\n"  # Generate E303
+    code = "import foo; print(foo.__file__)"  # Generate E702
     result = mu.logic.check_pycodestyle(code)
     assert len(result) == 1
-    assert result[6][0]["line_no"] == 6
-    assert result[6][0]["column"] == 0
-    assert " above this line" in result[6][0]["message"]
-    assert result[6][0]["code"] == "E303"
+    assert result[0][0]["line_no"] == 0
+    assert result[0][0]["column"] == 10
+    assert " on one line (semicolon)" in result[0][0]["message"]
+    assert result[0][0]["code"] == "E702"
+
+
+def test_check_pycodestyle_no_whitespace_newlines():
+    """
+    Ensure the PEP8 style validator doesn't flag whitespace or newline
+    issues.
+    """
+    code = (
+        "def bar  (   ) :#Comment\n    1  +  2\n    3+4\n    5\t-\t6\n"
+        "@bar\n\ndef baz(a = 7):\n\n\n    b= 8\tif\t9 else(10)\n"
+        "    return \tb"
+    )
+    result = mu.logic.check_pycodestyle(code)
+    assert len(result) == 0
 
 
 def test_check_pycodestyle_with_non_ascii():
