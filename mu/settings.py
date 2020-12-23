@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 from . import config
 
+class SettingsError(Exception): pass
+
 class _Settings(object):
     """A _Settings object operates like a dictionary, allowing item
     access to its values. It can be loaded from and saved to a JSON
@@ -36,9 +38,14 @@ class _Settings(object):
 
     def __init__(self, **kwargs):
         self._dirty = set()
+        self.filepath = "(unset)"
+        print("Defaults:", self.DEFAULTS)
         self.reset()
         self.update(kwargs)
         self.readonly = False
+
+    def __contains__(self, item):
+        return item in self._dict
 
     def __getitem__(self, item):
         return self._dict[item]
@@ -49,14 +56,14 @@ class _Settings(object):
 
     def __delitem__(self, item):
         del self._dict[item]
-        self._dirty.add(item)
+        self._dirty.discard(item)
 
     def update(self, dictalike):
         d = dict(dictalike)
         self._dict.update(d)
         self._dirty.update(d)
 
-    def get(self, item, default):
+    def get(self, item):
         return self._dict.get(item, self.DEFAULTS.get(item))
 
     def __repr__(self):
@@ -66,9 +73,9 @@ class _Settings(object):
         self._dict = dict(self.DEFAULTS)
         self._dirty.clear()
 
-    def as_string(self, dirty_only=False):
+    def as_string(self, changed_only=False):
         try:
-            return json.dumps(self._as_dict(dirty_only), indent=2)
+            return json.dumps(self._as_dict(changed_only), indent=2)
         except TypeError:
             logger.warn("Unable to encode settings as a string")
             raise
@@ -106,13 +113,20 @@ class _Settings(object):
         if self.readonly:
             logger.warn("Settings is readonly; won't save")
             return
-        logger.debug("Saving to %s", self.filepath)
 
+        #
+        # If we don't have a filepath, bail now
+        #
+        if not getattr(self, "filepath", None):
+            logger.warn("No filepath set; won't save")
+            return
+
+        logger.debug("Saving to %s", self.filepath)
         #
         # Only save elements which have been set by the user -- either through
         # the initial file load or via actions during the application run
         #
-        settings_as_string = self.as_string(dirty_only=True)
+        settings_as_string = self.as_string(changed_only=True)
 
         try:
             with open(self.filepath, "w", encoding="utf-8") as f:
@@ -172,8 +186,8 @@ class _Settings(object):
         #
         self.filepath = filepath
 
-    def _as_dict(self, dirty_only=False):
-        if dirty_only:
+    def _as_dict(self, changed_only=False):
+        if changed_only:
             return dict((k, v) for (k, v) in self._dict.items() if k in self._dirty)
         else:
             return dict(self._dict)
