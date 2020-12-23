@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 
 from . import config
 
-
-class _Settings:
+class _Settings(object):
     """A _Settings object operates like a dictionary, allowing item
     access to its values. It can be loaded from and saved to a JSON
-    file.
+    file. Only elements which have been loaded from file and/or changed
+    during the session will be written back.s
 
     Calling `reset` will revert to default values
     Settings `readonly` will prevent the file from being saved to disc
@@ -35,6 +35,7 @@ class _Settings:
     filename = "default.json"
 
     def __init__(self, **kwargs):
+        self._dirty = set()
         self.reset()
         self.update(kwargs)
         self.readonly = False
@@ -44,15 +45,33 @@ class _Settings:
 
     def __setitem__(self, item, value):
         self._dict[item] = value
+        self._dirty.add(item)
 
     def __delitem__(self, item):
         del self._dict[item]
+        self._dirty.add(item)
 
     def update(self, dictalike):
-        self._dict.update(dictalike)
+        d = dict(dictalike)
+        self._dict.update(d)
+        self._dirty.update(d)
+
+    def get(self, item, default):
+        return self._dict.get(item, self.DEFAULTS.get(item))
 
     def __repr__(self):
         return "<%s from %s>" % (self.__class__.__name__, self.filepath)
+
+    def reset(self):
+        self._dict = dict(self.DEFAULTS)
+        self._dirty.clear()
+
+    def as_string(self, dirty_only=False):
+        try:
+            return json.dumps(self._as_dict(dirty_only), indent=2)
+        except TypeError:
+            logger.warn("Unable to encode settings as a string")
+            raise
 
     @staticmethod
     def default_file_locations():
@@ -79,23 +98,41 @@ class _Settings:
         return [app_dir, config.DATA_DIR]
 
     def save(self):
+        """Save these settings as a JSON file
+        """
+        #
+        # If this settings file is tagged readonly don't try to save it
+        #
         if self.readonly:
             logger.warn("Settings is readonly; won't save")
-        else:
-            logger.debug("Saving to %s", self.filepath)
+            return
+        logger.debug("Saving to %s", self.filepath)
+
+        #
+        # Only save elements which have been set by the user -- either through
+        # the initial file load or via actions during the application run
+        #
+        settings_as_string = self.as_string(dirty_only=True)
+
+        try:
             with open(self.filepath, "w", encoding="utf-8") as f:
-                try:
-                    json.dump(self._as_dict(), f, indent=2)
-                except TypeError:
-                    #
-                    # Quarantine the file to avoid problems starting up next time
-                    # (Close it first or we won't be able to rename on Windows)
-                    #
-                    f.close()
-                    quarantined_filename = "FAILED-%s.json" % time.strftime("%Y%m%d%H%M%S")
-                    quarantined_dirpath = os.path.dirname(self.filepath)
-                    os.rename(self.filepath, os.path.join(quarantined_dirpath, quarantined_filename))
-                    logger.exception("Unable to save settings to %s; quarantined file as %s", self.filepath, quarantined_filename)
+                f.write(settings_as_string)
+        except:
+            logger.debug("Unwritten settings:\n%s", settings_as_string)
+            raise
+
+    def safely_save(self):
+        try:
+            self.save()
+        #
+        # This is an exceptional bare except as we want to shut down gracefully,
+        # come what may
+        #
+        except:
+            logger.exception("Unable to save settings to %s", self.filepath)
+
+    def quarantine_file(self, filepath):
+        raise NotImplementedError
 
     def load(self, filepath):
         """Load from a file, merging into existing settings
@@ -126,6 +163,8 @@ class _Settings:
                 self.update(json_settings)
         except FileNotFoundError:
             logger.warn("No settings file found at %s; skipping", filepath)
+        except OSError:
+            logger.exception("Unable to read file at %s; skipping", filepath)
 
         #
         # Keep track of the filepath even if we didn't find the file: this
@@ -133,12 +172,11 @@ class _Settings:
         #
         self.filepath = filepath
 
-    def reset(self):
-        self._dict = dict(self.DEFAULTS)
-
-    def _as_dict(self):
-        return self._dict
-
+    def _as_dict(self, dirty_only=False):
+        if dirty_only:
+            return dict((k, v) for (k, v) in self._dict.items() if k in self._dirty)
+        else:
+            return dict(self._dict)
 
 class _UserSettings(_Settings):
 
@@ -151,6 +189,13 @@ class _SessionSettings(_Settings):
     DEFAULTS = {}
     filename = "session.json"
 
+class _VirtualEnvironmentSettings(_Settings):
+
+    DEFAULTS = {
+        "baseline_packages" : [],
+        "dirpath" : "mu_venv"
+    }
+    filename = "venv.json"
 
 #
 # Create global singletons for the user & session settings
@@ -167,7 +212,7 @@ for dirpath in _UserSettings.default_file_locations():
     if os.path.exists(filepath):
         break
 user.load(filepath)
-atexit.register(user.save)
+atexit.register(user.safely_save)
 
 session = _SessionSettings()
 for dirpath in _SessionSettings.default_file_locations():
@@ -175,4 +220,12 @@ for dirpath in _SessionSettings.default_file_locations():
     if os.path.exists(filepath):
         break
 session.load(filepath)
-atexit.register(session.save)
+atexit.register(session.safely_save)
+
+venv = _VirtualEnvironmentSettings()
+for dirpath in _SessionSettings.default_file_locations():
+    filepath = os.path.join(dirpath, _SessionSettings.filename)
+    if os.path.exists(filepath):
+        break
+venv.load(filepath)
+atexit.register(venv.safely_save)

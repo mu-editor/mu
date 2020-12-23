@@ -39,7 +39,7 @@ Discussion and Implementation
 Open questions:
 
 * How many / which files do we need?
-* Should we combine both settings / sessions into one file? Is there a meaningful difference which we want to maintain? [+0.5]
+* Should we combine both settings / sessions into one file? Is there a meaningful difference which we want to maintain? [+1]
 * Should we register exit handlers so the files are always saved on closedown? [+1]
 * Should we write files to disc as soon as they are updated? [-0]
 * Should we re-read files to allow users to update them mid-session? [-1]
@@ -47,8 +47,13 @@ Open questions:
 * Should we implement amnesia mode (ie the file is neither loaded nor written back)? [+1]
 * Should we implement reset mode (ie the file is not loaded but is written back)? [+0]
 * Should we break out the virtual environment settings (venv location, baseline packages) into its own file? [+1]
+* Could we add a boards.json file to allow users to add new/variant configurations? [+0]
 * What levels of config do we need? Defaults? One/multiple settings files? Override at instance level?
 * Do we still need to look in the application directory as well as the data directory? [-0]
+* What format should the files use? [cf https://github.com/mu-editor/mu/issues/1203]
+* Should we save everything every time? [+0.5]
+* Do we need interpolation of other settings? (eg ROOT_DIR = abc; WORK_DIR = %(ROOT_DIR)/xyz)
+* Do we need interpolation of env vars? (eg ROOT_DIR = %USERPROFILE%\mu_code) [+0.5]
 
 Exit Handlers
 ~~~~~~~~~~~~~
@@ -61,7 +66,6 @@ hidden.
 Not currently writing to disc as soon as updated: having an exit handler ensures
 the settings will be written, even in the event of an unhandled exception.
 And it's not clear what advantage an "autosave" would offer.
-
 
 Levels of Config
 ~~~~~~~~~~~~~~~~
@@ -121,6 +125,50 @@ Writing
   testing where the JSON lib attempts to serialise a Mock object. Here, we can't
   really do more than log the exception and fail gracefully.
 
+Levels of Config & Defaults
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The thrust of this proposal expects the `Settings` subclass to hold a dictionary
+of defaults at class level. These are applied first before any file is loaded.
+Any information from a loaded file is overlaid, so the file data "wins". Any
+values not present in the file remain per the default.
+
+Although not implemented in any way at present, the mechanism allows for several
+files to be loaded in succession, typically for a site-wide file, set up by
+an administrator, followed by a user-specific file. In this scenario, the data
+would be read: Defaults < Site settings < User settings with later data
+replacing earlier data.
+
+The presence of the defaults in the `Settings` subclass should also make for
+a more consistent use of defaults across the codebase. Eg if in general device
+timeouts should be 2 seconds but can be changed, one piece of code might do::
+
+    timeout_s = settings.user.get('timeout_s', 2)
+
+while another piece elsewhere might do::
+
+    timeout_s = settings.user.get('timeout_s', 3)
+
+If the defaults are present in the class, the `.get` method could be implemented
+so the default, instead of `None` as conventional, returns the class default::
+
+    timeout_s = settings.user.get('timeout_s')
+    # with no explicit timeout_s setting, timeout_s is now the default value
+
+Saving Everything?
+~~~~~~~~~~~~~~~~~~
+
+Implicit in the new design is the idea that all settings are saved out to the
+settings file(s) at the end of every session. That is, a local settings file
+which doesn't have, say, a workspace directory set will inherit the default
+which will then be written out to the settings file at the end of the session.
+
+An alternative to this is to identify (somehow) certain settings as being those
+to be saved back at the end of a session. Obvious candidates are those which
+currently constitute the ``settings.json`` file: things like open file list,
+current zoom level and theme etc.
+
+
 Implemented via:
 ~~~~~~~~~~~~~~~~
 
@@ -130,3 +178,4 @@ Discussion in:
 ~~~~~~~~~~~~~~
 
 * https://github.com/mu-editor/mu/issues/1184
+* https://github.com/mu-editor/mu/issues/1203

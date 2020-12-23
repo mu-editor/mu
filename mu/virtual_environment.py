@@ -455,24 +455,11 @@ class VirtualEnvironment(object):
         # For now, though, just put it somewhere
         #
         packages = list(self.pip.installed())
-        os.makedirs(
-            os.path.dirname(self.BASELINE_PACKAGES_FILEPATH), exist_ok=True
-        )
-        with open(self.BASELINE_PACKAGES_FILEPATH, "w", encoding="utf-8") as f:
-            json.dump(packages, f)
+        settings.venv['baseline_packages'] = packages
 
     def baseline_packages(self):
         """Return the list of baseline packages"""
-        #
-        # FIXME: This should come out of settings. For now though...
-        # cf https://github.com/mu-editor/mu/issues/1185
-        #
-        with open(self.BASELINE_PACKAGES_FILEPATH, encoding="utf-8") as f:
-            try:
-                return json.load(f)
-            except json.decoder.JSONDecodeError:
-                logger.exception("Unable to read baseline packages")
-                return []
+        packages = settings.venv.get('baseline_packages')
 
     def install_user_packages(self, packages, slots=Process.Slots()):
         logger.info("Installing user packages: %s", ", ".join(packages))
