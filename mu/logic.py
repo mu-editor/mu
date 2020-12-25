@@ -56,7 +56,7 @@ LOG_FILE = os.path.join(LOG_DIR, "mu.log")
 # Regex to match pycodestyle (PEP8) output.
 STYLE_REGEX = re.compile(r".*:(\d+):(\d+):\s+(.*)")
 # Regex to match flake8 output.
-FLAKE_REGEX = re.compile(r".*:(\d+):\s+(.*)")
+FLAKE_REGEX = re.compile(r".*:(\d+):(\d+)\s+(.*)")
 # Regex to match false positive flake errors if microbit.* is expanded.
 EXPAND_FALSE_POSITIVE = re.compile(r"^'microbit\.(\w+)' imported but unused$")
 # The text to which "from microbit import \*" should be expanded.
@@ -580,11 +580,11 @@ class MuFlakeCodeReporter:
         """
         matcher = FLAKE_REGEX.match(str(message))
         if matcher:
-            line_no, msg = matcher.groups()
+            line_no, col, msg = matcher.groups()
             self.log.append(
                 {
                     "line_no": int(line_no) - 1,  # Zero based counting in Mu.
-                    "column": 0,
+                    "column": int(col),
                     "message": msg,
                 }
             )
