@@ -99,8 +99,9 @@ def baseline_packages(workspace_dirpath):
 
     venv_settings_filepath = workspace_dirpath / "venv.json"
     venv_settings = mu.settings._Settings()
+    venv_settings.load(venv_settings_filepath)
     venv_settings["baseline_packages"] = packages
-    venv_settings.save(venv_settings_filepath)
+    #~ venv_settings.save(venv_settings_filepath)
 
     with mock.patch.object(mu.settings, "venv", venv_settings):
         yield packages

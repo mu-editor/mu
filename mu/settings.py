@@ -105,9 +105,8 @@ class _Settings(object):
 
         return [app_dir, config.DATA_DIR]
 
-    def save(self, filepath=None):
+    def save(self):
         """Save these settings as a JSON file"""
-        print("About to call save for", self)
         #
         # If this settings file is tagged readonly don't try to save it
         #
@@ -118,7 +117,7 @@ class _Settings(object):
         #
         # If we don't have a filepath, bail now
         #
-        saving_to_filepath = filepath or getattr(self, "filepath", None)
+        saving_to_filepath = getattr(self, "filepath", None)
         if not saving_to_filepath:
             logger.warn("No filepath set; won't save")
             return
