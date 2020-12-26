@@ -11,16 +11,17 @@ import atexit
 import logging
 import os
 import json
-import pathlib
 import platform
 import sys
-import time
 
 logger = logging.getLogger(__name__)
 
 from . import config
 
-class SettingsError(Exception): pass
+
+class SettingsError(Exception):
+    pass
+
 
 class _Settings(object):
     """A _Settings object operates like a dictionary, allowing item
@@ -104,9 +105,8 @@ class _Settings(object):
 
         return [app_dir, config.DATA_DIR]
 
-    def save(self):
-        """Save these settings as a JSON file
-        """
+    def save(self, filepath=None):
+        """Save these settings as a JSON file"""
         print("About to call save for", self)
         #
         # If this settings file is tagged readonly don't try to save it
@@ -118,11 +118,12 @@ class _Settings(object):
         #
         # If we don't have a filepath, bail now
         #
-        if not getattr(self, "filepath", None):
+        saving_to_filepath = filepath or getattr(self, "filepath", None)
+        if not saving_to_filepath:
             logger.warn("No filepath set; won't save")
             return
 
-        logger.debug("Saving to %s", self.filepath)
+        logger.debug("Saving to %s", saving_to_filepath)
         #
         # Only save elements which have been set by the user -- either through
         # the initial file load or via actions during the application run
@@ -130,9 +131,9 @@ class _Settings(object):
         settings_as_string = self.as_string(changed_only=True)
 
         try:
-            with open(self.filepath, "w", encoding="utf-8") as f:
+            with open(saving_to_filepath, "w", encoding="utf-8") as f:
                 f.write(settings_as_string)
-        except:
+        except Exception:
             logger.debug("Unwritten settings:\n%s", settings_as_string)
             raise
 
@@ -143,8 +144,11 @@ class _Settings(object):
         # This is an exceptional bare except as we want to shut down gracefully,
         # come what may
         #
-        except:
+        except Exception:
             logger.exception("Unable to save settings to %s", self.filepath)
+
+    def register_for_autosave(self):
+        atexit.register(self.safely_save)
 
     def quarantine_file(self, filepath):
         raise NotImplementedError
@@ -173,7 +177,9 @@ class _Settings(object):
                 try:
                     json_settings = json.load(f)
                 except json.decoder.JSONDecodeError:
-                    logger.exception("Unable to load settings from %s", filepath)
+                    logger.exception(
+                        "Unable to load settings from %s", filepath
+                    )
                     json_settings = {}
                 self.update(json_settings)
         except FileNotFoundError:
@@ -189,9 +195,12 @@ class _Settings(object):
 
     def _as_dict(self, changed_only=False):
         if changed_only:
-            return dict((k, v) for (k, v) in self._dict.items() if k in self._dirty)
+            return dict(
+                (k, v) for (k, v) in self._dict.items() if k in self._dirty
+            )
         else:
             return dict(self._dict)
+
 
 class _UserSettings(_Settings):
 
@@ -204,43 +213,49 @@ class _SessionSettings(_Settings):
     DEFAULTS = {}
     filename = "session.json"
 
+
 class _VirtualEnvironmentSettings(_Settings):
 
-    DEFAULTS = {
-        "baseline_packages" : [],
-        "dirpath" : "mu_venv"
-    }
+    DEFAULTS = {"baseline_packages": [], "dirpath": "mu_venv"}
     filename = "venv.json"
 
-#
-# Create global singletons for the user & session settings
-# Load these from their default files and register exit
-# handlers so they are saved when the Mu process exits
-#
-# Try a number of well-known locations for the relevant
-# settings file. If it's not in any it will be "loaded" from
-# the last one in the list, causing it to be saved there at exit
-#
+
 settings = _UserSettings()
-for dirpath in _UserSettings.default_file_locations():
-    filepath = os.path.join(dirpath, _UserSettings.filename)
-    if os.path.exists(filepath):
-        break
-settings.load(filepath)
-atexit.register(settings.safely_save)
-
 session = _SessionSettings()
-for dirpath in _SessionSettings.default_file_locations():
-    filepath = os.path.join(dirpath, _SessionSettings.filename)
-    if os.path.exists(filepath):
-        break
-session.load(filepath)
-atexit.register(session.safely_save)
-
 venv = _VirtualEnvironmentSettings()
-for dirpath in _SessionSettings.default_file_locations():
-    filepath = os.path.join(dirpath, _SessionSettings.filename)
-    if os.path.exists(filepath):
-        break
-venv.load(filepath)
-atexit.register(venv.safely_save)
+
+
+def init(autosave=True):
+    #
+    # Create global singletons for the user & session settings
+    # Load these from their default files and register exit
+    # handlers so they are saved when the Mu process exits
+    #
+    # Try a number of well-known locations for the relevant
+    # settings file. If it's not in any it will be "loaded" from
+    # the last one in the list, causing it to be saved there at exit
+    #
+    # ~ settings = _UserSettings()
+    # ~ for dirpath in _UserSettings.default_file_locations():
+    # ~ filepath = os.path.join(dirpath, _UserSettings.filename)
+    # ~ if os.path.exists(filepath):
+    # ~ break
+    # ~ settings.load(filepath)
+    # ~ if autosave:
+    # ~ settings.register_for_autosave()
+
+    for dirpath in _SessionSettings.default_file_locations():
+        filepath = os.path.join(dirpath, _SessionSettings.filename)
+        if os.path.exists(filepath):
+            break
+    session.load(filepath)
+    if autosave:
+        session.register_for_autosave()
+
+    for dirpath in _VirtualEnvironmentSettings.default_file_locations():
+        filepath = os.path.join(dirpath, _VirtualEnvironmentSettings.filename)
+        if os.path.exists(filepath):
+            break
+    venv.load(filepath)
+    if autosave:
+        venv.register_for_autosave()

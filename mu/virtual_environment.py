@@ -3,7 +3,6 @@ import sys
 from collections import namedtuple
 import functools
 import glob
-import json
 import logging
 import subprocess
 
@@ -22,6 +21,7 @@ from PyQt5.QtCore import (
 
 from . import wheels
 from . import config
+from . import settings
 
 wheels_dirpath = os.path.dirname(wheels.__file__)
 
@@ -450,16 +450,12 @@ class VirtualEnvironment(object):
 
     def register_baseline_packages(self):
         """Keep track of the baseline packages installed into the empty venv"""
-        #
-        # FIXME: This should go into settings.
-        # For now, though, just put it somewhere
-        #
         packages = list(self.pip.installed())
-        settings.venv['baseline_packages'] = packages
+        settings.venv["baseline_packages"] = packages
 
     def baseline_packages(self):
         """Return the list of baseline packages"""
-        packages = settings.venv.get('baseline_packages')
+        return settings.venv.get("baseline_packages")
 
     def install_user_packages(self, packages, slots=Process.Slots()):
         logger.info("Installing user packages: %s", ", ".join(packages))

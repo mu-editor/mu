@@ -18,7 +18,6 @@ to add or remove certain flags, or to use different wheels.
 import sys
 import os
 import glob
-import json
 import pathlib
 import random
 import shutil
@@ -29,8 +28,12 @@ import uuid
 from PyQt5.QtCore import QTimer, QProcess
 import pytest
 
+import mu.config
 import mu.virtual_environment
 import mu.wheels
+import mu.settings
+
+mu.settings.init(autosave=False)
 
 VE = mu.virtual_environment.VirtualEnvironment
 PIP = mu.virtual_environment.Pip
@@ -81,17 +84,26 @@ def pipped():
 
 
 @pytest.fixture
-def baseline_packages(tmp_path):
-    baseline_filepath = tmp_path / "baseline_packages.json"
+def workspace_dirpath(tmp_path):
+    workspace_dirpath = tmp_path / uuid.uuid1().hex
+    workspace_dirpath.mkdir()
+    with mock.patch.object(mu.config, "DATA_DIR", workspace_dirpath):
+        yield workspace_dirpath
+
+
+@pytest.fixture
+def baseline_packages(workspace_dirpath):
     package_name = uuid.uuid1().hex
     package_version = uuid.uuid1().hex
     packages = [[package_name, package_version]]
-    with mock.patch.object(
-        mu.virtual_environment.VirtualEnvironment,
-        "BASELINE_PACKAGES_FILEPATH",
-        baseline_filepath,
-    ):
-        yield baseline_filepath, packages
+
+    venv_settings_filepath = workspace_dirpath / "venv.json"
+    venv_settings = mu.settings._Settings()
+    venv_settings["baseline_packages"] = packages
+    venv_settings.save(venv_settings_filepath)
+
+    with mock.patch.object(mu.settings, "venv", venv_settings):
+        yield packages
 
 
 @pytest.fixture
@@ -386,17 +398,19 @@ def test_ensure_pip(venv):
         venv.ensure_pip()
 
 
+@pytest.mark.skip(
+    "Baseline packages are now held in settings which have their own tests"
+)
 def test_read_baseline_packages_success(venv, baseline_packages):
     """Ensure that we can read back a list of baseline packages"""
-    baseline_filepath, packages = baseline_packages
-    with open(baseline_filepath, "w") as f:
-        f.write(json.dumps(packages))
-
-    expected_output = packages
+    expected_output = baseline_packages
     output = venv.baseline_packages()
     assert output == expected_output
 
 
+@pytest.mark.skip(
+    "Baseline packages are now held in settings which have their own tests"
+)
 def test_read_baseline_packages_failure(venv, baseline_packages):
     """Ensure that if we can't read a list of packages we see an error log
     and an empty list is returned

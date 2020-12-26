@@ -51,9 +51,10 @@ Open questions:
 * What levels of config do we need? Defaults? One/multiple settings files? Override at instance level?
 * Do we still need to look in the application directory as well as the data directory? [-0]
 * What format should the files use? [cf https://github.com/mu-editor/mu/issues/1203]
-* Should we save everything every time? [+0.5]
+* Should we save everything every time? [-0.5]
 * Do we need interpolation of other settings? (eg ROOT_DIR = abc; WORK_DIR = %(ROOT_DIR)/xyz)
 * Do we need interpolation of env vars? (eg ROOT_DIR = %USERPROFILE%\mu_code) [+0.5]
+* Should we merge ``settings.py`` into ``config.py`` [+0]
 
 Exit Handlers
 ~~~~~~~~~~~~~
@@ -155,18 +156,29 @@ so the default, instead of `None` as conventional, returns the class default::
     timeout_s = settings.user.get('timeout_s')
     # with no explicit timeout_s setting, timeout_s is now the default value
 
+Taking this further, it's not clear that we even need to load the defaults as
+such; we could always just fall back to them in the event of a .get KeyError
+or even a __getitem__ KeyError. Taking that approach would also means we wouldn't
+need the "dirty data" mechanism because anything in the ``_Settings`` object's own
+``_dict`` should be saved out at the end.
+
 Saving Everything?
 ~~~~~~~~~~~~~~~~~~
 
-Implicit in the new design is the idea that all settings are saved out to the
-settings file(s) at the end of every session. That is, a local settings file
-which doesn't have, say, a workspace directory set will inherit the default
-which will then be written out to the settings file at the end of the session.
+Implicit in the new design is the idea that settings are saved out to file(s) at
+the end of every session.
 
-An alternative to this is to identify (somehow) certain settings as being those
-to be saved back at the end of a session. Obvious candidates are those which
-currently constitute the ``settings.json`` file: things like open file list,
-current zoom level and theme etc.
+Originally, the effect of the defaults was that, say, a workspace directory would
+inherit the default which will then be written out to the settings file at the
+end of the session. Even if that file had not originally had a settings for the
+workspace directory.
+
+On reflection, I've re-implemented for now a "dirty" setting for each attribute.
+Only "dirty" attributes are written out to file. Anything loaded from a file
+is considered "dirty" even if it remains unchanged for the duration of the
+session. Anything updated during the session -- and this will typically be
+user-configurable items like Zoom level, Theme &c. -- is also tagged as "dirty"
+and will be written out to file.
 
 
 Implemented via:

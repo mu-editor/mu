@@ -45,6 +45,7 @@ from .modes import (
     PyboardMode,
 )
 from .interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
+from . import settings
 
 
 def excepthook(*exc_args):
@@ -119,6 +120,12 @@ def run():
     logging.info(platform.uname())
     logging.info("Python path: {}".format(sys.path))
     logging.info("Language code: {}".format(i18n.language_code))
+
+    #
+    # Load settings from known locations and register them for
+    # autosave
+    #
+    settings.init()
 
     # Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
     # unless this flag is set

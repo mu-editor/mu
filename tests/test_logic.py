@@ -4,6 +4,7 @@ Tests for the Editor and REPL logic.
 """
 import sys
 import os
+import atexit
 import codecs
 import contextlib
 import json
@@ -17,6 +18,7 @@ import uuid
 
 import pytest
 import mu.logic
+import mu.settings
 
 # ~ import mu.virtual_environment
 from mu.virtual_environment import venv
@@ -195,6 +197,19 @@ def mocked_editor(mode="python", text=None, path=None, newline=None):
     mock_mode.api.return_value = ["API Specification"]
     ed.modes = {mode: mock_mode}
     return ed
+
+
+@pytest.fixture(scope="module")
+def prevent_settings_autosave():
+    """Prevent the settings from auto-saving"""
+    atexit._clear()
+
+
+@pytest.fixture
+def mocked_save_session():
+    """Mock the save-session functionality"""
+    with mock.patch.object(mu.settings.session, "save") as mocked_session_save:
+        yield mocked_session_save
 
 
 def test_CONSTANTS():
@@ -2095,6 +2110,10 @@ def test_quit_modified_ok():
     If the user quits and there's unsaved work that's ignored then proceed to
     save the session.
     """
+    #
+    # Disable the settings' autosave functionality
+    #
+    atexit._clear()
     view = mock.MagicMock()
     view.modified = True
     view.show_confirmation = mock.MagicMock(return_value=True)
@@ -2115,16 +2134,19 @@ def test_quit_modified_ok():
     mock_open.return_value.__exit__ = mock.Mock()
     mock_open.return_value.write = mock.MagicMock()
     mock_event = mock.MagicMock()
+    #
+    # FIXME TJG: not sure what the ignore functionality being mocked here is doing
+    #
     mock_event.ignore = mock.MagicMock(return_value=None)
     with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
+        "mu.settings.session.save"
+    ) as mocked_save:
         ed.quit(mock_event)
+
     mock_debug_mode.stop.assert_called_once_with()
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
+    mocked_save.assert_called_once()
 
 
 def _editor_view_mock():
@@ -2290,12 +2312,12 @@ def test_quit_calls_mode_stop():
     mock_event.ignore = mock.MagicMock(return_value=None)
     with mock.patch("sys.exit", return_value=None), mock.patch(
         "builtins.open", mock_open
-    ):
+    ), mock.patch("mu.settings.session.save"):
         ed.quit(mock_event)
     ed.modes[ed.mode].stop.assert_called_once_with()
 
 
-def test_quit_calls_sys_exit():
+def test_quit_calls_sys_exit(mocked_save_session):
     """
     Ensure that sys.exit(0) is called.
     """
