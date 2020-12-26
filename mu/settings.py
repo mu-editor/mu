@@ -107,6 +107,7 @@ class _Settings(object):
     def save(self):
         """Save these settings as a JSON file
         """
+        print("About to call save for", self)
         #
         # If this settings file is tagged readonly don't try to save it
         #
@@ -220,13 +221,13 @@ class _VirtualEnvironmentSettings(_Settings):
 # settings file. If it's not in any it will be "loaded" from
 # the last one in the list, causing it to be saved there at exit
 #
-user = _UserSettings()
+settings = _UserSettings()
 for dirpath in _UserSettings.default_file_locations():
     filepath = os.path.join(dirpath, _UserSettings.filename)
     if os.path.exists(filepath):
         break
-user.load(filepath)
-atexit.register(user.safely_save)
+settings.load(filepath)
+atexit.register(settings.safely_save)
 
 session = _SessionSettings()
 for dirpath in _SessionSettings.default_file_locations():
