@@ -20,7 +20,6 @@ from PyQt5.QtCore import (
 )
 
 from . import wheels
-from . import config
 from . import settings
 
 wheels_dirpath = os.path.dirname(wheels.__file__)
@@ -281,16 +280,15 @@ class VirtualEnvironmentError(Exception):
 
 class VirtualEnvironment(object):
 
-    BASELINE_PACKAGES_FILEPATH = os.path.join(
-        config.DATA_DIR, "baseline_packages.json"
-    )
     Slots = Process.Slots
 
-    def __init__(self, dirpath):
+    def __init__(self, dirpath=None):
         self.process = Process()
         self._is_windows = sys.platform == "win32"
         self._bin_extension = ".exe" if self._is_windows else ""
-        self.relocate(dirpath)
+        self.settings = settings.VirtualEnvironmentSettings()
+        self.settings.init()
+        self.relocate(dirpath or self.settings["dirpath"])
 
     def __str__(self):
         return "<%s at %s>" % (self.__class__.__name__, self.path)
@@ -451,11 +449,11 @@ class VirtualEnvironment(object):
     def register_baseline_packages(self):
         """Keep track of the baseline packages installed into the empty venv"""
         packages = list(self.pip.installed())
-        settings.venv["baseline_packages"] = packages
+        self.settings["baseline_packages"] = packages
 
     def baseline_packages(self):
         """Return the list of baseline packages"""
-        return settings.venv.get("baseline_packages")
+        return self.settings.get("baseline_packages")
 
     def install_user_packages(self, packages, slots=Process.Slots()):
         logger.info("Installing user packages: %s", ", ".join(packages))
@@ -506,4 +504,4 @@ class VirtualEnvironment(object):
 # Create a singleton virtual environment to be used throughout
 # the application
 #
-venv = VirtualEnvironment(config.VENV_DIR)
+venv = VirtualEnvironment()

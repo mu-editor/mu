@@ -105,6 +105,15 @@ class _Settings(object):
 
         return [app_dir, config.DATA_DIR]
 
+    def init(self, autosave=True):
+        for dirpath in self.default_file_locations():
+            filepath = os.path.join(dirpath, self.filename)
+            if os.path.exists(filepath):
+                break
+        self.load(filepath)
+        if autosave:
+            self.register_for_autosave()
+
     def save(self):
         """Save these settings as a JSON file"""
         #
@@ -213,15 +222,15 @@ class _SessionSettings(_Settings):
     filename = "session.json"
 
 
-class _VirtualEnvironmentSettings(_Settings):
+class VirtualEnvironmentSettings(_Settings):
 
-    DEFAULTS = {"baseline_packages": [], "dirpath": "mu_venv"}
+    DEFAULTS = {"baseline_packages": [], "dirpath": config.VENV_DIR}
     filename = "venv.json"
 
 
 settings = _UserSettings()
 session = _SessionSettings()
-venv = _VirtualEnvironmentSettings()
+venv = VirtualEnvironmentSettings()
 
 
 def init(autosave=True):
@@ -250,11 +259,3 @@ def init(autosave=True):
     session.load(filepath)
     if autosave:
         session.register_for_autosave()
-
-    for dirpath in _VirtualEnvironmentSettings.default_file_locations():
-        filepath = os.path.join(dirpath, _VirtualEnvironmentSettings.filename)
-        if os.path.exists(filepath):
-            break
-    venv.load(filepath)
-    if autosave:
-        venv.register_for_autosave()
