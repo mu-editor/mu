@@ -16,7 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import json
 import sys
 import os
 import os.path
@@ -27,7 +26,7 @@ import pkgutil
 from serial import Serial
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 from PyQt5.QtCore import QObject, pyqtSignal, QIODevice, QTimer
-from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path, Device
+from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, Device
 from mu.contrib import microfs
 from .. import settings
 

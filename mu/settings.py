@@ -230,6 +230,8 @@ class VirtualEnvironmentSettings(SettingsBase):
 
 settings = UserSettings()
 session = SessionSettings()
+
+
 def init(autosave=True):
     settings.init(autosave=autosave)
     session.init(autosave=autosave)

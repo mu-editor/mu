@@ -45,7 +45,9 @@ def test_base_mode():
     assert bm.builtins is None
 
 
-@pytest.mark.skip("No longer needed now that settings are part of the settings module")
+@pytest.mark.skip(
+    "No longer needed now that settings are part of the settings module"
+)
 def test_base_mode_workspace_dir():
     """
     Return settings file workspace value.
@@ -84,10 +86,10 @@ def test_base_mode_workspace_invalid_value():
         mu.logic.HOME_DIRECTORY, mu.logic.WORKSPACE_NAME
     )
     mocked_settings = mu.settings.UserSettings()
-    mocked_settings['workspace'] = "*invalid*"
-    with mock.patch.object(mu.settings, "settings", mocked_settings), mock.patch(
-        "mu.modes.base.logger", return_value=None
-    ) as logger:
+    mocked_settings["workspace"] = "*invalid*"
+    with mock.patch.object(
+        mu.settings, "settings", mocked_settings
+    ), mock.patch("mu.modes.base.logger", return_value=None) as logger:
         editor = mock.MagicMock()
         view = mock.MagicMock()
         bm = BaseMode(editor, view)
