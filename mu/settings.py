@@ -22,6 +22,7 @@ serialiser = json
 serialiser_ext = "json"
 SerialiserDecodeError = json.decoder.JSONDecodeError
 
+
 class SettingsError(Exception):
     pass
 
