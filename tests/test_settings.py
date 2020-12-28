@@ -161,3 +161,9 @@ def test_reset_nothing_changed():
         assert s._dirty
         s.reset()
         assert not s._dirty
+
+def test_repr():
+    """Check that repr works without error
+    """
+    settings = mu.settings.SettingsBase()
+    assert "SettingsBase" in repr(settings)
