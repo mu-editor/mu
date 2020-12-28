@@ -43,7 +43,7 @@ class SettingsBase(object):
 
     def __init__(self, **kwargs):
         self._dirty = set()
-        self.filepath = "(unset)"
+        self.filepath = None
         print("Defaults:", self.DEFAULTS)
         self.reset()
         self.update(kwargs)
@@ -72,7 +72,7 @@ class SettingsBase(object):
         return self._dict.get(item, self.DEFAULTS.get(item, default))
 
     def __repr__(self):
-        return "<%s from %s>" % (self.__class__.__name__, self.filepath)
+        return "<%s from %s>" % (self.__class__.__name__, self.filepath or "(unset)")
 
     def reset(self):
         self._dict = dict(self.DEFAULTS)
@@ -82,8 +82,8 @@ class SettingsBase(object):
         try:
             return serialiser.dumps(self._as_dict(changed_only), indent=2)
         except TypeError:
-            logger.warn("Unable to encode settings as a string")
-            raise
+            logger.exception("Unable to encode settings as a string")
+            raise SettingsError("Unable to encode settings as a string")
 
     @staticmethod
     def default_file_locations():
