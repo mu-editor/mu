@@ -18,6 +18,9 @@ logger = logging.getLogger(__name__)
 
 from . import config
 
+serialiser = json
+serialiser_ext = "json"
+SerialiserDecodeError = json.decoder.JSONDecodeError
 
 class SettingsError(Exception):
     pass
@@ -25,7 +28,7 @@ class SettingsError(Exception):
 
 class SettingsBase(object):
     """A SettingsBase object operates like a dictionary, allowing item
-    access to its values. It can be loaded from and saved to a JSON
+    access to its values. It can be loaded from and saved to a serialised
     file. Only elements which have been loaded from file and/or changed
     during the session will be written back.s
 
@@ -35,7 +38,7 @@ class SettingsBase(object):
     """
 
     DEFAULTS = {}
-    filename = "default.json"
+    filename = "default." + serialiser_ext
 
     def __init__(self, **kwargs):
         self._dirty = set()
@@ -76,7 +79,7 @@ class SettingsBase(object):
 
     def as_string(self, changed_only=False):
         try:
-            return json.dumps(self._as_dict(changed_only), indent=2)
+            return serialiser.dumps(self._as_dict(changed_only), indent=2)
         except TypeError:
             logger.warn("Unable to encode settings as a string")
             raise
@@ -115,7 +118,7 @@ class SettingsBase(object):
             self.register_for_autosave()
 
     def save(self):
-        """Save these settings as a JSON file"""
+        """Save these settings as a serialised file"""
         #
         # If this settings file is tagged readonly don't try to save it
         #
@@ -183,13 +186,13 @@ class SettingsBase(object):
         try:
             with open(filepath, encoding="utf-8") as f:
                 try:
-                    json_settings = json.load(f)
-                except json.decoder.JSONDecodeError:
+                    serialised_settings = serialiser.load(f)
+                except SerialiserDecodeError:
                     logger.exception(
                         "Unable to load settings from %s", filepath
                     )
-                    json_settings = {}
-                self.update(json_settings)
+                    serialised_settings = {}
+                self.update(serialised_settings)
         except FileNotFoundError:
             logger.warn("No settings file found at %s; skipping", filepath)
         except OSError:
@@ -213,19 +216,19 @@ class SettingsBase(object):
 class UserSettings(SettingsBase):
 
     DEFAULTS = {}
-    filename = "settings.json"
+    filename = "settings." + serialiser_ext
 
 
 class SessionSettings(SettingsBase):
 
     DEFAULTS = {}
-    filename = "session.json"
+    filename = "session." + serialiser_ext
 
 
 class VirtualEnvironmentSettings(SettingsBase):
 
     DEFAULTS = {"baseline_packages": [], "dirpath": config.VENV_DIR}
-    filename = "venv.json"
+    filename = "venv." + serialiser_ext
 
 
 settings = UserSettings()
