@@ -29,6 +29,7 @@ from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 from PyQt5.QtCore import QObject, pyqtSignal, QIODevice, QTimer
 from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path, Device
 from mu.contrib import microfs
+from .. import settings
 
 ENTER_RAW_MODE = b"\x01"  # CTRL-A
 EXIT_RAW_MODE = b"\x02"  # CTRL-B
@@ -50,18 +51,7 @@ def get_settings():
     Return the JSON settings as a dictionary, which maybe empty if
     the `settings.json` file is not found or if it can not be parsed.
     """
-
-    sp = get_settings_path()
-    settings = {}
-    try:
-        with open(sp) as f:
-            settings = json.load(f)
-    except FileNotFoundError:
-        logger.error("Settings file {} does not exist.".format(sp))
-    except ValueError:
-        logger.error("Settings file {} could not be parsed.".format(sp))
-
-    return settings
+    return settings.settings
 
 
 def get_default_workspace():

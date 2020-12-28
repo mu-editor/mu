@@ -23,8 +23,8 @@ class SettingsError(Exception):
     pass
 
 
-class _Settings(object):
-    """A _Settings object operates like a dictionary, allowing item
+class SettingsBase(object):
+    """A SettingsBase object operates like a dictionary, allowing item
     access to its values. It can be loaded from and saved to a JSON
     file. Only elements which have been loaded from file and/or changed
     during the session will be written back.s
@@ -210,51 +210,26 @@ class _Settings(object):
             return dict(self._dict)
 
 
-class _UserSettings(_Settings):
+class UserSettings(SettingsBase):
 
     DEFAULTS = {}
     filename = "settings.json"
 
 
-class _SessionSettings(_Settings):
+class SessionSettings(SettingsBase):
 
     DEFAULTS = {}
     filename = "session.json"
 
 
-class VirtualEnvironmentSettings(_Settings):
+class VirtualEnvironmentSettings(SettingsBase):
 
     DEFAULTS = {"baseline_packages": [], "dirpath": config.VENV_DIR}
     filename = "venv.json"
 
 
-settings = _UserSettings()
-session = _SessionSettings()
-
-
+settings = UserSettings()
+session = SessionSettings()
 def init(autosave=True):
-    #
-    # Create global singletons for the user & session settings
-    # Load these from their default files and register exit
-    # handlers so they are saved when the Mu process exits
-    #
-    # Try a number of well-known locations for the relevant
-    # settings file. If it's not in any it will be "loaded" from
-    # the last one in the list, causing it to be saved there at exit
-    #
-    # ~ settings = _UserSettings()
-    # ~ for dirpath in _UserSettings.default_file_locations():
-    # ~ filepath = os.path.join(dirpath, _UserSettings.filename)
-    # ~ if os.path.exists(filepath):
-    # ~ break
-    # ~ settings.load(filepath)
-    # ~ if autosave:
-    # ~ settings.register_for_autosave()
-
-    for dirpath in _SessionSettings.default_file_locations():
-        filepath = os.path.join(dirpath, _SessionSettings.filename)
-        if os.path.exists(filepath):
-            break
-    session.load(filepath)
-    if autosave:
-        session.register_for_autosave()
+    settings.init(autosave=autosave)
+    session.init(autosave=autosave)
