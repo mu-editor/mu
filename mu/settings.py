@@ -64,8 +64,8 @@ class SettingsBase(object):
         self._dict.update(d)
         self._dirty.update(d)
 
-    def get(self, item):
-        return self._dict.get(item, self.DEFAULTS.get(item))
+    def get(self, item, default):
+        return self._dict.get(item, self.DEFAULTS.get(item, default))
 
     def __repr__(self):
         return "<%s from %s>" % (self.__class__.__name__, self.filepath)
