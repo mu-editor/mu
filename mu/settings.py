@@ -64,7 +64,7 @@ class SettingsBase(object):
         self._dict.update(d)
         self._dirty.update(d)
 
-    def get(self, item, default):
+    def get(self, item, default=None):
         return self._dict.get(item, self.DEFAULTS.get(item, default))
 
     def __repr__(self):
