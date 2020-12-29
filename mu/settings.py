@@ -72,7 +72,10 @@ class SettingsBase(object):
         return self._dict.get(item, self.DEFAULTS.get(item, default))
 
     def __repr__(self):
-        return "<%s from %s>" % (self.__class__.__name__, self.filepath or "(unset)")
+        return "<%s from %s>" % (
+            self.__class__.__name__,
+            self.filepath or "(unset)",
+        )
 
     def reset(self):
         self._dict = dict(self.DEFAULTS)
@@ -146,7 +149,9 @@ class SettingsBase(object):
             with open(saving_to_filepath, "w", encoding="utf-8") as f:
                 f.write(settings_as_string)
         except Exception:
-            logger.exception("Unable to write settings:\n%s", settings_as_string)
+            logger.exception(
+                "Unable to write settings:\n%s", settings_as_string
+            )
             raise SettingsError("Unable to write settings")
 
     def safely_save(self):
@@ -161,9 +166,6 @@ class SettingsBase(object):
 
     def register_for_autosave(self):
         atexit.register(self.safely_save)
-
-    def quarantine_file(self, filepath):
-        raise NotImplementedError
 
     def load(self, filepath):
         """Load from a file, merging into existing settings

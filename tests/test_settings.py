@@ -164,30 +164,32 @@ def test_reset_nothing_changed():
         s.reset()
         assert not s._dirty
 
+
 def test_repr():
-    """Check that repr works without error
-    """
+    """Check that repr works without error"""
     settings = mu.settings.SettingsBase()
     assert "SettingsBase" in repr(settings)
 
+
 def test_as_string():
-    """Check that serialisation works
-    """
+    """Check that serialisation works"""
     settings = mu.settings.SettingsBase()
     serialised = settings.as_string()
     assert isinstance(serialised, str)
 
-def test_as_string_unable_to_encode():
+
+@patch.object(mu.settings, "logger")
+def test_as_string_unable_to_encode(mocked_logger):
     """Check that we log an exception and raise SettingsError when
     we can't encode
     """
     settings = mu.settings.SettingsBase()
-    settings['test'] = object()
-    with patch.object(mu.settings, "logger") as mocked_logger:
-        with pytest.raises(mu.settings.SettingsError):
-            serialised = settings.as_string()
+    settings["test"] = object()
+    with pytest.raises(mu.settings.SettingsError):
+        _ = settings.as_string()
 
     assert mocked_logger.exception.called
+
 
 def test_as_string_changed_only():
     """If serialisation is requested only with changed objects, check that
@@ -195,10 +197,10 @@ def test_as_string_changed_only():
     """
     settings = mu.settings.SettingsBase()
     unchanged_value = rstring()
-    settings['unchanged'] = unchanged_value
+    settings["unchanged"] = unchanged_value
     changed_value = rstring()
-    settings['changed'] = changed_value
-    settings._dirty = ("changed")
+    settings["changed"] = changed_value
+    settings._dirty = "changed"
 
     #
     # This evidently assumes there's no encryption, compression etc. going
@@ -208,34 +210,34 @@ def test_as_string_changed_only():
     assert changed_value in as_string
     assert unchanged_value not in as_string
 
-def test_save_readonly():
-    """When a settings object is readonly save will warn and exit
-    """
+
+@patch.object(mu.settings, "logger")
+def test_save_readonly(mocked_logger):
+    """When a settings object is readonly save will warn and exit"""
     settings = mu.settings.SettingsBase()
     settings.as_string = mock.Mock()
     settings.readonly = True
 
-    with patch.object(mu.settings, "logger") as mocked_logger:
-        settings.save()
+    settings.save()
     assert mocked_logger.warn.called
     assert not settings.as_string.called
 
-def test_save_no_filepath():
-    """When a settings object has no filepath save will warn and exit
-    """
+
+@patch.object(mu.settings, "logger")
+def test_save_no_filepath(mocked_logger):
+    """When a settings object has no filepath save will warn and exit"""
     settings = mu.settings.SettingsBase()
     settings.as_string = mock.Mock()
-    settings.filepath = None # (just in case)
+    settings.filepath = None  # (just in case)
 
-    with patch.object(mu.settings, "logger") as mocked_logger:
-        settings.save()
+    settings.save()
     assert mocked_logger.warn.called
     assert not settings.as_string.called
+
 
 @patch("builtins.open")
 def test_save_only_changed(mocked_open):
-    """When a settings object is saved only changed items are written
-    """
+    """When a settings object is saved only changed items are written"""
     settings = mu.settings.SettingsBase()
     settings.filepath = rstring()
     settings.as_string = mock.Mock(return_value=rstring())
@@ -244,24 +246,55 @@ def test_save_only_changed(mocked_open):
     assert settings.as_string.called_with(changed_only=True)
     assert mocked_open.called_with(settings.filepath, "w")
 
-def test_save_unable_to_write():
+
+@patch.object(mu.settings, "logger")
+def test_save_unable_to_write(mocked_logger):
     """When a settings object can't be written log an exception and re-raise as
     a SettingsError
     """
     settings = mu.settings.SettingsBase()
-    settings.filepath = os.curdir # this should fail on every platform
+    settings.filepath = os.curdir  # this should fail on every platform
 
-    with patch.object(mu.settings, "logger") as mocked_logger:
-        with pytest.raises(mu.settings.SettingsError):
-            settings.save()
+    with pytest.raises(mu.settings.SettingsError):
+        settings.save()
 
     assert mocked_logger.exception.called
 
-def test_safely_save():
+
+@patch.object(mu.settings, "logger")
+def test_safely_save(mocked_logger):
     """When a settings object can't be saved, log an exception and carry on"""
     settings = mu.settings.SettingsBase()
-    settings.filepath = os.curdir # this should fail on every platform
-    with patch.object(mu.settings, "logger") as mocked_logger:
-        settings.safely_save()
+    settings.filepath = os.curdir  # this should fail on every platform
+    settings.safely_save()
 
     assert mocked_logger.exception.called
+
+
+@patch.object(mu.settings, "logger")
+def test_load_file_not_found(mocked_logger):
+    """When a settings object can't be found log a warning and carry on with that
+    filepath held for later
+    """
+    filepath = rstring()
+    assert not os.path.exists(filepath), (
+        "Unexpectedly, %s actually exists!" % filepath
+    )
+    settings = mu.settings.SettingsBase()
+    settings.load(filepath)
+
+    assert mocked_logger.warn.called
+    assert settings.filepath == filepath
+
+
+@patch.object(mu.settings, "logger")
+def test_load_file_unable_to_read(mocked_logger):
+    """When a settings object can't be read log an exception and carry on with that
+    filepath held for later
+    """
+    filepath = os.curdir  # certain to fail on every platform
+    settings = mu.settings.SettingsBase()
+    settings.load(filepath)
+
+    assert mocked_logger.exception.called
+    assert settings.filepath == filepath
