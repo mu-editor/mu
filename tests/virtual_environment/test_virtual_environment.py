@@ -351,6 +351,8 @@ def test_venv_folder_already_exists(venv):
 
 def test_venv_folder_already_exists_not_venv(venv):
     """When venv_folder does exist not as a venv ensure we raise an error"""
+    assert not os.path.isfile(os.path.join(venv.path, "pyvenv.cfg"))
+    assert not os.path.isfile(venv.interpreter)
     with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
         venv.ensure()
 
