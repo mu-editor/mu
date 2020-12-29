@@ -332,6 +332,27 @@ class VirtualEnvironment(object):
         else:
             return self.process.run_blocking(self.interpreter, args)
 
+    def _directory_is_venv(self):
+        """Determine whether a directory appears to be an existing venv
+
+        There appears to be no canonical way to achieve this. Often the
+        presence of a pyvenv.cfg file is enough, but this isn't always there.
+        Specifically, on debian it's not when created by virtualenv. So we
+        fall back to finding an executable python command where we expect
+        """
+        if os.path.isfile(os.path.join(self.path, "pyvenv.cfg")):
+            return True
+
+        #
+        # On windows os.access X_OK is close to meaningless, but it will
+        # succeed for executable files (and everything else). On Posix it
+        # does distinguish executable files
+        #
+        if os.access(self.interpreter, os.X_OK):
+            return True
+
+        return False
+
     def ensure(self):
         """Ensure that a virtual environment exists, creating it if needed"""
         if not os.path.exists(self.path):
@@ -341,17 +362,12 @@ class VirtualEnvironment(object):
             message = "%s exists but is not a directory" % self.path
             logger.error(message)
             raise VirtualEnvironmentError(message)
-
-        #
-        # There doesn't seem to be a canonical way of checking whether
-        # a directory is a virtual environment
-        #
-        elif not os.path.isfile(os.path.join(self.path, "pyvenv.cfg")):
+        elif not self._directory_is_venv():
             message = "Directory %s exists but is not a venv" % self.path
             logger.error(message)
             raise VirtualEnvironmentError(message)
         else:
-            logger.debug("Directory %s already exists", self.path)
+            logger.debug("Found existing virtual environment at %s", self.path)
 
         self.ensure_interpreter()
         self.ensure_pip()
@@ -385,7 +401,15 @@ class VirtualEnvironment(object):
 
         env = dict(os.environ)
         subprocess.run(
-            [sys.executable, "-m", "virtualenv", "-q", self.path],
+            [
+                sys.executable,
+                "-m",
+                "virtualenv",
+                "-p",
+                sys.executable,
+                "-q",
+                self.path,
+            ],
             check=True,
             env=env,
         )
