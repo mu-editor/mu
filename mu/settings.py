@@ -146,8 +146,8 @@ class SettingsBase(object):
             with open(saving_to_filepath, "w", encoding="utf-8") as f:
                 f.write(settings_as_string)
         except Exception:
-            logger.debug("Unwritten settings:\n%s", settings_as_string)
-            raise
+            logger.exception("Unable to write settings:\n%s", settings_as_string)
+            raise SettingsError("Unable to write settings")
 
     def safely_save(self):
         try:
