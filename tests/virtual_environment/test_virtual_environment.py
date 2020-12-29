@@ -133,7 +133,7 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     #
     # Check that we've created a virtual environment on disk
     #
-    assert (venv_dirpath / "pyvenv.cfg").is_file()
+    assert venv._directory_is_venv()
 
     #
     # Check that we have an installed version of pip
