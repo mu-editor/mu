@@ -93,16 +93,23 @@ def workspace_dirpath(tmp_path):
 
 
 @pytest.fixture
+def workspace_dirpath(tmp_path):
+    workspace_dirpath = str(tmp_path / uuid.uuid1().hex)
+    os.mkdir(workspace_dirpath)
+    with mock.patch.object(mu.config, "DATA_DIR", workspace_dirpath):
+        yield workspace_dirpath
+
+
+@pytest.fixture
 def baseline_packages(workspace_dirpath):
     package_name = uuid.uuid1().hex
     package_version = uuid.uuid1().hex
     packages = [[package_name, package_version]]
 
-    venv_settings_filepath = workspace_dirpath / "venv.json"
+    venv_settings_filepath = os.path.join(workspace_dirpath, "venv.json")
     venv_settings = mu.settings._Settings()
     venv_settings.load(venv_settings_filepath)
     venv_settings["baseline_packages"] = packages
-    # ~ venv_settings.save(venv_settings_filepath)
 
     with mock.patch.object(mu.settings, "venv", venv_settings):
         yield packages
