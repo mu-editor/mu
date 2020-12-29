@@ -249,24 +249,11 @@ def test_save_only_changed(mocked_open):
 
 @patch.object(mu.settings, "logger")
 def test_save_unable_to_write(mocked_logger):
-    """When a settings object can't be written log an exception and re-raise as
-    a SettingsError
+    """When a settings object can't be written log an exception
     """
     settings = mu.settings.SettingsBase()
     settings.filepath = os.curdir  # this should fail on every platform
-
-    with pytest.raises(mu.settings.SettingsError):
-        settings.save()
-
-    assert mocked_logger.exception.called
-
-
-@patch.object(mu.settings, "logger")
-def test_safely_save(mocked_logger):
-    """When a settings object can't be saved, log an exception and carry on"""
-    settings = mu.settings.SettingsBase()
-    settings.filepath = os.curdir  # this should fail on every platform
-    settings.safely_save()
+    settings.save()
 
     assert mocked_logger.exception.called
 

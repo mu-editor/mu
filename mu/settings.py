@@ -150,22 +150,11 @@ class SettingsBase(object):
                 f.write(settings_as_string)
         except Exception:
             logger.exception(
-                "Unable to write settings:\n%s", settings_as_string
+                "Unable to write settings to %s:\n%s", self.filepath, settings_as_string
             )
-            raise SettingsError("Unable to write settings")
-
-    def safely_save(self):
-        try:
-            self.save()
-        #
-        # This is an exceptional bare except as we want to shut down gracefully,
-        # come what may
-        #
-        except Exception:
-            logger.exception("Unable to save settings to %s", self.filepath)
 
     def register_for_autosave(self):
-        atexit.register(self.safely_save)
+        atexit.register(self.save)
 
     def load(self, filepath):
         """Load from a file, merging into existing settings
@@ -192,7 +181,7 @@ class SettingsBase(object):
                     serialised_settings = serialiser.load(f)
                 except SerialiserDecodeError:
                     logger.exception(
-                        "Unable to load settings from %s", filepath
+                        "Unable to decode settings from %s", filepath
                     )
                     serialised_settings = {}
                 self.update(serialised_settings)
