@@ -118,7 +118,7 @@ class SettingsBase(object):
             if os.path.exists(filepath):
                 break
         self.load(filepath)
-        if autosave:
+        if self.autosave:
             self.register_for_autosave()
 
     def save(self):
@@ -208,25 +208,27 @@ class SettingsBase(object):
 class UserSettings(SettingsBase):
 
     DEFAULTS = {}
+    autosave = False
     filename = "settings." + serialiser_ext
 
 
 class SessionSettings(SettingsBase):
 
     DEFAULTS = {}
+    autosave = True
     filename = "session." + serialiser_ext
 
 
 class VirtualEnvironmentSettings(SettingsBase):
 
     DEFAULTS = {"baseline_packages": [], "dirpath": config.VENV_DIR}
+    autosave = False
     filename = "venv." + serialiser_ext
 
 
 settings = UserSettings()
 session = SessionSettings()
 
-
-def init(autosave=True):
-    settings.init(autosave=autosave)
-    session.init(autosave=autosave)
+def init():
+    settings.init()
+    session.init()
