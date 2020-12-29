@@ -18,7 +18,6 @@ to add or remove certain flags, or to use different wheels.
 import sys
 import os
 import glob
-import json
 import random
 import shutil
 import subprocess
@@ -83,14 +82,6 @@ def pipped():
 def workspace_dirpath(tmp_path):
     workspace_dirpath = tmp_path / uuid.uuid1().hex
     workspace_dirpath.mkdir()
-    with mock.patch.object(mu.config, "DATA_DIR", workspace_dirpath):
-        yield workspace_dirpath
-
-
-@pytest.fixture
-def workspace_dirpath(tmp_path):
-    workspace_dirpath = str(tmp_path / uuid.uuid1().hex)
-    os.mkdir(workspace_dirpath)
     with mock.patch.object(mu.config, "DATA_DIR", workspace_dirpath):
         yield workspace_dirpath
 
@@ -386,6 +377,7 @@ def test_ensure_pip(venv):
         mu.virtual_environment.VirtualEnvironmentError, match="Pip"
     ):
         venv.ensure_pip()
+
 
 def _QTimer_singleshot(delay, partial):
     return partial.func(*partial.args, **partial.keywords)
