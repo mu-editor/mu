@@ -88,7 +88,7 @@ def baseline_packages(tmp_path):
     with mock.patch.object(
         mu.virtual_environment.VirtualEnvironment,
         "BASELINE_PACKAGES_FILEPATH",
-        baseline_filepath
+        baseline_filepath,
     ):
         yield baseline_filepath, packages
 
@@ -99,7 +99,7 @@ def test_wheels(tmp_path):
     os.mkdir(wheels_dirpath)
     shutil.copyfile(
         os.path.join(HERE, "wheels", WHEEL_FILENAME),
-        os.path.join(wheels_dirpath, WHEEL_FILENAME)
+        os.path.join(wheels_dirpath, WHEEL_FILENAME),
     )
     with mock.patch.object(
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
@@ -114,8 +114,8 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     venv.create()
     venv_site_packages = venv.run_python(
-            "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"
-        ).strip()
+        "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"
+    ).strip()
 
     #
     # Having a series of unrelated asserts is generally frowned upon
@@ -151,7 +151,8 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     bin = "scripts" if sys.platform == "win32" else "bin"
     bin_extension = ".exe" if sys.platform == "win32" else ""
     assert os.path.samefile(
-        venv.interpreter, os.path.join(venv_dirpath, bin, "python" + bin_extension)
+        venv.interpreter,
+        os.path.join(venv_dirpath, bin, "python" + bin_extension),
     )
 
     #

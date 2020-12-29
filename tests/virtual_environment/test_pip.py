@@ -71,11 +71,21 @@ def test_pip_run_with_kwargs():
         #
         output_command, output_args = args
         expected_command = pip_executable
-        expected_args = [command, "--disable-pip-version-check"] + expected_parameters
+        expected_args = [
+            command,
+            "--disable-pip-version-check",
+        ] + expected_parameters
         assert output_command == expected_command
         assert set(output_args) == set(expected_args)
 
-def pip_install_testing(label, command, package_or_packages, input_switches={}, expected_switches=[]):
+
+def pip_install_testing(
+    label,
+    command,
+    package_or_packages,
+    input_switches={},
+    expected_switches=[],
+):
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
     expected_command = pip_executable
@@ -101,41 +111,69 @@ def pip_install_testing(label, command, package_or_packages, input_switches={}, 
         assert output_command == expected_command
         assert set(output_args) == set(expected_args)
 
+
 #
 # pip install
 #
+
 
 def test_pip_install_single_package():
     """Ensure that installing a single package results in:
     "pip install <package>"
     """
-    pip_install_testing("test_pip_install_single_package", "install", rstring())
+    pip_install_testing(
+        "test_pip_install_single_package", "install", rstring()
+    )
+
 
 def test_pip_install_several_packages():
     """Ensure that installing several package results in
     "pip install <packageA> <packageB>"
     """
     package_names = [rstring() for _ in range(random.randint(1, 5))]
-    pip_install_testing("test_pip_install_several_packages", "install", package_names)
+    pip_install_testing(
+        "test_pip_install_several_packages", "install", package_names
+    )
+
 
 def test_pip_install_single_package_with_flag():
     """Ensure that installing a single package with upgrade=True
     "pip install --upgrade <package>"
     """
-    pip_install_testing("test_pip_install_single_package_with_flag", "install", rstring(), {"switch":True}, ["--switch"])
+    pip_install_testing(
+        "test_pip_install_single_package_with_flag",
+        "install",
+        rstring(),
+        {"switch": True},
+        ["--switch"],
+    )
+
 
 def test_pip_install_several_packages_with_flag():
     """Ensure that installing a single package with switch=True
     "pip install --upgrade <package>"
     """
     package_names = [rstring() for _ in range(random.randint(1, 5))]
-    pip_install_testing("test_pip_install_several_packages_with_flag", "install", rstring(), {"switch":True}, ["--switch"])
+    pip_install_testing(
+        "test_pip_install_several_packages_with_flag",
+        "install",
+        package_names,
+        {"switch": True},
+        ["--switch"],
+    )
+
 
 def test_pip_install_single_package_with_flag_value():
     """Ensure that installing a single package with timeout=30
     "pip install --timeout 30 <package>"
     """
-    pip_install_testing("test_pip_install_single_package_with_flag", "install", rstring(), {"switch":30}, ["--switch", "30"])
+    pip_install_testing(
+        "test_pip_install_single_package_with_flag",
+        "install",
+        rstring(),
+        {"switch": 30},
+        ["--switch", "30"],
+    )
 
 
 #
@@ -147,33 +185,59 @@ def test_pip_uninstall_single_package():
     """Ensure that uninstalling a single package results in:
     "pip uninstall <package>"
     """
-    pip_install_testing("test_pip_uninstall_single_package", "uninstall", rstring())
+    pip_install_testing(
+        "test_pip_uninstall_single_package", "uninstall", rstring()
+    )
+
 
 def test_pip_uninstall_several_packages():
     """Ensure that uninstalling several package results in
     "pip uninstall <packageA> <packageB>"
     """
     package_names = [rstring() for _ in range(random.randint(1, 5))]
-    pip_install_testing("test_pip_uninstall_several_packages", "uninstall", package_names)
+    pip_install_testing(
+        "test_pip_uninstall_several_packages", "uninstall", package_names
+    )
+
 
 def test_pip_uninstall_single_package_with_flag():
     """Ensure that uninstalling a single package with upgrade=True
     "pip uninstall --upgrade <package>"
     """
-    pip_install_testing("test_pip_uninstall_single_package_with_flag", "uninstall", rstring(), {"switch":True}, ["--switch"])
+    pip_install_testing(
+        "test_pip_uninstall_single_package_with_flag",
+        "uninstall",
+        rstring(),
+        {"switch": True},
+        ["--switch"],
+    )
+
 
 def test_pip_uninstall_several_packages_with_flag():
     """Ensure that uninstalling a single package with switch=True
     "pip uninstall --upgrade <package>"
     """
     package_names = [rstring() for _ in range(random.randint(1, 5))]
-    pip_install_testing("test_pip_uninstall_several_packages_with_flag", "uninstall", rstring(), {"switch":True}, ["--switch"])
+    pip_install_testing(
+        "test_pip_uninstall_several_packages_with_flag",
+        "uninstall",
+        package_names,
+        {"switch": True},
+        ["--switch"],
+    )
+
 
 def test_pip_uninstall_single_package_with_flag_value():
     """Ensure that uninstalling a single package with timeout=30
     "pip uninstall --timeout 30 <package>"
     """
-    pip_install_testing("test_pip_uninstall_single_package_with_flag", "uninstall", rstring(), {"switch":30}, ["--switch", "30"])
+    pip_install_testing(
+        "test_pip_uninstall_single_package_with_flag",
+        "uninstall",
+        rstring(),
+        {"switch": 30},
+        ["--switch", "30"],
+    )
 
 
 #
