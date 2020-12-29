@@ -64,12 +64,52 @@ def test_pip_run_with_kwargs():
     pip = mu.virtual_environment.Pip(pip_executable)
     with patch.object(pip.process, "run_blocking") as mock_run:
         pip.run(command, **params)
-        expected_args = (
-            pip_executable,
-            [command, "--disable-pip-version-check"] + expected_parameters,
-        )
         args, _ = mock_run.call_args
-        assert args == expected_args
+        #
+        # NB presumably because of non-ordered dicts, Python 3.5 can produce
+        # arguments in a different order.
+        #
+        output_command, output_args = args
+        expected_command = pip_executable
+        expected_args = [
+            command,
+            "--disable-pip-version-check",
+        ] + expected_parameters
+        assert output_command == expected_command
+        assert set(output_args) == set(expected_args)
+
+
+def pip_install_testing(
+    label,
+    command,
+    package_or_packages,
+    input_switches={},
+    expected_switches=[],
+):
+    pip_executable = "pip-" + rstring() + ".exe"
+    pip = mu.virtual_environment.Pip(pip_executable)
+    expected_command = pip_executable
+    expected_args = [command, "--disable-pip-version-check"]
+    if isinstance(package_or_packages, list):
+        expected_args.extend(package_or_packages)
+    else:
+        expected_args.append(package_or_packages)
+    if expected_switches:
+        expected_args.extend(expected_switches)
+    if command == "uninstall":
+        expected_args.append("--yes")
+
+    with patch.object(pip.process, "run_blocking") as mock_run:
+        function = getattr(pip, command)
+        function(package_or_packages, **input_switches)
+        args, _ = mock_run.call_args
+        output_command, output_args = args
+        #
+        # NB presumably because of non-ordered dicts, Python 3.5 can produce
+        # arguments in a different order.
+        #
+        assert output_command == expected_command
+        assert set(output_args) == set(expected_args)
 
 
 #
@@ -81,97 +121,59 @@ def test_pip_install_single_package():
     """Ensure that installing a single package results in:
     "pip install <package>"
     """
-    pip_executable = "pip-" + rstring() + ".exe"
-    package_name = rstring()
-    pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.install(package_name)
-        expected_args = (
-            pip_executable,
-            ["install", "--disable-pip-version-check", package_name],
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pip_install_testing(
+        "test_pip_install_single_package", "install", rstring()
+    )
 
 
 def test_pip_install_several_packages():
     """Ensure that installing several package results in
     "pip install <packageA> <packageB>"
     """
-    pip_executable = "pip-" + rstring() + ".exe"
     package_names = [rstring() for _ in range(random.randint(1, 5))]
-    pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.install(package_names)
-        expected_args = (
-            pip_executable,
-            ["install", "--disable-pip-version-check"] + package_names,
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pip_install_testing(
+        "test_pip_install_several_packages", "install", package_names
+    )
 
 
 def test_pip_install_single_package_with_flag():
     """Ensure that installing a single package with upgrade=True
     "pip install --upgrade <package>"
     """
-    pip_executable = "pip-" + rstring() + ".exe"
-    package_name = rstring()
-    pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.install(package_name, switch=True)
-        expected_args = (
-            pip_executable,
-            [
-                "install",
-                "--disable-pip-version-check",
-                "--switch",
-                package_name,
-            ],
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pip_install_testing(
+        "test_pip_install_single_package_with_flag",
+        "install",
+        rstring(),
+        {"switch": True},
+        ["--switch"],
+    )
 
 
 def test_pip_install_several_packages_with_flag():
     """Ensure that installing a single package with switch=True
     "pip install --upgrade <package>"
     """
-    pip_executable = "pip-" + rstring() + ".exe"
     package_names = [rstring() for _ in range(random.randint(1, 5))]
-    pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.install(package_names, switch=True)
-        expected_args = (
-            pip_executable,
-            ["install", "--disable-pip-version-check", "--switch"]
-            + package_names,
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pip_install_testing(
+        "test_pip_install_several_packages_with_flag",
+        "install",
+        package_names,
+        {"switch": True},
+        ["--switch"],
+    )
 
 
 def test_pip_install_single_package_with_flag_value():
     """Ensure that installing a single package with timeout=30
     "pip install --timeout 30 <package>"
     """
-    pip_executable = "pip-" + rstring() + ".exe"
-    package_name = rstring()
-    pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.install(package_name, switch=30)
-        expected_args = (
-            pip_executable,
-            [
-                "install",
-                "--disable-pip-version-check",
-                "--switch",
-                "30",
-                package_name,
-            ],
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pip_install_testing(
+        "test_pip_install_single_package_with_flag",
+        "install",
+        rstring(),
+        {"switch": 30},
+        ["--switch", "30"],
+    )
 
 
 #
@@ -180,108 +182,62 @@ def test_pip_install_single_package_with_flag_value():
 
 
 def test_pip_uninstall_single_package():
-    """Ensure that installing a single package results in:
+    """Ensure that uninstalling a single package results in:
     "pip uninstall <package>"
     """
-    pip_executable = "pip-" + rstring() + ".exe"
-    package_name = rstring()
-    pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.uninstall(package_name)
-        expected_args = (
-            pip_executable,
-            [
-                "uninstall",
-                "--disable-pip-version-check",
-                "--yes",
-                package_name,
-            ],
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pip_install_testing(
+        "test_pip_uninstall_single_package", "uninstall", rstring()
+    )
 
 
 def test_pip_uninstall_several_packages():
-    """Ensure that installing several package results in
+    """Ensure that uninstalling several package results in
     "pip uninstall <packageA> <packageB>"
     """
-    pip_executable = "pip-" + rstring() + ".exe"
     package_names = [rstring() for _ in range(random.randint(1, 5))]
-    pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.uninstall(package_names)
-        expected_args = (
-            pip_executable,
-            ["uninstall", "--disable-pip-version-check", "--yes"]
-            + package_names,
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pip_install_testing(
+        "test_pip_uninstall_several_packages", "uninstall", package_names
+    )
 
 
 def test_pip_uninstall_single_package_with_flag():
-    """Ensure that installing a single package with upgrade=True
+    """Ensure that uninstalling a single package with upgrade=True
     "pip uninstall --upgrade <package>"
     """
-    pip_executable = "pip-" + rstring() + ".exe"
-    package_name = rstring()
-    pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.uninstall(package_name, switch=True)
-        expected_args = (
-            pip_executable,
-            [
-                "uninstall",
-                "--disable-pip-version-check",
-                "--yes",
-                "--switch",
-                package_name,
-            ],
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pip_install_testing(
+        "test_pip_uninstall_single_package_with_flag",
+        "uninstall",
+        rstring(),
+        {"switch": True},
+        ["--switch"],
+    )
 
 
 def test_pip_uninstall_several_packages_with_flag():
-    """Ensure that installing a single package with switch=True
+    """Ensure that uninstalling a single package with switch=True
     "pip uninstall --upgrade <package>"
     """
-    pip_executable = "pip-" + rstring() + ".exe"
     package_names = [rstring() for _ in range(random.randint(1, 5))]
-    pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.uninstall(package_names, switch=True)
-        expected_args = (
-            pip_executable,
-            ["uninstall", "--disable-pip-version-check", "--yes", "--switch"]
-            + package_names,
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pip_install_testing(
+        "test_pip_uninstall_several_packages_with_flag",
+        "uninstall",
+        package_names,
+        {"switch": True},
+        ["--switch"],
+    )
 
 
 def test_pip_uninstall_single_package_with_flag_value():
-    """Ensure that installing a single package with timeout=30
+    """Ensure that uninstalling a single package with timeout=30
     "pip uninstall --timeout 30 <package>"
     """
-    pip_executable = "pip-" + rstring() + ".exe"
-    package_name = rstring()
-    pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.uninstall(package_name, switch=30)
-        expected_args = (
-            pip_executable,
-            [
-                "uninstall",
-                "--disable-pip-version-check",
-                "--yes",
-                "--switch",
-                "30",
-                package_name,
-            ],
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pip_install_testing(
+        "test_pip_uninstall_single_package_with_flag",
+        "uninstall",
+        rstring(),
+        {"switch": 30},
+        ["--switch", "30"],
+    )
 
 
 #

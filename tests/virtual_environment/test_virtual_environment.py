@@ -19,7 +19,6 @@ import sys
 import os
 import glob
 import json
-import pathlib
 import random
 import shutil
 import subprocess
@@ -29,12 +28,8 @@ import uuid
 from PyQt5.QtCore import QTimer, QProcess
 import pytest
 
-import mu.config
 import mu.virtual_environment
 import mu.wheels
-import mu.settings
-
-mu.settings.init(autosave=False)
 
 VE = mu.virtual_environment.VirtualEnvironment
 PIP = mu.virtual_environment.Pip
@@ -136,8 +131,8 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     venv.create()
     venv_site_packages = venv.run_python(
-            "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"
-        ).strip()
+        "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"
+    ).strip()
 
     #
     # Having a series of unrelated asserts is generally frowned upon
