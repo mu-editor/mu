@@ -196,7 +196,7 @@ def test_base_mode_write_csv(tmp_path):
     """When the plotter is removed the resulting csv should represent
     the data -- an should not not include interspersed blank lines
     """
-    csv_filepath = tmp_path / "plotter.csv"
+    csv_filepath = str(tmp_path / "plotter.csv")
     editor = mock.MagicMock()
     view = mock.MagicMock()
     view.plotter_pane.raw_data = [[1, 2, 3], [4, 5, 6]]
