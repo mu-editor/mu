@@ -96,21 +96,6 @@ def workspace_dirpath(tmp_path):
 
 
 @pytest.fixture
-def baseline_packages(workspace_dirpath):
-    package_name = uuid.uuid1().hex
-    package_version = uuid.uuid1().hex
-    packages = [[package_name, package_version]]
-
-    venv_settings_filepath = os.path.join(workspace_dirpath, "venv.json")
-    venv_settings = mu.settings._Settings()
-    venv_settings.load(venv_settings_filepath)
-    venv_settings["baseline_packages"] = packages
-
-    with mock.patch.object(mu.settings, "venv", venv_settings):
-        yield packages
-
-
-@pytest.fixture
 def test_wheels(tmp_path):
     wheels_dirpath = str(tmp_path / "wheels")
     os.mkdir(wheels_dirpath)
@@ -401,33 +386,6 @@ def test_ensure_pip(venv):
         mu.virtual_environment.VirtualEnvironmentError, match="Pip"
     ):
         venv.ensure_pip()
-
-
-@pytest.mark.skip(
-    "Baseline packages are now held in settings which have their own tests"
-)
-def test_read_baseline_packages_success(venv, baseline_packages):
-    """Ensure that we can read back a list of baseline packages"""
-    expected_output = baseline_packages
-    output = venv.baseline_packages()
-    assert output == expected_output
-
-
-@pytest.mark.skip(
-    "Baseline packages are now held in settings which have their own tests"
-)
-def test_read_baseline_packages_failure(venv, baseline_packages):
-    """Ensure that if we can't read a list of packages we see an error log
-    and an empty list is returned
-    """
-    baseline_filepath, _ = baseline_packages
-    with open(baseline_filepath, "w") as f:
-        f.write("***")
-
-    expected_output = []
-    output = venv.baseline_packages()
-    assert output == expected_output
-
 
 def _QTimer_singleshot(delay, partial):
     return partial.func(*partial.args, **partial.keywords)
