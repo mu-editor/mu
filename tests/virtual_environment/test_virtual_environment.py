@@ -19,7 +19,6 @@ import sys
 import os
 import glob
 import json
-import pathlib
 import random
 import shutil
 import subprocess
@@ -52,7 +51,7 @@ def venv_dirpath(tmp_path, venv_name):
     """Generate a temporary venv dirpath"""
     dirpath = tmp_path / venv_name
     dirpath.mkdir()
-    return dirpath
+    return str(dirpath)
 
 
 @pytest.fixture
@@ -82,25 +81,25 @@ def pipped():
 
 @pytest.fixture
 def baseline_packages(tmp_path):
-    baseline_filepath = tmp_path / "baseline_packages.json"
+    baseline_filepath = str(tmp_path / "baseline_packages.json")
     package_name = uuid.uuid1().hex
     package_version = uuid.uuid1().hex
     packages = [[package_name, package_version]]
     with mock.patch.object(
         mu.virtual_environment.VirtualEnvironment,
         "BASELINE_PACKAGES_FILEPATH",
-        baseline_filepath,
+        baseline_filepath
     ):
         yield baseline_filepath, packages
 
 
 @pytest.fixture
 def test_wheels(tmp_path):
-    wheels_dirpath = tmp_path / "wheels"
-    wheels_dirpath.mkdir()
+    wheels_dirpath = str(tmp_path / "wheels")
+    os.mkdir(wheels_dirpath)
     shutil.copyfile(
         os.path.join(HERE, "wheels", WHEEL_FILENAME),
-        wheels_dirpath / WHEEL_FILENAME,
+        os.path.join(wheels_dirpath, WHEEL_FILENAME)
     )
     with mock.patch.object(
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
@@ -114,11 +113,9 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     """
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     venv.create()
-    venv_site_packages = pathlib.Path(
-        venv.run_python(
+    venv_site_packages = venv.run_python(
             "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"
         ).strip()
-    )
 
     #
     # Having a series of unrelated asserts is generally frowned upon
@@ -138,7 +135,7 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     #
     # Check that we have an installed version of pip
     #
-    expected_pip_filepath = venv_site_packages / "pip"
+    expected_pip_filepath = os.path.join(venv_site_packages, "pip")
     pip_output = venv.pip.run("--version")
     #
     # Awkwardly the case of the filename returned as part of the version
@@ -154,13 +151,13 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     bin = "scripts" if sys.platform == "win32" else "bin"
     bin_extension = ".exe" if sys.platform == "win32" else ""
     assert os.path.samefile(
-        venv.interpreter, venv_dirpath / bin / ("python" + bin_extension)
+        venv.interpreter, os.path.join(venv_dirpath, bin, "python" + bin_extension)
     )
 
     #
     # Check that our test wheel has been installed to a single module
     #
-    expected_result = str(venv_site_packages / "arrr.py")
+    expected_result = os.path.join(venv_site_packages, "arrr.py")
     result = venv.run_python("-c", "import arrr; print(arrr.__file__)").strip()
     assert os.path.samefile(result, expected_result)
 
@@ -177,7 +174,7 @@ def test_create_virtual_environment_path(patched, venv_dirpath):
 def test_create_virtual_environment_name_obj(patched, venv_dirpath):
     """Ensure a virtual environment object has a name."""
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
-    assert venv.name == venv_dirpath.name
+    assert venv.name == os.path.basename(venv_dirpath)
 
 
 def test_download_wheels_if_not_present(venv, test_wheels):
@@ -185,8 +182,8 @@ def test_download_wheels_if_not_present(venv, test_wheels):
     ensure we try to download them
     """
     wheels_dirpath = test_wheels
-    for filepath in wheels_dirpath.glob("*.whl"):
-        filepath.unlink()
+    for filepath in glob.glob(os.path.join(wheels_dirpath, "*.whl")):
+        os.unlink(filepath)
     assert not glob.glob(os.path.join(wheels_dirpath, "*.whl"))
 
     with mock.patch.object(
@@ -361,7 +358,7 @@ def test_venv_folder_already_exists_not_directory(venv_dirpath):
     """When the runtime venv_folder does exist but is not a directory ensure
     we raise an exception
     """
-    venv_dirpath.rmdir()
+    os.rmdir(venv_dirpath)
     open(venv_dirpath, "w").close()
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
