@@ -44,7 +44,7 @@ Open questions:
 * Should we write files to disc as soon as they are updated? [-0]
 * Should we re-read files to allow users to update them mid-session? [-1]
 * Should we implement read-only mode (ie the existing file is loaded but not written back)? [+0]
-* Should we implement amnesia mode (ie the file is neither loaded nor written back)? [+1]
+* Should we implement safe mode (ie the file is neither loaded nor written back)? [+1]
 * Should we implement reset mode (ie the file is not loaded but is written back)? [+0]
 * Should we break out the virtual environment settings (venv location, baseline packages) into its own file? [+1]
 * Could we add a boards.json file to allow users to add new/variant configurations? [+0]
@@ -55,6 +55,7 @@ Open questions:
 * Do we need interpolation of other settings? (eg ROOT_DIR = abc; WORK_DIR = %(ROOT_DIR)/xyz)
 * Do we need interpolation of env vars? (eg ROOT_DIR = %USERPROFILE%\mu_code) [+0.5]
 * Should we merge ``settings.py`` into ``config.py`` [+0]
+* Should settings (as opposed to sessions) be read-only? [+1]
 
 Exit Handlers
 ~~~~~~~~~~~~~
@@ -89,9 +90,11 @@ disc; and a ``reset`` method which will return to default settings. This last
 can be used either to "forget" any loaded or set settings; or before reloading
 from a different file.
 
-So *amnesia mode* is implemented by calling ``reset`` without ``load`` and settings ``readonly``.
+So *Safe mode* is implemented by calling ``reset`` without ``load`` and setting ``readonly``.
 *Read-only mode* is implemented by calling ``reset`` followed by ``load`` and setting ``readonly``
-And *reset mode* is implemented by calling ``reset`` without ``load`` and *not* setting ``readonly``
+And *Reset mode* is implemented by calling ``reset`` without ``load`` and *not* setting ``readonly``
+
+[FIXME: add explanations & examples of amnesia mode]
 
 Failure modes
 ~~~~~~~~~~~~~
