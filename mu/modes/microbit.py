@@ -23,11 +23,12 @@ import os.path
 import logging
 import semver
 from tokenize import TokenError
-from mu.logic import HOME_DIRECTORY, sniff_newline_convention
+from mu.logic import sniff_newline_convention
 from mu.contrib import uflash, microfs
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from mu.modes.base import MicroPythonMode, FileManager
 from mu.interface.panes import CHARTS
+from .. import config
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 
 # We can run without nudatus
@@ -238,7 +239,7 @@ class MicrobitMode(MicroPythonMode):
         # fall back to asking the user to locate it.
         if path_to_microbit is None:
             # Ask the user to locate the device.
-            path_to_microbit = self.view.get_microbit_path(HOME_DIRECTORY)
+            path_to_microbit = self.view.get_microbit_path(config.HOME_DIRECTORY)
             user_defined_microbit_path = path_to_microbit
             logger.debug(
                 "User defined path to micro:bit: {}".format(

@@ -46,10 +46,6 @@ from .config import DATA_DIR, VENV_DIR, MAX_LINE_LENGTH
 from . import settings
 from .virtual_environment import venv
 
-# The user's home directory.
-HOME_DIRECTORY = os.path.expanduser("~")
-# Name of the directory within the home folder to use by default
-WORKSPACE_NAME = "mu_code"
 # The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.

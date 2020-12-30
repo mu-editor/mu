@@ -26,9 +26,9 @@ import pkgutil
 from serial import Serial
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 from PyQt5.QtCore import QObject, pyqtSignal, QIODevice, QTimer
-from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, Device
+from mu.logic import Device
 from mu.contrib import microfs
-from .. import settings
+from .. import config, settings
 
 ENTER_RAW_MODE = b"\x01"  # CTRL-A
 EXIT_RAW_MODE = b"\x02"  # CTRL-B
@@ -53,16 +53,16 @@ def get_default_workspace():
     in some network systems this in inaccessible. This allows a key in the
     settings file to be used to set a custom path.
     """
-    workspace_dir = os.path.join(HOME_DIRECTORY, WORKSPACE_NAME)
+    workspace_dir = os.path.join(config.HOME_DIRECTORY, config.WORKSPACE_NAME)
 
-    if "workspace" in settings:
-        if os.path.isdir(settings.settings["workspace"]):
-            workspace_dir = settings.settings["workspace"]
-        else:
-            logger.error(
-                "Workspace value in the settings file is not a valid"
-                "directory: {}".format(settings.settings["workspace"])
-            )
+    settings_workspace = settings.settings.get("workspace")
+    if settings_workspace and os.path.isdir(settings_workspace):
+        workspace_dir = settings_workspace
+    else:
+        logger.error(
+            "Workspace value in the settings file is not a valid"
+            "directory: {}".format(settings_workspace)
+        )
     return workspace_dir
 
 

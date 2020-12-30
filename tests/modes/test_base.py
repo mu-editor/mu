@@ -5,6 +5,7 @@ Tests for the BaseMode class.
 import os
 import mu
 import pytest
+import mu.config
 from mu.logic import Device
 from mu.modes.base import (
     BaseMode,
@@ -67,7 +68,7 @@ def test_base_mode_workspace_not_present():
     No workspace key in settings file, return default folder.
     """
     default_workspace = os.path.join(
-        mu.logic.HOME_DIRECTORY, mu.logic.WORKSPACE_NAME
+        mu.config.HOME_DIRECTORY, mu.config.WORKSPACE_NAME
     )
     mocked_settings = mu.settings.UserSettings()
     assert "workspace" not in mocked_settings
@@ -83,7 +84,7 @@ def test_base_mode_workspace_invalid_value():
     Invalid workspace key in settings file, return default folder.
     """
     default_workspace = os.path.join(
-        mu.logic.HOME_DIRECTORY, mu.logic.WORKSPACE_NAME
+        mu.config.HOME_DIRECTORY, mu.config.WORKSPACE_NAME
     )
     mocked_settings = mu.settings.UserSettings()
     mocked_settings["workspace"] = "*invalid*"
@@ -105,7 +106,7 @@ def test_base_mode_workspace_invalid_json(tmp_path):
     just testing that we get a suitable default back
     """
     default_workspace = os.path.join(
-        mu.logic.HOME_DIRECTORY, mu.logic.WORKSPACE_NAME
+        mu.config.HOME_DIRECTORY, mu.config.WORKSPACE_NAME
     )
     mocked_settings = mu.settings.UserSettings()
     settings_filepath = tmp_path / "settings.json"
@@ -127,7 +128,7 @@ def test_base_mode_workspace_no_settings_file():
     just testing that we get a suitable default back
     """
     default_workspace = os.path.join(
-        mu.logic.HOME_DIRECTORY, mu.logic.WORKSPACE_NAME
+        mu.config.HOME_DIRECTORY, mu.config.WORKSPACE_NAME
     )
     mocked_settings = mu.settings.UserSettings()
     with mock.patch.object(mu.settings, "settings", mocked_settings):
