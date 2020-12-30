@@ -45,14 +45,6 @@ MODULE_NAMES.add("sys")
 MODULE_NAMES.add("builtins")
 
 
-def get_settings():
-    """
-    Return the JSON settings as a dictionary, which maybe empty if
-    the `settings.json` file is not found or if it can not be parsed.
-    """
-    return settings.settings
-
-
 def get_default_workspace():
     """
     Return the location on the filesystem for opening and closing files.
@@ -62,15 +54,14 @@ def get_default_workspace():
     settings file to be used to set a custom path.
     """
     workspace_dir = os.path.join(HOME_DIRECTORY, WORKSPACE_NAME)
-    settings = get_settings()
 
     if "workspace" in settings:
-        if os.path.isdir(settings["workspace"]):
-            workspace_dir = settings["workspace"]
+        if os.path.isdir(settings.settings["workspace"]):
+            workspace_dir = settings.settings["workspace"]
         else:
             logger.error(
                 "Workspace value in the settings file is not a valid"
-                "directory: {}".format(settings["workspace"])
+                "directory: {}".format(settings.settings["workspace"])
             )
     return workspace_dir
 
@@ -654,7 +645,6 @@ class FileManager(QObject):
         """
         super().__init__()
         self.port = port
-        self.settings = get_settings()
 
     def on_start(self):
         """
@@ -666,7 +656,7 @@ class FileManager(QObject):
             self.serial = Serial(
                 self.port,
                 115200,
-                timeout=self.settings.get("serial_timeout", 2),
+                timeout=settings.settings.get("serial_timeout", 2),
                 parity="N",
             )
             self.ls()

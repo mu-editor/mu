@@ -839,7 +839,6 @@ class Editor(QObject):
             logger.debug("Creating directory: {}".format(DATA_DIR))
             os.makedirs(DATA_DIR)
         logger.info("Settings path: {}".format(get_settings_path()))
-        logger.info("Session path: {}".format(get_session_path()))
         logger.info("Log directory: {}".format(LOG_DIR))
         logger.info("Data directory: {}".format(DATA_DIR))
 
@@ -927,81 +926,74 @@ class Editor(QObject):
         the user, they are also "restored" at the same time (duplicates will be
         ignored).
         """
-        settings_path = get_session_path()
         self.change_mode(self.mode)
-        with open(settings_path) as f:
-            try:
-                old_session = json.load(f)
-            except ValueError:
-                old_session = None
-                logger.error(
-                    "Settings file {} could not be parsed.".format(
-                        settings_path
-                    )
-                )
+        old_session = settings.session
+        logger.debug(old_session)
+        if "theme" in old_session:
+            self.theme = old_session["theme"]
+        self._view.set_theme(self.theme)
+        if "mode" in old_session:
+            old_mode = old_session["mode"]
+            if old_mode in self.modes:
+                self.mode = old_session["mode"]
             else:
-                logger.info("Restoring session from: {}".format(settings_path))
-                logger.debug(old_session)
-                if "theme" in old_session:
-                    self.theme = old_session["theme"]
-                self._view.set_theme(self.theme)
-                if "mode" in old_session:
-                    old_mode = old_session["mode"]
-                    if old_mode in self.modes:
-                        self.mode = old_session["mode"]
-                    else:
-                        # Unknown mode (perhaps an old version?)
-                        self.select_mode(None)
-                else:
-                    # So ask for the desired mode.
-                    self.select_mode(None)
-                if "paths" in old_session:
-                    old_paths = self._abspath(old_session["paths"])
-                    launch_paths = self._abspath(paths) if paths else set()
-                    for old_path in old_paths:
-                        # if the os passed in a file, defer loading it now
-                        if old_path in launch_paths:
-                            continue
-                        self.direct_load(old_path)
-                    logger.info("Loaded files.")
-                if "envars" in old_session:
-                    self.envars = old_session["envars"]
-                    logger.info(
-                        "User defined environment variables: "
-                        "{}".format(self.envars)
+                # Unknown mode (perhaps an old version?)
+                self.select_mode(None)
+        else:
+            # So ask for the desired mode.
+            self.select_mode(None)
+        if "paths" in old_session:
+            old_paths = self._abspath(old_session["paths"])
+            launch_paths = self._abspath(paths) if paths else set()
+            for old_path in old_paths:
+                # if the os passed in a file, defer loading it now
+                if old_path in launch_paths:
+                    continue
+                self.direct_load(old_path)
+            logger.info("Loaded files.")
+        if "envars" in old_session:
+            self.envars = old_session["envars"]
+            logger.info(
+                "User defined environment variables: "
+                "{}".format(self.envars)
+            )
+        if "minify" in old_session:
+            self.minify = old_session["minify"]
+            logger.info(
+                "Minify scripts on micro:bit? "
+                "{}".format(self.minify)
+            )
+        if "microbit_runtime" in old_session:
+            self.microbit_runtime = old_session["microbit_runtime"]
+            if self.microbit_runtime:
+                logger.info(
+                    "Custom micro:bit runtime path: "
+                    "{}".format(self.microbit_runtime)
+                )
+                if not os.path.isfile(self.microbit_runtime):
+                    self.microbit_runtime = ""
+                    logger.warning(
+                        "The specified micro:bit runtime "
+                        "does not exist. Using default "
+                        "runtime instead."
                     )
-                if "minify" in old_session:
-                    self.minify = old_session["minify"]
-                    logger.info(
-                        "Minify scripts on micro:bit? "
-                        "{}".format(self.minify)
-                    )
-                if "microbit_runtime" in old_session:
-                    self.microbit_runtime = old_session["microbit_runtime"]
-                    if self.microbit_runtime:
-                        logger.info(
-                            "Custom micro:bit runtime path: "
-                            "{}".format(self.microbit_runtime)
-                        )
-                        if not os.path.isfile(self.microbit_runtime):
-                            self.microbit_runtime = ""
-                            logger.warning(
-                                "The specified micro:bit runtime "
-                                "does not exist. Using default "
-                                "runtime instead."
-                            )
-                if "zoom_level" in old_session:
-                    self._view.zoom_position = old_session["zoom_level"]
-                    self._view.set_zoom()
+        if "zoom_level" in old_session:
+            self._view.zoom_position = old_session["zoom_level"]
+            self._view.set_zoom()
 
-                if "venv_path" in old_session:
-                    venv.relocate(old_session["venv_path"])
-                    venv.ensure()
+        if "venv_path" in old_session:
+            venv.relocate(old_session["venv_path"])
+            venv.ensure()
 
-                old_window = old_session.get("window", {})
-                self._view.size_window(**old_window)
-        if old_session is None:
-            self._view.set_theme(self.theme)
+        old_window = old_session.get("window", {})
+        self._view.size_window(**old_window)
+
+        #
+        # Doesn't seem to do anything useful
+        #
+        #~ if old_session is None:
+            #~ self._view.set_theme(self.theme)
+
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
