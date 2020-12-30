@@ -97,7 +97,6 @@ def generate_session(
     theme="day",
     mode="python",
     file_contents=None,
-    filepath=None,
     envars=[["name", "value"]],
     minify=False,
     microbit_runtime=None,
@@ -155,17 +154,14 @@ def generate_session(
         session_data["venv_path"] = venv_path
     session_data.update(**kwargs)
 
-    if filepath is None:
-        filepath = os.path.join(dirpath, "session.json")
-    if session_data:
-        with open(filepath, "w") as f:
-            f.write(json.dumps(session_data))
-    session = dict(session_data)
-    session["session_filepath"] = filepath
-    with mock.patch("mu.logic.get_session_path", return_value=filepath):
-        yield session
-    shutil.rmtree(dirpath)
+    session = mu.settings.SessionSettings()
+    session.reset()
+    session.update(session_data)
 
+    with mock.patch("mu.settings.session", session):
+        yield session
+
+    shutil.rmtree(dirpath)
 
 def mocked_view(text, path, newline):
     """Create a mocked view with path, newline and text"""
@@ -1090,21 +1086,10 @@ def test_restore_session_open_tabs_in_the_same_order():
     Editor.restore_session() loads editor tabs in the same order as the 'paths'
     array in the session.json file.
     """
-    mocked_view = mock.MagicMock()
-    mocked_view.tab_count = 0
-    ed = mu.logic.Editor(mocked_view)
-
-    mocked_mode = mock.MagicMock()
-    mocked_mode.save_timeout = 5
-    ed.modes = {"python": mocked_mode}
-
+    ed = mocked_editor()
     ed.direct_load = mock.MagicMock()
-
     settings_paths = ["a.py", "b.py", "c.py", "d.py"]
-    settings_json_payload = json.dumps({"paths": settings_paths})
-
-    mock_open = mock.mock_open(read_data=settings_json_payload)
-    with mock.patch("builtins.open", mock_open):
+    with generate_session(paths=settings_paths):
         ed.restore_session()
 
     direct_load_calls_args = [
@@ -1141,23 +1126,13 @@ def test_editor_open_focus_passed_file():
     """
     A file passed in by the OS is opened
     """
-    view = mock.MagicMock()
-    view.tab_count = 0
-    ed = mu.logic.Editor(view)
-    mock_mode = mock.MagicMock()
-    mock_mode.workspace_dir.return_value = "/fake/path"
-    mock_mode.save_timeout = 5
-    ed.modes = {"python": mock_mode}
-    ed._load = mock.MagicMock()
-    file_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        "scripts",
-        "contains_red.py",
-    )
-    ed.select_mode = mock.MagicMock()
-    with mock.patch("builtins.open", mock.mock_open(read_data="data")):
-        ed.restore_session([file_path])
-        ed._load.assert_called_once_with(file_path)
+    ed = mocked_editor()
+    ed.direct_load = mock.MagicMock()
+    filepath = uuid.uuid1().hex
+    with generate_session():
+        ed.restore_session(paths=[filepath])
+
+    assert ed.direct_load.called_with(filepath)
 
 
 def test_editor_session_and_open_focus_passed_file():
@@ -1166,34 +1141,16 @@ def test_editor_session_and_open_focus_passed_file():
     so it receives focus
     It will be the middle position in the session
     """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.modes = mock.MagicMock()
+    ed = mocked_editor()
     ed.direct_load = mock.MagicMock()
-    mock_mode = mock.MagicMock()
-    mock_mode.workspace_dir.return_value = "/fake/path"
-    mock_mode.save_timeout = 5
-    ed.modes = {"python": mock_mode}
-    ed.select_mode = mock.MagicMock()
-    settings = json.dumps({"paths": ["path/foo.py", "path/bar.py"]})
-    mock_open = mock.mock_open(read_data=settings)
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.exists", return_value=True
-    ):
-        ed.restore_session(paths=["path/foo.py"])
+    filepath = os.path.abspath(uuid.uuid1().hex)
+    with generate_session(file_contents=[""]) as session:
+        ed.restore_session(paths=[filepath])
 
-    # direct_load should be called twice (once for each path)
-    assert ed.direct_load.call_count == 2
-    # However, "foo.py" as the passed_filename should be direct_load-ed
-    # at the end so it has focus, despite being the first file listed in
-    # the restored session.
-    assert ed.direct_load.call_args_list[0][0][0] == os.path.abspath(
-        "path/bar.py"
-    )
-    assert ed.direct_load.call_args_list[1][0][0] == os.path.abspath(
-        "path/foo.py"
-    )
-
+    args_only = [args for (args, _) in ed.direct_load.call_args_list]
+    call_args = [a[0] for a in args_only]
+    expected_call_args = session['paths'] + [filepath]
+    assert call_args == expected_call_args
 
 def test_toggle_theme_to_night():
     """
