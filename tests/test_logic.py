@@ -21,7 +21,6 @@ import mu.config
 import mu.logic
 import mu.settings
 
-# ~ import mu.virtual_environment
 from mu.virtual_environment import venv
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import pyqtSignal, QObject, Qt
