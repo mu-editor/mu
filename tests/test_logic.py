@@ -17,6 +17,7 @@ from unittest import mock
 import uuid
 
 import pytest
+import mu.config
 import mu.logic
 import mu.settings
 
@@ -212,9 +213,9 @@ def test_CONSTANTS():
     """
     Ensure the expected constants exist.
     """
-    assert mu.logic.HOME_DIRECTORY
-    assert mu.logic.DATA_DIR
-    assert mu.logic.WORKSPACE_NAME
+    assert mu.config.HOME_DIRECTORY
+    assert mu.config.DATA_DIR
+    assert mu.config.WORKSPACE_NAME
 
 
 @pytest.fixture
