@@ -30,26 +30,25 @@ import webbrowser
 import random
 import locale
 import shutil
+
 import appdirs
-import site
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QLocale
+from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5 import QtCore
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
-from mu.resources import path
-from mu.debugger.utils import is_breakpoint_line
-from mu import __version__
 
+from . import __version__
+from . import i18n
+from .resources import path
+from .debugger.utils import is_breakpoint_line
+from .config import DATA_DIR, VENV_DIR, MAX_LINE_LENGTH
+from .virtual_environment import venv
 
 # The user's home directory.
 HOME_DIRECTORY = os.path.expanduser("~")
 # Name of the directory within the home folder to use by default
 WORKSPACE_NAME = "mu_code"
-# The default directory for application data (i.e., configuration).
-DATA_DIR = appdirs.user_data_dir(appname="mu", appauthor="python")
-# The directory containing user installed third party modules.
-MODULE_DIR = os.path.join(DATA_DIR, "site-packages")
-sys.path.append(MODULE_DIR)
 # The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.
@@ -69,8 +68,6 @@ EXPANDED_IMPORT = (
     "accelerometer, display, uart, spi, panic, pin13, "
     "pin12, pin11, pin10, compass"
 )
-# Port number for debugger.
-DEBUGGER_PORT = 31415
 # Default images to copy over for use in PyGameZero demo apps.
 DEFAULT_IMAGES = [
     "alien.png",
@@ -187,36 +184,6 @@ ENCODING_COOKIE_RE = re.compile(
 logger = logging.getLogger(__name__)
 
 
-def installed_packages():
-    """
-    List all the third party modules installed by the user.
-    """
-    result = []
-    pkg_dirs = [
-        os.path.join(MODULE_DIR, d)
-        for d in os.listdir(MODULE_DIR)
-        if d.endswith("dist-info") or d.endswith("egg-info")
-    ]
-    logger.info("Packages found: {}".format(pkg_dirs))
-    for pkg in pkg_dirs:
-        if pkg.endswith("dist-info"):
-            # Modern.
-            metadata_file = os.path.join(pkg, "METADATA")
-        else:
-            # Legacy (eggs).
-            metadata_file = os.path.join(pkg, "PKG-INFO")
-        try:
-            with open(metadata_file, "rb") as f:
-                lines = f.readlines()
-                name = lines[1].rsplit(b":")[-1].strip()
-                result.append(name.decode("utf-8"))
-        except Exception as ex:
-            # Just log any errors.
-            logger.error("Unable to get metadata for package: " + pkg)
-            logger.error(ex)
-    return sorted(result)
-
-
 def write_and_flush(fileobj, content):
     """
     Write content to the fileobj then flush and fsync to ensure the data is,
@@ -253,7 +220,8 @@ def save_and_encode(text, filepath, newline=os.linesep):
 
     with open(filepath, "w", encoding=encoding, newline="") as f:
         text_to_write = (
-            newline.join(l.rstrip(" ") for l in text.splitlines()) + newline
+            newline.join(line.rstrip(" ") for line in text.splitlines())
+            + newline
         )
         write_and_flush(f, text_to_write)
 
@@ -439,6 +407,14 @@ def extract_envars(raw):
     return result
 
 
+def save_session(session):
+    session_path = get_session_path()
+    with open(session_path, "w") as out:
+        logger.debug("Session: {}".format(session))
+        logger.debug("Saving session to: {}".format(session_path))
+        json.dump(session, out, indent=2)
+
+
 def check_flake(filename, code, builtins=None):
     """
     Given a filename and some code to be checked, uses the PyFlakesmodule to
@@ -505,7 +481,11 @@ def check_pycodestyle(code, config_file=False):
         "W391",
         "W503",
     )
-    style = StyleGuide(parse_argv=False, config_file=config_file)
+    style = StyleGuide(
+        parse_argv=False,
+        config_file=config_file,
+        max_line_length=MAX_LINE_LENGTH,
+    )
 
     # StyleGuide() returns pycodestyle module's own ignore list. That list may
     # be a default list or a custom list provided by the user
@@ -614,44 +594,244 @@ class MuFlakeCodeReporter:
             )
 
 
-class REPL:
+class Device:
     """
-    Read, Evaluate, Print, Loop.
-
-    Represents the REPL. Since the logic for the REPL is simply a USB/serial
-    based widget this class only contains a reference to the associated port.
+    Device object, containing both information about the connected device,
+    the port it's connected through and the mode it works with.
     """
 
-    def __init__(self, port):
-        if os.name == "posix":
-            # If we're on Linux or OSX reference the port is like this...
-            self.port = "/dev/{}".format(port)
-        elif os.name == "nt":
-            # On Windows simply return the port (e.g. COM0).
-            self.port = port
+    def __init__(
+        self,
+        vid,
+        pid,
+        port,
+        serial_number,
+        manufacturer,
+        long_mode_name,
+        short_mode_name,
+        board_name=None,
+    ):
+        self.vid = vid
+        self.pid = pid
+        self.port = port
+        self.serial_number = serial_number
+        self.manufacturer = manufacturer
+        self.long_mode_name = long_mode_name
+        self.short_mode_name = short_mode_name
+        self.board_name = board_name
+
+    @property
+    def name(self):
+        """
+        Returns the device name.
+        """
+        if self.board_name:
+            return self.board_name
         else:
-            # No idea how to deal with other OS's so fail.
-            raise NotImplementedError("OS not supported.")
-        logger.info("Created new REPL object with port: {}".format(self.port))
+            return self.long_mode_name + " device"
+
+    def __eq__(self, other):
+        """
+        Equality on devices. Comparison on vid, pid, and serial_number,
+        and most importantly also matches on which port the device is
+        connected to. That is, if two identical devices are connected
+        to separate ports they are considered different.
+        """
+        return (
+            isinstance(other, self.__class__)
+            and self.pid == other.pid
+            and self.vid == other.vid
+            and self.port == other.port
+            and self.serial_number == other.serial_number
+        )
+
+    def __ne__(self, other):
+        """
+        Inequality of devices is the negation of equality
+        """
+        return not self.__eq__(other)
+
+    def __lt__(self, other):
+        """
+        Alphabetical ordering according to device name
+        """
+        return self.name < other.name
+
+    def __gt__(self, other):
+        """
+        Alphabetical ordering according to device name
+        """
+        return self.name > other.name
+
+    def __le__(self, other):
+        """
+        Alphabetical ordering according to device name
+        """
+        return self.name <= other.name
+
+    def __ge__(self, other):
+        """
+        Alphabetical ordering according to device name
+        """
+        return self.name >= other.name
+
+    def __str__(self):
+        """
+        String representation of devices includes name, port, and VID/PID
+        """
+        s = "{} on {} (VID: 0x{:04X}, PID: 0x{:04X})"
+        return s.format(self.name, self.port, self.vid, self.pid)
+
+    def __hash__(self):
+        """
+        Hash is the hash of the string representation, includes the same
+        elements in the hash as in equality testing.
+        """
+        return hash(str(self))
 
 
-class Editor:
+class DeviceList(QtCore.QAbstractListModel):
+    device_connected = pyqtSignal("PyQt_PyObject")
+    device_disconnected = pyqtSignal("PyQt_PyObject")
+
+    def __init__(self, modes, parent=None):
+        super().__init__(parent)
+        self.modes = modes
+        self._devices = list()
+
+    def __iter__(self):
+        """
+        Enables iteration over the list of devices
+        """
+        return iter(self._devices)
+
+    def __getitem__(self, i):
+        """
+        Enable [] operator
+        """
+        return self._devices[i]
+
+    def __len__(self):
+        """
+        Number of devices
+        """
+        return len(self._devices)
+
+    def rowCount(self, parent):
+        """
+        Number of devices
+        """
+        return len(self._devices)
+
+    def data(self, index, role):
+        """
+        Reimplements QAbstractListModel.data(): returns data for the
+        specified index and role. In this case only implmented for
+        ToolTipRole and DisplayRole
+        """
+        device = self._devices[index.row()]
+        if role == QtCore.Qt.ToolTipRole:
+            return str(device)
+        elif role == QtCore.Qt.DisplayRole:
+            return device.name
+
+    def add_device(self, new_device):
+        """
+        Add a new device to the device list, maintains alphabetical ordering
+        """
+        parent = QtCore.QModelIndex()
+        # Find position to insert sorted
+        position = 0
+        for i, device in enumerate(self._devices):
+            if new_device > device:
+                position = i + 1
+        # Insert
+        self.beginInsertRows(parent, position, position)
+        self._devices.insert(position, new_device)
+        self.endInsertRows()
+
+    def remove_device(self, device):
+        """
+        Remove the given device from the device list
+        """
+        parent = QtCore.QModelIndex()
+        position = self._devices.index(device)
+        self.beginRemoveRows(parent, position, position)
+        self._devices.remove(device)
+        self.endRemoveRows()
+
+    def check_usb(self):
+        """
+        Ensure connected USB devices are polled. If there's a change and a new
+        recognised device is attached, inform the user via a status message.
+        If a single device is found and Mu is in a different mode ask the user
+        if they'd like to change mode.
+        """
+        devices = []
+        device_types = set()
+        # Detect connected devices.
+        for mode_name, mode in self.modes.items():
+            if hasattr(mode, "find_devices"):
+                # The mode can detect attached devices.
+                detected = mode.find_devices(with_logging=False)
+                if detected:
+                    device_types.add(mode_name)
+                    devices.extend(detected)
+        # Remove no-longer connected devices.
+        for device in self:
+            if device not in devices:
+                self.remove_device(device)
+                self.device_disconnected.emit(device)
+                logger.info(
+                    (
+                        "{} device disconnected on port: {}"
+                        "(VID: 0x{:04X}, PID: 0x{:04X}, manufacturer {})"
+                    ).format(
+                        device.short_mode_name,
+                        device.port,
+                        device.vid,
+                        device.pid,
+                        device.manufacturer,
+                    )
+                )
+        # Add newly connected devices.
+        for device in devices:
+            if device not in self:
+                self.add_device(device)
+                self.device_connected.emit(device)
+                logger.info(
+                    (
+                        "{} device connected on port: {}"
+                        "(VID: 0x{:04X}, PID: 0x{:04X}, manufacturer: '{}')"
+                    ).format(
+                        device.short_mode_name,
+                        device.port,
+                        device.vid,
+                        device.pid,
+                        device.manufacturer,
+                    )
+                )
+
+
+class Editor(QObject):
     """
     Application logic for the editor itself.
     """
 
-    def __init__(self, view, status_bar=None):
+    def __init__(self, view):
+        super().__init__()
         logger.info("Setting up editor.")
         self._view = view
-        self._status_bar = status_bar
         self.fs = None
         self.theme = "day"
         self.mode = "python"
-        self.modes = {}  # See set_modes.
+        self.python_extensions = [".py", ".pyw"]
+        self.modes = {}
         self.envars = []  # See restore session and show_admin
         self.minify = False
         self.microbit_runtime = ""
-        self.connected_devices = set()
+        self.connected_devices = DeviceList(self.modes, parent=self)
+        self.current_device = None
         self.find = ""
         self.replace = ""
         self.current_path = ""  # Directory of last loaded file.
@@ -660,9 +840,6 @@ class Editor:
         if not os.path.exists(DATA_DIR):
             logger.debug("Creating directory: {}".format(DATA_DIR))
             os.makedirs(DATA_DIR)
-        if not os.path.exists(MODULE_DIR):
-            logger.debug("Creating directory: {}".format(MODULE_DIR))
-            os.makedirs(MODULE_DIR)
         logger.info("Settings path: {}".format(get_settings_path()))
         logger.info("Session path: {}".format(get_session_path()))
         logger.info("Log directory: {}".format(LOG_DIR))
@@ -679,6 +856,7 @@ class Editor:
         directory.
         """
         self.modes = modes
+        self.connected_devices.modes = modes
         logger.info("Available modes: {}".format(", ".join(self.modes.keys())))
         # Ensure there is a workspace directory.
         wd = self.modes["python"].workspace_dir()
@@ -722,7 +900,27 @@ class Editor:
             # Copy all the static directories.
         # Start the timer to poll every second for an attached or removed
         # USB device.
-        self._view.set_usb_checker(1, self.check_usb)
+        self._view.set_usb_checker(1, self.connected_devices.check_usb)
+
+    def connect_to_status_bar(self, status_bar):
+        """
+        Connect the editor with the Window-statusbar.
+        Should be called after Editor.setup(), to ensure modes are initialized
+        """
+        # Connect to logs
+        status_bar.connect_logs(self.show_admin, "Ctrl+Shift+D")
+        # Show connection messages in status_bar
+        self.connected_devices.device_connected.connect(
+            status_bar.device_connected
+        )
+        # Connect to device list
+        device_selector = status_bar.device_selector
+        status_bar.device_selector.set_device_list(self.connected_devices)
+        # Propagate device_changed events
+        device_selector.device_changed.connect(self.device_changed)
+        if self.modes:
+            for mode in self.modes.values():
+                device_selector.device_changed.connect(mode.device_changed)
 
     def restore_session(self, paths=None):
         """
@@ -737,6 +935,7 @@ class Editor:
             try:
                 old_session = json.load(f)
             except ValueError:
+                old_session = None
                 logger.error(
                     "Settings file {} could not be parsed.".format(
                         settings_path
@@ -747,6 +946,7 @@ class Editor:
                 logger.debug(old_session)
                 if "theme" in old_session:
                     self.theme = old_session["theme"]
+                self._view.set_theme(self.theme)
                 if "mode" in old_session:
                     old_mode = old_session["mode"]
                     if old_mode in self.modes:
@@ -795,14 +995,20 @@ class Editor:
                 if "zoom_level" in old_session:
                     self._view.zoom_position = old_session["zoom_level"]
                     self._view.set_zoom()
+
+                if "venv_path" in old_session:
+                    venv.relocate(old_session["venv_path"])
+                    venv.ensure()
+
                 old_window = old_session.get("window", {})
                 self._view.size_window(**old_window)
+        if old_session is None:
+            self._view.set_theme(self.theme)
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
             self.load_cli(paths)
         self.change_mode(self.mode)
-        self._view.set_theme(self.theme)
         self.show_status_message(random.choice(MOTD), 10)
         if not self._view.tab_count:
             py = self.modes[self.mode].code_template + NEWLINE
@@ -880,7 +1086,7 @@ class Editor:
                 return
         name, text, newline, file_mode = None, None, None, None
         try:
-            if path.lower().endswith(".py"):
+            if self.has_python_extension(path):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
                 try:
@@ -930,13 +1136,13 @@ class Editor:
             self._view.show_message(message, info)
         else:
             if file_mode and self.mode != file_mode:
-                device_name = self.modes[file_mode].name
-                message = _("Is this a {} file?").format(device_name)
+                mode_name = self.modes[file_mode].name
+                message = _("Is this a {} file?").format(mode_name)
                 info = _(
                     "It looks like this could be a {} file.\n\n"
                     "Would you like to change Mu to the {}"
                     "mode?"
-                ).format(device_name, device_name)
+                ).format(mode_name, mode_name)
                 if (
                     self._view.show_confirmation(
                         message, info, icon="Question"
@@ -951,7 +1157,7 @@ class Editor:
 
     def get_dialog_directory(self, default=None):
         """
-        Return the directory folder in which a load/save dialog box should
+        Return the directory folder which a load/save dialog box should
         open into. In order of precedence this function will return:
 
         0) If not None, the value of default.
@@ -979,11 +1185,11 @@ class Editor:
         extracts a Python script from a hex file.
         """
         # Get all supported extensions from the different modes
-        extensions = ["py"]
+        extensions = [ext.strip("*.") for ext in self.python_extensions]
         for mode_name, mode in self.modes.items():
             if mode.file_extensions:
                 extensions += mode.file_extensions
-        extensions = set([e.lower() for e in extensions])
+        extensions = [e.lower() for e in extensions]
         extensions = "*.{} *.{}".format(
             " *.".join(extensions), " *.".join(extensions).upper()
         )
@@ -1078,7 +1284,10 @@ class Editor:
         return False.
         """
         logger.info('Checking path "{}" for shadow module.'.format(path))
-        filename = os.path.basename(path).replace(".py", "")
+        pyextensions = [".pyw", ".PYW", ".py", ".PY"]
+        filename = os.path.basename(path)
+        for ext in pyextensions:
+            filename = filename.replace(ext, "")
         return filename in self.modes[self.mode].module_names
 
     def save(self, *args, default=None):
@@ -1151,7 +1360,7 @@ class Editor:
         if tab is None:
             # There is no active text editor so abort.
             return
-        if tab.path and not tab.path.endswith(".py"):
+        if tab.path and not self.has_python_extension(tab.path):
             # Only works on Python files, so abort.
             return
         tab.has_annotations = not tab.has_annotations
@@ -1191,10 +1400,9 @@ class Editor:
         """
         Display browser based help about Mu.
         """
-        language_code = QLocale.system().name()[:2]
         major_version = ".".join(__version__.split(".")[:2])
         url = "https://codewith.mu/{}/help/{}".format(
-            language_code, major_version
+            i18n.language_code[:2], major_version
         )
         logger.info("Showing help at %r.", url)
         webbrowser.open_new(url)
@@ -1230,6 +1438,8 @@ class Editor:
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
             "zoom_level": self._view.zoom_position,
+            "venv_name": venv.name,
+            "venv_python": venv.interpreter,
             "window": {
                 "x": self._view.x(),
                 "y": self._view.y(),
@@ -1237,23 +1447,7 @@ class Editor:
                 "h": self._view.height(),
             },
         }
-        session_path = get_session_path()
-        with open(session_path, "w") as out:
-            logger.debug("Session: {}".format(session))
-            logger.debug("Saving session to: {}".format(session_path))
-            json.dump(session, out, indent=2)
-        # Clean up temporary mu.pth file if needed (Windows only).
-        if sys.platform == "win32" and "pythonw.exe" in sys.executable:
-            if site.ENABLE_USER_SITE:
-                site_path = site.USER_SITE
-                path_file = os.path.join(site_path, "mu.pth")
-                if os.path.exists(path_file):
-                    try:
-                        os.remove(path_file)
-                        logger.info("{} removed.".format(path_file))
-                    except Exception as ex:
-                        logger.error("Unable to delete {}".format(path_file))
-                        logger.error(ex)
+        save_session(session)
         logger.info("Quitting.\n\n")
         sys.exit(0)
 
@@ -1272,10 +1466,15 @@ class Editor:
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
         }
-        packages = installed_packages()
+        baseline_packages, user_packages = venv.installed_packages()
+        packages = user_packages
         with open(LOG_FILE, "r", encoding="utf8") as logfile:
             new_settings = self._view.show_admin(
-                logfile.read(), settings, "\n".join(packages)
+                logfile.read(),
+                settings,
+                "\n".join(packages),
+                self.modes[self.mode],
+                self.connected_devices,
             )
         if new_settings:
             self.envars = extract_envars(new_settings["envars"])
@@ -1297,7 +1496,7 @@ class Editor:
                 for p in new_settings["packages"].lower().split("\n")
                 if p.strip()
             ]
-            old_packages = [p.lower() for p in packages]
+            old_packages = [p.lower() for p in user_packages]
             self.sync_package_state(old_packages, new_packages)
         else:
             logger.info("No admin settings changed.")
@@ -1319,8 +1518,8 @@ class Editor:
         if to_remove or to_add:
             logger.info("To add: {}".format(to_add))
             logger.info("To remove: {}".format(to_remove))
-            logger.info("Site packages: {}".format(MODULE_DIR))
-            self._view.sync_packages(to_remove, to_add, MODULE_DIR)
+            logger.info("Virtualenv: {}".format(VENV_DIR))
+            self._view.sync_packages(to_remove, to_add)
 
     def select_mode(self, event=None):
         """
@@ -1352,8 +1551,12 @@ class Editor:
         if hasattr(old_mode, "remove_plotter"):
             if old_mode.plotter:
                 old_mode.remove_plotter()
+        # Deactivate old mode
+        self.modes[self.mode].deactivate()
         # Re-assign to new mode.
         self.mode = mode
+        # Activate new mode
+        self.modes[mode].activate()
         # Update buttons.
         self._view.change_mode(self.modes[mode])
         button_bar = self._view.button_bar
@@ -1411,57 +1614,42 @@ class Editor:
                         "changes in {}.".format(tab.path)
                     )
 
-    def check_usb(self):
+    def ask_to_change_mode(self, new_mode, mode_name, heading):
         """
-        Ensure connected USB devices are polled. If there's a change and a new
-        recognised device is attached, inform the user via a status message.
-        If a single device is found and Mu is in a different mode ask the user
-        if they'd like to change mode.
+        Open a dialog asking the user, whether to change mode from
+        mode_name to new_mode. The dialog can be customized by the
+        heading-parameter.
         """
-        devices = []
-        device_types = set()
-        # Detect connected devices.
-        for name, mode in self.modes.items():
-            if hasattr(mode, "find_device"):
-                # The mode can detect an attached device.
-                port, serial = mode.find_device(with_logging=False)
-                if port:
-                    devices.append((name, port))
-                    device_types.add(name)
-        # Remove no-longer connected devices.
-        to_remove = []
-        for connected in self.connected_devices:
-            if connected not in devices:
-                to_remove.append(connected)
-        for device in to_remove:
-            self.connected_devices.remove(device)
-        # Add newly connected devices.
-        for device in devices:
-            if device not in self.connected_devices:
-                self.connected_devices.add(device)
-                mode_name = device[0]
-                device_name = self.modes[mode_name].name
-                msg = _("Detected new {} device.").format(device_name)
-                self.show_status_message(msg)
-                # Only ask to switch mode if a single device type is connected
-                # and we're not already trying to select a new mode via the
-                # dialog. Cannot change mode if a script is already being run
-                # by the current mode.
-                m = self.modes[self.mode]
-                running = hasattr(m, "runner") and m.runner
-                if (
-                    len(device_types) == 1
-                    and self.mode != mode_name
-                    and not self.selecting_mode
-                ) and not running:
-                    msg_body = _(
-                        "Would you like to change Mu to the {} " "mode?"
-                    ).format(device_name)
-                    change_confirmation = self._view.show_confirmation(
-                        msg, msg_body, icon="Question"
-                    )
-                    if change_confirmation == QMessageBox.Ok:
-                        self.change_mode(mode_name)
+        # Only ask to switch mode if we're not already trying to
+        # select a new mode via the dialog. Cannot change mode if
+        # a script is already being run by the current mode.
+        m = self.modes[self.mode]
+        running = hasattr(m, "runner") and m.runner
+        if (self.mode != new_mode and not self.selecting_mode) and not running:
+            msg_body = _(
+                "Would you like to change Mu to the {} " "mode?"
+            ).format(mode_name)
+            change_confirmation = self._view.show_confirmation(
+                heading, msg_body, icon="Question"
+            )
+            if change_confirmation == QMessageBox.Ok:
+                self.change_mode(new_mode)
+
+    def device_changed(self, device):
+        """
+        Slot for receiving signals that the current device has changed.
+        If the device change requires mode change, the user will be
+        asked through a dialog.
+        """
+        if device:
+            if self.current_device is None:
+                heading = _("Detected new {} device.").format(device.name)
+            else:
+                heading = _("Device changed to {}.").format(device.name)
+            self.ask_to_change_mode(
+                device.short_mode_name, device.long_mode_name, heading
+            )
+        self.current_device = device
 
     def show_status_message(self, message, duration=5):
         """
@@ -1529,7 +1717,7 @@ class Editor:
                     "Attempting to rename {} to {}".format(tab.path, new_path)
                 )
                 # The user specified a path to a file.
-                if not os.path.basename(new_path).endswith(".py"):
+                if not self.has_python_extension(os.path.basename(new_path)):
                     # No extension given, default to .py
                     new_path += ".py"
                 # Check for duplicate path with currently open tab.
@@ -1613,7 +1801,7 @@ class Editor:
         if not tab or sys.version_info[:2] < (3, 6):
             return
         # Only works on Python, so abort.
-        if tab.path and not tab.path.endswith(".py"):
+        if tab.path and not self.has_python_extension(tab.path):
             return
         from black import format_str, FileMode, PY36_VERSIONS
 
@@ -1621,7 +1809,9 @@ class Editor:
             source_code = tab.text()
             logger.info("Tidy code.")
             logger.info(source_code)
-            filemode = FileMode(target_versions=PY36_VERSIONS, line_length=88)
+            filemode = FileMode(
+                target_versions=PY36_VERSIONS, line_length=MAX_LINE_LENGTH
+            )
             tidy_code = format_str(source_code, mode=filemode)
             # The following bypasses tab.setText which resets the undo history.
             # Doing it this way means the user can use CTRL-Z to undo the
@@ -1641,3 +1831,10 @@ class Editor:
                 "these problems."
             )
             self._view.show_message(message, information)
+
+    def has_python_extension(self, filename):
+        """
+        Check whether the given filename matches recognized Python extensions.
+        """
+        file_ends = filename.lower().endswith
+        return any(file_ends(ext) for ext in self.python_extensions)

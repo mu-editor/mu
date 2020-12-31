@@ -5,6 +5,7 @@ Tests for the PyGameZero mode.
 import os.path
 from mu.modes.pygamezero import PyGameZeroMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS, PYGAMEZERO_APIS
+from mu.virtual_environment import venv
 from unittest import mock
 import tempfile
 
@@ -121,12 +122,15 @@ def test_pgzero_run_game():
     mock_runner = mock.MagicMock()
     view.add_python3_runner.return_value = mock_runner
     pm = PyGameZeroMode(editor, view)
-    pm.run_game()
-    editor.save_tab_to_file.called_once_with(view.current_tab)
     py_args = ["-m", "pgzero"]
+    with mock.patch.object(venv, "interpreter", "interpreter"):
+        pm.run_game()
+
+    editor.save_tab_to_file.called_once_with(view.current_tab)
     view.add_python3_runner.assert_called_once_with(
-        "/foo/bar",
-        "/foo",
+        interpreter="interpreter",
+        script_name="/foo/bar",
+        working_directory="/foo",
         interactive=False,
         envars=editor.envars,
         python_args=py_args,

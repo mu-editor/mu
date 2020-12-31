@@ -1,0 +1,42 @@
+My notes while trying to understand our use of the Jupyter kernel
+
+* IPython can be run as [I think] an external "kernel", processing instructions
+  and providing output. This is how the Jupyter notebooks operate: by providing
+  a front-end to the IPython kernel backend
+
+* We use this via a QtConsole widget which -- in ways that I'm still exploring --
+  operates as a Qt widget, slotting into our setup as a Pane -- while talking to
+  and from the backend kernel. There are two processes which talk via ZMQ
+
+* Useful docs on QtConsole here: https://qtconsole.readthedocs.io/en/stable/
+
+* We use the RichJupyterWidget from qtconsole.rich_jupyter_widget. This is
+  mentioned here:
+
+  https://qtconsole.readthedocs.io/en/stable/#embedding-the-qtconsole-in-a-qt-application
+
+  and there's an example here:
+
+  https://github.com/jupyter/qtconsole/blob/master/examples/embed_qtconsole.py
+
+* The heavy lifting for the RichJupyterWidget is all done in:
+
+  https://github.com/jupyter/qtconsole/blob/master/qtconsole/jupyter_widget.py
+
+  which, in turn, leans on:
+
+  https://github.com/jupyter/qtconsole/blob/master/qtconsole/frontend_widget.py
+
+* We start the kernel inside modes/python3.py:KernelRunner.start_kernel
+  The QtKernelManager is inside qtconsole.manager which leans on KernelManager
+  from jupyter_client\manager.py. This does *actually* manage the kernel, but
+  for launching, leans on jupyter_client\launcher.py:launch_kernel
+
+QUESTIONS
+---------
+
+* Do we need / make use of the extra complexity this brings? It has layer upon
+  layer, all of which we need to adapt for our particular situation.
+
+* It looks as if the QtConsole offers functionality similar to the Jupyter
+  notebooks, with graphs and so on. But do we need this?

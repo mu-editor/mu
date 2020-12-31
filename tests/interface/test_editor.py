@@ -925,8 +925,7 @@ def test_EditorPane_toggle_comments_selection_follows_len_change():
 
 
 def test_EditorPane_wheelEvent():
-    """
-    """
+    """"""
     ep = mu.interface.editor.EditorPane(None, "baz")
     mock_app = mock.MagicMock()
     mock_app.keyboardModifiers.return_value = []
@@ -938,8 +937,7 @@ def test_EditorPane_wheelEvent():
 
 
 def test_EditorPane_wheelEvent_with_modifier_ignored():
-    """
-    """
+    """"""
     ep = mu.interface.editor.EditorPane(None, "baz")
     mock_app = mock.MagicMock()
     mock_app.keyboardModifiers.return_value = ["CTRL"]

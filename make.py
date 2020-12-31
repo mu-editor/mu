@@ -60,7 +60,7 @@ def _process_code(executable, use_python, *args):
     in the codebase, skipping docs and build artefacts
     """
     if use_python:
-        execution = ["python", executable]
+        execution = [sys.executable, executable]
     else:
         execution = [executable]
     returncodes = set()
@@ -148,8 +148,7 @@ def flake8(*flake8_args):
 
 @export
 def tidy():
-    """Tidy code with the 'black' formatter.
-    """
+    """Tidy code with the 'black' formatter."""
     print("\nTidy")
     for target in [
         "setup.py",
@@ -167,11 +166,31 @@ def tidy():
 
 
 @export
+def black():
+    """Check code with the 'black' formatter."""
+    print("\nblack")
+    for target in [
+        "setup.py",
+        "win_installer.py",
+        "make.py",
+        "mu",
+        "package",
+        "tests",
+        "utils",
+    ]:
+        return_code = subprocess.run(
+            [TIDY, "--check", "-l", "79", target]
+        ).returncode
+        if return_code != 0:
+            return return_code
+    return 0
+
+
+@export
 def check():
-    """Run all the checkers and tests
-    """
+    """Run all the checkers and tests"""
     print("\nCheck")
-    funcs = [clean, tidy, flake8, coverage]
+    funcs = [clean, black, flake8, coverage]
     for func in funcs:
         return_code = func()
         if return_code != 0:
@@ -181,8 +200,7 @@ def check():
 
 @export
 def clean():
-    """Reset the project and remove auto-generated assets
-    """
+    """Reset the project and remove auto-generated assets"""
     print("\nClean")
     _rmtree("build")
     _rmtree("dist")
@@ -196,8 +214,7 @@ def clean():
 
 @export
 def translate():
-    """Translate
-    """
+    """Translate"""
     if not os.path.exists(PYGETTEXT):
         raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
 
@@ -212,14 +229,13 @@ def translate():
 
 @export
 def translateall():
-    """Translate All The Things
-    """
+    """Translate All The Things"""
     if not os.path.exists(PYGETTEXT):
         raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
 
     result = subprocess.run(
         [
-            "python",
+            sys.executable,
             PYGETTEXT,
             "mu/*",
             "mu/debugger/*",
@@ -237,31 +253,29 @@ def translateall():
 
 @export
 def run():
-    """Run Mu from within a virtual environment
-    """
+    """Run Mu from within a virtual environment"""
     clean()
     if not os.environ.get("VIRTUAL_ENV"):
         raise RuntimeError(
             "Cannot run Mu;" "your Python virtualenv is not activated"
         )
-    return subprocess.run(["python", "-m", "mu"]).returncode
+    return subprocess.run([sys.executable, "-m", "mu"]).returncode
 
 
 @export
 def dist():
-    """Generate a source distribution and a binary wheel
-    """
-    check()
+    """Generate a source distribution and a binary wheel"""
+    if check() != 0:
+        raise RuntimeError("Check failed")
     print("Checks pass; good to package")
     return subprocess.run(
-        ["python", "setup.py", "sdist", "bdist_wheel"]
+        [sys.executable, "setup.py", "sdist", "bdist_wheel"]
     ).returncode
 
 
 @export
 def publish_test():
-    """Upload to a test PyPI
-    """
+    """Upload to a test PyPI"""
     dist()
     print("Packaging complete; upload to PyPI")
     return subprocess.run(
@@ -271,8 +285,7 @@ def publish_test():
 
 @export
 def publish_live():
-    """Upload to PyPI
-    """
+    """Upload to PyPI"""
     dist()
     print("Packaging complete; upload to PyPI")
     return subprocess.run(["twine", "upload", "--sign", "dist/*"]).returncode
@@ -280,30 +293,29 @@ def publish_live():
 
 @export
 def win32():
-    """Build 32-bit Windows installer
-    """
-    check()
+    """Build 32-bit Windows installer"""
+    if check() != 0:
+        raise RuntimeError("Check failed")
     print("Building 32-bit Windows installer")
     return subprocess.run(
-        ["python", "win_installer.py", "32", "setup.py"]
+        [sys.executable, "win_installer.py", "32", "setup.py"]
     ).returncode
 
 
 @export
 def win64():
-    """Build 64-bit Windows installer
-    """
-    check()
+    """Build 64-bit Windows installer"""
+    if check() != 0:
+        raise RuntimeError("Check failed")
     print("Building 64-bit Windows installer")
     return subprocess.run(
-        ["python", "win_installer.py", "64", "setup.py"]
+        [sys.executable, "win_installer.py", "64", "setup.py"]
     ).returncode
 
 
 @export
 def docs():
-    """Build the docs
-    """
+    """Build the docs"""
     cwd = os.getcwd()
     os.chdir("docs")
     try:
@@ -316,8 +328,7 @@ def docs():
 
 @export
 def help():
-    """Display all commands with their description in alphabetical order
-    """
+    """Display all commands with their description in alphabetical order"""
     module_doc = sys.modules["__main__"].__doc__ or "check"
     print(module_doc + "\n" + "=" * len(module_doc) + "\n")
 

@@ -1,0 +1,29 @@
+How does the Mu debugger work?
+==============================
+
+The debugger has a kind of hybrid existence: it's a mode in its own right
+(since invoking it causes the button bar to change); but its raison d'etre
+is as a glorified runner for the Python3 mode.
+
+Pressing the [Debug] button in Python 3 mode calls `modes/python3.py:PythonMode.debug`
+which eventually calls `modes/debugger.py:DebugMode.start`. This eventually calls
+`main.py:Windows.add_python3_runner` in the same way as pressing the [Run] button does, but
+passing the `debugger=True` parameter. It then sets up and starts a
+`debugger/client.py:Debugger` object listening on localhost:DEBUGGER_PORT.
+
+`panes.py:PythonProcessPane.start_process` runs `mu-debug.py` with the code file
+as its first parameter. This basically imports and hands off to `mu/app.py.debug`.
+And *this* hands off to `mu/debugger/runner.py:run`. This sets up a
+`debugger/runner.py:Debugger` object which subclasses the stdlib `Bdb` class
+https://docs.python.org/3/library/bdb.html#bdb.Bdb.
+
+Meanwhile, back in Mu button-land: pressing the various [Step Into], [Step Over]
+etc. buttons call methods on the `debugger/client.py:Debugger` object. (eg
+`do_step`, `do_next`, `do_run`). These send simple messages over the socket
+to the listening debug runner (eg "step", "next", "continue" respectively).
+
+The debug runner operates a command buffer inside a thread from which messages
+are despatched via `debugger/runner.py:Debugger.interact`. (Interestingly,
+as far as I can tell, the command_buffer is only set up when an exception
+occurs to the listening thread. So, presumably, it's intended to fail on the
+first attempt and to set up the command buffer for the first time at that point).

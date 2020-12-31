@@ -30,24 +30,40 @@ class CircuitPythonMode(MicroPythonMode):
     """
 
     name = _("CircuitPython")
+    short_name = "circuitpython"
     description = _("Write code for boards running CircuitPython.")
     icon = "circuitpython"
     save_timeout = 0  #: No auto-save on CP boards. Will restart.
     connected = True  #: is the board connected.
     force_interrupt = False  #: NO keyboard interrupt on serial connection.
     valid_boards = [
-        (0x2B04, 0xC00C),  # Particle Argon
-        (0x2B04, 0xC00D),  # Particle Boron
-        (0x2B04, 0xC00E),  # Particle Xenon
-        (0x239A, None),  # Any Adafruit Boards
+        (0x2B04, 0xC00C, None, "Particle Argon"),
+        (0x2B04, 0xC00D, None, "Particle Boron"),
+        (0x2B04, 0xC00E, None, "Particle Xenon"),
+        (0x239A, None, None, "Adafruit CircuitPlayground"),
         # Non-Adafruit boards
-        (0x1209, 0xBAB1),  # Electronic Cats Meow Meow
-        (0x1209, 0xBAB2),  # Electronic Cats CatWAN USBStick
-        (0x1209, 0xBAB3),  # Electronic Cats Bast Pro Mini M0
-        (0x1B4F, 0x8D22),  # SparkFun SAMD21 Mini Breakout
-        (0x1B4F, 0x8D23),  # SparkFun SAMD21 Dev Breakout
-        (0x1209, 0x2017),  # Mini SAM M4
-        (0x1209, 0x7102),  # Mini SAM M0
+        (0x1209, 0xBAB1, None, "Electronic Cats Meow Meow"),
+        (0x1209, 0xBAB2, None, "Electronic Cats CatWAN USBStick"),
+        (0x1209, 0xBAB3, None, "Electronic Cats Bast Pro Mini M0"),
+        (0x1209, 0xBAB6, None, "Electronic Cats Escornabot Makech"),
+        (0x1B4F, 0x8D22, None, "SparkFun SAMD21 Mini Breakout"),
+        (0x1B4F, 0x8D23, None, "SparkFun SAMD21 Dev Breakout"),
+        (0x1209, 0x2017, None, "Mini SAM M4"),
+        (0x1209, 0x7102, None, "Mini SAM M0"),
+        (0x04D8, 0xEC72, None, "XinaBox CC03"),
+        (0x04D8, 0xEC75, None, "XinaBox CS11"),
+        (0x04D8, 0xED5E, None, "XinaBox CW03"),
+        (0x3171, 0x0101, None, "8086.net Commander"),
+        (0x04D8, 0xED94, None, "PyCubed"),
+        (0x04D8, 0xEDBE, None, "SAM32"),
+        (0x1D50, 0x60E8, None, "PewPew Game Console"),
+        (0x2886, 0x802D, None, "Seeed Wio Terminal"),
+        (0x1B4F, 0x0016, None, "Sparkfun Thing Plus - SAMD51"),
+        (0x2341, 0x8057, None, "Arduino Nano 33 IoT board"),
+        (0x04D8, 0xEAD1, None, "DynOSSAT-EDU-EPS"),
+        (0x04D8, 0xEAD2, None, "DynOSSAT-EDU-OBC"),
+        (0x1209, 0x4DDD, None, "ODT CP Sapling M0"),
+        (0x1209, 0x4DDE, None, "ODT CP Sapling M0 w/ SPI Flash"),
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
@@ -114,8 +130,12 @@ class CircuitPythonMode(MicroPythonMode):
                     mount_output = check_output(mount_command).splitlines()
                     mounted_volumes = [x.split()[2] for x in mount_output]
                     for volume in mounted_volumes:
-                        if volume.endswith(b"CIRCUITPY"):
+                        tail = os.path.split(volume)[-1]
+                        if tail.startswith(b"CIRCUITPY") or tail.startswith(
+                            b"PYBFLASH"
+                        ):
                             device_dir = volume.decode("utf-8")
+                            break
                 except FileNotFoundError:
                     next
         elif os.name == "nt":

@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-import site
 import os
 import re
 import platform
@@ -26,6 +25,8 @@ import signal
 import string
 import bisect
 import os.path
+import codecs
+
 from PyQt5.QtCore import (
     Qt,
     QProcess,
@@ -57,7 +58,7 @@ from PyQt5.QtGui import (
     QStandardItem,
 )
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
-from mu import language_code
+from ..i18n import language_code
 from mu.interface.themes import Font
 from mu.interface.themes import DEFAULT_FONT_SIZE
 
@@ -139,6 +140,17 @@ class JupyterREPLPane(RichJupyterWidget):
         self._control.setFocus()
 
 
+VT100_RETURN = b"\r"
+VT100_BACKSPACE = b"\b"
+VT100_DELETE = b"\x1B[\x33\x7E"
+VT100_UP = b"\x1B[A"
+VT100_DOWN = b"\x1B[B"
+VT100_RIGHT = b"\x1B[C"
+VT100_LEFT = b"\x1B[D"
+VT100_HOME = b"\x1B[H"
+VT100_END = b"\x1B[F"
+
+
 class MicroPythonREPLPane(QTextEdit):
     """
     REPL = Read, Evaluate, Print, Loop.
@@ -149,28 +161,37 @@ class MicroPythonREPLPane(QTextEdit):
     The device MUST be flashed with MicroPython for this to work.
     """
 
-    def __init__(self, serial, theme="day", parent=None):
+    def __init__(self, connection, theme="day", parent=None):
         super().__init__(parent)
-        self.serial = serial
+        self.connection = connection
         self.setFont(Font().load())
         self.setAcceptRichText(False)
         self.setReadOnly(False)
         self.setUndoRedoEnabled(False)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.context_menu)
+        # The following variable maintains the position where we know
+        # the device cursor is placed. It is initialized to the beginning
+        # of the QTextEdit (i.e. equal to the Qt cursor position)
+        self.device_cursor_position = self.textCursor().position()
         self.setObjectName("replpane")
         self.set_theme(theme)
+        self.unprocessed_input = b""  # used by process_bytes
+        self.decoder = codecs.getincrementaldecoder("utf8")("replace")
+        self.vt100_regex = re.compile(
+            r"\x1B\[(?P<count>[\d]*)(;?[\d]*)*(?P<action>[A-Za-z])"
+        )
 
     def paste(self):
         """
-        Grabs clipboard contents then sends down the serial port.
+        Grabs clipboard contents then sends to the REPL.
         """
         clipboard = QApplication.clipboard()
         if clipboard and clipboard.text():
             to_paste = (
                 clipboard.text().replace("\n", "\r").replace("\r\r", "\r")
             )
-            self.serial.write(bytes(to_paste, "utf8"))
+            self.connection.write(bytes(to_paste, "utf8"))
 
     def context_menu(self):
         """
@@ -191,118 +212,239 @@ class MicroPythonREPLPane(QTextEdit):
     def set_theme(self, theme):
         pass
 
+    def send(self, msg):
+        self.connection.write(msg)
+
     def keyPressEvent(self, data):
         """
         Called when the user types something in the REPL.
 
         Correctly encodes it and sends it to the connected device.
         """
+        tc = self.textCursor()
         key = data.key()
-        msg = bytes(data.text(), "utf8")
-        if key == Qt.Key_Backspace:
-            msg = b"\b"
+        ctrl_only = data.modifiers() == Qt.ControlModifier
+        meta_only = data.modifiers() == Qt.MetaModifier
+        ctrl_shift_only = (
+            data.modifiers() == Qt.ControlModifier | Qt.ShiftModifier
+        )
+        shift_down = data.modifiers() & Qt.ShiftModifier
+        on_osx = platform.system() == "Darwin"
+
+        if key == Qt.Key_Return:
+            # Move cursor to the end of document before sending carriage return
+            tc.movePosition(QTextCursor.End, mode=QTextCursor.MoveAnchor)
+            self.device_cursor_position = tc.position()
+            self.send(VT100_RETURN)
+        elif key == Qt.Key_Backspace:
+            if not self.delete_selection():
+                self.send(VT100_BACKSPACE)
         elif key == Qt.Key_Delete:
-            msg = b"\x1B[\x33\x7E"
+            if not self.delete_selection():
+                self.send(VT100_DELETE)
         elif key == Qt.Key_Up:
-            msg = b"\x1B[A"
+            self.send(VT100_UP)
         elif key == Qt.Key_Down:
-            msg = b"\x1B[B"
+            self.send(VT100_DOWN)
         elif key == Qt.Key_Right:
-            msg = b"\x1B[C"
+            if shift_down:
+                # Text selection - pass down
+                super().keyPressEvent(data)
+            elif tc.hasSelection():
+                self.move_cursor_to(tc.selectionEnd())
+            else:
+                self.send(VT100_RIGHT)
         elif key == Qt.Key_Left:
-            msg = b"\x1B[D"
+            if shift_down:
+                # Text selection - pass down
+                super().keyPressEvent(data)
+            elif tc.hasSelection():
+                self.move_cursor_to(tc.selectionStart())
+            else:
+                self.send(VT100_LEFT)
         elif key == Qt.Key_Home:
-            msg = b"\x1B[H"
+            self.send(VT100_HOME)
         elif key == Qt.Key_End:
-            msg = b"\x1B[F"
-        elif (
-            platform.system() == "Darwin"
-            and data.modifiers() == Qt.MetaModifier
-        ) or (
-            platform.system() != "Darwin"
-            and data.modifiers() == Qt.ControlModifier
-        ):
+            self.send(VT100_END)
+        elif (on_osx and meta_only) or (not on_osx and ctrl_only):
             # Handle the Control key. On OSX/macOS/Darwin (python calls this
             # platform Darwin), this is handled by Qt.MetaModifier. Other
             # platforms (Linux, Windows) call this Qt.ControlModifier. Go
             # figure. See http://doc.qt.io/qt-5/qt.html#KeyboardModifier-enum
             if Qt.Key_A <= key <= Qt.Key_Z:
                 # The microbit treats an input of \x01 as Ctrl+A, etc.
-                msg = bytes([1 + key - Qt.Key_A])
-        elif (data.modifiers() == Qt.ControlModifier | Qt.ShiftModifier) or (
-            platform.system() == "Darwin"
-            and data.modifiers() == Qt.ControlModifier
-        ):
+                self.send(bytes([1 + key - Qt.Key_A]))
+        elif ctrl_shift_only or (on_osx and ctrl_only):
             # Command-key on Mac, Ctrl-Shift on Win/Lin
             if key == Qt.Key_C:
                 self.copy()
-                msg = b""
             elif key == Qt.Key_V:
+                self.delete_selection()
                 self.paste()
-                msg = b""
-        self.serial.write(msg)
+        else:
+            self.delete_selection()
+            self.send(bytes(data.text(), "utf8"))
 
-    def process_bytes(self, data):
+    def set_qtcursor_to_devicecursor(self):
+        """
+        Resets the Qt TextCursor to where we know the device has the cursor
+        placed.
+        """
+        tc = self.textCursor()
+        tc.setPosition(self.device_cursor_position)
+        self.setTextCursor(tc)
+
+    def set_devicecursor_to_qtcursor(self):
+        """
+        Call this whenever the cursor has been moved by the user, to send
+        the cursor movement to the device.
+        """
+        self.move_cursor_to(self.textCursor().position())
+
+    def move_cursor_to(self, new_position):
+        """Move the cursor, by sending vt100 left/right signals through
+        serial. The Qt cursor is first returned to the known location
+        of the device cursor.  Then the appropriate number of move
+        left or right signals are send.  The Qt cursor is not moved to
+        the new_position here, but will be moved once receiving a
+        response (in process_tty_data).
+        """
+        # Reset Qt cursor position
+        self.set_qtcursor_to_devicecursor()
+        # Calculate number of steps
+        steps = new_position - self.device_cursor_position
+        # Send the appropriate right/left moves
+        if steps > 0:
+            # Move cursor right if positive
+            self.send(VT100_RIGHT * steps)
+        elif steps < 0:
+            # Move cursor left if negative
+            self.send(VT100_LEFT * abs(steps))
+
+    def delete_selection(self):
+        """
+        Returns true if deletion happened, returns false if there was no
+        selection to delete.
+        """
+        tc = self.textCursor()
+        if tc.hasSelection():
+            # Calculate how much should be deleted (N)
+            selectionSize = tc.selectionEnd() - tc.selectionStart()
+            # Move cursor to end of selection
+            self.move_cursor_to(tc.selectionEnd())
+            # Send N backspaces
+            self.send(VT100_BACKSPACE * selectionSize)
+            return True
+        return False
+
+    def mouseReleaseEvent(self, mouseEvent):
+        """Called whenever a user have had a mouse button pressed, and
+        releases it. We pass it through to the normal way Qt handles
+        button pressed, but also sends as cursor movement signal to
+        the device (except if a selection is made, for selections we first
+        move the cursor on deselection)
+        """
+        super().mouseReleaseEvent(mouseEvent)
+
+        # If when a user have clicked and not made a selection
+        # move the device cursor to where the user clicked
+        if not self.textCursor().hasSelection():
+            self.set_devicecursor_to_qtcursor()
+
+    def process_tty_data(self, data):
         """
         Given some incoming bytes of data, work out how to handle / display
         them in the REPL widget.
+        If received input is incomplete, stores remainder in
+        self.unprocessed_input.
+
+        Updates the self.device_cursor_position to match that of the device
+        for every input received.
         """
-        tc = self.textCursor()
-        # The text cursor must be on the last line of the document. If it isn't
-        # then move it there.
-        while tc.movePosition(QTextCursor.Down):
-            pass
         i = 0
+        data = self.decoder.decode(data)
+        if len(self.unprocessed_input) > 0:
+            # Prepend bytes from last time, that wasn't processed
+            data = self.unprocessed_input + data
+            self.unprocessed_input = ""
+
+        # Reset cursor. E.g. if doing a selection, the qt cursor and
+        # device cursor will not match, we reset it here to make sure
+        # they do match (this removes any selections when new input is
+        # received)
+        self.set_qtcursor_to_devicecursor()
+        tc = self.textCursor()
+
         while i < len(data):
-            if data[i] == 8:  # \b
+            if data[i] == "\b":
                 tc.movePosition(QTextCursor.Left)
-                self.setTextCursor(tc)
-            elif data[i] == 13:  # \r
+                self.device_cursor_position = tc.position()
+            elif data[i] == "\r":
+                # Carriage return. Do nothing, we handle newlines when
+                # reading \n
                 pass
-            elif len(data) > i + 1 and data[i] == 27 and data[i + 1] == 91:
-                # VT100 cursor detected: <Esc>[
-                i += 2  # move index to after the [
-                regex = r"(?P<count>[\d]*)(;?[\d]*)*(?P<action>[ABCDKm])"
-                m = re.search(regex, data[i:].decode("utf-8"))
-                if m:
-                    # move to (almost) after control seq
-                    # (will ++ at end of loop)
-                    i += m.end() - 1
-
-                    if m.group("count") == "":
-                        count = 1
+            elif data[i] == "\x1b":
+                # Escape
+                if len(data) > i + 1 and data[i + 1] == "[":
+                    # VT100 cursor detected: <Esc>[
+                    match = self.vt100_regex.search(data[i:])
+                    if match:
+                        # move to (almost) after control seq
+                        # (will ++ at end of loop)
+                        i += match.end() - 1
+                        count_string = match.group("count")
+                        count = 1 if count_string == "" else int(count_string)
+                        action = match.group("action")
+                        if action == "A":  # up
+                            tc.movePosition(QTextCursor.Up, n=count)
+                            self.device_cursor_position = tc.position()
+                        elif action == "B":  # down
+                            tc.movePosition(QTextCursor.Down, n=count)
+                            self.device_cursor_position = tc.position()
+                        elif action == "C":  # right
+                            tc.movePosition(QTextCursor.Right, n=count)
+                            self.device_cursor_position = tc.position()
+                        elif action == "D":  # left
+                            tc.movePosition(QTextCursor.Left, n=count)
+                            self.device_cursor_position = tc.position()
+                        elif action == "K":  # delete things
+                            if count_string == "":  # delete to end of line
+                                tc.movePosition(
+                                    QTextCursor.EndOfLine,
+                                    mode=QTextCursor.KeepAnchor,
+                                )
+                                tc.removeSelectedText()
+                                self.device_cursor_position = tc.position()
+                        else:
+                            # Unknown action, log warning and ignore
+                            command = match.group(0).replace("\x1B", "<Esc>")
+                            msg = "Received unsupported VT100 command: {}"
+                            logger.warning(msg.format(command))
                     else:
-                        count = int(m.group("count"))
-
-                    if m.group("action") == "A":  # up
-                        tc.movePosition(QTextCursor.Up, n=count)
-                        self.setTextCursor(tc)
-                    elif m.group("action") == "B":  # down
-                        tc.movePosition(QTextCursor.Down, n=count)
-                        self.setTextCursor(tc)
-                    elif m.group("action") == "C":  # right
-                        tc.movePosition(QTextCursor.Right, n=count)
-                        self.setTextCursor(tc)
-                    elif m.group("action") == "D":  # left
-                        tc.movePosition(QTextCursor.Left, n=count)
-                        self.setTextCursor(tc)
-                    elif m.group("action") == "K":  # delete things
-                        if m.group("count") == "":  # delete to end of line
-                            tc.movePosition(
-                                QTextCursor.EndOfLine,
-                                mode=QTextCursor.KeepAnchor,
-                            )
-                            tc.removeSelectedText()
-                            self.setTextCursor(tc)
-            elif data[i] == 10:  # \n
+                        # Cursor detected, but no match, must be
+                        # incomplete input
+                        self.unprocessed_input = data[i:]
+                        break
+                elif len(data) == i + 1:
+                    # Escape received as end of transmission. Perhaps
+                    # the transmission is incomplete, wait until next
+                    # bytes are received to determine what to do
+                    self.unprocessed_input = data[i:]
+                    break
+            elif data[i] == "\n":
                 tc.movePosition(QTextCursor.End)
+                self.device_cursor_position = tc.position() + 1
                 self.setTextCursor(tc)
-                self.insertPlainText(chr(data[i]))
+                self.insertPlainText(data[i])
             else:
+                # Char received, with VT100 that should be interpreted
+                # as overwrite the char in front of the cursor
                 tc.deleteChar()
-                self.setTextCursor(tc)
-                self.insertPlainText(chr(data[i]))
+                self.device_cursor_position = tc.position() + 1
+                self.insertPlainText(data[i])
+            self.setTextCursor(tc)
             i += 1
+        # Scroll textarea if necessary to see cursor
         self.ensureCursorVisible()
 
     def clear(self):
@@ -324,39 +466,6 @@ class MicroPythonREPLPane(QTextEdit):
         Set the current zoom level given the "t-shirt" size.
         """
         self.set_font_size(PANE_ZOOM_SIZES[size])
-
-    def send_commands(self, commands):
-        """
-        Send commands to the REPL via raw mode.
-        """
-        raw_on = [  # Sequence of commands to get into raw mode.
-            b"\x02",
-            b"\r\x03",
-            b"\r\x03",
-            b"\r\x03",
-            b"\r\x01",
-        ]
-        newline = [b'print("\\n")\r']
-        commands = [c.encode("utf-8") + b"\r" for c in commands]
-        commands.append(b"\r")
-        commands.append(b"\x04")
-        raw_off = [b"\x02"]
-        command_sequence = raw_on + newline + commands + raw_off
-        logger.info(command_sequence)
-        self.execute(command_sequence)
-
-    def execute(self, commands):
-        """
-        Execute a series of commands over a period of time (scheduling
-        remaining commands to be run in the next iteration of the event loop).
-        """
-        if commands:
-            command = commands[0]
-            logger.info("Sending command {}".format(command))
-            self.serial.write(command)
-            remainder = commands[1:]
-            remaining_task = lambda commands=remainder: self.execute(commands)
-            QTimer.singleShot(2, remaining_task)
 
 
 class MuFileList(QListWidget):
@@ -453,6 +562,7 @@ class LocalFileList(MuFileList):
     """
 
     get = pyqtSignal(str, str)
+    put = pyqtSignal(str, str)
     open_file = pyqtSignal(str)
 
     def __init__(self, home):
@@ -500,12 +610,16 @@ class LocalFileList(MuFileList):
         # Mu micro:bit mode only handles .py & .hex
         if ext == ".py" or ext == ".hex":
             open_internal_action = menu.addAction(_("Open in Mu"))
+        if ext == ".py":
+            write_to_main_action = menu.addAction(
+                _("Write to main.py on device")
+            )
         # Open outside Mu (things get meta if Mu is the default application)
         open_action = menu.addAction(_("Open"))
         action = menu.exec_(self.mapToGlobal(event.pos()))
         if action == open_action:
             # Get the file's path
-            path = os.path.join(self.home, local_filename)
+            path = os.path.abspath(os.path.join(self.home, local_filename))
             logger.info("Opening {}".format(path))
             msg = _("Opening '{}'").format(local_filename)
             logger.info(msg)
@@ -518,6 +632,9 @@ class LocalFileList(MuFileList):
             path = os.path.join(self.home, local_filename)
             # Send the signal bubbling up the tree
             self.open_file.emit(path)
+        elif action == write_to_main_action:
+            path = os.path.join(self.home, local_filename)
+            self.put.emit(path, "main.py")
 
 
 class MuFileTree(QTreeWidget):
@@ -1046,20 +1163,20 @@ class PythonProcessPane(QTextEdit):
 
     def start_process(
         self,
+        interpreter,
         script_name,
         working_directory,
         interactive=True,
         debugger=False,
         command_args=None,
         envars=None,
-        runner=None,
         python_args=None,
     ):
         """
         Start the child Python process.
 
-        Will run the referenced Python script_name within the context of the
-        working directory.
+        Will use the referenced interpreter to run the Python
+        script_name within the context of the working directory.
 
         If interactive is True (the default) the Python process will run in
         interactive mode (dropping the user into the REPL when the script
@@ -1074,11 +1191,8 @@ class PythonProcessPane(QTextEdit):
         If there is a list of environment variables, these will be part of the
         context of the new child process.
 
-        If runner is given, this is used as the command to start the Python
-        process.
-
         If python_args is given, these are passed as arguments to the Python
-        runtime used to launch the child process.
+        interpreter used to launch the child process.
         """
         if not envars:  # Envars must be a list if not passed a value.
             envars = []
@@ -1086,6 +1200,7 @@ class PythonProcessPane(QTextEdit):
         if script_name:
             self.script = os.path.abspath(os.path.normcase(script_name))
         logger.info("Running script: {}".format(self.script))
+        logger.info("Using interpreter: {}".format(interpreter))
         if interactive:
             logger.info("Running with interactive mode.")
         if command_args is None:
@@ -1105,51 +1220,7 @@ class PythonProcessPane(QTextEdit):
             encoding = "{}.utf-8".format(language_code)
             env.insert("LC_ALL", encoding)
             env.insert("LANG", encoding)
-        if sys.platform == "win32" and "pythonw.exe" in sys.executable:
-            # On Windows, if installed via NSIS then Python is always run in
-            # isolated mode via pythonw.exe so none of the expected directories
-            # are on sys.path. To mitigate, Mu attempts to drop a mu.pth file
-            # in a location taken from Windows based settings. This file will
-            # contain the "other" directories to include on the Python path,
-            # such as the working_directory and, if different from the
-            # working_directory, the directory containing the script to run.
-            try:
-                if site.ENABLE_USER_SITE:
-                    # Ensure the USER_SITE directory exists.
-                    os.makedirs(site.getusersitepackages(), exist_ok=True)
-                    site_path = site.USER_SITE
-                    path_file = os.path.join(site_path, "mu.pth")
-                    logger.info("Python paths set via {}".format(path_file))
-                    # Copy current Python paths. Use a set to avoid
-                    # duplications.
-                    paths_to_use = set([os.path.normcase(p) for p in sys.path])
-                    # Add Mu's working directory.
-                    paths_to_use.add(os.path.normcase(working_directory))
-                    # Add the directory containing the script.
-                    paths_to_use.add(
-                        os.path.normcase(os.path.dirname(self.script))
-                    )
-                    # Dropping a mu.pth file containing the paths_to_use
-                    # into USER_SITE will add such paths to sys.path in the
-                    # child process.
-                    with open(path_file, "w") as mu_pth:
-                        for p in paths_to_use:
-                            mu_pth.write(p + "\n")
-                else:
-                    logger.info(
-                        "Unable to set Python paths."
-                        " Python's USER_SITE not enabled."
-                        " Check configuration with administrator."
-                    )
-            except Exception as ex:
-                # Log all possible errors and allow Mu to continue. This is a
-                # "best effort" attempt to add the correct paths to the child
-                # process, but sometimes configuration by sys-admins may cause
-                # this to fail.
-                logger.error("Could not set Python paths with mu.pth file.")
-                logger.error(ex)
-        if "PYTHONPATH" not in envars:
-            envars.append(("PYTHONPATH", os.pathsep.join(sys.path)))
+        # Manage environment variables that may have been set by the user.
         if envars:
             logger.info(
                 "Running with environment variables: " "{}".format(envars)
@@ -1158,25 +1229,28 @@ class PythonProcessPane(QTextEdit):
                 env.insert(name, value)
         logger.info("Working directory: {}".format(working_directory))
         self.process.setWorkingDirectory(working_directory)
-        self.process.setProcessEnvironment(env)
         self.process.readyRead.connect(self.try_read_from_stdout)
         self.process.finished.connect(self.finished)
         logger.info("Python path: {}".format(sys.path))
         if debugger:
-            # Start the mu-debug runner for the script.
+            # Start the mu_debug runner for the script.
             parent_dir = os.path.join(os.path.dirname(__file__), "..")
             mu_dir = os.path.abspath(parent_dir)
-            runner = os.path.join(mu_dir, "mu-debug.py")
-            python_exec = sys.executable
+            logger.info("mu_dir: %s", mu_dir)
+            runner = os.path.join(mu_dir, "mu_debug.py")
             args = [runner, self.script] + command_args
-            self.process.start(python_exec, args)
+            #
+            # The runtime virtualenvironment doesn't include Mu
+            # itself (by design). But the debugger needs mu in
+            # order to run, so we temporarily set the PYTHONPATH
+            # to point to Mu's own directory
+            #
+            env.insert(
+                "PYTHONPATH", os.path.abspath(os.path.join(mu_dir, ".."))
+            )
+            self.process.setProcessEnvironment(env)
+            self.process.start(interpreter, args)
         else:
-            if runner:
-                # Use the passed in Python "runner" to run the script.
-                python_exec = runner
-            else:
-                # Use the current system Python to run the script.
-                python_exec = sys.executable
             args = []
             if self.script:
                 if interactive:
@@ -1187,9 +1261,9 @@ class PythonProcessPane(QTextEdit):
                     args = [self.script] + command_args
             if python_args:
                 args = python_args + args
-            logger.info("Runner: {}".format(python_exec))
             logger.info("Args: {}".format(args))
-            self.process.start(python_exec, args)
+            self.process.setProcessEnvironment(env)
+            self.process.start(interpreter, args)
             self.running = True
 
     def finished(self, code, status):
@@ -1591,19 +1665,23 @@ class PlotterPane(QChartView):
         # Holds the raw actionable data detected while plotting.
         self.raw_data = []
         self.setObjectName("plotterpane")
+        # Number of datapoints to show (caps at self.max_x)
+        self.num_datapoints = 0
+        self.lookback = 500
         self.max_x = 100  # Maximum value along x axis
         self.max_y = 1000  # Maximum value +/- along y axis
+        self.min_y = -1000
         self.flooded = False  # Flag to indicate if data flooding is happening.
 
         # Holds deques for each slot of incoming data (assumes 1 to start with)
-        self.data = [deque([0] * self.max_x)]
+        self.data = [deque([0] * self.lookback)]
         # Holds line series for each slot of incoming data (assumes 1 to start
         # with).
         self.series = [QLineSeries()]
 
         # Ranges used for the Y axis (up to 1000, after which we just double
         # the range).
-        self.y_ranges = [1, 5, 10, 25, 50, 100, 250, 500, 1000]
+        self.y_ranges = [0, 1, 5, 10, 25, 50, 100, 250, 500, 1000]
 
         # Set up the chart with sensible defaults.
         self.chart = QChart()
@@ -1612,7 +1690,7 @@ class PlotterPane(QChartView):
         self.axis_x = QValueAxis()
         self.axis_y = QValueAxis()
         self.axis_x.setRange(0, self.max_x)
-        self.axis_y.setRange(-self.max_y, self.max_y)
+        self.axis_y.setRange(self.min_y, self.max_y)
         self.axis_x.setLabelFormat("time")
         self.axis_y.setLabelFormat("%d")
         self.chart.setAxisX(self.axis_x, self.series[0])
@@ -1620,7 +1698,7 @@ class PlotterPane(QChartView):
         self.setChart(self.chart)
         self.setRenderHint(QPainter.Antialiasing)
 
-    def process_bytes(self, data):
+    def process_tty_data(self, data):
         """
         Takes raw bytes and, if a valid tuple is detected, adds the data to
         the plotter.
@@ -1666,7 +1744,7 @@ class PlotterPane(QChartView):
         self.input_buffer = []
         if lines[-1]:
             # Append any bytes that are not yet at the end of a line, for
-            # processing next time we read data from self.serial.
+            # processing next time we read data from self.connection.
             self.input_buffer.append(lines[-1])
 
     def add_data(self, values):
@@ -1690,7 +1768,7 @@ class PlotterPane(QChartView):
                     self.chart.setAxisX(self.axis_x, new_series)
                     self.chart.setAxisY(self.axis_y, new_series)
                     self.series.append(new_series)
-                    self.data.append(deque([0] * self.max_x))
+                    self.data.append(deque([0] * self.lookback))
             else:
                 # Remove old line series.
                 for old_series in self.series[value_len:]:
@@ -1701,11 +1779,14 @@ class PlotterPane(QChartView):
         # Add the incoming values to the data to be displayed, and compute
         # max range.
         max_ranges = []
+        min_ranges = []
         for i, value in enumerate(values):
             self.data[i].appendleft(value)
-            max_ranges.append(max([max(self.data[i]), abs(min(self.data[i]))]))
-            if len(self.data[i]) > self.max_x:
+            max_ranges.append(max(self.data[i]))
+            min_ranges.append(min(self.data[i]))
+            if len(self.data[i]) > self.lookback:
                 self.data[i].pop()
+            self.num_datapoints = min(self.num_datapoints + 1, self.max_x)
 
         # Re-scale y-axis.
         max_y_range = max(max_ranges)
@@ -1716,10 +1797,20 @@ class PlotterPane(QChartView):
             self.max_y += self.max_y
         elif max_y_range < self.max_y / 2:
             self.max_y = self.max_y / 2
-        self.axis_y.setRange(-self.max_y, self.max_y)
+
+        min_y_range = min(min_ranges)
+        y_range = bisect.bisect_left(self.y_ranges, abs(min_y_range))
+        if y_range < len(self.y_ranges):
+            self.min_y = -self.y_ranges[y_range]
+        elif min_y_range < self.min_y:
+            self.min_y += self.min_y
+        elif min_y_range > self.min_y / 2:
+            self.min_y = self.min_y / 2
+
+        self.axis_y.setRange(self.min_y, self.max_y)
 
         # Ensure floats are used to label y axis if the range is small.
-        if self.max_y <= 5:
+        if self.max_y - self.min_y <= 10:
             self.axis_y.setLabelFormat("%2.2f")
         else:
             self.axis_y.setLabelFormat("%d")
@@ -1728,8 +1819,8 @@ class PlotterPane(QChartView):
         for i, line_series in enumerate(self.series):
             line_series.clear()
             xy_vals = []
-            for j in range(self.max_x):
-                val = self.data[i][self.max_x - 1 - j]
+            for j in range(self.num_datapoints):
+                val = self.data[i][self.num_datapoints - 1 - j]
                 xy_vals.append((j, val))
             for point in xy_vals:
                 line_series.append(*point)

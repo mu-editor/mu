@@ -3,15 +3,15 @@
 Tests for the user interface elements of Mu.
 """
 from PyQt5.QtWidgets import QAction, QWidget, QFileDialog, QMessageBox
-from PyQt5.QtCore import Qt, QSize, QIODevice
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon, QKeySequence
 from unittest import mock
+import pytest
 from mu import __version__
 from tests.test_app import DumSig
 import mu.interface.main
 import mu.interface.themes
 import mu.interface.editor
-import pytest
 import sys
 
 
@@ -628,7 +628,7 @@ def test_Window_add_tab():
     new_tab_index = 999
     w.tabs = mock.MagicMock()
     w.tabs.addTab = mock.MagicMock(return_value=new_tab_index)
-    w.tabs.currentIndex = mock.MagicMock(return_value=new_tab_index)
+    w.tabs.indexOf = mock.MagicMock(return_value=new_tab_index)
     w.tabs.setCurrentIndex = mock.MagicMock(return_value=None)
     w.tabs.setTabText = mock.MagicMock(return_value=None)
     w.connect_zoom = mock.MagicMock(return_value=None)
@@ -722,18 +722,6 @@ def test_Window_modified():
     assert w.modified
 
 
-def test_Window_on_serial_read():
-    """
-    When data is received the data_received signal should emit it.
-    """
-    w = mu.interface.main.Window()
-    w.serial = mock.MagicMock()
-    w.serial.readAll.return_value = b"Hello"
-    w.data_received = mock.MagicMock()
-    w.on_serial_read()
-    w.data_received.emit.assert_called_once_with(b"Hello")
-
-
 def test_Window_on_stdout_write():
     """
     Ensure the data_received signal is emitted with the data.
@@ -742,76 +730,6 @@ def test_Window_on_stdout_write():
     w.data_received = mock.MagicMock()
     w.on_stdout_write(b"hello")
     w.data_received.emit.assert_called_once_with(b"hello")
-
-
-def test_Window_open_serial_link():
-    """
-    Ensure the serial port is opened in the expected manner.
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readyRead = mock.MagicMock()
-    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch("mu.interface.main.QSerialPort", mock_serial_class):
-        w = mu.interface.main.Window()
-        w.open_serial_link("COM0")
-        assert w.input_buffer == []
-    mock_serial.setPortName.assert_called_once_with("COM0")
-    mock_serial.setBaudRate.assert_called_once_with(115200)
-    mock_serial.open.assert_called_once_with(QIODevice.ReadWrite)
-    mock_serial.readyRead.connect.assert_called_once_with(w.on_serial_read)
-
-
-def test_Window_open_serial_link_unable_to_connect():
-    """
-    If serial.open fails raise an IOError.
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=False)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch("mu.interface.main.QSerialPort", mock_serial_class):
-        with pytest.raises(IOError):
-            w = mu.interface.main.Window()
-            w.open_serial_link("COM0")
-
-
-def test_Window_open_serial_link_DTR_unset():
-    """
-    If data terminal ready (DTR) is unset (as can be the case on some
-    Windows / Qt combinations) then fall back to PySerial to correct. See
-    issues #281 and #302 for details.
-    """
-    mock_qt_serial = mock.MagicMock()
-    mock_qt_serial.isDataTerminalReady.return_value = False
-    mock_py_serial = mock.MagicMock()
-    mock_serial_class = mock.MagicMock(return_value=mock_qt_serial)
-    with mock.patch("mu.interface.main.QSerialPort", mock_serial_class):
-        with mock.patch("mu.interface.main.serial", mock_py_serial):
-            w = mu.interface.main.Window()
-            w.open_serial_link("COM0")
-    mock_qt_serial.close.assert_called_once_with()
-    assert mock_qt_serial.open.call_count == 2
-    mock_py_serial.Serial.assert_called_once_with("COM0")
-    mock_pyser = mock_py_serial.Serial("COM0")
-    assert mock_pyser.dtr is True
-    mock_pyser.close.assert_called_once_with()
-
-
-def test_Window_close_serial_link():
-    """
-    Ensure the serial link is closed / cleaned up as expected.
-    """
-    mock_serial = mock.MagicMock()
-    w = mu.interface.main.Window()
-    w.serial = mock_serial
-    w.close_serial_link()
-    mock_serial.close.assert_called_once_with()
-    assert w.serial is None
 
 
 def test_Window_add_filesystem():
@@ -895,49 +813,18 @@ def test_Window_add_micropython_repl():
     MicroPython based REPL.
     """
     w = mu.interface.main.Window()
-    w.theme = mock.MagicMock()
     w.add_repl = mock.MagicMock()
+    mock_connection = mock.MagicMock()
 
-    def side_effect(self, w=w):
-        w.serial = mock.MagicMock()
-
-    w.open_serial_link = mock.MagicMock(side_effect=side_effect)
-    w.data_received = mock.MagicMock()
     mock_repl = mock.MagicMock()
     mock_repl_class = mock.MagicMock(return_value=mock_repl)
     with mock.patch("mu.interface.main.MicroPythonREPLPane", mock_repl_class):
-        w.add_micropython_repl("COM0", "Test REPL")
-    mock_repl_class.assert_called_once_with(serial=w.serial)
-    w.open_serial_link.assert_called_once_with("COM0")
-    assert w.serial.write.call_count == 2
-    assert w.serial.write.call_args_list[0][0][0] == b"\x02"
-    assert w.serial.write.call_args_list[1][0][0] == b"\x03"
-    w.data_received.connect.assert_called_once_with(mock_repl.process_bytes)
-    w.add_repl.assert_called_once_with(mock_repl, "Test REPL")
+        w.add_micropython_repl("Test REPL", mock_connection)
+    mock_repl_class.assert_called_once_with(mock_connection)
 
-
-def test_Window_add_micropython_repl_no_interrupt():
-    """
-    Ensure the expected object is instantiated and add_repl is called for a
-    MicroPython based REPL.
-    """
-    w = mu.interface.main.Window()
-    w.theme = mock.MagicMock()
-    w.add_repl = mock.MagicMock()
-
-    def side_effect(self, w=w):
-        w.serial = mock.MagicMock()
-
-    w.open_serial_link = mock.MagicMock(side_effect=side_effect)
-    w.data_received = mock.MagicMock()
-    mock_repl = mock.MagicMock()
-    mock_repl_class = mock.MagicMock(return_value=mock_repl)
-    with mock.patch("mu.interface.main.MicroPythonREPLPane", mock_repl_class):
-        w.add_micropython_repl("COM0", "Test REPL", False)
-    mock_repl_class.assert_called_once_with(serial=w.serial)
-    w.open_serial_link.assert_called_once_with("COM0")
-    assert w.serial.write.call_count == 0
-    w.data_received.connect.assert_called_once_with(mock_repl.process_bytes)
+    mock_connection.data_received.connect.assert_called_once_with(
+        mock_repl.process_tty_data
+    )
     w.add_repl.assert_called_once_with(mock_repl, "Test REPL")
 
 
@@ -947,24 +834,22 @@ def test_Window_add_micropython_plotter():
     a MicroPython based plotter.
     """
     w = mu.interface.main.Window()
-    w.theme = mock.MagicMock()
     w.add_plotter = mock.MagicMock()
+    mock_connection = mock.MagicMock()
 
-    def side_effect(self, w=w):
-        w.serial = mock.MagicMock()
-
-    w.open_serial_link = mock.MagicMock(side_effect=side_effect)
-    w.data_received = mock.MagicMock()
     mock_plotter = mock.MagicMock()
     mock_plotter_class = mock.MagicMock(return_value=mock_plotter)
-    mock_mode = mock.MagicMock()
+    mock_data_flood_handler = mock.MagicMock()
     with mock.patch("mu.interface.main.PlotterPane", mock_plotter_class):
-        w.add_micropython_plotter("COM0", "MicroPython Plotter", mock_mode)
+        w.add_micropython_plotter(
+            "MicroPython Plotter", mock_connection, mock_data_flood_handler
+        )
     mock_plotter_class.assert_called_once_with()
-    w.open_serial_link.assert_called_once_with("COM0")
-    w.data_received.connect.assert_called_once_with(mock_plotter.process_bytes)
+    mock_connection.data_received.connect.assert_called_once_with(
+        mock_plotter.process_tty_data
+    )
     mock_plotter.data_flood.connect.assert_called_once_with(
-        mock_mode.on_data_flood
+        mock_data_flood_handler
     )
     w.add_plotter.assert_called_once_with(mock_plotter, "MicroPython Plotter")
 
@@ -982,7 +867,9 @@ def test_Window_add_python3_plotter():
     mock_mode = mock.MagicMock()
     with mock.patch("mu.interface.main.PlotterPane", mock_plotter_class):
         w.add_python3_plotter(mock_mode)
-    w.data_received.connect.assert_called_once_with(mock_plotter.process_bytes)
+    w.data_received.connect.assert_called_once_with(
+        mock_plotter.process_tty_data
+    )
     mock_plotter.data_flood.connect.assert_called_once_with(
         mock_mode.on_data_flood
     )
@@ -1066,7 +953,7 @@ def test_Window_add_python3_runner():
     with mock.patch(
         "mu.interface.main.PythonProcessPane", mock_process_class
     ), mock.patch("mu.interface.main.QDockWidget", mock_dock_class):
-        result = w.add_python3_runner(name, path)
+        result = w.add_python3_runner(name, path, ".")
         assert result == mock_process_runner
     assert w.process_runner == mock_process_runner
     assert w.runner == mock_dock
@@ -1178,26 +1065,10 @@ def test_Window_remove_repl():
     mock_repl.setParent = mock.MagicMock(return_value=None)
     mock_repl.deleteLater = mock.MagicMock(return_value=None)
     w.repl = mock_repl
-    w.serial = mock.MagicMock()
     w.remove_repl()
     mock_repl.setParent.assert_called_once_with(None)
     mock_repl.deleteLater.assert_called_once_with()
     assert w.repl is None
-    assert w.serial is None
-
-
-def test_Window_remove_repl_active_plotter():
-    """
-    When removing the repl, if the plotter is active, retain the serial
-    connection.
-    """
-    w = mu.interface.main.Window()
-    w.repl = mock.MagicMock()
-    w.plotter = mock.MagicMock()
-    w.serial = mock.MagicMock()
-    w.remove_repl()
-    assert w.repl is None
-    assert w.serial
 
 
 def test_Window_remove_plotter():
@@ -1209,26 +1080,10 @@ def test_Window_remove_plotter():
     mock_plotter.setParent = mock.MagicMock(return_value=None)
     mock_plotter.deleteLater = mock.MagicMock(return_value=None)
     w.plotter = mock_plotter
-    w.serial = mock.MagicMock()
     w.remove_plotter()
     mock_plotter.setParent.assert_called_once_with(None)
     mock_plotter.deleteLater.assert_called_once_with()
     assert w.plotter is None
-    assert w.serial is None
-
-
-def test_Window_remove_plotter_active_repl():
-    """
-    When removing the plotter, if the repl is active, retain the serial
-    connection.
-    """
-    w = mu.interface.main.Window()
-    w.repl = mock.MagicMock()
-    w.plotter = mock.MagicMock()
-    w.serial = mock.MagicMock()
-    w.remove_plotter()
-    assert w.plotter is None
-    assert w.serial
 
 
 def test_Window_remove_python_runner():
@@ -1377,10 +1232,10 @@ def test_Window_show_admin():
     mock_admin_display.return_value = mock_admin_box
     with mock.patch("mu.interface.main.AdminDialog", mock_admin_display):
         w = mu.interface.main.Window()
-        result = w.show_admin("log", "envars", "packages")
+        result = w.show_admin("log", "envars", "packages", "mode", "devices")
         mock_admin_display.assert_called_once_with(w)
         mock_admin_box.setup.assert_called_once_with(
-            "log", "envars", "packages"
+            "log", "envars", "packages", "mode", "devices"
         )
         mock_admin_box.exec.assert_called_once_with()
         assert result == "this is the expected result"
@@ -1397,10 +1252,10 @@ def test_Window_show_admin_cancelled():
     mock_admin_display.return_value = mock_admin_box
     with mock.patch("mu.interface.main.AdminDialog", mock_admin_display):
         w = mu.interface.main.Window()
-        result = w.show_admin("log", "envars", "packages")
+        result = w.show_admin("log", "envars", "packages", "mode", "devices")
         mock_admin_display.assert_called_once_with(w)
         mock_admin_box.setup.assert_called_once_with(
-            "log", "envars", "packages"
+            "log", "envars", "packages", "mode", "devices"
         )
         mock_admin_box.exec.assert_called_once_with()
         assert result == {}
@@ -1416,10 +1271,9 @@ def test_Window_sync_packages():
         w = mu.interface.main.Window()
         to_remove = {"foo"}
         to_add = {"bar"}
-        module_dir = "baz"
-        w.sync_packages(to_remove, to_add, module_dir)
+        w.sync_packages(to_remove, to_add)
         dialog = mock_package_dialog()
-        dialog.setup.assert_called_once_with(to_remove, to_add, module_dir)
+        dialog.setup.assert_called_once_with(to_remove, to_add)
         dialog.exec.assert_called_once_with()
 
 
@@ -1973,6 +1827,23 @@ def test_Window_toggle_comments():
     mock_tab.toggle_comments.assert_called_once_with()
 
 
+def test_Window_show_hide_device_selector():
+    """
+    Ensure that the device_selector is shown as expected.
+    """
+    window = mu.interface.main.Window()
+    theme = "night"
+    breakpoint_toggle = mock.MagicMock()
+    window.setup(breakpoint_toggle, theme)
+
+    window.show_device_selector()
+    assert not (window.status_bar.device_selector.isHidden())
+    window.hide_device_selector()
+    assert window.status_bar.device_selector.isHidden()
+    window.show_device_selector()
+    assert not (window.status_bar.device_selector.isHidden())
+
+
 def test_StatusBar_init():
     """
     Ensure the status bar is set up as expected.
@@ -2054,3 +1925,61 @@ def test_StatusBar_set_mode():
     sb.mode_label.setText = mock.MagicMock()
     sb.set_mode(mode)
     sb.mode_label.setText.assert_called_once_with(mode)
+
+
+@pytest.fixture
+def microbit():
+    """
+    Fixture for easy setup of microbit device in tests
+    """
+    microbit = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM1",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
+    )
+    return microbit
+
+
+@pytest.fixture
+def adafruit_feather():
+    """
+    Fixture for easy setup of adafruit feather device in tests
+    """
+    adafruit_feather = mu.logic.Device(
+        0x239A,
+        0x800B,
+        "COM1",
+        123456,
+        "ARM",
+        "CircuitPython",
+        "circuitpython",
+        "Adafruit Feather",
+    )
+    return adafruit_feather
+
+
+def test_StatusBar_device_connected_microbit(microbit):
+    """
+    Test that a message is displayed when a new device is connected
+    (with no board_name set)
+    """
+    sb = mu.interface.main.StatusBar()
+    sb.set_message = mock.MagicMock()
+    sb.device_connected(microbit)
+    assert sb.set_message.call_count == 1
+
+
+def test_StatusBar_device_connected_adafruit_feather(adafruit_feather):
+    """
+    Test that a message is displayed when a new device is connected
+    (with board_name set)
+    """
+    sb = mu.interface.main.StatusBar()
+    sb.set_message = mock.MagicMock()
+    sb.device_connected(adafruit_feather)
+    assert sb.set_message.call_count == 1

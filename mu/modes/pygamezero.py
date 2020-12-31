@@ -1,5 +1,5 @@
 """
-The PyGameZero mode for the Mu editor.
+The Pygame Zero mode for the Mu editor.
 
 Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
 
@@ -21,6 +21,7 @@ import logging
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS, PYGAMEZERO_APIS
 from mu.resources import load_icon
+from ..virtual_environment import venv
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ class PyGameZeroMode(BaseMode):
     """
 
     name = _("Pygame Zero")
+    short_name = "pygamezero"
     description = _("Make games with Pygame Zero.")
     icon = "pygamezero"
     runner = None
@@ -143,9 +145,11 @@ class PyGameZeroMode(BaseMode):
             envars = self.editor.envars
             args = ["-m", "pgzero"]
             cwd = os.path.dirname(tab.path)
+
             self.runner = self.view.add_python3_runner(
-                tab.path,
-                cwd,
+                interpreter=venv.interpreter,
+                script_name=tab.path,
+                working_directory=cwd,
                 interactive=False,
                 envars=envars,
                 python_args=args,
@@ -165,7 +169,7 @@ class PyGameZeroMode(BaseMode):
 
     def show_images(self, event):
         """
-        Open the directory containing the image assets used by PyGame Zero.
+        Open the directory containing the image assets used by Pygame Zero.
 
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
@@ -174,7 +178,7 @@ class PyGameZeroMode(BaseMode):
 
     def show_fonts(self, event):
         """
-        Open the directory containing the font assets used by PyGame Zero.
+        Open the directory containing the font assets used by Pygame Zero.
 
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
@@ -183,7 +187,7 @@ class PyGameZeroMode(BaseMode):
 
     def show_sounds(self, event):
         """
-        Open the directory containing the sound assets used by PyGame Zero.
+        Open the directory containing the sound assets used by Pygame Zero.
 
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
@@ -192,7 +196,7 @@ class PyGameZeroMode(BaseMode):
 
     def show_music(self, event):
         """
-        Open the directory containing the music assets used by PyGame Zero.
+        Open the directory containing the music assets used by Pygame Zero.
 
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.

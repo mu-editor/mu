@@ -17,8 +17,11 @@ import uuid
 
 import pytest
 import mu.logic
+
+# ~ import mu.virtual_environment
+from mu.virtual_environment import venv
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtCore import pyqtSignal, QObject, Qt
 
 from mu import __version__
 
@@ -67,7 +70,8 @@ def _generate_python_files(contents, dirpath):
 
 @contextlib.contextmanager
 def generate_python_files(contents, dirpath=None):
-    """Create a temp directory and populate it with .py files, then remove it
+    """
+    Create a temp directory and populate it with .py files, then remove it.
     """
     dirpath = dirpath or tempfile.mkdtemp(prefix="mu-")
     yield list(_generate_python_files(contents, dirpath))
@@ -76,7 +80,8 @@ def generate_python_files(contents, dirpath=None):
 
 @contextlib.contextmanager
 def generate_python_file(text="", dirpath=None):
-    """Create a temp directory and populate it with on .py file, then remove it
+    """
+    Create a temp directory and populate it with on .py file, then remove it.
     """
     dirpath = dirpath or tempfile.mkdtemp(prefix="mu-")
     for filepath in _generate_python_files([text], dirpath):
@@ -96,6 +101,7 @@ def generate_session(
     microbit_runtime=None,
     zoom_level=2,
     window=None,
+    venv_path=None,
     **kwargs
 ):
     """Generate a temporary session file for one test
@@ -143,6 +149,8 @@ def generate_session(
         session_data["zoom_level"] = zoom_level
     if window:
         session_data["window"] = window
+    if venv_path:
+        session_data["venv_path"] = venv_path
     session_data.update(**kwargs)
 
     if filepath is None:
@@ -158,8 +166,7 @@ def generate_session(
 
 
 def mocked_view(text, path, newline):
-    """Create a mocked view with path, newline and text
-    """
+    """Create a mocked view with path, newline and text"""
     view = mock.MagicMock()
     view.current_tab = mock.MagicMock()
     view.current_tab.path = path
@@ -199,90 +206,64 @@ def test_CONSTANTS():
     assert mu.logic.WORKSPACE_NAME
 
 
-def test_installed_packages_dist_info():
-    """
-    Ensure module meta-data is processed properly to give a return value of a
-    list containing all the installed modules currently in the MODULE_DIR.
-    """
-    mock_listdir = mock.MagicMock(
-        return_value=["foo-1.0.0.dist-info", "bar-2.0.0.dist-info", "baz"]
+@pytest.fixture
+def microbit_com1():
+    microbit = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM1",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        "BBC micro:bit",
     )
-    mock_open = mock.MagicMock()
-    mock_file = mock.MagicMock()
-    mock_open().__enter__ = mock.MagicMock(return_value=mock_file)
-    foo_metadata = [
-        b"Metadata-Version: 2.1",
-        b"Name: foo",
-        b"test: \xe6\x88\x91",
-    ]
-    bar_metadata = [
-        b"Metadata-Version: 2.1",
-        b"Name: bar",
-        b"test: \xe6\x88\x91",
-    ]
-    mock_file.readlines = mock.MagicMock(
-        side_effect=[foo_metadata, bar_metadata]
-    )
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "mu.logic.os.listdir", mock_listdir
-    ):
-        mock_open.reset_mock()
-        result = mu.logic.installed_packages()
-        assert mock_open.call_args_list[0][0][0].endswith("METADATA")
-        assert mock_open.call_args_list[1][0][0].endswith("METADATA")
-        assert result == ["bar", "foo"]  # ordered result.
+    return microbit
 
 
-def test_installed_packages_egg_info():
-    """
-    Ensure module meta-data is processed properly to give a return value of a
-    list containing all the installed modules currently in the MODULE_DIR.
-    """
-    mock_listdir = mock.MagicMock(
-        return_value=["foo-1.0.0.egg-info", "bar-2.0.0.egg-info", "baz"]
+@pytest.fixture
+def microbit_com2():
+    microbit = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM2",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        "BBC micro:bit",
     )
-    mock_open = mock.MagicMock()
-    mock_file = mock.MagicMock()
-    mock_open().__enter__ = mock.MagicMock(return_value=mock_file)
-    foo_metadata = [
-        b"Metadata-Version: 2.1",
-        b"Name: foo",
-        b"test: \xe6\x88\x91",
-    ]
-    bar_metadata = [
-        b"Metadata-Version: 2.1",
-        b"Name: bar",
-        b"test: \xe6\x88\x91",
-    ]
-    mock_file.readlines = mock.MagicMock(
-        side_effect=[foo_metadata, bar_metadata]
-    )
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "mu.logic.os.listdir", mock_listdir
-    ):
-        mock_open.reset_mock()
-        result = mu.logic.installed_packages()
-        assert mock_open.call_args_list[0][0][0].endswith("PKG-INFO")
-        assert mock_open.call_args_list[1][0][0].endswith("PKG-INFO")
-        assert result == ["bar", "foo"]  # ordered result.
+    return microbit
 
 
-def test_installed_packages_errors():
-    """
-    If there's an error opening the expected metadata file, then just ignore
-    and log.
-    """
-    mock_listdir = mock.MagicMock(
-        return_value=["foo-1.0.0.egg-info", "bar-2.0.0.egg-info", "baz"]
+@pytest.fixture
+def adafruit_feather():
+    adafruit_feather = mu.logic.Device(
+        0x239A,
+        0x800B,
+        "COM1",
+        123456,
+        "ARM",
+        "CircuitPython",
+        "circuitpython",
+        "Adafruit Feather",
     )
-    mock_open = mock.MagicMock(side_effect=Exception("Boom"))
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "mu.logic.os.listdir", mock_listdir
-    ), mock.patch("mu.logic.logger.error") as mock_log:
-        mock_open.reset_mock()
-        result = mu.logic.installed_packages()
-        assert result == []
-        assert mock_log.call_count == 4
+    return adafruit_feather
+
+
+@pytest.fixture
+def esp_device():
+    esp_device = mu.logic.Device(
+        0x0403,
+        0x6015,
+        "COM1",
+        123456,
+        "Sparkfun",
+        "ESP MicroPython",
+        "esp",
+        # No board_name specified
+    )
+    return esp_device
 
 
 def test_write_and_flush():
@@ -731,31 +712,144 @@ def test_MuFlakeCodeReporter_flake_un_matched():
     assert r.log[0]["message"] == "something went wrong"
 
 
-def test_REPL_posix():
-    """
-    The port is set correctly in a posix environment.
-    """
-    with mock.patch("os.name", "posix"):
-        r = mu.logic.REPL("ttyACM0")
-        assert r.port == "/dev/ttyACM0"
+def test_device__init(adafruit_feather):
+    assert adafruit_feather.vid == 0x239A
+    assert adafruit_feather.pid == 0x800B
+    assert adafruit_feather.port == "COM1"
+    assert adafruit_feather.serial_number == 123456
+    assert adafruit_feather.manufacturer == "ARM"
+    assert adafruit_feather.long_mode_name == "CircuitPython"
+    assert adafruit_feather.short_mode_name == "circuitpython"
+    assert adafruit_feather.board_name == "Adafruit Feather"
 
 
-def test_REPL_nt():
+def test_device_name(esp_device, adafruit_feather):
     """
-    The port is set correctly in an nt (Windows) environment.
+    Test that devices without a boardname (such as the esp_device),
+    are the long mode name with " device" appended
     """
-    with mock.patch("os.name", "nt"):
-        r = mu.logic.REPL("COM0")
-        assert r.port == "COM0"
+    assert esp_device.name == "ESP MicroPython device"
+    assert adafruit_feather.name == "Adafruit Feather"
 
 
-def test_REPL_unsupported():
-    """
-    A NotImplementedError is raised on an unsupported OS.
-    """
-    with mock.patch("os.name", "SPARC"):
-        with pytest.raises(NotImplementedError):
-            mu.logic.REPL("tty0")
+def test_device_equality(microbit_com1):
+    assert microbit_com1 == microbit_com1
+
+
+def test_device_inequality(microbit_com1, microbit_com2):
+    assert microbit_com1 != microbit_com2
+
+
+def test_device_ordering_lt(microbit_com1, adafruit_feather):
+    assert adafruit_feather < microbit_com1
+
+
+def test_device_ordering_gt(microbit_com1, adafruit_feather):
+    assert microbit_com1 > adafruit_feather
+
+
+def test_device_ordering_le(microbit_com1, adafruit_feather):
+    assert adafruit_feather <= microbit_com1
+
+
+def test_device_ordering_ge(microbit_com1, adafruit_feather):
+    assert microbit_com1 >= adafruit_feather
+
+
+def test_device_to_string(adafruit_feather):
+    assert (
+        str(adafruit_feather)
+        == "Adafruit Feather on COM1 (VID: 0x239A, PID: 0x800B)"
+    )
+
+
+def test_device_hash(microbit_com1, microbit_com2):
+    assert hash(microbit_com1) == hash(microbit_com1)
+    assert hash(microbit_com1) != hash(microbit_com2)
+
+
+def test_devicelist_index(microbit_com1):
+    modes = {}
+    dl = mu.logic.DeviceList(modes)
+    dl.add_device(microbit_com1)
+    assert dl[0] == microbit_com1
+
+
+def test_devicelist_length(microbit_com1, microbit_com2):
+    modes = {}
+    dl = mu.logic.DeviceList(modes)
+    assert len(dl) == 0
+    dl.add_device(microbit_com1)
+    assert len(dl) == 1
+    dl.add_device(microbit_com2)
+    assert len(dl) == 2
+
+
+def test_devicelist_rowCount(microbit_com1, microbit_com2):
+    modes = {}
+    dl = mu.logic.DeviceList(modes)
+    assert dl.rowCount(None) == 0
+    dl.add_device(microbit_com1)
+    assert dl.rowCount(None) == 1
+    dl.add_device(microbit_com2)
+    assert dl.rowCount(None) == 2
+
+
+def test_devicelist_data(microbit_com1, adafruit_feather):
+    modes = {}
+    dl = mu.logic.DeviceList(modes)
+    dl.add_device(microbit_com1)
+    dl.add_device(adafruit_feather)
+    tooltip = dl.data(dl.index(0), Qt.ToolTipRole)
+    display = dl.data(dl.index(0), Qt.DisplayRole)
+    assert display == adafruit_feather.name
+    assert tooltip == str(adafruit_feather)
+    tooltip = dl.data(dl.index(1), Qt.ToolTipRole)
+    display = dl.data(dl.index(1), Qt.DisplayRole)
+    assert display == microbit_com1.name
+    assert tooltip == str(microbit_com1)
+
+
+def test_devicelist_add_device_in_sorted_order(
+    microbit_com1, adafruit_feather
+):
+    modes = {}
+    dl = mu.logic.DeviceList(modes)
+    dl.add_device(microbit_com1)
+    assert dl[0] == microbit_com1
+    dl.add_device(adafruit_feather)
+    assert dl[0] == adafruit_feather
+    assert dl[1] == microbit_com1
+
+    xyz_device = mu.logic.Device(
+        0x123B,
+        0x333A,
+        "COM1",
+        123456,
+        "ARM",
+        "ESP Mode",
+        "esp",
+        "xyz",
+    )
+    dl.add_device(xyz_device)
+    assert dl[2] == xyz_device
+
+
+def test_devicelist_remove_device(microbit_com1, adafruit_feather):
+    modes = {}
+    dl = mu.logic.DeviceList(modes)
+    dl.add_device(microbit_com1)
+    assert len(dl) == 1
+    dl.remove_device(microbit_com1)
+    assert len(dl) == 0
+
+    dl.add_device(microbit_com1)
+    dl.add_device(adafruit_feather)
+    assert len(dl) == 2
+    dl.remove_device(adafruit_feather)
+    assert len(dl) == 1
+    dl.remove_device(microbit_com1)
+    assert len(dl) == 0
 
 
 def test_editor_init():
@@ -777,14 +871,13 @@ def test_editor_init():
         assert e.envars == []
         assert e.minify is False
         assert e.microbit_runtime == ""
-        assert e.connected_devices == set()
+        # assert e.connected_devices == set()
         assert e.find == ""
         assert e.replace == ""
         assert e.global_replace is False
         assert e.selecting_mode is False
-        assert mkd.call_count == 2
+        assert mkd.call_count == 1
         assert mkd.call_args_list[0][0][0] == mu.logic.DATA_DIR
-        assert mkd.call_args_list[1][0][0] == mu.logic.MODULE_DIR
 
 
 def test_editor_setup():
@@ -808,7 +901,32 @@ def test_editor_setup():
         assert mock_shutil_copy.call_count == asset_len
         assert mock_shutil_copytree.call_count == 2
     assert e.modes == mock_modes
-    view.set_usb_checker.assert_called_once_with(1, e.check_usb)
+    view.set_usb_checker.assert_called_once_with(
+        1, e.connected_devices.check_usb
+    )
+
+
+def test_editor_connect_to_status_bar():
+    """
+    Check that the Window status bar is connected appropriately
+    to Editor-pane and to modes
+    """
+    view = mock.MagicMock()
+    e = mu.logic.Editor(view)
+    mock_python_mode = mock.MagicMock()
+    mock_esp_mode = mock.MagicMock()
+    mock_python_mode.workspace_dir.return_value = "foo"
+    mock_modes = {"python": mock_python_mode, "esp": mock_esp_mode}
+    mock_device_selector = mock.MagicMock()
+    with mock.patch("os.path.exists", return_value=False), mock.patch(
+        "os.makedirs", return_value=None
+    ), mock.patch("shutil.copy"), mock.patch("shutil.copytree"):
+        e.setup(mock_modes)
+        sb = mock.MagicMock()
+        sb.device_selector = mock_device_selector
+        e.connect_to_status_bar(sb)
+        # Check device_changed signal is connected to both editor and modes
+        assert sb.device_selector.device_changed.connect.call_count == 3
 
 
 def test_editor_restore_session_existing_runtime():
@@ -819,10 +937,16 @@ def test_editor_restore_session_existing_runtime():
     file_contents = ["", ""]
     ed = mocked_editor(mode)
     with mock.patch("os.path.isfile", return_value=True):
-        with generate_session(
-            theme, mode, file_contents, microbit_runtime="/foo", zoom_level=5
-        ):
-            ed.restore_session()
+        with mock.patch.object(venv, "relocate") as venv_relocate:
+            with generate_session(
+                theme,
+                mode,
+                file_contents,
+                microbit_runtime="/foo",
+                zoom_level=5,
+                venv_path="foo",
+            ):
+                ed.restore_session()
 
     assert ed.theme == theme
     assert ed._view.add_tab.call_count == len(file_contents)
@@ -831,6 +955,7 @@ def test_editor_restore_session_existing_runtime():
     assert ed.minify is False
     assert ed.microbit_runtime == "/foo"
     assert ed._view.zoom_position == 5
+    assert venv_relocate.called_with("foo")
 
 
 def test_editor_restore_session_missing_runtime():
@@ -1501,7 +1626,7 @@ def test_load_no_current_path():
     ed.load()
     expected = os.path.abspath("old_path")
     view.get_load_path.assert_called_once_with(
-        expected, "*.py *.PY", allow_previous=True
+        expected, "*.py *.pyw *.PY *.PYW", allow_previous=True
     )
 
 
@@ -1526,7 +1651,7 @@ def test_load_no_current_path_no_current_tab():
     ed.load()
     expected = mock_mode.workspace_dir()
     view.get_load_path.assert_called_once_with(
-        expected, "*.py *.PY", allow_previous=True
+        expected, "*.py *.pyw *.PY *.PYW", allow_previous=True
     )
 
 
@@ -1550,7 +1675,7 @@ def test_load_has_current_path_does_not_exist():
     ed.load()
     expected = mock_mode.workspace_dir()
     view.get_load_path.assert_called_once_with(
-        expected, "*.py *.PY", allow_previous=True
+        expected, "*.py *.pyw *.PY *.PYW", allow_previous=True
     )
 
 
@@ -1574,7 +1699,7 @@ def test_load_has_current_path():
     with mock.patch("os.path.isdir", return_value=True):
         ed.load()
     view.get_load_path.assert_called_once_with(
-        "foo", "*.py *.PY", allow_previous=True
+        "foo", "*.py *.pyw *.PY *.PYW", allow_previous=True
     )
 
 
@@ -1597,7 +1722,7 @@ def test_load_has_default_path():
     with mock.patch("os.path.isdir", return_value=True):
         ed.load(default_path="foo")
     view.get_load_path.assert_called_once_with(
-        "foo", "*.py *.PY", allow_previous=False
+        "foo", "*.py *.pyw *.PY *.PYW", allow_previous=False
     )
 
 
@@ -1911,13 +2036,9 @@ def test_show_help():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    qlocalesys = mock.MagicMock()
-    qlocalesys.name.return_value = "en_GB"
     with mock.patch(
         "mu.logic.webbrowser.open_new", return_value=None
-    ) as wb, mock.patch(
-        "PyQt5.QtCore.QLocale.system", return_value=qlocalesys
-    ):
+    ) as wb, mock.patch("mu.i18n.language_code", "en_GB"):
         ed.show_help()
         version = ".".join(__version__.split(".")[:2])
         url = "https://codewith.mu/en/help/{}".format(version)
@@ -2036,24 +2157,12 @@ def test_quit_save_tabs_with_paths():
     mock_mode.workspace_dir.return_value = "foo/bar"
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit"):
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    [session], _ = mock_save_session.call_args
     assert os.path.abspath("foo.py") in session["paths"]
 
 
@@ -2071,24 +2180,12 @@ def test_quit_save_theme():
     mock_mode.workspace_dir.return_value = "foo/bar"
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit"):
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    [session], _ = mock_save_session.call_args
     assert session["theme"] == "night"
 
 
@@ -2108,24 +2205,12 @@ def test_quit_save_envars():
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
     ed.envars = [["name1", "value1"], ["name2", "value2"]]
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit"):
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    [session], _ = mock_save_session.call_args
     assert session["envars"] == [["name1", "value1"], ["name2", "value2"]]
 
 
@@ -2144,25 +2229,15 @@ def test_quit_save_zoom_level():
     mock_mode.workspace_dir.return_value = "foo/bar"
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
-    ed.envars = [["name1", "value1"], ["name2", "value2"]]
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit"):
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    [session], _ = mock_save_session.call_args
+    #
+    # FIXME: not clear where this is set. Default?
+    #
     assert session["zoom_level"] == 2
 
 
@@ -2181,124 +2256,16 @@ def test_quit_save_window_geometry():
     mock_mode.workspace_dir.return_value = "foo/bar"
     mock_mode.get_hex_path.return_value = "foo/bar"
     ed.modes = {"python": mock_mode, "microbit": mock_mode}
-    ed.envars = [["name1", "value1"], ["name2", "value2"]]
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
-        ed.quit(mock_event)
-    assert view.show_confirmation.call_count == 1
-    assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
-    recovered = "".join(
-        [i[0][0] for i in mock_open.return_value.write.call_args_list]
-    )
-    session = json.loads(recovered)
+
+    with mock.patch.object(sys, "exit"):
+        with mock.patch.object(mu.logic, "save_session") as mock_save_session:
+            ed.quit()
+
+    [session], _ = mock_save_session.call_args
+    #
+    # FIXME: not clear where this is set. Default?
+    #
     assert session["window"] == {"x": 100, "y": 200, "w": 300, "h": 400}
-
-
-def test_quit_cleans_temporary_pth_file_on_windows():
-    """
-    If the platform is Windows and Mu is running as installed by the official
-    Windows installer, then check for the existence of mu.pth, and if found,
-    delete it.
-    """
-    view = _editor_view_mock()
-    w1 = mock.MagicMock()
-    w1.path = "foo.py"
-    view.widgets = [w1]
-    ed = mu.logic.Editor(view)
-    ed.theme = "night"
-    ed.modes = {"python": mock.MagicMock(), "microbit": mock.MagicMock()}
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    mock_sys = mock.MagicMock()
-    mock_sys.platform = "win32"
-    mock_sys.executable = "C:\\Program Files\\Mu\\Python\\pythonw.exe"
-    mock_os_p_e = mock.MagicMock(return_value=True)
-    mock_os_remove = mock.MagicMock()
-    mock_site = mock.MagicMock()
-    mock_site.ENABLE_USER_SITE = True
-    mock_site.USER_SITE = (
-        "C:\\Users\\foo\\AppData\\Roaming\\Python\\" "Python36\\site-packages"
-    )
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ), mock.patch("json.dump"), mock.patch(
-        "mu.logic.sys", mock_sys
-    ), mock.patch(
-        "mu.logic.os.path.exists", mock_os_p_e
-    ), mock.patch(
-        "mu.logic.os.remove", mock_os_remove
-    ), mock.patch(
-        "mu.logic.site", mock_site
-    ):
-        ed.quit(mock_event)
-    expected_path = os.path.join(mock_site.USER_SITE, "mu.pth")
-    mock_os_remove.assert_called_once_with(expected_path)
-
-
-def test_quit_unable_to_clean_temporary_pth_file_on_windows():
-    """
-    If the platform is Windows and Mu is running as installed by the official
-    Windows installer, then check for the existence of mu.pth, and if found,
-    attempt to delete it, but in the case of an error, simply log the error
-    for future reference / debugging.
-    """
-    view = mock.MagicMock()
-    view.modified = True
-    view.show_confirmation = mock.MagicMock(return_value=True)
-    w1 = mock.MagicMock()
-    w1.path = "foo.py"
-    view.widgets = [w1]
-    ed = mu.logic.Editor(view)
-    ed.theme = "night"
-    ed.modes = {"python": mock.MagicMock(), "microbit": mock.MagicMock()}
-    mock_open = mock.MagicMock()
-    mock_open.return_value.__enter__ = lambda s: s
-    mock_open.return_value.__exit__ = mock.Mock()
-    mock_open.return_value.write = mock.MagicMock()
-    mock_event = mock.MagicMock()
-    mock_event.ignore = mock.MagicMock(return_value=None)
-    mock_sys = mock.MagicMock()
-    mock_sys.platform = "win32"
-    mock_sys.executable = "C:\\Program Files\\Mu\\Python\\pythonw.exe"
-    mock_os_p_e = mock.MagicMock(return_value=True)
-    mock_os_remove = mock.MagicMock(side_effect=PermissionError("Boom"))
-    mock_site = mock.MagicMock()
-    mock_site.ENABLE_USER_SITE = True
-    mock_site.USER_SITE = (
-        "C:\\Users\\foo\\AppData\\Roaming\\Python\\" "Python36\\site-packages"
-    )
-    mock_log = mock.MagicMock()
-    with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ), mock.patch("json.dump"), mock.patch(
-        "mu.logic.sys", mock_sys
-    ), mock.patch(
-        "mu.logic.os.path.exists", mock_os_p_e
-    ), mock.patch(
-        "mu.logic.os.remove", mock_os_remove
-    ), mock.patch(
-        "mu.logic.site", mock_site
-    ), mock.patch(
-        "mu.logic.logger", mock_log
-    ):
-        ed.quit(mock_event)
-    logs = [call[0][0] for call in mock_log.error.call_args_list]
-    expected_path = os.path.join(mock_site.USER_SITE, "mu.pth")
-    expected = "Unable to delete {}".format(expected_path)
-    assert expected in logs
 
 
 def test_quit_calls_mode_stop():
@@ -2360,6 +2327,7 @@ def test_show_admin():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.modes = {"python": mock.MagicMock()}
     ed.sync_package_state = mock.MagicMock()
     ed.envars = [["name", "value"]]
     ed.minify = True
@@ -2376,22 +2344,26 @@ def test_show_admin():
         "packages": "baz\n",
     }
     view.show_admin.return_value = new_settings
-    mock_open = mock.mock_open()
-    mock_ip = mock.MagicMock(return_value=["Foo", "bar"])
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.isfile", return_value=True
-    ), mock.patch("mu.logic.installed_packages", mock_ip):
-        ed.show_admin(None)
-        mock_open.assert_called_once_with(
-            mu.logic.LOG_FILE, "r", encoding="utf8"
-        )
-        assert view.show_admin.call_count == 1
-        assert view.show_admin.call_args[0][1] == settings
-        assert ed.envars == [["name", "value"]]
-        assert ed.minify is True
-        assert ed.microbit_runtime == "/foo/bar"
-        # Expect package names to be normalised to lowercase.
-        ed.sync_package_state.assert_called_once_with(["foo", "bar"], ["baz"])
+    with mock.patch.object(
+        venv, "installed_packages", return_value=([], ["Foo", "bar"])
+    ):
+        mock_open = mock.mock_open()
+        with mock.patch("builtins.open", mock_open), mock.patch(
+            "os.path.isfile", return_value=True
+        ):
+            ed.show_admin()
+            mock_open.assert_called_once_with(
+                mu.logic.LOG_FILE, "r", encoding="utf8"
+            )
+            assert view.show_admin.call_count == 1
+            assert view.show_admin.call_args[0][1] == settings
+            assert ed.envars == [["name", "value"]]
+            assert ed.minify is True
+            assert ed.microbit_runtime == "/foo/bar"
+            # Expect package names to be normalised to lowercase.
+            ed.sync_package_state.assert_called_once_with(
+                ["foo", "bar"], ["baz"]
+            )
 
 
 def test_show_admin_no_change():
@@ -2400,6 +2372,7 @@ def test_show_admin_no_change():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.modes = {"python": mock.MagicMock()}
     ed.sync_package_state = mock.MagicMock()
     ed.envars = [["name", "value"]]
     ed.minify = True
@@ -2407,12 +2380,14 @@ def test_show_admin_no_change():
     new_settings = {}
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    mock_ip = mock.MagicMock(return_value=["foo", "bar"])
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.isfile", return_value=True
-    ), mock.patch("mu.logic.installed_packages", mock_ip):
-        ed.show_admin(None)
-        assert ed.sync_package_state.call_count == 0
+    with mock.patch.object(
+        venv, "installed_packages", return_value=([], ["Foo", "bar"])
+    ):
+        with mock.patch("builtins.open", mock_open), mock.patch(
+            "os.path.isfile", return_value=True
+        ):
+            ed.show_admin(None)
+            assert ed.sync_package_state.call_count == 0
 
 
 def test_show_admin_missing_microbit_runtime():
@@ -2422,6 +2397,7 @@ def test_show_admin_missing_microbit_runtime():
     """
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
+    ed.modes = {"python": mock.MagicMock()}
     ed.sync_package_state = mock.MagicMock()
     ed.envars = [["name", "value"]]
     ed.minify = True
@@ -2439,21 +2415,25 @@ def test_show_admin_missing_microbit_runtime():
     }
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
-    mock_ip = mock.MagicMock(return_value=["foo", "bar"])
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.isfile", return_value=False
-    ), mock.patch("mu.logic.installed_packages", mock_ip):
-        ed.show_admin(None)
-        mock_open.assert_called_once_with(
-            mu.logic.LOG_FILE, "r", encoding="utf8"
-        )
-        assert view.show_admin.call_count == 1
-        assert view.show_admin.call_args[0][1] == settings
-        assert ed.envars == [["name", "value"]]
-        assert ed.minify is True
-        assert ed.microbit_runtime == ""
-        assert view.show_message.call_count == 1
-        ed.sync_package_state.assert_called_once_with(["foo", "bar"], ["baz"])
+    with mock.patch.object(
+        venv, "installed_packages", return_value=([], ["Foo", "bar"])
+    ):
+        with mock.patch("builtins.open", mock_open), mock.patch(
+            "os.path.isfile", return_value=False
+        ):
+            ed.show_admin(None)
+            mock_open.assert_called_once_with(
+                mu.logic.LOG_FILE, "r", encoding="utf8"
+            )
+            assert view.show_admin.call_count == 1
+            assert view.show_admin.call_args[0][1] == settings
+            assert ed.envars == [["name", "value"]]
+            assert ed.minify is True
+            assert ed.microbit_runtime == ""
+            assert view.show_message.call_count == 1
+            ed.sync_package_state.assert_called_once_with(
+                ["foo", "bar"], ["baz"]
+            )
 
 
 def test_sync_package_state():
@@ -2466,9 +2446,8 @@ def test_sync_package_state():
     old_packages = ["foo", "bar"]
     new_packages = ["bar", "baz"]
     ed.sync_package_state(old_packages, new_packages)
-    view.sync_packages.assert_called_once_with(
-        {"foo"}, {"baz"}, mu.logic.MODULE_DIR
-    )
+    args, _ = view.sync_packages.call_args
+    assert args[:2] == ({"foo"}, {"baz"})
 
 
 def test_select_mode():
@@ -2611,9 +2590,40 @@ def test_autosave():
     )
 
 
-def test_check_usb():
+def test_check_usb(microbit_com1):
     """
     Ensure the check_usb callback actually checks for connected USB devices.
+    """
+    mode_py = mock.MagicMock()
+    mode_py.name = "Python3"
+    mode_py.runner = None
+    mode_py.find_devices.return_value = []
+    mode_mb = mock.MagicMock()
+    mode_mb.name = "BBC micro:bit"
+    mode_mb.find_devices.return_value = [microbit_com1]
+    modes = {"microbit": mode_mb, "python": mode_py}
+    device_list = mu.logic.DeviceList(modes)
+    device_list.device_connected = mock.MagicMock()
+    device_list.check_usb()
+    device_list.device_connected.emit.assert_called_with(microbit_com1)
+
+
+def test_check_usb_remove_disconnected_devices(microbit_com1):
+    """
+    Ensure that if a device is no longer connected, it is removed from
+    the set of connected devices.
+    """
+    # No modes, so no devices should be detected
+    modes = {}
+    device_list = mu.logic.DeviceList(modes)
+    device_list.add_device(microbit_com1)
+    device_list.check_usb()
+    assert len(device_list) == 0
+
+
+def test_ask_to_change_mode_confirm():
+    """
+    Ensure the ask_to_change_mode calls change_mode, if user confirms.
     """
     view = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
@@ -2622,22 +2632,18 @@ def test_check_usb():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None)
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345")
     ed.modes = {"microbit": mode_mb, "python": mode_py}
-    ed.show_status_message = mock.MagicMock()
-    ed.check_usb()
-    expected = "Detected new BBC micro:bit device."
-    ed.show_status_message.assert_called_with(expected)
+    ed.ask_to_change_mode("microbit", "python", "New device detected")
     assert view.show_confirmation.called
     ed.change_mode.assert_called_once_with("microbit")
 
 
-def test_check_usb_change_mode_cancel():
+def test_ask_to_change_mode_cancel(adafruit_feather):
     """
-    Ensure the check_usb doesn't change mode if confirmation cancelled by user.
+    Ensure the ask_to_change_mode doesn't change mode if confirmation cancelled
+    by user.
     """
     view = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
@@ -2646,22 +2652,18 @@ def test_check_usb_change_mode_cancel():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None)
     mode_cp = mock.MagicMock()
     mode_cp.name = "CircuitPlayground"
-    mode_cp.find_device.return_value = ("/dev/ttyUSB1", "12345")
     ed.modes = {"circuitplayground": mode_cp, "python": mode_py}
-    ed.show_status_message = mock.MagicMock()
-    ed.check_usb()
-    expected = "Detected new CircuitPlayground device."
-    ed.show_status_message.assert_called_with(expected)
+    ed.ask_to_change_mode(mode_cp, mode_py, "New device detected")
     assert view.show_confirmation.called
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_already_in_mode():
+def test_ask_to_change_mode_already_in_mode(microbit_com1):
     """
-    Ensure the check_usb doesn't ask to change mode if already selected.
+    Ensure the ask_to_change_mode doesn't ask to change mode if already
+    selected.
     """
     view = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
@@ -2669,21 +2671,21 @@ def test_check_usb_already_in_mode():
     ed.change_mode = mock.MagicMock()
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345")
+    mode_mb.find_devices.return_value = [microbit_com1]
     mode_cp = mock.MagicMock()
-    mode_cp.find_device.return_value = (None, None)
+    mode_cp.find_devices.return_value = []
     ed.modes = {"microbit": mode_mb, "circuitplayground": mode_cp}
     ed.mode = "microbit"
     ed.show_status_message = mock.MagicMock()
-    ed.check_usb()
+    ed.ask_to_change_mode(mode_mb, mode_mb, "New device detected")
     view.show_confirmation.assert_not_called()
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_currently_running_code():
+def test_ask_to_change_mode_currently_running_code(microbit_com1):
     """
-    Ensure the check_usb doesn't ask to change mode if the current mode is
-    running code.
+    Ensure the ask_to_check_mode doesn't ask to change mode if the current mode
+    is running code.
     """
     view = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
@@ -2692,55 +2694,21 @@ def test_check_usb_currently_running_code():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = True
-    mode_py.find_device.return_value = (None, None)
+    mode_py.find_device.return_value = []
     mode_mb = mock.MagicMock()
     mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345")
+    mode_mb.find_devices.return_value = [microbit_com1]
     ed.modes = {"microbit": mode_mb, "python": mode_py}
     ed.show_status_message = mock.MagicMock()
-    ed.check_usb()
+    ed.ask_to_change_mode(mode_mb, mode_py, "New device detected")
     view.show_confirmation.assert_not_called()
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_multiple_devices():
+def test_ask_to_change_mode_when_selecting_mode_is_silent(adafruit_feather):
     """
-    Ensure the check_usb doesn't ask to change mode if multiple devices found.
-    """
-    view = mock.MagicMock()
-    view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Ok)
-    ed = mu.logic.Editor(view)
-    ed.change_mode = mock.MagicMock()
-    mode_py = mock.MagicMock()
-    mode_py.name = "Python3"
-    mode_py.runner = None
-    mode_py.find_device.return_value = (None, None)
-    mode_mb = mock.MagicMock()
-    mode_mb.name = "BBC micro:bit"
-    mode_mb.find_device.return_value = ("/dev/ttyUSB0", "12345")
-    mode_cp = mock.MagicMock()
-    mode_cp.name = "CircuitPlayground"
-    mode_cp.find_device.return_value = ("/dev/ttyUSB1", "54321")
-    ed.modes = {
-        "microbit": mode_mb,
-        "circuitplayground": mode_cp,
-        "python": mode_py,
-    }
-    ed.show_status_message = mock.MagicMock()
-    ed.check_usb()
-    expected_mb = mock.call("Detected new BBC micro:bit device.")
-    expected_cp = mock.call("Detected new CircuitPlayground device.")
-    ed.show_status_message.assert_has_calls(
-        (expected_mb, expected_cp), any_order=True
-    )
-    view.show_confirmation.assert_not_called()
-    ed.change_mode.assert_not_called()
-
-
-def test_check_usb_when_selecting_mode_is_silent():
-    """
-    Ensure the check_usb doesn't ask to change mode if the user has the mode
-    selection dialog active (indicated by the selecting_mode flag.
+    Ensure ask_to_change_mode doesn't ask to change mode if the user has
+    the mode selection dialog active (indicated by the selecting_mode flag).
     """
     view = mock.MagicMock()
     view.show_confirmation = mock.MagicMock(return_value=QMessageBox.Cancel)
@@ -2749,32 +2717,31 @@ def test_check_usb_when_selecting_mode_is_silent():
     mode_py = mock.MagicMock()
     mode_py.name = "Python3"
     mode_py.runner = None
-    mode_py.find_device.return_value = (None, None)
+    mode_py.find_devices.return_value = []
     mode_cp = mock.MagicMock()
     mode_cp.name = "CircuitPlayground"
-    mode_cp.find_device.return_value = ("/dev/ttyUSB1", "12345")
+    mode_cp.find_devices.return_value = [adafruit_feather]
     ed.modes = {"circuitplayground": mode_cp, "python": mode_py}
-    ed.show_status_message = mock.MagicMock()
     ed.selecting_mode = True
-    ed.check_usb()
-    expected = "Detected new CircuitPlayground device."
-    ed.show_status_message.assert_called_with(expected)
+    ed.ask_to_change_mode(mode_cp, mode_py, "New device detected")
     assert view.show_confirmation.call_count == 0
     ed.change_mode.assert_not_called()
 
 
-def test_check_usb_remove_disconnected_devices():
-    """
-    Ensure that if a device is no longer connected, it is removed from
-    the set of connected devices.
-    """
+def test_device_changed(microbit_com1, adafruit_feather):
     view = mock.MagicMock()
     ed = mu.logic.Editor(view)
-    ed.modes = {}
-    ed.show_status_message = mock.MagicMock()
-    ed.connected_devices = {("microbit", "/dev/ttyACM1")}
-    ed.check_usb()
-    assert len(ed.connected_devices) == 0
+    ed.ask_to_change_mode = mock.MagicMock()
+    ed.device_changed(adafruit_feather)
+    ed.ask_to_change_mode.assert_called_once_with(
+        "circuitpython",
+        "CircuitPython",
+        "Detected new Adafruit Feather device.",
+    )
+    assert ed.current_device == adafruit_feather
+    ed.device_changed(microbit_com1)
+    assert ed.ask_to_change_mode.call_count == 2
+    assert ed.current_device == microbit_com1
 
 
 def test_show_status_message():
@@ -2994,8 +2961,7 @@ def test_logic_independent_import_app():
 
 
 def test_read_newline_no_text():
-    """If the file being loaded is empty, use the platform default newline
-    """
+    """If the file being loaded is empty, use the platform default newline"""
     with generate_python_file() as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3003,8 +2969,7 @@ def test_read_newline_no_text():
 
 
 def test_read_newline_all_unix():
-    """If the file being loaded has only the Unix convention, use that
-    """
+    """If the file being loaded has only the Unix convention, use that"""
     with generate_python_file("abc\ndef") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3012,8 +2977,7 @@ def test_read_newline_all_unix():
 
 
 def test_read_newline_all_windows():
-    """If the file being loaded has only the Windows convention, use that
-    """
+    """If the file being loaded has only the Windows convention, use that"""
     with generate_python_file("abc\r\ndef") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3021,8 +2985,7 @@ def test_read_newline_all_windows():
 
 
 def test_read_newline_most_unix():
-    """If the file being loaded has mostly the Unix convention, use that
-    """
+    """If the file being loaded has mostly the Unix convention, use that"""
     with generate_python_file("\nabc\r\ndef\n") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3030,8 +2993,7 @@ def test_read_newline_most_unix():
 
 
 def test_read_newline_most_windows():
-    """If the file being loaded has mostly the Windows convention, use that
-    """
+    """If the file being loaded has mostly the Windows convention, use that"""
     with generate_python_file("\r\nabc\ndef\r\n") as filepath:
         text, newline = mu.logic.read_and_decode(filepath)
         assert text.count("\r\n") == 0
@@ -3097,8 +3059,7 @@ UNICODE_TEST_STRING = BYTES_TEST_STRING.decode("iso-8859-1")
 # - fallback to the platform default (locale.getpreferredencoding())
 #
 def test_read_utf8bom():
-    """Successfully decode from utf-8 encoded with BOM
-    """
+    """Successfully decode from utf-8 encoded with BOM"""
     with generate_python_file() as filepath:
         with open(filepath, "w", encoding="utf-8-sig") as f:
             f.write(UNICODE_TEST_STRING)
@@ -3107,8 +3068,7 @@ def test_read_utf8bom():
 
 
 def test_read_utf16bebom():
-    """Successfully decode from utf-16 BE encoded with BOM
-    """
+    """Successfully decode from utf-16 BE encoded with BOM"""
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
             f.write(codecs.BOM_UTF16_BE)
@@ -3118,8 +3078,7 @@ def test_read_utf16bebom():
 
 
 def test_read_utf16lebom():
-    """Successfully decode from utf-16 LE encoded with BOM
-    """
+    """Successfully decode from utf-16 LE encoded with BOM"""
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
             f.write(codecs.BOM_UTF16_LE)
@@ -3129,8 +3088,7 @@ def test_read_utf16lebom():
 
 
 def test_read_encoding_cookie():
-    """Successfully decode from iso-8859-1 with an encoding cookie
-    """
+    """Successfully decode from iso-8859-1 with an encoding cookie"""
     encoding_cookie = ENCODING_COOKIE.replace(mu.logic.ENCODING, "iso-8859-1")
     test_string = encoding_cookie + UNICODE_TEST_STRING
     with generate_python_file() as filepath:
@@ -3141,8 +3099,7 @@ def test_read_encoding_cookie():
 
 
 def test_read_encoding_mu_default():
-    """Successfully decode from the mu default
-    """
+    """Successfully decode from the mu default"""
     test_string = UNICODE_TEST_STRING.encode(mu.logic.ENCODING)
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
@@ -3152,8 +3109,7 @@ def test_read_encoding_mu_default():
 
 
 def test_read_encoding_default():
-    """Successfully decode from the default locale
-    """
+    """Successfully decode from the default locale"""
     test_string = UNICODE_TEST_STRING.encode(locale.getpreferredencoding())
     with generate_python_file() as filepath:
         with open(filepath, "wb") as f:
@@ -3163,8 +3119,7 @@ def test_read_encoding_default():
 
 
 def test_read_encoding_unsuccessful():
-    """Fail to decode encoded text
-    """
+    """Fail to decode encoded text"""
     #
     # Have to work quite hard to produce text which will definitely
     # fail to decode since UTF-8 and cp1252 (the default on this
@@ -3232,6 +3187,7 @@ def test_handle_open_file():
 
     class Dummy(QObject):
         open_file = pyqtSignal(str)
+        venv = None
 
     view = Dummy()
     edit = mu.logic.Editor(view)
@@ -3473,3 +3429,156 @@ def test_tidy_code_invalid_python():
     ed = mu.logic.Editor(mock_view)
     ed.tidy_code()
     assert mock_view.show_message.call_count == 1
+
+
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="Requires Python3.6")
+def test_check_tidy_check_line_too_long():
+    """
+    Check we detect, then correct, lines longer than MAX_LINE_LENGTH.
+    """
+    mock_view = mock.MagicMock()
+    # a simple to format list running 94 characters long plus newline
+    long_list = "[{}{}]\n".format(*("(1, 2), " * 10, '"0123456789"'))
+    tab = mock_view.current_tab
+    tab.text.return_value = long_list
+    ed = mu.logic.Editor(mock_view)
+    too_long = mu.logic.check_pycodestyle(tab.text.return_value)
+    assert len(too_long) == 1  # One issue found: line too long
+    ed.tidy_code()
+    called_with = tab.SendScintilla.call_args[0][1].decode()
+    tab.text.return_value = called_with
+    ok = mu.logic.check_pycodestyle(tab.text.return_value)
+    assert len(ok) == 0  # No issues
+
+    assert (
+        tab.text.return_value
+        == """[
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    (1, 2),
+    "0123456789",
+]
+"""
+    )
+
+
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="Requires Python3.6")
+def test_check_tidy_check_short_line():
+    """
+    Check that Cidy and Check leave a short line as-is and respect
+    MAX_LINE_LENGTH.
+    """
+    mock_view = mock.MagicMock()
+    # a simple to format list running 94 characters long plus newline
+    long_list = "[{}{}]\n".format(*("(1, 2), " * 10, '"0123456789"'))
+    tab = mock_view.current_tab
+    tab.text.return_value = long_list
+    with mock.patch("mu.logic.MAX_LINE_LENGTH", 94):
+        ed = mu.logic.Editor(mock_view)
+        too_long = mu.logic.check_pycodestyle(tab.text.return_value)
+        assert len(too_long) == 0  # No issues
+        ed.tidy_code()
+        called_with = tab.SendScintilla.call_args[0][1].decode()
+        tab.text.return_value = called_with
+        ok = mu.logic.check_pycodestyle(tab.text.return_value)
+        assert len(ok) == 0  # No issues
+
+    assert tab.text.return_value == long_list
+
+
+def test_device_init(microbit_com1):
+    """
+    Test that all properties are set properly and can be read.
+    """
+    assert microbit_com1.vid == 0x0D28
+    assert microbit_com1.pid == 0x0204
+    assert microbit_com1.port == "COM1"
+    assert microbit_com1.serial_number == 123456
+    assert microbit_com1.long_mode_name == "BBC micro:bit"
+    assert microbit_com1.short_mode_name == "microbit"
+
+
+def test_device_with_no_board_name_is_mode_name(esp_device):
+    """
+    Test that when no board name is given, the board name is the same
+    as the mode name.
+    """
+    assert esp_device.name == "ESP MicroPython device"
+
+
+def test_com1_equality(microbit_com1):
+    """
+    Test that two separate Device-objects representing the same device
+    are recognized as equal.
+    """
+    identical_microbit_com1 = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM1",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        "BBC micro:bit",
+    )
+    assert microbit_com1 == identical_microbit_com1
+
+
+def test_com1_not_equal_on_different_ports(microbit_com1):
+    """
+    Test that if two otherwise identical devices differ on the port, they
+    are not recognized as being equal.
+    """
+    microbit_com2 = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM2",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        "BBC micro:bit",
+    )
+    assert microbit_com1 != microbit_com2
+
+
+def test_com1_hash_equality(microbit_com1):
+    """
+    Test that hash function returns the same for two identical Device-objects.
+    """
+    identical_microbit_com1 = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM1",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        "BBC micro:bit",
+    )
+    assert hash(microbit_com1) == hash(identical_microbit_com1)
+
+
+def test_com1_hash_not_equal_on_different_ports(microbit_com1):
+    """
+    Test that the hash function differs, when two otherwise identical
+    devices are connected to two different ports.
+    """
+    microbit_com2 = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM2",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        "BBC micro:bit",
+    )
+    assert hash(microbit_com1) != hash(microbit_com2)

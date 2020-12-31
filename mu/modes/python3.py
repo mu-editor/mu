@@ -19,11 +19,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import os
 import logging
-from mu.logic import MODULE_DIR
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from mu.resources import load_icon
 from mu.interface.panes import CHARTS
+from ..virtual_environment import venv
 from qtconsole.manager import QtKernelManager
 from qtconsole.client import QtKernelClient
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
@@ -43,11 +43,20 @@ class KernelRunner(QObject):
     # Used to build context with user defined envars when running the REPL.
     default_envars = os.environ.copy()
 
-    def __init__(self, cwd, envars):
+    def __init__(self, kernel_name, cwd, envars):
         """
-        Initialise the kernel runner with a target current working directory.
+        Initialise the kernel runner with a name of a kernel specification, a
+        target current working directory, any user-defined envars and the
+        path for the currently active virtualenv's site-packages.
         """
+        logger.debug(
+            "About to create KernelRunner for %s, %s, %s ",
+            kernel_name,
+            cwd,
+            envars,
+        )
         super().__init__()
+        self.kernel_name = kernel_name
         self.cwd = cwd
         self.envars = dict(envars)
 
@@ -56,6 +65,7 @@ class KernelRunner(QObject):
         Create the expected context, start the kernel, obtain a client and
         emit a signal when both are started.
         """
+        logger.debug("About to start kernel")
         logger.info(sys.path)
         os.chdir(self.cwd)  # Ensure the kernel runs with the expected CWD.
         # Add user defined envars to os.environ so they can be picked up by
@@ -66,18 +76,9 @@ class KernelRunner(QObject):
         )
         for k, v in self.envars.items():
             os.environ[k] = v
-        # Ensure the expected paths are in PYTHONPATH of the subprocess so the
-        # kernel and Mu-installed third party applications can be found.
-        if "PYTHONPATH" not in os.environ:
-            paths = sys.path + [MODULE_DIR]
-            os.environ["PYTHONPATH"] = os.pathsep.join(paths)
-        if MODULE_DIR not in os.environ["PYTHONPATH"]:
-            # This is needed on Windows to ensure user installed third party
-            # packages are available in the REPL.
-            new_path = os.pathsep.join([os.environ["PYTHONPATH"], MODULE_DIR])
-            os.environ["PYTHONPATH"] = new_path
-        logger.info("REPL PYTHONPATH: {}".format(os.environ["PYTHONPATH"]))
+
         self.repl_kernel_manager = QtKernelManager()
+        self.repl_kernel_manager.kernel_name = self.kernel_name
         self.repl_kernel_manager.start_kernel()
         self.repl_kernel_client = self.repl_kernel_manager.client()
         self.kernel_started.emit(
@@ -103,6 +104,7 @@ class PythonMode(BaseMode):
     """
 
     name = _("Python 3")
+    short_name = "python"
     description = _("Create code using standard Python 3.")
     icon = "python"
     runner = None
@@ -198,8 +200,22 @@ class PythonMode(BaseMode):
                 self.editor.save_tab_to_file(tab)
             envars = self.editor.envars
             cwd = os.path.dirname(tab.path)
+            logger.info(
+                "About to run script: %s",
+                dict(
+                    interpreter=venv.interpreter,
+                    script_name=tab.path,
+                    working_directory=cwd,
+                    interactive=True,
+                    envars=envars,
+                ),
+            )
             self.runner = self.view.add_python3_runner(
-                tab.path, cwd, interactive=True, envars=envars
+                interpreter=venv.interpreter,
+                script_name=tab.path,
+                working_directory=cwd,
+                interactive=True,
+                envars=envars,
             )
             self.runner.process.waitForStarted()
             if self.kernel_runner:
@@ -255,7 +271,9 @@ class PythonMode(BaseMode):
         self.set_buttons(repl=False)
         self.kernel_thread = QThread()
         self.kernel_runner = KernelRunner(
-            cwd=self.workspace_dir(), envars=self.editor.envars
+            kernel_name=venv.name,
+            cwd=self.workspace_dir(),
+            envars=self.editor.envars,
         )
         self.kernel_runner.moveToThread(self.kernel_thread)
         self.kernel_runner.kernel_started.connect(self.on_kernel_start)
@@ -279,12 +297,12 @@ class PythonMode(BaseMode):
         """
         Toggles the plotter on and off.
         """
-        if self.plotter is None:
-            logger.info("Toggle plotter on.")
-            self.add_plotter()
-        else:
+        if self.plotter:
             logger.info("Toggle plotter off.")
             self.remove_plotter()
+        else:
+            logger.info("Toggle plotter on.")
+            self.add_plotter()
 
     def add_plotter(self):
         """
