@@ -249,8 +249,7 @@ def test_save_only_changed(mocked_open):
 
 @patch.object(mu.settings, "logger")
 def test_save_unable_to_write(mocked_logger):
-    """When a settings object can't be written log an exception
-    """
+    """When a settings object can't be written log an exception"""
     settings = mu.settings.SettingsBase()
     settings.filepath = os.curdir  # this should fail on every platform
     settings.save()

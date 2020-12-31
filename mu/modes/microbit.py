@@ -239,7 +239,9 @@ class MicrobitMode(MicroPythonMode):
         # fall back to asking the user to locate it.
         if path_to_microbit is None:
             # Ask the user to locate the device.
-            path_to_microbit = self.view.get_microbit_path(config.HOME_DIRECTORY)
+            path_to_microbit = self.view.get_microbit_path(
+                config.HOME_DIRECTORY
+            )
             user_defined_microbit_path = path_to_microbit
             logger.debug(
                 "User defined path to micro:bit: {}".format(

@@ -950,14 +950,12 @@ class Editor(QObject):
         if "envars" in old_session:
             self.envars = old_session["envars"]
             logger.info(
-                "User defined environment variables: "
-                "{}".format(self.envars)
+                "User defined environment variables: " "{}".format(self.envars)
             )
         if "minify" in old_session:
             self.minify = old_session["minify"]
             logger.info(
-                "Minify scripts on micro:bit? "
-                "{}".format(self.minify)
+                "Minify scripts on micro:bit? " "{}".format(self.minify)
             )
         if "microbit_runtime" in old_session:
             self.microbit_runtime = old_session["microbit_runtime"]
@@ -987,8 +985,8 @@ class Editor(QObject):
         #
         # Doesn't seem to do anything useful
         #
-        #~ if old_session is None:
-            #~ self._view.set_theme(self.theme)
+        # ~ if old_session is None:
+        # ~ self._view.set_theme(self.theme)
 
         # handle os passed file last,
         # so it will not be focused over by another tab

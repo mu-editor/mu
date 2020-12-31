@@ -163,6 +163,7 @@ def generate_session(
 
     shutil.rmtree(dirpath)
 
+
 def mocked_view(text, path, newline):
     """Create a mocked view with path, newline and text"""
     view = mock.MagicMock()
@@ -1149,8 +1150,9 @@ def test_editor_session_and_open_focus_passed_file():
 
     args_only = [args for (args, _) in ed.direct_load.call_args_list]
     call_args = [a[0] for a in args_only]
-    expected_call_args = session['paths'] + [filepath]
+    expected_call_args = session["paths"] + [filepath]
     assert call_args == expected_call_args
+
 
 def test_toggle_theme_to_night():
     """

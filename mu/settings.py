@@ -39,12 +39,11 @@ class SettingsBase(object):
     """
 
     DEFAULTS = {}
-    filename = "default." + serialiser_ext
+    filestem = "default"
 
     def __init__(self, **kwargs):
         self._dirty = set()
         self.filepath = None
-        print("Defaults:", self.DEFAULTS)
         self.reset()
         self.update(kwargs)
         self.readonly = False
@@ -53,7 +52,7 @@ class SettingsBase(object):
         return item in self._dict
 
     def __getitem__(self, item):
-        return self._dict[item]
+        return self._expanded_value(self._dict[item])
 
     def __setitem__(self, item, value):
         self._dict[item] = value
@@ -69,7 +68,10 @@ class SettingsBase(object):
         self._dirty.update(d)
 
     def get(self, item, default=None):
-        return self._dict.get(item, self.DEFAULTS.get(item, default))
+        """Return a settings value, falling back to the default and then to standard get mechanism"""
+        return self._expanded_value(
+            self._dict.get(item, self.DEFAULTS.get(item, default))
+        )
 
     def __repr__(self):
         return "<%s from %s>" % (
@@ -77,11 +79,18 @@ class SettingsBase(object):
             self.filepath or "(unset)",
         )
 
+    @staticmethod
+    def _expanded_value(value):
+        """Return a value with env vars expanded"""
+        return os.path.expandvars(value) if isinstance(value, str) else value
+
     def reset(self):
+        """Reset the settings to defaults only"""
         self._dict = dict(self.DEFAULTS)
         self._dirty.clear()
 
     def as_string(self, changed_only=False):
+        """Use the serialiser to produce a string version of the settings"""
         try:
             return serialiser.dumps(self._as_dict(changed_only), indent=2)
         except TypeError:
@@ -91,7 +100,7 @@ class SettingsBase(object):
     @staticmethod
     def default_file_locations():
         """
-        Given an admin related filename, this function will attempt to get the
+        Given an admin related filestem, this function will attempt to get the
         most relevant version of this file (the default location is the application
         data directory, although a file of the same name in the same directory as
         the application itself takes preference). If this file isn't found, an
@@ -112,9 +121,18 @@ class SettingsBase(object):
 
         return [app_dir, config.DATA_DIR]
 
+    def register_for_autosave(self):
+        """Ensure the settings are saved at least when the Python session finishes"""
+        atexit.register(self.save)
+
     def init(self, autosave=True):
+        """Attempt to find the default filestem in a number of well-known locations.
+        If requested, set up autosave
+        """
         for dirpath in self.default_file_locations():
-            filepath = os.path.join(dirpath, self.filename)
+            filepath = os.path.join(
+                dirpath, self.filestem + "." + serialiser_ext
+            )
             if os.path.exists(filepath):
                 break
         self.load(filepath)
@@ -122,7 +140,17 @@ class SettingsBase(object):
             self.register_for_autosave()
 
     def save(self):
-        """Save these settings as a serialised file"""
+        """Save these settings as a serialised file
+
+        If the settings are marked as readonly, warn and don't save
+        If there's no filestem set, warn and don't save
+        Otherwise use the current serialiser to encode the settings as a
+        string and write to the current filepath -- which will usually be
+        the last file loaded.
+
+        If the save fails for any reason, write the settings out to the log
+        as an exception for possible debugging later and carry on.
+        """
         #
         # If this settings file is tagged readonly don't try to save it
         #
@@ -150,11 +178,10 @@ class SettingsBase(object):
                 f.write(settings_as_string)
         except Exception:
             logger.exception(
-                "Unable to write settings to %s:\n%s", self.filepath, settings_as_string
+                "Unable to write settings to %s:\n%s",
+                self.filepath,
+                settings_as_string,
             )
-
-    def register_for_autosave(self):
-        atexit.register(self.save)
 
     def load(self, filepath):
         """Load from a file, merging into existing settings
@@ -197,6 +224,9 @@ class SettingsBase(object):
         self.filepath = filepath
 
     def _as_dict(self, changed_only=False):
+        """Return the underlying settings data as a dictionary, optionally
+        limiting to values which have been changed
+        """
         if changed_only:
             return dict(
                 (k, v) for (k, v) in self._dict.items() if k in self._dirty
@@ -209,25 +239,26 @@ class UserSettings(SettingsBase):
 
     DEFAULTS = {}
     autosave = False
-    filename = "settings." + serialiser_ext
+    filestem = "settings"
 
 
 class SessionSettings(SettingsBase):
 
     DEFAULTS = {}
     autosave = True
-    filename = "session." + serialiser_ext
+    filestem = "session"
 
 
 class VirtualEnvironmentSettings(SettingsBase):
 
     DEFAULTS = {"baseline_packages": [], "dirpath": config.VENV_DIR}
     autosave = False
-    filename = "venv." + serialiser_ext
+    filestem = "venv"
 
 
 settings = UserSettings()
 session = SessionSettings()
+
 
 def init():
     settings.init()
