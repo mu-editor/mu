@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import random
 from unittest import mock
 from unittest.mock import patch
@@ -284,3 +285,46 @@ def test_load_file_unable_to_read(mocked_logger):
 
     assert mocked_logger.exception.called
     assert settings.filepath == filepath
+
+
+def test_expandvars_string():
+    """When a string value contains an embedded environment variable it is
+    expanded to its underlying value
+    """
+    key, envvar_name, value = rstring(), rstring(), rstring()
+    if sys.platform == "win32":
+        envvar = "%{}%".format(envvar_name)
+    else:
+        envvar = "${}".format(envvar_name)
+    os.environ[envvar_name] = value
+    s = mu.settings.SettingsBase()
+    s[key] = envvar
+
+    assert s[key] == value
+
+
+def test_expandvars_none():
+    """When a value is None the expand mechanism does not fail"""
+    key = rstring()
+    s = mu.settings.SettingsBase()
+    s[key] = None
+
+    assert s[key] is None
+
+
+def test_expandvars_nonexistent_envvar():
+    """When a value refers to an envvar which does not exist, follow the
+    conventional approach of returning the envvar name unaltered
+
+    ie if we have "%NON-EXISTENT%\abc" then the value returned will
+    be "%NON-EXISTENT%\abc"
+    """
+    key, envvar_name = rstring(), rstring()
+    if sys.platform == "win32":
+        envvar = "%{}%".format(envvar_name)
+    else:
+        envvar = "${}".format(envvar_name)
+    s = mu.settings.SettingsBase()
+    s[key] = envvar
+
+    assert s[key] == envvar

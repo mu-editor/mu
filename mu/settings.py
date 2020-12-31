@@ -68,7 +68,8 @@ class SettingsBase(object):
         self._dirty.update(d)
 
     def get(self, item, default=None):
-        """Return a settings value, falling back to the default and then to standard get mechanism"""
+        """Return a settings value, falling back to the default and then to
+        standard get mechanism"""
         return self._expanded_value(
             self._dict.get(item, self.DEFAULTS.get(item, default))
         )
