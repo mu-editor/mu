@@ -4,16 +4,90 @@ Session & Settings Data
 Decision
 --------
 
-*(Draft - to be discussed / agreed)*
+Centralise access to settings inside a standalone module offering a
+dictalike-interface. The settings can be loaded from and saved to files.
+This currently uses JSON (as we have historically) but https://github.com/mu-editor/mu/issues/1203
+is tracking the possibility of using TOML or some other format.
+
+Settings objects have defaults which are overridden by values loaded from file
+or set programatically. When the settings are saved, only values overriding
+the defaults are saved.
+
+The ``load`` method can be called several times for the same settings; values in
+each one override any corresponding existing values. The last loaded filename
+is the file which the settings will be saved to. Both load and save attempt to
+be robust, carrying on with warnings in the log if files can't be found, open,
+read etc.
+
+The existing files (session.json, settings.json) are implemented as singletons
+in the settings module, and settings.json is autosaved. New settings to support
+venv functionality -- in particular, baseline packages -- is also added.
+
+At its simplest https://github.com/mu-editor/mu/pull/1200 does no more than
+implement this set of functionality. The few places in existing code where
+settings were used or altered have been updated to use the new objects and
+functionality.
+
+Not Implemented / Hooks
+-----------------------
+
+During the design and/or based on previous discussions, several ideas were
+floated which are at least supported by the new implementation.
+
+* Safe mode / Readonly mode / Reset mode
+
+  As described below, there are situations where teachers or admins would
+  like to reset settings for use in a club or classroom setting. The new
+  implementation supports this idea via the ``reset`` method and ``readonly``
+  flags without actually implementing it as such.
+
+  Such functionality might, in the future, be managed by means of command-line
+  switches or some other flag.
+
+* File format: JSON, YAML, TOML...
+
+  The implementation tries to be agnostic as to file format. At present it
+  uses the historically-implemented JSON format. But the choice of serialiser
+  is centralised towards the top of the module and shouldn't be hard to change,
+  especially for any serialiser which uses the conventional ``.dumps``, ``.loads``
+  API.
+
+  cf https://github.com/mu-editor/mu/issues/1203
+
+* One file / Two files?
+
+  The new settings implementation facilitates any number of files each of
+  which can have an arbitrary hierarchy. Whether we end up with one settings
+  file containing, eg, session settings and board settings, or several files
+  each specific to an area can be decided later. Nothing in this implementation
+  precludes either approach.
+
+* Interpolation
+
+  Because it is easy to implement and doesn't seem risky, this implementation
+  applies ``os.path.expandvars`` to any values retrieved. This will do
+  platform-sensitive env var expansion so admins can specify, eg, a workspace
+  directory of %USERPROFILE%\mu_code or $HOME/.mu/mu_code.
+
+  Value interpolation (where one settings value can rely on another) has *not*
+  been implemented. It's potentially quite an involved piece of work, and the
+  benefit is not so clear.
+
+* Indicating failure to users
+
+  This is obviously a wider issue, but while this implementation tries to be
+  robust when loading / saving settings, it only writes to the standard logs
+  and then fails quietly. The problem here is that we're possibly not operating
+  within the UI. At the least, we don't have a good overall story for a UI
+  which isn't part of the central editor itself.
+
+Background
+----------
 
 Mu maintains two files, automatically saved on exit, to hold user settings
 and session data. The former contains critical parameters without which the
 editor probably won't function. The latter contains more or less cosmetic
 items which can be cleared (eg by a "Reset" button) without losing functionality.
-
-
-Background
-----------
 
 Historically access to these files has been somewhat scattered around the
 codebase, making it difficult for modules to access them coherently. The
@@ -94,7 +168,9 @@ So *Safe mode* is implemented by calling ``reset`` without ``load`` and setting 
 *Read-only mode* is implemented by calling ``reset`` followed by ``load`` and setting ``readonly``
 And *Reset mode* is implemented by calling ``reset`` without ``load`` and *not* setting ``readonly``
 
-[FIXME: add explanations & examples of amnesia mode]
+The use cases here would be mostly for admins or leaders who needed, eg,
+to ensure that new sessions were started for every user, or who needed to debug
+or recover from a corrupt settings file.
 
 Failure modes
 ~~~~~~~~~~~~~
