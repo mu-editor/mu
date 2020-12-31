@@ -9,6 +9,7 @@ import codecs
 import contextlib
 import json
 import locale
+import random
 import re
 import shutil
 import subprocess
@@ -47,6 +48,11 @@ ENCODING_COOKIE = "# -*- coding: {} -*-{}".format(
 # tested from among the boilerplate setup code
 #
 
+
+def rstring(length=10, characters="abcdefghijklmnopqrstuvwxyz"):
+    letters = list(characters)
+    random.shuffle(letters)
+    return "".join(letters[:length])
 
 def _generate_python_files(contents, dirpath):
     """Generate a series of .py files, one for each element in an iterable
@@ -167,10 +173,12 @@ def generate_session(
 def mocked_view(text, path, newline):
     """Create a mocked view with path, newline and text"""
     view = mock.MagicMock()
-    view.current_tab = mock.MagicMock()
-    view.current_tab.path = path
-    view.current_tab.newline = newline
-    view.current_tab.text = mock.MagicMock(return_value=text)
+    if path:
+        view.current_tab = mock.MagicMock()
+        view.current_tab.path = path
+        view.current_tab.newline = newline
+        view.current_tab.text = mock.MagicMock(return_value=text)
+
     view.add_tab = mock.MagicMock()
     view.get_save_path = mock.MagicMock(return_value=path)
     view.get_load_path = mock.MagicMock()
@@ -1031,55 +1039,44 @@ def test_editor_restore_session_no_session_file():
     """
     If there's no prior session file (such as upon first start) then simply
     start up the editor with an empty untitled tab.
+
+    Strictly, this isn't now a check for no session file but for an
+    empty session object (which might have arisen from no file)
     """
-    view = mock.MagicMock()
-    view.tab_count = 0
-    ed = mu.logic.Editor(view)
+    ed = mocked_editor()
+    ed._view.tab_count = 0
     ed._view.add_tab = mock.MagicMock()
-    ed.select_mode = mock.MagicMock()
-    mock_mode = mock.MagicMock()
-    api = ["API specification"]
-    mock_mode.api.return_value = api
-    mock_mode.workspace_dir.return_value = "/fake/path"
-    mock_mode.save_timeout = 5
-    mock_mode.code_template = "Hello"
-    ed.modes = {"python": mock_mode}
-    mock_gettext = mock.MagicMock()
-    mock_gettext.return_value = "# Write your code here :-)"
-    with mock.patch("os.path.exists", return_value=False):
+    session = mu.settings.SessionSettings()
+    filepath = os.path.abspath(rstring())
+    assert not os.path.exists(filepath)
+    session.load(filepath)
+
+    with mock.patch.object(mu.settings, "session", session):
         ed.restore_session()
-    py = mock_mode.code_template + mu.logic.NEWLINE
-    ed._view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
+
+    ed._view.add_tab.assert_called_once()
     ed.select_mode.assert_called_once_with(None)
 
 
-def test_editor_restore_session_invalid_file():
+def test_editor_restore_session_invalid_file(tmp_path):
     """
     A malformed JSON file is correctly detected and app behaves the same as if
     there was no session file.
     """
-    view = mock.MagicMock()
-    view.tab_count = 0
-    ed = mu.logic.Editor(view)
+    ed = mocked_editor()
+    ed._view.tab_count = 0
     ed._view.add_tab = mock.MagicMock()
-    mock_mode = mock.MagicMock()
-    api = ["API specification"]
-    mock_mode.api.return_value = api
-    mock_mode.workspace_dir.return_value = "/fake/path"
-    mock_mode.save_timeout = 5
-    mock_mode.code_template = "template code"
-    ed.modes = {"python": mock_mode}
-    mock_open = mock.mock_open(
-        read_data='{"paths": ["path/foo.py", "path/bar.py"]}, invalid: 0}'
-    )
-    mock_gettext = mock.MagicMock()
-    mock_gettext.return_value = "# Write your code here :-)"
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.exists", return_value=True
-    ):
+    session = mu.settings.SessionSettings()
+    filepath = os.path.join(str(tmp_path), rstring())
+    with open(filepath, "w") as f:
+        f.write(rstring())
+    session.load(filepath)
+
+    with mock.patch.object(mu.settings, "session", session):
         ed.restore_session()
-    py = "template code" + mu.logic.NEWLINE
-    ed._view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
+
+    ed._view.add_tab.assert_called_once()
+    ed.select_mode.assert_called_once_with(None)
 
 
 def test_restore_session_open_tabs_in_the_same_order():
