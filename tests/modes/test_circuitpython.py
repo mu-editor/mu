@@ -104,36 +104,60 @@ def test_workspace_dir_posix_missing():
                 assert am.workspace_dir() == "foo"
 
 
-def test_workspace_dir_nt_exists():
+@pytest.fixture
+def windll():
+    """
+    Mocking the windll is tricky. It's not present on Posix platforms so
+    we can't use standard patching. But it *is* present on Windows platforms
+    so we need to unpatch once finished.
+    """
+    if hasattr(ctypes, "windll"):
+        ctypes_has_windll = True
+        mock_windll = mock.patch("ctypes.windll")
+        mock_windll.start()
+    else:
+        mock_windll = mock.MagicMock()
+        ctypes.windll = mock_windll
+
+    yield mock_windll
+
+    if ctypes_has_windll:
+        mock_windll.stop()
+    else:
+        delattr(ctypes, "windll")
+
+def test_workspace_dir_nt_exists(windll):
     """
     Simulate being on os.name == 'nt' and a disk with a volume name 'CIRCUITPY'
     exists indicating a connected device.
+
     """
-    mock_windll = mock.MagicMock()
-    mock_windll.kernel32 = mock.MagicMock()
-    mock_windll.kernel32.GetVolumeInformationW = mock.MagicMock()
-    mock_windll.kernel32.GetVolumeInformationW.return_value = None
+    #~ mock_windll = mock.MagicMock()
+    #~ mock_windll.kernel32 = mock.MagicMock()
+    #~ mock_windll.kernel32.GetVolumeInformationW = mock.MagicMock()
+    #~ mock_windll.kernel32.GetVolumeInformationW.return_value = None
     editor = mock.MagicMock()
     view = mock.MagicMock()
     am = CircuitPythonMode(editor, view)
+
     with mock.patch("os.name", "nt"):
         with mock.patch("os.path.exists", return_value=True):
             return_value = ctypes.create_unicode_buffer("CIRCUITPY")
             with mock.patch(
                 "ctypes.create_unicode_buffer", return_value=return_value
-            ), mock.patch.object(ctypes, "windll", mock_windll):
+            ):
                 assert am.workspace_dir() == "A:\\"
 
 
-def test_workspace_dir_nt_missing():
+def test_workspace_dir_nt_missing(windll):
     """
     Simulate being on os.name == 'nt' and a disk with a volume name 'CIRCUITPY'
     does not exist for a device.
     """
-    mock_windll = mock.MagicMock()
-    mock_windll.kernel32 = mock.MagicMock()
-    mock_windll.kernel32.GetVolumeInformationW = mock.MagicMock()
-    mock_windll.kernel32.GetVolumeInformationW.return_value = None
+    #~ mock_windll = mock.MagicMock()
+    #~ mock_windll.kernel32 = mock.MagicMock()
+    #~ mock_windll.kernel32.GetVolumeInformationW = mock.MagicMock()
+    #~ mock_windll.kernel32.GetVolumeInformationW.return_value = None
     editor = mock.MagicMock()
     view = mock.MagicMock()
     am = CircuitPythonMode(editor, view)
@@ -144,7 +168,7 @@ def test_workspace_dir_nt_missing():
                 "ctypes.create_unicode_buffer", return_value=return_value
             ), mock.patch(
                 "mu.modes.circuitpython." "MicroPythonMode.workspace_dir"
-            ) as mpm, mock.patch.object(ctypes, "windll", mock_windll):
+            ) as mpm:
                 mpm.return_value = "foo"
                 assert am.workspace_dir() == "foo"
 
