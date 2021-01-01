@@ -175,9 +175,7 @@ class SettingsBase(object):
         try:
             settings_as_string = self.as_string(changed_only=True)
         except Exception:
-            logger.exception(
-                "Unable to encode settings"
-            )
+            logger.exception("Unable to encode settings")
             return
 
         try:

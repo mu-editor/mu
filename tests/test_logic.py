@@ -1035,7 +1035,7 @@ def test_editor_restore_session_invalid_mode():
     ed.select_mode.assert_called_once_with(None)
 
 
-#~ @pytest.mark.skip("Temporarily skip")
+# ~ @pytest.mark.skip("Temporarily skip")
 def test_editor_restore_session_no_session_file():
     """
     If there's no prior session file (such as upon first start) then simply
@@ -1059,7 +1059,7 @@ def test_editor_restore_session_no_session_file():
     ed.select_mode.assert_called_once_with(None)
 
 
-#~ @pytest.mark.skip("Temporarily skip")
+# ~ @pytest.mark.skip("Temporarily skip")
 def test_editor_restore_session_invalid_file(tmp_path):
     """
     A malformed JSON file is correctly detected and app behaves the same as if

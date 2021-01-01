@@ -31,6 +31,7 @@ def windll():
     else:
         delattr(ctypes, "windll")
 
+
 def test_pyboard_mode():
     """
     Sanity check for setting up the mode.
@@ -131,10 +132,10 @@ def test_workspace_dir_nt_exists(windll):
     Simulate being on os.name == 'nt' and a disk with a volume name 'PYBFLASH'
     exists indicating a connected device.
     """
-    #~ mock_windll = mock.MagicMock()
-    #~ mock_windll.kernel32 = mock.MagicMock()
-    #~ mock_windll.kernel32.GetVolumeInformationW = mock.MagicMock()
-    #~ mock_windll.kernel32.GetVolumeInformationW.return_value = None
+    # ~ mock_windll = mock.MagicMock()
+    # ~ mock_windll.kernel32 = mock.MagicMock()
+    # ~ mock_windll.kernel32.GetVolumeInformationW = mock.MagicMock()
+    # ~ mock_windll.kernel32.GetVolumeInformationW.return_value = None
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pbm = PyboardMode(editor, view)
@@ -152,10 +153,10 @@ def test_workspace_dir_nt_missing(windll):
     Simulate being on os.name == 'nt' and a disk with a volume name 'PYBFLASH'
     does not exist for a device.
     """
-    #~ mock_windll = mock.MagicMock()
-    #~ mock_windll.kernel32 = mock.MagicMock()
-    #~ mock_windll.kernel32.GetVolumeInformationW = mock.MagicMock()
-    #~ mock_windll.kernel32.GetVolumeInformationW.return_value = None
+    # ~ mock_windll = mock.MagicMock()
+    # ~ mock_windll.kernel32 = mock.MagicMock()
+    # ~ mock_windll.kernel32.GetVolumeInformationW = mock.MagicMock()
+    # ~ mock_windll.kernel32.GetVolumeInformationW.return_value = None
     editor = mock.MagicMock()
     view = mock.MagicMock()
     pbm = PyboardMode(editor, view)
