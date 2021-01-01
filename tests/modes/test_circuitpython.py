@@ -111,8 +111,8 @@ def windll():
     we can't use standard patching. But it *is* present on Windows platforms
     so we need to unpatch once finished.
     """
-    if hasattr(ctypes, "windll"):
-        ctypes_has_windll = True
+    ctypes_has_windll = hasattr(ctypes, "windll")
+    if ctypes_has_windll:
         mock_windll = mock.patch("ctypes.windll")
         mock_windll.start()
     else:
