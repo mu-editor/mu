@@ -121,8 +121,7 @@ def test_workspace_dir_nt_exists():
             return_value = ctypes.create_unicode_buffer("CIRCUITPY")
             with mock.patch(
                 "ctypes.create_unicode_buffer", return_value=return_value
-            ):
-                ctypes.windll = mock_windll
+            ), mock.patch.object(ctypes, "windll", mock_windll):
                 assert am.workspace_dir() == "A:\\"
 
 
@@ -145,9 +144,8 @@ def test_workspace_dir_nt_missing():
                 "ctypes.create_unicode_buffer", return_value=return_value
             ), mock.patch(
                 "mu.modes.circuitpython." "MicroPythonMode.workspace_dir"
-            ) as mpm:
+            ) as mpm, mock.patch.object(ctypes, "windll", mock_windll):
                 mpm.return_value = "foo"
-                ctypes.windll = mock_windll
                 assert am.workspace_dir() == "foo"
 
 

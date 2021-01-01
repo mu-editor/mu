@@ -126,7 +126,7 @@ class SettingsBase(object):
         """Ensure the settings are saved at least when the Python session finishes"""
         atexit.register(self.save)
 
-    def init(self, autosave=True):
+    def init(self):
         """Attempt to find the default filestem in a number of well-known locations.
         If requested, set up autosave
         """
@@ -172,7 +172,13 @@ class SettingsBase(object):
         # Only save elements which have been set by the user -- either through
         # the initial file load or via actions during the application run
         #
-        settings_as_string = self.as_string(changed_only=True)
+        try:
+            settings_as_string = self.as_string(changed_only=True)
+        except Exception:
+            logger.exception(
+                "Unable to encode settings"
+            )
+            return
 
         try:
             with open(saving_to_filepath, "w", encoding="utf-8") as f:

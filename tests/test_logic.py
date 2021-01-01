@@ -54,6 +54,7 @@ def rstring(length=10, characters="abcdefghijklmnopqrstuvwxyz"):
     random.shuffle(letters)
     return "".join(letters[:length])
 
+
 def _generate_python_files(contents, dirpath):
     """Generate a series of .py files, one for each element in an iterable
 
@@ -173,11 +174,10 @@ def generate_session(
 def mocked_view(text, path, newline):
     """Create a mocked view with path, newline and text"""
     view = mock.MagicMock()
-    if path:
-        view.current_tab = mock.MagicMock()
-        view.current_tab.path = path
-        view.current_tab.newline = newline
-        view.current_tab.text = mock.MagicMock(return_value=text)
+    view.current_tab = mock.MagicMock()
+    view.current_tab.path = path
+    view.current_tab.newline = newline
+    view.current_tab.text = mock.MagicMock(return_value=text)
 
     view.add_tab = mock.MagicMock()
     view.get_save_path = mock.MagicMock(return_value=path)
@@ -211,10 +211,10 @@ def prevent_settings_autosave():
 
 
 @pytest.fixture
-def mocked_save_session():
+def mocked_session():
     """Mock the save-session functionality"""
-    with mock.patch.object(mu.settings.session, "save") as mocked_session_save:
-        yield mocked_session_save
+    with mock.patch.object(mu.settings, "session") as mocked_session:
+        yield mocked_session
 
 
 def test_CONSTANTS():
@@ -1035,6 +1035,7 @@ def test_editor_restore_session_invalid_mode():
     ed.select_mode.assert_called_once_with(None)
 
 
+#~ @pytest.mark.skip("Temporarily skip")
 def test_editor_restore_session_no_session_file():
     """
     If there's no prior session file (such as upon first start) then simply
@@ -1058,6 +1059,7 @@ def test_editor_restore_session_no_session_file():
     ed.select_mode.assert_called_once_with(None)
 
 
+#~ @pytest.mark.skip("Temporarily skip")
 def test_editor_restore_session_invalid_file(tmp_path):
     """
     A malformed JSON file is correctly detected and app behaves the same as if
@@ -2273,7 +2275,7 @@ def test_quit_calls_mode_stop():
     ed.modes[ed.mode].stop.assert_called_once_with()
 
 
-def test_quit_calls_sys_exit(mocked_save_session):
+def test_quit_calls_sys_exit(mocked_session):
     """
     Ensure that sys.exit(0) is called.
     """
