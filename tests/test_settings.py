@@ -258,6 +258,19 @@ def test_save_unable_to_write(mocked_logger):
     assert mocked_logger.exception.called
 
 
+@patch("builtins.open")
+@patch.object(mu.settings, "logger")
+def test_save_unable_to_encode(mocked_logger, mocked_open):
+    """When a settings object can't be written log an exception and exit"""
+    settings = mu.settings.SettingsBase()
+    settings.filepath = rstring()
+    settings[rstring()] = object()
+    settings.save()
+
+    assert not mocked_open.called
+    assert mocked_logger.exception.called
+
+
 @patch.object(mu.settings, "logger")
 def test_load_file_not_found(mocked_logger):
     """When a settings object can't be found log a warning and carry on with that
