@@ -172,7 +172,7 @@ class Pip(object):
             return result
         else:
             logger.debug(
-                "About to run unblocking: %s, %s, %s", self.executable, params
+                "About to run unblocking: %s, %s", self.executable, params
             )
             if slots.started:
                 self.process.started.connect(slots.started)
