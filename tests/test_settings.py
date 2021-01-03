@@ -341,3 +341,121 @@ def test_expandvars_nonexistent_envvar():
     s[key] = envvar
 
     assert s[key] == envvar
+
+def test_get_admin_file_path():
+    """
+    Finds an admin file in the application location, when Mu is run as if
+    NOT frozen by PyInstaller.
+    """
+    fake_app_path = os.path.dirname(__file__)
+    fake_app_script = os.path.join(fake_app_path, "run.py")
+    wrong_fake_path = "wrong/path/to/executable"
+    fake_local_settings = os.path.join(fake_app_path, "settings.json")
+    with mock.patch.object(
+        sys, "executable", wrong_fake_path
+    ), mock.patch.object(sys, "argv", [fake_app_script]):
+        result = mu.logic.get_admin_file_path("settings.json")
+        assert result == fake_local_settings
+
+
+def test_get_admin_file_path_frozen():
+    """
+    Find an admin file in the application location when it has been frozen
+    using PyInstaller.
+    """
+    fake_app_path = os.path.dirname(__file__)
+    fake_app_script = os.path.join(fake_app_path, "mu.exe")
+    wrong_fake_path = "wrong/path/to/executable"
+    fake_local_settings = os.path.join(fake_app_path, "settings.json")
+    with mock.patch.object(
+        sys, "frozen", create=True, return_value=True
+    ), mock.patch(
+        "platform.system", return_value="not_Darwin"
+    ), mock.patch.object(
+        sys, "executable", fake_app_script
+    ), mock.patch.object(
+        sys, "argv", [wrong_fake_path]
+    ):
+        result = mu.logic.get_admin_file_path("settings.json")
+        assert result == fake_local_settings
+
+
+def test_get_admin_file_path_frozen_osx():
+    """
+    Find an admin file in the application location when it has been frozen
+    using PyInstaller on macOS (as the path is different in the app bundle).
+    """
+    fake_app_path = os.path.join(os.path.dirname(__file__), "a", "b", "c")
+    fake_app_script = os.path.join(fake_app_path, "mu.exe")
+    wrong_fake_path = "wrong/path/to/executable"
+    fake_local_settings = os.path.abspath(
+        os.path.join(fake_app_path, "..", "..", "..", "settings.json")
+    )
+    with mock.patch.object(
+        sys, "frozen", create=True, return_value=True
+    ), mock.patch("platform.system", return_value="Darwin"), mock.patch.object(
+        sys, "executable", fake_app_script
+    ), mock.patch.object(
+        sys, "argv", [wrong_fake_path]
+    ):
+        result = mu.logic.get_admin_file_path("settings.json")
+        assert result == fake_local_settings
+
+
+def test_get_admin_file_path_with_data_path():
+    """
+    Find an admin file in the data location.
+    """
+    mock_open = mock.mock_open()
+    mock_exists = mock.MagicMock()
+    mock_exists.side_effect = [False, True]
+    mock_json_dump = mock.MagicMock()
+    with mock.patch("os.path.exists", mock_exists), mock.patch(
+        "builtins.open", mock_open
+    ), mock.patch("json.dump", mock_json_dump), mock.patch(
+        "mu.logic.DATA_DIR", "fake_path"
+    ):
+        result = mu.logic.get_admin_file_path("settings.json")
+        assert result == os.path.join("fake_path", "settings.json")
+    assert not mock_json_dump.called
+
+
+def test_get_admin_file_path_no_files():
+    """
+    No admin file found, so create one.
+    """
+    mock_open = mock.mock_open()
+    mock_json_dump = mock.MagicMock()
+    with mock.patch("os.path.exists", return_value=False), mock.patch(
+        "builtins.open", mock_open
+    ), mock.patch("json.dump", mock_json_dump), mock.patch(
+        "mu.logic.DATA_DIR", "fake_path"
+    ):
+        result = mu.logic.get_admin_file_path("settings.json")
+        assert result == os.path.join("fake_path", "settings.json")
+    assert mock_json_dump.call_count == 1
+
+
+def test_get_admin_file_path_no_files_cannot_create():
+    """
+    No admin file found, attempting to create one causes Mu to log and
+    make do.
+    """
+    mock_open = mock.MagicMock()
+    mock_open.return_value.__enter__.side_effect = FileNotFoundError("Bang")
+    mock_open.return_value.__exit__ = mock.Mock()
+    mock_json_dump = mock.MagicMock()
+    with mock.patch("os.path.exists", return_value=False), mock.patch(
+        "builtins.open", mock_open
+    ), mock.patch("json.dump", mock_json_dump), mock.patch(
+        "mu.logic.DATA_DIR", "fake_path"
+    ), mock.patch(
+        "mu.logic.logger", return_value=None
+    ) as logger:
+        mu.logic.get_admin_file_path("settings.json")
+        msg = (
+            "Unable to create admin file: "
+            "fake_path{}settings.json".format(os.path.sep)
+        )
+        logger.error.assert_called_once_with(msg)
+
