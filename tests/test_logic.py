@@ -4,10 +4,12 @@ Tests for the Editor and REPL logic.
 """
 import sys
 import os
+import atexit
 import codecs
 import contextlib
 import json
 import locale
+import random
 import re
 import shutil
 import subprocess
@@ -16,9 +18,10 @@ from unittest import mock
 import uuid
 
 import pytest
+import mu.config
 import mu.logic
+import mu.settings
 
-# ~ import mu.virtual_environment
 from mu.virtual_environment import venv
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import pyqtSignal, QObject, Qt
@@ -44,6 +47,12 @@ ENCODING_COOKIE = "# -*- coding: {} -*-{}".format(
 # the test more readable and easier to spot the element being
 # tested from among the boilerplate setup code
 #
+
+
+def rstring(length=10, characters="abcdefghijklmnopqrstuvwxyz"):
+    letters = list(characters)
+    random.shuffle(letters)
+    return "".join(letters[:length])
 
 
 def _generate_python_files(contents, dirpath):
@@ -95,7 +104,6 @@ def generate_session(
     theme="day",
     mode="python",
     file_contents=None,
-    filepath=None,
     envars=[["name", "value"]],
     minify=False,
     microbit_runtime=None,
@@ -153,15 +161,13 @@ def generate_session(
         session_data["venv_path"] = venv_path
     session_data.update(**kwargs)
 
-    if filepath is None:
-        filepath = os.path.join(dirpath, "session.json")
-    if session_data:
-        with open(filepath, "w") as f:
-            f.write(json.dumps(session_data))
-    session = dict(session_data)
-    session["session_filepath"] = filepath
-    with mock.patch("mu.logic.get_session_path", return_value=filepath):
+    session = mu.settings.SessionSettings()
+    session.reset()
+    session.update(session_data)
+
+    with mock.patch("mu.settings.session", session):
         yield session
+
     shutil.rmtree(dirpath)
 
 
@@ -172,6 +178,7 @@ def mocked_view(text, path, newline):
     view.current_tab.path = path
     view.current_tab.newline = newline
     view.current_tab.text = mock.MagicMock(return_value=text)
+
     view.add_tab = mock.MagicMock()
     view.get_save_path = mock.MagicMock(return_value=path)
     view.get_load_path = mock.MagicMock()
@@ -197,13 +204,26 @@ def mocked_editor(mode="python", text=None, path=None, newline=None):
     return ed
 
 
+@pytest.fixture(scope="module")
+def prevent_settings_autosave():
+    """Prevent the settings from auto-saving"""
+    atexit._clear()
+
+
+@pytest.fixture
+def mocked_session():
+    """Mock the save-session functionality"""
+    with mock.patch.object(mu.settings, "session") as mocked_session:
+        yield mocked_session
+
+
 def test_CONSTANTS():
     """
     Ensure the expected constants exist.
     """
-    assert mu.logic.HOME_DIRECTORY
-    assert mu.logic.DATA_DIR
-    assert mu.logic.WORKSPACE_NAME
+    assert mu.config.HOME_DIRECTORY
+    assert mu.config.DATA_DIR
+    assert mu.config.WORKSPACE_NAME
 
 
 @pytest.fixture
@@ -1015,59 +1035,50 @@ def test_editor_restore_session_invalid_mode():
     ed.select_mode.assert_called_once_with(None)
 
 
+# ~ @pytest.mark.skip("Temporarily skip")
 def test_editor_restore_session_no_session_file():
     """
     If there's no prior session file (such as upon first start) then simply
     start up the editor with an empty untitled tab.
+
+    Strictly, this isn't now a check for no session file but for an
+    empty session object (which might have arisen from no file)
     """
-    view = mock.MagicMock()
-    view.tab_count = 0
-    ed = mu.logic.Editor(view)
+    ed = mocked_editor()
+    ed._view.tab_count = 0
     ed._view.add_tab = mock.MagicMock()
-    ed.select_mode = mock.MagicMock()
-    mock_mode = mock.MagicMock()
-    api = ["API specification"]
-    mock_mode.api.return_value = api
-    mock_mode.workspace_dir.return_value = "/fake/path"
-    mock_mode.save_timeout = 5
-    mock_mode.code_template = "Hello"
-    ed.modes = {"python": mock_mode}
-    mock_gettext = mock.MagicMock()
-    mock_gettext.return_value = "# Write your code here :-)"
-    with mock.patch("os.path.exists", return_value=False):
+    session = mu.settings.SessionSettings()
+    filepath = os.path.abspath(rstring())
+    assert not os.path.exists(filepath)
+    session.load(filepath)
+
+    with mock.patch.object(mu.settings, "session", session):
         ed.restore_session()
-    py = mock_mode.code_template + mu.logic.NEWLINE
-    ed._view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
+
+    ed._view.add_tab.assert_called_once()
     ed.select_mode.assert_called_once_with(None)
 
 
-def test_editor_restore_session_invalid_file():
+# ~ @pytest.mark.skip("Temporarily skip")
+def test_editor_restore_session_invalid_file(tmp_path):
     """
     A malformed JSON file is correctly detected and app behaves the same as if
     there was no session file.
     """
-    view = mock.MagicMock()
-    view.tab_count = 0
-    ed = mu.logic.Editor(view)
+    ed = mocked_editor()
+    ed._view.tab_count = 0
     ed._view.add_tab = mock.MagicMock()
-    mock_mode = mock.MagicMock()
-    api = ["API specification"]
-    mock_mode.api.return_value = api
-    mock_mode.workspace_dir.return_value = "/fake/path"
-    mock_mode.save_timeout = 5
-    mock_mode.code_template = "template code"
-    ed.modes = {"python": mock_mode}
-    mock_open = mock.mock_open(
-        read_data='{"paths": ["path/foo.py", "path/bar.py"]}, invalid: 0}'
-    )
-    mock_gettext = mock.MagicMock()
-    mock_gettext.return_value = "# Write your code here :-)"
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.exists", return_value=True
-    ):
+    session = mu.settings.SessionSettings()
+    filepath = os.path.join(str(tmp_path), rstring())
+    with open(filepath, "w") as f:
+        f.write(rstring())
+    session.load(filepath)
+
+    with mock.patch.object(mu.settings, "session", session):
         ed.restore_session()
-    py = "template code" + mu.logic.NEWLINE
-    ed._view.add_tab.assert_called_once_with(None, py, api, mu.logic.NEWLINE)
+
+    ed._view.add_tab.assert_called_once()
+    ed.select_mode.assert_called_once_with(None)
 
 
 def test_restore_session_open_tabs_in_the_same_order():
@@ -1075,21 +1086,10 @@ def test_restore_session_open_tabs_in_the_same_order():
     Editor.restore_session() loads editor tabs in the same order as the 'paths'
     array in the session.json file.
     """
-    mocked_view = mock.MagicMock()
-    mocked_view.tab_count = 0
-    ed = mu.logic.Editor(mocked_view)
-
-    mocked_mode = mock.MagicMock()
-    mocked_mode.save_timeout = 5
-    ed.modes = {"python": mocked_mode}
-
+    ed = mocked_editor()
     ed.direct_load = mock.MagicMock()
-
     settings_paths = ["a.py", "b.py", "c.py", "d.py"]
-    settings_json_payload = json.dumps({"paths": settings_paths})
-
-    mock_open = mock.mock_open(read_data=settings_json_payload)
-    with mock.patch("builtins.open", mock_open):
+    with generate_session(paths=settings_paths):
         ed.restore_session()
 
     direct_load_calls_args = [
@@ -1126,23 +1126,13 @@ def test_editor_open_focus_passed_file():
     """
     A file passed in by the OS is opened
     """
-    view = mock.MagicMock()
-    view.tab_count = 0
-    ed = mu.logic.Editor(view)
-    mock_mode = mock.MagicMock()
-    mock_mode.workspace_dir.return_value = "/fake/path"
-    mock_mode.save_timeout = 5
-    ed.modes = {"python": mock_mode}
-    ed._load = mock.MagicMock()
-    file_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        "scripts",
-        "contains_red.py",
-    )
-    ed.select_mode = mock.MagicMock()
-    with mock.patch("builtins.open", mock.mock_open(read_data="data")):
-        ed.restore_session([file_path])
-        ed._load.assert_called_once_with(file_path)
+    ed = mocked_editor()
+    ed.direct_load = mock.MagicMock()
+    filepath = uuid.uuid1().hex
+    with generate_session():
+        ed.restore_session(paths=[filepath])
+
+    assert ed.direct_load.called_with(filepath)
 
 
 def test_editor_session_and_open_focus_passed_file():
@@ -1151,33 +1141,16 @@ def test_editor_session_and_open_focus_passed_file():
     so it receives focus
     It will be the middle position in the session
     """
-    view = mock.MagicMock()
-    ed = mu.logic.Editor(view)
-    ed.modes = mock.MagicMock()
+    ed = mocked_editor()
     ed.direct_load = mock.MagicMock()
-    mock_mode = mock.MagicMock()
-    mock_mode.workspace_dir.return_value = "/fake/path"
-    mock_mode.save_timeout = 5
-    ed.modes = {"python": mock_mode}
-    ed.select_mode = mock.MagicMock()
-    settings = json.dumps({"paths": ["path/foo.py", "path/bar.py"]})
-    mock_open = mock.mock_open(read_data=settings)
-    with mock.patch("builtins.open", mock_open), mock.patch(
-        "os.path.exists", return_value=True
-    ):
-        ed.restore_session(paths=["path/foo.py"])
+    filepath = os.path.abspath(uuid.uuid1().hex)
+    with generate_session(file_contents=[""]) as session:
+        ed.restore_session(paths=[filepath])
 
-    # direct_load should be called twice (once for each path)
-    assert ed.direct_load.call_count == 2
-    # However, "foo.py" as the passed_filename should be direct_load-ed
-    # at the end so it has focus, despite being the first file listed in
-    # the restored session.
-    assert ed.direct_load.call_args_list[0][0][0] == os.path.abspath(
-        "path/bar.py"
-    )
-    assert ed.direct_load.call_args_list[1][0][0] == os.path.abspath(
-        "path/foo.py"
-    )
+    args_only = [args for (args, _) in ed.direct_load.call_args_list]
+    call_args = [a[0] for a in args_only]
+    expected_call_args = session["paths"] + [filepath]
+    assert call_args == expected_call_args
 
 
 def test_toggle_theme_to_night():
@@ -2095,6 +2068,10 @@ def test_quit_modified_ok():
     If the user quits and there's unsaved work that's ignored then proceed to
     save the session.
     """
+    #
+    # Disable the settings' autosave functionality
+    #
+    atexit._clear()
     view = mock.MagicMock()
     view.modified = True
     view.show_confirmation = mock.MagicMock(return_value=True)
@@ -2115,16 +2092,19 @@ def test_quit_modified_ok():
     mock_open.return_value.__exit__ = mock.Mock()
     mock_open.return_value.write = mock.MagicMock()
     mock_event = mock.MagicMock()
+    #
+    # FIXME TJG: not sure what the ignore functionality being mocked here is doing
+    #
     mock_event.ignore = mock.MagicMock(return_value=None)
     with mock.patch("sys.exit", return_value=None), mock.patch(
-        "builtins.open", mock_open
-    ):
+        "mu.settings.session.save"
+    ) as mocked_save:
         ed.quit(mock_event)
+
     mock_debug_mode.stop.assert_called_once_with()
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    assert mock_open.call_count == 1
-    assert mock_open.return_value.write.call_count > 0
+    mocked_save.assert_called_once()
 
 
 def _editor_view_mock():
@@ -2290,12 +2270,12 @@ def test_quit_calls_mode_stop():
     mock_event.ignore = mock.MagicMock(return_value=None)
     with mock.patch("sys.exit", return_value=None), mock.patch(
         "builtins.open", mock_open
-    ):
+    ), mock.patch("mu.settings.session.save"):
         ed.quit(mock_event)
     ed.modes[ed.mode].stop.assert_called_once_with()
 
 
-def test_quit_calls_sys_exit():
+def test_quit_calls_sys_exit(mocked_session):
     """
     Ensure that sys.exit(0) is called.
     """

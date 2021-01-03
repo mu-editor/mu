@@ -18,7 +18,6 @@ to add or remove certain flags, or to use different wheels.
 import sys
 import os
 import glob
-import json
 import random
 import shutil
 import subprocess
@@ -80,17 +79,11 @@ def pipped():
 
 
 @pytest.fixture
-def baseline_packages(tmp_path):
-    baseline_filepath = str(tmp_path / "baseline_packages.json")
-    package_name = uuid.uuid1().hex
-    package_version = uuid.uuid1().hex
-    packages = [[package_name, package_version]]
-    with mock.patch.object(
-        mu.virtual_environment.VirtualEnvironment,
-        "BASELINE_PACKAGES_FILEPATH",
-        baseline_filepath,
-    ):
-        yield baseline_filepath, packages
+def workspace_dirpath(tmp_path):
+    workspace_dirpath = tmp_path / uuid.uuid1().hex
+    workspace_dirpath.mkdir()
+    with mock.patch.object(mu.config, "DATA_DIR", workspace_dirpath):
+        yield workspace_dirpath
 
 
 @pytest.fixture
@@ -384,30 +377,6 @@ def test_ensure_pip(venv):
         mu.virtual_environment.VirtualEnvironmentError, match="Pip"
     ):
         venv.ensure_pip()
-
-
-def test_read_baseline_packages_success(venv, baseline_packages):
-    """Ensure that we can read back a list of baseline packages"""
-    baseline_filepath, packages = baseline_packages
-    with open(baseline_filepath, "w") as f:
-        f.write(json.dumps(packages))
-
-    expected_output = packages
-    output = venv.baseline_packages()
-    assert output == expected_output
-
-
-def test_read_baseline_packages_failure(venv, baseline_packages):
-    """Ensure that if we can't read a list of packages we see an error log
-    and an empty list is returned
-    """
-    baseline_filepath, _ = baseline_packages
-    with open(baseline_filepath, "w") as f:
-        f.write("***")
-
-    expected_output = []
-    output = venv.baseline_packages()
-    assert output == expected_output
 
 
 def _QTimer_singleshot(delay, partial):

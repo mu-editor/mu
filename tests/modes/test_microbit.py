@@ -5,7 +5,8 @@ Tests for the micro:bit mode.
 import os
 import os.path
 import pytest
-from mu.logic import HOME_DIRECTORY, Device
+from mu.config import HOME_DIRECTORY
+from mu.logic import Device
 from mu.modes.microbit import MicrobitMode, DeviceFlasher, can_minify
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from mu.contrib import uflash

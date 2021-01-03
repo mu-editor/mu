@@ -3,7 +3,6 @@ import sys
 from collections import namedtuple
 import functools
 import glob
-import json
 import logging
 import subprocess
 
@@ -21,7 +20,7 @@ from PyQt5.QtCore import (
 )
 
 from . import wheels
-from . import config
+from . import settings
 
 wheels_dirpath = os.path.dirname(wheels.__file__)
 
@@ -173,7 +172,7 @@ class Pip(object):
             return result
         else:
             logger.debug(
-                "About to run unblocking: %s, %s, %s", self.executable, params
+                "About to run unblocking: %s, %s", self.executable, params
             )
             if slots.started:
                 self.process.started.connect(slots.started)
@@ -281,16 +280,15 @@ class VirtualEnvironmentError(Exception):
 
 class VirtualEnvironment(object):
 
-    BASELINE_PACKAGES_FILEPATH = os.path.join(
-        config.DATA_DIR, "baseline_packages.json"
-    )
     Slots = Process.Slots
 
-    def __init__(self, dirpath):
+    def __init__(self, dirpath=None):
         self.process = Process()
         self._is_windows = sys.platform == "win32"
         self._bin_extension = ".exe" if self._is_windows else ""
-        self.relocate(dirpath)
+        self.settings = settings.VirtualEnvironmentSettings()
+        self.settings.init()
+        self.relocate(dirpath or self.settings["dirpath"])
 
     def __str__(self):
         return "<%s at %s>" % (self.__class__.__name__, self.path)
@@ -474,29 +472,12 @@ class VirtualEnvironment(object):
 
     def register_baseline_packages(self):
         """Keep track of the baseline packages installed into the empty venv"""
-        #
-        # FIXME: This should go into settings.
-        # For now, though, just put it somewhere
-        #
         packages = list(self.pip.installed())
-        os.makedirs(
-            os.path.dirname(self.BASELINE_PACKAGES_FILEPATH), exist_ok=True
-        )
-        with open(self.BASELINE_PACKAGES_FILEPATH, "w", encoding="utf-8") as f:
-            json.dump(packages, f)
+        self.settings["baseline_packages"] = packages
 
     def baseline_packages(self):
         """Return the list of baseline packages"""
-        #
-        # FIXME: This should come out of settings. For now though...
-        # cf https://github.com/mu-editor/mu/issues/1185
-        #
-        with open(self.BASELINE_PACKAGES_FILEPATH, encoding="utf-8") as f:
-            try:
-                return json.load(f)
-            except json.decoder.JSONDecodeError:
-                logger.exception("Unable to read baseline packages")
-                return []
+        return self.settings.get("baseline_packages")
 
     def install_user_packages(self, packages, slots=Process.Slots()):
         logger.info("Installing user packages: %s", ", ".join(packages))
@@ -547,4 +528,4 @@ class VirtualEnvironment(object):
 # Create a singleton virtual environment to be used throughout
 # the application
 #
-venv = VirtualEnvironment(config.VENV_DIR)
+venv = VirtualEnvironment()
