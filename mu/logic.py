@@ -359,38 +359,6 @@ def get_admin_file_path(filename):
                     "Unable to create admin file: {}".format(file_path)
                 )
     return file_path
-
-
-def get_session_path():
-    """
-    The session file stores details about the state of Mu from the user's
-    perspective (tabs open, current mode etc...).
-
-    The session file default location is the application data directory.
-    However, a session file in the same directory as the application itself
-    takes preference.
-
-    If no session file is detected a blank one in the default location is
-    automatically created.
-    """
-    return get_admin_file_path("session.json")
-
-
-def get_settings_path():
-    """
-    The settings file stores details about the configuration of Mu from an
-    administrators' perspective (default workspace etc...).
-
-    The settings file default location is the application data directory.
-    However, a settings file in the same directory as the application itself
-    takes preference.
-
-    If no settings file is detected a blank one in the default location is
-    automatically created.
-    """
-    return get_admin_file_path("settings.json")
-
-
 def extract_envars(raw):
     """
     Returns a list of environment variables given a string containing
@@ -834,7 +802,6 @@ class Editor(QObject):
         if not os.path.exists(DATA_DIR):
             logger.debug("Creating directory: {}".format(DATA_DIR))
             os.makedirs(DATA_DIR)
-        logger.info("Settings path: {}".format(get_settings_path()))
         logger.info("Log directory: {}".format(LOG_DIR))
         logger.info("Data directory: {}".format(DATA_DIR))
 
