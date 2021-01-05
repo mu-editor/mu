@@ -22,10 +22,8 @@ import sys
 import codecs
 import io
 import re
-import json
 import logging
 import tempfile
-import platform
 import webbrowser
 import random
 import locale
@@ -332,33 +330,6 @@ def read_and_decode(filepath):
     return text, newline
 
 
-def get_admin_file_path(filename):
-    """
-    Given an admin related filename, this function will attempt to get the
-    most relevant version of this file (the default location is the application
-    data directory, although a file of the same name in the same directory as
-    the application itself takes preference). If this file isn't found, an
-    empty one is created in the default location.
-    """
-    # App location depends on being interpreted by normal Python or bundled
-    app_path = sys.executable if getattr(sys, "frozen", False) else sys.argv[0]
-    app_dir = os.path.dirname(os.path.abspath(app_path))
-    # The os x bundled application is placed 3 levels deep in the .app folder
-    if platform.system() == "Darwin" and getattr(sys, "frozen", False):
-        app_dir = os.path.dirname(os.path.dirname(os.path.dirname(app_dir)))
-    file_path = os.path.join(app_dir, filename)
-    if not os.path.exists(file_path):
-        file_path = os.path.join(DATA_DIR, filename)
-        if not os.path.exists(file_path):
-            try:
-                with open(file_path, "w") as f:
-                    logger.debug("Creating admin file: {}".format(file_path))
-                    json.dump({}, f)
-            except FileNotFoundError:
-                logger.error(
-                    "Unable to create admin file: {}".format(file_path)
-                )
-    return file_path
 def extract_envars(raw):
     """
     Returns a list of environment variables given a string containing

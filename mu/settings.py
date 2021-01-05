@@ -40,6 +40,7 @@ class SettingsBase(object):
 
     DEFAULTS = {}
     filestem = "default"
+    autosave = False
 
     def __init__(self, **kwargs):
         self._dirty = set()
@@ -106,8 +107,6 @@ class SettingsBase(object):
         data directory, although a file of the same name in the same directory as
         the application itself takes preference). If this file isn't found, an
         empty one is created in the default location.
-
-        FIXME: not sure if we still need / use this flexibility
         """
         # App location depends on being interpreted by normal Python or bundled
         app_path = (

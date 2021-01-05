@@ -412,8 +412,6 @@ def test_sniff_newline_convention_local():
     assert mu.logic.sniff_newline_convention(text) == os.linesep
 
 
-
-
 @pytest.mark.skip("No longer needed post PR #1200")
 def test_get_session_path():
     """
@@ -890,11 +888,10 @@ def test_editor_restore_session_missing_files():
     ignored when attempting to restore them.
     """
     mode, theme = "python", "night"
-    file_contents = [""]
     ed = mocked_editor(mode)
 
     with generate_session(theme, mode) as session:
-        session['paths'] = ["*does not exist*"]
+        session["paths"] = ["*does not exist*"]
         ed.restore_session()
 
     assert ed._view.add_tab.call_count == 0
