@@ -2,6 +2,7 @@
 
 import os
 import sys
+import platform
 import random
 from unittest import mock
 from unittest.mock import patch
@@ -409,7 +410,7 @@ def test_default_file_location_frozen(mocked_settings):
     settings, filepath, items = mocked_settings
     with mock.patch.object(sys, "executable", filepath), mock.patch.object(
         sys, "frozen", True, create=True
-    ):
+    ), mock.patch.object(platform, "system", return_value="not_Darwin"):
         settings.init()
 
     assert settings.filepath == filepath
