@@ -594,12 +594,26 @@ def test_MuFlakeCodeReporter_flake_matched():
     message structure.
     """
     r = mu.logic.MuFlakeCodeReporter()
-    err = "foo.py:4: something went wrong"
+    err = "foo.py:4:0 something went wrong"
     r.flake(err)
     assert len(r.log) == 1
     assert r.log[0]["line_no"] == 3
     assert r.log[0]["column"] == 0
     assert r.log[0]["message"] == "something went wrong"
+
+
+def test_MuFlakeCodeReporter_flake_real_output():
+    """
+    Check the reporter handles real output from flake, to catch format
+    change regressions.
+    """
+    check = mu.logic.check
+    reporter = mu.logic.MuFlakeCodeReporter()
+    code = "a = 1\nb = 2\nc\n"
+    check(code, "filename", reporter)
+    assert reporter.log[0]["line_no"] == 2
+    assert reporter.log[0]["message"] == "undefined name 'c'"
+    assert reporter.log[0]["column"] == 1
 
 
 def test_MuFlakeCodeReporter_flake_un_matched():
