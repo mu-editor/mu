@@ -51,9 +51,11 @@ flake8:
 	flake8
 
 test: clean
+	export LANG=en_GB.utf8
 	pytest --random-order
 
 coverage: clean
+	export LANG=en_GB.utf8
 	pytest --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
 tidy: clean
