@@ -134,6 +134,12 @@ def run():
         QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
+    # An issue in PyQt5 v5.13.2 to v5.15.1 makes PyQt5 application
+    # hang on Mac OS 11 (Big Sur)
+    # Setting this environment variable fixes the problem.
+    # See issue #1147 for more information
+    os.environ["QT_MAC_WANTS_LAYER"] = "1"
+
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
     # By default PyQt uses the script name (run.py)
