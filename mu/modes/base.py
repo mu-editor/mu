@@ -16,7 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import json
 import sys
 import os
 import os.path
@@ -27,8 +26,9 @@ import pkgutil
 from serial import Serial
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 from PyQt5.QtCore import QObject, pyqtSignal, QIODevice, QTimer
-from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path, Device
+from mu.logic import Device
 from mu.contrib import microfs
+from .. import config, settings
 
 ENTER_RAW_MODE = b"\x01"  # CTRL-A
 EXIT_RAW_MODE = b"\x02"  # CTRL-B
@@ -45,25 +45,6 @@ MODULE_NAMES.add("sys")
 MODULE_NAMES.add("builtins")
 
 
-def get_settings():
-    """
-    Return the JSON settings as a dictionary, which maybe empty if
-    the `settings.json` file is not found or if it can not be parsed.
-    """
-
-    sp = get_settings_path()
-    settings = {}
-    try:
-        with open(sp) as f:
-            settings = json.load(f)
-    except FileNotFoundError:
-        logger.error("Settings file {} does not exist.".format(sp))
-    except ValueError:
-        logger.error("Settings file {} could not be parsed.".format(sp))
-
-    return settings
-
-
 def get_default_workspace():
     """
     Return the location on the filesystem for opening and closing files.
@@ -72,17 +53,16 @@ def get_default_workspace():
     in some network systems this in inaccessible. This allows a key in the
     settings file to be used to set a custom path.
     """
-    workspace_dir = os.path.join(HOME_DIRECTORY, WORKSPACE_NAME)
-    settings = get_settings()
+    workspace_dir = os.path.join(config.HOME_DIRECTORY, config.WORKSPACE_NAME)
 
-    if "workspace" in settings:
-        if os.path.isdir(settings["workspace"]):
-            workspace_dir = settings["workspace"]
-        else:
-            logger.error(
-                "Workspace value in the settings file is not a valid"
-                "directory: {}".format(settings["workspace"])
-            )
+    settings_workspace = settings.settings.get("workspace")
+    if settings_workspace and os.path.isdir(settings_workspace):
+        workspace_dir = settings_workspace
+    else:
+        logger.error(
+            "Workspace value in the settings file is not a valid"
+            "directory: {}".format(settings_workspace)
+        )
     return workspace_dir
 
 
@@ -300,6 +280,14 @@ class BaseMode(QObject):
         """
         return NotImplemented
 
+    def write_plotter_data_to_csv(self, csv_filepath):
+        """Write any plotter data out to a CSV file when the
+        plotter is closed
+        """
+        with open(csv_filepath, "w", newline="") as csvfile:
+            csv_writer = csv.writer(csvfile)
+            csv_writer.writerows(self.view.plotter_pane.raw_data)
+
     def remove_plotter(self):
         """
         If there's an active plotter, hide it.
@@ -308,16 +296,14 @@ class BaseMode(QObject):
         called 'data_capture' in the workspace directory. The file contains
         CSV data and is named with a timestamp for easy identification.
         """
+        # Save the raw data as CSV
         data_dir = os.path.join(get_default_workspace(), "data_capture")
         if not os.path.exists(data_dir):
             logger.debug("Creating directory: {}".format(data_dir))
             os.makedirs(data_dir)
-        # Save the raw data as CSV
         filename = "{}.csv".format(time.strftime("%Y%m%d-%H%M%S"))
-        f = os.path.join(data_dir, filename)
-        with open(f, "w") as csvfile:
-            csv_writer = csv.writer(csvfile)
-            csv_writer.writerows(self.view.plotter_pane.raw_data)
+        filepath = os.path.join(data_dir, filename)
+        self.write_plotter_data_to_csv(filepath)
         self.view.remove_plotter()
         self.plotter = False
         logger.info("Removing plotter")
@@ -659,7 +645,6 @@ class FileManager(QObject):
         """
         super().__init__()
         self.port = port
-        self.settings = get_settings()
 
     def on_start(self):
         """
@@ -671,7 +656,7 @@ class FileManager(QObject):
             self.serial = Serial(
                 self.port,
                 115200,
-                timeout=self.settings.get("serial_timeout", 2),
+                timeout=settings.settings.get("serial_timeout", 2),
                 parity="N",
             )
             self.ls()

@@ -23,17 +23,18 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
 import platform
-import pkgutil
 import sys
 
 from PyQt5.QtCore import QTimer, Qt, QCoreApplication
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
-from mu import __version__, language_code
-from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
-from mu.interface import Window
-from mu.resources import load_pixmap, load_icon
-from mu.modes import (
+from . import i18n
+from .virtual_environment import venv
+from . import __version__
+from .logic import Editor, LOG_FILE, LOG_DIR, ENCODING
+from .interface import Window
+from .resources import load_pixmap, load_icon
+from .modes import (
     PythonMode,
     CircuitPythonMode,
     MicrobitMode,
@@ -43,8 +44,17 @@ from mu.modes import (
     WebMode,
     PyboardMode,
 )
-from mu.debugger.runner import run as run_debugger
-from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
+from .interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
+from . import settings
+
+
+def excepthook(*exc_args):
+    """
+    Log exception and exit cleanly.
+    """
+    logging.error("Unrecoverable error", exc_info=(exc_args))
+    sys.__excepthook__(*exc_args)
+    sys.exit(1)
 
 
 def setup_logging():
@@ -82,7 +92,7 @@ def setup_modes(editor, view):
     *PREMATURE OPTIMIZATION ALERT* This may become more complex in future so
     splitting things out here to contain the mess. ;-)
     """
-    modes = {
+    return {
         "python": PythonMode(editor, view),
         "circuitpython": CircuitPythonMode(editor, view),
         "microbit": MicrobitMode(editor, view),
@@ -90,23 +100,8 @@ def setup_modes(editor, view):
         "web": WebMode(editor, view),
         "pyboard": PyboardMode(editor, view),
         "debugger": DebugMode(editor, view),
+        "pygamezero": PyGameZeroMode(editor, view),
     }
-
-    # Check if pgzero is available (without importing it)
-    if any([m for m in pkgutil.iter_modules() if "pgzero" in m]):
-        modes["pygamezero"] = PyGameZeroMode(editor, view)
-
-    # return available modes
-    return modes
-
-
-def excepthook(*exc_args):
-    """
-    Log exception and exit cleanly.
-    """
-    logging.error("Unrecoverable error", exc_info=(exc_args))
-    sys.__excepthook__(*exc_args)
-    sys.exit(1)
 
 
 def run():
@@ -124,7 +119,20 @@ def run():
     logging.info("\n\n-----------------\n\nStarting Mu {}".format(__version__))
     logging.info(platform.uname())
     logging.info("Python path: {}".format(sys.path))
-    logging.info("Language code: {}".format(language_code))
+    logging.info("Language code: {}".format(i18n.language_code))
+
+    #
+    # Load settings from known locations and register them for
+    # autosave
+    #
+    settings.init()
+
+    # Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
+    # unless this flag is set
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+    if hasattr(Qt, "AA_EnableHighDpiScaling"):
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
@@ -134,9 +142,12 @@ def run():
     app.setDesktopFileName("mu.codewith.editor")
     app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
-    # Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
-    # unless this flag is set
-    app.setAttribute(Qt.AA_UseHighDpiPixmaps)
+
+    #
+    # FIXME -- look at the possiblity of tying ensure completion
+    # into Splash screen finish below...
+    #
+    venv.ensure()
 
     # Create the "window" we'll be looking at.
     editor_window = Window()
@@ -196,19 +207,3 @@ def run():
 
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
-
-
-def debug():
-    """
-    Create a debug runner in a new process.
-
-    This is what the Mu debugger will drive. Uses the filename and associated
-    args found in sys.argv.
-    """
-    if len(sys.argv) > 1:
-        filename = os.path.normcase(os.path.abspath(sys.argv[1]))
-        args = sys.argv[2:]
-        run_debugger("localhost", DEBUGGER_PORT, filename, args)
-    else:
-        # See https://github.com/mu-editor/mu/issues/743
-        print("Debugger requires a Python script filename to run.")

@@ -24,6 +24,7 @@ from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, FLASK_APIS
 from mu.resources import load_icon
 from mu.logic import read_and_decode
+from ..virtual_environment import venv
 
 
 logger = logging.getLogger(__name__)
@@ -173,7 +174,12 @@ class WebMode(BaseMode):
             args = ["-m", "flask", "run"]
             cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(
-                "", cwd, interactive=False, envars=envars, python_args=args
+                venv.interpreter,
+                "",
+                cwd,
+                interactive=False,
+                envars=envars,
+                python_args=args,
             )
             logger.debug("Starting Flask app.")
             self.runner.process.waitForStarted()

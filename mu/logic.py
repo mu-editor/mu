@@ -30,27 +30,22 @@ import webbrowser
 import random
 import locale
 import shutil
+
 import appdirs
-import site
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QLocale, QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5 import QtCore
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
-from mu.resources import path
-from mu.debugger.utils import is_breakpoint_line
-from mu import __version__
 
+from . import __version__
+from . import i18n
+from .resources import path
+from .debugger.utils import is_breakpoint_line
+from .config import DATA_DIR, VENV_DIR, MAX_LINE_LENGTH
+from . import settings
+from .virtual_environment import venv
 
-# The user's home directory.
-HOME_DIRECTORY = os.path.expanduser("~")
-# Name of the directory within the home folder to use by default
-WORKSPACE_NAME = "mu_code"
-# The default directory for application data (i.e., configuration).
-DATA_DIR = appdirs.user_data_dir(appname="mu", appauthor="python")
-# The directory containing user installed third party modules.
-MODULE_DIR = os.path.join(DATA_DIR, "site-packages")
-sys.path.append(MODULE_DIR)
 # The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.
@@ -72,9 +67,7 @@ EXPANDED_IMPORT = (
     "accelerometer, display, uart, spi, panic, pin13, "
     "pin12, pin11, pin10, compass"
 )
-# Port number for debugger.
-DEBUGGER_PORT = 31415
-# Default images to copy over for use in Pygame Zero demo apps.
+# Default images to copy over for use in PyGameZero demo apps.
 DEFAULT_IMAGES = [
     "alien.png",
     "alien_hurt.png",
@@ -84,7 +77,7 @@ DEFAULT_IMAGES = [
     "cat4.png",
     "splat.png",
 ]
-# Default sound effects to copy over for use in Pygame Zero demo apps.
+# Default sound effects to copy over for use in PyGameZero demo apps.
 DEFAULT_SOUNDS = [
     "eep.wav",
     "meow1.wav",
@@ -188,36 +181,6 @@ ENCODING_COOKIE_RE = re.compile(
 )
 
 logger = logging.getLogger(__name__)
-
-
-def installed_packages():
-    """
-    List all the third party modules installed by the user.
-    """
-    result = []
-    pkg_dirs = [
-        os.path.join(MODULE_DIR, d)
-        for d in os.listdir(MODULE_DIR)
-        if d.endswith("dist-info") or d.endswith("egg-info")
-    ]
-    logger.info("Packages found: {}".format(pkg_dirs))
-    for pkg in pkg_dirs:
-        if pkg.endswith("dist-info"):
-            # Modern.
-            metadata_file = os.path.join(pkg, "METADATA")
-        else:
-            # Legacy (eggs).
-            metadata_file = os.path.join(pkg, "PKG-INFO")
-        try:
-            with open(metadata_file, "rb") as f:
-                lines = f.readlines()
-                name = lines[1].rsplit(b":")[-1].strip()
-                result.append(name.decode("utf-8"))
-        except Exception as ex:
-            # Just log any errors.
-            logger.error("Unable to get metadata for package: " + pkg)
-            logger.error(ex)
-    return sorted(result)
 
 
 def write_and_flush(fileobj, content):
@@ -443,6 +406,11 @@ def extract_envars(raw):
     return result
 
 
+def save_session(session):
+    settings.session.update(session)
+    settings.session.save()
+
+
 def check_flake(filename, code, builtins=None):
     """
     Given a filename and some code to be checked, uses the PyFlakesmodule to
@@ -509,7 +477,11 @@ def check_pycodestyle(code, config_file=False):
         "W391",
         "W503",
     )
-    style = StyleGuide(parse_argv=False, config_file=config_file)
+    style = StyleGuide(
+        parse_argv=False,
+        config_file=config_file,
+        max_line_length=MAX_LINE_LENGTH,
+    )
 
     # StyleGuide() returns pycodestyle module's own ignore list. That list may
     # be a default list or a custom list provided by the user
@@ -864,11 +836,7 @@ class Editor(QObject):
         if not os.path.exists(DATA_DIR):
             logger.debug("Creating directory: {}".format(DATA_DIR))
             os.makedirs(DATA_DIR)
-        if not os.path.exists(MODULE_DIR):
-            logger.debug("Creating directory: {}".format(MODULE_DIR))
-            os.makedirs(MODULE_DIR)
         logger.info("Settings path: {}".format(get_settings_path()))
-        logger.info("Session path: {}".format(get_session_path()))
         logger.info("Log directory: {}".format(LOG_DIR))
         logger.info("Data directory: {}".format(DATA_DIR))
 
@@ -890,7 +858,7 @@ class Editor(QObject):
         if not os.path.exists(wd):
             logger.debug("Creating directory: {}".format(wd))
             os.makedirs(wd)
-        # Ensure Pygame Zero assets are copied over.
+        # Ensure PyGameZero assets are copied over.
         images_path = os.path.join(wd, "images")
         fonts_path = os.path.join(wd, "fonts")
         sounds_path = os.path.join(wd, "sounds")
@@ -956,80 +924,78 @@ class Editor(QObject):
         the user, they are also "restored" at the same time (duplicates will be
         ignored).
         """
-        settings_path = get_session_path()
         self.change_mode(self.mode)
-        with open(settings_path) as f:
-            try:
-                old_session = json.load(f)
-            except ValueError:
-                old_session = None
-                logger.error(
-                    "Settings file {} could not be parsed.".format(
-                        settings_path
-                    )
-                )
+        old_session = settings.session
+        logger.debug(old_session)
+        if "theme" in old_session:
+            self.theme = old_session["theme"]
+        self._view.set_theme(self.theme)
+        if "mode" in old_session:
+            old_mode = old_session["mode"]
+            if old_mode in self.modes:
+                self.mode = old_session["mode"]
             else:
-                logger.info("Restoring session from: {}".format(settings_path))
-                logger.debug(old_session)
-                if "theme" in old_session:
-                    self.theme = old_session["theme"]
-                self._view.set_theme(self.theme)
-                if "mode" in old_session:
-                    old_mode = old_session["mode"]
-                    if old_mode in self.modes:
-                        self.mode = old_session["mode"]
-                    else:
-                        # Unknown mode (perhaps an old version?)
-                        self.select_mode(None)
-                else:
-                    # So ask for the desired mode.
-                    self.select_mode(None)
-                if "paths" in old_session:
-                    old_paths = self._abspath(old_session["paths"])
-                    launch_paths = self._abspath(paths) if paths else set()
-                    for old_path in old_paths:
-                        # if the os passed in a file, defer loading it now
-                        if old_path in launch_paths:
-                            continue
-                        self.direct_load(old_path)
-                    logger.info("Loaded files.")
-                if "envars" in old_session:
-                    self.envars = old_session["envars"]
-                    logger.info(
-                        "User defined environment variables: "
-                        "{}".format(self.envars)
+                # Unknown mode (perhaps an old version?)
+                self.select_mode(None)
+        else:
+            # So ask for the desired mode.
+            self.select_mode(None)
+        if "paths" in old_session:
+            old_paths = self._abspath(old_session["paths"])
+            launch_paths = self._abspath(paths) if paths else set()
+            for old_path in old_paths:
+                # if the os passed in a file, defer loading it now
+                if old_path in launch_paths:
+                    continue
+                self.direct_load(old_path)
+            logger.info("Loaded files.")
+        if "envars" in old_session:
+            self.envars = old_session["envars"]
+            logger.info(
+                "User defined environment variables: " "{}".format(self.envars)
+            )
+        if "minify" in old_session:
+            self.minify = old_session["minify"]
+            logger.info(
+                "Minify scripts on micro:bit? " "{}".format(self.minify)
+            )
+        if "microbit_runtime" in old_session:
+            self.microbit_runtime = old_session["microbit_runtime"]
+            if self.microbit_runtime:
+                logger.info(
+                    "Custom micro:bit runtime path: "
+                    "{}".format(self.microbit_runtime)
+                )
+                if not os.path.isfile(self.microbit_runtime):
+                    self.microbit_runtime = ""
+                    logger.warning(
+                        "The specified micro:bit runtime "
+                        "does not exist. Using default "
+                        "runtime instead."
                     )
-                if "minify" in old_session:
-                    self.minify = old_session["minify"]
-                    logger.info(
-                        "Minify scripts on micro:bit? "
-                        "{}".format(self.minify)
-                    )
-                if "microbit_runtime" in old_session:
-                    self.microbit_runtime = old_session["microbit_runtime"]
-                    if self.microbit_runtime:
-                        logger.info(
-                            "Custom micro:bit runtime path: "
-                            "{}".format(self.microbit_runtime)
-                        )
-                        if not os.path.isfile(self.microbit_runtime):
-                            self.microbit_runtime = ""
-                            logger.warning(
-                                "The specified micro:bit runtime "
-                                "does not exist. Using default "
-                                "runtime instead."
-                            )
-                if "zoom_level" in old_session:
-                    self._view.zoom_position = old_session["zoom_level"]
-                    self._view.set_zoom()
-                old_window = old_session.get("window", {})
-                self._view.size_window(**old_window)
-        if old_session is None:
-            self._view.set_theme(self.theme)
+        if "zoom_level" in old_session:
+            self._view.zoom_position = old_session["zoom_level"]
+            self._view.set_zoom()
+
+        if "venv_path" in old_session:
+            venv.relocate(old_session["venv_path"])
+            venv.ensure()
+
+        old_window = old_session.get("window", {})
+        self._view.size_window(**old_window)
+        print("Checking tab_count:", self._view.tab_count)
+
+        #
+        # Doesn't seem to do anything useful
+        #
+        # ~ if old_session is None:
+        # ~ self._view.set_theme(self.theme)
+
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
             self.load_cli(paths)
+        print("Checking tab_count:", self._view.tab_count)
         self.change_mode(self.mode)
         self.show_status_message(random.choice(MOTD), 10)
         if not self._view.tab_count:
@@ -1179,7 +1145,7 @@ class Editor(QObject):
 
     def get_dialog_directory(self, default=None):
         """
-        Return the directory folder in which a load/save dialog box should
+        Return the directory folder which a load/save dialog box should
         open into. In order of precedence this function will return:
 
         0) If not None, the value of default.
@@ -1422,10 +1388,9 @@ class Editor(QObject):
         """
         Display browser based help about Mu.
         """
-        language_code = QLocale.system().name()[:2]
         major_version = ".".join(__version__.split(".")[:2])
         url = "https://codewith.mu/{}/help/{}".format(
-            language_code, major_version
+            i18n.language_code[:2], major_version
         )
         logger.info("Showing help at %r.", url)
         webbrowser.open_new(url)
@@ -1461,6 +1426,8 @@ class Editor(QObject):
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
             "zoom_level": self._view.zoom_position,
+            "venv_name": venv.name,
+            "venv_python": venv.interpreter,
             "window": {
                 "x": self._view.x(),
                 "y": self._view.y(),
@@ -1468,23 +1435,7 @@ class Editor(QObject):
                 "h": self._view.height(),
             },
         }
-        session_path = get_session_path()
-        with open(session_path, "w") as out:
-            logger.debug("Session: {}".format(session))
-            logger.debug("Saving session to: {}".format(session_path))
-            json.dump(session, out, indent=2)
-        # Clean up temporary mu.pth file if needed (Windows only).
-        if sys.platform == "win32" and "pythonw.exe" in sys.executable:
-            if site.ENABLE_USER_SITE:
-                site_path = site.USER_SITE
-                path_file = os.path.join(site_path, "mu.pth")
-                if os.path.exists(path_file):
-                    try:
-                        os.remove(path_file)
-                        logger.info("{} removed.".format(path_file))
-                    except Exception as ex:
-                        logger.error("Unable to delete {}".format(path_file))
-                        logger.error(ex)
+        save_session(session)
         logger.info("Quitting.\n\n")
         sys.exit(0)
 
@@ -1503,7 +1454,8 @@ class Editor(QObject):
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
         }
-        packages = installed_packages()
+        baseline_packages, user_packages = venv.installed_packages()
+        packages = user_packages
         with open(LOG_FILE, "r", encoding="utf8") as logfile:
             new_settings = self._view.show_admin(
                 logfile.read(),
@@ -1532,7 +1484,7 @@ class Editor(QObject):
                 for p in new_settings["packages"].lower().split("\n")
                 if p.strip()
             ]
-            old_packages = [p.lower() for p in packages]
+            old_packages = [p.lower() for p in user_packages]
             self.sync_package_state(old_packages, new_packages)
         else:
             logger.info("No admin settings changed.")
@@ -1554,8 +1506,8 @@ class Editor(QObject):
         if to_remove or to_add:
             logger.info("To add: {}".format(to_add))
             logger.info("To remove: {}".format(to_remove))
-            logger.info("Site packages: {}".format(MODULE_DIR))
-            self._view.sync_packages(to_remove, to_add, MODULE_DIR)
+            logger.info("Virtualenv: {}".format(VENV_DIR))
+            self._view.sync_packages(to_remove, to_add)
 
     def select_mode(self, event=None):
         """
@@ -1845,7 +1797,9 @@ class Editor(QObject):
             source_code = tab.text()
             logger.info("Tidy code.")
             logger.info(source_code)
-            filemode = FileMode(target_versions=PY36_VERSIONS, line_length=88)
+            filemode = FileMode(
+                target_versions=PY36_VERSIONS, line_length=MAX_LINE_LENGTH
+            )
             tidy_code = format_str(source_code, mode=filemode)
             # The following bypasses tab.setText which resets the undo history.
             # Doing it this way means the user can use CTRL-Z to undo the

@@ -17,11 +17,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import os.path
-from mu.modes.base import BaseMode
-from mu.logic import DEBUGGER_PORT
-from mu.debugger.client import Debugger
-from mu.debugger.utils import is_breakpoint_line
+import os
+
+from .base import BaseMode
+from ..debugger.config import DEBUGGER_PORT
+from ..debugger.client import Debugger
+from ..debugger.utils import is_breakpoint_line
+from ..virtual_environment import venv
 
 from PyQt5.QtCore import QTimer
 
@@ -120,7 +122,11 @@ class DebugMode(BaseMode):
             envars = self.editor.envars
             cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(
-                tab.path, cwd, debugger=True, envars=envars
+                venv.interpreter,
+                tab.path,
+                cwd,
+                debugger=True,
+                envars=envars,
             )
             self.runner.process.waitForStarted()
             self.runner.process.finished.connect(self.finished)

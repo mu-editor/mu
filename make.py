@@ -112,6 +112,7 @@ def test(*pytest_args):
     with a failure value. This forces things to stop if tests fail.
     """
     print("\ntest")
+    os.environ["LANG"] = "en_GB.utf8"
     return subprocess.run([PYTEST] + list(pytest_args)).returncode
 
 
@@ -122,6 +123,7 @@ def coverage():
     Call py.test with coverage turned on
     """
     print("\ncoverage")
+    os.environ["LANG"] = "en_GB.utf8"
     return subprocess.run(
         [
             PYTEST,
@@ -265,7 +267,8 @@ def run():
 @export
 def dist():
     """Generate a source distribution and a binary wheel"""
-    check()
+    if check() != 0:
+        raise RuntimeError("Check failed")
     print("Checks pass; good to package")
     return subprocess.run(
         [sys.executable, "setup.py", "sdist", "bdist_wheel"]
@@ -293,7 +296,8 @@ def publish_live():
 @export
 def win32():
     """Build 32-bit Windows installer"""
-    check()
+    if check() != 0:
+        raise RuntimeError("Check failed")
     print("Building 32-bit Windows installer")
     return subprocess.run(
         [sys.executable, "win_installer.py", "32", "setup.py"]
@@ -303,7 +307,8 @@ def win32():
 @export
 def win64():
     """Build 64-bit Windows installer"""
-    check()
+    if check() != 0:
+        raise RuntimeError("Check failed")
     print("Building 64-bit Windows installer")
     return subprocess.run(
         [sys.executable, "win_installer.py", "64", "setup.py"]

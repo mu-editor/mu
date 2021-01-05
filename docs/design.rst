@@ -1,4 +1,4 @@
-Design Decisions 
+Design Decisions
 ----------------
 
 The following documents concern the decision making aspects behind various
@@ -11,3 +11,5 @@ technical decisions will be documented in this way.
 
     design/file_reading_and_writing.rst
     design/line-endings
+    design/runtime-virtual-environment
+    design/settings
