@@ -983,7 +983,6 @@ class Editor(QObject):
 
         old_window = old_session.get("window", {})
         self._view.size_window(**old_window)
-        print("Checking tab_count:", self._view.tab_count)
 
         #
         # Doesn't seem to do anything useful
