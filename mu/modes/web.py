@@ -171,6 +171,8 @@ class WebMode(BaseMode):
             envars = self.editor.envars
             envars.append(("FLASK_APP", os.path.basename(tab.path)))
             envars.append(("FLASK_ENV", "development"))
+            envars.append(("LC_ALL", "en_GB.UTF8"))
+            envars.append(("LANG", "en_GB.UTF8"))
             args = ["-m", "flask", "run"]
             cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(
