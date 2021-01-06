@@ -1712,12 +1712,12 @@ class Editor(QObject):
                 )
                 self._view.show_message(message, information)
 
-    def find_again(self):
+    def find_again(self, forward=True):
         """
         Handle find again (F3) functionality.
         """
         if self.find:
-            matched = self._view.highlight_text(self.find)
+            matched = self._view.highlight_text(self.find, forward)
             if matched:
                 msg = _('Highlighting matches for "{}".')
             else:
@@ -1730,6 +1730,9 @@ class Editor(QObject):
                 "in the find box."
             )
             self._view.show_message(message, information)
+
+    def find_again_backward(self, forward=False):
+        self.find_again(forward=False)
 
     def toggle_comments(self):
         """

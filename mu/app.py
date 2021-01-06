@@ -205,7 +205,9 @@ def run():
     # Connect the various UI elements in the window to the editor.
     editor_window.connect_tab_rename(editor.rename_tab, "Ctrl+Shift+S")
     editor_window.connect_find_replace(editor.find_replace, "Ctrl+F")
-    editor_window.connect_find_again(editor.find_again, "F3")
+    # Connect find again both forward and backward ('Shift+F3')
+    find_again_handlers = (editor.find_again, editor.find_again_backward)
+    editor_window.connect_find_again(find_again_handlers, "F3")
     editor_window.connect_toggle_comments(editor.toggle_comments, "Ctrl+K")
     editor.connect_to_status_bar(editor_window.status_bar)
 
