@@ -1714,7 +1714,7 @@ class Editor(QObject):
 
     def find_again(self, forward=True):
         """
-        Handle find again (F3) functionality.
+        Handle find again (F3 and Shift+F3) functionality.
         """
         if self.find:
             matched = self._view.highlight_text(self.find, forward)
@@ -1732,6 +1732,9 @@ class Editor(QObject):
             self._view.show_message(message, information)
 
     def find_again_backward(self, forward=False):
+        """
+        Handle find again backward (Shift+F3) functionality.
+        """
         self.find_again(forward=False)
 
     def toggle_comments(self):

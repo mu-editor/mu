@@ -1098,7 +1098,9 @@ class Window(QMainWindow):
     def connect_find_again(self, handlers, shortcut):
         """
         Create keyboard shortcuts and associate them with handlers for doing
-        a find again in forward or backward direction.
+        a find again in forward or backward direction. Any given shortcut
+        will be used for forward find again, while Shift+shortcut will find
+        again backwards.
         """
         forward, backward = handlers
         self.find_again_shortcut = QShortcut(QKeySequence(shortcut), self)
@@ -1154,10 +1156,12 @@ class Window(QMainWindow):
         the current tab for the target_text. Returns True if there's a match.
         """
         if self.current_tab:
-            # Workaround for `findFirst(forward=False)` not advancing
-            # backwards: pass explicit line and index values.
-            start_line, start_index, _el, _ei = self.current_tab.getSelection()
-            index = -1 if forward else start_index
+            line = -1
+            index = -1
+            if not forward:
+                # Workaround for `findFirst(forward=False)` not advancing
+                # backwards: pass explicit line and index values.
+                line, index, _el, _ei = self.current_tab.getSelection()
             return self.current_tab.findFirst(
                 target_text,  # Text to find,
                 True,  # Treat as regular expression
@@ -1165,7 +1169,7 @@ class Window(QMainWindow):
                 False,  # Whole word matches only
                 True,  # Wrap search
                 forward=forward,  # Forward search
-                line=start_line,  # -1 starts at current position
+                line=line,  # -1 starts at current position
                 index=index,  # -1 starts at current position
             )
         else:
