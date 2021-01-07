@@ -762,7 +762,6 @@ class MicroPythonFileManager(FileManager):
         filename. Emit the name of the filename when complete or emit a
         failure signal.
         """
-        print('hello')
         try:
             mpyfs.get(device_filename, local_filename, serial=self.serial)
             self.on_get_file.emit(device_filename)
@@ -787,3 +786,15 @@ class MicroPythonFileManager(FileManager):
         except Exception as ex:
             logger.error(ex)
             self.on_put_fail.emit(local_filename)
+
+    def delete(self, device_filename):
+        """
+        Delete the referenced file on the device's filesystem. Emit the name
+        of the file when complete, or emit a failure signal.
+        """
+        try:
+            mpyfs.rm(device_filename, serial=self.serial)
+            self.on_delete_file.emit(device_filename)
+        except Exception as ex:
+            logger.error(ex)
+            self.on_delete_fail.emit(device_filename)
