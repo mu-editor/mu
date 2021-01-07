@@ -337,14 +337,16 @@ def seek(dirs, path, serial, flist):
         out, err = send_cmd_blocking(serial, command)
         out = ast.literal_eval(out.decode("utf-8"))
         kind = out[0]
-
         if kind == 0x4000:  # dir
             new_path = path + "/" + f
 
             # tree(os.listdir(new_path), new_path)
             command = ["import os", "print(os.listdir('" + new_path + "'))"]
             out, err = send_cmd_blocking(serial, command)
-            seek(out, new_path, serial, flist)
+            if out == b'[]\r\n':
+                flist.append(new_path + "/")
+            else:
+                seek(out, new_path, serial, flist)
 
         if kind == 0x8000:
             flist.append(path + "/" + f)
