@@ -1174,7 +1174,7 @@ class Window(QMainWindow):
         if global_replace:
             counter = 0
             found = self.current_tab.findFirst(
-                target_text, True, True, False, False, line=0, index=0
+                target_text, False, True, False, False, line=0, index=0
             )
             if found:
                 counter += 1
@@ -1185,7 +1185,7 @@ class Window(QMainWindow):
             return counter
         else:
             found = self.current_tab.findFirst(
-                target_text, True, True, False, True
+                target_text, False, True, False, True
             )
             if found:
                 self.current_tab.replace(replace)
@@ -1207,7 +1207,7 @@ class Window(QMainWindow):
                 line, index, _el, _ei = self.current_tab.getSelection()
             return self.current_tab.findFirst(
                 target_text,  # Text to find,
-                True,  # Treat as regular expression
+                False,  # Treat as regular expression
                 True,  # Case sensitive search
                 False,  # Whole word matches only
                 True,  # Wrap search

@@ -1841,7 +1841,7 @@ def test_Window_highlight_text():
     mock_tab.getSelection.return_value = 0, 0, 0, 0
     assert w.highlight_text("foo")
     mock_tab.findFirst.assert_called_once_with(
-        "foo", True, True, False, True, forward=True, index=-1, line=-1
+        "foo", False, True, False, True, forward=True, index=-1, line=-1
     )
 
 
