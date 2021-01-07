@@ -19,10 +19,8 @@ import uuid
 
 import pytest
 import mu.config
-import mu.interface.editor
 import mu.logic
 import mu.settings
-from mu.interface import Window
 
 from mu.virtual_environment import venv
 from PyQt5.QtWidgets import QMessageBox
@@ -3204,22 +3202,6 @@ def test_find_replace_find_matched():
     ed.show_status_message.assert_called_once_with(
         'Highlighting matches for "foo".'
     )
-
-
-def test_find_replace_find_correct_selection():
-    """
-    If the user just supplies a find target and it is matched in the code then
-    the expected status message should be shown.
-    """
-    view = Window()
-    text = "ofafefifoof."
-    tab = mu.interface.editor.EditorPane("path", text)
-    with mock.patch("mu.interface.Window.current_tab") as current:
-        current.findFirst = tab.findFirst
-        view.highlight_text("f.")
-        assert tab.selectedText() == "f."
-        assert view.replace_text("of.", "", False)
-        assert tab.selectedText() == "of."
 
 
 def test_find_again_find_matched():
