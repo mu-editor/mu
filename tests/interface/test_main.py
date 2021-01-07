@@ -1805,7 +1805,24 @@ def test_Window_highlight_text():
     mock_tab.getSelection.return_value = 0, 0, 0, 0
     assert w.highlight_text("foo")
     mock_tab.findFirst.assert_called_once_with(
-        "foo", True, True, False, True, forward=True, index=-1, line=0
+        "foo", True, True, False, True, forward=True, index=-1, line=-1
+    )
+
+
+def test_Window_highlight_text_backward():
+    """
+    Given target_text, highlights the first instance via Scintilla's findFirst
+    method.
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    mock_tab.findFirst.return_value = True
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 0, 0
+    assert w.highlight_text("foo", forward=False)
+    mock_tab.findFirst.assert_called_once_with(
+        "foo", True, True, False, True, forward=False, index=0, line=0
     )
 
 
