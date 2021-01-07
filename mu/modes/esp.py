@@ -238,7 +238,7 @@ class ESPMode(MicroPythonMode):
             self.view.show_message(message, information)
             return
         self.file_manager_thread = QThread(self)
-        self.file_manager = MicroPythonFileManager(device_port)
+        self.file_manager = MicroPythonFileManager(device.port)
         self.file_manager.moveToThread(self.file_manager_thread)
         self.file_manager_thread.started.connect(self.file_manager.on_start)
 

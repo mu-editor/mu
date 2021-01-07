@@ -1844,6 +1844,8 @@ class MicroPythonLocalFileList(LocalFileList):
 
     def dropEvent(self, event):
         source = event.source()
+        if source == self:
+            return
 
         if source.currentItem().childCount() != 0:
             self.set_message.emit(_("File only"))
