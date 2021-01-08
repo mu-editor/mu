@@ -943,7 +943,7 @@ def test_editor_restore_session_no_session_file():
     with mock.patch.object(mu.settings, "session", session):
         ed.restore_session()
 
-    ed._view.add_tab.assert_called_once()
+    ed._view.add_tab.call_count == 1
     ed.select_mode.assert_called_once_with(None)
 
 
@@ -964,7 +964,7 @@ def test_editor_restore_session_invalid_file(tmp_path):
     with mock.patch.object(mu.settings, "session", session):
         ed.restore_session()
 
-    ed._view.add_tab.assert_called_once()
+    ed._view.add_tab.call_count == 1
     ed.select_mode.assert_called_once_with(None)
 
 
@@ -1955,10 +1955,6 @@ def test_quit_modified_ok():
     If the user quits and there's unsaved work that's ignored then proceed to
     save the session.
     """
-    #
-    # Disable the settings' autosave functionality
-    #
-    atexit._clear()
     view = mock.MagicMock()
     view.modified = True
     view.show_confirmation = mock.MagicMock(return_value=True)
@@ -1984,15 +1980,14 @@ def test_quit_modified_ok():
     #
     mock_event.ignore = mock.MagicMock(return_value=None)
     with mock.patch("sys.exit", return_value=None), mock.patch(
-        "mu.settings.session.save"
+        "mu.settings.SessionSettings.save"
     ) as mocked_save:
         ed.quit(mock_event)
 
     mock_debug_mode.stop.assert_called_once_with()
     assert view.show_confirmation.call_count == 1
     assert mock_event.ignore.call_count == 0
-    mocked_save.assert_called_once()
-
+    assert mocked_save.called
 
 def _editor_view_mock():
     """
