@@ -564,9 +564,7 @@ class Window(QMainWindow):
         self.fs_pane.local_fs.get.connect(file_manager.get)
         self.fs_pane.local_fs.list_files.connect(file_manager.tree)
         file_manager.on_put_file.connect(self.fs_pane.mpy_fs.on_put)
-        file_manager.on_delete_file.connect(
-            self.fs_pane.mpy_fs.on_delete
-        )
+        file_manager.on_delete_file.connect(self.fs_pane.mpy_fs.on_delete)
         file_manager.on_get_file.connect(self.fs_pane.local_fs.on_get)
         file_manager.on_list_fail.connect(self.fs_pane.on_tree_fail)
         file_manager.on_put_fail.connect(self.fs_pane.on_put_fail)
