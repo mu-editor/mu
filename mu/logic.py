@@ -932,7 +932,6 @@ class Editor(QObject):
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
             self.load_cli(paths)
-        print("Checking tab_count:", self._view.tab_count)
         self.change_mode(self.mode)
         self.show_status_message(random.choice(MOTD), 10)
         if not self._view.tab_count:
