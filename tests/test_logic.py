@@ -1989,6 +1989,7 @@ def test_quit_modified_ok():
     assert mock_event.ignore.call_count == 0
     assert mocked_save.called
 
+
 def _editor_view_mock():
     """
     Return a mocked mu.interface.Window to be used as a mu.logic.Editor view
