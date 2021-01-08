@@ -53,6 +53,7 @@ def open_serial(port):
 
     return serial
 
+
 def close_serial(serial):
     """
     Close and clean up the currently open serial link.
@@ -60,19 +61,22 @@ def close_serial(serial):
     if serial:
         serial.close()
 
+
 def read_until(serial, token, timeout=5000):
     buff = bytearray()
     while True:
         if not (serial.waitForReadyRead(timeout)):
-            raise TimeoutError(_('Transfer synchronization processing failed'))
+            raise TimeoutError(_("Transfer synchronization processing failed"))
         data = bytes(serial.readAll())  # get all the available bytes.
         buff.extend(data)
         if token in buff:
             break
     return buff
 
+
 def flush_to_msg(serial, token):
     read_until(serial, token)
+
 
 def raw_on(serial):
     """
@@ -110,6 +114,7 @@ def raw_off(serial):
     Takes the device out of raw mode.
     """
     serial.write(b"\x02")  # Send CTRL-B to get out of raw mode.
+
 
 def execute(commands, serial=None):
     """
@@ -149,6 +154,7 @@ def execute(commands, serial=None):
         time.sleep(0.1)
     return result, err
 
+
 def send_cmd_blocking(serial, commands):
     """
     Separated RAW REPL ON / OFF processing from execute function to trace device
@@ -168,6 +174,7 @@ def send_cmd_blocking(serial, commands):
             return b"", err
 
     return result, err
+
 
 def send_cmd(serial, commands, cb):
     """
@@ -326,6 +333,7 @@ def version(serial=None):
         result[key] = value[1:-1]
     return result
 
+
 def seek(dirs, path, serial, flist):
     """
     Get device directory hierarchy.
@@ -343,13 +351,14 @@ def seek(dirs, path, serial, flist):
             # tree(os.listdir(new_path), new_path)
             command = ["import os", "print(os.listdir('" + new_path + "'))"]
             out, err = send_cmd_blocking(serial, command)
-            if out == b'[]\r\n':
+            if out == b"[]\r\n":
                 flist.append(new_path + "/")
             else:
                 seek(out, new_path, serial, flist)
 
         if kind == 0x8000:
             flist.append(path + "/" + f)
+
 
 def tree(serial=None):
     """
@@ -364,5 +373,3 @@ def tree(serial=None):
     seek(out, ".", serial, flist)
     raw_off(serial)
     return flist
-
-

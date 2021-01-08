@@ -707,9 +707,8 @@ class MicroPythonDeviceFileTree(MuFileTree):
                 )
             else:
                 for i in range(target_item.childCount()):
-                    if source.currentItem().text() == target_item.child(
-                        i
-                    ).text(0):
+                    if source.currentItem().text() == \
+                    target_item.child(i).text(0):
                         file_exists = True
 
             # Copy file
@@ -717,9 +716,8 @@ class MicroPythonDeviceFileTree(MuFileTree):
                 file_exists and self.show_confirm_overwrite_dialog()
             ):
                 self.disable.emit()
-                local_filename = os.path.join(
-                    self.home, source.currentItem().text()
-                )
+                local_filename = \
+                    os.path.join(self.home, source.currentItem().text())
 
                 msg = _("Copying '{}' to device.").format(local_filename)
                 logger.info(msg)
