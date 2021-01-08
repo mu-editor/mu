@@ -109,7 +109,7 @@ def test_base_mode_workspace_invalid_json(tmp_path):
         mu.config.HOME_DIRECTORY, mu.config.WORKSPACE_NAME
     )
     mocked_settings = mu.settings.UserSettings()
-    settings_filepath = tmp_path / "settings.json"
+    settings_filepath = os.path.join(str(tmp_path), "settings.json")
     with open(settings_filepath, "w") as f:
         f.write("*invalid JSON*")
     mocked_settings.load(settings_filepath)
