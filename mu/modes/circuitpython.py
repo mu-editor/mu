@@ -58,6 +58,7 @@ class CircuitPythonMode(MicroPythonMode):
         (0x04D8, 0xEDBE, None, "SAM32"),
         (0x1D50, 0x60E8, None, "PewPew Game Console"),
         (0x2886, 0x802D, None, "Seeed Wio Terminal"),
+        (0x2886, 0x002F, None, "Seeed XIAO"),
         (0x1B4F, 0x0016, None, "Sparkfun Thing Plus - SAMD51"),
         (0x2341, 0x8057, None, "Arduino Nano 33 IoT board"),
         (0x04D8, 0xEAD1, None, "DynOSSAT-EDU-EPS"),
