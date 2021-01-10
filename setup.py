@@ -145,8 +145,4 @@ setup(
         "Topic :: Text Editors :: Integrated Development Environments (IDE)",
     ],
     entry_points={"console_scripts": ["mu-editor = mu.app:run"]},
-    options={  # Briefcase packaging options for OSX
-        "app": {"formal_name": "mu-editor", "bundle": "mu.codewith.editor"},
-        "macos": {"icon": "package/icons/mac_icon"},
-    },
 )
