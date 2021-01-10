@@ -116,9 +116,12 @@ win64: check
 	@echo "\nBuilding 64bit Windows installer."
 	python win_installer.py 64 setup.py
 
-macos: check
+macos:
 	@echo "\nPackaging Mu into a macOS native application."
-	python setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz
+	python -m venv venv-pup
+	./venv-pup/bin/pip install pup
+	./venv-pup/bin/pup package --launch-module=mu --nice-name="Mu Editor" --icon-path=./package/icons/mac_icon.icns --license-path=./LICENSE .
+	rm -r venv-pup
 
 video: clean
 	@echo "\nFetching contributor avatars."
