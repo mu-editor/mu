@@ -118,14 +118,16 @@ win64: check
 macos:
 	@echo "\nPackaging Mu into a macOS native application."
 	python -m venv venv-pup
-	# Let's not activate venv-pup:
-	# - It's not really needed.
-	# - Any previously active venv would be lost on deactivation.
+	# Don't activate venv-pup because:
+	# 1. Not really needed.
+	# 2. Previously active venv would be "gone" on venv-pup deactivation.
 	./venv-pup/bin/pip install pup
-	# Run pup with a venv-like activated PATH:
-	# - As of 1.0.0a7 it's required for it to find the dmgbuild command.
+	# Run pup with an "active venv"-like PATH...
+	# ...for pup 1.0.0a7 to find the dmgbuild command.
 	PATH="${PWD}/venv-pup/bin:${PATH}" ./venv-pup/bin/pup package --launch-module=mu --nice-name="Mu Editor" --icon-path=./package/icons/mac_icon.icns --license-path=./LICENSE .
 	rm -r venv-pup
+	ls -la ./build/pup/
+	ls -la ./dist/
 
 video: clean
 	@echo "\nFetching contributor avatars."
