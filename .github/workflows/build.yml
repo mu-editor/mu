@@ -30,6 +30,7 @@ jobs:
           pip config list
           pip freeze
       - name: Install Mu dependencies
+        if: runner.os == 'Windows'
         run: |
           pip install .[dev]
           pip list
