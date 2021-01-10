@@ -32,7 +32,6 @@ clean:
 	rm -rf lib
 	rm -rf pynsist_pkgs
 	rm -rf pynsist_tkinter*
-	rm -rf macOS
 	rm -rf *.mp4
 	rm -rf .git/avatar/*
 	find . \( -name '*.py[co]' -o -name dropin.cache \) -delete
