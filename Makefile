@@ -125,7 +125,7 @@ macos:
 	./venv-pup/bin/pip install pup
 	# Run pup with a venv-like activated PATH:
 	# - As of 1.0.0a7 it's required for it to find the dmgbuild command.
-	PATH=$PWD/venv-pup/bin:$PATH ./venv-pup/bin/pup package --launch-module=mu --nice-name="Mu Editor" --icon-path=./package/icons/mac_icon.icns --license-path=./LICENSE .
+	PATH="${PWD}/venv-pup/bin:${PATH}" ./venv-pup/bin/pup package --launch-module=mu --nice-name="Mu Editor" --icon-path=./package/icons/mac_icon.icns --license-path=./LICENSE .
 	rm -r venv-pup
 
 video: clean
