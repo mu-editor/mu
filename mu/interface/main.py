@@ -843,11 +843,16 @@ class Window(QMainWindow):
         """
         Update ButtonBar icons to match dark or light themes.
         """
+        icon_to_show = {"day": "", "night": "_contrast", "contrast": "_day"}
         suffix = ""
         if theme == "contrast" or theme == "night":
             suffix = dark_suffix
         for name in self.button_bar.slots:
-            self.button_bar.slots[name].setIcon(load_icon(name + suffix))
+            if name == "theme":
+                icon_name = "theme" + icon_to_show[theme] + suffix
+            else:
+                icon_name = name + suffix
+            self.button_bar.slots[name].setIcon(load_icon(icon_name))
 
     def set_checker_icon(self, icon):
         """
