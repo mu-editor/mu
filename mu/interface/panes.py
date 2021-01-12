@@ -56,6 +56,8 @@ from PyQt5.QtGui import (
     QStandardItem,
 )
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
+from qtconsole import styles
+from pygments.styles.bw import BlackWhiteStyle
 from ..i18n import language_code
 from mu.interface.themes import Font
 from mu.interface.themes import DEFAULT_FONT_SIZE
@@ -82,6 +84,11 @@ PANE_ZOOM_SIZES = {
     "xxl": 24,
     "xxxl": 28,
 }
+
+
+class HighContrastStyle(BlackWhiteStyle):
+    color = "#ffffff"
+    background_color = "#000000"
 
 
 class JupyterREPLPane(RichJupyterWidget):
@@ -124,9 +131,10 @@ class JupyterREPLPane(RichJupyterWidget):
         Sets the theme / look for the REPL pane.
         """
         if theme == "contrast":
-            self.set_default_style(colors="nocolor")
+            self.style_sheet = styles.default_dark_style_sheet
+            self._highlighter.set_style(HighContrastStyle)
         elif theme == "night":
-            self.set_default_style(colors="nocolor")
+            self.set_default_style(colors="linux")
         else:
             self.set_default_style()
 
