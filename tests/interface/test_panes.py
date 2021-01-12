@@ -1432,7 +1432,7 @@ def test_JupyterREPLPane_set_theme_night():
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_default_style = mock.MagicMock()
     jw.set_theme("night")
-    jw.set_default_style.assert_called_once_with(colors="nocolor")
+    jw.set_default_style.assert_called_once_with(colors="linux")
 
 
 def test_JupyterREPLPane_set_theme_contrast():
@@ -1440,9 +1440,9 @@ def test_JupyterREPLPane_set_theme_contrast():
     Make sure the theme is correctly set for high contrast.
     """
     jw = mu.interface.panes.JupyterREPLPane()
-    jw.set_default_style = mock.MagicMock()
+    jw._highlighter.set_style = mock.MagicMock()
     jw.set_theme("contrast")
-    jw.set_default_style.assert_called_once_with(colors="nocolor")
+    jw._highlighter.set_style.assert_called_once()
 
 
 def test_JupyterREPLPane_setFocus():
