@@ -36,7 +36,12 @@ NIGHT_STYLE = load_stylesheet("night.css")
 DAY_STYLE = load_stylesheet("day.css")
 # CONTRAST_STYLE is a high contrast theme.
 CONTRAST_STYLE = load_stylesheet("contrast.css")
-
+# A given theme displays the icon of the next available theme.
+THEME_ICONS = {
+    "contrast": "theme_day_transp",
+    "night": "theme_contrast_transp",
+    "day": "theme",
+}
 
 logger = logging.getLogger(__name__)
 
@@ -302,3 +307,10 @@ class ContrastTheme(Theme):
     AtRule = Decorator
     MediaRule = Decorator
     Variable = HighlightedIdentifier
+
+
+THEMES = {
+    "contrast": ContrastTheme,
+    "night": NightTheme,
+    "day": DayTheme,
+}

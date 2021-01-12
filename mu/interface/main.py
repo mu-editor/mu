@@ -48,9 +48,8 @@ from mu.interface.dialogs import (
     PackageDialog,
 )
 from mu.interface.themes import (
-    DayTheme,
-    NightTheme,
-    ContrastTheme,
+    THEMES,
+    THEME_ICONS,
     DEFAULT_FONT_SIZE,
 )
 from mu.interface.panes import (
@@ -821,18 +820,9 @@ class Window(QMainWindow):
         """
         self.theme = theme
         self.load_theme.emit(theme)
-        if theme == "contrast":
-            new_theme = ContrastTheme
-            new_icon = "theme_day"
-        elif theme == "night":
-            new_theme = NightTheme
-            new_icon = "theme_contrast"
-        else:
-            new_theme = DayTheme
-            new_icon = "theme"
+        new_theme = THEMES[theme]
         for widget in self.widgets:
             widget.set_theme(new_theme)
-        self.button_bar.slots["theme"].setIcon(load_icon(new_icon))
         self.update_icons(theme)
         if hasattr(self, "repl") and self.repl:
             self.repl_pane.set_theme(theme)
@@ -843,16 +833,15 @@ class Window(QMainWindow):
         """
         Update ButtonBar icons to match dark or light themes.
         """
-        icon_to_show = {"day": "", "night": "_contrast", "contrast": "_day"}
+        new_icon = THEME_ICONS[theme]
+        self.button_bar.slots["theme"].setIcon(load_icon(new_icon))
+
         suffix = ""
         if theme == "contrast" or theme == "night":
             suffix = dark_suffix
         for name in self.button_bar.slots:
-            if name == "theme":
-                icon_name = "theme" + icon_to_show[theme] + suffix
-            else:
-                icon_name = name + suffix
-            self.button_bar.slots[name].setIcon(load_icon(icon_name))
+            if name != "theme":
+                self.button_bar.slots[name].setIcon(load_icon(name + suffix))
 
     def set_checker_icon(self, icon):
         """
