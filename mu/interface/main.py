@@ -833,10 +833,21 @@ class Window(QMainWindow):
         for widget in self.widgets:
             widget.set_theme(new_theme)
         self.button_bar.slots["theme"].setIcon(load_icon(new_icon))
+        self.update_icons(theme)
         if hasattr(self, "repl") and self.repl:
             self.repl_pane.set_theme(theme)
         if hasattr(self, "plotter") and self.plotter:
             self.plotter_pane.set_theme(theme)
+
+    def update_icons(self, theme, dark_suffix="_transp"):
+        """
+        Update ButtonBar icons to match dark or light themes.
+        """
+        suffix = ""
+        if theme == "contrast" or theme == "night":
+            suffix = dark_suffix
+        for name in self.button_bar.slots:
+            self.button_bar.slots[name].setIcon(load_icon(name + suffix))
 
     def set_checker_icon(self, icon):
         """

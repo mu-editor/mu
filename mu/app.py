@@ -210,6 +210,8 @@ def run():
 
     # Restore the previous session along with files passed by the os
     editor.restore_session(sys.argv[1:])
+    # Update icons to match the current theme
+    editor_window.update_icons(editor.theme)
 
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
