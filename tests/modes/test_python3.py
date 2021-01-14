@@ -34,7 +34,7 @@ def test_kernel_runner_start_kernel():
     mock_kernel_manager_class = mock.MagicMock()
     mock_kernel_manager_class.return_value = mock_kernel_manager
     with mock.patch("mu.modes.python3.os", mock_os), mock.patch(
-        "mu.modes.python3.QtKernelManager", mock_kernel_manager_class
+        "mu.modes.python3.MuKernelManager", mock_kernel_manager_class
     ), mock.patch("sys.platform", "darwin"):
         kr.start_kernel()
     mock_os.chdir.assert_called_once_with("/a/path/to/mu_code")

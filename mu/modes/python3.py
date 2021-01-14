@@ -32,6 +32,32 @@ from PyQt5.QtCore import QObject, QThread, pyqtSignal
 logger = logging.getLogger(__name__)
 
 
+class MuKernelManager(QtKernelManager):
+    def start_kernel(self, **kw):
+        """Starts a kernel on this host in a separate process.
+
+        Subclassed to allow checking that the kernel uses the same Python as
+        Mu itself.
+        """
+        kernel_cmd, kw = self.pre_start_kernel(**kw)
+        cmd_interpreter = kernel_cmd[0]
+        if cmd_interpreter != venv.interpreter:
+            self.log.debug(
+                "Wrong interpreter selected to run REPL: %s", kernel_cmd
+            )
+            self.log.debug(
+                "Using default interpreter to run REPL instead: %s",
+                cmd_interpreter,
+            )
+            cmd_interpreter = venv.interpreter
+            kernel_cmd[0] = cmd_interpreter
+
+        # launch the kernel subprocess
+        self.log.debug("Starting kernel: %s", kernel_cmd)
+        self.kernel = self._launch_kernel(kernel_cmd, **kw)
+        self.post_start_kernel(**kw)
+
+
 class KernelRunner(QObject):
     """
     Used to control the iPython kernel in a non-blocking manner so the UI
@@ -78,7 +104,7 @@ class KernelRunner(QObject):
             if k != "PYTHONPATH":
                 os.environ[k] = v
 
-        self.repl_kernel_manager = QtKernelManager()
+        self.repl_kernel_manager = MuKernelManager()
         self.repl_kernel_manager.kernel_name = self.kernel_name
         self.repl_kernel_manager.start_kernel()
         self.repl_kernel_client = self.repl_kernel_manager.client()
