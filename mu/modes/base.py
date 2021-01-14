@@ -27,7 +27,7 @@ from serial import Serial
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 from PyQt5.QtCore import QObject, pyqtSignal, QIODevice, QTimer
 from mu.logic import Device
-from mu.contrib import microfs, mpyfs
+from mu.contrib import microfs
 from mu.contrib import mpyfs
 from .. import config, settings
 
