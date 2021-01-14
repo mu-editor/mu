@@ -862,6 +862,7 @@ class PythonProcessPane(QTextEdit):
         """
         if not envars:  # Envars must be a list if not passed a value.
             envars = []
+        envars = [(name, v) for (name, v) in envars if name != "PYTHONPATH"]
         self.script = ""
         if script_name:
             self.script = os.path.abspath(os.path.normcase(script_name))

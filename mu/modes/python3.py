@@ -75,7 +75,8 @@ class KernelRunner(QObject):
             "{}".format(self.envars)
         )
         for k, v in self.envars.items():
-            os.environ[k] = v
+            if k != "PYTHONPATH":
+                os.environ[k] = v
 
         self.repl_kernel_manager = QtKernelManager()
         self.repl_kernel_manager.kernel_name = self.kernel_name
