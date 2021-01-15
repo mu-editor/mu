@@ -538,7 +538,6 @@ class Window(QMainWindow):
         self.connect_zoom(self.fs_pane)
         return self.fs_pane
 
-
     def add_micropython_filesystem(self, home, file_manager, board_name="board"):
         """
         Adds MicroPython file system pane to the application.
@@ -573,8 +572,7 @@ class Window(QMainWindow):
         self.connect_zoom(self.fs_pane)
         return self.fs_pane
 
-
-    def add_micropython_repl(self, port, name, force_interrupt=True):
+    def add_micropython_repl(self, name, connection):
         """
         Adds a MicroPython based REPL pane to the application.
         """
