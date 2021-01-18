@@ -34,6 +34,7 @@ class ESPMode(MicroPythonMode):
 
     name = _("ESP MicroPython")
     short_name = "esp"
+    board_name = "ESP8266/ESP32"
     description = _("Write MicroPython on ESP8266/ESP32 boards.")
     icon = "esp"
     fs = None
@@ -69,16 +70,18 @@ class ESPMode(MicroPythonMode):
                 "name": "run",
                 "display_name": _("Run"),
                 "description": _(
-                    "Run your code directly on the ESP8266/ESP32"
+                    "Run your code directly on the {board_name}"
                     " via the REPL."
-                ),
+                ).format(board_name=self.board_name),
                 "handler": self.run,
                 "shortcut": "F5",
             },
             {
                 "name": "files",
                 "display_name": _("Files"),
-                "description": _("Access the file system on ESP8266/ESP32."),
+                "description": _(
+                    "Access the file system on {board_name}."
+                ).format(board_name=self.board_name),
                 "handler": self.toggle_files,
                 "shortcut": "F4",
             },
@@ -86,8 +89,8 @@ class ESPMode(MicroPythonMode):
                 "name": "repl",
                 "display_name": _("REPL"),
                 "description": _(
-                    "Use the REPL to live-code on the " "ESP8266/ESP32."
-                ),
+                    "Use the REPL to live-code on the {board_name}."
+                ).format(board_name=self.board_name),
                 "handler": self.toggle_repl,
                 "shortcut": "Ctrl+Shift+I",
             },
@@ -225,7 +228,9 @@ class ESPMode(MicroPythonMode):
 
         # Check for MicroPython device
         if not device:
-            message = _("Could not find an attached ESP8266/ESP32.")
+            message = _("Could not find an attached {board_name}").format(
+                board_name=self.board_name
+            )
             information = _(
                 "Please make sure the device is plugged "
                 "into this computer.\n\nThe device must "
@@ -249,7 +254,9 @@ class ESPMode(MicroPythonMode):
         else:
             path = self.workspace_dir()
         self.fs = self.view.add_filesystem(
-            path, self.file_manager, _("ESP board")
+            path,
+            self.file_manager,
+            _("{board_name} board").format(board_name=self.board_name),
         )
         self.fs.set_message.connect(self.editor.show_status_message)
         self.fs.set_warning.connect(self.view.show_message)
