@@ -1711,6 +1711,31 @@ class Editor(QObject):
                 )
                 self._view.show_message(message, information)
 
+    def find_again(self, forward=True):
+        """
+        Handle find again (F3 and Shift+F3) functionality.
+        """
+        if self.find:
+            matched = self._view.highlight_text(self.find, forward)
+            if matched:
+                msg = _('Highlighting matches for "{}".')
+            else:
+                msg = _('Could not find "{}".')
+            self.show_status_message(msg.format(self.find))
+        else:
+            message = _("You must provide something to find.")
+            information = _(
+                "Please try again, this time with something "
+                "in the find box."
+            )
+            self._view.show_message(message, information)
+
+    def find_again_backward(self, forward=False):
+        """
+        Handle find again backward (Shift+F3) functionality.
+        """
+        self.find_again(forward=False)
+
     def toggle_comments(self):
         """
         Ensure all highlighted lines are toggled between comments/uncommented.

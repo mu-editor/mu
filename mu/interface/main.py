@@ -1095,6 +1095,20 @@ class Window(QMainWindow):
         self.find_replace_shortcut = QShortcut(QKeySequence(shortcut), self)
         self.find_replace_shortcut.activated.connect(handler)
 
+    def connect_find_again(self, handlers, shortcut):
+        """
+        Create keyboard shortcuts and associate them with handlers for doing
+        a find again in forward or backward direction. Any given shortcut
+        will be used for forward find again, while Shift+shortcut will find
+        again backwards.
+        """
+        forward, backward = handlers
+        self.find_again_shortcut = QShortcut(QKeySequence(shortcut), self)
+        self.find_again_shortcut.activated.connect(forward)
+        backward_shortcut = QKeySequence("Shift+" + shortcut)
+        self.find_again_backward_shortcut = QShortcut(backward_shortcut, self)
+        self.find_again_backward_shortcut.activated.connect(backward)
+
     def show_find_replace(self, find, replace, global_replace):
         """
         Display the find/replace dialog. If the dialog's OK button was clicked
@@ -1136,14 +1150,27 @@ class Window(QMainWindow):
             else:
                 return 0
 
-    def highlight_text(self, target_text):
+    def highlight_text(self, target_text, forward=True):
         """
         Highlight the first match from the current position of the cursor in
         the current tab for the target_text. Returns True if there's a match.
         """
         if self.current_tab:
+            line = -1
+            index = -1
+            if not forward:
+                # Workaround for `findFirst(forward=False)` not advancing
+                # backwards: pass explicit line and index values.
+                line, index, _el, _ei = self.current_tab.getSelection()
             return self.current_tab.findFirst(
-                target_text, True, True, False, True
+                target_text,  # Text to find,
+                True,  # Treat as regular expression
+                True,  # Case sensitive search
+                False,  # Whole word matches only
+                True,  # Wrap search
+                forward=forward,  # Forward search
+                line=line,  # -1 starts at current position
+                index=index,  # -1 starts at current position
             )
         else:
             return False

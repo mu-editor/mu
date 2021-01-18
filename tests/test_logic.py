@@ -3133,6 +3133,23 @@ def test_find_replace_no_find():
     mock_view.show_message.assert_called_once_with(msg, info)
 
 
+def test_find_again_no_find():
+    """
+    If the user fails to supply something to find again (forward or backward),
+    display a modal warning message to explain the problem.
+    """
+    mock_view = mock.MagicMock()
+    ed = mu.logic.Editor(mock_view)
+    ed.find = False
+    ed.show_message = mock.MagicMock()
+    ed.find_again()
+    msg = "You must provide something to find."
+    info = "Please try again, this time with something in the find box."
+    mock_view.show_message.assert_called_once_with(msg, info)
+    ed.find_again_backward(forward=False)
+    assert mock_view.show_message.call_count == 2
+
+
 def test_find_replace_find_matched():
     """
     If the user just supplies a find target and it is matched in the code then
@@ -3153,6 +3170,29 @@ def test_find_replace_find_matched():
     )
 
 
+def test_find_again_find_matched():
+    """
+    If the user supplies a find target to find again (forward or backward) and
+    it is matched in the code then the expected status message should be
+    shown.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.highlight_text.return_value = True
+    ed = mu.logic.Editor(mock_view)
+    ed.show_status_message = mock.MagicMock()
+    ed.find = "foo"
+    ed.find_again()
+    mock_view.highlight_text.assert_called_once_with("foo", True)
+    assert ed.find == "foo"
+    assert ed.replace == ""
+    assert ed.global_replace is False
+    ed.show_status_message.assert_called_once_with(
+        'Highlighting matches for "foo".'
+    )
+    ed.find_again_backward()
+    assert ed.show_status_message.call_count == 2
+
+
 def test_find_replace_find_unmatched():
     """
     If the user just supplies a find target and it is UN-matched in the code
@@ -3165,6 +3205,24 @@ def test_find_replace_find_unmatched():
     ed.show_status_message = mock.MagicMock()
     ed.find_replace()
     ed.show_status_message.assert_called_once_with('Could not find "foo".')
+
+
+def test_find_again_find_unmatched():
+    """
+    If the user supplies a find target to find_again or find_again_backward
+    and it is UN-matched in the code then the expected status message should
+    be shown.
+    """
+    mock_view = mock.MagicMock()
+    mock_view.highlight_text.return_value = False
+    ed = mu.logic.Editor(mock_view)
+    ed.find = "foo"
+    ed.show_status_message = mock.MagicMock()
+    ed.find_again()
+    ed.show_status_message.assert_called_once_with('Could not find "foo".')
+    ed.find_again_backward()
+    ed.show_status_message.assert_called_with('Could not find "foo".')
+    assert ed.show_status_message.call_count == 2
 
 
 def test_find_replace_replace_no_match():
