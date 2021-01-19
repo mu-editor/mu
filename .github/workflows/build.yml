@@ -49,7 +49,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           make macos
-          mv macOS/mu-editor.app upload/
+          mv dist/*.dmg upload/
       - name: Upload Mu installer
         uses: actions/upload-artifact@v1
         with:
