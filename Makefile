@@ -124,7 +124,7 @@ macos:
 	./venv-pup/bin/pip install pup
 	# HACK
 	# 1. Use a custom dmgbuild to address `hdiutil detach` timeouts.
-	./venv-pup/bin/pip uninstall dmgbuild
+	./venv-pup/bin/pip uninstall -y dmgbuild
 	./venv-pup/bin/pip install git+https://github.com/tmontes/dmgbuild.git@mu-pup-ci-hack
 	# Run pup with an "active venv"-like PATH...
 	# ...for pup 1.0.0a7 to find the dmgbuild command.
