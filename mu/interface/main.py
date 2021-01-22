@@ -723,6 +723,7 @@ class Window(QMainWindow):
         while self.debug_model.rowCount() > 0:
             self.debug_model.removeRow(0)
         for name in names:
+            item_to_expand = None
             try:
                 # DANGER!
                 val = eval(locals_dict[name])
@@ -731,6 +732,7 @@ class Window(QMainWindow):
             if isinstance(val, list):
                 # Show a list consisting of rows of position/value
                 list_item = DebugInspectorItem(name)
+                item_to_expand = list_item
                 for i, i_val in enumerate(val):
                     list_item.appendRow(
                         [
@@ -749,6 +751,7 @@ class Window(QMainWindow):
             elif isinstance(val, dict):
                 # Show a dict consisting of rows of key/value pairs.
                 dict_item = DebugInspectorItem(name)
+                item_to_expand = dict_item
                 for k, k_val in val.items():
                     dict_item.appendRow(
                         [
@@ -764,20 +767,21 @@ class Window(QMainWindow):
                         ),
                     ]
                 )
-                # Expand dicts with names matching previously expanded dicts
-                if (
-                    hasattr(self, "debug_inspector")
-                    and name in self.debug_inspector.expanded_dicts
-                ):
-                    self.debug_inspector.expand(
-                        self.debug_model.indexFromItem(dict_item)
-                    )
             else:
                 self.debug_model.appendRow(
                     [
                         DebugInspectorItem(name),
                         DebugInspectorItem(locals_dict[name]),
                     ]
+                )
+            # Expand dicts/list with names matching old expanded entries
+            if (
+                hasattr(self, "debug_inspector")
+                and name in self.debug_inspector.expanded_dicts
+                and item_to_expand is not None
+            ):
+                self.debug_inspector.expand(
+                    self.debug_model.indexFromItem(item_to_expand)
                 )
 
     def remove_filesystem(self):
