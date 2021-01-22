@@ -764,6 +764,14 @@ class Window(QMainWindow):
                         ),
                     ]
                 )
+                # Expand dicts with names matching previously expanded dicts
+                if (
+                    hasattr(self, "debug_inspector")
+                    and name in self.debug_inspector.expanded_dicts
+                ):
+                    self.debug_inspector.expand(
+                        self.debug_model.indexFromItem(dict_item)
+                    )
             else:
                 self.debug_model.appendRow(
                     [
