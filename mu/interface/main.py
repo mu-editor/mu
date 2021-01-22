@@ -316,6 +316,7 @@ class Window(QMainWindow):
     open_file = pyqtSignal(str)
     load_theme = pyqtSignal(str)
     previous_folder = None
+    debug_widths = None
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -704,6 +705,11 @@ class Window(QMainWindow):
         )
         self.addDockWidget(Qt.RightDockWidgetArea, self.inspector)
         self.connect_zoom(self.debug_inspector)
+        # Setup the inspector headers and restore column widths
+        self.debug_model.setHorizontalHeaderLabels([_("Name"), _("Value")])
+        if self.debug_widths:
+            for col, width in enumerate(self.debug_widths):
+                self.debug_inspector.setColumnWidth(col, width)
 
     def update_debug_inspector(self, locals_dict):
         """
@@ -712,8 +718,10 @@ class Window(QMainWindow):
         """
         excluded_names = ["__builtins__", "__debug_code__", "__debug_script__"]
         names = sorted([x for x in locals_dict if x not in excluded_names])
-        self.debug_model.clear()
-        self.debug_model.setHorizontalHeaderLabels([_("Name"), _("Value")])
+
+        # Remove rows so we keep the same column layouts if manually set
+        while self.debug_model.rowCount() > 0:
+            self.debug_model.removeRow(0)
         for name in names:
             try:
                 # DANGER!
@@ -809,6 +817,8 @@ class Window(QMainWindow):
         Removes the debug inspector pane from the application.
         """
         if hasattr(self, "inspector") and self.inspector:
+            width = self.debug_inspector.columnWidth
+            self.debug_widths = width(0), width(1)
             self.debug_inspector = None
             self.debug_model = None
             self.inspector.setParent(None)

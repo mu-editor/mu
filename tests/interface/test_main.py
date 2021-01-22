@@ -1011,12 +1011,13 @@ def test_Window_update_debug_inspector():
     }
     w = mu.interface.main.Window()
     w.debug_model = mock.MagicMock()
+    w.debug_model.rowCount.return_value = 0
     mock_standard_item = mock.MagicMock()
     with mock.patch(
         "mu.interface.main.DebugInspectorItem", mock_standard_item
     ):
         w.update_debug_inspector(locals_dict)
-    w.debug_model.clear.assert_called_once_with()
+    w.debug_model.rowCount.assert_called_once_with()
     w.debug_model.setHorizontalHeaderLabels(["Name", "Value"])
     # You just have to believe this is correct. I checked! :-)
     assert mock_standard_item.call_count == 22
@@ -1030,6 +1031,7 @@ def test_Window_update_debug_inspector_with_exception():
     locals_dict = {"bar": "['this', 'is', 'a', 'list']"}
     w = mu.interface.main.Window()
     w.debug_model = mock.MagicMock()
+    w.debug_model.rowCount.return_value = 0
     mock_standard_item = mock.MagicMock()
     mock_eval = mock.MagicMock(side_effect=Exception("BOOM!"))
     with mock.patch(
