@@ -65,6 +65,7 @@ class CircuitPythonMode(MicroPythonMode):
         (0x04D8, 0xEAD2, None, "DynOSSAT-EDU-OBC"),
         (0x1209, 0x4DDD, None, "ODT CP Sapling M0"),
         (0x1209, 0x4DDE, None, "ODT CP Sapling M0 w/ SPI Flash"),
+        (0x054C, 0x0BC2, None, "Spresense"),
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
