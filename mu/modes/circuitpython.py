@@ -18,10 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
 import ctypes
+import logging
 from subprocess import check_output
 from mu.modes.base import MicroPythonMode
 from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
+
+
+logger = logging.getLogger(__name__)
 
 
 class CircuitPythonMode(MicroPythonMode):
@@ -139,7 +143,30 @@ class CircuitPythonMode(MicroPythonMode):
                             device_dir = volume.decode("utf-8")
                             break
                 except FileNotFoundError:
-                    next
+                    pass
+                except PermissionError as e:
+                    logger.error(
+                        "Received '{}' running command: {}".format(
+                            repr(e),
+                            mount_command,
+                        )
+                    )
+                    m = _("Permission error running mount command")
+                    info = _(
+                        "The mount command ({}) returned an error: "
+                        "{}. Mu will continue as if a device isn't "
+                        "plugged in."
+                    ).format(e, mount_command)
+                    self.view.show_message(m, info.format(wd))
+                # Avoid crashing Mu, the workspace dir will be set to default
+                except Exception as e:
+                    logger.error(
+                        "Received '{}' running command: {}".format(
+                            repr(e),
+                            mount_command,
+                        )
+                    )
+
         elif os.name == "nt":
             # We're on Windows.
 
