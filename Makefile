@@ -121,7 +121,7 @@ macos:
 	# Don't activate venv-pup because:
 	# 1. Not really needed.
 	# 2. Previously active venv would be "gone" on venv-pup deactivation.
-	./venv-pup/bin/pip install git+https://github.com/mu-editor/pup
+	./venv-pup/bin/pip install pup
 	# HACK
 	# 1. Use a custom dmgbuild to address `hdiutil detach` timeouts.
 	./venv-pup/bin/pip uninstall -y dmgbuild
