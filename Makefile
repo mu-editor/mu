@@ -115,7 +115,7 @@ win64: check
 	@echo "\nBuilding 64bit Windows installer."
 	python win_installer.py 64 setup.py
 
-macos:
+macos: check
 	@echo "\nPackaging Mu into a macOS native application."
 	python -m venv venv-pup
 	# Don't activate venv-pup because:
