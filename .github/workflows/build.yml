@@ -29,10 +29,9 @@ jobs:
           pip --version
           pip config list
           pip freeze
-      - name: Install Mu dependencies
-        if: runner.os == 'Windows'
+      - name: Install Mu test dependencies
         run: |
-          pip install .[dev]
+          pip install .[tests]
           pip list
       - run: mkdir upload
       - name: Build Windows 32 bit
