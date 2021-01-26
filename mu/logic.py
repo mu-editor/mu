@@ -52,6 +52,8 @@ LOG_FILE = os.path.join(LOG_DIR, "mu.log")
 STYLE_REGEX = re.compile(r".*:(\d+):(\d+):\s+(.*)")
 # Regex to match flake8 output.
 FLAKE_REGEX = re.compile(r".*:(\d+):(\d+)\s+(.*)")
+# Regex to match undefined name errors for given builtins
+BUILTINS_REGEX = r"^undefined name '({})'"
 # Regex to match false positive flake errors if microbit.* is expanded.
 EXPAND_FALSE_POSITIVE = re.compile(
     r"^.*'microbit\.(\w+)' imported but unused$"
@@ -368,9 +370,7 @@ def check_flake(filename, code, builtins=None):
     reporter = MuFlakeCodeReporter()
     check(code, filename, reporter)
     if builtins:
-        builtins_regex = re.compile(
-            r"^undefined name '(" + "|".join(builtins) + r")'"
-        )
+        builtins_regex = re.compile(BUILTINS_REGEX.format("|".join(builtins)))
     feedback = {}
     for log in reporter.log:
         if import_all:

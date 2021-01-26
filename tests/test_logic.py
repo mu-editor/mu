@@ -497,6 +497,17 @@ def test_check_flake_with_builtins():
         mock_check.assert_called_once_with("some code", "foo.py", mock_r)
 
 
+def test_check_real_flake_output_with_builtins():
+    """
+    Check that passing builtins correctly suppresses undefined name errors
+    using real .check_flake() output.
+    """
+    ok_result = mu.logic.check_flake("foo.py", "print(foo)", builtins=["foo"])
+    assert ok_result == {}
+    bad_result = mu.logic.check_flake("foo.py", "print(bar)", builtins=["foo"])
+    assert len(bad_result) == 1
+
+
 def test_check_pycodestyle_E121():
     """
     Ensure the expected result is generated from the PEP8 style validator.

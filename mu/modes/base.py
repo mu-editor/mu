@@ -370,6 +370,7 @@ class MicroPythonMode(BaseMode):
     force_interrupt = True
     connection = None
     baudrate = 115200
+    builtins = ["const"]
 
     def compatible_board(self, port):
         """
