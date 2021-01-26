@@ -1525,7 +1525,7 @@ class Editor(QObject):
                     "Could not open {} mode workspace directory, "
                     'due to exception "{}".'
                     "Using:\n\n{}\n\n...to store your code instead"
-                ).format(mode, e, workspace_dir)
+                ).format(mode, repr(e), workspace_dir)
             )
         # Reset remembered current path for load/save dialogs.
         self.current_path = ""
