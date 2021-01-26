@@ -84,6 +84,48 @@ def test_workspace_dir_posix_no_mount_command():
         assert mock_check.call_args_list[1][0][0] == "/sbin/mount"
 
 
+def test_workspace_dir_posix_permission_denied():
+    """
+    When the mount command results in a Permission Denied error, show a
+    message and use default workspace dir.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    am = CircuitPythonMode(editor, view)
+    with open("tests/modes/mount_exists.txt", "rb") as fixture_file:
+        fixture = fixture_file.read()
+    mock_check = mock.MagicMock(side_effect=[PermissionError, fixture])
+    with mock.patch("os.name", "posix"), mock.patch(
+        "mu.modes.circuitpython.check_output", mock_check
+    ):
+        assert am.workspace_dir() == "/media/ntoll/CIRCUITPY"
+        assert mock_check.call_count == 2
+        assert mock_check.call_args_list[0][0][0] == "mount"
+        assert mock_check.call_args_list[1][0][0] == "/sbin/mount"
+    view.show_message.assert_called_once()
+
+
+def test_workspace_dir_posix_exception_raised():
+    """
+    When the mount command results in an unexpected exception, log the error
+    and use the default workspace dir.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    am = CircuitPythonMode(editor, view)
+    with open("tests/modes/mount_exists.txt", "rb") as fixture_file:
+        fixture = fixture_file.read()
+    mock_check = mock.MagicMock(side_effect=[ValueError, fixture])
+    with mock.patch("os.name", "posix"), mock.patch(
+        "mu.modes.circuitpython.check_output", mock_check
+    ):
+        assert am.workspace_dir() == "/media/ntoll/CIRCUITPY"
+        assert mock_check.call_count == 2
+        assert mock_check.call_args_list[0][0][0] == "mount"
+        assert mock_check.call_args_list[1][0][0] == "/sbin/mount"
+
+
 def test_workspace_dir_posix_missing():
     """
     Simulate being on os.name == 'posix' and a call to "mount" returns a
