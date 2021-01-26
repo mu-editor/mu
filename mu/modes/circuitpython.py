@@ -153,11 +153,11 @@ class CircuitPythonMode(MicroPythonMode):
                     )
                     m = _("Permission error running mount command")
                     info = _(
-                        "The mount command ({}) returned an error: "
+                        'The mount command ("{}") returned an error: '
                         "{}. Mu will continue as if a device isn't "
                         "plugged in."
-                    ).format(e, mount_command)
-                    self.view.show_message(m, info.format(wd))
+                    ).format(mount_command, repr(e))
+                    self.view.show_message(m, info)
                 # Avoid crashing Mu, the workspace dir will be set to default
                 except Exception as e:
                     logger.error(

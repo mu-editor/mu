@@ -1103,9 +1103,10 @@ class Editor(QObject):
                 workspace_path = self.modes["python"].workspace_dir()
                 logger.error(
                     (
-                        "Could not open {} mode workspace directory, using:"
+                        "Could not open {} mode workspace directory"
+                        'due to exception "{}". Using:'
                         "\n\n{}\n\n...to store your code instead"
-                    ).format(self.mode, workspace_path)
+                    ).format(self.mode, e, workspace_path)
                 )
             tab = self._view.current_tab
             if tab and tab.path:
@@ -1522,8 +1523,9 @@ class Editor(QObject):
             logger.error(
                 (
                     "Could not open {} mode workspace directory, "
-                    "using:\n\n{}\n\n...to store your code instead"
-                ).format(mode, workspace_dir)
+                    'due to exception "{}".'
+                    "Using:\n\n{}\n\n...to store your code instead"
+                ).format(mode, e, workspace_dir)
             )
         # Reset remembered current path for load/save dialogs.
         self.current_path = ""
