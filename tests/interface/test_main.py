@@ -1125,6 +1125,7 @@ def test_Window_remove_python_runner():
     mock_runner.setParent = mock.MagicMock(return_value=None)
     mock_runner.deleteLater = mock.MagicMock(return_value=None)
     w.runner = mock_runner
+    w.process_runner = mock.MagicMock()
     w.dockWidgetArea = mock.MagicMock()
     w.remove_python_runner()
     mock_runner.setParent.assert_called_once_with(None)

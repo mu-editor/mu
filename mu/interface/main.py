@@ -320,6 +320,7 @@ class Window(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         # Record pane area to allow reopening where user put it in a session
+        self._debugger_area = 0
         self._inspector_area = 0
         self._plotter_area = 0
         self._repl_area = 0
@@ -666,7 +667,11 @@ class Window(QMainWindow):
             | Qt.LeftDockWidgetArea
             | Qt.RightDockWidgetArea
         )
-        area = self._runner_area or Qt.BottomDockWidgetArea
+        self.process_runner.debugger = debugger
+        if debugger:
+            area = self._debugger_area or Qt.BottomDockWidgetArea
+        else:
+            area = self._runner_area or Qt.BottomDockWidgetArea
         self.addDockWidget(area, self.runner)
         logger.info(
             "About to start_process: %r, %r, %r, %r, %r, %r, %r, %r",
@@ -810,7 +815,10 @@ class Window(QMainWindow):
         Removes the runner pane from the application.
         """
         if hasattr(self, "runner") and self.runner:
-            self._runner_area = self.dockWidgetArea(self.runner)
+            if self.process_runner.debugger:
+                self._debugger_area = self.dockWidgetArea(self.runner)
+            else:
+                self._runner_area = self.dockWidgetArea(self.runner)
             self.process_runner = None
             self.runner.setParent(None)
             self.runner.deleteLater()
