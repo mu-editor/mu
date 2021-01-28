@@ -38,12 +38,18 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           python make.py win32
-          mv dist/*.msi upload/
+          for FN in dist/*.msi
+          do
+              mv "${FN}" "upload/${FN%.msi} (32 bit).msi"
+          done
       - name: Build Windows 64 bit
         if: runner.os == 'Windows'
         run: |
           python make.py win64
-          mv dist/*.msi upload/
+          for FN in dist/*.msi
+          do
+              mv "${FN}" "upload/${FN%.msi} (64 bit).msi"
+          done
       - name: Build macOS
         if: runner.os == 'macOS'
         run: |
