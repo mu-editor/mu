@@ -295,6 +295,7 @@ _PUP_PBS_URLs = {
     64: None,
 }
 
+
 def _build_windows_msi(bitness=64):
     """Build Windows MSI installer"""
     try:
@@ -305,16 +306,19 @@ def _build_windows_msi(bitness=64):
     #     raise RuntimeError("Check failed")
     print("Building {}-bit Windows installer".format(bitness))
     if pup_pbs_url:
-        os.environ['PUP_PBS_URL'] = pup_pbs_url
+        os.environ["PUP_PBS_URL"] = pup_pbs_url
     cmd_sequence = (
         [sys.executable, "-m", "venv", "venv-pup"],
         ["./venv-pup/Scripts/pip.exe", "install", "pup"],
-        ["./venv-pup/Scripts/pup.exe", "package",
-        "--launch-module=mu",
-        "--nice-name=Mu Editor",
-        "--icon-path=./package/icons/win_icon.ico",
-        "--license-path=./LICENSE",
-        "."],
+        [
+            "./venv-pup/Scripts/pup.exe",
+            "package",
+            "--launch-module=mu",
+            "--nice-name=Mu Editor",
+            "--icon-path=./package/icons/win_icon.ico",
+            "--license-path=./LICENSE",
+            ".",
+        ],
         ["cmd.exe", "/c", "dir", r".\dist"],
     )
     try:
@@ -323,7 +327,6 @@ def _build_windows_msi(bitness=64):
             subprocess.check_call(cmd)
     finally:
         shutil.rmtree("./venv-pup", ignore_errors=True)
-
 
 
 @export
