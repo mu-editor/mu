@@ -319,6 +319,12 @@ class Window(QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        # Record pane area to allow reopening where user put it in a session
+        self._fs_area = 0
+        self._inspector_area = 0
+        self._plotter_area = 0
+        self._repl_area = 0
+        self._runner_area = 0
 
     def wheelEvent(self, event):
         """
@@ -591,7 +597,8 @@ class Window(QMainWindow):
             | Qt.LeftDockWidgetArea
             | Qt.RightDockWidgetArea
         )
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.repl)
+        area = self._repl_area or Qt.BottomDockWidgetArea
+        self.addDockWidget(area, self.repl)
         self.connect_zoom(self.repl_pane)
         self.repl_pane.set_theme(self.theme)
         self.repl_pane.setFocus()
@@ -609,7 +616,8 @@ class Window(QMainWindow):
             | Qt.LeftDockWidgetArea
             | Qt.RightDockWidgetArea
         )
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.plotter)
+        area = self._plotter_area or Qt.BottomDockWidgetArea
+        self.addDockWidget(area, self.plotter)
         self.plotter_pane.set_theme(self.theme)
         self.plotter_pane.setFocus()
 
@@ -659,7 +667,8 @@ class Window(QMainWindow):
             | Qt.LeftDockWidgetArea
             | Qt.RightDockWidgetArea
         )
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
+        area = self._runner_area or Qt.BottomDockWidgetArea
+        self.addDockWidget(area, self.runner)
         logger.info(
             "About to start_process: %r, %r, %r, %r, %r, %r, %r, %r",
             interpreter,
@@ -702,7 +711,8 @@ class Window(QMainWindow):
             | Qt.LeftDockWidgetArea
             | Qt.RightDockWidgetArea
         )
-        self.addDockWidget(Qt.RightDockWidgetArea, self.inspector)
+        area = self._inspector_area or Qt.RightDockWidgetArea
+        self.addDockWidget(area, self.inspector)
         self.connect_zoom(self.debug_inspector)
 
     def update_debug_inspector(self, locals_dict):
@@ -769,6 +779,7 @@ class Window(QMainWindow):
         Removes the file system pane from the application.
         """
         if hasattr(self, "fs") and self.fs:
+            self._fs_area = self.dockWidgetArea(self.fs)
             self.fs_pane = None
             self.fs.setParent(None)
             self.fs.deleteLater()
@@ -779,6 +790,7 @@ class Window(QMainWindow):
         Removes the REPL pane from the application.
         """
         if self.repl:
+            self._repl_area = self.dockWidgetArea(self.repl)
             self.repl_pane = None
             self.repl.setParent(None)
             self.repl.deleteLater()
@@ -789,6 +801,7 @@ class Window(QMainWindow):
         Removes the plotter pane from the application.
         """
         if self.plotter:
+            self._plotter_area = self.dockWidgetArea(self.plotter)
             self.plotter_pane = None
             self.plotter.setParent(None)
             self.plotter.deleteLater()
@@ -799,6 +812,7 @@ class Window(QMainWindow):
         Removes the runner pane from the application.
         """
         if hasattr(self, "runner") and self.runner:
+            self._runner_area = self.dockWidgetArea(self.runner)
             self.process_runner = None
             self.runner.setParent(None)
             self.runner.deleteLater()
@@ -809,6 +823,7 @@ class Window(QMainWindow):
         Removes the debug inspector pane from the application.
         """
         if hasattr(self, "inspector") and self.inspector:
+            self._inspector_area = self.dockWidgetArea(self.inspector)
             self.debug_inspector = None
             self.debug_model = None
             self.inspector.setParent(None)
