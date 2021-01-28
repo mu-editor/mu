@@ -320,7 +320,6 @@ class Window(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         # Record pane area to allow reopening where user put it in a session
-        self._fs_area = 0
         self._inspector_area = 0
         self._plotter_area = 0
         self._repl_area = 0
@@ -779,7 +778,6 @@ class Window(QMainWindow):
         Removes the file system pane from the application.
         """
         if hasattr(self, "fs") and self.fs:
-            self._fs_area = self.dockWidgetArea(self.fs)
             self.fs_pane = None
             self.fs.setParent(None)
             self.fs.deleteLater()

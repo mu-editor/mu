@@ -1078,7 +1078,6 @@ def test_Window_remove_filesystem():
     w.remove_filesystem()
     mock_fs.setParent.assert_called_once_with(None)
     mock_fs.deleteLater.assert_called_once_with()
-    w.dockWidgetArea.assert_called_once()
     assert w.fs is None
 
 
