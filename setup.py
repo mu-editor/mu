@@ -78,9 +78,6 @@ extras_require = {
         # Wheel building and PyPI uploading
         "wheel",
         "twine",
-        # Windows native packaging (see win_installer.py).
-        'requests==2.23.0;platform_system == "Windows"',
-        'yarg==0.1.9;platform_system == "Windows"',
     ],
     "utils": ["scrapy", "beautifulsoup4", "requests"],
 }

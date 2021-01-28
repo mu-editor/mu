@@ -29,21 +29,21 @@ jobs:
           pip --version
           pip config list
           pip freeze
-      - name: Install Mu test and package dependencies
+      - name: Install Mu test dependencies
         run: |
-          pip install .[tests,package]
+          pip install .[tests]
           pip list
       - run: mkdir upload
       - name: Build Windows 32 bit
         if: runner.os == 'Windows'
         run: |
           python make.py win32
-          mv dist/*.exe upload/
+          mv dist/*.msi upload/
       - name: Build Windows 64 bit
         if: runner.os == 'Windows'
         run: |
           python make.py win64
-          mv dist/*.exe upload/
+          mv dist/*.msi upload/
       - name: Build macOS
         if: runner.os == 'macOS'
         run: |

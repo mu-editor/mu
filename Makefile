@@ -108,12 +108,12 @@ translateall:
 	@echo "Remember to update the translation strings found in the locale directory."
 
 win32: check
-	@echo "\nBuilding 32bit Windows installer."
-	python win_installer.py 32 setup.py
+	@echo "\nBuilding 32bit Windows MSI installer."
+	python make.py win32
 
 win64: check
-	@echo "\nBuilding 64bit Windows installer."
-	python win_installer.py 64 setup.py
+	@echo "\nBuilding 64bit Windows MSI installer."
+	python make.py win64
 
 macos: check
 	@echo "\nPackaging Mu into a macOS native application."
