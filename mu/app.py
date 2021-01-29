@@ -48,6 +48,16 @@ from .interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 from . import settings
 
 
+class SplashScreenHandler(logging.Handler):
+    def __init__(self, emitter, level=logging.NOTSET):
+        super().__init__(level=level)
+        self.emitter = emitter
+    def emit(self, record: logging.LogRecord):
+        import time
+        time.sleep(0.4)
+        self.emitter(record.getMessage())
+
+
 def excepthook(*exc_args):
     """
     Log exception and exit cleanly.
@@ -149,8 +159,57 @@ def run():
     app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
+    # Display a friendly "splash" icon.
+    splash = QSplashScreen(load_pixmap("splash-screen"))
+    splash.show()
+
+    # Display an info screen to show logs during Mu start up.
+    infoscreen = QSplashScreen()
+    infoscreen.resize(splash.pixmap().width(), splash.pixmap().height())
+    infoscreen.show()
+
+    # Ready the infoscreen to show messages.
+    font = infoscreen.font()
+    font.setPointSize(12)
+    infoscreen.setFont(font)
+
+    def infoscreen_message(message, infoscreen=infoscreen, maxlines=15):
+        """
+        Keep maxlines of messages and display them on the splash screen.
+        """
+        old_messages = infoscreen.message().splitlines()
+        messages = old_messages + [message]
+        infoscreen.showMessage("\n".join(messages[-maxlines:]))
+
+    # Use the infoscreen handler to send logs to be displayed
+    log = logging.getLogger()
+    infoscreen_handler = SplashScreenHandler(infoscreen_message)
+    log.addHandler(infoscreen_handler)
+
+    def raise_and_process_events():
+        # Make sure the splash screen stays on top while
+        # the mode selection dialog might open
+        splash.raise_()
+        infoscreen.raise_()
+
+        # Make sure splash screen reacts to mouse clicks, even when
+        # the event loop is not yet started
+        QCoreApplication.processEvents()
+
+    raise_splash = QTimer()
+    raise_splash.timeout.connect(raise_and_process_events)
+    raise_splash.start(10)
+    # Hide the splash icon.
+    def remove_splash():
+        splash.finish(editor_window)
+        raise_splash.stop()
+
+    splash_be_gone = QTimer()
+    splash_be_gone.timeout.connect(remove_splash)
+    splash_be_gone.setSingleShot(True)
+    splash_be_gone.start(2000)
     #
-    # FIXME -- look at the possiblity of tying ensure completion
+    # FIXME -- look at the possibility of tying ensure completion
     # into Splash screen finish below...
     #
     venv.ensure()
@@ -166,33 +225,6 @@ def run():
             app.setStyleSheet(NIGHT_STYLE)
         else:
             app.setStyleSheet(DAY_STYLE)
-
-    # Display a friendly "splash" icon.
-    splash = QSplashScreen(load_pixmap("splash-screen"))
-    splash.show()
-
-    def raise_and_process_events():
-        # Make sure the splash screen stays on top while
-        # the mode selection dialog might open
-        splash.raise_()
-
-        # Make sure splash screen reacts to mouse clicks, even when
-        # the event loop is not yet started
-        QCoreApplication.processEvents()
-
-    raise_splash = QTimer()
-    raise_splash.timeout.connect(raise_and_process_events)
-    raise_splash.start(10)
-
-    # Hide the splash icon.
-    def remove_splash():
-        splash.finish(editor_window)
-        raise_splash.stop()
-
-    splash_be_gone = QTimer()
-    splash_be_gone.timeout.connect(remove_splash)
-    splash_be_gone.setSingleShot(True)
-    splash_be_gone.start(2000)
 
     # Make sure all windows have the Mu icon as a fallback
     app.setWindowIcon(load_icon(editor_window.icon))
@@ -213,6 +245,10 @@ def run():
 
     # Restore the previous session along with files passed by the os
     editor.restore_session(sys.argv[1:])
+
+    # Remove infoscreen and its logger when ready to run app
+    log.removeHandler(infoscreen_handler)
+    infoscreen.finish(editor_window)
 
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())
