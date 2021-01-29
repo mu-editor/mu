@@ -6,6 +6,7 @@ from .pygamezero import PyGameZeroMode
 from .esp import ESPMode
 from .web import WebMode
 from .pyboard import PyboardMode
+from .lego import LegoMode
 
 __all__ = [
     "PythonMode",
@@ -16,4 +17,5 @@ __all__ = [
     "ESPMode",
     "WebMode",
     "PyboardMode",
+    "LegoMode",
 ]

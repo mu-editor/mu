@@ -80,7 +80,9 @@ def test_add_fs(fm, qthread, esp_mode):
     esp_mode.add_fs()
     workspace = esp_mode.workspace_dir()
     esp_mode.view.add_filesystem.assert_called_once_with(
-        workspace, esp_mode.file_manager, "ESP board"
+        workspace,
+        esp_mode.file_manager,
+        "{board_name} board".format(board_name=esp_mode.board_name),
     )
     assert esp_mode.fs
 
@@ -98,7 +100,9 @@ def test_add_fs_project_path(fm, qthread, esp_mode):
     esp_mode.add_fs()
     workspace = os.path.dirname(os.path.abspath("foo"))
     esp_mode.view.add_filesystem.assert_called_once_with(
-        workspace, esp_mode.file_manager, "ESP board"
+        workspace,
+        esp_mode.file_manager,
+        "{board_name} board".format(board_name=esp_mode.board_name),
     )
     assert esp_mode.fs
 
