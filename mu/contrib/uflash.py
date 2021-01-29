@@ -3,7 +3,7 @@
 This module contains functions for turning a Python script into a .hex file
 and flashing it onto a BBC micro:bit.
 
-Copyright (c) 2015-2018 Nicholas H.Tollervey and others.
+Copyright (c) 2015-2020 Nicholas H.Tollervey and others.
 
 See the LICENSE file for more information, or visit:
 
@@ -21,7 +21,7 @@ import sys
 from subprocess import check_output
 import time
 
-# nudatus is an optional dependancy
+# nudatus is an optional dependency
 can_minify = True
 try:
     import nudatus
@@ -32,7 +32,7 @@ except ImportError:  # pragma: no cover
 _SCRIPT_ADDR = 0x3E000
 
 
-#: The help text to be shown when requested.
+#: The help text to be shown by uflash  when requested.
 _HELP_TEXT = """
 Flash Python onto the BBC micro:bit or extract Python from a .hex file.
 
@@ -45,9 +45,18 @@ version of the MicroPython runtime.
 Documentation is here: https://uflash.readthedocs.io/en/latest/
 """
 
+_PY2HEX_HELP_TEXT = """
+A simple utility script intended for creating hexified versions of MicroPython
+scripts on the local filesystem _NOT_ the microbit.  Does not autodetect a
+microbit.  Accepts multiple input scripts and optionally one output directory.
+"""
 
 #: MAJOR, MINOR, RELEASE, STATUS [alpha, beta, final], VERSION of uflash
-_VERSION = (1, 2, 4)
+_VERSION = (
+    1,
+    3,
+    0,
+)
 _MAX_SIZE = 8188
 
 
@@ -296,6 +305,8 @@ def save_hex(hex_file, path):
         raise ValueError("The path to flash must be for a .hex file.")
     with open(path, "wb") as output:
         output.write(hex_file.encode("ascii"))
+        output.flush()
+        os.fsync(output.fileno())
 
 
 def flash(
@@ -304,6 +315,7 @@ def flash(
     path_to_runtime=None,
     python_script=None,
     minify=False,
+    keepname=False,
 ):
     """
     Given a path to or source of a Python file will attempt to create a hex
@@ -321,6 +333,9 @@ def flash(
     If paths_to_microbits is unspecified it will attempt to find the device's
     path on the filesystem automatically.
 
+    If keepname is True the original filename (excluding the
+    extension) will be preserved.
+
     If the path_to_runtime is unspecified it will use the built in version of
     the MicroPython runtime. This feature is useful if a custom build of
     MicroPython is available.
@@ -336,6 +351,8 @@ def flash(
     # Grab the Python script (if needed).
     python_hex = ""
     if path_to_python:
+        (script_path, script_name) = os.path.split(path_to_python)
+        (script_name_root, script_name_ext) = os.path.splitext(script_name)
         if not path_to_python.endswith(".py"):
             raise ValueError('Python files must end in ".py".')
         with open(path_to_python, "rb") as python_script:
@@ -358,8 +375,18 @@ def flash(
     # Attempt to write the hex file to the micro:bit.
     if paths_to_microbits:
         for path in paths_to_microbits:
-            hex_path = os.path.join(path, "micropython.hex")
-            print("Flashing Python to: {}".format(hex_path))
+            if keepname and path_to_python:
+                hex_file_name = script_name_root + ".hex"
+                hex_path = os.path.join(path, hex_file_name)
+            else:
+                hex_path = os.path.join(path, "micropython.hex")
+            if path_to_python:
+                if not keepname:
+                    print("Flashing {} to: {}".format(script_name, hex_path))
+                else:
+                    print("Hexifying {} as: {}".format(script_name, hex_path))
+            else:
+                print("Flashing Python to: {}".format(hex_path))
             save_hex(micropython_hex, hex_path)
     else:
         raise IOError("Unable to find micro:bit. Is it plugged in?")
@@ -400,10 +427,57 @@ def watch_file(path, func, *args, **kwargs):
         pass
 
 
+def py2hex(argv=None):
+    """
+    Entry point for the command line tool 'py2hex'
+
+    Will print help text if the optional first argument is "help". Otherwise
+    it will ensure the first argument ends in ".py" (the source Python script).
+
+    An optional second argument is used to to reference the path where the
+    resultant hex file sill be saved (the default location is in the same
+    directory as the .py file).
+
+    Exceptions are caught and printed for the user.
+    """
+    if not argv:  # pragma: no cover
+        argv = sys.argv[1:]
+
+    parser = argparse.ArgumentParser(description=_PY2HEX_HELP_TEXT)
+    parser.add_argument("source", nargs="*", default=None)
+    parser.add_argument(
+        "-r",
+        "--runtime",
+        default=None,
+        help="Use the referenced MicroPython runtime.",
+    )
+    parser.add_argument(
+        "-o", "--outdir", default=None, help="Output directory"
+    )
+    parser.add_argument(
+        "-m", "--minify", action="store_true", help="Minify the source"
+    )
+    parser.add_argument(
+        "--version", action="version", version="%(prog)s " + get_version()
+    )
+    args = parser.parse_args(argv)
+
+    for py_file in args.source:
+        if not args.outdir:
+            (script_path, script_name) = os.path.split(py_file)
+            args.outdir = script_path
+        flash(
+            path_to_python=py_file,
+            path_to_runtime=args.runtime,
+            paths_to_microbits=[args.outdir],
+            minify=args.minify,
+            keepname=True,
+        )  # keepname is always True in py2hex
+
+
 def main(argv=None):
     """
     Entry point for the command line tool 'uflash'.
-
     Will print help text if the optional first argument is "help". Otherwise
     it will ensure the optional first argument ends in ".py" (the source
     Python script).
@@ -483,6 +557,7 @@ def main(argv=None):
                 paths_to_microbits=args.target,
                 path_to_runtime=args.runtime,
                 minify=args.minify,
+                keepname=False,
             )
         except Exception as ex:
             error_message = (
