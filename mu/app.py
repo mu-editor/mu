@@ -48,13 +48,16 @@ from .interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 from . import settings
 
 
-class SplashScreenHandler(logging.Handler):
+class ForwardingHandler(logging.Handler):
+    """
+    Handler to allow simple forwarding of log entries.
+    """
+
     def __init__(self, emitter, level=logging.NOTSET):
         super().__init__(level=level)
         self.emitter = emitter
-    def emit(self, record: logging.LogRecord):
-        import time
-        time.sleep(0.4)
+
+    def emit(self, record):
         self.emitter(record.getMessage())
 
 
@@ -114,6 +117,26 @@ def setup_modes(editor, view):
     }
 
 
+def create_info_screen(height, splash, bottom_margin=60, font_size=10):
+    """
+    Create and position an info screen to show logs during Mu start up.
+    """
+    infoscreen = QSplashScreen()
+    info_height = height - splash.height() - bottom_margin
+    infoscreen.resize(splash.width(), info_height)
+    infoscreen.move(
+        splash.pos().x(),
+        splash.pos().y() + splash.height(),
+    )
+    infoscreen.show()
+    # Style the infoscreen to show messages.
+    font = infoscreen.font()
+    font.setPointSize(font_size)
+    infoscreen.setFont(font)
+
+    return infoscreen
+
+
 def run():
     """
     Creates all the top-level assets for the application, sets things up and
@@ -161,29 +184,27 @@ def run():
 
     # Display a friendly "splash" icon.
     splash = QSplashScreen(load_pixmap("splash-screen"))
+    # Move splashscreen towards the top of the screen to allow adding another
+    # screen below it to show logging info during initialization.
+    height = app.screens()[0].geometry().height()
+    splash.move(splash.pos().x(), 40)
     splash.show()
 
-    # Display an info screen to show logs during Mu start up.
-    infoscreen = QSplashScreen()
-    infoscreen.resize(splash.pixmap().width(), splash.pixmap().height())
-    infoscreen.show()
+    # Create infoscreen and move it below splashscreen.
+    infoscreen = create_info_screen(height, splash)
 
-    # Ready the infoscreen to show messages.
-    font = infoscreen.font()
-    font.setPointSize(12)
-    infoscreen.setFont(font)
-
-    def infoscreen_message(message, infoscreen=infoscreen, maxlines=15):
+    def infoscreen_message(message, infoscreen=infoscreen, maxlines=8):
         """
-        Keep maxlines of messages and display them on the splash screen.
+        Keep maxlines of messages and display them on the splash screen. This
+        will be passed to ForwardingHandler as the emitter.
         """
         old_messages = infoscreen.message().splitlines()
         messages = old_messages + [message]
         infoscreen.showMessage("\n".join(messages[-maxlines:]))
 
-    # Use the infoscreen handler to send logs to be displayed
+    # Use this handler to display logs on the infoscreen.
+    infoscreen_handler = ForwardingHandler(infoscreen_message)
     log = logging.getLogger()
-    infoscreen_handler = SplashScreenHandler(infoscreen_message)
     log.addHandler(infoscreen_handler)
 
     def raise_and_process_events():
