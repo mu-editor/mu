@@ -220,6 +220,16 @@ def run():
     raise_splash = QTimer()
     raise_splash.timeout.connect(raise_and_process_events)
     raise_splash.start(10)
+
+    #
+    # FIXME -- look at the possibility of tying ensure completion
+    # into Splash screen finish below...
+    #
+    venv.ensure()
+
+    # Create the "window" we'll be looking at.
+    editor_window = Window()
+
     # Hide the splash icon.
     def remove_splash():
         splash.finish(editor_window)
@@ -229,14 +239,6 @@ def run():
     splash_be_gone.timeout.connect(remove_splash)
     splash_be_gone.setSingleShot(True)
     splash_be_gone.start(2000)
-    #
-    # FIXME -- look at the possibility of tying ensure completion
-    # into Splash screen finish below...
-    #
-    venv.ensure()
-
-    # Create the "window" we'll be looking at.
-    editor_window = Window()
 
     @editor_window.load_theme.connect
     def load_theme(theme):
