@@ -117,11 +117,28 @@ def setup_modes(editor, view):
     }
 
 
+class MuSplashScreen(QSplashScreen):
+    def __init__(self):
+        super().__init__()
+        self.progress = 0
+        self.block = "██"
+        self.blank = "▒▒"
+        self.total = 45
+
+    def drawContents(self, painter):
+        self.progress += 1
+        remaining = self.total - self.progress
+        progress_line = self.block * self.progress + self.blank * remaining
+        painter.drawText(0, 12, progress_line)
+        for y, line in enumerate(self.message().splitlines()):
+            painter.drawText(0, 30 + y * 15, line)
+
+
 def create_info_screen(height, splash, bottom_margin=60, font_size=10):
     """
     Create and position an info screen to show logs during Mu start up.
     """
-    infoscreen = QSplashScreen()
+    infoscreen = MuSplashScreen()
     info_height = height - splash.height() - bottom_margin
     infoscreen.resize(splash.width(), info_height)
     infoscreen.move(
@@ -271,7 +288,7 @@ def run():
 
     # Remove infoscreen and its logger when ready to run app
     log.removeHandler(infoscreen_handler)
-    infoscreen.finish(editor_window)
+    infoscreen.close()
 
     # Stop the program after the application finishes executing.
     sys.exit(app.exec_())

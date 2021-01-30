@@ -183,7 +183,7 @@ def test_close_splash_screen():
         "mu.app.QSplashScreen", return_value=splash
     ):
         run()
-        assert splash.finish.call_count == 2  # splashscreen and infoscreen
+        assert splash.finish.call_count == 1
 
 
 def test_excepthook():
