@@ -311,6 +311,7 @@ class VirtualEnvironment(object):
         logger.debug(
             "Virtual environment set up %s at %s", self.name, self.path
         )
+        self.settings["dirpath"] = self.path
 
     def run_python(self, *args, slots=Process.Slots()):
         """Run the referenced Python interpreter with the passed in args
