@@ -1828,6 +1828,22 @@ def test_Window_replace_text_global_missing():
     assert w.replace_text("foo", "bar", True) == 0
 
 
+def test_Window_replace_text_highlight_text_correct_selection():
+    """
+    Check that replace_text and highlight_text are actually highlighting text
+    without regex matching.
+    """
+    view = mu.interface.main.Window()
+    text = "ofafefifoof."
+    tab = mu.interface.editor.EditorPane("path", text)
+    with mock.patch("mu.interface.Window.current_tab") as current:
+        current.findFirst = tab.findFirst
+        view.highlight_text("f.")
+        assert tab.selectedText() == "f."
+        assert view.replace_text("of.", "", False)
+        assert tab.selectedText() == "of."
+
+
 def test_Window_highlight_text():
     """
     Given target_text, highlights the first instance via Scintilla's findFirst
@@ -1841,7 +1857,7 @@ def test_Window_highlight_text():
     mock_tab.getSelection.return_value = 0, 0, 0, 0
     assert w.highlight_text("foo")
     mock_tab.findFirst.assert_called_once_with(
-        "foo", True, True, False, True, forward=True, index=-1, line=-1
+        "foo", False, True, False, True, forward=True, index=-1, line=-1
     )
 
 
@@ -1858,7 +1874,7 @@ def test_Window_highlight_text_backward():
     mock_tab.getSelection.return_value = 0, 0, 0, 0
     assert w.highlight_text("foo", forward=False)
     mock_tab.findFirst.assert_called_once_with(
-        "foo", True, True, False, True, forward=False, index=0, line=0
+        "foo", False, True, False, True, forward=False, index=0, line=0
     )
 
 
