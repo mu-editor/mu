@@ -25,15 +25,22 @@ import os
 import platform
 import sys
 
-from PyQt5.QtCore import QTimer, Qt, QCoreApplication
+from PyQt5.QtCore import (
+    Qt,
+    QEventLoop,
+    QThread,
+    QObject,
+    pyqtSignal,
+)
 from PyQt5.QtWidgets import QApplication, QSplashScreen
+
 
 from . import i18n
 from .virtual_environment import venv
 from . import __version__
 from .logic import Editor, LOG_FILE, LOG_DIR, ENCODING
 from .interface import Window
-from .resources import load_pixmap, load_icon
+from .resources import load_icon, load_movie
 from .modes import (
     PythonMode,
     CircuitPythonMode,
@@ -47,6 +54,48 @@ from .modes import (
 )
 from .interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 from . import settings
+
+
+class AnimatedSplash(QSplashScreen):
+    """
+    An animated splash screen for gifs.
+    """
+
+    def __init__(self, animation, parent=None):
+        """
+        Ensure signals are connected and start the animation.
+        """
+        super().__init__()
+        self.animation = animation
+        self.animation.frameChanged.connect(self.set_frame)
+        self.animation.start()
+
+    def set_frame(self):
+        """
+        Update the splash screen with the next frame of the animation.
+        """
+        pixmap = self.animation.currentPixmap()
+        self.setPixmap(pixmap)
+        self.setMask(pixmap.mask())
+
+
+class StartupWorker(QObject):
+    """
+    A worker class for running blocking tasks on a separate thread during
+    application start-up.
+
+    The animated splash screen will be shown until this thread is finished.
+    """
+
+    finished = pyqtSignal()
+
+    def run(self):
+        """
+        Blocking and long running tasks for application startup should be
+        called from here.
+        """
+        venv.ensure()
+        self.finished.emit()  # Always called last.
 
 
 def excepthook(*exc_args):
@@ -151,11 +200,25 @@ def run():
     app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
-    #
-    # FIXME -- look at the possiblity of tying ensure completion
-    # into Splash screen finish below...
-    #
-    venv.ensure()
+    # Display a friendly "splash" icon.
+    splash = AnimatedSplash(load_movie("splash_screen"))
+    splash.show()
+    app.processEvents()
+
+    # Create a blocking thread upon which to run the StartupWorker and which
+    # will process the events for animating the splash screen.
+    initLoop = QEventLoop()
+    thread = QThread()
+    worker = StartupWorker()
+    worker.moveToThread(thread)
+    thread.started.connect(worker.run)
+    worker.finished.connect(thread.quit)
+    worker.finished.connect(worker.deleteLater)
+    # Stop the blocking event loop when the thread is finished.
+    thread.finished.connect(initLoop.quit)
+    thread.finished.connect(thread.deleteLater)
+    thread.start()
+    initLoop.exec()  # start processing the pending StartupWorker.
 
     # Create the "window" we'll be looking at.
     editor_window = Window()
@@ -169,32 +232,7 @@ def run():
         else:
             app.setStyleSheet(DAY_STYLE)
 
-    # Display a friendly "splash" icon.
-    splash = QSplashScreen(load_pixmap("splash-screen"))
-    splash.show()
-
-    def raise_and_process_events():
-        # Make sure the splash screen stays on top while
-        # the mode selection dialog might open
-        splash.raise_()
-
-        # Make sure splash screen reacts to mouse clicks, even when
-        # the event loop is not yet started
-        QCoreApplication.processEvents()
-
-    raise_splash = QTimer()
-    raise_splash.timeout.connect(raise_and_process_events)
-    raise_splash.start(10)
-
-    # Hide the splash icon.
-    def remove_splash():
-        splash.finish(editor_window)
-        raise_splash.stop()
-
-    splash_be_gone = QTimer()
-    splash_be_gone.timeout.connect(remove_splash)
-    splash_be_gone.setSingleShot(True)
-    splash_be_gone.start(2000)
+    splash.finish(editor_window)
 
     # Make sure all windows have the Mu icon as a fallback
     app.setWindowIcon(load_icon(editor_window.icon))
