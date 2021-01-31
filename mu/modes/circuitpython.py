@@ -18,10 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
 import ctypes
+import logging
 from subprocess import check_output
 from mu.modes.base import MicroPythonMode
 from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
+
+
+logger = logging.getLogger(__name__)
 
 
 class CircuitPythonMode(MicroPythonMode):
@@ -58,12 +62,14 @@ class CircuitPythonMode(MicroPythonMode):
         (0x04D8, 0xEDBE, None, "SAM32"),
         (0x1D50, 0x60E8, None, "PewPew Game Console"),
         (0x2886, 0x802D, None, "Seeed Wio Terminal"),
+        (0x2886, 0x002F, None, "Seeed XIAO"),
         (0x1B4F, 0x0016, None, "Sparkfun Thing Plus - SAMD51"),
         (0x2341, 0x8057, None, "Arduino Nano 33 IoT board"),
         (0x04D8, 0xEAD1, None, "DynOSSAT-EDU-EPS"),
         (0x04D8, 0xEAD2, None, "DynOSSAT-EDU-OBC"),
         (0x1209, 0x4DDD, None, "ODT CP Sapling M0"),
         (0x1209, 0x4DDE, None, "ODT CP Sapling M0 w/ SPI Flash"),
+        (0x054C, 0x0BC2, None, "Spresense"),
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
@@ -137,7 +143,30 @@ class CircuitPythonMode(MicroPythonMode):
                             device_dir = volume.decode("utf-8")
                             break
                 except FileNotFoundError:
-                    next
+                    pass
+                except PermissionError as e:
+                    logger.error(
+                        "Received '{}' running command: {}".format(
+                            repr(e),
+                            mount_command,
+                        )
+                    )
+                    m = _("Permission error running mount command")
+                    info = _(
+                        'The mount command ("{}") returned an error: '
+                        "{}. Mu will continue as if a device isn't "
+                        "plugged in."
+                    ).format(mount_command, repr(e))
+                    self.view.show_message(m, info)
+                # Avoid crashing Mu, the workspace dir will be set to default
+                except Exception as e:
+                    logger.error(
+                        "Received '{}' running command: {}".format(
+                            repr(e),
+                            mount_command,
+                        )
+                    )
+
         elif os.name == "nt":
             # We're on Windows.
 

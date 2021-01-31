@@ -72,23 +72,12 @@ extras_require = {
         "nudatus",
     ],
     "docs": [
-        "docutils >= 0.12, < 0.16",  # adding docutils requirement to avoid
-        # conflict between sphinx and briefcase
         "sphinx",
     ],
     "package": [
         # Wheel building and PyPI uploading
         "wheel",
         "twine",
-        # Windows native packaging (see win_installer.py).
-        'requests==2.23.0;platform_system == "Windows"',
-        'yarg==0.1.9;platform_system == "Windows"',
-        # Temporarily pin boto3 (briefcase dependency) to fix urllib3  version
-        # conflicts, it can be removed after the dependencies have been updated
-        # https://github.com/mu-editor/mu/issues/1155
-        "boto3==1.15.18",
-        # macOS native packaging (see Makefile)
-        'briefcase==0.2.9;platform_system == "Darwin"',
     ],
     "utils": ["scrapy", "beautifulsoup4", "requests"],
 }
@@ -153,8 +142,4 @@ setup(
         "Topic :: Text Editors :: Integrated Development Environments (IDE)",
     ],
     entry_points={"console_scripts": ["mu-editor = mu.app:run"]},
-    options={  # Briefcase packaging options for OSX
-        "app": {"formal_name": "mu-editor", "bundle": "mu.codewith.editor"},
-        "macos": {"icon": "package/icons/mac_icon"},
-    },
 )
