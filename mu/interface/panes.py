@@ -862,6 +862,7 @@ class PythonProcessPane(QTextEdit):
         """
         if not envars:  # Envars must be a list if not passed a value.
             envars = []
+        envars = [(name, v) for (name, v) in envars if name != "PYTHONPATH"]
         self.script = ""
         if script_name:
             self.script = os.path.abspath(os.path.normcase(script_name))
@@ -1291,6 +1292,25 @@ class DebugInspector(QTreeView):
         super().__init__()
         self.setUniformRowHeights(True)
         self.setSelectionBehavior(QTreeView.SelectRows)
+        # Record row expansion/collapse to keep dicts expanded on update
+        self.expanded.connect(self.record_expanded)
+        self.collapsed.connect(self.record_collapsed)
+        self.expanded_dicts = set()
+
+    def record_expanded(self, index):
+        """
+        Keep track of expanded dicts for displaying in debugger.
+        """
+        expanded = self.model().itemFromIndex(index).text()
+        self.expanded_dicts.add(expanded)
+
+    def record_collapsed(self, index):
+        """
+        Remove collapsed dicts from set, so they render collapsed.
+        """
+        collapsed = self.model().itemFromIndex(index).text()
+        if collapsed in self.expanded_dicts:
+            self.expanded_dicts.remove(collapsed)
 
     def set_font_size(self, new_size=DEFAULT_FONT_SIZE):
         """

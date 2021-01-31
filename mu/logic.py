@@ -52,6 +52,8 @@ LOG_FILE = os.path.join(LOG_DIR, "mu.log")
 STYLE_REGEX = re.compile(r".*:(\d+):(\d+):\s+(.*)")
 # Regex to match flake8 output.
 FLAKE_REGEX = re.compile(r".*:(\d+):(\d+)\s+(.*)")
+# Regex to match undefined name errors for given builtins
+BUILTINS_REGEX = r"^undefined name '({})'"
 # Regex to match false positive flake errors if microbit.* is expanded.
 EXPAND_FALSE_POSITIVE = re.compile(
     r"^.*'microbit\.(\w+)' imported but unused$"
@@ -368,9 +370,7 @@ def check_flake(filename, code, builtins=None):
     reporter = MuFlakeCodeReporter()
     check(code, filename, reporter)
     if builtins:
-        builtins_regex = re.compile(
-            r"^undefined name '(" + "|".join(builtins) + r")'"
-        )
+        builtins_regex = re.compile(BUILTINS_REGEX.format("|".join(builtins)))
     feedback = {}
     for log in reporter.log:
         if import_all:
@@ -1095,7 +1095,19 @@ class Editor(QObject):
             folder = self.current_path
         else:
             current_file_path = ""
-            workspace_path = self.modes[self.mode].workspace_dir()
+            try:
+                workspace_path = self.modes[self.mode].workspace_dir()
+            except Exception as e:
+                # Avoid crashing if workspace_dir raises, use default path
+                # instead
+                workspace_path = self.modes["python"].workspace_dir()
+                logger.error(
+                    (
+                        "Could not open {} mode workspace directory"
+                        'due to exception "{}". Using:'
+                        "\n\n{}\n\n...to store your code instead"
+                    ).format(self.mode, e, workspace_path)
+                )
             tab = self._view.current_tab
             if tab and tab.path:
                 current_file_path = os.path.dirname(os.path.abspath(tab.path))
@@ -1502,9 +1514,19 @@ class Editor(QObject):
         button_bar.connect("quit", self.quit, "Ctrl+Q")
         self._view.status_bar.set_mode(self.modes[mode].name)
         # Update references to default file locations.
-        logger.info(
-            "Workspace directory: {}".format(self.modes[mode].workspace_dir())
-        )
+        try:
+            workspace_dir = self.modes[mode].workspace_dir()
+            logger.info("Workspace directory: {}".format(workspace_dir))
+        except Exception as e:
+            # Avoid crashing if workspace_dir raises, use default path instead
+            workspace_dir = self.modes["python"].workspace_dir()
+            logger.error(
+                (
+                    "Could not open {} mode workspace directory, "
+                    'due to exception "{}".'
+                    "Using:\n\n{}\n\n...to store your code instead"
+                ).format(mode, repr(e), workspace_dir)
+            )
         # Reset remembered current path for load/save dialogs.
         self.current_path = ""
         # Ensure auto-save timeouts are set.

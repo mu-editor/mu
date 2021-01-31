@@ -497,6 +497,17 @@ def test_check_flake_with_builtins():
         mock_check.assert_called_once_with("some code", "foo.py", mock_r)
 
 
+def test_check_real_flake_output_with_builtins():
+    """
+    Check that passing builtins correctly suppresses undefined name errors
+    using real .check_flake() output.
+    """
+    ok_result = mu.logic.check_flake("foo.py", "print(foo)", builtins=["foo"])
+    assert ok_result == {}
+    bad_result = mu.logic.check_flake("foo.py", "print(bar)", builtins=["foo"])
+    assert len(bad_result) == 1
+
+
 def test_check_pycodestyle_E121():
     """
     Ensure the expected result is generated from the PEP8 style validator.
@@ -2433,6 +2444,29 @@ def test_change_mode_reset_breakpoints():
     assert ed.mode == "microbit"
     assert mock_tab.breakpoint_handles == set()
     mock_tab.reset_annotations.assert_called_once_with()
+
+
+def test_change_mode_workspace_dir_exception():
+    """
+    Check that any mode.workspace_dir() raising an exception doesn't crash Mu,
+    but uses Python mode's workspace_dir as a default.
+    """
+    ed = mu.logic.Editor(mock.MagicMock())
+    mode = mock.MagicMock()
+    mode.save_timeout = 0
+    mode.workspace_dir = mock.MagicMock(side_effect=ValueError("Some error."))
+    python_mode = mock.MagicMock()
+    ed.modes = {
+        "circuitpython": mode,
+        "python": python_mode,
+        "debug": mock.MagicMock(),
+    }
+    ed.mode = "debug"
+    with mock.patch("mu.logic.logger.error") as mock_error:
+        ed.change_mode("circuitpython")
+        assert mock_error.call_count == 1
+    assert ed.mode == "circuitpython"
+    assert python_mode.workspace_dir.called_once()
 
 
 def test_autosave():

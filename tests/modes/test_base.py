@@ -71,6 +71,7 @@ def test_base_mode_workspace_not_present():
         mu.config.HOME_DIRECTORY, mu.config.WORKSPACE_NAME
     )
     mocked_settings = mu.settings.UserSettings()
+    del mocked_settings["workspace"]
     assert "workspace" not in mocked_settings
     with mock.patch.object(mu.settings, "settings", mocked_settings):
         editor = mock.MagicMock()
@@ -95,7 +96,7 @@ def test_base_mode_workspace_invalid_value():
         view = mock.MagicMock()
         bm = BaseMode(editor, view)
         assert bm.workspace_dir() == default_workspace
-        assert logger.error.call_count == 1
+        assert logger.warn.call_count == 1
 
 
 def test_base_mode_workspace_invalid_json(tmp_path):
