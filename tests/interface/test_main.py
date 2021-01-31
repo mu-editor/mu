@@ -1874,7 +1874,7 @@ def test_Window_highlight_text_backward():
     mock_tab.getSelection.return_value = 0, 0, 0, 0
     assert w.highlight_text("foo", forward=False)
     mock_tab.findFirst.assert_called_once_with(
-        "foo", True, True, False, True, forward=False, index=0, line=0
+        "foo", False, True, False, True, forward=False, index=0, line=0
     )
 
 
