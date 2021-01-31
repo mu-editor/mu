@@ -115,6 +115,7 @@ setup(
     python_requires=">=3.5,<3.9",
     install_requires=install_requires,
     extras_require=extras_require,
+    package_data={'mu.wheels': ['*.whl']},
     include_package_data=True,
     zip_safe=False,
     classifiers=[
