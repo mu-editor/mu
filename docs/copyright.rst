@@ -84,3 +84,12 @@ say of the `use of the Python logo <https://www.python.org/community/logos/>`_):
 
     In general, we want the logo to be used as widely as possible to
     indicate use of Python or suitability for Python."
+
+lego.png
+++++++++
+
+This is a copped version of the
+`Creative Commons licensed <https://creativecommons.org/licenses/by-sa/2.0/>`_
+photograph taken by
+`Jeff Eaton <https://www.flickr.com/people/jeffeaton/>`_
+that can be `found here <https://www.flickr.com/photos/jeffeaton/7283481712/>`_.
