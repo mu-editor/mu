@@ -316,6 +316,7 @@ class Window(QMainWindow):
     open_file = pyqtSignal(str)
     load_theme = pyqtSignal(str)
     previous_folder = None
+    debug_widths = None
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -718,6 +719,11 @@ class Window(QMainWindow):
         area = self._inspector_area or Qt.RightDockWidgetArea
         self.addDockWidget(area, self.inspector)
         self.connect_zoom(self.debug_inspector)
+        # Setup the inspector headers and restore column widths
+        self.debug_model.setHorizontalHeaderLabels([_("Name"), _("Value")])
+        if self.debug_widths:
+            for col, width in enumerate(self.debug_widths):
+                self.debug_inspector.setColumnWidth(col, width)
 
     def update_debug_inspector(self, locals_dict):
         """
@@ -726,9 +732,12 @@ class Window(QMainWindow):
         """
         excluded_names = ["__builtins__", "__debug_code__", "__debug_script__"]
         names = sorted([x for x in locals_dict if x not in excluded_names])
-        self.debug_model.clear()
-        self.debug_model.setHorizontalHeaderLabels([_("Name"), _("Value")])
+
+        # Remove rows so we keep the same column layouts if manually set
+        while self.debug_model.rowCount() > 0:
+            self.debug_model.removeRow(0)
         for name in names:
+            item_to_expand = None
             try:
                 # DANGER!
                 val = eval(locals_dict[name])
@@ -737,6 +746,7 @@ class Window(QMainWindow):
             if isinstance(val, list):
                 # Show a list consisting of rows of position/value
                 list_item = DebugInspectorItem(name)
+                item_to_expand = list_item
                 for i, i_val in enumerate(val):
                     list_item.appendRow(
                         [
@@ -755,6 +765,7 @@ class Window(QMainWindow):
             elif isinstance(val, dict):
                 # Show a dict consisting of rows of key/value pairs.
                 dict_item = DebugInspectorItem(name)
+                item_to_expand = dict_item
                 for k, k_val in val.items():
                     dict_item.appendRow(
                         [
@@ -776,6 +787,15 @@ class Window(QMainWindow):
                         DebugInspectorItem(name),
                         DebugInspectorItem(locals_dict[name]),
                     ]
+                )
+            # Expand dicts/list with names matching old expanded entries
+            if (
+                hasattr(self, "debug_inspector")
+                and name in self.debug_inspector.expanded_dicts
+                and item_to_expand is not None
+            ):
+                self.debug_inspector.expand(
+                    self.debug_model.indexFromItem(item_to_expand)
                 )
 
     def remove_filesystem(self):
@@ -829,6 +849,8 @@ class Window(QMainWindow):
         Removes the debug inspector pane from the application.
         """
         if hasattr(self, "inspector") and self.inspector:
+            width = self.debug_inspector.columnWidth
+            self.debug_widths = width(0), width(1)
             self._inspector_area = self.dockWidgetArea(self.inspector)
             self.debug_inspector = None
             self.debug_model = None
