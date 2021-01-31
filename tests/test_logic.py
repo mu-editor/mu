@@ -2446,6 +2446,29 @@ def test_change_mode_reset_breakpoints():
     mock_tab.reset_annotations.assert_called_once_with()
 
 
+def test_change_mode_workspace_dir_exception():
+    """
+    Check that any mode.workspace_dir() raising an exception doesn't crash Mu,
+    but uses Python mode's workspace_dir as a default.
+    """
+    ed = mu.logic.Editor(mock.MagicMock())
+    mode = mock.MagicMock()
+    mode.save_timeout = 0
+    mode.workspace_dir = mock.MagicMock(side_effect=ValueError("Some error."))
+    python_mode = mock.MagicMock()
+    ed.modes = {
+        "circuitpython": mode,
+        "python": python_mode,
+        "debug": mock.MagicMock(),
+    }
+    ed.mode = "debug"
+    with mock.patch("mu.logic.logger.error") as mock_error:
+        ed.change_mode("circuitpython")
+        assert mock_error.call_count == 1
+    assert ed.mode == "circuitpython"
+    assert python_mode.workspace_dir.called_once()
+
+
 def test_autosave():
     """
     Ensure the autosave callback does the expected things to the tabs.
