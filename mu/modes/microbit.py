@@ -2,7 +2,7 @@
 The mode for working with the BBC micro:bit. Contains most of the origial
 functionality from Mu when it was only a micro:bit related editor.
 
-Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
+Copyright (c) 2015-2021 Nicholas H.Tollervey and others (see the AUTHORS file).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,15 +19,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
 import logging
-import semver
+import time
 from tokenize import TokenError
+
+import semver
+from PyQt5.QtCore import QThread, pyqtSignal
+
 from mu.logic import sniff_newline_convention
 from mu.contrib import uflash, microfs
 from mu.modes.api import MICROBIT_APIS, SHARED_APIS
 from mu.modes.base import MicroPythonMode, FileManager
 from mu.interface.panes import CHARTS
 from .. import config
-from PyQt5.QtCore import QThread, pyqtSignal
+
 
 # We can run without nudatus
 can_minify = True
@@ -47,30 +51,51 @@ class DeviceFlasher(QThread):
     # Emitted when flashing the micro:bit fails for any reason.
     on_flash_fail = pyqtSignal(str)
 
-    def __init__(self, paths_to_microbits, python_script, path_to_runtime):
+    def __init__(
+        self, path_to_microbit, python_script=None, path_to_runtime=None
+    ):
         """
-        The paths_to_microbits should be a list containing filesystem paths to
-        attached micro:bits to flash. The python_script should be the text of
+        The path_to_microbit should be a filesystem path to an attached
+        micro:bit to flash. The python_script should be the text of
         the script to flash onto the device. The path_to_runtime should be the
         path of the hex file for the MicroPython runtime to use. If the
         path_to_runtime is None, the default MicroPython runtime is used by
         default.
         """
         QThread.__init__(self)
-        self.paths_to_microbits = paths_to_microbits
+        self.path_to_microbit = path_to_microbit
         self.python_script = python_script
         self.path_to_runtime = path_to_runtime
 
     def run(self):
         """
         Flash the device.
+        If we are sending a custom hex we need to manually read it and copy it
+        into the micro:bit drive otherwise use uFlash.
         """
         try:
-            uflash.flash(
-                paths_to_microbits=self.paths_to_microbits,
-                python_script=self.python_script,
-                path_to_runtime=self.path_to_runtime,
-            )
+            if self.path_to_runtime:
+                if self.python_script:
+                    raise Exception(
+                        "Cannot flash a custom runtime with a Python script"
+                    )
+                with open(self.path_to_runtime, "rb") as f_input:
+                    rt_bytes = f_input.read()
+                with open(
+                    os.path.join(self.path_to_microbit, "micropython.hex"),
+                    "wb",
+                ) as f_output:
+                    f_output.write(rt_bytes)
+                    f_output.flush()
+                    os.fsync(f_output.fileno())
+            else:
+                uflash.flash(
+                    paths_to_microbits=[self.path_to_microbit],
+                    python_script=self.python_script,
+                )
+            # After flash ends DAPLink reboots the MSD, and serial might not
+            # be immediately available, so this small delay helps.
+            time.sleep(0.5)
         except Exception as ex:
             # Catch everything so Mu can recover from all of the wide variety
             # of possible exceptions that could happen at this point.
@@ -97,7 +122,8 @@ class MicrobitMode(MicroPythonMode):
     #               VID,     PID,   manufact., device name
     valid_boards = [(0x0D28, 0x0204, None, "BBC micro:bit")]
 
-    valid_board_ids = [0x9900, 0x9901]  # Board IDs of supported boards.
+    # Board IDs of supported boards.
+    valid_board_ids = [0x9900, 0x9901, 0x9904]
 
     python_script = ""
 
@@ -293,23 +319,39 @@ class MicrobitMode(MicroPythonMode):
 
         # Check use of custom runtime.
         rt_hex_path = self.editor.microbit_runtime.strip()
-        if rt_hex_path and os.path.exists(rt_hex_path):
+        if rt_hex_path and os.path.isfile(rt_hex_path):
             logger.info("Using custom runtime: {}".format(rt_hex_path))
+            if user_defined_microbit_path:
+                self.view.show_message(
+                    _("Cannot save a custom hex file to a local directory."),
+                    _(
+                        "When a custom hex file is configured in the settings "
+                        "a local directory cannot be used to saved the final "
+                        "hex file."
+                    ),
+                )
+                return
+            if not port:
+                self.view.show_message(
+                    _("Cannot use a custom hex file without micro:bit port."),
+                    _(
+                        "Mu was unable to detect the micro:bit serial port. "
+                        "Normally this is okay, as Mu can inject the Python "
+                        "code into the hex to flash. "
+                        "However, this cannot be done with a custom hex file."
+                    ),
+                )
+                return
+            # If the user has specified a bespoke runtime hex file assume they
+            # know what they're doing, always flash it, and hope for the best.
+            self.flash_and_send(python_script, path_to_microbit, rt_hex_path)
+            return
         else:
-            rt_hex_path = None
             self.editor.microbit_runtime = ""
-
         # Old hex-attach flash method when there's no port (likely Windows<8.1
         # and/or old DAPLink), or when user has selected a PC location.
         if not port or user_defined_microbit_path:
-            self.flash_start(
-                python_script, path_to_microbit, rt_hex_path, serial_fs=False
-            )
-            return
-        # If the user has specified a bespoke runtime hex file assume they
-        # know what they're doing, always flash it, and hope for the best.
-        if rt_hex_path:
-            self.flash_start(python_script, path_to_microbit, rt_hex_path)
+            self.flash_attached(python_script, path_to_microbit)
             return
 
         # Get the version of MicroPython on the device.
@@ -317,12 +359,15 @@ class MicrobitMode(MicroPythonMode):
         update_micropython = False
         try:
             board_version = self.get_device_micropython_version()
-            logger.info(
-                "Mu MicroPython: {}".format(uflash.MICROPYTHON_VERSION)
-            )
+            # MicroPython for micro:bit V2 version starts at 2.x.x.
+            if semver.parse(board_version)["major"] < 2:
+                uflash_version = uflash.MICROPYTHON_V1_VERSION
+            else:
+                uflash_version = uflash.MICROPYTHON_V2_VERSION
+            logger.info("Mu MicroPython: {}".format(uflash_version))
             # If there's an older version of MicroPython on the device,
             # update it with the one packaged with Mu.
-            if semver.compare(board_version, uflash.MICROPYTHON_VERSION) < 0:
+            if semver.compare(board_version, uflash_version) < 0:
                 logger.info("Board MicroPython is older than Mu's MicroPython")
                 update_micropython = True
         except Exception:
@@ -339,7 +384,7 @@ class MicrobitMode(MicroPythonMode):
             if board_id in self.valid_board_ids:
                 # The connected board has a serial number that indicates the
                 # MicroPython hex bundled with Mu supports it, so flash it.
-                self.flash_start(python_script, path_to_microbit, None)
+                self.flash_and_send(python_script, path_to_microbit)
                 return
             else:
                 message = _("Unsupported BBC micro:bit.")
@@ -363,24 +408,17 @@ class MicrobitMode(MicroPythonMode):
                 logger.warning("Could not copy file to device.")
                 logger.error(ioex)
                 logger.info("Falling back to old-style flashing.")
-                self.flash_start(
-                    python_script,
-                    path_to_microbit,
-                    rt_hex_path,
-                    serial_fs=False,
-                )
+                self.flash_attached(python_script, path_to_microbit)
                 return
             except Exception as ex:
                 self.flash_failed(ex)
             self.set_buttons(flash=True, repl=True, files=True, plotter=True)
 
-    def flash_start(self, script, microbit_path, rt_path, serial_fs=True):
+    def flash_and_send(self, script, microbit_path, rt_path=None):
         """
         Start the MicroPython hex flashing process in a new thread with a
         custom hex file, or the one provided by uFlash.
         Then send the user script via serial.
-        If the serial_fs argument is False, use instead of sending the script,
-        use the old method of attaching the script to the hex file.
         """
         logger.info("Flashing new MicroPython runtime onto device")
         self.set_buttons(flash=False, repl=False, files=False, plotter=False)
@@ -388,14 +426,27 @@ class MicrobitMode(MicroPythonMode):
         if rt_path:
             status_message += ". {}: {}".format(_("Runtime"), rt_path)
         self.editor.show_status_message(status_message, 10)
-        if serial_fs:
-            # Store the script to be sent via serial after flashing the runtime
-            self.python_script = script
-            self.flash_thread = DeviceFlasher([microbit_path], None, rt_path)
-        else:
-            # Use the old style to attach the script to the hex for flashing
-            self.python_script = ""
-            self.flash_thread = DeviceFlasher([microbit_path], script, rt_path)
+        # Store the script to be sent via serial after flashing the runtime
+        self.python_script = script
+        self.flash_thread = DeviceFlasher(
+            microbit_path, python_script=None, path_to_runtime=rt_path
+        )
+        self.flash_thread.finished.connect(self.flash_finished)
+        self.flash_thread.on_flash_fail.connect(self.flash_failed)
+        self.flash_thread.start()
+
+    def flash_attached(self, script, microbit_path):
+        """
+        Start the MicroPython hex flashing process in a new thread with the
+        hex file provided by uFlash and the script added to the filesystem
+        in the hex.
+        """
+        logger.info("Flashing new MicroPython runtime onto device")
+        self.set_buttons(flash=False, repl=False, files=False, plotter=False)
+        self.editor.show_status_message(_("Flashing the micro:bit"), 10)
+        # Attach the script to the hex filesystem for flashing
+        self.python_script = ""
+        self.flash_thread = DeviceFlasher(microbit_path, script)
         self.flash_thread.finished.connect(self.flash_finished)
         self.flash_thread.on_flash_fail.connect(self.flash_failed)
         self.flash_thread.start()
