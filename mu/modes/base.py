@@ -54,15 +54,18 @@ def get_default_workspace():
     settings file to be used to set a custom path.
     """
     workspace_dir = os.path.join(config.HOME_DIRECTORY, config.WORKSPACE_NAME)
-
     settings_workspace = settings.settings.get("workspace")
-    if settings_workspace and os.path.isdir(settings_workspace):
-        workspace_dir = settings_workspace
-    else:
-        logger.error(
-            "Workspace value in the settings file is not a valid"
-            "directory: {}".format(settings_workspace)
-        )
+
+    if settings_workspace:
+        if os.path.isdir(settings_workspace):
+            logger.info("Using workspace {} from settings file".format(settings_workspace))
+            workspace_dir = settings_workspace
+        else:
+            logger.warn(
+                "Workspace {} in the settings file is not a valid "
+                "directory; using default {}".format(settings_workspace, workspace_dir)
+            )
+
     return workspace_dir
 
 
