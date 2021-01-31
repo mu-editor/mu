@@ -1,6 +1,42 @@
 Release History
 ---------------
 
+1.1.0-beta.1
+============
+
+This is a beta release and may contain bugs or unfinished features. Please
+provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
+
+* A new mode for ESP8266/ESP32 devices running MicroPython. This work and a
+  significant amount of related refactoring was contributed with Viking like
+  energy and efficiency by Martin Dybdal. This work has meant it was relatively
+  easy to create two further new modes...
+* New mode for Lego Spike devices (thanks to Chris and Ethan at Tufts
+  University for the help and support).
+* New mode for Raspberry Pi Pico (thanks to Zander, Martin and Carlos for the
+  extensive testing).
+* Updates to the Microbit mode made by Spanish source-code wrangler
+  extraordinaire (and resident Microbit expert) Carlos Pereira Atencio. The
+  Microbit mode now supports versions 1 and 2 of the board.
+* Various bits of artwork used in the application have been updated (including
+  a new [temporary] animated splash screen). Thanks to devdanzin for
+  choreographing the initial work on the splash screen at short notice.
+* A complete re-write of the virtualenv and third party package handlers by the
+  hugely talented Tim Golden. This was a long term and difficult refactoring
+  project which Tim has delivered with great aplomb. This should make package
+  handling much smoother and simpler.
+* Various smallish UI fixes, enhancements and smoothing by devdanzin. Thank you
+  for these contributions - they really make a difference to the ease of use
+  and friendly feel of Mu.
+* This version of Mu is packaged with stand-alone installers for Windows and
+  OSX by the wonder that is PUP - a new packaging tool by our very own Tiago
+  Montes ~ Portugal's Premier Python Packager Par-excellence. We have big plans
+  for PUP... watch this space. :-)
+* Many many many minor bug fixes contributed by many many many people to whom
+  we are eternally grateful.
+
+We hope to release beta.2 very soon.
+
 1.0.3
 =====
 
