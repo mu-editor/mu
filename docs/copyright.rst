@@ -92,4 +92,16 @@ This is a copped version of the
 `Creative Commons licensed <https://creativecommons.org/licenses/by-sa/2.0/>`_
 photograph taken by
 `Jeff Eaton <https://www.flickr.com/people/jeffeaton/>`_
-that can be `found here <https://www.flickr.com/photos/jeffeaton/7283481712/>`_.
+that can be `found here <https://www.flickr.com/photos/jeffeaton/7298224068>`_.
+
+pyboard.png
++++++++++++
+
+The `MicroPython Logo <https://commons.wikimedia.org/wiki/File:MicroPython_new_logo.svg>`_
+is covered by the MIT license.
+
+web.png
++++++++
+
+The `Flask Logo <https://commons.wikimedia.org/wiki/File:Flask_logo.svg>`_ has
+been released to the public domain.
