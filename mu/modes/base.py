@@ -58,12 +58,18 @@ def get_default_workspace():
 
     if settings_workspace:
         if os.path.isdir(settings_workspace):
-            logger.info("Using workspace {} from settings file".format(settings_workspace))
+            logger.info(
+                "Using workspace {} from settings file".format(
+                    settings_workspace
+                )
+            )
             workspace_dir = settings_workspace
         else:
             logger.warn(
                 "Workspace {} in the settings file is not a valid "
-                "directory; using default {}".format(settings_workspace, workspace_dir)
+                "directory; using default {}".format(
+                    settings_workspace, workspace_dir
+                )
             )
 
     return workspace_dir

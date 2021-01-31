@@ -242,7 +242,7 @@ class SettingsBase(object):
 class UserSettings(SettingsBase):
 
     DEFAULTS = {
-        "workspace" : os.path.join(config.HOME_DIRECTORY, config.WORKSPACE_NAME)
+        "workspace": os.path.join(config.HOME_DIRECTORY, config.WORKSPACE_NAME)
     }
     autosave = False
     filestem = "settings"
