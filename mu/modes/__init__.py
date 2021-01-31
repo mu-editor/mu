@@ -7,6 +7,7 @@ from .esp import ESPMode
 from .web import WebMode
 from .pyboard import PyboardMode
 from .lego import LegoMode
+from .pico import PicoMode
 
 __all__ = [
     "PythonMode",
@@ -18,4 +19,5 @@ __all__ = [
     "WebMode",
     "PyboardMode",
     "LegoMode",
+    "PicoMode",
 ]
