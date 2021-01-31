@@ -30,7 +30,7 @@ class PicoMode(ESPMode):
     Raspberry Pi Pico board. This is simply a modified version of the ESP mode.
     """
 
-    name = _("Raspberry Pi Pico")
+    name = _("RP2040")
     short_name = "pico"
     board_name = "Raspberry Pi Pico"
     description = _("Write MicroPython directly on a Raspberry Pi Pico.")
