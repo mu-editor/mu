@@ -5,7 +5,13 @@ Tests for the app script.
 import sys
 import os.path
 from unittest import mock
-from mu.app import excepthook, run, setup_logging
+from mu.app import (
+    excepthook,
+    run,
+    setup_logging,
+    AnimatedSplash,
+    StartupWorker,
+)
 from mu.debugger.config import DEBUGGER_PORT
 
 # ~ from mu.debugger import runner as debugger_runner
@@ -45,6 +51,48 @@ class DumSig:
         Proxy the callback function
         """
         self.func(*args)
+
+
+def test_animated_splash_init():
+    """
+    Ensure the AnimatedSplash class uses the passed in animation.
+    """
+    mock_gif = mock.MagicMock()
+    asplash = AnimatedSplash(mock_gif)
+    assert asplash.animation == mock_gif
+    asplash.animation.frameChanged.connect.assert_called_once_with(
+        asplash.set_frame
+    )
+    asplash.animation.start.assert_called_once_with()
+
+
+def test_animated_splash_set_frame():
+    """
+    Ensure the splash screen's pixmap is updated with the animation's current
+    pixmap.
+    """
+    mock_gif = mock.MagicMock()
+    asplash = AnimatedSplash(mock_gif)
+    asplash.setPixmap = mock.MagicMock()
+    asplash.setMask = mock.MagicMock()
+    asplash.set_frame()
+    asplash.animation.currentPixmap.assert_called_once_with()
+    pixmap = asplash.animation.currentPixmap()
+    asplash.setPixmap.assert_called_once_with(pixmap)
+    asplash.setMask.assert_called_once_with(pixmap.mask())
+
+
+def test_worker_run():
+    """
+    Ensure the finished signal is called when the tasks called in the run
+    method are completed.
+    """
+    w = StartupWorker()
+    w.finished = mock.MagicMock()
+    with mock.patch("mu.app.venv.ensure") as mock_ensure:
+        w.run()
+        mock_ensure.assert_called_once_with()
+        w.finished.emit.assert_called_once_with()
 
 
 def test_setup_logging():
@@ -90,15 +138,13 @@ def test_run():
 
     with mock.patch("mu.app.setup_logging") as set_log, mock.patch(
         "mu.app.QApplication"
-    ) as qa, mock.patch("mu.app.QSplashScreen") as qsp, mock.patch(
+    ) as qa, mock.patch("mu.app.AnimatedSplash") as qsp, mock.patch(
         "mu.app.Editor"
     ) as ed, mock.patch(
-        "mu.app.load_pixmap"
+        "mu.app.load_movie"
     ), mock.patch(
         "mu.app.Window", window
     ) as win, mock.patch(
-        "mu.app.QTimer"
-    ) as timer, mock.patch(
         "sys.argv", ["mu"]
     ), mock.patch(
         "sys.exit"
@@ -109,13 +155,11 @@ def test_run():
         assert qa.call_count == 1
         # foo.mock_calls are method calls on the object
         if hasattr(Qt, "AA_EnableHighDpiScaling"):
-            assert len(qa.mock_calls) == 9
+            assert len(qa.mock_calls) == 10
         else:
-            assert len(qa.mock_calls) == 8
+            assert len(qa.mock_calls) == 9
         assert qsp.call_count == 1
-        assert len(qsp.mock_calls) == 2
-        assert timer.call_count == 2
-        assert len(timer.mock_calls) == 7
+        assert len(qsp.mock_calls) == 3
         assert ed.call_count == 1
         assert len(ed.mock_calls) == 4
         assert win.call_count == 1
@@ -165,12 +209,10 @@ def test_close_splash_screen():
     splash = mock.MagicMock()
 
     # Mock QTimer, QApplication, Window, Editor, sys.exit
-    with mock.patch("mu.app.QTimer", new=DummyTimer), mock.patch(
-        "mu.app.Window", window
-    ), mock.patch("mu.app.QApplication"), mock.patch("sys.exit"), mock.patch(
-        "mu.app.Editor"
-    ), mock.patch(
-        "mu.app.QSplashScreen", return_value=splash
+    with mock.patch("mu.app.Window", window), mock.patch(
+        "mu.app.QApplication"
+    ), mock.patch("sys.exit"), mock.patch("mu.app.Editor"), mock.patch(
+        "mu.app.AnimatedSplash", return_value=splash
     ):
         run()
         assert splash.finish.call_count == 1
