@@ -12,6 +12,7 @@ from tests.test_app import DumSig
 import mu.interface.main
 import mu.interface.themes
 import mu.interface.editor
+from mu.interface.panes import PlotterPane
 import sys
 
 
@@ -936,6 +937,29 @@ def test_Window_add_plotter():
     w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
 
 
+def test_Window_remember_plotter_position():
+    """
+    Check that opening plotter, changing the area it's docked to, then closing
+    it makes the next plotter open at the same area.
+    """
+    w = mu.interface.main.Window()
+    w.theme = mock.MagicMock()
+    pane = PlotterPane()
+    w.add_plotter(pane, "Test Plotter")
+    dock_area = w.dockWidgetArea(w.plotter)
+    assert dock_area == 8  # Bottom
+    w.removeDockWidget(w.plotter)
+    w.addDockWidget(Qt.LeftDockWidgetArea, w.plotter)
+    dock_area = w.dockWidgetArea(w.plotter)
+    assert dock_area == 1  # Left
+    w.remove_plotter()
+    assert w.plotter is None
+    pane2 = PlotterPane()
+    w.add_plotter(pane2, "Test Plotter 2")
+    dock_area = w.dockWidgetArea(w.plotter)
+    assert dock_area == 1  # Reopened on left
+
+
 def test_Window_add_python3_runner():
     """
     Ensure a Python 3 runner (to capture stdin/out/err) is displayed correctly.
@@ -1050,6 +1074,7 @@ def test_Window_remove_filesystem():
     mock_fs.setParent = mock.MagicMock(return_value=None)
     mock_fs.deleteLater = mock.MagicMock(return_value=None)
     w.fs = mock_fs
+    w.dockWidgetArea = mock.MagicMock()
     w.remove_filesystem()
     mock_fs.setParent.assert_called_once_with(None)
     mock_fs.deleteLater.assert_called_once_with()
@@ -1065,9 +1090,11 @@ def test_Window_remove_repl():
     mock_repl.setParent = mock.MagicMock(return_value=None)
     mock_repl.deleteLater = mock.MagicMock(return_value=None)
     w.repl = mock_repl
+    w.dockWidgetArea = mock.MagicMock()
     w.remove_repl()
     mock_repl.setParent.assert_called_once_with(None)
     mock_repl.deleteLater.assert_called_once_with()
+    w.dockWidgetArea.assert_called_once()
     assert w.repl is None
 
 
@@ -1079,10 +1106,12 @@ def test_Window_remove_plotter():
     mock_plotter = mock.MagicMock()
     mock_plotter.setParent = mock.MagicMock(return_value=None)
     mock_plotter.deleteLater = mock.MagicMock(return_value=None)
+    w.dockWidgetArea = mock.MagicMock()
     w.plotter = mock_plotter
     w.remove_plotter()
     mock_plotter.setParent.assert_called_once_with(None)
     mock_plotter.deleteLater.assert_called_once_with()
+    w.dockWidgetArea.assert_called_once()
     assert w.plotter is None
 
 
@@ -1096,9 +1125,12 @@ def test_Window_remove_python_runner():
     mock_runner.setParent = mock.MagicMock(return_value=None)
     mock_runner.deleteLater = mock.MagicMock(return_value=None)
     w.runner = mock_runner
+    w.process_runner = mock.MagicMock()
+    w.dockWidgetArea = mock.MagicMock()
     w.remove_python_runner()
     mock_runner.setParent.assert_called_once_with(None)
     mock_runner.deleteLater.assert_called_once_with()
+    w.dockWidgetArea.assert_called_once()
     assert w.process_runner is None
     assert w.runner is None
 
@@ -1115,12 +1147,14 @@ def test_Window_remove_debug_inspector():
     w.inspector = mock_inspector
     w.debug_inspector = mock_debug_inspector
     w.debug_model = mock_model
+    w.dockWidgetArea = mock.MagicMock()
     w.remove_debug_inspector()
     assert w.debug_inspector is None
     assert w.debug_model is None
     assert w.inspector is None
     mock_inspector.setParent.assert_called_once_with(None)
     mock_inspector.deleteLater.assert_called_once_with()
+    w.dockWidgetArea.assert_called_once()
 
 
 def test_Window_set_theme():
