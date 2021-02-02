@@ -12,6 +12,7 @@ from tests.test_app import DumSig
 import mu.interface.main
 import mu.interface.themes
 import mu.interface.editor
+from mu.interface.panes import PlotterPane
 import sys
 
 
@@ -936,6 +937,29 @@ def test_Window_add_plotter():
     w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
 
 
+def test_Window_remember_plotter_position():
+    """
+    Check that opening plotter, changing the area it's docked to, then closing
+    it makes the next plotter open at the same area.
+    """
+    w = mu.interface.main.Window()
+    w.theme = mock.MagicMock()
+    pane = PlotterPane()
+    w.add_plotter(pane, "Test Plotter")
+    dock_area = w.dockWidgetArea(w.plotter)
+    assert dock_area == 8  # Bottom
+    w.removeDockWidget(w.plotter)
+    w.addDockWidget(Qt.LeftDockWidgetArea, w.plotter)
+    dock_area = w.dockWidgetArea(w.plotter)
+    assert dock_area == 1  # Left
+    w.remove_plotter()
+    assert w.plotter is None
+    pane2 = PlotterPane()
+    w.add_plotter(pane2, "Test Plotter 2")
+    dock_area = w.dockWidgetArea(w.plotter)
+    assert dock_area == 1  # Reopened on left
+
+
 def test_Window_add_python3_runner():
     """
     Ensure a Python 3 runner (to capture stdin/out/err) is displayed correctly.
@@ -953,7 +977,7 @@ def test_Window_add_python3_runner():
     with mock.patch(
         "mu.interface.main.PythonProcessPane", mock_process_class
     ), mock.patch("mu.interface.main.QDockWidget", mock_dock_class):
-        result = w.add_python3_runner(name, path)
+        result = w.add_python3_runner(name, path, ".")
         assert result == mock_process_runner
     assert w.process_runner == mock_process_runner
     assert w.runner == mock_dock
@@ -1011,12 +1035,13 @@ def test_Window_update_debug_inspector():
     }
     w = mu.interface.main.Window()
     w.debug_model = mock.MagicMock()
+    w.debug_model.rowCount.return_value = 0
     mock_standard_item = mock.MagicMock()
     with mock.patch(
         "mu.interface.main.DebugInspectorItem", mock_standard_item
     ):
         w.update_debug_inspector(locals_dict)
-    w.debug_model.clear.assert_called_once_with()
+    w.debug_model.rowCount.assert_called_once_with()
     w.debug_model.setHorizontalHeaderLabels(["Name", "Value"])
     # You just have to believe this is correct. I checked! :-)
     assert mock_standard_item.call_count == 22
@@ -1030,6 +1055,7 @@ def test_Window_update_debug_inspector_with_exception():
     locals_dict = {"bar": "['this', 'is', 'a', 'list']"}
     w = mu.interface.main.Window()
     w.debug_model = mock.MagicMock()
+    w.debug_model.rowCount.return_value = 0
     mock_standard_item = mock.MagicMock()
     mock_eval = mock.MagicMock(side_effect=Exception("BOOM!"))
     with mock.patch(
@@ -1050,6 +1076,7 @@ def test_Window_remove_filesystem():
     mock_fs.setParent = mock.MagicMock(return_value=None)
     mock_fs.deleteLater = mock.MagicMock(return_value=None)
     w.fs = mock_fs
+    w.dockWidgetArea = mock.MagicMock()
     w.remove_filesystem()
     mock_fs.setParent.assert_called_once_with(None)
     mock_fs.deleteLater.assert_called_once_with()
@@ -1065,9 +1092,11 @@ def test_Window_remove_repl():
     mock_repl.setParent = mock.MagicMock(return_value=None)
     mock_repl.deleteLater = mock.MagicMock(return_value=None)
     w.repl = mock_repl
+    w.dockWidgetArea = mock.MagicMock()
     w.remove_repl()
     mock_repl.setParent.assert_called_once_with(None)
     mock_repl.deleteLater.assert_called_once_with()
+    w.dockWidgetArea.assert_called_once()
     assert w.repl is None
 
 
@@ -1079,10 +1108,12 @@ def test_Window_remove_plotter():
     mock_plotter = mock.MagicMock()
     mock_plotter.setParent = mock.MagicMock(return_value=None)
     mock_plotter.deleteLater = mock.MagicMock(return_value=None)
+    w.dockWidgetArea = mock.MagicMock()
     w.plotter = mock_plotter
     w.remove_plotter()
     mock_plotter.setParent.assert_called_once_with(None)
     mock_plotter.deleteLater.assert_called_once_with()
+    w.dockWidgetArea.assert_called_once()
     assert w.plotter is None
 
 
@@ -1096,9 +1127,12 @@ def test_Window_remove_python_runner():
     mock_runner.setParent = mock.MagicMock(return_value=None)
     mock_runner.deleteLater = mock.MagicMock(return_value=None)
     w.runner = mock_runner
+    w.process_runner = mock.MagicMock()
+    w.dockWidgetArea = mock.MagicMock()
     w.remove_python_runner()
     mock_runner.setParent.assert_called_once_with(None)
     mock_runner.deleteLater.assert_called_once_with()
+    w.dockWidgetArea.assert_called_once()
     assert w.process_runner is None
     assert w.runner is None
 
@@ -1115,12 +1149,14 @@ def test_Window_remove_debug_inspector():
     w.inspector = mock_inspector
     w.debug_inspector = mock_debug_inspector
     w.debug_model = mock_model
+    w.dockWidgetArea = mock.MagicMock()
     w.remove_debug_inspector()
     assert w.debug_inspector is None
     assert w.debug_model is None
     assert w.inspector is None
     mock_inspector.setParent.assert_called_once_with(None)
     mock_inspector.deleteLater.assert_called_once_with()
+    w.dockWidgetArea.assert_called_once()
 
 
 def test_Window_set_theme():
@@ -1271,10 +1307,9 @@ def test_Window_sync_packages():
         w = mu.interface.main.Window()
         to_remove = {"foo"}
         to_add = {"bar"}
-        module_dir = "baz"
-        w.sync_packages(to_remove, to_add, module_dir)
+        w.sync_packages(to_remove, to_add)
         dialog = mock_package_dialog()
-        dialog.setup.assert_called_once_with(to_remove, to_add, module_dir)
+        dialog.setup.assert_called_once_with(to_remove, to_add)
         dialog.exec.assert_called_once_with()
 
 
@@ -1687,6 +1722,27 @@ def test_Window_connect_find_replace():
     shortcut.activated.connect.assert_called_once_with(mock_handler)
 
 
+def test_Window_connect_find_again():
+    """
+    Ensure a shortcut is created with the expected shortcut and handler
+    function.
+    """
+    window = mu.interface.main.Window()
+    mock_handlers = mock.MagicMock(), mock.MagicMock()
+    mock_shortcut = mock.MagicMock()
+    mock_sequence = mock.MagicMock()
+    ksf = mock.MagicMock("F3")
+    # ksb = mock.MagicMock("Shift+F3")
+    with mock.patch("mu.interface.main.QShortcut", mock_shortcut), mock.patch(
+        "mu.interface.main.QKeySequence", mock_sequence
+    ):
+        window.connect_find_again(mock_handlers, "F3")
+    mock_sequence.assert_has_calls((mock.call("F3"), mock.call("Shift+F3")))
+    shortcut = mock_shortcut(ksf, window)
+    shortcut.activated.connect.assert_called_with(mock_handlers[1])
+    assert shortcut.activated.connect.call_count == 2
+
+
 def test_Window_show_find_replace():
     """
     The find/replace dialog is setup with the right arguments and, if
@@ -1772,6 +1828,22 @@ def test_Window_replace_text_global_missing():
     assert w.replace_text("foo", "bar", True) == 0
 
 
+def test_Window_replace_text_highlight_text_correct_selection():
+    """
+    Check that replace_text and highlight_text are actually highlighting text
+    without regex matching.
+    """
+    view = mu.interface.main.Window()
+    text = "ofafefifoof."
+    tab = mu.interface.editor.EditorPane("path", text)
+    with mock.patch("mu.interface.Window.current_tab") as current:
+        current.findFirst = tab.findFirst
+        view.highlight_text("f.")
+        assert tab.selectedText() == "f."
+        assert view.replace_text("of.", "", False)
+        assert tab.selectedText() == "of."
+
+
 def test_Window_highlight_text():
     """
     Given target_text, highlights the first instance via Scintilla's findFirst
@@ -1782,8 +1854,28 @@ def test_Window_highlight_text():
     mock_tab.findFirst.return_value = True
     w.tabs = mock.MagicMock()
     w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 0, 0
     assert w.highlight_text("foo")
-    mock_tab.findFirst.assert_called_once_with("foo", True, True, False, True)
+    mock_tab.findFirst.assert_called_once_with(
+        "foo", False, True, False, True, forward=True, index=-1, line=-1
+    )
+
+
+def test_Window_highlight_text_backward():
+    """
+    Given target_text, highlights the first instance via Scintilla's findFirst
+    method.
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    mock_tab.findFirst.return_value = True
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 0, 0
+    assert w.highlight_text("foo", forward=False)
+    mock_tab.findFirst.assert_called_once_with(
+        "foo", False, True, False, True, forward=False, index=0, line=0
+    )
 
 
 def test_Window_highlight_text_no_tab():
@@ -1793,6 +1885,7 @@ def test_Window_highlight_text_no_tab():
     w = mu.interface.main.Window()
     w.tabs = mock.MagicMock()
     w.tabs.currentWidget.return_value = None
+    w.tabs.currentWidget.getSelection.return_value = 0, 0, 0, 0
     assert w.highlight_text("foo") is False
 
 

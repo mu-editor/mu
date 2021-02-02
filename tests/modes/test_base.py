@@ -5,6 +5,7 @@ Tests for the BaseMode class.
 import os
 import mu
 import pytest
+import mu.config
 from mu.logic import Device
 from mu.modes.base import (
     BaseMode,
@@ -12,6 +13,7 @@ from mu.modes.base import (
     FileManager,
     REPLConnection,
 )
+import mu.settings
 from PyQt5.QtCore import QIODevice
 from unittest import mock
 
@@ -44,6 +46,9 @@ def test_base_mode():
     assert bm.builtins is None
 
 
+@pytest.mark.skip(
+    "No longer needed now that settings are part of the settings module"
+)
 def test_base_mode_workspace_dir():
     """
     Return settings file workspace value.
@@ -63,12 +68,12 @@ def test_base_mode_workspace_not_present():
     No workspace key in settings file, return default folder.
     """
     default_workspace = os.path.join(
-        mu.logic.HOME_DIRECTORY, mu.logic.WORKSPACE_NAME
+        mu.config.HOME_DIRECTORY, mu.config.WORKSPACE_NAME
     )
-    with mock.patch(
-        "mu.modes.base.get_settings_path",
-        return_value="tests/settingswithoutworkspace.json",
-    ):
+    mocked_settings = mu.settings.UserSettings()
+    del mocked_settings["workspace"]
+    assert "workspace" not in mocked_settings
+    with mock.patch.object(mu.settings, "settings", mocked_settings):
         editor = mock.MagicMock()
         view = mock.MagicMock()
         bm = BaseMode(editor, view)
@@ -80,59 +85,58 @@ def test_base_mode_workspace_invalid_value():
     Invalid workspace key in settings file, return default folder.
     """
     default_workspace = os.path.join(
-        mu.logic.HOME_DIRECTORY, mu.logic.WORKSPACE_NAME
+        mu.config.HOME_DIRECTORY, mu.config.WORKSPACE_NAME
     )
-    # read from our demo settings.json
-    with mock.patch(
-        "mu.modes.base.get_settings_path", return_value="tests/settings.json"
-    ), mock.patch("os.path.isdir", return_value=False), mock.patch(
-        "mu.modes.base.logger", return_value=None
-    ) as logger:
+    mocked_settings = mu.settings.UserSettings()
+    mocked_settings["workspace"] = "*invalid*"
+    with mock.patch.object(
+        mu.settings, "settings", mocked_settings
+    ), mock.patch("mu.modes.base.logger", return_value=None) as logger:
         editor = mock.MagicMock()
         view = mock.MagicMock()
         bm = BaseMode(editor, view)
         assert bm.workspace_dir() == default_workspace
-        assert logger.error.call_count == 1
+        assert logger.warn.call_count == 1
 
 
-def test_base_mode_workspace_invalid_json():
+def test_base_mode_workspace_invalid_json(tmp_path):
     """
     Invalid workspace key in settings file, return default folder.
+
+    NB most of the work here is done in the settings.py module so we're
+    just testing that we get a suitable default back
     """
     default_workspace = os.path.join(
-        mu.logic.HOME_DIRECTORY, mu.logic.WORKSPACE_NAME
+        mu.config.HOME_DIRECTORY, mu.config.WORKSPACE_NAME
     )
-    mock_open = mock.mock_open(read_data='{"workspace": invalid}')
-    with mock.patch(
-        "mu.modes.base.get_settings_path", return_value="a.json"
-    ), mock.patch("builtins.open", mock_open), mock.patch(
-        "mu.modes.base.logger", return_value=None
-    ) as logger:
+    mocked_settings = mu.settings.UserSettings()
+    settings_filepath = os.path.join(str(tmp_path), "settings.json")
+    with open(settings_filepath, "w") as f:
+        f.write("*invalid JSON*")
+    mocked_settings.load(settings_filepath)
+    with mock.patch.object(mu.settings, "settings", mocked_settings):
         editor = mock.MagicMock()
         view = mock.MagicMock()
         bm = BaseMode(editor, view)
         assert bm.workspace_dir() == default_workspace
-        assert logger.error.call_count == 1
 
 
 def test_base_mode_workspace_no_settings_file():
     """
     Invalid settings file, return default folder.
+
+    NB most of the work here is done in the settings.py module so we're
+    just testing that we get a suitable default back
     """
     default_workspace = os.path.join(
-        mu.logic.HOME_DIRECTORY, mu.logic.WORKSPACE_NAME
+        mu.config.HOME_DIRECTORY, mu.config.WORKSPACE_NAME
     )
-    mock_open = mock.MagicMock(side_effect=FileNotFoundError())
-    with mock.patch(
-        "mu.modes.base.get_settings_path", return_value="tests/settings.json"
-    ), mock.patch("builtins.open", mock_open), mock.patch(
-        "mu.modes.base.logger", return_value=None
-    ) as logger:
+    mocked_settings = mu.settings.UserSettings()
+    with mock.patch.object(mu.settings, "settings", mocked_settings):
         editor = mock.MagicMock()
         view = mock.MagicMock()
         bm = BaseMode(editor, view)
         assert bm.workspace_dir() == default_workspace
-        assert logger.error.call_count == 1
 
 
 def test_base_mode_set_buttons():
@@ -190,6 +194,23 @@ def test_base_mode_remove_plotter():
     mock_csv_writer.writerows.assert_called_once_with(
         view.plotter_pane.raw_data
     )
+
+
+def test_base_mode_write_csv(tmp_path):
+    """When the plotter is removed the resulting csv should represent
+    the data -- an should not not include interspersed blank lines
+    """
+    csv_filepath = str(tmp_path / "plotter.csv")
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.plotter_pane.raw_data = [[1, 2, 3], [4, 5, 6]]
+    bm = BaseMode(editor, view)
+    bm.write_plotter_data_to_csv(csv_filepath)
+
+    expected_output = ["1,2,3", "4,5,6"]
+    with open(csv_filepath, "r") as f:
+        output = f.read().splitlines()
+    assert output == expected_output
 
 
 def test_base_on_data_flood():

@@ -316,6 +316,16 @@ class Window(QMainWindow):
     open_file = pyqtSignal(str)
     load_theme = pyqtSignal(str)
     previous_folder = None
+    debug_widths = None
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # Record pane area to allow reopening where user put it in a session
+        self._debugger_area = 0
+        self._inspector_area = 0
+        self._plotter_area = 0
+        self._repl_area = 0
+        self._runner_area = 0
 
     def wheelEvent(self, event):
         """
@@ -588,7 +598,8 @@ class Window(QMainWindow):
             | Qt.LeftDockWidgetArea
             | Qt.RightDockWidgetArea
         )
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.repl)
+        area = self._repl_area or Qt.BottomDockWidgetArea
+        self.addDockWidget(area, self.repl)
         self.connect_zoom(self.repl_pane)
         self.repl_pane.set_theme(self.theme)
         self.repl_pane.setFocus()
@@ -606,23 +617,25 @@ class Window(QMainWindow):
             | Qt.LeftDockWidgetArea
             | Qt.RightDockWidgetArea
         )
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.plotter)
+        area = self._plotter_area or Qt.BottomDockWidgetArea
+        self.addDockWidget(area, self.plotter)
         self.plotter_pane.set_theme(self.theme)
         self.plotter_pane.setFocus()
 
     def add_python3_runner(
         self,
+        interpreter,
         script_name,
         working_directory,
         interactive=False,
         debugger=False,
         command_args=None,
-        runner=None,
         envars=None,
         python_args=None,
     ):
         """
-        Display console output for the referenced Python script.
+        Display console output for the interpreter with the referenced
+        pythonpath running the referenced script.
 
         The script will be run within the workspace_path directory.
 
@@ -637,9 +650,6 @@ class Window(QMainWindow):
         If there is a list of command_args (the default is None) then these
         will be passed as further arguments into the command run in the
         new process.
-
-        If runner is given, this is used as the command to start the Python
-        process.
 
         If envars is given, these will become part of the environment context
         of the new chlid process.
@@ -658,15 +668,32 @@ class Window(QMainWindow):
             | Qt.LeftDockWidgetArea
             | Qt.RightDockWidgetArea
         )
-        self.addDockWidget(Qt.BottomDockWidgetArea, self.runner)
-        self.process_runner.start_process(
+        self.process_runner.debugger = debugger
+        if debugger:
+            area = self._debugger_area or Qt.BottomDockWidgetArea
+        else:
+            area = self._runner_area or Qt.BottomDockWidgetArea
+        self.addDockWidget(area, self.runner)
+        logger.info(
+            "About to start_process: %r, %r, %r, %r, %r, %r, %r, %r",
+            interpreter,
             script_name,
             working_directory,
             interactive,
             debugger,
             command_args,
             envars,
-            runner,
+            python_args,
+        )
+
+        self.process_runner.start_process(
+            interpreter,
+            script_name,
+            working_directory,
+            interactive,
+            debugger,
+            command_args,
+            envars,
             python_args,
         )
         self.process_runner.setFocus()
@@ -689,8 +716,14 @@ class Window(QMainWindow):
             | Qt.LeftDockWidgetArea
             | Qt.RightDockWidgetArea
         )
-        self.addDockWidget(Qt.RightDockWidgetArea, self.inspector)
+        area = self._inspector_area or Qt.RightDockWidgetArea
+        self.addDockWidget(area, self.inspector)
         self.connect_zoom(self.debug_inspector)
+        # Setup the inspector headers and restore column widths
+        self.debug_model.setHorizontalHeaderLabels([_("Name"), _("Value")])
+        if self.debug_widths:
+            for col, width in enumerate(self.debug_widths):
+                self.debug_inspector.setColumnWidth(col, width)
 
     def update_debug_inspector(self, locals_dict):
         """
@@ -699,9 +732,12 @@ class Window(QMainWindow):
         """
         excluded_names = ["__builtins__", "__debug_code__", "__debug_script__"]
         names = sorted([x for x in locals_dict if x not in excluded_names])
-        self.debug_model.clear()
-        self.debug_model.setHorizontalHeaderLabels([_("Name"), _("Value")])
+
+        # Remove rows so we keep the same column layouts if manually set
+        while self.debug_model.rowCount() > 0:
+            self.debug_model.removeRow(0)
         for name in names:
+            item_to_expand = None
             try:
                 # DANGER!
                 val = eval(locals_dict[name])
@@ -710,6 +746,7 @@ class Window(QMainWindow):
             if isinstance(val, list):
                 # Show a list consisting of rows of position/value
                 list_item = DebugInspectorItem(name)
+                item_to_expand = list_item
                 for i, i_val in enumerate(val):
                     list_item.appendRow(
                         [
@@ -728,6 +765,7 @@ class Window(QMainWindow):
             elif isinstance(val, dict):
                 # Show a dict consisting of rows of key/value pairs.
                 dict_item = DebugInspectorItem(name)
+                item_to_expand = dict_item
                 for k, k_val in val.items():
                     dict_item.appendRow(
                         [
@@ -750,6 +788,15 @@ class Window(QMainWindow):
                         DebugInspectorItem(locals_dict[name]),
                     ]
                 )
+            # Expand dicts/list with names matching old expanded entries
+            if (
+                hasattr(self, "debug_inspector")
+                and name in self.debug_inspector.expanded_dicts
+                and item_to_expand is not None
+            ):
+                self.debug_inspector.expand(
+                    self.debug_model.indexFromItem(item_to_expand)
+                )
 
     def remove_filesystem(self):
         """
@@ -766,6 +813,7 @@ class Window(QMainWindow):
         Removes the REPL pane from the application.
         """
         if self.repl:
+            self._repl_area = self.dockWidgetArea(self.repl)
             self.repl_pane = None
             self.repl.setParent(None)
             self.repl.deleteLater()
@@ -776,6 +824,7 @@ class Window(QMainWindow):
         Removes the plotter pane from the application.
         """
         if self.plotter:
+            self._plotter_area = self.dockWidgetArea(self.plotter)
             self.plotter_pane = None
             self.plotter.setParent(None)
             self.plotter.deleteLater()
@@ -786,6 +835,10 @@ class Window(QMainWindow):
         Removes the runner pane from the application.
         """
         if hasattr(self, "runner") and self.runner:
+            if self.process_runner.debugger:
+                self._debugger_area = self.dockWidgetArea(self.runner)
+            else:
+                self._runner_area = self.dockWidgetArea(self.runner)
             self.process_runner = None
             self.runner.setParent(None)
             self.runner.deleteLater()
@@ -796,6 +849,9 @@ class Window(QMainWindow):
         Removes the debug inspector pane from the application.
         """
         if hasattr(self, "inspector") and self.inspector:
+            width = self.debug_inspector.columnWidth
+            self.debug_widths = width(0), width(1)
+            self._inspector_area = self.dockWidgetArea(self.inspector)
             self.debug_inspector = None
             self.debug_model = None
             self.inspector.setParent(None)
@@ -853,13 +909,13 @@ class Window(QMainWindow):
         else:
             return {}
 
-    def sync_packages(self, to_remove, to_add, module_dir):
+    def sync_packages(self, to_remove, to_add):
         """
         Display a modal dialog that indicates the status of the add/remove
         package management operation.
         """
         package_box = PackageDialog(self)
-        package_box.setup(to_remove, to_add, module_dir)
+        package_box.setup(to_remove, to_add)
         package_box.exec()
 
     def show_message(self, message, information=None, icon=None):
@@ -1082,6 +1138,20 @@ class Window(QMainWindow):
         self.find_replace_shortcut = QShortcut(QKeySequence(shortcut), self)
         self.find_replace_shortcut.activated.connect(handler)
 
+    def connect_find_again(self, handlers, shortcut):
+        """
+        Create keyboard shortcuts and associate them with handlers for doing
+        a find again in forward or backward direction. Any given shortcut
+        will be used for forward find again, while Shift+shortcut will find
+        again backwards.
+        """
+        forward, backward = handlers
+        self.find_again_shortcut = QShortcut(QKeySequence(shortcut), self)
+        self.find_again_shortcut.activated.connect(forward)
+        backward_shortcut = QKeySequence("Shift+" + shortcut)
+        self.find_again_backward_shortcut = QShortcut(backward_shortcut, self)
+        self.find_again_backward_shortcut.activated.connect(backward)
+
     def show_find_replace(self, find, replace, global_replace):
         """
         Display the find/replace dialog. If the dialog's OK button was clicked
@@ -1104,7 +1174,7 @@ class Window(QMainWindow):
         if global_replace:
             counter = 0
             found = self.current_tab.findFirst(
-                target_text, True, True, False, False, line=0, index=0
+                target_text, False, True, False, False, line=0, index=0
             )
             if found:
                 counter += 1
@@ -1115,7 +1185,7 @@ class Window(QMainWindow):
             return counter
         else:
             found = self.current_tab.findFirst(
-                target_text, True, True, False, True
+                target_text, False, True, False, True
             )
             if found:
                 self.current_tab.replace(replace)
@@ -1123,14 +1193,27 @@ class Window(QMainWindow):
             else:
                 return 0
 
-    def highlight_text(self, target_text):
+    def highlight_text(self, target_text, forward=True):
         """
         Highlight the first match from the current position of the cursor in
         the current tab for the target_text. Returns True if there's a match.
         """
         if self.current_tab:
+            line = -1
+            index = -1
+            if not forward:
+                # Workaround for `findFirst(forward=False)` not advancing
+                # backwards: pass explicit line and index values.
+                line, index, _el, _ei = self.current_tab.getSelection()
             return self.current_tab.findFirst(
-                target_text, True, True, False, True
+                target_text,  # Text to find,
+                False,  # Treat as regular expression
+                True,  # Case sensitive search
+                False,  # Whole word matches only
+                True,  # Wrap search
+                forward=forward,  # Forward search
+                line=line,  # -1 starts at current position
+                index=index,  # -1 starts at current position
             )
         else:
             return False

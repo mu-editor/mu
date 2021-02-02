@@ -868,7 +868,7 @@ def test_run_with_user_requested_quit():
     ), mock.patch("mu.debugger.runner.sys", mock_sys), mock.patch(
         "mu.debugger.runner.socket", mock_socket
     ):
-        mu.debugger.runner.run("localhost", 1908, "foo.py", "bar", "baz")
+        mu.debugger.runner.run("localhost", 1908, "foo.py", ["bar", "baz"])
     mock_debugger.reset.assert_called_once_with()
     mock_debugger._runscript.assert_called_once_with("foo.py")
     mock_debugger.client.shutdown.assert_called_once_with(mock_socket.SHUT_WR)
@@ -896,7 +896,7 @@ def test_run_with_restart_exception():
     ), mock.patch("mu.debugger.runner.sys", mock_sys), mock.patch(
         "mu.debugger.runner.socket", mock_socket
     ):
-        mu.debugger.runner.run("localhost", 1908, "foo.py", "bar", "baz")
+        mu.debugger.runner.run("localhost", 1908, "foo.py", ["bar", "baz"])
     assert mock_debugger.output.call_count == 2
     assert mock_debugger.output.call_args_list[0][0][0] == "restart"
     assert mock_debugger.output.call_args_list[1][0][0] == "finished"
@@ -918,7 +918,7 @@ def test_run_with_expected_exception():
     ), mock.patch("mu.debugger.runner.sys", mock_sys), mock.patch(
         "mu.debugger.runner.socket", mock_socket
     ):
-        mu.debugger.runner.run("localhost", 1908, "foo.py", "bar", "baz")
+        mu.debugger.runner.run("localhost", 1908, "foo.py", ["bar", "baz"])
     assert mock_debugger.client is None
 
 
@@ -940,6 +940,6 @@ def test_run_with_unexpected_exception():
     ), mock.patch("mu.debugger.runner.sys", mock_sys), mock.patch(
         "mu.debugger.runner.socket", mock_socket
     ):
-        mu.debugger.runner.run("localhost", 1908, "foo.py", "bar", "baz")
+        mu.debugger.runner.run("localhost", 1908, "foo.py", ["bar", "baz"])
     assert mock_debugger.output.call_count == 1
     assert mock_debugger.output.call_args_list[0][0][0] == "postmortem"

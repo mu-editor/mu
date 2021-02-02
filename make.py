@@ -112,6 +112,7 @@ def test(*pytest_args):
     with a failure value. This forces things to stop if tests fail.
     """
     print("\ntest")
+    os.environ["LANG"] = "en_GB.utf8"
     return subprocess.run([PYTEST] + list(pytest_args)).returncode
 
 
@@ -122,6 +123,7 @@ def coverage():
     Call py.test with coverage turned on
     """
     print("\ncoverage")
+    os.environ["LANG"] = "en_GB.utf8"
     return subprocess.run(
         [
             PYTEST,
@@ -152,7 +154,6 @@ def tidy():
     print("\nTidy")
     for target in [
         "setup.py",
-        "win_installer.py",
         "make.py",
         "mu",
         "package",
@@ -171,7 +172,6 @@ def black():
     print("\nblack")
     for target in [
         "setup.py",
-        "win_installer.py",
         "make.py",
         "mu",
         "package",
@@ -207,7 +207,6 @@ def clean():
     _rmtree("coverage")
     _rmtree("docs/build")
     _rmtree("lib")
-    _rmtree("pynsist_pkgs")
     _rmfiles(".", "*.pyc")
     return 0
 
@@ -265,7 +264,8 @@ def run():
 @export
 def dist():
     """Generate a source distribution and a binary wheel"""
-    check()
+    if check() != 0:
+        raise RuntimeError("Check failed")
     print("Checks pass; good to package")
     return subprocess.run(
         [sys.executable, "setup.py", "sdist", "bdist_wheel"]
@@ -290,24 +290,55 @@ def publish_live():
     return subprocess.run(["twine", "upload", "--sign", "dist/*"]).returncode
 
 
+_PUP_PBS_URLs = {
+    32: "https://github.com/indygreg/python-build-standalone/releases/download/20200822/cpython-3.7.9-i686-pc-windows-msvc-shared-pgo-20200823T0159.tar.zst",  # noqa: E501
+    64: None,
+}
+
+
+def _build_windows_msi(bitness=64):
+    """Build Windows MSI installer"""
+    try:
+        pup_pbs_url = _PUP_PBS_URLs[bitness]
+    except KeyError:
+        raise ValueError("bitness") from None
+    if check() != 0:
+        raise RuntimeError("Check failed")
+    print("Building {}-bit Windows installer".format(bitness))
+    if pup_pbs_url:
+        os.environ["PUP_PBS_URL"] = pup_pbs_url
+    cmd_sequence = (
+        [sys.executable, "-m", "venv", "venv-pup"],
+        ["./venv-pup/Scripts/pip.exe", "install", "pup"],
+        [
+            "./venv-pup/Scripts/pup.exe",
+            "package",
+            "--launch-module=mu",
+            "--nice-name=Mu Editor",
+            "--icon-path=./package/icons/win_icon.ico",
+            "--license-path=./LICENSE",
+            ".",
+        ],
+        ["cmd.exe", "/c", "dir", r".\dist"],
+    )
+    try:
+        for cmd in cmd_sequence:
+            print("Running:", " ".join(cmd))
+            subprocess.check_call(cmd)
+    finally:
+        shutil.rmtree("./venv-pup", ignore_errors=True)
+
+
 @export
 def win32():
     """Build 32-bit Windows installer"""
-    check()
-    print("Building 32-bit Windows installer")
-    return subprocess.run(
-        [sys.executable, "win_installer.py", "32", "setup.py"]
-    ).returncode
+    _build_windows_msi(bitness=32)
 
 
 @export
 def win64():
     """Build 64-bit Windows installer"""
-    check()
-    print("Building 64-bit Windows installer")
-    return subprocess.run(
-        [sys.executable, "win_installer.py", "64", "setup.py"]
-    ).returncode
+    _build_windows_msi(bitness=64)
 
 
 @export

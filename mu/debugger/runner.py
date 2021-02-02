@@ -493,11 +493,12 @@ class Debugger(bdb.Bdb):
         self.run(e)
 
 
-def run(hostname, port, filename, *args):
+def run(hostname, port, filename, args):
     """
     Run a Python script identified by "filename" with the specified arguments
     in a debugger session that's listening at hostname/port.
     """
+    logger.debug("runner.run %s:%s %s %r", hostname, port, filename, args)
     # Create the correct context for the target Python script.
     sys.argv[0] = filename
     sys.argv[1:] = args

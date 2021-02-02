@@ -22,35 +22,28 @@ import sys
 import codecs
 import io
 import re
-import json
 import logging
 import tempfile
-import platform
 import webbrowser
 import random
 import locale
 import shutil
+
 import appdirs
-import site
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QLocale, QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5 import QtCore
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
-from mu.resources import path
-from mu.debugger.utils import is_breakpoint_line
-from mu import __version__
 
+from . import __version__
+from . import i18n
+from .resources import path
+from .debugger.utils import is_breakpoint_line
+from .config import DATA_DIR, VENV_DIR, MAX_LINE_LENGTH
+from . import settings
+from .virtual_environment import venv
 
-# The user's home directory.
-HOME_DIRECTORY = os.path.expanduser("~")
-# Name of the directory within the home folder to use by default
-WORKSPACE_NAME = "mu_code"
-# The default directory for application data (i.e., configuration).
-DATA_DIR = appdirs.user_data_dir(appname="mu", appauthor="python")
-# The directory containing user installed third party modules.
-MODULE_DIR = os.path.join(DATA_DIR, "site-packages")
-sys.path.append(MODULE_DIR)
 # The default directory for application logs.
 LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.
@@ -58,9 +51,13 @@ LOG_FILE = os.path.join(LOG_DIR, "mu.log")
 # Regex to match pycodestyle (PEP8) output.
 STYLE_REGEX = re.compile(r".*:(\d+):(\d+):\s+(.*)")
 # Regex to match flake8 output.
-FLAKE_REGEX = re.compile(r".*:(\d+):\s+(.*)")
+FLAKE_REGEX = re.compile(r".*:(\d+):(\d+)\s+(.*)")
+# Regex to match undefined name errors for given builtins
+BUILTINS_REGEX = r"^undefined name '({})'"
 # Regex to match false positive flake errors if microbit.* is expanded.
-EXPAND_FALSE_POSITIVE = re.compile(r"^'microbit\.(\w+)' imported but unused$")
+EXPAND_FALSE_POSITIVE = re.compile(
+    r"^.*'microbit\.(\w+)' imported but unused$"
+)
 # The text to which "from microbit import \*" should be expanded.
 EXPANDED_IMPORT = (
     "from microbit import pin15, pin2, pin0, pin1, "
@@ -70,8 +67,6 @@ EXPANDED_IMPORT = (
     "accelerometer, display, uart, spi, panic, pin13, "
     "pin12, pin11, pin10, compass"
 )
-# Port number for debugger.
-DEBUGGER_PORT = 31415
 # Default images to copy over for use in PyGameZero demo apps.
 DEFAULT_IMAGES = [
     "alien.png",
@@ -186,36 +181,6 @@ ENCODING_COOKIE_RE = re.compile(
 )
 
 logger = logging.getLogger(__name__)
-
-
-def installed_packages():
-    """
-    List all the third party modules installed by the user.
-    """
-    result = []
-    pkg_dirs = [
-        os.path.join(MODULE_DIR, d)
-        for d in os.listdir(MODULE_DIR)
-        if d.endswith("dist-info") or d.endswith("egg-info")
-    ]
-    logger.info("Packages found: {}".format(pkg_dirs))
-    for pkg in pkg_dirs:
-        if pkg.endswith("dist-info"):
-            # Modern.
-            metadata_file = os.path.join(pkg, "METADATA")
-        else:
-            # Legacy (eggs).
-            metadata_file = os.path.join(pkg, "PKG-INFO")
-        try:
-            with open(metadata_file, "rb") as f:
-                lines = f.readlines()
-                name = lines[1].rsplit(b":")[-1].strip()
-                result.append(name.decode("utf-8"))
-        except Exception as ex:
-            # Just log any errors.
-            logger.error("Unable to get metadata for package: " + pkg)
-            logger.error(ex)
-    return sorted(result)
 
 
 def write_and_flush(fileobj, content):
@@ -369,65 +334,6 @@ def read_and_decode(filepath):
     return text, newline
 
 
-def get_admin_file_path(filename):
-    """
-    Given an admin related filename, this function will attempt to get the
-    most relevant version of this file (the default location is the application
-    data directory, although a file of the same name in the same directory as
-    the application itself takes preference). If this file isn't found, an
-    empty one is created in the default location.
-    """
-    # App location depends on being interpreted by normal Python or bundled
-    app_path = sys.executable if getattr(sys, "frozen", False) else sys.argv[0]
-    app_dir = os.path.dirname(os.path.abspath(app_path))
-    # The os x bundled application is placed 3 levels deep in the .app folder
-    if platform.system() == "Darwin" and getattr(sys, "frozen", False):
-        app_dir = os.path.dirname(os.path.dirname(os.path.dirname(app_dir)))
-    file_path = os.path.join(app_dir, filename)
-    if not os.path.exists(file_path):
-        file_path = os.path.join(DATA_DIR, filename)
-        if not os.path.exists(file_path):
-            try:
-                with open(file_path, "w") as f:
-                    logger.debug("Creating admin file: {}".format(file_path))
-                    json.dump({}, f)
-            except FileNotFoundError:
-                logger.error(
-                    "Unable to create admin file: {}".format(file_path)
-                )
-    return file_path
-
-
-def get_session_path():
-    """
-    The session file stores details about the state of Mu from the user's
-    perspective (tabs open, current mode etc...).
-
-    The session file default location is the application data directory.
-    However, a session file in the same directory as the application itself
-    takes preference.
-
-    If no session file is detected a blank one in the default location is
-    automatically created.
-    """
-    return get_admin_file_path("session.json")
-
-
-def get_settings_path():
-    """
-    The settings file stores details about the configuration of Mu from an
-    administrators' perspective (default workspace etc...).
-
-    The settings file default location is the application data directory.
-    However, a settings file in the same directory as the application itself
-    takes preference.
-
-    If no settings file is detected a blank one in the default location is
-    automatically created.
-    """
-    return get_admin_file_path("settings.json")
-
-
 def extract_envars(raw):
     """
     Returns a list of environment variables given a string containing
@@ -439,6 +345,11 @@ def extract_envars(raw):
         if len(definition) == 2:
             result.append([definition[0].strip(), definition[1].strip()])
     return result
+
+
+def save_session(session):
+    settings.session.update(session)
+    settings.session.save()
 
 
 def check_flake(filename, code, builtins=None):
@@ -459,9 +370,7 @@ def check_flake(filename, code, builtins=None):
     reporter = MuFlakeCodeReporter()
     check(code, filename, reporter)
     if builtins:
-        builtins_regex = re.compile(
-            r"^undefined name '(" + "|".join(builtins) + r")'"
-        )
+        builtins_regex = re.compile(BUILTINS_REGEX.format("|".join(builtins)))
     feedback = {}
     for log in reporter.log:
         if import_all:
@@ -507,7 +416,11 @@ def check_pycodestyle(code, config_file=False):
         "W391",
         "W503",
     )
-    style = StyleGuide(parse_argv=False, config_file=config_file)
+    style = StyleGuide(
+        parse_argv=False,
+        config_file=config_file,
+        max_line_length=MAX_LINE_LENGTH,
+    )
 
     # StyleGuide() returns pycodestyle module's own ignore list. That list may
     # be a default list or a custom list provided by the user
@@ -602,11 +515,11 @@ class MuFlakeCodeReporter:
         """
         matcher = FLAKE_REGEX.match(str(message))
         if matcher:
-            line_no, msg = matcher.groups()
+            line_no, col, msg = matcher.groups()
             self.log.append(
                 {
                     "line_no": int(line_no) - 1,  # Zero based counting in Mu.
-                    "column": 0,
+                    "column": int(col),
                     "message": msg,
                 }
             )
@@ -847,6 +760,7 @@ class Editor(QObject):
         self.fs = None
         self.theme = "day"
         self.mode = "python"
+        self.python_extensions = [".py", ".pyw"]
         self.modes = {}
         self.envars = []  # See restore session and show_admin
         self.minify = False
@@ -861,11 +775,6 @@ class Editor(QObject):
         if not os.path.exists(DATA_DIR):
             logger.debug("Creating directory: {}".format(DATA_DIR))
             os.makedirs(DATA_DIR)
-        if not os.path.exists(MODULE_DIR):
-            logger.debug("Creating directory: {}".format(MODULE_DIR))
-            os.makedirs(MODULE_DIR)
-        logger.info("Settings path: {}".format(get_settings_path()))
-        logger.info("Session path: {}".format(get_session_path()))
         logger.info("Log directory: {}".format(LOG_DIR))
         logger.info("Data directory: {}".format(DATA_DIR))
 
@@ -953,76 +862,72 @@ class Editor(QObject):
         the user, they are also "restored" at the same time (duplicates will be
         ignored).
         """
-        settings_path = get_session_path()
         self.change_mode(self.mode)
-        with open(settings_path) as f:
-            try:
-                old_session = json.load(f)
-            except ValueError:
-                old_session = None
-                logger.error(
-                    "Settings file {} could not be parsed.".format(
-                        settings_path
-                    )
-                )
+        old_session = settings.session
+        logger.debug(old_session)
+        if "theme" in old_session:
+            self.theme = old_session["theme"]
+        self._view.set_theme(self.theme)
+        if "mode" in old_session:
+            old_mode = old_session["mode"]
+            if old_mode in self.modes:
+                self.mode = old_session["mode"]
             else:
-                logger.info("Restoring session from: {}".format(settings_path))
-                logger.debug(old_session)
-                if "theme" in old_session:
-                    self.theme = old_session["theme"]
-                self._view.set_theme(self.theme)
-                if "mode" in old_session:
-                    old_mode = old_session["mode"]
-                    if old_mode in self.modes:
-                        self.mode = old_session["mode"]
-                    else:
-                        # Unknown mode (perhaps an old version?)
-                        self.select_mode(None)
-                else:
-                    # So ask for the desired mode.
-                    self.select_mode(None)
-                if "paths" in old_session:
-                    old_paths = self._abspath(old_session["paths"])
-                    launch_paths = self._abspath(paths) if paths else set()
-                    for old_path in old_paths:
-                        # if the os passed in a file, defer loading it now
-                        if old_path in launch_paths:
-                            continue
-                        self.direct_load(old_path)
-                    logger.info("Loaded files.")
-                if "envars" in old_session:
-                    self.envars = old_session["envars"]
-                    logger.info(
-                        "User defined environment variables: "
-                        "{}".format(self.envars)
+                # Unknown mode (perhaps an old version?)
+                self.select_mode(None)
+        else:
+            # So ask for the desired mode.
+            self.select_mode(None)
+        if "paths" in old_session:
+            old_paths = self._abspath(old_session["paths"])
+            launch_paths = self._abspath(paths) if paths else set()
+            for old_path in old_paths:
+                # if the os passed in a file, defer loading it now
+                if old_path in launch_paths:
+                    continue
+                self.direct_load(old_path)
+            logger.info("Loaded files.")
+        if "envars" in old_session:
+            self.envars = old_session["envars"]
+            logger.info(
+                "User defined environment variables: " "{}".format(self.envars)
+            )
+        if "minify" in old_session:
+            self.minify = old_session["minify"]
+            logger.info(
+                "Minify scripts on micro:bit? " "{}".format(self.minify)
+            )
+        if "microbit_runtime" in old_session:
+            self.microbit_runtime = old_session["microbit_runtime"]
+            if self.microbit_runtime:
+                logger.info(
+                    "Custom micro:bit runtime path: "
+                    "{}".format(self.microbit_runtime)
+                )
+                if not os.path.isfile(self.microbit_runtime):
+                    self.microbit_runtime = ""
+                    logger.warning(
+                        "The specified micro:bit runtime "
+                        "does not exist. Using default "
+                        "runtime instead."
                     )
-                if "minify" in old_session:
-                    self.minify = old_session["minify"]
-                    logger.info(
-                        "Minify scripts on micro:bit? "
-                        "{}".format(self.minify)
-                    )
-                if "microbit_runtime" in old_session:
-                    self.microbit_runtime = old_session["microbit_runtime"]
-                    if self.microbit_runtime:
-                        logger.info(
-                            "Custom micro:bit runtime path: "
-                            "{}".format(self.microbit_runtime)
-                        )
-                        if not os.path.isfile(self.microbit_runtime):
-                            self.microbit_runtime = ""
-                            logger.warning(
-                                "The specified micro:bit runtime "
-                                "does not exist. Using default "
-                                "runtime instead."
-                            )
-                if "zoom_level" in old_session:
-                    self._view.zoom_position = old_session["zoom_level"]
-                    self._view.set_zoom()
-                old_window = old_session.get("window", {})
-                self._view.size_window(**old_window)
-        if old_session is None:
-            self._view.set_theme(self.theme)
+        if "zoom_level" in old_session:
+            self._view.zoom_position = old_session["zoom_level"]
+            self._view.set_zoom()
+
+        if "venv_path" in old_session:
+            venv.relocate(old_session["venv_path"])
+            venv.ensure()
+
+        old_window = old_session.get("window", {})
+        self._view.size_window(**old_window)
+
+        #
+        # Doesn't seem to do anything useful
+        #
+        # ~ if old_session is None:
+        # ~ self._view.set_theme(self.theme)
+
         # handle os passed file last,
         # so it will not be focused over by another tab
         if paths and len(paths) > 0:
@@ -1105,7 +1010,7 @@ class Editor(QObject):
                 return
         name, text, newline, file_mode = None, None, None, None
         try:
-            if path.lower().endswith(".py"):
+            if self.has_python_extension(path):
                 # Open the file, read the textual content and set the name as
                 # the path to the file.
                 try:
@@ -1176,7 +1081,7 @@ class Editor(QObject):
 
     def get_dialog_directory(self, default=None):
         """
-        Return the directory folder in which a load/save dialog box should
+        Return the directory folder which a load/save dialog box should
         open into. In order of precedence this function will return:
 
         0) If not None, the value of default.
@@ -1190,7 +1095,19 @@ class Editor(QObject):
             folder = self.current_path
         else:
             current_file_path = ""
-            workspace_path = self.modes[self.mode].workspace_dir()
+            try:
+                workspace_path = self.modes[self.mode].workspace_dir()
+            except Exception as e:
+                # Avoid crashing if workspace_dir raises, use default path
+                # instead
+                workspace_path = self.modes["python"].workspace_dir()
+                logger.error(
+                    (
+                        "Could not open {} mode workspace directory"
+                        'due to exception "{}". Using:'
+                        "\n\n{}\n\n...to store your code instead"
+                    ).format(self.mode, e, workspace_path)
+                )
             tab = self._view.current_tab
             if tab and tab.path:
                 current_file_path = os.path.dirname(os.path.abspath(tab.path))
@@ -1204,11 +1121,11 @@ class Editor(QObject):
         extracts a Python script from a hex file.
         """
         # Get all supported extensions from the different modes
-        extensions = ["py"]
+        extensions = [ext.strip("*.") for ext in self.python_extensions]
         for mode_name, mode in self.modes.items():
             if mode.file_extensions:
                 extensions += mode.file_extensions
-        extensions = set([e.lower() for e in extensions])
+        extensions = [e.lower() for e in extensions]
         extensions = "*.{} *.{}".format(
             " *.".join(extensions), " *.".join(extensions).upper()
         )
@@ -1303,7 +1220,10 @@ class Editor(QObject):
         return False.
         """
         logger.info('Checking path "{}" for shadow module.'.format(path))
-        filename = os.path.basename(path).replace(".py", "")
+        pyextensions = [".pyw", ".PYW", ".py", ".PY"]
+        filename = os.path.basename(path)
+        for ext in pyextensions:
+            filename = filename.replace(ext, "")
         return filename in self.modes[self.mode].module_names
 
     def save(self, *args, default=None):
@@ -1376,7 +1296,7 @@ class Editor(QObject):
         if tab is None:
             # There is no active text editor so abort.
             return
-        if tab.path and not tab.path.endswith(".py"):
+        if tab.path and not self.has_python_extension(tab.path):
             # Only works on Python files, so abort.
             return
         tab.has_annotations = not tab.has_annotations
@@ -1416,10 +1336,9 @@ class Editor(QObject):
         """
         Display browser based help about Mu.
         """
-        language_code = QLocale.system().name()[:2]
         major_version = ".".join(__version__.split(".")[:2])
         url = "https://codewith.mu/{}/help/{}".format(
-            language_code, major_version
+            i18n.language_code[:2], major_version
         )
         logger.info("Showing help at %r.", url)
         webbrowser.open_new(url)
@@ -1455,6 +1374,8 @@ class Editor(QObject):
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
             "zoom_level": self._view.zoom_position,
+            "venv_name": venv.name,
+            "venv_python": venv.interpreter,
             "window": {
                 "x": self._view.x(),
                 "y": self._view.y(),
@@ -1462,23 +1383,7 @@ class Editor(QObject):
                 "h": self._view.height(),
             },
         }
-        session_path = get_session_path()
-        with open(session_path, "w") as out:
-            logger.debug("Session: {}".format(session))
-            logger.debug("Saving session to: {}".format(session_path))
-            json.dump(session, out, indent=2)
-        # Clean up temporary mu.pth file if needed (Windows only).
-        if sys.platform == "win32" and "pythonw.exe" in sys.executable:
-            if site.ENABLE_USER_SITE:
-                site_path = site.USER_SITE
-                path_file = os.path.join(site_path, "mu.pth")
-                if os.path.exists(path_file):
-                    try:
-                        os.remove(path_file)
-                        logger.info("{} removed.".format(path_file))
-                    except Exception as ex:
-                        logger.error("Unable to delete {}".format(path_file))
-                        logger.error(ex)
+        save_session(session)
         logger.info("Quitting.\n\n")
         sys.exit(0)
 
@@ -1497,7 +1402,8 @@ class Editor(QObject):
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
         }
-        packages = installed_packages()
+        baseline_packages, user_packages = venv.installed_packages()
+        packages = user_packages
         with open(LOG_FILE, "r", encoding="utf8") as logfile:
             new_settings = self._view.show_admin(
                 logfile.read(),
@@ -1526,7 +1432,7 @@ class Editor(QObject):
                 for p in new_settings["packages"].lower().split("\n")
                 if p.strip()
             ]
-            old_packages = [p.lower() for p in packages]
+            old_packages = [p.lower() for p in user_packages]
             self.sync_package_state(old_packages, new_packages)
         else:
             logger.info("No admin settings changed.")
@@ -1548,8 +1454,8 @@ class Editor(QObject):
         if to_remove or to_add:
             logger.info("To add: {}".format(to_add))
             logger.info("To remove: {}".format(to_remove))
-            logger.info("Site packages: {}".format(MODULE_DIR))
-            self._view.sync_packages(to_remove, to_add, MODULE_DIR)
+            logger.info("Virtualenv: {}".format(VENV_DIR))
+            self._view.sync_packages(to_remove, to_add)
 
     def select_mode(self, event=None):
         """
@@ -1608,9 +1514,19 @@ class Editor(QObject):
         button_bar.connect("quit", self.quit, "Ctrl+Q")
         self._view.status_bar.set_mode(self.modes[mode].name)
         # Update references to default file locations.
-        logger.info(
-            "Workspace directory: {}".format(self.modes[mode].workspace_dir())
-        )
+        try:
+            workspace_dir = self.modes[mode].workspace_dir()
+            logger.info("Workspace directory: {}".format(workspace_dir))
+        except Exception as e:
+            # Avoid crashing if workspace_dir raises, use default path instead
+            workspace_dir = self.modes["python"].workspace_dir()
+            logger.error(
+                (
+                    "Could not open {} mode workspace directory, "
+                    'due to exception "{}".'
+                    "Using:\n\n{}\n\n...to store your code instead"
+                ).format(mode, repr(e), workspace_dir)
+            )
         # Reset remembered current path for load/save dialogs.
         self.current_path = ""
         # Ensure auto-save timeouts are set.
@@ -1662,7 +1578,6 @@ class Editor(QObject):
             change_confirmation = self._view.show_confirmation(
                 heading, msg_body, icon="Question"
             )
-            print(change_confirmation)
             if change_confirmation == QMessageBox.Ok:
                 self.change_mode(new_mode)
 
@@ -1748,7 +1663,7 @@ class Editor(QObject):
                     "Attempting to rename {} to {}".format(tab.path, new_path)
                 )
                 # The user specified a path to a file.
-                if not os.path.basename(new_path).endswith(".py"):
+                if not self.has_python_extension(os.path.basename(new_path)):
                     # No extension given, default to .py
                     new_path += ".py"
                 # Check for duplicate path with currently open tab.
@@ -1818,6 +1733,31 @@ class Editor(QObject):
                 )
                 self._view.show_message(message, information)
 
+    def find_again(self, forward=True):
+        """
+        Handle find again (F3 and Shift+F3) functionality.
+        """
+        if self.find:
+            matched = self._view.highlight_text(self.find, forward)
+            if matched:
+                msg = _('Highlighting matches for "{}".')
+            else:
+                msg = _('Could not find "{}".')
+            self.show_status_message(msg.format(self.find))
+        else:
+            message = _("You must provide something to find.")
+            information = _(
+                "Please try again, this time with something "
+                "in the find box."
+            )
+            self._view.show_message(message, information)
+
+    def find_again_backward(self, forward=False):
+        """
+        Handle find again backward (Shift+F3) functionality.
+        """
+        self.find_again(forward=False)
+
     def toggle_comments(self):
         """
         Ensure all highlighted lines are toggled between comments/uncommented.
@@ -1832,7 +1772,7 @@ class Editor(QObject):
         if not tab or sys.version_info[:2] < (3, 6):
             return
         # Only works on Python, so abort.
-        if tab.path and not tab.path.endswith(".py"):
+        if tab.path and not self.has_python_extension(tab.path):
             return
         from black import format_str, FileMode, PY36_VERSIONS
 
@@ -1840,7 +1780,9 @@ class Editor(QObject):
             source_code = tab.text()
             logger.info("Tidy code.")
             logger.info(source_code)
-            filemode = FileMode(target_versions=PY36_VERSIONS, line_length=88)
+            filemode = FileMode(
+                target_versions=PY36_VERSIONS, line_length=MAX_LINE_LENGTH
+            )
             tidy_code = format_str(source_code, mode=filemode)
             # The following bypasses tab.setText which resets the undo history.
             # Doing it this way means the user can use CTRL-Z to undo the
@@ -1860,3 +1802,10 @@ class Editor(QObject):
                 "these problems."
             )
             self._view.show_message(message, information)
+
+    def has_python_extension(self, filename):
+        """
+        Check whether the given filename matches recognized Python extensions.
+        """
+        file_ends = filename.lower().endswith
+        return any(file_ends(ext) for ext in self.python_extensions)

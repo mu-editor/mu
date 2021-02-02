@@ -1,0 +1,85 @@
+name: Run tests
+
+on:
+  push:
+    branches: '*'
+  pull_request:
+    branches: '*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-16.04, ubuntu-latest, macos-10.15, macos-11.0, windows-2016, windows-latest]
+        python-version: ['3.6', '3.7']
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    name: Test Py ${{ matrix.python-version }} - ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python info
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -c "import platform, struct; print(platform.machine(), struct.calcsize('P') * 8)"
+          python -c "import sys; print(sys.executable)"
+          python -m pip --version
+          pip --version
+          pip config list
+          pip freeze
+      - name: Prepare Ubuntu
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxkbcommon-x11-0 xvfb
+      - name: Install Mu dependencies
+        run: |
+          pip install .[dev]
+          pip list
+      - name: Run tests
+        if: runner.os == 'Linux'
+        run: xvfb-run make check
+      - name: Run tests
+        if: runner.os != 'Linux'
+        run: python make.py check
+
+  build-arm:
+    runs-on: ubuntu-latest
+    name: Test Py 3.7 - arm-debian-buster
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: 'linux/arm64,linux/arm/v7,linux/arm/v6'
+      - name: Check Debian image info
+        uses: docker://multiarch/debian-debootstrap:armhf-buster
+        with:
+          args: /bin/bash -c "uname -a && cat /etc/os-release"
+      - name: Install dependencies and run tests
+        uses: docker://multiarch/debian-debootstrap:armhf-buster
+        with:
+          args: >
+            bash -c "
+              apt-get update &&
+              apt-get install -y python3 python3-pip python3-virtualenv &&
+              apt-get install -y python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg python3-pyqt5.qtchart &&
+              apt-get install -y libxmlsec1-dev libxml2 libxml2-dev libxkbcommon-x11-0 libatlas-base-dev xvfb &&
+              python3 -m virtualenv venv --python=python3 --system-site-packages &&
+              source venv/bin/activate &&
+              python -c \"import platform, struct, sys; print(platform.machine(), struct.calcsize('P') * 8, sys.version)\" &&
+              python -m pip --version &&
+              python -m pip config set global.extra-index-url https://www.piwheels.org/simple &&
+              python -m pip config list &&
+              python -m pip list &&
+              python -m pip install .[dev] &&
+              python -m pip list &&
+              QT_QPA_PLATFORM=\"offscreen\" &&
+              xvfb-run python make.py check &&
+              echo 'Finished successfully! :)'
+            "
