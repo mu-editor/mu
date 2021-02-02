@@ -10,7 +10,14 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 mode_packages = [
-    ("pgzero", ""),
+    # A fork of pgzero that works with any version of pygame >= 1.9.6
+    (
+        "git+https://github.com/ntoll/pgzero.git"
+        "@5bcfff44fb50a30f9c0194c76099786d9e31d906",
+        "",
+    ),
+    # Pin to a known version of pygame
+    ("pygame", "==2.0.1"),
     ("Flask", "==1.1.2"),
     ("pyserial", "==3.4"),
     ("qtconsole", "==4.7.4"),
