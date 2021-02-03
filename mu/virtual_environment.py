@@ -518,9 +518,9 @@ class VirtualEnvironment(object):
         ]
         user_packages = []
         for package, version in self.pip.installed():
-            logger.info(package)
             if package not in baseline_packages:
                 user_packages.append(package)
+        logger.info(user_packages)
 
         return baseline_packages, user_packages
 
