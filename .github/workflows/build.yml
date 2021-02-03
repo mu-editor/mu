@@ -34,12 +34,6 @@ jobs:
           pip install .[tests]
           pip list
       - run: mkdir upload
-      - name: Build Windows 32 bit
-        if: runner.os == 'Windows'
-        run: |
-          python make.py win32
-          dir dist/*.msi | rename-item -newname {  $_.name  -replace ".msi"," (32 bit).msi"  }
-          mv dist/*.msi upload/
       - name: Build Windows 64 bit
         if: runner.os == 'Windows'
         run: |
