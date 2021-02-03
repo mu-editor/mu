@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-16.04, ubuntu-latest, macos-10.15, macos-11.0, windows-2016, windows-latest]
-        python-version: ['3.6', '3.7']
+        python-version: ['3.6', '3.7', '3.8']
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: Test Py ${{ matrix.python-version }} - ${{ matrix.os }}
@@ -69,7 +69,8 @@ jobs:
               apt-get update &&
               apt-get install -y python3 python3-pip python3-virtualenv &&
               apt-get install -y python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg python3-pyqt5.qtchart &&
-              apt-get install -y libxmlsec1-dev libxml2 libxml2-dev libxkbcommon-x11-0 libatlas-base-dev xvfb &&
+              apt-get install -y libxmlsec1-dev libxml2 libxml2-dev libxkbcommon-x11-0 libatlas-base-dev &&
+              apt-get install -y git xvfb &&
               python3 -m virtualenv venv --python=python3 --system-site-packages &&
               source venv/bin/activate &&
               python -c \"import platform, struct, sys; print(platform.machine(), struct.calcsize('P') * 8, sys.version)\" &&
