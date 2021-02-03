@@ -172,7 +172,7 @@ def black():
     print("\nblack")
     # Black is no available in Python 3.5, in that case let the tests continue
     try:
-        _ = subprocess.run([TIDY, "--version"])
+        subprocess.run([TIDY, "--version"])
     except FileNotFoundError as e:
         python_version = sys.version_info
         if python_version.major == 3 and python_version.minor == 5:
