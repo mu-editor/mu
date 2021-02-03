@@ -10,19 +10,16 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 mode_packages = [
-    # A fork of pgzero that works with any version of pygame >= 1.9.6
     (
-        "git+https://github.com/ntoll/pgzero.git"
-        "@5bcfff44fb50a30f9c0194c76099786d9e31d906",
-        "",
+        "pgzero",
+        "git+https://github.com/ntoll/pgzero.git@"
+        "5bcfff44fb50a30f9c0194c76099786d9e31d906",
     ),
-    # Pin to a known version of pygame
-    ("pygame", "==2.0.1"),
-    ("Flask", "==1.1.2"),
-    ("pyserial", "==3.4"),
-    ("qtconsole", "==4.7.4"),
-    ("nudatus", ">=0.0.3"),
-    ("black", '>=19.10b0;python_version>"3.5"'),
+    ("Flask", "flask==1.1.2"),
+    ("pyserial", "pyserial==3.4"),
+    ("qtconsole", "qtconsole==4.7.4"),
+    ("nudatus", "nudatus>=0.0.3"),
+    ("black", 'black>=19.10b0;python_version>"3.5"'),
 ]
 WHEELS_DIRPATH = os.path.dirname(__file__)
 
@@ -33,9 +30,9 @@ def download(dirpath=WHEELS_DIRPATH):
     #
     logger.debug("WHEELS_DIRPATH: %s", WHEELS_DIRPATH)
     logger.debug("mode_packages: %s", mode_packages)
-    for package in mode_packages:
-        print("download:package", package)
-        subprocess.run(
+    for name, pip_identifier in mode_packages:
+        logger.info("Running pip download for %s / %s", name, pip_identifier)
+        process = subprocess.run(
             [
                 sys.executable,
                 "-m",
@@ -43,16 +40,20 @@ def download(dirpath=WHEELS_DIRPATH):
                 "download",
                 "--destination-directory",
                 dirpath,
-                "%s%s" % package,
+                pip_identifier,
             ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             check=True,
         )
+        logger.debug(process.stdout.decode("utf-8"))
 
     #
     # Convert any sdists to wheels
     #
     for filepath in glob.glob(os.path.join(dirpath, "*")):
         if filepath.endswith(("gz", ".zip")):
+            logger.info("Building wheel for %s", filepath)
             subprocess.run(
                 [
                     sys.executable,
@@ -63,6 +64,9 @@ def download(dirpath=WHEELS_DIRPATH):
                     dirpath,
                     filepath,
                 ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
                 check=True,
             )
             os.remove(filepath)
+            logger.debug(process.stdout.decode("utf-8"))

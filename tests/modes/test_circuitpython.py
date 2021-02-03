@@ -102,7 +102,7 @@ def test_workspace_dir_posix_permission_denied():
         assert mock_check.call_count == 2
         assert mock_check.call_args_list[0][0][0] == "mount"
         assert mock_check.call_args_list[1][0][0] == "/sbin/mount"
-    view.show_message.assert_called_once()
+    assert view.show_message.call_count == 1
 
 
 def test_workspace_dir_posix_exception_raised():

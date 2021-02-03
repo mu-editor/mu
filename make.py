@@ -304,6 +304,8 @@ def _build_windows_msi(bitness=64):
         raise ValueError("bitness") from None
     if check() != 0:
         raise RuntimeError("Check failed")
+    print("Fetching wheels")
+    subprocess.check_call([sys.executable, "-m", "mu.wheels"])
     print("Building {}-bit Windows installer".format(bitness))
     if pup_pbs_url:
         os.environ["PUP_PBS_URL"] = pup_pbs_url
