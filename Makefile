@@ -112,6 +112,8 @@ win64: check
 	python make.py win64
 
 macos: check
+	@echo "\nFetching wheels."
+	python -m mu.wheels
 	@echo "\nPackaging Mu into a macOS native application."
 	python -m venv venv-pup
 	# Don't activate venv-pup because:
