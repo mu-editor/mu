@@ -42,7 +42,7 @@ def venv_name():
     """Use a random venv name each time, at least partly to expose any
     hidden assumptions about the name of the venv directory
     """
-    return uuid.uuid1().hex
+    return uuid.uuid1().hex[:4]
 
 
 @pytest.fixture
