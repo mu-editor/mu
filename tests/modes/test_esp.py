@@ -31,7 +31,8 @@ def test_ESPMode_actions(esp_mode):
     """
     Sanity check for mode actions.
     """
-    actions = esp_mode.actions()
+    with mock.patch("mu.modes.esp.CHARTS", True):
+        actions = esp_mode.actions()
     assert len(actions) == 4
     assert actions[0]["name"] == "run"
     assert actions[0]["handler"] == esp_mode.run
@@ -41,6 +42,21 @@ def test_ESPMode_actions(esp_mode):
     assert actions[2]["handler"] == esp_mode.toggle_repl
     assert actions[3]["name"] == "plotter"
     assert actions[3]["handler"] == esp_mode.toggle_plotter
+
+
+def test_ESPMode_actions_no_charts(esp_mode):
+    """
+    Sanity check for mode actions.
+    """
+    with mock.patch("mu.modes.esp.CHARTS", False):
+        actions = esp_mode.actions()
+    assert len(actions) == 3
+    assert actions[0]["name"] == "run"
+    assert actions[0]["handler"] == esp_mode.run
+    assert actions[1]["name"] == "files"
+    assert actions[1]["handler"] == esp_mode.toggle_files
+    assert actions[2]["name"] == "repl"
+    assert actions[2]["handler"] == esp_mode.toggle_repl
 
 
 def test_api(esp_mode):
@@ -64,7 +80,9 @@ def test_add_fs(fm, qthread, esp_mode):
     esp_mode.add_fs()
     workspace = esp_mode.workspace_dir()
     esp_mode.view.add_filesystem.assert_called_once_with(
-        workspace, esp_mode.file_manager, "ESP board"
+        workspace,
+        esp_mode.file_manager,
+        "{board_name} board".format(board_name=esp_mode.board_name),
     )
     assert esp_mode.fs
 
@@ -82,7 +100,9 @@ def test_add_fs_project_path(fm, qthread, esp_mode):
     esp_mode.add_fs()
     workspace = os.path.dirname(os.path.abspath("foo"))
     esp_mode.view.add_filesystem.assert_called_once_with(
-        workspace, esp_mode.file_manager, "ESP board"
+        workspace,
+        esp_mode.file_manager,
+        "{board_name} board".format(board_name=esp_mode.board_name),
     )
     assert esp_mode.fs
 

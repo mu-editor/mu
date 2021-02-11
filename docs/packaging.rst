@@ -72,17 +72,22 @@ the release looks, behaves and works as expected before pushing to live.
 Raspberry Pi
 ++++++++++++
 
-When asked, Serge Schneider, a maintainer of Raspbian at the Raspberry Pi
-Foundation takes our latest release and updates the Raspbian package
-repositories. It means that all you need to do to install Mu on Raspbian is
-type::
+Raspberry Pi OS (previously called Raspbian) is the official operating system
+for the Raspberry Pi and features Mu as Recommended Software. Raspberry Pi OS
+uses the Mu packages contributed to Debian by
+`Nick Morrott <https://twitter.com/nickmorrott>`_.
 
-    $ sudo apt-get install mu
+To install Mu on Raspberry Pi OS from the command line, type::
+
+    $ sudo apt install mu-editor
+
+Alternatively, Mu can be installed from the Recommended Software menu in the
+Programming section.
 
 .. warning::
 
-    Since Mu for Raspberry Pi is packaged by a third party, our latest releases
-    may not be immediately available.
+    Since Mu for Raspberry Pi OS is packaged by a third party, our latest
+    releases may not be immediately available.
 
 Windows Installer
 +++++++++++++++++
@@ -207,8 +212,18 @@ Fedora based distributions.
 Debian
 ======
 
-Work on packaging for Debian is at an advanced stage and ongoing. You can
-track progress at `this ticket <https://github.com/mu-editor/mu/issues/58>`_.
+Mu (and the MicroPython runtime) were packaged for Debian and Ubuntu by
+`Nick Morrott <https://twitter.com/nickmorrott>`_ and have been available to
+install since the releases of Debian 10 "buster" and Ubuntu 19.04 "Disco Dingo".
+
+To install Mu on Debian/Ubuntu from the command line, type::
+
+    $ sudo apt install mu-editor
+
+.. warning::
+
+    Since Mu for Debian/Ubuntu is packaged by a third party, our latest
+    releases may not be immediately available.
 
 Fedora
 ======

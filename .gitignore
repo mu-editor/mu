@@ -79,4 +79,6 @@ target/
 *.mp4
 
 # Virtual Environment
-.venv/
+.venv*/
+/mu/wheels/*.whl
+/baseline_packages.json

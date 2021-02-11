@@ -6,7 +6,8 @@ import sys
 import os
 from mu.modes.python3 import PythonMode, KernelRunner
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
-from mu.logic import MODULE_DIR
+from mu.virtual_environment import venv
+
 from unittest import mock
 
 
@@ -20,7 +21,9 @@ def test_kernel_runner_start_kernel():
     mock_client = mock.MagicMock()
     mock_kernel_manager.client.return_value = mock_client
     envars = [["name", "value"]]
-    kr = KernelRunner(cwd="/a/path/to/mu_code", envars=envars)
+    kr = KernelRunner(
+        kernel_name=sys.executable, cwd="/a/path/to/mu_code", envars=envars
+    )
     kr.kernel_started = mock.MagicMock()
     mock_os = mock.MagicMock()
     mock_os.environ = {}
@@ -31,48 +34,11 @@ def test_kernel_runner_start_kernel():
     mock_kernel_manager_class = mock.MagicMock()
     mock_kernel_manager_class.return_value = mock_kernel_manager
     with mock.patch("mu.modes.python3.os", mock_os), mock.patch(
-        "mu.modes.python3.QtKernelManager", mock_kernel_manager_class
+        "mu.modes.python3.MuKernelManager", mock_kernel_manager_class
     ), mock.patch("sys.platform", "darwin"):
         kr.start_kernel()
     mock_os.chdir.assert_called_once_with("/a/path/to/mu_code")
     assert mock_os.environ["name"] == "value"
-    expected_paths = sys.path + [MODULE_DIR]
-    assert mock_os.environ["PYTHONPATH"] == os.pathsep.join(expected_paths)
-    assert kr.repl_kernel_manager == mock_kernel_manager
-    mock_kernel_manager_class.assert_called_once_with()
-    mock_kernel_manager.start_kernel.assert_called_once_with()
-    assert kr.repl_kernel_client == mock_client
-    kr.kernel_started.emit.assert_called_once_with(
-        mock_kernel_manager, mock_client
-    )
-
-
-def test_kernel_runner_start_kernel_pythonpath_exists():
-    """
-    Ensure  that MODULE_DIR is added to the existing PYTHONPATH
-    """
-    mock_kernel_manager = mock.MagicMock()
-    mock_client = mock.MagicMock()
-    mock_kernel_manager.client.return_value = mock_client
-    envars = [["name", "value"]]
-    kr = KernelRunner(cwd="/a/path/to/mu_code", envars=envars)
-    kr.kernel_started = mock.MagicMock()
-    mock_os = mock.MagicMock()
-    mock_os.environ = {"PYTHONPATH": "foo"}
-    mock_os.pathsep = os.pathsep
-    mock_os.path.dirname.return_value = (
-        "/Applications/mu-editor.app" "/Contents/Resources/app/mu"
-    )
-    mock_kernel_manager_class = mock.MagicMock()
-    mock_kernel_manager_class.return_value = mock_kernel_manager
-    with mock.patch("mu.modes.python3.os", mock_os), mock.patch(
-        "mu.modes.python3.QtKernelManager", mock_kernel_manager_class
-    ), mock.patch("sys.platform", "darwin"):
-        kr.start_kernel()
-    mock_os.chdir.assert_called_once_with("/a/path/to/mu_code")
-    assert mock_os.environ["name"] == "value"
-    expected_paths = ["foo"] + [MODULE_DIR]
-    assert mock_os.environ["PYTHONPATH"] == os.pathsep.join(expected_paths)
     assert kr.repl_kernel_manager == mock_kernel_manager
     mock_kernel_manager_class.assert_called_once_with()
     mock_kernel_manager.start_kernel.assert_called_once_with()
@@ -88,7 +54,10 @@ def test_kernel_runner_stop_kernel():
     signal once it has stopped the client communication channels and shutdown
     the kernel in the quickest way possible.
     """
-    kr = KernelRunner(cwd="/a/path/to/mu_code", envars=[["name", "value"]])
+    envars = [["name", "value"]]
+    kr = KernelRunner(
+        kernel_name=sys.executable, cwd="/a/path/to/mu_code", envars=envars
+    )
     kr.repl_kernel_client = mock.MagicMock()
     kr.repl_kernel_manager = mock.MagicMock()
     kr.kernel_finished = mock.MagicMock()
@@ -117,7 +86,8 @@ def test_python_mode():
     assert pm.editor == editor
     assert pm.view == view
 
-    actions = pm.actions()
+    with mock.patch("mu.modes.python3.CHARTS", True):
+        actions = pm.actions()
     assert len(actions) == 4
     assert actions[0]["name"] == "run"
     assert actions[0]["handler"] == pm.run_toggle
@@ -127,6 +97,31 @@ def test_python_mode():
     assert actions[2]["handler"] == pm.toggle_repl
     assert actions[3]["name"] == "plotter"
     assert actions[3]["handler"] == pm.toggle_plotter
+
+
+def test_python_mode_no_charts():
+    """
+    If QCharts is not available, ensure the plotter feature is not available.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    assert pm.name == "Python 3"
+    assert pm.description is not None
+    assert pm.icon == "python"
+    assert pm.is_debugger is False
+    assert pm.editor == editor
+    assert pm.view == view
+
+    with mock.patch("mu.modes.python3.CHARTS", False):
+        actions = pm.actions()
+    assert len(actions) == 3
+    assert actions[0]["name"] == "run"
+    assert actions[0]["handler"] == pm.run_toggle
+    assert actions[1]["name"] == "debug"
+    assert actions[1]["handler"] == pm.debug
+    assert actions[2]["name"] == "repl"
+    assert actions[2]["handler"] == pm.toggle_repl
 
 
 def test_python_api():
@@ -140,7 +135,7 @@ def test_python_api():
     assert result == SHARED_APIS + PYTHON3_APIS + PI_APIS
 
 
-def test_python_run_toggle_on(qtapp):
+def test_python_run_toggle_on():
     """
     Check the handler for clicking run starts the new process and updates the
     UI state.
@@ -185,7 +180,7 @@ def test_python_run_toggle_on_cancelled():
     assert slot.setIcon.call_count == 0
 
 
-def test_python_run_toggle_off(qtapp):
+def test_python_run_toggle_off():
     """
     Check the handler for clicking run stops the process and reverts the UI
     state.
@@ -223,10 +218,16 @@ def test_python_run_script():
     mock_runner = mock.MagicMock()
     view.add_python3_runner.return_value = mock_runner
     pm = PythonMode(editor, view)
-    pm.run_script()
+    with mock.patch.object(venv, "interpreter", "interpreter"):
+        pm.run_script()
+
     editor.save_tab_to_file.assert_called_once_with(view.current_tab)
     view.add_python3_runner.assert_called_once_with(
-        "/foo/bar", "/foo", interactive=True, envars=editor.envars
+        interpreter="interpreter",
+        script_name="/foo/bar",
+        working_directory="/foo",
+        interactive=True,
+        envars=editor.envars,
     )
     mock_runner.process.waitForStarted.assert_called_once_with()
     # Check the buttons are set to the correct state when other aspects of the
@@ -359,7 +360,7 @@ def test_python_toggle_repl():
 
 def test_python_add_repl():
     """
-    Check the REPL's kernal manager is configured correctly before being handed
+    Check the REPL's kernel manager is configured correctly before being handed
     to the Jupyter widget in the view.
     """
     mock_qthread = mock.MagicMock()
@@ -372,11 +373,13 @@ def test_python_add_repl():
     pm.stop_kernel = mock.MagicMock()
     with mock.patch("mu.modes.python3.QThread", mock_qthread), mock.patch(
         "mu.modes.python3.KernelRunner", mock_kernel_runner
-    ):
+    ), mock.patch.object(venv, "name", "name"):
         pm.add_repl()
     mock_qthread.assert_called_once_with()
     mock_kernel_runner.assert_called_once_with(
-        cwd=pm.workspace_dir(), envars=editor.envars
+        kernel_name="name",
+        cwd=pm.workspace_dir(),
+        envars=editor.envars,
     )
     assert pm.kernel_thread == mock_qthread()
     assert pm.kernel_runner == mock_kernel_runner()

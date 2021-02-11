@@ -47,7 +47,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "Mu"
-copyright = "2017-2018, Nicholas H.Tollervey"
+copyright = "2017-2021, Nicholas H.Tollervey and Mu Contributors"
 author = "Nicholas H.Tollervey"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -186,12 +186,3 @@ texinfo_documents = [
         "Miscellaneous",
     )
 ]
-
-
-def remove_module_docstring(app, what, name, obj, options, lines):
-    if what == "module":
-        del lines[:]
-
-
-def setup(app):
-    app.connect("autodoc-process-docstring", remove_module_docstring)

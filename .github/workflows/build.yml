@@ -1,0 +1,52 @@
+name: Build Mu
+
+on:
+  push:
+    branches: 'master'
+  pull_request:
+    branches: '*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [macos-10.15, windows-2016]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Display Python info
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -c "import platform, struct; print(platform.machine(), struct.calcsize('P') * 8)"
+          python -c "import sys; print(sys.executable)"
+          python -m pip --version
+          pip --version
+          pip config list
+          pip freeze
+      - name: Install Mu test dependencies
+        run: |
+          pip install .[tests]
+          pip list
+      - run: mkdir upload
+      - name: Build Windows 64 bit
+        if: runner.os == 'Windows'
+        run: |
+          python make.py win64
+          dir dist/*.msi | rename-item -newname {  $_.name  -replace ".msi"," (64 bit).msi"  }
+          mv dist/*.msi upload/
+      - name: Build macOS
+        if: runner.os == 'macOS'
+        run: |
+          make macos
+          mv dist/*.dmg upload/
+      - name: Upload Mu installer
+        uses: actions/upload-artifact@v1
+        with:
+          name: mu-editor-${{ runner.os }}-${{ github.sha }}
+          path: upload

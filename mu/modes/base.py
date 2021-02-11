@@ -16,7 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import json
 import sys
 import os
 import os.path
@@ -27,8 +26,9 @@ import pkgutil
 from serial import Serial
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 from PyQt5.QtCore import QObject, pyqtSignal, QIODevice, QTimer
-from mu.logic import HOME_DIRECTORY, WORKSPACE_NAME, get_settings_path, Device
+from mu.logic import Device
 from mu.contrib import microfs
+from .. import config, settings
 
 ENTER_RAW_MODE = b"\x01"  # CTRL-A
 EXIT_RAW_MODE = b"\x02"  # CTRL-B
@@ -38,19 +38,6 @@ SOFT_REBOOT = b"\x04"  # CTRL-C
 
 logger = logging.getLogger(__name__)
 
-
-# List of supported board USB IDs.  Each board is a tuple of unique USB vendor
-# ID, USB product ID.
-BOARD_IDS = [
-    # VID  , PID   , manufact., device name
-    (0x0D28, 0x0204, None, "micro:bit"),
-    (0x239A, 0x800B, None, "Adafruit Feather M0"),  # CDC only
-    (0x239A, 0x8016, None, "Adafruit Feather M0"),  # CDC + MSC
-    (0x239A, 0x8014, None, "Adafruit Metro M0"),
-    (0x239A, 0x8019, None, "Circuit Playground Express M0"),
-    (0x239A, 0x8015, None, "Circuit Playground M0 (prototype)"),
-    (0x239A, 0x801B, None, "Adafruit Feather M0 Express"),
-]
 
 # Cache module names for filename shadow checking later.
 MODULE_NAMES = set([name for _, name, _ in pkgutil.iter_modules()])
@@ -66,25 +53,25 @@ def get_default_workspace():
     in some network systems this in inaccessible. This allows a key in the
     settings file to be used to set a custom path.
     """
-    sp = get_settings_path()
-    workspace_dir = os.path.join(HOME_DIRECTORY, WORKSPACE_NAME)
-    settings = {}
-    try:
-        with open(sp) as f:
-            settings = json.load(f)
-    except FileNotFoundError:
-        logger.error("Settings file {} does not exist.".format(sp))
-    except ValueError:
-        logger.error("Settings file {} could not be parsed.".format(sp))
-    else:
-        if "workspace" in settings:
-            if os.path.isdir(settings["workspace"]):
-                workspace_dir = settings["workspace"]
-            else:
-                logger.error(
-                    "Workspace value in the settings file is not a valid"
-                    "directory: {}".format(settings["workspace"])
+    workspace_dir = os.path.join(config.HOME_DIRECTORY, config.WORKSPACE_NAME)
+    settings_workspace = settings.settings.get("workspace")
+
+    if settings_workspace:
+        if os.path.isdir(settings_workspace):
+            logger.info(
+                "Using workspace {} from settings file".format(
+                    settings_workspace
                 )
+            )
+            workspace_dir = settings_workspace
+        else:
+            logger.warn(
+                "Workspace {} in the settings file is not a valid "
+                "directory; using default {}".format(
+                    settings_workspace, workspace_dir
+                )
+            )
+
     return workspace_dir
 
 
@@ -302,6 +289,14 @@ class BaseMode(QObject):
         """
         return NotImplemented
 
+    def write_plotter_data_to_csv(self, csv_filepath):
+        """Write any plotter data out to a CSV file when the
+        plotter is closed
+        """
+        with open(csv_filepath, "w", newline="") as csvfile:
+            csv_writer = csv.writer(csvfile)
+            csv_writer.writerows(self.view.plotter_pane.raw_data)
+
     def remove_plotter(self):
         """
         If there's an active plotter, hide it.
@@ -310,16 +305,14 @@ class BaseMode(QObject):
         called 'data_capture' in the workspace directory. The file contains
         CSV data and is named with a timestamp for easy identification.
         """
+        # Save the raw data as CSV
         data_dir = os.path.join(get_default_workspace(), "data_capture")
         if not os.path.exists(data_dir):
             logger.debug("Creating directory: {}".format(data_dir))
             os.makedirs(data_dir)
-        # Save the raw data as CSV
         filename = "{}.csv".format(time.strftime("%Y%m%d-%H%M%S"))
-        f = os.path.join(data_dir, filename)
-        with open(f, "w") as csvfile:
-            csv_writer = csv.writer(csvfile)
-            csv_writer.writerows(self.view.plotter_pane.raw_data)
+        filepath = os.path.join(data_dir, filename)
+        self.write_plotter_data_to_csv(filepath)
         self.view.remove_plotter()
         self.plotter = False
         logger.info("Removing plotter")
@@ -382,9 +375,11 @@ class MicroPythonMode(BaseMode):
     Includes functionality that works with a USB serial based REPL.
     """
 
-    valid_boards = BOARD_IDS
+    valid_boards = []
     force_interrupt = True
     connection = None
+    baudrate = 115200
+    builtins = ["const"]
 
     def compatible_board(self, port):
         """
@@ -497,7 +492,9 @@ class MicroPythonMode(BaseMode):
         if device:
             try:
                 if not self.connection:
-                    self.connection = REPLConnection(device.port)
+                    self.connection = REPLConnection(
+                        device.port, self.baudrate
+                    )
                     self.connection.open()
                     if self.force_interrupt:
                         self.connection.send_interrupt()
@@ -546,7 +543,9 @@ class MicroPythonMode(BaseMode):
         if device:
             try:
                 if not self.connection:
-                    self.connection = REPLConnection(device.port)
+                    self.connection = REPLConnection(
+                        device.port, self.baudrate
+                    )
                     self.connection.open()
                 self.view.add_micropython_plotter(
                     self.name, self.connection, self.on_data_flood
@@ -664,7 +663,12 @@ class FileManager(QObject):
         """
         # Create a new serial connection.
         try:
-            self.serial = Serial(self.port, 115200, timeout=1, parity="N")
+            self.serial = Serial(
+                self.port,
+                115200,
+                timeout=settings.settings.get("serial_timeout", 2),
+                parity="N",
+            )
             self.ls()
         except Exception as ex:
             logger.exception(ex)
@@ -695,14 +699,14 @@ class FileManager(QObject):
             logger.error(ex)
             self.on_get_fail.emit(device_filename)
 
-    def put(self, local_filename):
+    def put(self, local_filename, target=None):
         """
         Put the referenced local file onto the filesystem on the micro:bit.
         Emit the name of the file on the micro:bit when complete, or emit
         a failure signal.
         """
         try:
-            microfs.put(local_filename, target=None, serial=self.serial)
+            microfs.put(local_filename, target=target, serial=self.serial)
             self.on_put_file.emit(os.path.basename(local_filename))
         except Exception as ex:
             logger.error(ex)

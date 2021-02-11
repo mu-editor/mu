@@ -1,5 +1,5 @@
 """
-Contains definitions for the PyGame / PyGameZero related APIs so they can be
+Contains definitions for the Pygame Zero related APIs so they can be
 used in the editor for autocomplete and call tips.
 
 Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 PYGAMEZERO_APIS = [
     _(
-        "actor.Actor(image, pos=None, anchor=None, **kwargs) \nRect(left, top, width, height) -> Rect\nRect((left, top), (width, height)) -> Rect\nRect(object) -> Rect\npygame object for storing rectangular coordinates"
+        "actor.Actor(image, pos=None, anchor=None, **kwargs) \nRect(left, top, width, height) -> Rect\nRect((left, top), (width, height)) -> Rect\nRect(object) -> Rect\nPygame Zero object for storing rectangular coordinates"
     ),
     _(
         "actor.atan2() \natan2(y, x)\n\nReturn the arc tangent (measured in radians) of y/x.\nUnlike atan(y/x), the signs of both x and y are considered."
@@ -31,7 +31,7 @@ PYGAMEZERO_APIS = [
         "actor.degrees() \ndegrees(x)\n\nConvert angle x from radians to degrees."
     ),
     _(
-        "actor.pygame() \nPygame is a set of Python modules designed for writing games.\nIt is written on top of the excellent SDL library. This allows you\nto create fully featured games and multimedia programs in the python\nlanguage. The package is highly portable, with games running on\nWindows, MacOS, OS X, BeOS, FreeBSD, IRIX, and Linux."
+        "actor.pygame() \nPygame Zero is a set of Python modules designed for writing games.\nIt is written on top of the excellent SDL library. This allows you\nto create fully featured games and multimedia programs in the python\nlanguage. The package is highly portable, with games running on\nWindows, MacOS, OS X, BeOS, FreeBSD, IRIX, and Linux."
     ),
     _(
         "actor.radians() \nradians(x)\n\nConvert angle x from degrees to radians."
@@ -133,7 +133,9 @@ PYGAMEZERO_APIS = [
     _(
         "music.pause() \nTemporarily stop playback of the music stream.\n\nCall `unpause()` to resume."
     ),
-    _("music.pgzero.constants() \nNames for constants returned by Pygame."),
+    _(
+        "music.pgzero.constants() \nNames for constants returned by Pygame Zero."
+    ),
     _(
         "music.play(name) \nPlay a music file from the music/ directory.\n\nThe music will loop when it finishes playing."
     ),
@@ -158,10 +160,10 @@ PYGAMEZERO_APIS = [
         "screen.SurfacePainter(screen) \nInterface to pygame.draw that is bound to a surface."
     ),
     _(
-        "screen.pgzero.ptext() \npygame-text - high-level text rendering with Pygame.\n\nThis module is directly copied from\n\n    https://github.com/cosmologicon/pygame-text\n\nat revision c04e59b7382a832e117f0598cdcbc1bb3eb26db5\nand used under CC0."
+        "screen.pgzero.ptext() \npygame-text - high-level text rendering with Pygame Zero.\n\nThis module is directly copied from\n\n    https://github.com/cosmologicon/pygame-text\n\nat revision c04e59b7382a832e117f0598cdcbc1bb3eb26db5\nand used under CC0."
     ),
     _(
-        "screen.pygame() \nPygame is a set of Python modules designed for writing games.\nIt is written on top of the excellent SDL library. This allows you\nto create fully featured games and multimedia programs in the python\nlanguage. The package is highly portable, with games running on\nWindows, MacOS, OS X, BeOS, FreeBSD, IRIX, and Linux."
+        "screen.pygame() \nPygame Zero is a set of Python modules designed for writing games.\nIt is written on top of the excellent SDL library. This allows you\nto create fully featured games and multimedia programs in the python\nlanguage. The package is highly portable, with games running on\nWindows, MacOS, OS X, BeOS, FreeBSD, IRIX, and Linux."
     ),
     _(
         "screen.round_pos(pos) \nRound a tuple position so it can be used for drawing."
