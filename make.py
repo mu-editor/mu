@@ -321,7 +321,7 @@ def _build_windows_msi(bitness=64):
     if pup_pbs_url:
         os.environ["PUP_PBS_URL"] = pup_pbs_url
     cmd_sequence = (
-        [sys.executable, "-m", "venv", "venv-pup"],
+        [sys.executable, "-m", "virtualenv", "venv-pup"],
         ["./venv-pup/Scripts/pip.exe", "install", "pup"],
         [
             "./venv-pup/Scripts/pup.exe",
