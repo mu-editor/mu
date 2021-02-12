@@ -28,7 +28,17 @@ def download(dirpath=WHEELS_DIRPATH):
     #
     # Download the wheels needed for modes
     #
-    logger.debug("WHEELS_DIRPATH: %s", WHEELS_DIRPATH)
+    logger.debug("dirpath: %s", dirpath)
+
+    #
+    # Clear the directory of any existing wheels (this is especially
+    # important because there may have been wheels left over from a
+    # test with a different Python version)
+    #
+    for wheel_filepath in glob.glob(os.path.join(dirpath, "*.whl")):
+        logger.debug("Removing %s", wheel_filepath)
+        os.remove(wheel_filepath)
+
     logger.debug("mode_packages: %s", mode_packages)
     for name, pip_identifier in mode_packages:
         logger.info("Running pip download for %s / %s", name, pip_identifier)
