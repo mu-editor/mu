@@ -10,12 +10,15 @@ import subprocess
 logger = logging.getLogger(__name__)
 
 mode_packages = [
-    ("pgzero", ""),
-    ("Flask", "==1.1.2"),
-    ("pyserial", "==3.4"),
-    ("qtconsole", "==4.7.4"),
-    ("nudatus", ">=0.0.3"),
-    ("black", '>=19.10b0;python_version>"3.5"'),
+    (
+        "pgzero",
+        "git+https://github.com/ntoll/pgzero.git@"
+        "5bcfff44fb50a30f9c0194c76099786d9e31d906",
+    ),
+    ("Flask", "flask==1.1.2"),
+    ("pyserial", "pyserial==3.4"),
+    ("qtconsole", "qtconsole==4.7.4"),
+    ("nudatus", "nudatus>=0.0.3"),
 ]
 WHEELS_DIRPATH = os.path.dirname(__file__)
 
@@ -24,11 +27,21 @@ def download(dirpath=WHEELS_DIRPATH):
     #
     # Download the wheels needed for modes
     #
-    logger.debug("WHEELS_DIRPATH: %s", WHEELS_DIRPATH)
+    logger.debug("dirpath: %s", dirpath)
+
+    #
+    # Clear the directory of any existing wheels (this is especially
+    # important because there may have been wheels left over from a
+    # test with a different Python version)
+    #
+    for wheel_filepath in glob.glob(os.path.join(dirpath, "*.whl")):
+        logger.debug("Removing %s", wheel_filepath)
+        os.remove(wheel_filepath)
+
     logger.debug("mode_packages: %s", mode_packages)
-    for package in mode_packages:
-        print("download:package", package)
-        subprocess.run(
+    for name, pip_identifier in mode_packages:
+        logger.info("Running pip download for %s / %s", name, pip_identifier)
+        process = subprocess.run(
             [
                 sys.executable,
                 "-m",
@@ -36,16 +49,20 @@ def download(dirpath=WHEELS_DIRPATH):
                 "download",
                 "--destination-directory",
                 dirpath,
-                "%s%s" % package,
+                pip_identifier,
             ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             check=True,
         )
+        logger.debug(process.stdout.decode("utf-8"))
 
     #
     # Convert any sdists to wheels
     #
     for filepath in glob.glob(os.path.join(dirpath, "*")):
         if filepath.endswith(("gz", ".zip")):
+            logger.info("Building wheel for %s", filepath)
             subprocess.run(
                 [
                     sys.executable,
@@ -56,6 +73,9 @@ def download(dirpath=WHEELS_DIRPATH):
                     dirpath,
                     filepath,
                 ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
                 check=True,
             )
             os.remove(filepath)
+            logger.debug(process.stdout.decode("utf-8"))

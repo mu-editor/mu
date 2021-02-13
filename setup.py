@@ -43,6 +43,7 @@ install_requires = [
     # though. Regarding these packages' versions, please refer to:
     # http://flake8.pycqa.org/en/latest/faq.html#why-does-flake8-use-ranges-for-its-dependencies
     "flake8 >= 3.8.3",
+    "black>=19.10b0;python_version>'3.5'",
     "appdirs>=1.4.3",
     "semver>=2.8.0",
     #
@@ -112,7 +113,7 @@ setup(
         "mu.modes.api",
         "mu.wheels",
     ],
-    python_requires=">=3.5,<3.8",
+    python_requires=">=3.5,<3.9",
     install_requires=install_requires,
     extras_require=extras_require,
     package_data={"mu.wheels": ["*.whl"]},
@@ -134,6 +135,7 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Education",
         "Topic :: Games/Entertainment",
         "Topic :: Software Development",

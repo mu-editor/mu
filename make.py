@@ -170,6 +170,17 @@ def tidy():
 def black():
     """Check code with the 'black' formatter."""
     print("\nblack")
+    # Black is no available in Python 3.5, in that case let the tests continue
+    try:
+        subprocess.run([TIDY, "--version"])
+    except FileNotFoundError as e:
+        python_version = sys.version_info
+        if python_version.major == 3 and python_version.minor == 5:
+            print("Black checks are not available in Python 3.5.")
+            return 0
+        else:
+            print(e)
+            return 1
     for target in [
         "setup.py",
         "make.py",
@@ -304,11 +315,13 @@ def _build_windows_msi(bitness=64):
         raise ValueError("bitness") from None
     if check() != 0:
         raise RuntimeError("Check failed")
+    print("Fetching wheels")
+    subprocess.check_call([sys.executable, "-m", "mu.wheels"])
     print("Building {}-bit Windows installer".format(bitness))
     if pup_pbs_url:
         os.environ["PUP_PBS_URL"] = pup_pbs_url
     cmd_sequence = (
-        [sys.executable, "-m", "venv", "venv-pup"],
+        [sys.executable, "-m", "virtualenv", "venv-pup"],
         ["./venv-pup/Scripts/pip.exe", "install", "pup"],
         [
             "./venv-pup/Scripts/pup.exe",

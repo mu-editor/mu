@@ -1096,7 +1096,7 @@ def test_Window_remove_repl():
     w.remove_repl()
     mock_repl.setParent.assert_called_once_with(None)
     mock_repl.deleteLater.assert_called_once_with()
-    w.dockWidgetArea.assert_called_once()
+    assert w.dockWidgetArea.call_count == 1
     assert w.repl is None
 
 
@@ -1113,7 +1113,7 @@ def test_Window_remove_plotter():
     w.remove_plotter()
     mock_plotter.setParent.assert_called_once_with(None)
     mock_plotter.deleteLater.assert_called_once_with()
-    w.dockWidgetArea.assert_called_once()
+    assert w.dockWidgetArea.call_count == 1
     assert w.plotter is None
 
 
@@ -1132,7 +1132,7 @@ def test_Window_remove_python_runner():
     w.remove_python_runner()
     mock_runner.setParent.assert_called_once_with(None)
     mock_runner.deleteLater.assert_called_once_with()
-    w.dockWidgetArea.assert_called_once()
+    assert w.dockWidgetArea.call_count == 1
     assert w.process_runner is None
     assert w.runner is None
 
@@ -1156,7 +1156,7 @@ def test_Window_remove_debug_inspector():
     assert w.inspector is None
     mock_inspector.setParent.assert_called_once_with(None)
     mock_inspector.deleteLater.assert_called_once_with()
-    w.dockWidgetArea.assert_called_once()
+    assert w.dockWidgetArea.call_count == 1
 
 
 def test_Window_set_theme():

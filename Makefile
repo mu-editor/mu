@@ -65,13 +65,7 @@ tidy: clean
 	black -l 79 utils 
 
 black: clean
-	@echo "\nChecking code with black..."
-	black --check -l 79 setup.py
-	black --check -l 79 make.py
-	black --check -l 79 mu
-	black --check -l 79 package
-	black --check -l 79 tests
-	black --check -l 79 utils
+	python make.py black
 
 check: clean black flake8 coverage
 
@@ -112,8 +106,10 @@ win64: check
 	python make.py win64
 
 macos: check
+	@echo "\nFetching wheels."
+	python -m mu.wheels
 	@echo "\nPackaging Mu into a macOS native application."
-	python -m venv venv-pup
+	python -m virtualenv venv-pup
 	# Don't activate venv-pup because:
 	# 1. Not really needed.
 	# 2. Previously active venv would be "gone" on venv-pup deactivation.
