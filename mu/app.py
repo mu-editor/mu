@@ -72,9 +72,11 @@ class AnimatedSplash(QSplashScreen):
         self.log = []
         self.animation = animation
         self.animation.frameChanged.connect(self.set_frame)
+        # Always on top.
         super().__init__(
             self.animation.currentPixmap(), Qt.WindowStaysOnTopHint
         )
+        # Disable clicks.
         self.setEnabled(False)
         self.animation.start()
 
