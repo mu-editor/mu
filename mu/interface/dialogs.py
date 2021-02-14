@@ -480,20 +480,24 @@ class AdminDialog(QDialog):
         self.tabs.addTab(self.log_widget, _("Current Log"))
         self.envar_widget = EnvironmentVariablesWidget(self)
         self.envar_widget.setup(settings.get("envars", ""))
-        self.tabs.addTab(self.envar_widget, _("Python3 Environment"))
-        self.log_widget.log_text_area.setFocus()
         self.microbit_widget = MicrobitSettingsWidget(self)
         self.microbit_widget.setup(
-            settings.get("minify", False), settings.get("microbit_runtime", "")
+            settings.get("minify", False),
+            settings.get("microbit_runtime", ""),
         )
-        self.tabs.addTab(self.microbit_widget, _("BBC micro:bit Settings"))
         self.package_widget = PackagesWidget(self)
         self.package_widget.setup(packages)
-        self.tabs.addTab(self.package_widget, _("Third Party Packages"))
+        if mode.short_name in ["python", "web", "pygamezero"]:
+            self.tabs.addTab(self.envar_widget, _("Python3 Environment"))
+        if mode.short_name == "microbit":
+            self.tabs.addTab(self.microbit_widget, _("BBC micro:bit Settings"))
+        if mode.short_name in ["python", "web", "pygamezero"]:
+            self.tabs.addTab(self.package_widget, _("Third Party Packages"))
         if mode.short_name == "esp":
             self.esp_widget = ESPFirmwareFlasherWidget(self)
             self.esp_widget.setup(mode, device_list)
             self.tabs.addTab(self.esp_widget, _("ESP Firmware flasher"))
+        self.log_widget.log_text_area.setFocus()
 
     def settings(self):
         """
