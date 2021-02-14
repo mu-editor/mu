@@ -71,8 +71,8 @@ class AnimatedSplash(QSplashScreen):
         """
         Ensure signals are connected and start the animation.
         """
-        self.number_of_log_lines = 3
-        # To hold only the number_of_log_lines of logs to display.
+        self.log_lines = 3
+        # To hold only number of log_lines of logs to display.
         self.log = []
         self.animation = animation
         self.animation.frameChanged.connect(self.set_frame)
@@ -92,12 +92,16 @@ class AnimatedSplash(QSplashScreen):
 
     def draw_log(self, text):
         """
-        Draw the log entries onto the splash screen.
+        Draw the log entries onto the splash screen. Will only display the last
+        self.log_lines number of log entries. The logs will be displayed at the
+        bottom of the splash screen, justified left.
         """
         self.log.append(text)
-        self.log = self.log[-self.number_of_log_lines:]
+        self.log = self.log[-self.log_lines :]
         if self.log:
-            self.showMessage("\n".join(self.log), Qt.AlignBottom | Qt.AlignLeft)
+            self.showMessage(
+                "\n".join(self.log), Qt.AlignBottom | Qt.AlignLeft
+            )
 
 
 class StartupWorker(QObject):
