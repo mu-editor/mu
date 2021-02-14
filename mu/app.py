@@ -63,16 +63,23 @@ from . import settings
 
 class AnimatedSplash(QSplashScreen):
     """
-    An animated splash screen for gifs.
+    An animated splash screen for gifs. Includes a text area for logging
+    output.
     """
 
     def __init__(self, animation, parent=None):
         """
         Ensure signals are connected and start the animation.
         """
-        super().__init__()
+        self.number_of_log_lines = 3
+        # To hold only the number_of_log_lines of logs to display.
+        self.log = []
         self.animation = animation
         self.animation.frameChanged.connect(self.set_frame)
+        super().__init__(
+            self.animation.currentPixmap(), Qt.WindowStaysOnTopHint
+        )
+        self.setEnabled(False)
         self.animation.start()
 
     def set_frame(self):
@@ -82,6 +89,15 @@ class AnimatedSplash(QSplashScreen):
         pixmap = self.animation.currentPixmap()
         self.setPixmap(pixmap)
         self.setMask(pixmap.mask())
+
+    def draw_log(self, text):
+        """
+        Draw the log entries onto the splash screen.
+        """
+        self.log.append(text)
+        self.log = self.log[-self.number_of_log_lines:]
+        if self.log:
+            self.showMessage("\n".join(self.log), Qt.AlignBottom | Qt.AlignLeft)
 
 
 class StartupWorker(QObject):
@@ -93,6 +109,7 @@ class StartupWorker(QObject):
     """
 
     finished = pyqtSignal()
+    display_text = pyqtSignal(str)
 
     def run(self):
         """
@@ -239,6 +256,7 @@ def run():
     thread.started.connect(worker.run)
     worker.finished.connect(thread.quit)
     worker.finished.connect(worker.deleteLater)
+    worker.display_text.connect(splash.draw_log)
     # Stop the blocking event loop when the thread is finished.
     thread.finished.connect(initLoop.quit)
     thread.finished.connect(thread.deleteLater)
