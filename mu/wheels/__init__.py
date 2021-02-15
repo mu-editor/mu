@@ -5,6 +5,7 @@ import os
 import sys
 import glob
 import logging
+import platform
 import subprocess
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,16 @@ mode_packages = [
     ("qtconsole", "qtconsole==4.7.4"),
     ("nudatus", "nudatus>=0.0.3"),
 ]
+# Temporary app signing workaround https://github.com/mu-editor/mu/issues/1290
+if sys.version_info[:2] == (3, 8) and platform.system() == "Darwin":
+    mode_packages.insert(
+        0,
+        (
+            "pygame",
+            "https://github.com/mu-editor/pygame/releases/download/2.0.1/"
+            "pygame-2.0.1-cp38-cp38-macosx_10_9_intel.whl",
+        ),
+    )
 WHEELS_DIRPATH = os.path.dirname(__file__)
 
 
