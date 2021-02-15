@@ -514,8 +514,9 @@ class AdminDialog(QDialog):
         if self.microbit_widget:
             settings["minify"] = self.microbit_widget.minify.isChecked()
             settings["microbit_runtime"] = self.microbit_widget.runtime_path.text()
-        if self.packages:
+        if self.package_widget:
             settings["packages"] = self.package_widget.text_area.toPlainText()
+        return settings
 
 
 class FindReplaceDialog(QDialog):
