@@ -54,7 +54,7 @@ test: clean
 
 coverage: clean
 	export LANG=en_GB.utf8
-	pytest --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
+	pytest -v -v -s --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
 tidy: clean
 	@echo "\nTidying code with black..."
