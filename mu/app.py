@@ -24,6 +24,10 @@ from logging.handlers import TimedRotatingFileHandler
 import os
 import platform
 import sys
+import webbrowser
+import tempfile
+import pathlib
+import traceback
 
 from PyQt5.QtCore import (
     Qt,
@@ -55,6 +59,74 @@ from .modes import (
 )
 from .interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 from . import settings
+
+
+CRASH_TEMPLATE = """<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <meta content="utf-8" http-equiv="encoding">
+  <title>{title}</title>
+  <style type="text/css">
+    body {{
+      font-family: 'Lucida Grande', Arial, sans-serif;
+    }}
+    h1 {{
+      display: inline;
+      font-size: 3em;
+      vertical-align: bottom;
+    }}
+    div {{
+      width: 60%;
+      margin: auto;
+    }}
+    pre {{
+      border: 1px solid black;
+      background: #eee;
+      border-radius: 8px;
+      padding: 16px;
+    }}
+    a, a:visited {{
+      color: #004DCC;
+    }}
+    a:hover, a:focus {{
+      text-decoration: underline;
+      color: #004DCC;
+    }}
+  </style>
+</head>
+<body>
+ <div>
+  <img src="{icon}" />
+  <h1>{title}</h1>
+  <p>{details}</p>
+  <pre><code id="error">{error}</code></pre>
+  <p>
+    <button onclick="copyError()">{copy}</button>
+    <a href="{logfile}">{log}</a>
+  </p>
+  <p><a href="{url}" target="_blank" rel="noopener noreferrer">{report}</a></p>
+  <p>{thanks}</p>
+ </div>
+ <script>
+ function copyError() {{
+  const buffer = document.createElement("textarea");
+  buffer.value = document.getElementById("error").innerText;
+  document.body.appendChild(buffer);
+  buffer.select()
+  document.execCommand("copy");
+  document.body.removeChild(buffer);
+ }}
+ </script>
+</body>
+</html>"""
+
+CRASH_TITLE = _("Mu Crash Report")
+CRASH_DETAILS = _("Something has gone wrong with Mu. Here's the error:")
+CRASH_COPY = _("Click to copy error")
+CRASH_LOG = _("Log file")
+CRASH_REPORT = _("Submit a new bug report (copy and paste the error).")
+CRASH_THANKS = _("Apologies for the inconvenience and thanks for the help.")
 
 
 class AnimatedSplash(QSplashScreen):
@@ -104,6 +176,34 @@ def excepthook(*exc_args):
     Log exception and exit cleanly.
     """
     logging.error("Unrecoverable error", exc_info=(exc_args))
+    try:
+        root_dir = pathlib.Path(__file__).parent.parent.absolute()
+        icon = str(root_dir / "docs" / "icon_small.png")
+        error = "".join(traceback.format_exception(*exc_args))
+        url = (
+            "https://github.com/mu-editor/mu/issues/new?"
+            "title=Crash%20Report&"
+            "body=Mu%20crashed...%0A%0A```%0ACopy%20error%20here...%0A```"
+        )
+        content = CRASH_TEMPLATE.format(
+            url=url,
+            icon=icon,
+            title=CRASH_TITLE,
+            details=CRASH_DETAILS,
+            copy=CRASH_COPY,
+            log=CRASH_LOG,
+            logfile="file://" + LOG_FILE,
+            error=error,
+            report=CRASH_REPORT,
+            thanks=CRASH_THANKS,
+        )
+        with tempfile.NamedTemporaryFile(
+            suffix=".html", delete=False
+        ) as crash_report:
+            crash_report.write(content.encode("utf-8"))
+        webbrowser.open(crash_report.name)
+    except Exception as e:  # The Alamo of crash handling.
+        logging.error("Failed to report crash", exc_info=e)
     sys.__excepthook__(*exc_args)
     sys.exit(1)
 
@@ -235,6 +335,9 @@ def run():
             app.setStyleSheet(DAY_STYLE)
 
     splash.finish(editor_window)
+
+    # BOOM! FOR TESTING PURPOSES... ;-)
+    x = 1 / 0
 
     # Make sure all windows have the Mu icon as a fallback
     app.setWindowIcon(load_icon(editor_window.icon))
