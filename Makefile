@@ -127,4 +127,4 @@ video: clean
 	@echo "\nFetching contributor avatars."
 	python utils/avatar.py
 	@echo "\nMaking video of source commits."
-	gource --user-image-dir .git/avatar/ --title "The Making of Mu" --logo ~/Pictures/icon.png --font-size 24 --file-idle-time 0 --key -1280x720 -s 0.1 --auto-skip-seconds .1 --multi-sampling --stop-at-end --hide mouse,progress --output-ppm-stream - --output-framerate 30 | ffmpeg -y -r 30 -f image2pipe -vcodec ppm -i - -b 65536K movie.mp4
+	gource --user-image-dir .git/avatar/ --title "The Making of Mu" --logo docs/icon_small.png --font-size 24 --file-idle-time 0 --key -1280x720 -s 0.1 --auto-skip-seconds .1 --multi-sampling --stop-at-end --hide mouse,progress --output-ppm-stream - --output-framerate 30 | ffmpeg -y -r 30 -f image2pipe -vcodec ppm -i - -b 65536K movie.mp4
