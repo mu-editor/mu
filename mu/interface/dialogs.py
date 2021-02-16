@@ -513,7 +513,9 @@ class AdminDialog(QDialog):
             settings["envars"] = self.envar_widget.text_area.toPlainText()
         if self.microbit_widget:
             settings["minify"] = self.microbit_widget.minify.isChecked()
-            settings["microbit_runtime"] = self.microbit_widget.runtime_path.text()
+            settings[
+                "microbit_runtime"
+            ] = self.microbit_widget.runtime_path.text()
         if self.package_widget:
             settings["packages"] = self.package_widget.text_area.toPlainText()
         return settings
