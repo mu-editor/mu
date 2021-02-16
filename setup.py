@@ -54,10 +54,6 @@ install_requires = [
     # Needed for packaging
     #
     "wheel",
-    #
-    # Needed for ESP-mode
-    #
-    "esptool",
 ]
 
 
