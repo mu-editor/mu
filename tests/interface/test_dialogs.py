@@ -373,8 +373,6 @@ def test_AdminDialog_setup_python_mode():
     log = "this is the contents of a log file"
     settings = {
         "envars": "name=value",
-        "minify": True,
-        "microbit_runtime": "/foo/bar",
     }
     packages = "foo\nbar\nbaz\n"
     mock_window = QWidget()
@@ -399,7 +397,6 @@ def test_AdminDialog_setup_microbit_mode():
     """
     log = "this is the contents of a log file"
     settings = {
-        "envars": "name=value",
         "minify": True,
         "microbit_runtime": "/foo/bar",
     }
@@ -414,8 +411,6 @@ def test_AdminDialog_setup_microbit_mode():
     ad.setup(log, settings, packages, mode, device_list)
     assert ad.log_widget.log_text_area.toPlainText() == log
     s = ad.settings()
-    assert s["packages"] == packages
-    del s["packages"]
     assert s == settings
 
 
@@ -425,11 +420,7 @@ def test_AdminDialog_setup():
     file and envars.
     """
     log = "this is the contents of a log file"
-    settings = {
-        "envars": "name=value",
-        "minify": True,
-        "microbit_runtime": "/foo/bar",
-    }
+    settings = {}
     packages = "foo\nbar\nbaz\n"
     mock_window = QWidget()
     mode = mock.MagicMock()
@@ -445,8 +436,6 @@ def test_AdminDialog_setup():
         ad.setup(log, settings, packages, mode, device_list)
         assert ad.log_widget.log_text_area.toPlainText() == log
         s = ad.settings()
-        assert s["packages"] == packages
-        del s["packages"]
         assert s == settings
 
 
