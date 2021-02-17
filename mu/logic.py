@@ -1413,27 +1413,31 @@ class Editor(QObject):
                 self.connected_devices,
             )
         if new_settings:
-            self.envars = extract_envars(new_settings["envars"])
-            self.minify = new_settings["minify"]
-            runtime = new_settings["microbit_runtime"].strip()
-            if runtime and not os.path.isfile(runtime):
-                self.microbit_runtime = ""
-                message = _("Could not find MicroPython runtime.")
-                information = _(
-                    "The micro:bit runtime you specified "
-                    "('{}') does not exist. "
-                    "Please try again."
-                ).format(runtime)
-                self._view.show_message(message, information)
-            else:
-                self.microbit_runtime = runtime
-            new_packages = [
-                p
-                for p in new_settings["packages"].lower().split("\n")
-                if p.strip()
-            ]
-            old_packages = [p.lower() for p in user_packages]
-            self.sync_package_state(old_packages, new_packages)
+            if "envars" in new_settings:
+                self.envars = extract_envars(new_settings["envars"])
+            if "minify" in new_settings:
+                self.minify = new_settings["minify"]
+            if "microbit_runtime" in new_settings:
+                runtime = new_settings["microbit_runtime"].strip()
+                if runtime and not os.path.isfile(runtime):
+                    self.microbit_runtime = ""
+                    message = _("Could not find MicroPython runtime.")
+                    information = _(
+                        "The micro:bit runtime you specified "
+                        "('{}') does not exist. "
+                        "Please try again."
+                    ).format(runtime)
+                    self._view.show_message(message, information)
+                else:
+                    self.microbit_runtime = runtime
+            if "packages" in new_settings:
+                new_packages = [
+                    p
+                    for p in new_settings["packages"].lower().split("\n")
+                    if p.strip()
+                ]
+                old_packages = [p.lower() for p in user_packages]
+                self.sync_package_state(old_packages, new_packages)
         else:
             logger.info("No admin settings changed.")
 
