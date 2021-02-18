@@ -288,12 +288,31 @@ class VirtualEnvironment(object):
         self._bin_extension = ".exe" if self._is_windows else ""
         self.settings = settings.VirtualEnvironmentSettings()
         self.settings.init()
-        self.relocate(dirpath or self.settings["dirpath"])
+        dirpath_to_use = dirpath or self.settings["dirpath"] or self._generate_dirpath()
+        logger.info("Using dirpath: %s", dirpath_to_use)
+        self.relocate(dirpath_to_use)
 
     def __str__(self):
         return "<%s at %s>" % (self.__class__.__name__, self.path)
 
+    @staticmethod
+    def _generate_dirpath():
+        """Construct a unique virtual environment folder
+
+        To avoid clashing with previously-created virtual environments,
+        construct one which includes the Python version and a timestamp
+        """
+        return "%s-%s-%s" % (
+            config.VENV_DIR,
+            "%s%s" % sys.version_info[:2],
+            time.strftime("%Y%m%d-%H%M%S")
+        )
+
     def relocate(self, dirpath):
+        """Relocate sets up variables for, eg, the expected location and name of
+        the Python and Pip binaries, but doesn't access the file system. That's
+        done by code in or called from `create`
+        """
         self.path = str(dirpath)
         self.name = os.path.basename(self.path)
         self._bin_directory = os.path.join(
@@ -371,9 +390,22 @@ class VirtualEnvironment(object):
             logger.debug("Found existing virtual environment at %s", self.path)
 
         self.ensure_interpreter()
+        print("#1")
+        self.ensure_interpreter_version()
+        print("#2")
         self.ensure_pip()
+        print("#3")
+        self.ensure_key_modules()
+        print("#4")
 
     def ensure_interpreter(self):
+        """Ensure there is an interpreter of the expected name at the expected
+        location, given the platform and naming conventions
+
+        NB if the interpreter is present as a symlink to a system interpreter (likely
+        for a venv) but the link is broken, then os.path.isfile will fail as though
+        the file wasn't there. Which is what we want in these circumstances
+        """
         if os.path.isfile(self.interpreter):
             logger.info("Interpreter found at %s", self.interpreter)
         else:
@@ -382,6 +414,44 @@ class VirtualEnvironment(object):
             )
             logger.error(message)
             raise VirtualEnvironmentError(message)
+
+    def ensure_interpreter_version(self):
+        """Ensure that the venv interpreter matches the version of Python running Mu
+
+        This is necessary because otherwise we'll have mismatched wheels etc.
+        """
+        current_version = "%s%s" % sys.version_info[:2]
+        print("Current version:", current_version)
+        #
+        # Can't use self.run_python as we're not yet within the Qt UI loop
+        #
+        process = subprocess.run([self.interpreter, "-c", 'import sys; print("%s%s" % sys.version_info[:2])'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=True)
+        venv_version = process.stdout.decode("utf-8").strip()
+        print("Venv version:", venv_version)
+        if current_version == venv_version:
+            logger.info("Both interpreters at version %s", current_version)
+        else:
+            message = (
+                "Current interpreter is at version %s; venv interpreter is at version %s" % (current_version, venv_version)
+            )
+            logger.error(message)
+            raise VirtualEnvironmentError(message)
+
+    def ensure_key_modules(self):
+        """Ensure that the venv interpreter is able to load key modules
+        """
+        #
+        # FIXME: import from wheels.mode_packages
+        #
+        modules = ['pygame', 'pgzero', 'flask', 'xxx']
+        for module in modules:
+            logger.debug("Trying to import %s", module)
+            try:
+                process = subprocess.run([self.interpreter, "-c", 'import %s' % module], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=True)
+            except subprocess.CalledProcessError:
+                message = "Failed to import %s" % module
+                logger.error(message)
+                raise VirtualEnvironmentError(message)
 
     def ensure_pip(self):
         if os.path.isfile(self.pip.executable):
