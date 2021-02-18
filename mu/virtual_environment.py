@@ -5,11 +5,7 @@ import functools
 import glob
 import logging
 import subprocess
-
-import encodings
-
-python36_zip = os.path.dirname(encodings.__path__[0])
-del encodings
+import time
 
 from PyQt5.QtCore import (
     QObject,
@@ -21,6 +17,7 @@ from PyQt5.QtCore import (
 
 from . import wheels
 from . import settings
+from . import config
 
 wheels_dirpath = os.path.dirname(wheels.__file__)
 
@@ -373,11 +370,20 @@ class VirtualEnvironment(object):
 
         return False
 
+    def ensure_and_create(self):
+        try:
+            self.ensure()
+        except VirtualEnvironmentError:
+            self.relocate(self._generate_dirpath())
+            self.create()
+            self.ensure()
+
     def ensure(self):
         """Ensure that a virtual environment exists, creating it if needed"""
         if not os.path.exists(self.path):
-            logger.debug("%s does not exist; creating", self.path)
-            self.create()
+            message = "%s does not exist" % self.path
+            logger.error(message)
+            raise VirtualEnvironmentError(message)
         elif not os.path.isdir(self.path):
             message = "%s exists but is not a directory" % self.path
             logger.error(message)
@@ -390,13 +396,9 @@ class VirtualEnvironment(object):
             logger.debug("Found existing virtual environment at %s", self.path)
 
         self.ensure_interpreter()
-        print("#1")
         self.ensure_interpreter_version()
-        print("#2")
         self.ensure_pip()
-        print("#3")
         self.ensure_key_modules()
-        print("#4")
 
     def ensure_interpreter(self):
         """Ensure there is an interpreter of the expected name at the expected
@@ -421,13 +423,11 @@ class VirtualEnvironment(object):
         This is necessary because otherwise we'll have mismatched wheels etc.
         """
         current_version = "%s%s" % sys.version_info[:2]
-        print("Current version:", current_version)
         #
         # Can't use self.run_python as we're not yet within the Qt UI loop
         #
         process = subprocess.run([self.interpreter, "-c", 'import sys; print("%s%s" % sys.version_info[:2])'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=True)
         venv_version = process.stdout.decode("utf-8").strip()
-        print("Venv version:", venv_version)
         if current_version == venv_version:
             logger.info("Both interpreters at version %s", current_version)
         else:
@@ -441,9 +441,9 @@ class VirtualEnvironment(object):
         """Ensure that the venv interpreter is able to load key modules
         """
         #
-        # FIXME: import from wheels.mode_packages
+        # FIXME: import from wheels.mode_packages, but need import name, not PyPI name
         #
-        modules = ['pygame', 'pgzero', 'flask', 'xxx']
+        modules = ["pygame", "pgzero", "flask", "serial"]
         for module in modules:
             logger.debug("Trying to import %s", module)
             try:
