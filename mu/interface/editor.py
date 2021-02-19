@@ -283,7 +283,17 @@ class EditorPane(QsciScintilla):
             "xxl": 16,
             "xxxl": 48,
         }
+        margins = {
+            "xs": 30,
+            "s": 35,
+            "m": 45,
+            "l": 50,
+            "xl": 60,
+            "xxl": 75,
+            "xxxl": 85,
+        }
         self.zoomTo(sizes[size])
+        self.setMarginWidth(0, margins[size])
 
     @property
     def label(self):
