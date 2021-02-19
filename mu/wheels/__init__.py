@@ -19,6 +19,7 @@ mode_packages = [
     ("pyserial", "pyserial==3.4"),
     ("qtconsole", "qtconsole==4.7.4"),
     ("nudatus", "nudatus>=0.0.3"),
+    ("esptool", "esptool==3.*"),
 ]
 WHEELS_DIRPATH = os.path.dirname(__file__)
 
