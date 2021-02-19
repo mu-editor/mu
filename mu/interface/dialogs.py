@@ -343,6 +343,7 @@ class ESPFirmwareFlasherWidget(QWidget):
             self.txtFolder.setText(filename)
 
     def update_firmware(self):
+        baudrate = 115200
 
         if self.mode.repl:
             self.mode.toggle_repl(None)
@@ -362,22 +363,24 @@ class ESPFirmwareFlasherWidget(QWidget):
 
         if self.device_type.currentText() == "ESP32":
             write_command = (
-                '"{}" "{}" --chip esp32 --port {} --baud 460800 '
+                '"{}" "{}" --chip esp32 --port {} --baud {} '
                 'write_flash -z 0x1000 "{}"'
             ).format(
                 venv.interpreter,
                 esptool,
                 device.port,
+                baudrate,
                 self.txtFolder.text(),
             )
         else:
             write_command = (
-                '"{}" "{}" --chip esp8266 --port {} --baud 460800 '
+                '"{}" "{}" --chip esp8266 --port {} --baud {} '
                 'write_flash --flash_size=detect 0 "{}"'
             ).format(
                 venv.interpreter,
                 esptool,
                 device.port,
+                baudrate,
                 self.txtFolder.text(),
             )
 
