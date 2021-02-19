@@ -38,8 +38,8 @@ QListWidget, QTreeView, QTreeView::branch {
 }
 
 QTextEdit, QPlainTextEdit, QLineEdit {
-    background-color: white;
-    color: black;
+    background-color: black;
+    color: white;
     border: 2px solid white;
 }
 
