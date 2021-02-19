@@ -266,7 +266,8 @@ def test_EditorPane_set_zoom():
     ep.setMarginWidth = mock.MagicMock()
     ep.set_zoom("xl")
     ep.zoomTo.assert_called_once_with(8)
-    ep.setMarginWidth.assert_called_once_with(0, 60)
+    ep.setMarginWidth.assert_any_call(0, 60)
+    ep.setMarginWidth.call_count = 3
 
 
 def test_EditorPane_label():
