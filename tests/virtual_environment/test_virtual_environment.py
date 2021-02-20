@@ -36,7 +36,6 @@ PIP = mu.virtual_environment.Pip
 HERE = os.path.dirname(__file__)
 WHEEL_FILENAME = "arrr-1.0.2-py3-none-any.whl"
 
-
 @pytest.fixture
 def venv_name():
     """Use a random venv name each time, at least partly to expose any

@@ -18,6 +18,7 @@ from mu.debugger.config import DEBUGGER_PORT
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 from mu.logic import LOG_FILE, LOG_DIR, ENCODING
 from mu import mu_debug
+from mu.virtual_environment import VirtualEnvironment as VE
 from PyQt5.QtCore import Qt
 
 
@@ -148,7 +149,7 @@ def test_run():
         "sys.argv", ["mu"]
     ), mock.patch(
         "sys.exit"
-    ) as ex:
+    ) as ex, mock.patch.object(VE, "ensure_and_create") as mock_ensure_and_create:
         run()
         assert set_log.call_count == 1
         # foo.call_count is instantiating the class
@@ -165,6 +166,7 @@ def test_run():
         assert win.call_count == 1
         assert len(win.mock_calls) == 6
         assert ex.call_count == 1
+        assert mock_ensure_and_create.call_count == 1
         window.load_theme.emit("day")
         qa.assert_has_calls([mock.call().setStyleSheet(DAY_STYLE)])
         window.load_theme.emit("night")
@@ -213,7 +215,7 @@ def test_close_splash_screen():
         "mu.app.QApplication"
     ), mock.patch("sys.exit"), mock.patch("mu.app.Editor"), mock.patch(
         "mu.app.AnimatedSplash", return_value=splash
-    ):
+    ), mock.patch.object(VE, "ensure_and_create") as mock_ensure_and_create:
         run()
         assert splash.finish.call_count == 1
 
