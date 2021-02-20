@@ -1,5 +1,6 @@
 import os
 import sys
+import datetime
 from collections import namedtuple
 import functools
 import glob
@@ -22,6 +23,38 @@ from . import config
 wheels_dirpath = os.path.dirname(wheels.__file__)
 
 logger = logging.getLogger(__name__)
+
+
+class SplashLogHandler(logging.NullHandler):
+    """
+    A simple log handler that does only one thing: use the referenced Qt signal
+    to emit the log.
+    """
+
+    def __init__(self, emitter):
+        """
+        Returns an instance of the class that will use the Qt signal passed in
+        as emitter.
+        """
+        super().__init__()
+        self.setLevel(logging.DEBUG)
+        self.emitter = emitter
+
+    def emit(self, record):
+        """
+        Emits a record via the Qt signal.
+        """
+        timestamp = datetime.datetime.fromtimestamp(record.created)
+        messages = record.getMessage().splitlines()
+        for msg in messages:
+            output = "[{level}]() - {message}".format(level=record.levelname, timestamp=timestamp, message=msg)
+            self.emitter.emit(output)
+
+    def handle(self, record):
+        """
+        Handles the log record.
+        """
+        self.emit(record)
 
 
 class Process(QObject):
@@ -372,7 +405,10 @@ class VirtualEnvironment(object):
 
         return False
 
-    def ensure_and_create(self):
+    def ensure_and_create(self, emitter):
+        splash_handler = SplashLogHandler(emitter)
+        logger.addHandler(splash_handler)
+        logger.info("Added handler")
         n_retries = 3
         for n in range(n_retries):
             try:

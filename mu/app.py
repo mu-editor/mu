@@ -67,7 +67,7 @@ class AnimatedSplash(QSplashScreen):
         """
         Ensure signals are connected and start the animation.
         """
-        self.log_lines = 3
+        self.log_lines = 4
         # To hold only number of log_lines of logs to display.
         self.log = []
         self.animation = animation
@@ -118,7 +118,7 @@ class StartupWorker(QObject):
         Blocking and long running tasks for application startup should be
         called from here.
         """
-        venv.ensure_and_create()
+        venv.ensure_and_create(self.display_text)
         self.finished.emit()  # Always called last.
 
 
