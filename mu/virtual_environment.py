@@ -416,7 +416,7 @@ class VirtualEnvironment(object):
         if emitter:
             splash_handler = SplashLogHandler(emitter)
             logger.addHandler(splash_handler)
-            logger.info("Added handler")
+            logger.info("Added log handler")
         n_retries = 3
         for n in range(n_retries):
             try:
@@ -436,7 +436,7 @@ class VirtualEnvironment(object):
         # displayed in the splash screen and then exit via the exception.
         logger.error("Unable to create a working virtual environment.")
         if emitter and splash_handler:
-                logger.removeHandler(splash_handler)
+            logger.removeHandler(splash_handler)
         raise VirtualEnvironmentError(
             "Unable to create a working virtual environment."
         )
