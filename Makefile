@@ -27,6 +27,7 @@ clean:
 	rm -rf dist
 	rm -rf .coverage
 	rm -rf .eggs
+	rm -rf *.egg-info
 	rm -rf docs/_build
 	rm -rf .pytest_cache
 	rm -rf lib
