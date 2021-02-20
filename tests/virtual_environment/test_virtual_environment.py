@@ -311,33 +311,49 @@ def test_venv_is_singleton():
 
 
 def test_venv_folder_created(venv):
-    """When the runtime venv_folder does not exist ensure we create it"""
+    """When not existing venv is ensured we create a new one"""
     os.rmdir(venv.path)
-    with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
-        VE, "ensure_pip"
-    ) as mock_ensure_pip, mock.patch.object(
-        VE, "ensure_interpreter"
-    ) as mock_ensure_interpreter:
-        venv.ensure()
+    with mock.patch.object(VE, "create") as mock_create, mock.patch.object(VE, "ensure", side_effect=mu.virtual_environment.VirtualEnvironmentError()) as mock_ensure:
+        venv.ensure_and_create()
 
     assert mock_create.called
-    assert mock_ensure_pip.called
-    assert mock_ensure_interpreter.called
+
+def _ensure_venv():
+    def _inner_ensure_venv(self, tries=[1, 2, 3]):
+        print("_inner_ensure_venv called with", tries)
+        n_try = tries.pop()
+        if n_try > 1:
+            raise mu.virtual_environment.VirtualEnvironmentError()
+        else:
+            return
+    return _inner_ensure_venv
+
+def test_venv_second_try(venv):
+    """If the creation of a venv fails to produce a valid venv, try again"""
+    with mock.patch.object(VE, "create") as mock_create, mock.patch.object(VE, "ensure", _ensure_venv()) as mock_ensure:
+        venv.ensure_and_create()
+
+    assert mock_create.call_count == 2
 
 
+#
+# Ensure Path
+#
 def test_venv_folder_already_exists(venv):
-    """When the venv_folder does exist as a venv ensure we do not create it"""
+    """When all ensure tests pass, we have an existing venv so don't create it"""
     open(os.path.join(venv.path, "pyvenv.cfg"), "w").close()
-    with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
-        VE, "ensure_pip"
-    ) as mock_ensure_pip, mock.patch.object(
-        VE, "ensure_interpreter"
-    ) as mock_ensure_interpreter:
-        venv.ensure()
+    with mock.patch.object(VE, "ensure") as mock_ensure, mock.patch.object(VE, "create") as mock_create:
+        venv.ensure_and_create()
 
     assert not mock_create.called
-    assert mock_ensure_pip.called
-    assert mock_ensure_interpreter.called
+    assert mock_ensure.called
+
+
+def test_venv_folder_does_not_exist(venv):
+    """When venv_folder does exist not at all we raise an error"""
+    os.rmdir(venv.path)
+    with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
+        venv.ensure_path()
 
 
 def test_venv_folder_already_exists_not_venv(venv):
@@ -345,7 +361,7 @@ def test_venv_folder_already_exists_not_venv(venv):
     assert not os.path.isfile(os.path.join(venv.path, "pyvenv.cfg"))
     assert not os.path.isfile(venv.interpreter)
     with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
-        venv.ensure()
+        venv.ensure_path()
 
 
 def test_venv_folder_already_exists_not_directory(venv_dirpath):
@@ -356,9 +372,12 @@ def test_venv_folder_already_exists_not_directory(venv_dirpath):
     open(venv_dirpath, "w").close()
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
-        venv.ensure()
+        venv.ensure_path()
 
 
+#
+# Ensure Interpreter / Version
+#
 def test_ensure_interpreter(venv):
     """When venv exists but has no interpreter ensure we raise an exception"""
     assert not os.path.isfile(venv.interpreter)
@@ -368,7 +387,26 @@ def test_ensure_interpreter(venv):
     ):
         venv.ensure_interpreter()
 
+def test_ensure_interpreter_version(venv):
+    """When venv interpreter exists but is for a different Python version we raise an exception"""
+    mocked_process = mock.MagicMock()
+    mocked_process.stdout = b"x.y"
+    with mock.patch.object(subprocess, "run", return_value=mocked_process):
+        with pytest.raises(
+            mu.virtual_environment.VirtualEnvironmentError, match="interpreter"
+        ):
+            venv.ensure_interpreter_version()
 
+#
+# Ensure Key Modules
+#
+@pytest.mark.skip("Not sure how to test this one yet")
+def test_ensure_key_modules(venv):
+    assert False
+
+#
+# Ensure Pip
+#
 def test_ensure_pip(venv):
     """When venv exists but has no interpreter ensure we raise an exception"""
     assert not os.path.isfile(venv.interpreter)
