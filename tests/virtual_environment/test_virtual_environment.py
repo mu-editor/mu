@@ -313,10 +313,15 @@ def test_venv_is_singleton():
 def test_venv_folder_created(venv):
     """When not existing venv is ensured we create a new one"""
     os.rmdir(venv.path)
-    with mock.patch.object(VE, "create") as mock_create, mock.patch.object(VE, "ensure", side_effect=mu.virtual_environment.VirtualEnvironmentError()) as mock_ensure:
+    with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
+        VE,
+        "ensure",
+        side_effect=mu.virtual_environment.VirtualEnvironmentError(),
+    ):
         venv.ensure_and_create()
 
     assert mock_create.called
+
 
 def _ensure_venv():
     def _inner_ensure_venv(self, tries=[1, 2, 3]):
@@ -326,11 +331,15 @@ def _ensure_venv():
             raise mu.virtual_environment.VirtualEnvironmentError()
         else:
             return
+
     return _inner_ensure_venv
+
 
 def test_venv_second_try(venv):
     """If the creation of a venv fails to produce a valid venv, try again"""
-    with mock.patch.object(VE, "create") as mock_create, mock.patch.object(VE, "ensure", _ensure_venv()) as mock_ensure:
+    with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
+        VE, "ensure", _ensure_venv()
+    ):
         venv.ensure_and_create()
 
     assert mock_create.call_count == 2
@@ -342,7 +351,9 @@ def test_venv_second_try(venv):
 def test_venv_folder_already_exists(venv):
     """When all ensure tests pass, we have an existing venv so don't create it"""
     open(os.path.join(venv.path, "pyvenv.cfg"), "w").close()
-    with mock.patch.object(VE, "ensure") as mock_ensure, mock.patch.object(VE, "create") as mock_create:
+    with mock.patch.object(VE, "ensure") as mock_ensure, mock.patch.object(
+        VE, "create"
+    ) as mock_create:
         venv.ensure_and_create()
 
     assert not mock_create.called
@@ -387,8 +398,9 @@ def test_ensure_interpreter(venv):
     ):
         venv.ensure_interpreter()
 
+
 def test_ensure_interpreter_version(venv):
-    """When venv interpreter exists but is for a different Python version we raise an exception"""
+    """When venv interpreter exists but for a different Py version raise an exception"""
     mocked_process = mock.MagicMock()
     mocked_process.stdout = b"x.y"
     with mock.patch.object(subprocess, "run", return_value=mocked_process):
@@ -397,12 +409,14 @@ def test_ensure_interpreter_version(venv):
         ):
             venv.ensure_interpreter_version()
 
+
 #
 # Ensure Key Modules
 #
 @pytest.mark.skip("Not sure how to test this one yet")
 def test_ensure_key_modules(venv):
     assert False
+
 
 #
 # Ensure Pip

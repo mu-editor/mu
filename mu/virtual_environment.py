@@ -376,7 +376,7 @@ class VirtualEnvironment(object):
         n_retries = 3
         for n in range(n_retries):
             try:
-                logger.debug("Checking venv; attempt #%d", 1 + n_retries)
+                logger.debug("Checking venv; attempt #%d", 1 + n)
                 self.ensure()
             except VirtualEnvironmentError:
                 logger.debug("Venv not present or correct")
@@ -388,7 +388,15 @@ class VirtualEnvironment(object):
                 break
 
     def ensure(self):
-        """Ensure that a virtual environment exists, creating it if needed"""
+        """Ensure that virtual environment exists and is in a good state"""
+        self.ensure_path()
+        self.ensure_interpreter()
+        self.ensure_interpreter_version()
+        self.ensure_pip()
+        self.ensure_key_modules()
+
+    def ensure_path(self):
+        """Ensure that the virtual environment path exists and is a valid venv"""
         if not os.path.exists(self.path):
             message = "%s does not exist" % self.path
             logger.error(message)
@@ -401,13 +409,7 @@ class VirtualEnvironment(object):
             message = "Directory %s exists but is not a venv" % self.path
             logger.error(message)
             raise VirtualEnvironmentError(message)
-        else:
-            logger.debug("Found existing virtual environment at %s", self.path)
-
-        self.ensure_interpreter()
-        self.ensure_interpreter_version()
-        self.ensure_pip()
-        self.ensure_key_modules()
+        logger.info("Virtual Environment found at %s", self.path)
 
     def ensure_interpreter(self):
         """Ensure there is an interpreter of the expected name at the expected
@@ -509,7 +511,8 @@ class VirtualEnvironment(object):
         self.install_jupyter_kernel()
 
     def install_jupyter_kernel(self):
-        logger.info("Installing Jupyter Kernel")
+        kernel_name = '"Python/Mu ({})"'.format(self.name)
+        logger.info("Installing Jupyter Kernel %s", kernel_name)
         return self.run_python(
             "-m",
             "ipykernel",
@@ -518,7 +521,7 @@ class VirtualEnvironment(object):
             "--name",
             self.name,
             "--display-name",
-            '"Python/Mu ({})"'.format(self.name),
+            kernel_name,
         )
 
     def install_baseline_packages(self):
