@@ -47,7 +47,7 @@ class SplashLogHandler(logging.NullHandler):
         timestamp = datetime.datetime.fromtimestamp(record.created)
         messages = record.getMessage().splitlines()
         for msg in messages:
-            output = "[{level}]() - {message}".format(level=record.levelname, timestamp=timestamp, message=msg)
+            output = "[{level}]({timestamp}) - {message}".format(level=record.levelname, timestamp=timestamp, message=msg)
             self.emitter.emit(output)
 
     def handle(self, record):
