@@ -47,7 +47,9 @@ class SplashLogHandler(logging.NullHandler):
         timestamp = datetime.datetime.fromtimestamp(record.created)
         messages = record.getMessage().splitlines()
         for msg in messages:
-            output = "[{level}]({timestamp}) - {message}".format(level=record.levelname, timestamp=timestamp, message=msg)
+            output = "[{level}]({timestamp}) - {message}".format(
+                level=record.levelname, timestamp=timestamp, message=msg
+            )
             self.emitter.emit(output)
 
     def handle(self, record):
@@ -405,26 +407,38 @@ class VirtualEnvironment(object):
 
         return False
 
-    def ensure_and_create(self, emitter):
-        splash_handler = SplashLogHandler(emitter)
-        logger.addHandler(splash_handler)
-        logger.info("Added handler")
+    def ensure_and_create(self, emitter=None):
+        """
+        If an emitter is provided, this will be used by a custom log handler
+        to display logging events onto a splash screen.
+        """
+        splash_handler = None
+        if emitter:
+            splash_handler = SplashLogHandler(emitter)
+            logger.addHandler(splash_handler)
+            logger.info("Added handler")
         n_retries = 3
         for n in range(n_retries):
             try:
-                logger.debug("Checking venv; attempt #%d", 1 + n)
+                logger.debug("Checking virtual environment; attempt #%d.", 1 + n)
                 self.ensure()
             except VirtualEnvironmentError:
-                logger.debug("Venv not present or correct")
+                logger.debug("Virtual environment not present or correct.")
                 new_dirpath = self._generate_dirpath()
-                logger.debug("Creating new venv at %s", new_dirpath)
+                logger.debug("Creating new virtual environment at %s.", new_dirpath)
                 self.relocate(new_dirpath)
                 self.create()
             else:
+                logger.info("Virtual environment already exists.")
                 return
-
+        # If we get here, there's a problem creating the virtual environment,
+        # so attempt to signal this via the logger, wait for the log to be
+        # displayed in the splash screen and then exit via the exception.
+        logger.error("Unable to create a working virtual environment.")
+        if emitter and splash_handler:
+                logger.removeHandler(splash_handler)
         raise VirtualEnvironmentError(
-            "Unable to create a working virtual environment"
+            "Unable to create a working virtual environment."
         )
 
     def ensure(self):
@@ -436,7 +450,9 @@ class VirtualEnvironment(object):
         self.ensure_key_modules()
 
     def ensure_path(self):
-        """Ensure that the virtual environment path exists and is a valid venv"""
+        """
+        Ensure that the virtual environment path exists and is a valid venv.
+        """
         if not os.path.exists(self.path):
             message = "%s does not exist" % self.path
             logger.error(message)
