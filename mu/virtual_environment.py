@@ -47,7 +47,9 @@ class SplashLogHandler(logging.NullHandler):
         timestamp = datetime.datetime.fromtimestamp(record.created)
         messages = record.getMessage().splitlines()
         for msg in messages:
-            output = "[{level}]({timestamp}) - {message}".format(level=record.levelname, timestamp=timestamp, message=msg)
+            output = "[{level}]({timestamp}) - {message}".format(
+                level=record.levelname, timestamp=timestamp, message=msg
+            )
             self.emitter.emit(output)
 
     def handle(self, record):
@@ -405,10 +407,16 @@ class VirtualEnvironment(object):
 
         return False
 
-    def ensure_and_create(self, emitter):
-        splash_handler = SplashLogHandler(emitter)
-        logger.addHandler(splash_handler)
-        logger.info("Added handler")
+    def ensure_and_create(self, emitter=None):
+        """
+        If an emitter is provided, this will be used by a custom log handler
+        to display logging events onto a splash screen.
+        """
+        splash_handler = None
+        if emitter:
+            splash_handler = SplashLogHandler(emitter)
+            logger.addHandler(splash_handler)
+            logger.info("Added handler")
         n_retries = 3
         for n in range(n_retries):
             try:
@@ -422,6 +430,8 @@ class VirtualEnvironment(object):
                 self.create()
             else:
                 break
+        if emitter and splash_handler:
+                logger.removeHandler(splash_handler)
 
     def ensure(self):
         """Ensure that virtual environment exists and is in a good state"""
@@ -432,7 +442,9 @@ class VirtualEnvironment(object):
         self.ensure_key_modules()
 
     def ensure_path(self):
-        """Ensure that the virtual environment path exists and is a valid venv"""
+        """
+        Ensure that the virtual environment path exists and is a valid venv.
+        """
         if not os.path.exists(self.path):
             message = "%s does not exist" % self.path
             logger.error(message)
