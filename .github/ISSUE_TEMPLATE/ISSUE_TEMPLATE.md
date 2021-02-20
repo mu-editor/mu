@@ -1,3 +1,10 @@
+---
+
+name: New Bug Report
+about: Report a problem with the Mu editor.
+
+---
+
 If you are reporting a bug, we would like to know:
 
 * What you were trying to do,
