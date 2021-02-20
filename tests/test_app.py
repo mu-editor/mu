@@ -149,7 +149,9 @@ def test_run():
         "sys.argv", ["mu"]
     ), mock.patch(
         "sys.exit"
-    ) as ex, mock.patch.object(VE, "ensure_and_create") as mock_ensure_and_create:
+    ) as ex, mock.patch.object(
+        VE, "ensure_and_create"
+    ) as mock_ensure_and_create:
         run()
         assert set_log.call_count == 1
         # foo.call_count is instantiating the class
@@ -215,7 +217,9 @@ def test_close_splash_screen():
         "mu.app.QApplication"
     ), mock.patch("sys.exit"), mock.patch("mu.app.Editor"), mock.patch(
         "mu.app.AnimatedSplash", return_value=splash
-    ), mock.patch.object(VE, "ensure_and_create") as mock_ensure_and_create:
+    ), mock.patch.object(
+        VE, "ensure_and_create"
+    ):
         run()
         assert splash.finish.call_count == 1
 
