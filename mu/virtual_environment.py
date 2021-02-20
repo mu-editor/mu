@@ -416,7 +416,7 @@ class VirtualEnvironment(object):
         if emitter:
             splash_handler = SplashLogHandler(emitter)
             logger.addHandler(splash_handler)
-            logger.info("Added handler")
+            logger.info("Added log handler")
         n_retries = 3
         for n in range(n_retries):
             try:
@@ -431,7 +431,7 @@ class VirtualEnvironment(object):
             else:
                 break
         if emitter and splash_handler:
-                logger.removeHandler(splash_handler)
+            logger.removeHandler(splash_handler)
 
     def ensure(self):
         """Ensure that virtual environment exists and is in a good state"""
