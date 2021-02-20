@@ -286,7 +286,7 @@ class VirtualEnvironment(object):
         self.settings = settings.VirtualEnvironmentSettings()
         self.settings.init()
         dirpath_to_use = (
-            dirpath or self.settings["dirpath"] or self._generate_dirpath()
+            dirpath or self.settings.get("dirpath") or self._generate_dirpath()
         )
         logger.info("Using dirpath: %s", dirpath_to_use)
         self.relocate(dirpath_to_use)
