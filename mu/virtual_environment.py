@@ -285,7 +285,9 @@ class VirtualEnvironment(object):
         self._bin_extension = ".exe" if self._is_windows else ""
         self.settings = settings.VirtualEnvironmentSettings()
         self.settings.init()
-        dirpath_to_use = dirpath or self.settings["dirpath"] or self._generate_dirpath()
+        dirpath_to_use = (
+            dirpath or self.settings["dirpath"] or self._generate_dirpath()
+        )
         logger.info("Using dirpath: %s", dirpath_to_use)
         self.relocate(dirpath_to_use)
 
@@ -302,7 +304,7 @@ class VirtualEnvironment(object):
         return "%s-%s-%s" % (
             config.VENV_DIR,
             "%s%s" % sys.version_info[:2],
-            time.strftime("%Y%m%d-%H%M%S")
+            time.strftime("%Y%m%d-%H%M%S"),
         )
 
     def relocate(self, dirpath):
@@ -371,12 +373,19 @@ class VirtualEnvironment(object):
         return False
 
     def ensure_and_create(self):
-        try:
-            self.ensure()
-        except VirtualEnvironmentError:
-            self.relocate(self._generate_dirpath())
-            self.create()
-            self.ensure()
+        n_retries = 3
+        for n in range(n_retries):
+            try:
+                logger.debug("Checking venv; attempt #%d", 1 + n_retries)
+                self.ensure()
+            except VirtualEnvironmentError:
+                logger.debug("Venv not present or correct")
+                new_dirpath = self._generate_dirpath()
+                logger.debug("Creating new venv at %s", new_dirpath)
+                self.relocate(new_dirpath)
+                self.create()
+            else:
+                break
 
     def ensure(self):
         """Ensure that a virtual environment exists, creating it if needed"""
@@ -426,28 +435,38 @@ class VirtualEnvironment(object):
         #
         # Can't use self.run_python as we're not yet within the Qt UI loop
         #
-        process = subprocess.run([self.interpreter, "-c", 'import sys; print("%s%s" % sys.version_info[:2])'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=True)
+        process = subprocess.run(
+            [
+                self.interpreter,
+                "-c",
+                'import sys; print("%s%s" % sys.version_info[:2])',
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            check=True,
+        )
         venv_version = process.stdout.decode("utf-8").strip()
         if current_version == venv_version:
             logger.info("Both interpreters at version %s", current_version)
         else:
             message = (
-                "Current interpreter is at version %s; venv interpreter is at version %s" % (current_version, venv_version)
+                "Mu interpreter is at version %s; venv interpreter is at version %s"
+                % (current_version, venv_version)
             )
             logger.error(message)
             raise VirtualEnvironmentError(message)
 
     def ensure_key_modules(self):
-        """Ensure that the venv interpreter is able to load key modules
-        """
-        #
-        # FIXME: import from wheels.mode_packages, but need import name, not PyPI name
-        #
-        modules = ["pygame", "pgzero", "flask", "serial"]
-        for module in modules:
+        """Ensure that the venv interpreter is able to load key modules"""
+        for module, *_ in wheels.mode_packages:
             logger.debug("Trying to import %s", module)
             try:
-                process = subprocess.run([self.interpreter, "-c", 'import %s' % module], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=True)
+                subprocess.run(
+                    [self.interpreter, "-c", "import %s" % module],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    check=True,
+                )
             except subprocess.CalledProcessError:
                 message = "Failed to import %s" % module
                 logger.error(message)
