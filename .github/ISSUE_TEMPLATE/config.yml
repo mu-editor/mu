@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Request New Features
+    url: https://github.com/mu-editor/mu/discussions/categories/ideas-new-features
+    about: New features are first discussed here.
+  - name: General discussion
+    url: https://github.com/mu-editor/mu/discussions/
+    about: You can talk about anything else in the Discussions section.
+  - name: Tutorials & Guides
+    url: https://codewith.mu
+    about: Have you checked the Mu website for documentation first?
