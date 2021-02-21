@@ -310,39 +310,53 @@ def test_venv_is_singleton():
         assert module.venv is venv
 
 
+def _ensure_venv(results):
+    def _inner_ensure_venv(self, results=results):
+        print("_inner_ensure_venv called with", results)
+        result = results.pop()
+        print("Using result", result)
+        if isinstance(result, Exception):
+            raise result
+        else:
+            return result
+
+    return _inner_ensure_venv
+
+
 def test_venv_folder_created(venv):
     """When not existing venv is ensured we create a new one"""
     os.rmdir(venv.path)
     with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
         VE,
         "ensure",
-        side_effect=mu.virtual_environment.VirtualEnvironmentError(),
+        _ensure_venv([True, mu.virtual_environment.VirtualEnvironmentError()]),
     ):
         venv.ensure_and_create()
 
     assert mock_create.called
 
 
-def _ensure_venv():
-    def _inner_ensure_venv(self, tries=[1, 2, 3]):
-        print("_inner_ensure_venv called with", tries)
-        n_try = tries.pop()
-        if n_try > 1:
-            raise mu.virtual_environment.VirtualEnvironmentError()
-        else:
-            return
-
-    return _inner_ensure_venv
-
-
 def test_venv_second_try(venv):
     """If the creation of a venv fails to produce a valid venv, try again"""
     with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
-        VE, "ensure", _ensure_venv()
+        VE,
+        "ensure",
+        _ensure_venv([True, mu.virtual_environment.VirtualEnvironmentError()]),
     ):
         venv.ensure_and_create()
 
-    assert mock_create.call_count == 2
+    assert mock_create.call_count == 1
+
+
+def test_venv_fails_after_three_tries(venv):
+    """If the venv fails to ensure after three tries we raise an exception"""
+    with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
+        VE,
+        "ensure",
+        _ensure_venv([mu.virtual_environment.VirtualEnvironmentError(), mu.virtual_environment.VirtualEnvironmentError(), mu.virtual_environment.VirtualEnvironmentError()]),
+    ):
+        with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
+            venv.ensure_and_create()
 
 
 #
