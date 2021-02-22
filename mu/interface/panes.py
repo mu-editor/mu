@@ -936,6 +936,18 @@ class PythonProcessPane(QTextEdit):
             self.process.start(interpreter, args)
             self.running = True
 
+    def stop_process(self):
+        if self.process:
+            self.process.terminate()
+            terminated = self.process.waitForFinished(10)
+            if not terminated:
+                self.process.kill()
+                self.process.waitForFinished()
+            self.running = False
+
+    def _del_(self):
+        self.stop_process()
+
     def finished(self, code, status):
         """
         Handle when the child process finishes.

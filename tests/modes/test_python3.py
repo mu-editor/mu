@@ -297,8 +297,7 @@ def test_python_stop_script():
     mock_runner = mock.MagicMock()
     pm.runner = mock_runner
     pm.stop_script()
-    mock_runner.process.kill.assert_called_once_with()
-    mock_runner.process.waitForFinished.assert_called_once_with()
+    mock_runner.stop_process.assert_called_once_with()
     assert pm.runner is None
 
 
