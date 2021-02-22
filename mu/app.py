@@ -24,6 +24,7 @@ from logging.handlers import TimedRotatingFileHandler
 import os
 import platform
 import sys
+import signal
 
 from PyQt5.QtCore import (
     Qt,
@@ -31,6 +32,7 @@ from PyQt5.QtCore import (
     QThread,
     QObject,
     pyqtSignal,
+    QTimer,
 )
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
@@ -106,6 +108,41 @@ def excepthook(*exc_args):
     logging.error("Unrecoverable error", exc_info=(exc_args))
     sys.__excepthook__(*exc_args)
     sys.exit(1)
+
+
+# The following function handles a problem with using CTRL+C
+# in terminal to terminate Qt applications.
+# From:
+#  https://coldfix.eu/2016/11/08/pyqt-boilerplate/#keyboardinterrupt-ctrl-c
+def setup_interrupt_handling(editor_quit):
+    """Setup handling of KeyboardInterrupt (Ctrl-C) for PyQt."""
+
+    # Define this as a global function to make sure it is not garbage
+    # collected when going out of scope:
+    global _interrupt_handler
+
+    def _interrupt_handler(signum, frame):
+        """Handle KeyboardInterrupt: quit application."""
+        editor_quit()
+
+    def safe_timer(timeout, func, *args, **kwargs):
+        """
+        Create a timer that is safe against garbage collection and overlapping
+        calls. See: http://ralsina.me/weblog/posts/BB974.html
+        """
+
+        def timer_event():
+            try:
+                func(*args, **kwargs)
+            finally:
+                QTimer.singleShot(timeout, timer_event)
+
+        QTimer.singleShot(timeout, timer_event)
+
+    signal.signal(signal.SIGINT, _interrupt_handler)
+    # Regularly run some (any) python code, so the signal handler gets a
+    # chance to be executed:
+    safe_timer(50, lambda: None)
 
 
 def setup_logging():
@@ -252,6 +289,9 @@ def run():
     editor_window.connect_find_again(find_again_handlers, "F3")
     editor_window.connect_toggle_comments(editor.toggle_comments, "Ctrl+K")
     editor.connect_to_status_bar(editor_window.status_bar)
+
+    # Make CTRL-C quit Mu
+    setup_interrupt_handling(editor.quit)
 
     # Restore the previous session along with files passed by the os
     editor.restore_session(sys.argv[1:])
