@@ -865,7 +865,7 @@ class Editor(QObject):
         # https://stackoverflow.com/questions/65294987/detect-os-dark-mode-in-python
 
         def macos_prefers_dark_theme(self):
-            if sys.platform != "darwin":
+            if sys.platform == "darwin":
                 cmd = "defaults read -g AppleInterfaceStyle"
                 p = subprocess.Popen(
                     cmd,
@@ -900,8 +900,8 @@ class Editor(QObject):
                     break
             return False
 
-        def GNOME_prefers_dark_theme(self):
-            if sys.environ["XDG_CURRENT_DESKTOP"] != "GNOME":
+        def gnome_prefers_dark_theme(self):
+            if sys.environ.get("XDG_CURRENT_DESKTOP") != "GNOME":
                 return False
             # Detect dark mode in GNOME
             getArgs = [
@@ -910,21 +910,18 @@ class Editor(QObject):
                 "org.gnome.desktop.interface",
                 "gtk-theme",
             ]
-
             currentTheme = (
                 subprocess.run(getArgs, capture_output=True)
                 .stdout.decode("utf-8")
                 .strip()
                 .strip("'")
             )
-
-            darkIndicator = "-dark"
-            return currentTheme.endswith(darkIndicator)
+            return currentTheme.endswith("-dark")
 
         preferrence_checkers = [
             macos_prefers_dark_theme,
             windows_prefers_dark_theme,
-            GNOME_prefers_dark_theme,
+            gnome_prefers_dark_theme,
         ]
 
         # Try all preference checkers, if any of the prefers dark
