@@ -867,13 +867,8 @@ class Editor(QObject):
         def macos_prefers_dark_theme(self):
             if sys.platform == "darwin":
                 cmd = "defaults read -g AppleInterfaceStyle"
-                p = subprocess.Popen(
-                    cmd,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    shell=True,
-                )
-                return bool(p.communicate()[0])
+                result = subprocess.run(cmd.split())
+                return result.return_code == 0
 
         def windows_prefers_dark_theme(self):
             if sys.platform != "win32":
@@ -904,19 +899,10 @@ class Editor(QObject):
             if sys.environ.get("XDG_CURRENT_DESKTOP") != "GNOME":
                 return False
             # Detect dark mode in GNOME
-            getArgs = [
-                "gsettings",
-                "get",
-                "org.gnome.desktop.interface",
-                "gtk-theme",
-            ]
-            currentTheme = (
-                subprocess.run(getArgs, capture_output=True)
-                .stdout.decode("utf-8")
-                .strip()
-                .strip("'")
-            )
-            return currentTheme.endswith("-dark")
+            cmd = "gsettings get org.gnome.desktop.interface gtk-theme"
+            result = subprocess.run(cmd.split(), capture_output=True)
+            current_theme = result.stdout.decode("utf-8").strip().strip("'")
+            return current_theme.endswith("-dark")
 
         preferrence_checkers = [
             macos_prefers_dark_theme,
