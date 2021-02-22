@@ -31,6 +31,7 @@ import mu.virtual_environment
 import mu.wheels
 
 VE = mu.virtual_environment.VirtualEnvironment
+VEError = mu.virtual_environment.VirtualEnvironmentError
 PIP = mu.virtual_environment.Pip
 
 HERE = os.path.dirname(__file__)
@@ -189,7 +190,7 @@ def test_download_wheels_if_not_present(venv, test_wheels):
         # Ignore the exception which will arise from not actually
         # downloading any wheels!
         #
-        except mu.virtual_environment.VirtualEnvironmentError:
+        except VEError:
             pass
 
     assert mock_download.called
@@ -310,39 +311,51 @@ def test_venv_is_singleton():
         assert module.venv is venv
 
 
+def _ensure_venv(results):
+    def _inner_ensure_venv(self, results=results):
+        result = results.pop()
+        if isinstance(result, Exception):
+            raise result
+        else:
+            return result
+
+    return _inner_ensure_venv
+
+
 def test_venv_folder_created(venv):
     """When not existing venv is ensured we create a new one"""
     os.rmdir(venv.path)
     with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
         VE,
         "ensure",
-        side_effect=mu.virtual_environment.VirtualEnvironmentError(),
+        _ensure_venv([True, VEError()]),
     ):
         venv.ensure_and_create()
 
     assert mock_create.called
 
 
-def _ensure_venv():
-    def _inner_ensure_venv(self, tries=[1, 2, 3]):
-        print("_inner_ensure_venv called with", tries)
-        n_try = tries.pop()
-        if n_try > 1:
-            raise mu.virtual_environment.VirtualEnvironmentError()
-        else:
-            return
-
-    return _inner_ensure_venv
-
-
 def test_venv_second_try(venv):
     """If the creation of a venv fails to produce a valid venv, try again"""
     with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
-        VE, "ensure", _ensure_venv()
+        VE,
+        "ensure",
+        _ensure_venv([True, VEError()]),
     ):
         venv.ensure_and_create()
 
-    assert mock_create.call_count == 2
+    assert mock_create.call_count == 1
+
+
+def test_venv_fails_after_three_tries(venv):
+    """If the venv fails to ensure after three tries we raise an exception"""
+    with mock.patch.object(VE, "create"), mock.patch.object(
+        VE,
+        "ensure",
+        _ensure_venv([VEError(), VEError(), VEError()]),
+    ):
+        with pytest.raises(VEError):
+            venv.ensure_and_create()
 
 
 #
@@ -363,7 +376,7 @@ def test_venv_folder_already_exists(venv):
 def test_venv_folder_does_not_exist(venv):
     """When venv_folder does exist not at all we raise an error"""
     os.rmdir(venv.path)
-    with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
+    with pytest.raises(VEError):
         venv.ensure_path()
 
 
@@ -371,7 +384,7 @@ def test_venv_folder_already_exists_not_venv(venv):
     """When venv_folder does exist not as a venv ensure we raise an error"""
     assert not os.path.isfile(os.path.join(venv.path, "pyvenv.cfg"))
     assert not os.path.isfile(venv.interpreter)
-    with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
+    with pytest.raises(VEError):
         venv.ensure_path()
 
 
@@ -382,7 +395,7 @@ def test_venv_folder_already_exists_not_directory(venv_dirpath):
     os.rmdir(venv_dirpath)
     open(venv_dirpath, "w").close()
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
-    with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
+    with pytest.raises(VEError):
         venv.ensure_path()
 
 
@@ -393,9 +406,7 @@ def test_ensure_interpreter(venv):
     """When venv exists but has no interpreter ensure we raise an exception"""
     assert not os.path.isfile(venv.interpreter)
 
-    with pytest.raises(
-        mu.virtual_environment.VirtualEnvironmentError, match="Interpreter"
-    ):
+    with pytest.raises(VEError, match="[Ii]nterpreter"):
         venv.ensure_interpreter()
 
 
@@ -404,9 +415,7 @@ def test_ensure_interpreter_version(venv):
     mocked_process = mock.MagicMock()
     mocked_process.stdout = b"x.y"
     with mock.patch.object(subprocess, "run", return_value=mocked_process):
-        with pytest.raises(
-            mu.virtual_environment.VirtualEnvironmentError, match="interpreter"
-        ):
+        with pytest.raises(VEError, match="[Ii]nterpreter"):
             venv.ensure_interpreter_version()
 
 
@@ -425,9 +434,7 @@ def test_ensure_pip(venv):
     """When venv exists but has no interpreter ensure we raise an exception"""
     assert not os.path.isfile(venv.interpreter)
 
-    with pytest.raises(
-        mu.virtual_environment.VirtualEnvironmentError, match="Pip"
-    ):
+    with pytest.raises(VEError, match="Pip"):
         venv.ensure_pip()
 
 

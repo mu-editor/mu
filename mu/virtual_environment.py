@@ -385,7 +385,11 @@ class VirtualEnvironment(object):
                 self.relocate(new_dirpath)
                 self.create()
             else:
-                break
+                return
+
+        raise VirtualEnvironmentError(
+            "Unable to create a working virtual environment"
+        )
 
     def ensure(self):
         """Ensure that virtual environment exists and is in a good state"""
