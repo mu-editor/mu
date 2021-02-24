@@ -867,15 +867,18 @@ def test_editor_restore_session_existing_runtime():
     ed = mocked_editor(mode)
     with mock.patch("os.path.isfile", return_value=True):
         with mock.patch.object(venv, "relocate") as venv_relocate:
-            with generate_session(
-                theme,
-                mode,
-                file_contents,
-                microbit_runtime="/foo",
-                zoom_level=5,
-                venv_path="foo",
+            with mock.patch.object(venv, "ensure"), mock.patch.object(
+                venv, "create"
             ):
-                ed.restore_session()
+                with generate_session(
+                    theme,
+                    mode,
+                    file_contents,
+                    microbit_runtime="/foo",
+                    zoom_level=5,
+                    venv_path="foo",
+                ):
+                    ed.restore_session()
 
     assert ed.theme == theme
     assert ed._view.add_tab.call_count == len(file_contents)

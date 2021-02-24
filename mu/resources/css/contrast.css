@@ -38,8 +38,8 @@ QListWidget, QTreeView, QTreeView::branch {
 }
 
 QTextEdit, QPlainTextEdit, QLineEdit {
-    background-color: white;
-    color: black;
+    background-color: black;
+    color: white;
     border: 2px solid white;
 }
 
@@ -271,12 +271,15 @@ QDockWidget > QWidget {
     border-bottom: 1px solid #555;   /* Border */
 }
 
-QMainWindow::separator:horizontal {
-    width: 2px;
+QMainWindow::separator:horizontal,
+QMainWindow::separator:vertical {
+    width: 8px;
+    background: #333;
 }
 
-QMainWindow::separator:vertical {
-    height: 2px;
+QMainWindow::separator:horizontal:hover,
+QMainWindow::separator:vertical:hover {
+    background: white;
 }
 
 QHeaderView::section {

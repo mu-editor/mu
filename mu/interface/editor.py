@@ -284,6 +284,20 @@ class EditorPane(QsciScintilla):
             "xxxl": 48,
         }
         self.zoomTo(sizes[size])
+        margins = {
+            "xs": 30,
+            "s": 35,
+            "m": 45,
+            "l": 50,
+            "xl": 60,
+            "xxl": 75,
+            "xxxl": 85,
+        }
+        # Make the margin left of line numbers follow zoom level
+        self.setMarginWidth(0, margins[size])
+        # Make margins around debugger-marker follow zoom level
+        self.setMarginWidth(1, margins[size] * 0.25)
+        self.setMarginWidth(4, margins[size] * 0.1)
 
     @property
     def label(self):

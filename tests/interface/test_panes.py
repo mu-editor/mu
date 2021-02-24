@@ -17,6 +17,7 @@ import mu
 import mu.interface.panes
 from mu import i18n
 from mu.interface.panes import CHARTS
+from mu.interface.themes import DAY_STYLE, NIGHT_STYLE, CONTRAST_STYLE
 
 
 def test_PANE_ZOOM_SIZES():
@@ -1420,9 +1421,9 @@ def test_JupyterREPLPane_set_theme_day():
     Make sure the theme is correctly set for day.
     """
     jw = mu.interface.panes.JupyterREPLPane()
-    jw.set_default_style = mock.MagicMock()
     jw.set_theme("day")
-    jw.set_default_style.assert_called_once_with()
+    assert jw.style_sheet == DAY_STYLE
+    assert jw.syntax_style == "default"
 
 
 def test_JupyterREPLPane_set_theme_night():
@@ -1430,9 +1431,9 @@ def test_JupyterREPLPane_set_theme_night():
     Make sure the theme is correctly set for night.
     """
     jw = mu.interface.panes.JupyterREPLPane()
-    jw.set_default_style = mock.MagicMock()
     jw.set_theme("night")
-    jw.set_default_style.assert_called_once_with(colors="nocolor")
+    assert jw.style_sheet == NIGHT_STYLE
+    assert jw.syntax_style == "monokai"
 
 
 def test_JupyterREPLPane_set_theme_contrast():
@@ -1440,9 +1441,9 @@ def test_JupyterREPLPane_set_theme_contrast():
     Make sure the theme is correctly set for high contrast.
     """
     jw = mu.interface.panes.JupyterREPLPane()
-    jw.set_default_style = mock.MagicMock()
     jw.set_theme("contrast")
-    jw.set_default_style.assert_called_once_with(colors="nocolor")
+    assert jw.style_sheet == CONTRAST_STYLE
+    assert jw.syntax_style == "bw"
 
 
 def test_JupyterREPLPane_setFocus():

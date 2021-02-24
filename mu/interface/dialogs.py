@@ -241,18 +241,6 @@ class ESPFirmwareFlasherWidget(QWidget):
         widget_layout = QVBoxLayout()
         self.setLayout(widget_layout)
 
-        # Check whether esptool is installed, show error if not
-        if not self.esptool_is_installed():
-            error_msg = _(
-                "The ESP Firmware flasher requires the esptool' "
-                "package to be installed.\n"
-                "Select \"Third Party Packages\", add 'esptool' "
-                "and click 'OK'"
-            )
-            error_label = QLabel(error_msg)
-            widget_layout.addWidget(error_label)
-            return
-
         # Instructions
         grp_instructions = QGroupBox(
             _("How to flash MicroPython to your device")
@@ -343,6 +331,7 @@ class ESPFirmwareFlasherWidget(QWidget):
             self.txtFolder.setText(filename)
 
     def update_firmware(self):
+        baudrate = 115200
 
         if self.mode.repl:
             self.mode.toggle_repl(None)
@@ -362,22 +351,24 @@ class ESPFirmwareFlasherWidget(QWidget):
 
         if self.device_type.currentText() == "ESP32":
             write_command = (
-                '"{}" "{}" --chip esp32 --port {} --baud 460800 '
+                '"{}" "{}" --chip esp32 --port {} --baud {} '
                 'write_flash -z 0x1000 "{}"'
             ).format(
                 venv.interpreter,
                 esptool,
                 device.port,
+                baudrate,
                 self.txtFolder.text(),
             )
         else:
             write_command = (
-                '"{}" "{}" --chip esp8266 --port {} --baud 460800 '
+                '"{}" "{}" --chip esp8266 --port {} --baud {} '
                 'write_flash --flash_size=detect 0 "{}"'
             ).format(
                 venv.interpreter,
                 esptool,
                 device.port,
+                baudrate,
                 self.txtFolder.text(),
             )
 

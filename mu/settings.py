@@ -257,7 +257,9 @@ class SessionSettings(SettingsBase):
 
 class VirtualEnvironmentSettings(SettingsBase):
 
-    DEFAULTS = {"baseline_packages": [], "dirpath": config.VENV_DIR}
+    DEFAULTS = {
+        "baseline_packages": [],
+    }
     autosave = True
     filestem = "venv"
 

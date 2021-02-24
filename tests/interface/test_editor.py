@@ -258,12 +258,16 @@ def test_EditorPane_set_theme():
 
 def test_EditorPane_set_zoom():
     """
-    Ensure the t-shirt size is turned into a call to parent's zoomTo.
+    Ensure the t-shirt size is turned into a call to parent's zoomTo,
+    and the margin width are adjusted properly.
     """
     ep = mu.interface.editor.EditorPane("/foo/bar.py", "baz")
     ep.zoomTo = mock.MagicMock()
+    ep.setMarginWidth = mock.MagicMock()
     ep.set_zoom("xl")
     ep.zoomTo.assert_called_once_with(8)
+    ep.setMarginWidth.assert_any_call(0, 60)
+    ep.setMarginWidth.call_count = 3
 
 
 def test_EditorPane_label():

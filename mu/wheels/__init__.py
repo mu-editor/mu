@@ -10,15 +10,22 @@ import subprocess
 
 logger = logging.getLogger(__name__)
 
+#
+# List of base packages to support modes
+# The first element should be the importable name (so "serial" rather than "pyserial")
+# The second element is passed to `pip download|install`
+# Any additional elements are passed to `pip` for specific purposes
+#
 mode_packages = [
     (
         "pgzero",
         "git+https://github.com/mu-editor/pgzero.git@mu-wheel",
     ),
-    ("Flask", "flask==1.1.2"),
-    ("pyserial", "pyserial==3.4"),
+    ("flask", "flask==1.1.2"),
+    ("serial", "pyserial>=3.0"),
     ("qtconsole", "qtconsole==4.7.4"),
     ("nudatus", "nudatus>=0.0.3"),
+    ("esptool", "esptool==3.*"),
 ]
 WHEELS_DIRPATH = os.path.dirname(__file__)
 
