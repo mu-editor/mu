@@ -865,10 +865,11 @@ class Editor(QObject):
         # https://stackoverflow.com/questions/65294987/detect-os-dark-mode-in-python
 
         def macos_prefers_dark_theme(self):
-            if sys.platform == "darwin":
-                cmd = "defaults read -g AppleInterfaceStyle"
-                result = subprocess.run(cmd.split())
-                return result.return_code == 0
+            if sys.platform != "darwin":
+                return False
+            cmd = "defaults read -g AppleInterfaceStyle"
+            result = subprocess.run(cmd.split())
+            return result.return_code == 0
 
         def windows_prefers_dark_theme(self):
             if sys.platform != "win32":
