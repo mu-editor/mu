@@ -297,9 +297,7 @@ def test_installed_packages():
         with patch.object(Pip, "freeze", return_value=pip_freeze_output):
             with patch.object(Pip, "list", return_value=pip_list_output):
                 installed_packages = set(pip.installed())
-                expected_packages = set(
-                    (name, version) for (name, version, location) in packages
-                )
+                expected_packages = {(name, version) for (name, version, location) in packages}
                 assert installed_packages == expected_packages
 
 
@@ -331,9 +329,7 @@ def test_installed_packages_no_location():
                 mock_list.return_value = pip_list_output
 
                 installed_packages = set(pip.installed())
-                expected_packages = set(
-                    (name, version) for (name, version, location) in packages
-                )
+                expected_packages = {(name, version) for (name, version, location) in packages}
                 assert installed_packages == expected_packages
 
 

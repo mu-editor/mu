@@ -405,11 +405,11 @@ class VirtualEnvironment(object):
             message = "%s does not exist" % self.path
             logger.error(message)
             raise VirtualEnvironmentError(message)
-        elif not os.path.isdir(self.path):
+        if not os.path.isdir(self.path):
             message = "%s exists but is not a directory" % self.path
             logger.error(message)
             raise VirtualEnvironmentError(message)
-        elif not self._directory_is_venv():
+        if not self._directory_is_venv():
             message = "Directory %s exists but is not a venv" % self.path
             logger.error(message)
             raise VirtualEnvironmentError(message)

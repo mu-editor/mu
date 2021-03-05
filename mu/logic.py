@@ -632,7 +632,7 @@ class DeviceList(QtCore.QAbstractListModel):
     def __init__(self, modes, parent=None):
         super().__init__(parent)
         self.modes = modes
-        self._devices = list()
+        self._devices = []
 
     def __iter__(self):
         """

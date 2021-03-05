@@ -140,7 +140,7 @@ def script_to_fs(script, microbit_version_id):
     chunk = header + script[:first_chunk_data_size]
     script = script[first_chunk_data_size:]
     chunks.append(bytearray(chunk + (b"\xff" * (chunk_size - len(chunk)))))
-    while len(script):
+    while script:
         # The previous chunk tail points to this one
         chunk_index = len(chunks) + 1
         chunks[-1][-1] = chunk_index

@@ -25,11 +25,11 @@ def _walk(
     start_from=".", include_patterns=None, exclude_patterns=None, recurse=True
 ):
     if include_patterns:
-        _include_patterns = set(os.path.normpath(p) for p in include_patterns)
+        _include_patterns = {os.path.normpath(p) for p in include_patterns}
     else:
         _include_patterns = set()
     if exclude_patterns:
-        _exclude_patterns = set(os.path.normpath(p) for p in exclude_patterns)
+        _exclude_patterns = {os.path.normpath(p) for p in exclude_patterns}
     else:
         _exclude_patterns = set()
 

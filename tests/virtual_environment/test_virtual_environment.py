@@ -290,7 +290,7 @@ def test_installed_packages(patched, venv):
             assert set(baseline_result) == set(
                 ["mu-editor"] + [name for name, _ in baseline_packages]
             )
-            assert set(user_result) == set(name for name, _ in user_packages)
+            assert set(user_result) == {name for name, _ in user_packages}
 
 
 def test_venv_is_singleton():
@@ -316,8 +316,7 @@ def _ensure_venv(results):
         result = results.pop()
         if isinstance(result, Exception):
             raise result
-        else:
-            return result
+        return result
 
     return _inner_ensure_venv
 
