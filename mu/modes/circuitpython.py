@@ -44,7 +44,7 @@ class CircuitPythonMode(MicroPythonMode):
         (0x2B04, 0xC00C, None, "Particle Argon"),
         (0x2B04, 0xC00D, None, "Particle Boron"),
         (0x2B04, 0xC00E, None, "Particle Xenon"),
-        (0x239A, None, None, "Adafruit CircuitPlayground"),
+        (0x239A, None, None, "Adafruit CircuitPython board"),
         # Non-Adafruit boards
         (0x1209, 0xBAB1, None, "Electronic Cats Meow Meow"),
         (0x1209, 0xBAB2, None, "Electronic Cats CatWAN USBStick"),
