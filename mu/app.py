@@ -22,7 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
+import time
 import platform
+import traceback
 import sys
 import urllib
 import webbrowser
@@ -44,7 +46,7 @@ from .virtual_environment import venv
 from . import __version__
 from .logic import Editor, LOG_FILE, LOG_DIR, ENCODING
 from .interface import Window
-from .resources import load_icon, load_movie
+from .resources import load_icon, load_movie, load_pixmap
 from .modes import (
     PythonMode,
     CircuitPythonMode,
@@ -101,9 +103,24 @@ class AnimatedSplash(QSplashScreen):
         self.log.append(text)
         self.log = self.log[-self.log_lines :]
         if self.log:
-            self.showMessage(
-                "\n".join(self.log), Qt.AlignBottom | Qt.AlignLeft
-            )
+            self.draw_text("\n".join(self.log))
+
+    def draw_text(self, text):
+        """
+        Draw text into splash screen.
+        """
+        if text:
+            self.showMessage(text, Qt.AlignBottom | Qt.AlignLeft)
+
+    def failed(self, text):
+        """
+        Something has gone wrong during start-up, so signal this, display a
+        helpful message along with instructions for what to do.
+        """
+        self.animation.stop()
+        pixmap = load_pixmap("splash_fail.png")
+        self.setPixmap(pixmap)
+        self.draw_text(text + "\n\nThis screen will close in a few seconds")
 
 
 class StartupWorker(QObject):
@@ -114,16 +131,31 @@ class StartupWorker(QObject):
     The animated splash screen will be shown until this thread is finished.
     """
 
-    finished = pyqtSignal()
-    display_text = pyqtSignal(str)
+    finished = pyqtSignal()  # emitted when successfully finished.
+    failed = pyqtSignal(str)  # emitted if finished with an error.
+    display_text = pyqtSignal(str)  # emitted to update the splash text.
 
     def run(self):
         """
         Blocking and long running tasks for application startup should be
         called from here.
         """
-        venv.ensure_and_create(self.display_text)
-        self.finished.emit()  # Always called last.
+        try:
+            venv.ensure_and_create(self.display_text)
+            x = 1/0
+            self.finished.emit()  # Always called last.
+        except Exception as ex:
+            # Catch all exceptions just in case.
+            # Report the failure, along with a summary to show the user.
+            stack = traceback.extract_stack()[:-1]
+            msg = "\n".join(traceback.format_list(stack))
+            msg += "\n\n" + traceback.format_exc()
+            self.failed.emit(msg)
+            # Sleep a while in the thread so the user sees something is wrong.
+            time.sleep(7)
+            self.finished.emit()
+            # Re-raise for crash handler to kick in.
+            raise ex
 
 
 def excepthook(*exc_args):
@@ -263,6 +295,7 @@ def run():
     worker.finished.connect(thread.quit)
     worker.finished.connect(worker.deleteLater)
     worker.display_text.connect(splash.draw_log)
+    worker.failed.connect(splash.failed)
     # Stop the blocking event loop when the thread is finished.
     thread.finished.connect(initLoop.quit)
     thread.finished.connect(thread.deleteLater)

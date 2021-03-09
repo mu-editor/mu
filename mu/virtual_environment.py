@@ -420,12 +420,16 @@ class VirtualEnvironment(object):
         n_retries = 3
         for n in range(n_retries):
             try:
-                logger.debug("Checking virtual environment; attempt #%d.", 1 + n)
+                logger.debug(
+                    "Checking virtual environment; attempt #%d.", 1 + n
+                )
                 self.ensure()
             except VirtualEnvironmentError:
                 logger.debug("Virtual environment not present or correct.")
                 new_dirpath = self._generate_dirpath()
-                logger.debug("Creating new virtual environment at %s.", new_dirpath)
+                logger.debug(
+                    "Creating new virtual environment at %s.", new_dirpath
+                )
                 self.relocate(new_dirpath)
                 self.create()
             else:
