@@ -14,9 +14,9 @@ from mu.app import (
 )
 from mu.debugger.config import DEBUGGER_PORT
 
-# ~ from mu.debugger import runner as debugger_runner
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 from mu.logic import LOG_FILE, LOG_DIR, ENCODING
+from mu.resources import load_icon, load_movie, load_pixmap
 from mu import mu_debug
 from mu.virtual_environment import VirtualEnvironment as VE
 from PyQt5.QtCore import Qt
@@ -58,9 +58,11 @@ def test_animated_splash_init():
     """
     Ensure the AnimatedSplash class uses the passed in animation.
     """
-    mock_gif = mock.MagicMock()
-    asplash = AnimatedSplash(mock_gif)
-    assert asplash.animation == mock_gif
+    test_animation = load_movie("splash_screen")
+    test_animation.frameChanged = mock.MagicMock()
+    test_animation.start = mock.MagicMock()
+    asplash = AnimatedSplash(test_animation)
+    assert asplash.animation == test_animation
     asplash.animation.frameChanged.connect.assert_called_once_with(
         asplash.set_frame
     )
@@ -72,15 +74,69 @@ def test_animated_splash_set_frame():
     Ensure the splash screen's pixmap is updated with the animation's current
     pixmap.
     """
-    mock_gif = mock.MagicMock()
-    asplash = AnimatedSplash(mock_gif)
+    test_animation = load_movie("splash_screen")
+    test_animation.frameChanged = mock.MagicMock()
+    test_animation.start = mock.MagicMock()
+    asplash = AnimatedSplash(test_animation)
     asplash.setPixmap = mock.MagicMock()
     asplash.setMask = mock.MagicMock()
+    test_animation.currentPixmap = mock.MagicMock()
     asplash.set_frame()
     asplash.animation.currentPixmap.assert_called_once_with()
     pixmap = asplash.animation.currentPixmap()
     asplash.setPixmap.assert_called_once_with(pixmap)
     asplash.setMask.assert_called_once_with(pixmap.mask())
+
+
+def test_animated_splash_draw_log():
+    """
+    Ensure the scrolling updates from the log handler are sliced properly and
+    the expected text is shown in the right place on the splash screen.
+    """
+    test_animation = load_movie("splash_screen")
+    asplash = AnimatedSplash(test_animation)
+    asplash.log = [
+        "1st line of the log",
+        "2nd line of the log",
+        "3rd line of the log",
+        "4th line of the log",
+        "5th line of the log",
+    ]
+    asplash.showMessage = mock.MagicMock()
+    msg = "A new line of the log"
+    expected = asplash.log[-3:]
+    expected.append(msg)
+    expected = "\n".join(expected)
+    asplash.draw_log(msg)
+    asplash.showMessage.assert_called_once_with(
+        expected, Qt.AlignBottom | Qt.AlignLeft
+    )
+
+
+def test_animated_splash_failed():
+    """
+    When instructed to transition to a failed state, ensure the correct image
+    is displayed along with the correct message.
+    """
+    test_animation = load_movie("splash_screen")
+    asplash = AnimatedSplash(test_animation)
+    asplash.setPixmap = mock.MagicMock()
+    asplash.draw_text = mock.MagicMock()
+    error = (
+        "Something went boom!\n"
+        "This is an error message...\n"
+        "In real life, this would include a stack trace.\n"
+        "It will also include details about the exception.\n"
+    )
+    with mock.patch("mu.app.load_pixmap") as load_pix:
+        asplash.failed(error)
+        load_pix.assert_called_once_with("splash_fail.png")
+    asplash.draw_text.assert_called_once_with(
+        error
+        + "\nThis screen will close in a few seconds. "
+        + "Then a crash report tool will open in your browser."
+    )
+    assert asplash.setPixmap.call_count == 1
 
 
 def test_worker_run():
@@ -233,10 +289,11 @@ def test_excepthook():
 
     with mock.patch("mu.app.logging.error") as error, mock.patch(
         "mu.app.sys.exit"
-    ) as exit:
+    ) as exit, mock.patch("mu.app.webbrowser") as browser:
         excepthook(*exc_args)
         error.assert_called_once_with("Unrecoverable error", exc_info=exc_args)
         exit.assert_called_once_with(1)
+        assert browser.open.call_count == 1
 
 
 def test_debug():

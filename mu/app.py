@@ -28,7 +28,6 @@ import traceback
 import sys
 import urllib
 import webbrowser
-import traceback
 import base64
 
 from PyQt5.QtCore import (
@@ -120,7 +119,13 @@ class AnimatedSplash(QSplashScreen):
         self.animation.stop()
         pixmap = load_pixmap("splash_fail.png")
         self.setPixmap(pixmap)
-        self.draw_text(text + "\n\nThis screen will close in a few seconds")
+        lines = text.split("\n")
+        lines.append(
+            "This screen will close in a few seconds. "
+            + "Then a crash report tool will open in your browser."
+        )
+        lines = lines[-12:]
+        self.draw_text("\n".join(lines))
 
 
 class StartupWorker(QObject):
@@ -142,7 +147,6 @@ class StartupWorker(QObject):
         """
         try:
             venv.ensure_and_create(self.display_text)
-            x = 1/0
             self.finished.emit()  # Always called last.
         except Exception as ex:
             # Catch all exceptions just in case.
@@ -315,9 +319,6 @@ def run():
             app.setStyleSheet(DAY_STYLE)
 
     splash.finish(editor_window)
-
-    # BOOM! FOR TESTING PURPOSES... ;-)
-    x = 1 / 0
 
     # Make sure all windows have the Mu icon as a fallback
     app.setWindowIcon(load_icon(editor_window.icon))

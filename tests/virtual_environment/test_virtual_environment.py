@@ -38,6 +38,18 @@ HERE = os.path.dirname(__file__)
 WHEEL_FILENAME = "arrr-1.0.2-py3-none-any.whl"
 
 
+def clean_log_handlers():
+    """
+    Ensure we have a clean logger without a SplashLogHandler from an old
+    test.
+    """
+    logger = logging.getLogger()
+    while logger.hasHandlers():
+        handler = logger.handlers[0]
+        if isinstance(handler, mu.virtual_environment.SplashLogHandler):
+            logger.removeHandler(handler)
+
+
 @pytest.fixture
 def venv_name():
     """Use a random venv name each time, at least partly to expose any
@@ -57,6 +69,7 @@ def venv_dirpath(tmp_path, venv_name):
 @pytest.fixture
 def venv(venv_dirpath):
     """Generate a temporary venv"""
+    clean_log_handlers()
     return mu.virtual_environment.VirtualEnvironment(venv_dirpath)
 
 
@@ -105,6 +118,7 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     """Ensure that we're actually creating a working virtual environment
     on the disk with wheels installed
     """
+    clean_log_handlers()
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     venv.create()
     venv_site_packages = venv.run_python(
@@ -162,12 +176,14 @@ def test_create_virtual_environment_path(patched, venv_dirpath):
     a valid directory path.
     NB this doesn't create the venv itself; only the object
     """
+    clean_log_handlers()
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     assert venv.path == str(venv_dirpath)
 
 
 def test_create_virtual_environment_name_obj(patched, venv_dirpath):
     """Ensure a virtual environment object has a name."""
+    clean_log_handlers()
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     assert venv.name == os.path.basename(venv_dirpath)
 
@@ -394,6 +410,7 @@ def test_venv_folder_already_exists_not_directory(venv_dirpath):
     """
     os.rmdir(venv_dirpath)
     open(venv_dirpath, "w").close()
+    clean_log_handlers()
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     with pytest.raises(VEError):
         venv.ensure_path()

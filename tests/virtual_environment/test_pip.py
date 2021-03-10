@@ -4,7 +4,7 @@ Tests for the virtual_environment module pip support
 """
 import os
 import random
-from unittest.mock import patch
+from unittest import mock
 
 import pytest
 
@@ -38,14 +38,14 @@ def test_pip_run():
     params = [rstring() for _ in rrange(3)]
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.run(command, *params)
-        expected_args = (
-            pip_executable,
-            [command, "--disable-pip-version-check"] + list(params),
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pip.process = mock.MagicMock()
+    pip.run(command, *params)
+    expected_args = (
+        pip_executable,
+        [command, "--disable-pip-version-check"] + list(params),
+    )
+    args, _ = pip.process.call_args
+    assert args == expected_args
 
 
 def test_pip_run_with_kwargs():
@@ -62,21 +62,22 @@ def test_pip_run_with_kwargs():
     expected_parameters = ["--a", "1", "--no-b", "--c", "--d-e", "2"]
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.run(command, **params)
-        args, _ = mock_run.call_args
-        #
-        # NB presumably because of non-ordered dicts, Python 3.5 can produce
-        # arguments in a different order.
-        #
-        output_command, output_args = args
-        expected_command = pip_executable
-        expected_args = [
-            command,
-            "--disable-pip-version-check",
-        ] + expected_parameters
-        assert output_command == expected_command
-        assert set(output_args) == set(expected_args)
+    pip.process = mock.MagicMock()
+
+    pip.run(command, **params)
+    args, _ = pip.process.call_args
+    #
+    # NB presumably because of non-ordered dicts, Python 3.5 can produce
+    # arguments in a different order.
+    #
+    output_command, output_args = args
+    expected_command = pip_executable
+    expected_args = [
+        command,
+        "--disable-pip-version-check",
+    ] + expected_parameters
+    assert output_command == expected_command
+    assert set(output_args) == set(expected_args)
 
 
 def pip_install_testing(
@@ -99,17 +100,18 @@ def pip_install_testing(
     if command == "uninstall":
         expected_args.append("--yes")
 
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        function = getattr(pip, command)
-        function(package_or_packages, **input_switches)
-        args, _ = mock_run.call_args
-        output_command, output_args = args
-        #
-        # NB presumably because of non-ordered dicts, Python 3.5 can produce
-        # arguments in a different order.
-        #
-        assert output_command == expected_command
-        assert set(output_args) == set(expected_args)
+    pip.process = mock.MagicMock()
+
+    function = getattr(pip, command)
+    function(package_or_packages, **input_switches)
+    args, _ = pip.process.call_args
+    output_command, output_args = args
+    #
+    # NB presumably because of non-ordered dicts, Python 3.5 can produce
+    # arguments in a different order.
+    #
+    assert output_command == expected_command
+    assert set(output_args) == set(expected_args)
 
 
 #
@@ -247,28 +249,28 @@ def test_pip_freeze():
     """Ensure that pip.freeze calls pip freeze"""
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.freeze()
-        expected_args = (
-            pip_executable,
-            ["freeze", "--disable-pip-version-check"],
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pip.process = mock.MagicMock()
+    pip.freeze()
+    expected_args = (
+        pip_executable,
+        ["freeze", "--disable-pip-version-check"],
+    )
+    args, _ = pip.process.call_args
+    assert args == expected_args
 
 
 def test_pip_list():
     """Ensure that pip.list calls pip list"""
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking") as mock_run:
-        pip.list()
-        expected_args = (
-            pip_executable,
-            ["list", "--disable-pip-version-check"],
-        )
-        args, _ = mock_run.call_args
-        assert args == expected_args
+    pop.process = mock.MagicMock()
+    pip.list()
+    expected_args = (
+        pip_executable,
+        ["list", "--disable-pip-version-check"],
+    )
+    args, _ = pip.process.call_args
+    assert args == expected_args
 
 
 #
@@ -293,14 +295,14 @@ def test_installed_packages():
     pip_freeze_output = os.linesep.join("%s==%s" % (p[:2]) for p in packages)
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking"):
-        with patch.object(Pip, "freeze", return_value=pip_freeze_output):
-            with patch.object(Pip, "list", return_value=pip_list_output):
-                installed_packages = set(pip.installed())
-                expected_packages = set(
-                    (name, version) for (name, version, location) in packages
-                )
-                assert installed_packages == expected_packages
+    pip.process = mock.MagicMock()
+    with mock.patch.object(Pip, "freeze", return_value=pip_freeze_output):
+        with mock.patch.object(Pip, "list", return_value=pip_list_output):
+            installed_packages = set(pip.installed())
+            expected_packages = set(
+                (name, version) for (name, version, location) in packages
+            )
+            assert installed_packages == expected_packages
 
 
 def test_installed_packages_no_location():
@@ -324,17 +326,17 @@ def test_installed_packages_no_location():
     pip_freeze_output = os.linesep.join("%s==%s" % (p[:2]) for p in packages)
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip.process, "run_blocking"):
-        with patch.object(Pip, "freeze") as mock_freeze:
-            mock_freeze.return_value = pip_freeze_output
-            with patch.object(Pip, "list") as mock_list:
-                mock_list.return_value = pip_list_output
+    pip.process = mock.MagicMock()
+    with mock.patch.object(Pip, "freeze") as mock_freeze:
+        mock_freeze.return_value = pip_freeze_output
+        with mock.patch.object(Pip, "list") as mock_list:
+            mock_list.return_value = pip_list_output
 
-                installed_packages = set(pip.installed())
-                expected_packages = set(
-                    (name, version) for (name, version, location) in packages
-                )
-                assert installed_packages == expected_packages
+            installed_packages = set(pip.installed())
+            expected_packages = set(
+                (name, version) for (name, version, location) in packages
+            )
+            assert installed_packages == expected_packages
 
 
 def test_pip_list_returns_empty():
@@ -343,7 +345,7 @@ def test_pip_list_returns_empty():
     """
     pip_executable = "pip-" + rstring() + ".exe"
     pip = mu.virtual_environment.Pip(pip_executable)
-    with patch.object(pip, "list", return_value=""):
+    with mock.patch.object(pip, "list", return_value=""):
         with pytest.raises(
             mu.virtual_environment.VirtualEnvironmentError,
             match="Unable to parse",
