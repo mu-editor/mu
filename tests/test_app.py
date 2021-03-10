@@ -16,7 +16,7 @@ from mu.debugger.config import DEBUGGER_PORT
 
 from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 from mu.logic import LOG_FILE, LOG_DIR, ENCODING
-from mu.resources import load_icon, load_movie, load_pixmap
+from mu.resources import load_movie
 from mu import mu_debug
 from mu.virtual_environment import VirtualEnvironment as VE
 from PyQt5.QtCore import Qt

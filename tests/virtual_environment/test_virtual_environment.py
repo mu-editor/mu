@@ -21,8 +21,9 @@ import glob
 import random
 import shutil
 import subprocess
-from unittest import mock
 import uuid
+import logging
+from unittest import mock
 
 from PyQt5.QtCore import QTimer, QProcess
 import pytest
