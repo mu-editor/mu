@@ -39,18 +39,6 @@ HERE = os.path.dirname(__file__)
 WHEEL_FILENAME = "arrr-1.0.2-py3-none-any.whl"
 
 
-def clean_log_handlers():
-    """
-    Ensure we have a clean logger without a SplashLogHandler from an old
-    test.
-    """
-    logger = logging.getLogger()
-    while logger.hasHandlers():
-        handler = logger.handlers[0]
-        if isinstance(handler, mu.virtual_environment.SplashLogHandler):
-            logger.removeHandler(handler)
-
-
 @pytest.fixture
 def venv_name():
     """Use a random venv name each time, at least partly to expose any
@@ -70,8 +58,20 @@ def venv_dirpath(tmp_path, venv_name):
 @pytest.fixture
 def venv(venv_dirpath):
     """Generate a temporary venv"""
-    clean_log_handlers()
-    return mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+    logger = logging.getLogger(mu.virtual_environment.__name__)
+    # Clean up the logging from an unknown previous state.
+    while logger.hasHandlers() and logger.handlers:
+        handler = logger.handlers[0]
+        if isinstance(handler, mu.virtual_environment.SplashLogHandler):
+            logger.removeHandler(handler)
+
+    yield mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+
+    # Now clean up the logging after the test.
+    while logger.hasHandlers() and logger.handlers:
+        handler = logger.handlers[0]
+        if isinstance(handler, mu.virtual_environment.SplashLogHandler):
+            logger.removeHandler(handler)
 
 
 @pytest.fixture
@@ -115,11 +115,26 @@ def test_wheels(tmp_path):
         yield wheels_dirpath
 
 
+def test_splash_log_handler():
+    """
+    Ensure a SplashLogHandler emits an appropriately formatted log entries to
+    the referenced PyQT signal.
+    """
+    signal = mock.MagicMock()
+    slh = mu.virtual_environment.SplashLogHandler(signal)
+    assert slh.level == logging.DEBUG
+    assert slh.emitter == signal
+    log_record = mock.MagicMock()
+    log_record.getMessage.return_value = "A multiline\nlog message\n"
+    slh.handle(log_record)
+    # One log message for each line in the record.
+    assert signal.emit.call_count == 2
+
+
 def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     """Ensure that we're actually creating a working virtual environment
     on the disk with wheels installed
     """
-    clean_log_handlers()
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     venv.create()
     venv_site_packages = venv.run_python(
@@ -177,14 +192,12 @@ def test_create_virtual_environment_path(patched, venv_dirpath):
     a valid directory path.
     NB this doesn't create the venv itself; only the object
     """
-    clean_log_handlers()
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     assert venv.path == str(venv_dirpath)
 
 
 def test_create_virtual_environment_name_obj(patched, venv_dirpath):
     """Ensure a virtual environment object has a name."""
-    clean_log_handlers()
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     assert venv.name == os.path.basename(venv_dirpath)
 
@@ -411,7 +424,6 @@ def test_venv_folder_already_exists_not_directory(venv_dirpath):
     """
     os.rmdir(venv_dirpath)
     open(venv_dirpath, "w").close()
-    clean_log_handlers()
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     with pytest.raises(VEError):
         venv.ensure_path()

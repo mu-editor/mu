@@ -4,6 +4,7 @@ Tests for the app script.
 """
 import sys
 import os.path
+import pytest
 from unittest import mock
 from mu.app import (
     excepthook,
@@ -146,10 +147,32 @@ def test_worker_run():
     """
     w = StartupWorker()
     w.finished = mock.MagicMock()
-    with mock.patch("mu.app.venv.ensure") as mock_ensure:
+    with mock.patch("mu.app.venv.ensure_and_create") as mock_ensure:
         w.run()
-        mock_ensure.assert_called_once_with()
+        assert mock_ensure.call_count == 1
         w.finished.emit.assert_called_once_with()
+
+
+def test_worker_fail():
+    """
+    Ensure that exceptions encountered during Mu's start-up are handled in the
+    expected manner.
+    """
+    w = StartupWorker()
+    w.finished = mock.MagicMock()
+    w.failed = mock.MagicMock()
+    mock_ensure = mock.MagicMock()
+    ex = RuntimeError("Boom")
+    mock_ensure.side_effect = ex
+    with pytest.raises(RuntimeError):
+        with mock.patch(
+            "mu.app.venv.ensure_and_create", mock_ensure
+        ), mock.patch("mu.app.time") as mock_time:
+            w.run()
+    assert mock_ensure.call_count == 1
+    assert w.failed.emit.call_count == 1
+    mock_time.sleep.assert_called_once_with(7)
+    w.finished.emit.assert_called_once_with()
 
 
 def test_setup_logging():
@@ -205,9 +228,13 @@ def test_run():
         "sys.argv", ["mu"]
     ), mock.patch(
         "sys.exit"
-    ) as ex, mock.patch.object(
-        VE, "ensure_and_create"
-    ) as mock_ensure_and_create:
+    ) as ex, mock.patch(
+        "mu.app.QEventLoop"
+    ) as mock_event_loop, mock.patch(
+        "mu.app.QThread"
+    ), mock.patch(
+        "mu.app.StartupWorker"
+    ) as mock_worker:
         run()
         assert set_log.call_count == 1
         # foo.call_count is instantiating the class
@@ -224,7 +251,8 @@ def test_run():
         assert win.call_count == 1
         assert len(win.mock_calls) == 6
         assert ex.call_count == 1
-        assert mock_ensure_and_create.call_count == 1
+        assert mock_event_loop.call_count == 1
+        assert mock_worker.call_count == 1
         window.load_theme.emit("day")
         qa.assert_has_calls([mock.call().setStyleSheet(DAY_STYLE)])
         window.load_theme.emit("night")
@@ -294,6 +322,25 @@ def test_excepthook():
         error.assert_called_once_with("Unrecoverable error", exc_info=exc_args)
         exit.assert_called_once_with(1)
         assert browser.open.call_count == 1
+
+
+def test_excepthook_alamo():
+    """
+    If the crash reporting code itself encounters an error, then ensure this
+    is logged before exiting.
+    """
+    ex = Exception("BANG")
+    exc_args = (type(ex), ex, ex.__traceback__)
+
+    mock_browser = mock.MagicMock()
+    mock_browser.open.side_effect = RuntimeError("BROWSER BANG")
+
+    with mock.patch("mu.app.logging.error") as error, mock.patch(
+        "mu.app.sys.exit"
+    ) as exit, mock.patch("mu.app.webbrowser", mock_browser):
+        excepthook(*exc_args)
+        assert error.call_count == 2
+        exit.assert_called_once_with(1)
 
 
 def test_debug():
