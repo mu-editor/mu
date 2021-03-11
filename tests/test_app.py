@@ -12,6 +12,7 @@ from mu.app import (
     setup_logging,
     AnimatedSplash,
     StartupWorker,
+    vlogger,
 )
 from mu.debugger.config import DEBUGGER_PORT
 
@@ -19,7 +20,7 @@ from mu.interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 from mu.logic import LOG_FILE, LOG_DIR, ENCODING
 from mu.resources import load_movie
 from mu import mu_debug
-from mu.virtual_environment import VirtualEnvironment as VE
+from mu.virtual_environment import VirtualEnvironment as VE, SplashLogHandler
 from PyQt5.QtCore import Qt
 
 
@@ -146,11 +147,17 @@ def test_worker_run():
     method are completed.
     """
     w = StartupWorker()
+    slh = SplashLogHandler(w.display_text)
+    vlogger.addHandler(slh)
     w.finished = mock.MagicMock()
     with mock.patch("mu.app.venv.ensure_and_create") as mock_ensure:
         w.run()
         assert mock_ensure.call_count == 1
         w.finished.emit.assert_called_once_with()
+    # Ensure the splash related logger handler has been removed.
+    while vlogger.hasHandlers() and vlogger.handlers:
+        handler = vlogger.handlers[0]
+        assert not isinstance(handler, SplashLogHandler)
 
 
 def test_worker_fail():

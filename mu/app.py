@@ -41,7 +41,7 @@ from PyQt5.QtWidgets import QApplication, QSplashScreen
 
 
 from . import i18n
-from .virtual_environment import venv
+from .virtual_environment import venv, logger as vlogger, SplashLogHandler
 from . import __version__
 from .logic import Editor, LOG_FILE, LOG_DIR, ENCODING
 from .interface import Window
@@ -160,6 +160,12 @@ class StartupWorker(QObject):
             self.finished.emit()
             # Re-raise for crash handler to kick in.
             raise ex
+        finally:
+            # Always clean up the startup splash logging handlers.
+            while vlogger.hasHandlers() and vlogger.handlers:
+                handler = vlogger.handlers[0]
+                if isinstance(handler, SplashLogHandler):
+                    vlogger.removeHandler(handler)
 
 
 def excepthook(*exc_args):
