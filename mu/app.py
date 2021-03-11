@@ -174,14 +174,14 @@ def excepthook(*exc_args):
     """
     logging.error("Unrecoverable error", exc_info=(exc_args))
     try:
-        error = base64.urlsafe_b64encode(
+        error = base64.standard_b64encode(
             "".join(traceback.format_exception(*exc_args)).encode("utf-8")
         )
         p = platform.uname()
         params = {
             "v": __version__,  # version
             "l": str(i18n.language_code),  # locale
-            "p": base64.urlsafe_b64encode(
+            "p": base64.standard_b64encode(
                 " ".join([p.system, p.release, p.version, p.machine]).encode(
                     "utf-8"
                 )
