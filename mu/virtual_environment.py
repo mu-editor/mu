@@ -173,7 +173,8 @@ class Pip(object):
     def run(
         self, command, *args, wait_for_s=30.0, slots=Process.Slots(), **kwargs
     ):
-        """Run a command with args, treating kwargs as Posix switches
+        """
+        Run a command with args, treating kwargs as Posix switches.
 
         eg run("python", version=True)
         run("python", "-c", "import sys; print(sys.executable)")
@@ -217,7 +218,7 @@ class Pip(object):
 
     def install(self, packages, slots=Process.Slots(), **kwargs):
         """
-        Use pip to install a package or packages
+        Use pip to install a package or packages.
 
         If the first parameter is a string one package is installed; otherwise
         it is assumed to be an iterable of package names.
