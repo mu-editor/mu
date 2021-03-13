@@ -292,7 +292,7 @@ def run():
     # Create the "window" we'll be looking at.
     editor_window = Window()
 
-    def splash(app=app, editor_window=editor_window):
+    def splash_context(app=app, editor_window=editor_window):
         """
         Function context (to ensure garbage collection) for displaying the
         splash screen.
@@ -321,7 +321,7 @@ def run():
         splash.finish(editor_window)
         splash.deleteLater()
 
-    splash()
+    splash_context()
 
     @editor_window.load_theme.connect
     def load_theme(theme):
