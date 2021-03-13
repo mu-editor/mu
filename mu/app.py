@@ -41,7 +41,7 @@ from PyQt5.QtWidgets import QApplication, QSplashScreen
 
 
 from . import i18n
-from .virtual_environment import venv, logger as vlogger, SplashLogHandler
+from .virtual_environment import venv, logger as vlogger
 from . import __version__
 from .logic import Editor, LOG_FILE, LOG_DIR, ENCODING
 from .interface import Window
@@ -161,11 +161,10 @@ class StartupWorker(QObject):
             # Re-raise for crash handler to kick in.
             raise ex
         finally:
-            # Always clean up the startup splash logging handlers.
-            while vlogger.hasHandlers() and vlogger.handlers:
+            # Always clean up the startup splash/venv logging handlers.
+            if vlogger.handlers:
                 handler = vlogger.handlers[0]
-                if isinstance(handler, SplashLogHandler):
-                    vlogger.removeHandler(handler)
+                vlogger.removeHandler(handler)
 
 
 def excepthook(*exc_args):
@@ -290,30 +289,39 @@ def run():
     app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
-    # Display a friendly "splash" icon.
-    splash = AnimatedSplash(load_movie("splash_screen"))
-    splash.show()
-    app.processEvents()
-
-    # Create a blocking thread upon which to run the StartupWorker and which
-    # will process the events for animating the splash screen.
-    initLoop = QEventLoop()
-    thread = QThread()
-    worker = StartupWorker()
-    worker.moveToThread(thread)
-    thread.started.connect(worker.run)
-    worker.finished.connect(thread.quit)
-    worker.finished.connect(worker.deleteLater)
-    worker.display_text.connect(splash.draw_log)
-    worker.failed.connect(splash.failed)
-    # Stop the blocking event loop when the thread is finished.
-    thread.finished.connect(initLoop.quit)
-    thread.finished.connect(thread.deleteLater)
-    thread.start()
-    initLoop.exec()  # start processing the pending StartupWorker.
-
     # Create the "window" we'll be looking at.
     editor_window = Window()
+
+    def splash(app=app, editor_window=editor_window):
+        """
+        Function context (to ensure garbage collection) for displaying the
+        splash screen.
+        """
+        # Display a friendly "splash" icon.
+        splash = AnimatedSplash(load_movie("splash_screen"))
+        splash.show()
+        app.processEvents()
+
+        # Create a blocking thread upon which to run the StartupWorker and which
+        # will process the events for animating the splash screen.
+        initLoop = QEventLoop()
+        thread = QThread()
+        worker = StartupWorker()
+        worker.moveToThread(thread)
+        thread.started.connect(worker.run)
+        worker.finished.connect(thread.quit)
+        worker.finished.connect(worker.deleteLater)
+        worker.display_text.connect(splash.draw_log)
+        worker.failed.connect(splash.failed)
+        # Stop the blocking event loop when the thread is finished.
+        thread.finished.connect(initLoop.quit)
+        thread.finished.connect(thread.deleteLater)
+        thread.start()
+        initLoop.exec()  # start processing the pending StartupWorker.
+        splash.finish(editor_window)
+        splash.deleteLater()
+
+    splash()
 
     @editor_window.load_theme.connect
     def load_theme(theme):
@@ -323,8 +331,6 @@ def run():
             app.setStyleSheet(NIGHT_STYLE)
         else:
             app.setStyleSheet(DAY_STYLE)
-
-    splash.finish(editor_window)
 
     # Make sure all windows have the Mu icon as a fallback
     app.setWindowIcon(load_icon(editor_window.icon))
