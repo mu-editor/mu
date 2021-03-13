@@ -4,6 +4,7 @@ Tests for the virtual_environment module pip support
 """
 import os
 import random
+import logging
 from unittest.mock import patch
 
 import pytest
@@ -13,6 +14,38 @@ import mu.virtual_environment
 VE = mu.virtual_environment.VirtualEnvironment
 
 HERE = os.path.dirname(__file__)
+
+
+@pytest.fixture(autouse=True)
+def cleanup_logger():
+    """
+    This function will always be called for each test in this module.
+
+    It first yields to the test function and then ensures the logger no longer
+    references and SplashLogHandler instances.
+
+    Why do this..?
+
+    The SplashLogHandler was not garbage collected but the PyQt signal used
+    by this handler was destroyed by Qt. This appeared to result in a core dump
+    at random times, depending on the order in which the tests were run.
+
+    This fix ensures no such log handler exists after these tests are run.
+    """
+    logger = logging.getLogger(mu.virtual_environment.__name__)
+    # Clean up the logger from an unknown "dirty" state.
+    while logger.hasHandlers() and logger.handlers:
+        handler = logger.handlers[0]
+        if isinstance(handler, mu.virtual_environment.SplashLogHandler):
+            logger.removeHandler(handler)
+
+    yield  # Run the test function.
+
+    # Now clean up the logging.
+    while logger.hasHandlers() and logger.handlers:
+        handler = logger.handlers[0]
+        if isinstance(handler, mu.virtual_environment.SplashLogHandler):
+            logger.removeHandler(handler)
 
 
 def rstring(length=10, characters="abcdefghijklmnopqrstuvwxyz"):
