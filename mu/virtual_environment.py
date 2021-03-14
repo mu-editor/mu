@@ -124,6 +124,7 @@ class Process(QObject):
         return self.data()
 
     def run(self, command, args, **envvars):
+        logger.info("About to run %s with args %s and envvars %s", command, args, envvars)
         self._set_up_run(**envvars)
         self.process.readyRead.connect(self._readyRead)
         self.process.started.connect(self._started)
@@ -673,6 +674,7 @@ class VirtualEnvironment(object):
         Install user defined packages.
         """
         logger.info("Installing user packages: %s", ", ".join(packages))
+        logger.debug("Slots: %s", slots)
         self.pip.install(
             packages,
             slots=slots,
@@ -684,6 +686,7 @@ class VirtualEnvironment(object):
         Remove user defined packages.
         """
         logger.info("Removing user packages: %s", ", ".join(packages))
+        logger.debug("Slots: %s", slots)
         self.pip.uninstall(
             packages,
             slots=slots,
