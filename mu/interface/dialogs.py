@@ -573,7 +573,9 @@ class FindReplaceDialog(QDialog):
 
 
 class PackageDialog(QDialog):
-    """Display the output of the pip commands needed to remove or install packages
+    """
+    Display the output of the pip commands needed to remove or install
+    packages.
 
     Because the QProcess mechanism we're using is asynchronous, we have to
     manage the pip requests via `pip_queue`. When one request is signalled
@@ -616,7 +618,9 @@ class PackageDialog(QDialog):
         QTimer.singleShot(2, self.next_pip_command)
 
     def next_pip_command(self):
-        """Run the next pip command, finishing if there is none"""
+        """
+        Run the next pip command, finishing if there is none.
+        """
         if self.pip_queue:
             command, packages = self.pip_queue.pop()
             self.run_pip(command, packages)
@@ -643,7 +647,6 @@ class PackageDialog(QDialog):
             raise RuntimeError(
                 "Invalid pip command: %s %s" % (command, packages)
             )
-
         pip_fn(
             packages,
             slots=venv.Slots(
