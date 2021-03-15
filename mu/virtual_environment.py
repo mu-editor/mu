@@ -110,18 +110,30 @@ class Process(QObject):
 
     def _set_up_run(self, **envvars):
         """Run the process with the command and args"""
-        self.process = QProcess(self)
+        logger.debug("_set_up_run#0 with envvars %s", envvars)
+        self.process = QProcess()
+        logger.debug("_set_up_run#1")
         environment = QProcessEnvironment(self.environment)
+        logger.debug("_set_up_run#2")
         for k, v in envvars.items():
             environment.insert(k, v)
+        logger.debug("_set_up_run#3")
         self.process.setProcessEnvironment(environment)
+        logger.debug("_set_up_run#4")
         self.process.setProcessChannelMode(QProcess.MergedChannels)
+        logger.debug("_set_up_run#5")
 
     def run_blocking(self, command, args, wait_for_s=30.0, **envvars):
+        logger.debug("run_blocking#0 with command %s, args %s, wait_for %s, envvars %s", command, args, wait_for_s, envvars)
         self._set_up_run(**envvars)
+        logger.debug("run_blocking#1")
         self.process.start(command, args)
+        logger.debug("run_blocking#2")
         self.wait(wait_for_s=wait_for_s)
-        return self.data()
+        logger.debug("run_blocking#3")
+        output = self.data()
+        logger.debug("run_blocking#4")
+        return output
 
     def run(self, command, args, **envvars):
         logger.info("About to run %s with args %s and envvars %s", command, args, envvars)
@@ -129,8 +141,11 @@ class Process(QObject):
         self.process.readyRead.connect(self._readyRead)
         self.process.started.connect(self._started)
         self.process.finished.connect(self._finished)
+        logger.debug("About to call QTimer.singleShot with %r", [self.process.start, command, args])
+        partial = functools.partial(self.process.start, command, args)
+        logger.debug("partial: %r", partial)
         QTimer.singleShot(
-            100, functools.partial(self.process.start, command, args)
+            100, partial ##functools.partial(self.process.start, command, args)
         )
 
     def wait(self, wait_for_s=30.0):
@@ -389,7 +404,7 @@ class VirtualEnvironment(object):
         headless and the process will be run synchronously and output collected
         will be returned when the process is complete
         """
-
+        logger.debug("run_python with args %s and slots %s", args, slots)
         if slots.output:
             if slots.started:
                 self.process.started.connect(slots.started)
@@ -440,6 +455,7 @@ class VirtualEnvironment(object):
                     "Checking virtual environment; attempt #%d.", 1 + n
                 )
                 self.ensure()
+                logger.debug("ensure_and_create#1")
             except VirtualEnvironmentError:
                 logger.debug("Virtual environment not present or correct.")
                 new_dirpath = self._generate_dirpath()
@@ -447,7 +463,9 @@ class VirtualEnvironment(object):
                     "Creating new virtual environment at %s.", new_dirpath
                 )
                 self.relocate(new_dirpath)
+                logger.debug("ensure_and_create#2a")
                 self.create()
+                logger.debug("ensure_and_create#2b")
             else:
                 logger.info("Virtual environment already exists.")
                 return
@@ -465,11 +483,17 @@ class VirtualEnvironment(object):
         """
         Ensure that virtual environment exists and is in a good state.
         """
+        logger.debug("ensure#1")
         self.ensure_path()
+        logger.debug("ensure#2")
         self.ensure_interpreter()
+        logger.debug("ensure#3")
         self.ensure_interpreter_version()
+        logger.debug("ensure#4")
         self.ensure_pip()
+        logger.debug("ensure#5")
         self.ensure_key_modules()
+        logger.debug("ensure#6")
 
     def ensure_path(self):
         """

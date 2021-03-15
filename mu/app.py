@@ -216,10 +216,16 @@ def setup_logging():
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG)
 
+    stdout_handler = logging.StreamHandler()
+    stdout_handler.setFormatter(formatter)
+    stdout_handler.setLevel(logging.DEBUG)
+
+
     # set up primary log
     log = logging.getLogger()
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
+    log.addHandler(stdout_handler)
     sys.excepthook = excepthook
 
 
