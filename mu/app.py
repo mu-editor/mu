@@ -122,7 +122,7 @@ class AnimatedSplash(QSplashScreen):
         lines = text.split("\n")
         lines.append(
             "This screen will close in a few seconds. "
-            + "Then a crash report tool will open in your browser."
+            "Then a crash report tool will open in your browser."
         )
         lines = lines[-12:]
         self.draw_text("\n".join(lines))
@@ -224,7 +224,7 @@ def setup_logging():
     log = logging.getLogger()
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
-    log.addHandler(stdout_handler)
+    # log.addHandler(stdout_handler)
     sys.excepthook = excepthook
 
 

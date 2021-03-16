@@ -152,10 +152,6 @@ class Process(QObject):
         self.process.readyRead.connect(self._readyRead)
         self.process.started.connect(self._started)
         self.process.finished.connect(self._finished)
-        logger.debug(
-            "About to call QTimer.singleShot with %r",
-            [self.process.start, command, args],
-        )
         partial = functools.partial(self.process.start, command, args)
         logger.debug("partial: %r", partial)
         QTimer.singleShot(
@@ -385,6 +381,9 @@ class VirtualEnvironment(object):
             time.strftime("%Y%m%d-%H%M%S"),
         )
 
+    def reset_pip(self):
+        self.pip = Pip(self.pip_executable)
+
     def relocate(self, dirpath):
         """
         Relocate sets up variables for, eg, the expected location and name of
@@ -402,9 +401,10 @@ class VirtualEnvironment(object):
         self.interpreter = os.path.join(
             self._bin_directory, "python" + self._bin_extension
         )
-        self.pip = Pip(
-            os.path.join(self._bin_directory, "pip" + self._bin_extension)
+        self.pip_executable = os.path.join(
+            self._bin_directory, "pip" + self._bin_extension
         )
+        self.reset_pip()
         logger.debug(
             "Virtual environment set up %s at %s", self.name, self.path
         )
@@ -602,11 +602,11 @@ class VirtualEnvironment(object):
         """
         Ensure that pip is available.
         """
-        if os.path.isfile(self.pip.executable):
-            logger.info("Pip found at: %s", self.pip.executable)
+        if os.path.isfile(self.pip_executable):
+            logger.info("Pip found at: %s", self.pip_executable)
         else:
             message = (
-                "Pip not found where expected at: %s" % self.pip.executable
+                "Pip not found where expected at: %s" % self.pip_executable
             )
             logger.error(message)
             raise VirtualEnvironmentError(message)
@@ -693,12 +693,14 @@ class VirtualEnvironment(object):
             raise VirtualEnvironmentError(
                 "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
             )
+        self.reset_pip()
         logger.debug(self.pip.install(wheel_filepaths))
 
     def register_baseline_packages(self):
         """
         Keep track of the baseline packages installed into the empty venv.
         """
+        self.reset_pip()
         packages = list(self.pip.installed())
         self.settings["baseline_packages"] = packages
 
@@ -714,6 +716,7 @@ class VirtualEnvironment(object):
         """
         logger.info("Installing user packages: %s", ", ".join(packages))
         logger.debug("Slots: %s", slots)
+        self.reset_pip()
         self.pip.install(
             packages,
             slots=slots,
@@ -726,6 +729,7 @@ class VirtualEnvironment(object):
         """
         logger.info("Removing user packages: %s", ", ".join(packages))
         logger.debug("Slots: %s", slots)
+        self.reset_pip()
         self.pip.uninstall(
             packages,
             slots=slots,
@@ -753,6 +757,7 @@ class VirtualEnvironment(object):
             name for name, version in self.baseline_packages()
         ]
         user_packages = []
+        self.reset_pip()
         for package, version in self.pip.installed():
             if package not in baseline_packages:
                 user_packages.append(package)
