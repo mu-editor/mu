@@ -220,12 +220,11 @@ def setup_logging():
     stdout_handler.setFormatter(formatter)
     stdout_handler.setLevel(logging.DEBUG)
 
-
     # set up primary log
     log = logging.getLogger()
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
-    log.addHandler(stdout_handler)
+    #~ log.addHandler(stdout_handler)
     sys.excepthook = excepthook
 
 

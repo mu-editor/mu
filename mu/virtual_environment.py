@@ -124,7 +124,13 @@ class Process(QObject):
         logger.debug("_set_up_run#5")
 
     def run_blocking(self, command, args, wait_for_s=30.0, **envvars):
-        logger.debug("run_blocking#0 with command %s, args %s, wait_for %s, envvars %s", command, args, wait_for_s, envvars)
+        logger.debug(
+            "run_blocking#0 with command %s, args %s, wait_for %s, envvars %s",
+            command,
+            args,
+            wait_for_s,
+            envvars,
+        )
         self._set_up_run(**envvars)
         logger.debug("run_blocking#1")
         self.process.start(command, args)
@@ -136,16 +142,25 @@ class Process(QObject):
         return output
 
     def run(self, command, args, **envvars):
-        logger.info("About to run %s with args %s and envvars %s", command, args, envvars)
+        logger.info(
+            "About to run %s with args %s and envvars %s",
+            command,
+            args,
+            envvars,
+        )
         self._set_up_run(**envvars)
         self.process.readyRead.connect(self._readyRead)
         self.process.started.connect(self._started)
         self.process.finished.connect(self._finished)
-        logger.debug("About to call QTimer.singleShot with %r", [self.process.start, command, args])
+        logger.debug(
+            "About to call QTimer.singleShot with %r",
+            [self.process.start, command, args],
+        )
         partial = functools.partial(self.process.start, command, args)
         logger.debug("partial: %r", partial)
         QTimer.singleShot(
-            100, partial ##functools.partial(self.process.start, command, args)
+            100,
+            partial,
         )
 
     def wait(self, wait_for_s=30.0):
