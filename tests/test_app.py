@@ -248,9 +248,9 @@ def test_run():
         assert qa.call_count == 1
         # foo.mock_calls are method calls on the object
         if hasattr(Qt, "AA_EnableHighDpiScaling"):
-            assert len(qa.mock_calls) == 10
-        else:
             assert len(qa.mock_calls) == 9
+        else:
+            assert len(qa.mock_calls) == 8
         assert qsp.call_count == 1
         assert len(qsp.mock_calls) == 4
         assert ed.call_count == 1
@@ -312,7 +312,7 @@ def test_close_splash_screen():
         VE, "ensure_and_create"
     ):
         run()
-        assert splash.finish.call_count == 1
+        assert splash.close.call_count == 1
 
 
 def test_excepthook():
