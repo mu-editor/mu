@@ -36,7 +36,7 @@ install_requires = [
     # qtconsole, pyserial
     #
     "qtconsole==4.7.4",
-    "pyserial==3.4",
+    "pyserial==3.5",
     # `flake8` is actually a testing/packaging dependency that, among other
     # packages, brings in `pycodestyle` and `pyflakes` which are runtime
     # dependencies. For the sake of "locality", it is being declared here,
