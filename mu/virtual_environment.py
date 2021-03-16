@@ -159,7 +159,7 @@ class Process(QObject):
         partial = functools.partial(self.process.start, command, args)
         logger.debug("partial: %r", partial)
         QTimer.singleShot(
-            100,
+            1,
             partial,
         )
 
