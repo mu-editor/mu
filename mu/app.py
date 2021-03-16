@@ -224,7 +224,7 @@ def setup_logging():
     log = logging.getLogger()
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
-    #~ log.addHandler(stdout_handler)
+    # ~ log.addHandler(stdout_handler)
     sys.excepthook = excepthook
 
 
