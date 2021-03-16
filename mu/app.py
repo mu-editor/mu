@@ -289,10 +289,7 @@ def run():
     app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
-    # Create the "window" we'll be looking at.
-    editor_window = Window()
-
-    def splash_context(app=app, editor_window=editor_window):
+    def splash_context():
         """
         Function context (to ensure garbage collection) for displaying the
         splash screen.
@@ -300,7 +297,6 @@ def run():
         # Display a friendly "splash" icon.
         splash = AnimatedSplash(load_movie("splash_screen"))
         splash.show()
-        app.processEvents()
 
         # Create a blocking thread upon which to run the StartupWorker and which
         # will process the events for animating the splash screen.
@@ -318,10 +314,13 @@ def run():
         thread.finished.connect(thread.deleteLater)
         thread.start()
         initLoop.exec()  # start processing the pending StartupWorker.
-        splash.finish(editor_window)
+        splash.close()
         splash.deleteLater()
 
     splash_context()
+
+    # Create the "window" we'll be looking at.
+    editor_window = Window()
 
     @editor_window.load_theme.connect
     def load_theme(theme):
