@@ -12,7 +12,7 @@ from tests.test_app import DumSig
 import mu.interface.main
 import mu.interface.themes
 import mu.interface.editor
-from mu.interface.panes import PlotterPane
+from mu.interface.panes import CHARTS, PlotterPane
 import sys
 
 
@@ -937,6 +937,7 @@ def test_Window_add_plotter():
     w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
 def test_Window_remember_plotter_position():
     """
     Check that opening plotter, changing the area it's docked to, then closing
