@@ -37,7 +37,7 @@ install_requires = [
     # adafruit-board-toolkit is used to find serial ports and help identify
     # CircuitPython boards.
     #
-    "adafruit-board-toolkit",
+    "adafruit-board-toolkit>=1.0.1",
     "qtconsole==4.7.4",
     "pyserial>=3.5",
     # `flake8` is actually a testing/packaging dependency that, among other
