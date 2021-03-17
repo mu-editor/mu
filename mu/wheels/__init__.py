@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 mode_packages = [
     (
         "pgzero",
-        "git+https://github.com/mu-editor/pgzero.git@mu-wheel",
+        "pgzero>=1.2.1",
     ),
     ("flask", "flask==1.1.2"),
     ("serial", "pyserial>=3.0"),
