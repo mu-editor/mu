@@ -33,10 +33,13 @@ install_requires = [
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
     #
     # FIXME: Maybe should be in a mode?
-    # qtconsole, pyserial
+    # adafruit-board-toolkit, qtconsole, pyserial
+    # adafruit-board-toolkit is used to find serial ports and help identify
+    # CircuitPython boards.
     #
+    "adafruit-board-toolkit",
     "qtconsole==4.7.4",
-    "pyserial==3.5",
+    "pyserial>=3.5",
     # `flake8` is actually a testing/packaging dependency that, among other
     # packages, brings in `pycodestyle` and `pyflakes` which are runtime
     # dependencies. For the sake of "locality", it is being declared here,
