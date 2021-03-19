@@ -21,8 +21,9 @@ import glob
 import random
 import shutil
 import subprocess
-from unittest import mock
 import uuid
+import logging
+from unittest import mock
 
 from PyQt5.QtCore import QTimer, QProcess
 import pytest
@@ -31,6 +32,7 @@ import mu.virtual_environment
 import mu.wheels
 
 VE = mu.virtual_environment.VirtualEnvironment
+VEError = mu.virtual_environment.VirtualEnvironmentError
 PIP = mu.virtual_environment.Pip
 
 HERE = os.path.dirname(__file__)
@@ -56,7 +58,20 @@ def venv_dirpath(tmp_path, venv_name):
 @pytest.fixture
 def venv(venv_dirpath):
     """Generate a temporary venv"""
-    return mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+    logger = logging.getLogger(mu.virtual_environment.__name__)
+    # Clean up the logging from an unknown previous state.
+    while logger.hasHandlers() and logger.handlers:
+        handler = logger.handlers[0]
+        if isinstance(handler, mu.virtual_environment.SplashLogHandler):
+            logger.removeHandler(handler)
+
+    yield mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+
+    # Now clean up the logging after the test.
+    while logger.hasHandlers() and logger.handlers:
+        handler = logger.handlers[0]
+        if isinstance(handler, mu.virtual_environment.SplashLogHandler):
+            logger.removeHandler(handler)
 
 
 @pytest.fixture
@@ -98,6 +113,22 @@ def test_wheels(tmp_path):
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
     ):
         yield wheels_dirpath
+
+
+def test_splash_log_handler():
+    """
+    Ensure a SplashLogHandler emits an appropriately formatted log entries to
+    the referenced PyQT signal.
+    """
+    signal = mock.MagicMock()
+    slh = mu.virtual_environment.SplashLogHandler(signal)
+    assert slh.level == logging.DEBUG
+    assert slh.emitter == signal
+    log_record = mock.MagicMock()
+    log_record.getMessage.return_value = "A multiline\nlog message\n"
+    slh.handle(log_record)
+    # One log message for each line in the record.
+    assert signal.emit.call_count == 2
 
 
 def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
@@ -189,7 +220,7 @@ def test_download_wheels_if_not_present(venv, test_wheels):
         # Ignore the exception which will arise from not actually
         # downloading any wheels!
         #
-        except mu.virtual_environment.VirtualEnvironmentError:
+        except VEError:
             pass
 
     assert mock_download.called
@@ -310,42 +341,81 @@ def test_venv_is_singleton():
         assert module.venv is venv
 
 
+def _ensure_venv(results):
+    def _inner_ensure_venv(self, results=results):
+        result = results.pop()
+        if isinstance(result, Exception):
+            raise result
+        else:
+            return result
+
+    return _inner_ensure_venv
+
+
 def test_venv_folder_created(venv):
-    """When the runtime venv_folder does not exist ensure we create it"""
+    """When not existing venv is ensured we create a new one"""
     os.rmdir(venv.path)
     with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
-        VE, "ensure_pip"
-    ) as mock_ensure_pip, mock.patch.object(
-        VE, "ensure_interpreter"
-    ) as mock_ensure_interpreter:
-        venv.ensure()
+        VE,
+        "ensure",
+        _ensure_venv([True, VEError()]),
+    ):
+        venv.ensure_and_create()
 
     assert mock_create.called
-    assert mock_ensure_pip.called
-    assert mock_ensure_interpreter.called
 
 
-def test_venv_folder_already_exists(venv):
-    """When the venv_folder does exist as a venv ensure we do not create it"""
-    open(os.path.join(venv.path, "pyvenv.cfg"), "w").close()
+def test_venv_second_try(venv):
+    """If the creation of a venv fails to produce a valid venv, try again"""
     with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
-        VE, "ensure_pip"
-    ) as mock_ensure_pip, mock.patch.object(
-        VE, "ensure_interpreter"
-    ) as mock_ensure_interpreter:
-        venv.ensure()
+        VE,
+        "ensure",
+        _ensure_venv([True, VEError()]),
+    ):
+        venv.ensure_and_create()
+
+    assert mock_create.call_count == 1
+
+
+def test_venv_fails_after_three_tries(venv):
+    """If the venv fails to ensure after three tries we raise an exception"""
+    with mock.patch.object(VE, "create"), mock.patch.object(
+        VE,
+        "ensure",
+        _ensure_venv([VEError(), VEError(), VEError()]),
+    ):
+        with pytest.raises(VEError):
+            venv.ensure_and_create()
+
+
+#
+# Ensure Path
+#
+def test_venv_folder_already_exists(venv):
+    """When all ensure tests pass, we have an existing venv so don't create it"""
+    open(os.path.join(venv.path, "pyvenv.cfg"), "w").close()
+    with mock.patch.object(VE, "ensure") as mock_ensure, mock.patch.object(
+        VE, "create"
+    ) as mock_create:
+        venv.ensure_and_create()
 
     assert not mock_create.called
-    assert mock_ensure_pip.called
-    assert mock_ensure_interpreter.called
+    assert mock_ensure.called
+
+
+def test_venv_folder_does_not_exist(venv):
+    """When venv_folder does exist not at all we raise an error"""
+    os.rmdir(venv.path)
+    with pytest.raises(VEError):
+        venv.ensure_path()
 
 
 def test_venv_folder_already_exists_not_venv(venv):
     """When venv_folder does exist not as a venv ensure we raise an error"""
     assert not os.path.isfile(os.path.join(venv.path, "pyvenv.cfg"))
     assert not os.path.isfile(venv.interpreter)
-    with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
-        venv.ensure()
+    with pytest.raises(VEError):
+        venv.ensure_path()
 
 
 def test_venv_folder_already_exists_not_directory(venv_dirpath):
@@ -355,27 +425,46 @@ def test_venv_folder_already_exists_not_directory(venv_dirpath):
     os.rmdir(venv_dirpath)
     open(venv_dirpath, "w").close()
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
-    with pytest.raises(mu.virtual_environment.VirtualEnvironmentError):
-        venv.ensure()
+    with pytest.raises(VEError):
+        venv.ensure_path()
 
 
+#
+# Ensure Interpreter / Version
+#
 def test_ensure_interpreter(venv):
     """When venv exists but has no interpreter ensure we raise an exception"""
     assert not os.path.isfile(venv.interpreter)
 
-    with pytest.raises(
-        mu.virtual_environment.VirtualEnvironmentError, match="Interpreter"
-    ):
+    with pytest.raises(VEError, match="[Ii]nterpreter"):
         venv.ensure_interpreter()
 
 
+def test_ensure_interpreter_version(venv):
+    """When venv interpreter exists but for a different Py version raise an exception"""
+    mocked_process = mock.MagicMock()
+    mocked_process.stdout = b"x.y"
+    with mock.patch.object(subprocess, "run", return_value=mocked_process):
+        with pytest.raises(VEError, match="[Ii]nterpreter"):
+            venv.ensure_interpreter_version()
+
+
+#
+# Ensure Key Modules
+#
+@pytest.mark.skip("Not sure how to test this one yet")
+def test_ensure_key_modules(venv):
+    assert False
+
+
+#
+# Ensure Pip
+#
 def test_ensure_pip(venv):
     """When venv exists but has no interpreter ensure we raise an exception"""
     assert not os.path.isfile(venv.interpreter)
 
-    with pytest.raises(
-        mu.virtual_environment.VirtualEnvironmentError, match="Pip"
-    ):
+    with pytest.raises(VEError, match="Pip"):
         venv.ensure_pip()
 
 
@@ -405,3 +494,25 @@ def test_run_python_nonblocking(venv):
         venv.run_python(*args, slots=venv.Slots(output=lambda x: x))
 
     mocked_start.assert_called_with(command, args)
+
+
+def test_reset_pip(venv, pipped):
+    """Ensure that we're using a new Pip object for every invocation"""
+    n_tries = random.randint(1, 5)
+    for i in range(n_tries):
+        venv.reset_pip()
+    assert pipped.call_count == n_tries
+
+
+def test_reset_pip_used(venv_dirpath):
+    with mock.patch("mu.virtual_environment.Pip") as mock_pip:
+        mock_pip.installed.return_value = []
+        venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+        with mock.patch.object(venv, "reset_pip") as mocked_reset:
+            venv.relocate(".")
+            venv.register_baseline_packages()
+            venv.install_user_packages([])
+            venv.remove_user_packages([])
+            venv.installed_packages()
+
+    assert mocked_reset.call_count == 5

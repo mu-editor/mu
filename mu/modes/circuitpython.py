@@ -114,7 +114,7 @@ class CircuitPythonMode(MicroPythonMode):
                 "shortcut": "CTRL+Shift+U",
             }
         ]
-        if self.editor.circuitpython_run:
+        if True:
             buttons.insert(
                 0,
                 {
@@ -309,8 +309,7 @@ class CircuitPythonMode(MicroPythonMode):
                     dst = dst_dir + "/lib/" + os.path.basename(pathname)
 
                 # copy library files on to device if not working on the device
-                if self.editor.circuitpython_lib:
-                    self.run_circuitpython_lib_copy(pathname, dst_dir)
+                # self.run_circuitpython_lib_copy(pathname, dst_dir)
 
                 # copy edited source file on to device
                 copyfile(pathname, dst)

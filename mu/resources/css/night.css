@@ -263,12 +263,15 @@ QDockWidget > QWidget {
     border-bottom: 1px solid #6b6b6b;   /* Border */
 }
 
-QMainWindow::separator:horizontal {
-    width: 2px;
+QMainWindow::separator:horizontal,
+QMainWindow::separator:vertical {
+    width: 8px;
+    background: #424446;
 }
 
-QMainWindow::separator:vertical {
-    height: 2px;
+QMainWindow::separator:horizontal:hover,
+QMainWindow::separator:vertical:hover {
+    background: #6b6b6b;
 }
 
 QHeaderView::section {

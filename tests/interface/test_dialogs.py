@@ -137,19 +137,6 @@ def test_MicrobitSettingsWidget_setup():
     assert mbsw.runtime_path.text() == "/foo/bar"
 
 
-def test_CircuitPythonSettingsWidget_setup():
-    """
-    Ensure the widget for editing settings related to adafruit mode
-    displays the referenced settings data in the expected way.
-    """
-    circuitpython_run = True
-    circuitpython_lib = True
-    mbsw = mu.interface.dialogs.CircuitPythonSettingsWidget()
-    mbsw.setup(circuitpython_run, circuitpython_lib)
-    assert mbsw.circuitpython_run.isChecked()
-    assert mbsw.circuitpython_lib.isChecked()
-
-
 def test_PackagesWidget_setup():
     """
     Ensure the widget for editing settings related to third party packages
@@ -378,7 +365,7 @@ def test_ESPFirmwareFlasherWidget_firmware_path_changed(
     assert not espff.btnExec.isEnabled()
 
 
-def test_AdminDialog_setup():
+def test_AdminDialog_setup_python_mode():
     """
     Ensure the admin dialog is setup properly given the content of a log
     file and envars.
@@ -386,11 +373,54 @@ def test_AdminDialog_setup():
     log = "this is the contents of a log file"
     settings = {
         "envars": "name=value",
+    }
+    packages = "foo\nbar\nbaz\n"
+    mock_window = QWidget()
+    mode = mock.MagicMock()
+    mode.short_name = "python"
+    mode.name = "Python 3"
+    modes = mock.MagicMock()
+    device_list = mu.logic.DeviceList(modes)
+    ad = mu.interface.dialogs.AdminDialog(mock_window)
+    ad.setup(log, settings, packages, mode, device_list)
+    assert ad.log_widget.log_text_area.toPlainText() == log
+    s = ad.settings()
+    assert s["packages"] == packages
+    del s["packages"]
+    assert s == settings
+
+
+def test_AdminDialog_setup_microbit_mode():
+    """
+    Ensure the admin dialog is setup properly given the content of a log
+    file and envars.
+    """
+    log = "this is the contents of a log file"
+    settings = {
         "minify": True,
         "microbit_runtime": "/foo/bar",
-        "circuitpython_run": True,
-        "circuitpython_lib": True,
     }
+    packages = "foo\nbar\nbaz\n"
+    mock_window = QWidget()
+    mode = mock.MagicMock()
+    mode.short_name = "microbit"
+    mode.name = "BBC micro:bit"
+    modes = mock.MagicMock()
+    device_list = mu.logic.DeviceList(modes)
+    ad = mu.interface.dialogs.AdminDialog(mock_window)
+    ad.setup(log, settings, packages, mode, device_list)
+    assert ad.log_widget.log_text_area.toPlainText() == log
+    s = ad.settings()
+    assert s == settings
+
+
+def test_AdminDialog_setup():
+    """
+    Ensure the admin dialog is setup properly given the content of a log
+    file and envars.
+    """
+    log = "this is the contents of a log file"
+    settings = {}
     packages = "foo\nbar\nbaz\n"
     mock_window = QWidget()
     mode = mock.MagicMock()
@@ -406,8 +436,6 @@ def test_AdminDialog_setup():
         ad.setup(log, settings, packages, mode, device_list)
         assert ad.log_widget.log_text_area.toPlainText() == log
         s = ad.settings()
-        assert s["packages"] == packages
-        del s["packages"]
         assert s == settings
 
 

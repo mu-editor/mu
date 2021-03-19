@@ -107,8 +107,6 @@ def generate_session(
     envars=[["name", "value"]],
     minify=False,
     microbit_runtime=None,
-    circuitpython_run=True,
-    circuitpython_lib=True,
     zoom_level=2,
     window=None,
     venv_path=None,
@@ -155,10 +153,6 @@ def generate_session(
         session_data["minify"] = minify
     if microbit_runtime:
         session_data["microbit_runtime"] = microbit_runtime
-    if circuitpython_run:
-        session_data["circuitpython_run"] = circuitpython_run
-    if circuitpython_lib:
-        session_data["circuitpython_lib"] = circuitpython_lib
     if zoom_level:
         session_data["zoom_level"] = zoom_level
     if window:
@@ -813,8 +807,6 @@ def test_editor_init():
         assert e.envars == []
         assert e.minify is False
         assert e.microbit_runtime == ""
-        assert e.circuitpython_run is False
-        assert e.circuitpython_lib is False
         # assert e.connected_devices == set()
         assert e.find == ""
         assert e.replace == ""
@@ -882,15 +874,18 @@ def test_editor_restore_session_existing_runtime():
     ed = mocked_editor(mode)
     with mock.patch("os.path.isfile", return_value=True):
         with mock.patch.object(venv, "relocate") as venv_relocate:
-            with generate_session(
-                theme,
-                mode,
-                file_contents,
-                microbit_runtime="/foo",
-                zoom_level=5,
-                venv_path="foo",
+            with mock.patch.object(venv, "ensure"), mock.patch.object(
+                venv, "create"
             ):
-                ed.restore_session()
+                with generate_session(
+                    theme,
+                    mode,
+                    file_contents,
+                    microbit_runtime="/foo",
+                    zoom_level=5,
+                    venv_path="foo",
+                ):
+                    ed.restore_session()
 
     assert ed.theme == theme
     assert ed._view.add_tab.call_count == len(file_contents)
@@ -898,8 +893,6 @@ def test_editor_restore_session_existing_runtime():
     assert ed.envars == [["name", "value"]]
     assert ed.minify is False
     assert ed.microbit_runtime == "/foo"
-    assert ed.circuitpython_run is True
-    assert ed.circuitpython_lib is True
     assert ed._view.zoom_position == 5
     assert venv_relocate.called_with("foo")
 
@@ -922,8 +915,6 @@ def test_editor_restore_session_missing_runtime():
     assert ed.envars == [["name", "value"]]
     assert ed.minify is False
     assert ed.microbit_runtime == ""  # File does not exist so set to ''
-    assert ed.circuitpython_run is True
-    assert ed.circuitpython_lib is True
 
 
 def test_editor_restore_session_missing_files():
@@ -2229,15 +2220,11 @@ def test_show_admin():
         "envars": "name=value",
         "minify": True,
         "microbit_runtime": "/foo/bar",
-        "circuitpython_run": False,
-        "circuitpython_lib": False,
     }
     new_settings = {
         "envars": "name=value",
         "minify": True,
         "microbit_runtime": "/foo/bar",
-        "circuitpython_run": True,
-        "circuitpython_lib": True,
         "packages": "baz\n",
     }
     view.show_admin.return_value = new_settings
@@ -2299,22 +2286,16 @@ def test_show_admin_missing_microbit_runtime():
     ed.envars = [["name", "value"]]
     ed.minify = True
     ed.microbit_runtime = "/foo/bar"
-    ed.circuitpython_run = True
-    ed.circuitpython_lib = True
     settings = {
         "envars": "name=value",
         "minify": True,
         "microbit_runtime": "/foo/bar",
-        "circuitpython_run": True,
-        "circuitpython_lib": True,
     }
     new_settings = {
         "envars": "name=value",
         "minify": True,
         "microbit_runtime": "/foo/bar",
         "packages": "baz\n",
-        "circuitpython_run": True,
-        "circuitpython_lib": True,
     }
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
@@ -2333,8 +2314,6 @@ def test_show_admin_missing_microbit_runtime():
             assert ed.envars == [["name", "value"]]
             assert ed.minify is True
             assert ed.microbit_runtime == ""
-            assert ed.circuitpython_run is True
-            assert ed.circuitpython_lib is True
             assert view.show_message.call_count == 1
             ed.sync_package_state.assert_called_once_with(
                 ["foo", "bar"], ["baz"]

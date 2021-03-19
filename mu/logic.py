@@ -833,8 +833,6 @@ class Editor(QObject):
         self.envars = []  # See restore session and show_admin
         self.minify = False
         self.microbit_runtime = ""
-        self.circuitpython_run = False
-        self.circuitpython_lib = False
         self.connected_devices = DeviceList(self.modes, parent=self)
         self.current_device = None
         self.find = ""
@@ -981,18 +979,6 @@ class Editor(QObject):
                         "does not exist. Using default "
                         "runtime instead."
                     )
-        if "circuitpython_run" in old_session:
-            self.circuitpython_run = old_session["circuitpython_run"]
-            logger.info(
-                'Enable CircuitPython "Run" button? '
-                "{}".format(self.circuitpython_run)
-            )
-        if "circuitpython_lib" in old_session:
-            self.circuitpython_lib = old_session["circuitpython_lib"]
-            logger.info(
-                "Enable CircuitPython copy library function? "
-                "{}".format(self.circuitpython_lib)
-            )
         if "zoom_level" in old_session:
             self._view.zoom_position = old_session["zoom_level"]
             self._view.set_zoom()
@@ -1455,8 +1441,6 @@ class Editor(QObject):
             "envars": self.envars,
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
-            "circuitpython_run": self.circuitpython_run,
-            "circuitpython_lib": self.circuitpython_lib,
             "zoom_level": self._view.zoom_position,
             "venv_name": venv.name,
             "venv_python": venv.interpreter,
@@ -1485,8 +1469,6 @@ class Editor(QObject):
             "envars": envars,
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
-            "circuitpython_run": self.circuitpython_run,
-            "circuitpython_lib": self.circuitpython_lib,
         }
         baseline_packages, user_packages = venv.installed_packages()
         packages = user_packages
@@ -1499,32 +1481,31 @@ class Editor(QObject):
                 self.connected_devices,
             )
         if new_settings:
-            self.envars = extract_envars(new_settings["envars"])
-            self.minify = new_settings["minify"]
-            self.circuitpython_run = new_settings["circuitpython_run"]
-            self.circuitpython_lib = new_settings["circuitpython_lib"]
-            #  show/hide circuitpython "run" options possibly changed in admin
-            if self.mode == "circuitpython":
-                self.change_mode(self.mode)
-            runtime = new_settings["microbit_runtime"].strip()
-            if runtime and not os.path.isfile(runtime):
-                self.microbit_runtime = ""
-                message = _("Could not find MicroPython runtime.")
-                information = _(
-                    "The micro:bit runtime you specified "
-                    "('{}') does not exist. "
-                    "Please try again."
-                ).format(runtime)
-                self._view.show_message(message, information)
-            else:
-                self.microbit_runtime = runtime
-            new_packages = [
-                p
-                for p in new_settings["packages"].lower().split("\n")
-                if p.strip()
-            ]
-            old_packages = [p.lower() for p in user_packages]
-            self.sync_package_state(old_packages, new_packages)
+            if "envars" in new_settings:
+                self.envars = extract_envars(new_settings["envars"])
+            if "minify" in new_settings:
+                self.minify = new_settings["minify"]
+            if "microbit_runtime" in new_settings:
+                runtime = new_settings["microbit_runtime"].strip()
+                if runtime and not os.path.isfile(runtime):
+                    self.microbit_runtime = ""
+                    message = _("Could not find MicroPython runtime.")
+                    information = _(
+                        "The micro:bit runtime you specified "
+                        "('{}') does not exist. "
+                        "Please try again."
+                    ).format(runtime)
+                    self._view.show_message(message, information)
+                else:
+                    self.microbit_runtime = runtime
+            if "packages" in new_settings:
+                new_packages = [
+                    p
+                    for p in new_settings["packages"].lower().split("\n")
+                    if p.strip()
+                ]
+                old_packages = [p.lower() for p in user_packages]
+                self.sync_package_state(old_packages, new_packages)
         else:
             logger.info("No admin settings changed.")
 

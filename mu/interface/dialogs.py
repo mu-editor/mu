@@ -203,33 +203,6 @@ class MicrobitSettingsWidget(QWidget):
         widget_layout.addStretch()
 
 
-class CircuitPythonSettingsWidget(QWidget):
-    """
-    Used for configuring how to interact with adafruit mode:
-
-    * Enable the "Run" button.
-    """
-
-    def setup(self, circuitpython_run, circuitpython_lib):
-        widget_layout = QVBoxLayout()
-        self.setLayout(widget_layout)
-        self.circuitpython_run = QCheckBox(
-            _(
-                'Enable the "Run" button to '
-                "save and copy the current "
-                "file to CIRCUITPY?"
-            )
-        )
-        self.circuitpython_run.setChecked(circuitpython_run)
-        widget_layout.addWidget(self.circuitpython_run)
-        self.circuitpython_lib = QCheckBox(
-            _("Enable the copy library to " "CIRCUITPY function?")
-        )
-        self.circuitpython_lib.setChecked(circuitpython_lib)
-        widget_layout.addWidget(self.circuitpython_lib)
-        widget_layout.addStretch()
-
-
 class PackagesWidget(QWidget):
     """
     Used for editing and displaying 3rd party packages installed via pip to be
@@ -267,18 +240,6 @@ class ESPFirmwareFlasherWidget(QWidget):
     def setup(self, mode, device_list):
         widget_layout = QVBoxLayout()
         self.setLayout(widget_layout)
-
-        # Check whether esptool is installed, show error if not
-        if not self.esptool_is_installed():
-            error_msg = _(
-                "The ESP Firmware flasher requires the esptool' "
-                "package to be installed.\n"
-                "Select \"Third Party Packages\", add 'esptool' "
-                "and click 'OK'"
-            )
-            error_label = QLabel(error_msg)
-            widget_layout.addWidget(error_label)
-            return
 
         # Instructions
         grp_instructions = QGroupBox(
@@ -370,6 +331,7 @@ class ESPFirmwareFlasherWidget(QWidget):
             self.txtFolder.setText(filename)
 
     def update_firmware(self):
+        baudrate = 115200
 
         if self.mode.repl:
             self.mode.toggle_repl(None)
@@ -389,22 +351,24 @@ class ESPFirmwareFlasherWidget(QWidget):
 
         if self.device_type.currentText() == "ESP32":
             write_command = (
-                '"{}" "{}" --chip esp32 --port {} --baud 460800 '
+                '"{}" "{}" --chip esp32 --port {} --baud {} '
                 'write_flash -z 0x1000 "{}"'
             ).format(
                 venv.interpreter,
                 esptool,
                 device.port,
+                baudrate,
                 self.txtFolder.text(),
             )
         else:
             write_command = (
-                '"{}" "{}" --chip esp8266 --port {} --baud 460800 '
+                '"{}" "{}" --chip esp8266 --port {} --baud {} '
                 'write_flash --flash_size=detect 0 "{}"'
             ).format(
                 venv.interpreter,
                 esptool,
                 device.port,
+                baudrate,
                 self.txtFolder.text(),
             )
 
@@ -487,6 +451,9 @@ class AdminDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.microbit_widget = None
+        self.package_widget = None
+        self.envar_widget = None
 
     def setup(self, log, settings, packages, mode, device_list):
         self.setMinimumSize(600, 400)
@@ -505,28 +472,26 @@ class AdminDialog(QDialog):
         self.log_widget = LogWidget(self)
         self.log_widget.setup(log)
         self.tabs.addTab(self.log_widget, _("Current Log"))
-        self.envar_widget = EnvironmentVariablesWidget(self)
-        self.envar_widget.setup(settings.get("envars", ""))
-        self.tabs.addTab(self.envar_widget, _("Python3 Environment"))
-        self.log_widget.log_text_area.setFocus()
-        self.microbit_widget = MicrobitSettingsWidget(self)
-        self.microbit_widget.setup(
-            settings.get("minify", False), settings.get("microbit_runtime", "")
-        )
-        self.tabs.addTab(self.microbit_widget, _("BBC micro:bit Settings"))
-        self.cp_widget = CircuitPythonSettingsWidget()
-        self.cp_widget.setup(
-            settings.get("circuitpython_run", False),
-            settings.get("circuitpython_lib", False),
-        )
-        self.tabs.addTab(self.cp_widget, _("CircuitPython Settings"))
-        self.package_widget = PackagesWidget(self)
-        self.package_widget.setup(packages)
-        self.tabs.addTab(self.package_widget, _("Third Party Packages"))
+        if mode.short_name in ["python", "web", "pygamezero"]:
+            self.envar_widget = EnvironmentVariablesWidget(self)
+            self.envar_widget.setup(settings.get("envars", ""))
+            self.tabs.addTab(self.envar_widget, _("Python3 Environment"))
+        if mode.short_name == "microbit":
+            self.microbit_widget = MicrobitSettingsWidget(self)
+            self.microbit_widget.setup(
+                settings.get("minify", False),
+                settings.get("microbit_runtime", ""),
+            )
+            self.tabs.addTab(self.microbit_widget, _("BBC micro:bit Settings"))
+        if mode.short_name in ["python", "web", "pygamezero"]:
+            self.package_widget = PackagesWidget(self)
+            self.package_widget.setup(packages)
+            self.tabs.addTab(self.package_widget, _("Third Party Packages"))
         if mode.short_name == "esp":
             self.esp_widget = ESPFirmwareFlasherWidget(self)
             self.esp_widget.setup(mode, device_list)
             self.tabs.addTab(self.esp_widget, _("ESP Firmware flasher"))
+        self.log_widget.log_text_area.setFocus()
 
     def settings(self):
         """
@@ -534,14 +499,17 @@ class AdminDialog(QDialog):
         generated by this dialog. Such settings will need to be processed /
         checked in the "logic" layer of Mu.
         """
-        return {
-            "envars": self.envar_widget.text_area.toPlainText(),
-            "minify": self.microbit_widget.minify.isChecked(),
-            "microbit_runtime": self.microbit_widget.runtime_path.text(),
-            "circuitpython_run": self.cp_widget.circuitpython_run.isChecked(),
-            "circuitpython_lib": self.cp_widget.circuitpython_lib.isChecked(),
-            "packages": self.package_widget.text_area.toPlainText(),
-        }
+        settings = {}
+        if self.envar_widget:
+            settings["envars"] = self.envar_widget.text_area.toPlainText()
+        if self.microbit_widget:
+            settings["minify"] = self.microbit_widget.minify.isChecked()
+            settings[
+                "microbit_runtime"
+            ] = self.microbit_widget.runtime_path.text()
+        if self.package_widget:
+            settings["packages"] = self.package_widget.text_area.toPlainText()
+        return settings
 
 
 class FindReplaceDialog(QDialog):
@@ -605,7 +573,9 @@ class FindReplaceDialog(QDialog):
 
 
 class PackageDialog(QDialog):
-    """Display the output of the pip commands needed to remove or install packages
+    """
+    Display the output of the pip commands needed to remove or install
+    packages.
 
     Because the QProcess mechanism we're using is asynchronous, we have to
     manage the pip requests via `pip_queue`. When one request is signalled
@@ -648,7 +618,9 @@ class PackageDialog(QDialog):
         QTimer.singleShot(2, self.next_pip_command)
 
     def next_pip_command(self):
-        """Run the next pip command, finishing if there is none"""
+        """
+        Run the next pip command, finishing if there is none.
+        """
         if self.pip_queue:
             command, packages = self.pip_queue.pop()
             self.run_pip(command, packages)
@@ -675,7 +647,6 @@ class PackageDialog(QDialog):
             raise RuntimeError(
                 "Invalid pip command: %s %s" % (command, packages)
             )
-
         pip_fn(
             packages,
             slots=venv.Slots(
