@@ -107,26 +107,22 @@ class CircuitPythonMode(MicroPythonMode):
         """
         buttons = [
             {
+                "name": "run",
+                "display_name": _("Run"),
+                "description": _(
+                    "Save and run your current file on CIRCUITPY."
+                ),
+                "handler": self.run,
+                "shortcut": "CTRL+Shift+R",
+            },
+            {
                 "name": "serial",
                 "display_name": _("Serial"),
                 "description": _("Open a serial connection to your device."),
                 "handler": self.toggle_repl,
                 "shortcut": "CTRL+Shift+U",
-            }
+            },
         ]
-        if True:
-            buttons.insert(
-                0,
-                {
-                    "name": "run",
-                    "display_name": _("Run"),
-                    "description": _(
-                        "Save and run your current file " "on CIRCUITPY"
-                    ),
-                    "handler": self.run,
-                    "shortcut": "CTRL+Shift+R",
-                },
-            )
         if CHARTS:
             buttons.append(
                 {
@@ -219,11 +215,9 @@ class CircuitPythonMode(MicroPythonMode):
             try:
                 for disk in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
                     path = "{}:\\".format(disk)
-                    if (
-                        os.path.exists(path)
-                        and get_volume_name(path) == "CIRCUITPY"
-                    ):
-                        return path
+                    if os.path.exists(path):
+                        if get_volume_name(path) == "CIRCUITPY":
+                            return path
             finally:
                 ctypes.windll.kernel32.SetErrorMode(old_mode)
         else:
