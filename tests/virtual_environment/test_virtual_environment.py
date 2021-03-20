@@ -494,3 +494,25 @@ def test_run_python_nonblocking(venv):
         venv.run_python(*args, slots=venv.Slots(output=lambda x: x))
 
     mocked_start.assert_called_with(command, args)
+
+
+def test_reset_pip(venv, pipped):
+    """Ensure that we're using a new Pip object for every invocation"""
+    n_tries = random.randint(1, 5)
+    for i in range(n_tries):
+        venv.reset_pip()
+    assert pipped.call_count == n_tries
+
+
+def test_reset_pip_used(venv_dirpath):
+    with mock.patch("mu.virtual_environment.Pip") as mock_pip:
+        mock_pip.installed.return_value = []
+        venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+        with mock.patch.object(venv, "reset_pip") as mocked_reset:
+            venv.relocate(".")
+            venv.register_baseline_packages()
+            venv.install_user_packages([])
+            venv.remove_user_packages([])
+            venv.installed_packages()
+
+    assert mocked_reset.call_count == 5
