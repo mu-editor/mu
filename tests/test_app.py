@@ -6,7 +6,7 @@ import sys
 import os.path
 import pytest
 
-pytestmark = pytest.mark.skip("Skipping for hangs")
+# ~ pytestmark = pytest.mark.skip("Skipping for hangs")
 from unittest import mock
 from mu.app import (
     excepthook,
