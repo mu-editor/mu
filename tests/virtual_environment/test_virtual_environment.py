@@ -28,7 +28,7 @@ from unittest import mock
 from PyQt5.QtCore import QTimer, QProcess
 import pytest
 
-pytestmark = pytest.mark.skip("Skipping for hangs")
+# ~ pytestmark = pytest.mark.skip("Skipping for hangs")
 
 import mu.virtual_environment
 import mu.wheels
