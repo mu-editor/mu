@@ -17,6 +17,7 @@ import sys
 
 pytestmark = pytest.mark.skip("Skipping for hangs")
 
+
 def test_ButtonBar_init():
     """
     Ensure everything is set and configured given a new instance of the
