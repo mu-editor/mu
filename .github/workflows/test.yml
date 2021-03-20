@@ -49,6 +49,7 @@ jobs:
         timeout-minutes: 3
 
   build-arm:
+    if: false
     runs-on: ubuntu-latest
     name: Test Py 3.7 - arm-debian-buster
     steps:
