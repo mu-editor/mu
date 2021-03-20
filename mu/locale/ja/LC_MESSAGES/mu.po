@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-03-14 19:10+0900\n"
-"PO-Revision-Date: 2021-03-14 HO:MI+0900\n"
+"POT-Creation-Date: 2021-03-20 11:22+0900\n"
+"PO-Revision-Date: 2021-03-20 11:40+0900\n"
 "Last-Translator: Minoru Inachi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -351,7 +351,7 @@ msgstr "'{}' を読込み中"
 
 #: ./mu/interface/panes.py:668
 msgid "Files on your device:"
-msgstr "micro:bit のファイル:"
+msgstr "デバイスのファイル:"
 
 #: ./mu/interface/panes.py:670
 msgid "Files on your computer:"
@@ -1178,7 +1178,7 @@ msgstr ""
 
 #: ./mu/modes/pico.py:36
 msgid "Write MicroPython directly on a Raspberry Pi Pico."
-msgstr "Raspberry Pi Pico で直接 MicroPython を編集。"
+msgstr "Raspberry Pi Pico の MicroPython を編集。"
 
 #: ./mu/modes/pyboard.py:32
 msgid "Pyboard MicroPython"
