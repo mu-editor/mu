@@ -39,7 +39,7 @@ jobs:
         run: |
           pip install .[dev]
           pip list
-          timeout-minutes: 3
+        timeout-minutes: 3
       - name: Run tests
         if: runner.os == 'Linux'
         run: xvfb-run make check
