@@ -1,6 +1,48 @@
 Release History
 ---------------
 
+1.1.0-beta.2
+============
+
+This is a beta release and may contain bugs or unfinished features. Please
+provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
+
+* This is the first public beta release (beta 1 was created for testing by the
+  core development team).
+* Many minor bug fixes to the existing new features found in beta 1
+  (see below).
+* Many thanks to Martin Dybdal for his work on improving the admin panel.
+* Carlos made significant changes so Mu can be packaged with very recent
+  versions of Python. Carlos also made various changes relating to the status
+  of Python packages contained within the official installer.
+* Many thanks to Dan Pope for assistance with an upgraded version of PyGameZero
+  (which uses the latest version of PyGame - kudos to René and the other
+  developers of PyGame for the recent improvements).
+* Various fixes to the UI so that panes are easier to resize and the themes are
+  correctly applied to the REPL (thanks again to Martin for these fixes).
+* Carlos also contributed fixes relating to the micro:bit mode (compatibility
+  with versions 1 and 2).
+* Tim has made herculean efforts to ensure the creation and checking of Mu's
+  virtual environment is robust and easy to maintain.
+* A new crash reporting feature has been added. If Mu breaks the user will be
+  redirected to the endpoint codewith.mu/crash with details of the crash and an
+  option to create a bug report. This ensures Mu crashes are handled more
+  gracefully, and the user is able to see the error that caused the crash.
+* A new animated splash screen has been added so the initial creation of Mu's
+  virtual environment happens in such a way that the user can see progress is
+  being made, and updates are logged on the splash screen for the user. If Mu
+  encounters a problem at this early stage, the splash screen recovers and the
+  new crash reporting feature kicks in. The current animation was created by
+  Steve Hawkes (thank you) with a much more polished version promised very
+  soon..!
+* Behind the scenes, Tiago has continued to make outstanding work on the `pup`
+  tool we use to create the installers for Windows 64/32 bit and MacOS X. This
+  beta release will be the first to use installers created with `pup`.
+* **Known bug** - on first ever start of Mu, if in Python3 mode the package
+  manager will not work. Re-starting Mu fixes this (i.e. from second and
+  subsequent starts). We're tracking this problem via
+  [this issue](https://github.com/mu-editor/mu/issues/1358).
+
 1.1.0-beta.1
 ============
 
