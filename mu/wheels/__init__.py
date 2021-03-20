@@ -17,10 +17,7 @@ logger = logging.getLogger(__name__)
 # Any additional elements are passed to `pip` for specific purposes
 #
 mode_packages = [
-    (
-        "pgzero",
-        "git+https://github.com/mu-editor/pgzero.git@mu-wheel",
-    ),
+    ("pgzero", "pgzero>=1.2.1"),
     ("flask", "flask==1.1.2"),
     ("serial", "pyserial>=3.0"),
     ("qtconsole", "qtconsole==4.7.4"),

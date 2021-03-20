@@ -899,6 +899,7 @@ def test_Window_add_jupyter_repl():
     w.add_repl.assert_called_once_with(mock_pane, "Python3 (Jupyter)")
 
 
+@pytest.mark.skip("May be causing hangs")
 def test_Window_add_repl():
     """
     Ensure the expected settings are updated.
