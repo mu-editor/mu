@@ -108,6 +108,7 @@ def download(dirpath=WHEELS_DIRPATH):
                     "-m",
                     "pip",
                     "wheel",
+                    "--no-deps",
                     "--wheel-dir",
                     dirpath,
                     filepath,
