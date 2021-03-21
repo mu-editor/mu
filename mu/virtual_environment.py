@@ -521,10 +521,11 @@ class VirtualEnvironment(object):
         #
         process = subprocess.run(
             [
-                self.interpreter,
+                os.path.basename(self.interpreter),
                 "-c",
                 'import sys; print("%s%s" % sys.version_info[:2])',
             ],
+            cwd=os.path.abspath(os.path.dirname(self.interpreter)),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             check=True,
