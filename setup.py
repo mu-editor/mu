@@ -63,6 +63,7 @@ extras_require = {
         "pytest-cov",
         "pytest-random-order>=1.0.0",
         "pytest-faulthandler",
+        "pytest-timeout",
         "coverage",
         #
         # Mode-specific modules needed for testing

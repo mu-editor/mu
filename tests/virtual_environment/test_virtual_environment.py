@@ -28,6 +28,8 @@ from unittest import mock
 from PyQt5.QtCore import QTimer, QProcess
 import pytest
 
+# ~ pytestmark = pytest.mark.skip("Skipping for hangs")
+
 import mu.virtual_environment
 import mu.wheels
 
@@ -510,10 +512,9 @@ def test_reset_pip_used(venv_dirpath):
         venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
         with mock.patch.object(venv, "reset_pip") as mocked_reset:
             venv.relocate(".")
-            venv.install_baseline_packages()
             venv.register_baseline_packages()
             venv.install_user_packages([])
             venv.remove_user_packages([])
             venv.installed_packages()
 
-    assert mocked_reset.call_count == 6
+    assert mocked_reset.call_count == 5
