@@ -9,6 +9,8 @@ from unittest.mock import patch
 
 import pytest
 
+# ~ pytestmark = pytest.mark.skip("Skipping for hangs")
+
 import mu.virtual_environment
 
 VE = mu.virtual_environment.VirtualEnvironment
