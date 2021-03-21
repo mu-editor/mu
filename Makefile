@@ -50,20 +50,20 @@ flake8:
 
 test: clean
 	export LANG=en_GB.utf8
-	pytest --random-order
+	pytest -v --random-order
 
 coverage: clean
 	export LANG=en_GB.utf8
-	pytest --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
+	pytest -v --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
 tidy: clean
 	@echo "\nTidying code with black..."
-	black -l 79 setup.py 
+	black -l 79 setup.py
 	black -l 79 make.py
-	black -l 79 mu 
-	black -l 79 package 
+	black -l 79 mu
+	black -l 79 package
 	black -l 79 tests
-	black -l 79 utils 
+	black -l 79 utils
 
 black: clean
 	python make.py black

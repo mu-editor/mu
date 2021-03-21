@@ -127,6 +127,7 @@ def coverage():
     return subprocess.run(
         [
             PYTEST,
+            "-v",
             "--cov-config",
             ".coveragerc",
             "--cov-report",
