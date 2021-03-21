@@ -73,7 +73,7 @@ def test_animated_splash_init():
     asplash.animation.start.assert_called_once_with()
 
 
-def test_animated_splash_set_frame(): ###
+def test_animated_splash_set_frame():  # run successfully
     """
     Ensure the splash screen's pixmap is updated with the animation's current
     pixmap.
@@ -92,7 +92,7 @@ def test_animated_splash_set_frame(): ###
     asplash.setMask.assert_called_once_with(pixmap.mask())
 
 
-def test_animated_splash_draw_log(): ###
+def test_animated_splash_draw_log():  # run successfully
     """
     Ensure the scrolling updates from the log handler are sliced properly and
     the expected text is shown in the right place on the splash screen.
@@ -117,7 +117,7 @@ def test_animated_splash_draw_log(): ###
     )
 
 
-def test_animated_splash_failed(): ###
+def test_animated_splash_failed():  # run successfully
     """
     When instructed to transition to a failed state, ensure the correct image
     is displayed along with the correct message.
@@ -162,7 +162,7 @@ def test_worker_run():
         assert not isinstance(handler, SplashLogHandler)
 
 
-def test_worker_fail(): ###
+def test_worker_fail():  # run successfully
     """
     Ensure that exceptions encountered during Mu's start-up are handled in the
     expected manner.
@@ -184,7 +184,7 @@ def test_worker_fail(): ###
     w.finished.emit.assert_called_once_with()
 
 
-def test_setup_logging(): ###
+def test_setup_logging():  # run successfully
     """
     Ensure that logging is set up in some way.
     """
@@ -206,7 +206,7 @@ def test_setup_logging(): ###
         assert sys.excepthook == excepthook
 
 
-def test_run(): ###
+def test_run():  # run successfully
     """
     Ensure the run function sets things up in the expected way.
 
@@ -334,7 +334,7 @@ def test_excepthook():
         assert browser.open.call_count == 1
 
 
-def test_excepthook_alamo(): ###
+def test_excepthook_alamo():  # run successfully
     """
     If the crash reporting code itself encounters an error, then ensure this
     is logged before exiting.
@@ -353,7 +353,7 @@ def test_excepthook_alamo(): ###
         exit.assert_called_once_with(1)
 
 
-def test_debug(): ###
+def test_debug():  # run successfully
     """
     Ensure the debugger is run with the expected arguments given the filename
     and other arguments passed in via sys.argv.
@@ -369,7 +369,7 @@ def test_debug(): ###
         )
 
 
-def test_debug_no_args(): ###
+def test_debug_no_args():  # run successfully
     """
     If the debugger is accidentally started with no filename and/or associated
     args, then emit a friendly message to indicate the problem.
