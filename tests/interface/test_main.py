@@ -15,8 +15,6 @@ import mu.interface.editor
 from mu.interface.panes import CHARTS, PlotterPane
 import sys
 
-# ~ pytestmark = pytest.mark.skip("Skipping for hangs")
-
 
 def test_ButtonBar_init():
     """
