@@ -8,7 +8,6 @@ import uuid
 
 import pytest
 
-# ~ pytestmark = pytest.mark.skip("Skipping for hangs")
 from PyQt5.QtCore import QTimer, QProcess
 
 from mu import virtual_environment
