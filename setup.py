@@ -49,7 +49,7 @@ install_requires = [
     #
     # Needed for creating the runtime virtual environment
     #
-    "virtualenv",
+    "virtualenv>=16.0.0",
     #
     # Needed for packaging
     #
@@ -63,6 +63,7 @@ extras_require = {
         "pytest-cov",
         "pytest-random-order>=1.0.0",
         "pytest-faulthandler",
+        "pytest-timeout",
         "coverage",
         #
         # Mode-specific modules needed for testing
