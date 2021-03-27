@@ -10,6 +10,6 @@ technical decisions will be documented in this way.
     :maxdepth: 2
 
     design/file_reading_and_writing.rst
-    design/line-endings
-    design/runtime-virtual-environment
-    design/settings
+    design/line-endings.rst
+    design/runtime_virtual_environment.rst
+    design/settings-and-sessions.rst
