@@ -1,6 +1,42 @@
 Release History
 ---------------
 
+1.1.0-beta.3
+============
+
+This is a beta release and may contain bugs or unfinished features. Please
+provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
+
+* During beta phase, we're moving to a fortnightly release cadence. Expect beta
+  4 on the 12th April.
+* The final version of the Mu splash screen was delivered. Huge thanks to the
+  extraordinarily talented Steve Hawkes ([@hawkz](https://github.com/hawkz)) of
+  [The Developer Society](https://www.dev.ngo/) for his generous artistic
+  support, patience and humorous approach.
+* Thanks to a recent update in [PyGame Zero](https://pypi.org/project/pgzero/),
+  we're back to using the official package from PyPI, rather than our patched
+  fork, in the installer.
+* Both Tim and Carlos have contributed updates, fixes and tests to address a
+  bug affecting Windows users who may have a space in the file path upon which
+  Mu is found. This was a difficult bug to reproduce but Tim did a lot of
+  digging to isolate the cause with as much confidence as is possible when it
+  comes to such things. Carlos did a bunch of thankless and fiddly test related
+  work so testing with spaces in the path is part of our test suite. As always,
+  many thanks for these efforts.
+* Tim addressed a `wheel`/`sdist` related problem that was causing odd side
+  effects with regard to dependancies.
+* A strange bug, where it was not possible to install third-party packages on
+  first run of Mu, opened up a deep rabbit hole of investigation. In the end
+  Tim was able to fix this AND address the source of a warning message from Qt
+  when Mu was starting for the first time.
+* The splash screen code was rewritten in such a way that objects relating to
+  the splash screen will always be garbage-collected by Python and destroyed by
+  Qt5. Previously, they existed for the full duration of the application, not
+  really causing any problems, but "in limbo" nonetheless.
+* The crash reporting tool has had a minor update so the user is reminded to
+  attach their log file to the bug report, along with an indication of where to
+  find the log file.
+
 1.1.0-beta.2
 ============
 
