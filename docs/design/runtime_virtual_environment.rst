@@ -26,17 +26,14 @@ Background
 ----------
 
 * Getting Mu to unpack and run out of the box on the three main platforms:
-Windows, OS X & Linux has always proven challenging.
-
+  Windows, OS X & Linux has always proven challenging.
 * In addition, within the Mu codebase, the code to run the user's code is
-scattered and contains a fragile re-implementation of a virtual environment.
-
+  scattered and contains a fragile re-implementation of a virtual environment.
 * Installing 3rd-party modules was also a little fragile as we had to run
-`pip` with a `--target` parameter
-
+  `pip` with a `--target` parameter
 * There are other issues, especially around the Jupyter console and, on
-Windows, its use of the pywin32 packages which have slightly odd path
-handling.
+  Windows, its use of the pywin32 packages which have slightly odd path
+  handling.
 
 Discussion and Implementation
 -----------------------------
