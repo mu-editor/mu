@@ -21,8 +21,9 @@ provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
   Mu is found. This was a difficult bug to reproduce but Tim did a lot of
   digging to isolate the cause with as much confidence as is possible when it
   comes to such things. Carlos did a bunch of thankless and fiddly test related
-  work so testing with spaces in the path is part of our test suite. As always,
-  many thanks for these efforts.
+  work so testing with spaces in the path is part of our test suite. Work on
+  this is ongoing so expect further improvements in upcoming releases. As
+  always, many thanks for these efforts.
 * Tim addressed a `wheel`/`sdist` related problem that was causing odd side
   effects with regard to dependancies.
 * A strange bug, where it was not possible to install third-party packages on
