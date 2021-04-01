@@ -1002,14 +1002,14 @@ def test_MicroPythonDeviceFileList_on_put():
     mfs.on_put("my_file.py")
 
     mfs.set_message.emit.assert_called_once_with(
-        "'my_file.py' successfully copied to micro:bit."
+        "'my_file.py' successfully copied to device."
     )
     mfs.list_files.emit.assert_called_once_with()
 
 
 def test_MicroPythonDeviceFileList_contextMenuEvent():
     """
-    Ensure that the menu displayed when a file on the micro:bit is
+    Ensure that the menu displayed when a file on the MicroPython device is
     right-clicked works as expected when activated.
     """
     mock_menu = mock.MagicMock()
@@ -1060,7 +1060,7 @@ def test_MicroPythonFileList_on_delete():
     mfs.on_delete("my_file.py")
 
     mfs.set_message.emit.assert_called_once_with(
-        "'my_file.py' successfully deleted from micro:bit."
+        "'my_file.py' successfully deleted from device."
     )
     mfs.list_files.emit.assert_called_once_with()
 
@@ -1121,7 +1121,7 @@ def test_LocalFileList_on_get():
     lfs.on_get("my_file.py")
 
     lfs.set_message.emit.assert_called_once_with(
-        "Successfully copied 'my_file.py' from the micro:bit to your computer."
+        "Successfully copied 'my_file.py' from the device to your computer."
     )
     lfs.list_files.emit.assert_called_once_with()
 
