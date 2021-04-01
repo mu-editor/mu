@@ -534,12 +534,15 @@ class MicroPythonDeviceFileList(MuFileList):
         self.list_files.emit()
 
     def contextMenuEvent(self, event):
+        menu_current_item = self.currentItem()
+        if menu_current_item is None:
+            return
         menu = QMenu(self)
         delete_action = menu.addAction(_("Delete (cannot be undone)"))
         action = menu.exec_(self.mapToGlobal(event.pos()))
         if action == delete_action:
             self.disable.emit()
-            microbit_filename = self.currentItem().text()
+            microbit_filename = menu_current_item.text()
             logger.info("Deleting {}".format(microbit_filename))
             msg = _("Deleting '{}' from micro:bit.").format(microbit_filename)
             logger.info(msg)
@@ -603,10 +606,13 @@ class LocalFileList(MuFileList):
         self.list_files.emit()
 
     def contextMenuEvent(self, event):
-        menu = QMenu(self)
-        local_filename = self.currentItem().text()
+        menu_current_item = self.currentItem()
+        if menu_current_item is None:
+            return
+        local_filename = menu_current_item.text()
         # Get the file extension
         ext = os.path.splitext(local_filename)[1].lower()
+        menu = QMenu(self)
         open_internal_action = None
         # Mu micro:bit mode only handles .py & .hex
         if ext == ".py" or ext == ".hex":
