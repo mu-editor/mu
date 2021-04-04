@@ -72,6 +72,8 @@ class CircuitPythonMode(MicroPythonMode):
         (0x239A, 0x80AC, None, "Unexpected Maker FeatherS2"),
         (0x303A, 0x8002, None, "Unexpected Maker TinyS2"),
         (0x054C, 0x0BC2, None, "Spresense"),
+        (0x303A, 0x80AA, None, "Franzininho WiFi Wroom"),
+        (0x303A, 0x80AD, None, "Franzininho WiFi Wrover"),        
     ]
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
