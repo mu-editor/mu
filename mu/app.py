@@ -173,6 +173,7 @@ def excepthook(*exc_args):
     """
     logging.error("Unrecoverable error", exc_info=(exc_args))
     try:
+        log_file = base64.standard_b64encode(LOG_FILE.encode("utf-8"))
         error = base64.standard_b64encode(
             "".join(traceback.format_exception(*exc_args)).encode("utf-8")
         )
@@ -185,6 +186,7 @@ def excepthook(*exc_args):
                     "utf-8"
                 )
             ),  # platform
+            "f": log_file,  # location of log file
             "e": error,  # error message
         }
         args = urllib.parse.urlencode(params)
