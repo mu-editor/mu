@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-03-20 11:22+0900\n"
-"PO-Revision-Date: 2021-03-20 11:40+0900\n"
+"POT-Creation-Date: 2021-04-04 10:12+0900\n"
+"PO-Revision-Date: 2021-04-04 10:30+0900\n"
 "Last-Translator: Minoru Inachi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -306,70 +306,70 @@ msgid "File already exists"
 msgstr "ファイルが既にあります"
 
 #: ./mu/interface/panes.py:523
-msgid "Copying '{}' to micro:bit."
-msgstr "'{}' を micro:bit にコピー中。"
+msgid "Copying '{}' to device."
+msgstr "'{}' をデバイスにコピー中。"
 
 #: ./mu/interface/panes.py:532
-msgid "'{}' successfully copied to micro:bit."
-msgstr "micro:bit へ '{}' のコピーが成功しました。"
+msgid "'{}' successfully copied to device."
+msgstr "'{}' のデバイスへのコピーが成功しました。"
 
-#: ./mu/interface/panes.py:538
+#: ./mu/interface/panes.py:541
 msgid "Delete (cannot be undone)"
 msgstr "削除 (元に戻せません)"
 
-#: ./mu/interface/panes.py:544
-msgid "Deleting '{}' from micro:bit."
-msgstr "micro:bit から '{}' を削除中。"
+#: ./mu/interface/panes.py:547
+msgid "Deleting '{}' from device."
+msgstr "デバイスから '{}' を削除中。"
 
-#: ./mu/interface/panes.py:553
-msgid "'{}' successfully deleted from micro:bit."
-msgstr "micro:bit から '{}' の削除が成功しました。"
+#: ./mu/interface/panes.py:556
+msgid "'{}' successfully deleted from device."
+msgstr "'{}' のデバイスからの削除が成功しました。"
 
-#: ./mu/interface/panes.py:588
-msgid "Getting '{}' from micro:bit. Copying to '{}'."
-msgstr "micro:bit から '{}' を取得中。{} にコピー中。"
+#: ./mu/interface/panes.py:589
+msgid "Getting '{}' from device. Copying to '{}'."
+msgstr "デバイスから '{}' を取得中。'{}' にコピー中。"
 
-#: ./mu/interface/panes.py:599
-msgid "Successfully copied '{}' from the micro:bit to your computer."
-msgstr "micro:bit からコンピュータへの '{}' のコピーが成功しました。"
+#: ./mu/interface/panes.py:600
+msgid "Successfully copied '{}' from the device to your computer."
+msgstr "デバイスからコンピュータへの '{}' のコピーが成功しました。"
 
-#: ./mu/interface/panes.py:613
+#: ./mu/interface/panes.py:617
 msgid "Open in Mu"
 msgstr "Mu で開く"
 
-#: ./mu/interface/panes.py:616
+#: ./mu/interface/panes.py:620
 msgid "Write to main.py on device"
 msgstr "main.py をデバイスに書き込む"
 
-#: ./mu/interface/panes.py:619
+#: ./mu/interface/panes.py:623
 msgid "Open"
 msgstr "開く"
 
-#: ./mu/interface/panes.py:625
+#: ./mu/interface/panes.py:629
 msgid "Opening '{}'"
 msgstr "'{}' を読込み中"
 
-#: ./mu/interface/panes.py:668
+#: ./mu/interface/panes.py:672
 msgid "Files on your device:"
 msgstr "デバイスのファイル:"
 
-#: ./mu/interface/panes.py:670
+#: ./mu/interface/panes.py:674
 msgid "Files on your computer:"
 msgstr "コンピュータのファイル:"
 
-#: ./mu/interface/panes.py:742
+#: ./mu/interface/panes.py:746
 msgid "There was a problem getting the list of files on the device. Please check Mu's logs for technical information. Alternatively, try unplugging/plugging-in your device and/or restarting Mu."
 msgstr "micro:bit 内のファイルのリストを取得する際に問題が発生しました。技術的な情報は Mu のログを確認してください。または micro:bit のプラグを抜き差しするか、Muを再起動してみてください。"
 
-#: ./mu/interface/panes.py:757
+#: ./mu/interface/panes.py:761
 msgid "There was a problem copying the file '{}' onto the device. Please check Mu's logs for more information."
 msgstr "micro:bit にファイル '{}' をコピーしている際に問題が発生しました。詳しくは Mu のログを確認してください。"
 
-#: ./mu/interface/panes.py:769
+#: ./mu/interface/panes.py:773
 msgid "There was a problem deleting '{}' from the device. Please check Mu's logs for more information."
 msgstr "micro:bit 内のファイル '{}' を削除している際にに問題が発生しました。詳しくは Mu のログを確認してください。"
 
-#: ./mu/interface/panes.py:781
+#: ./mu/interface/panes.py:785
 msgid "There was a problem getting '{}' from the device. Please check Mu's logs for more information."
 msgstr "micro:bit 内のファイル '{}' を取得している際に問題が発生しました。詳しくは Mu のログを確認してください。"
 
