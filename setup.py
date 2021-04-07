@@ -31,7 +31,10 @@ install_requires = [
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
     "PyQtChart==5.13.1"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
-    "qtconsole==4.7.4",
+    # FIXME: jupyter-client added for Py3.5 compatibility, to be dropped after
+    # Mu v1.1 release. So, qtconsole < 5 and jupyter-client < 6.2 (issue #1444)
+    "jupyter-client>=4.1,<6.2",
+    "qtconsole==4.7.7",
     "pyserial==3.4",
     "nudatus>=0.0.3",
     # `flake8` is actually a testing/packaging dependency that, among other
