@@ -88,22 +88,27 @@ working development environment:
 
     sudo apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg python3-dev python3-gpiozero python3-pgzero libxmlsec1-dev libxml2 libxml2-dev
 
-2. Create a virtualenv that uses Python 3 and allows the virtualenv access
+2. If you are running Raspbian Buster or newer you can also install this
+   optional package::
+   
+    sudo apt-get install python3-pyqt5.qtchart
+
+3. Create a virtualenv that uses Python 3 and allows the virtualenv access
    to the packages installed on your system via the ``--system-site-packages``
    flag::
 
     sudo pip3 install virtualenv
     virtualenv -p /usr/bin/python3 --system-site-packages ~/mu-venv
 
-3. Activate the virtual environment ::
+4. Activate the virtual environment ::
 
     source ~/mu-venv/bin/activate
 
-4. Clone mu::
+5. Clone mu::
 
     (mu-venv) $ git clone https://github.com/mu-editor/mu.git ~/mu-source
 
-5. With the virtualenv enabled, pip install the Python packages for the
+6. With the virtualenv enabled, pip install the Python packages for the
    Raspberry Pi with::
 
     (mu-venv) $ cd ~/mu-source
