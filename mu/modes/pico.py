@@ -40,7 +40,6 @@ class PicoMode(ESPMode):
     valid_boards = [
         # VID  , PID,    Manufacturer string, Device name
         (0x2E8A, 0x0005, None, "Raspberry Pi Pico"),
-        (0x16d0, 0x08c7, None, "Tiny 2040")
     ]
 
     def api(self):
