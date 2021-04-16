@@ -48,11 +48,15 @@ if sys.version_info[:2] == (3, 8) and platform.system() == "Darwin":
     ] + mode_packages[1:]
 
 
+def compact(text):
+    """Remove double line spaces and anything else which might help"""
+    return "\n".join(line for line in text.splitlines() if line.strip())
+
 def download(dirpath=WHEELS_DIRPATH):
     #
     # Download the wheels needed for modes
     #
-    logger.debug("dirpath: %s", dirpath)
+    logger.info("Downloading wheels to %s", dirpath)
 
     #
     # Clear the directory of any existing wheels and source distributions
@@ -65,10 +69,9 @@ def download(dirpath=WHEELS_DIRPATH):
         + glob.glob(os.path.join(dirpath, "*.zip"))
     )
     for rm_filepath in rm_files:
-        logger.debug("Removing %s", rm_filepath)
+        logger.info("Removing existing wheel/sdist %s", rm_filepath)
         os.remove(rm_filepath)
 
-    logger.debug("mode_packages: %s", mode_packages)
     for name, pip_identifier, *extra_flags in mode_packages:
         logger.info(
             "Running pip download for %s / %s / %s",
@@ -89,9 +92,10 @@ def download(dirpath=WHEELS_DIRPATH):
             + extra_flags,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            check=True,
         )
-        logger.debug(process.stdout.decode("utf-8"))
+        logger.debug(compact(process.stdout.decode("utf-8")))
+        if process.returncode != 0:
+            logger.error("Pip was unable to download %s", pip_identifier)
 
     #
     # Convert any sdists to wheels
@@ -99,7 +103,7 @@ def download(dirpath=WHEELS_DIRPATH):
     for filepath in glob.glob(os.path.join(dirpath, "*")):
         if filepath.endswith(("gz", ".zip")):
             logger.info("Building wheel for %s", filepath)
-            subprocess.run(
+            process = subprocess.run(
                 [
                     sys.executable,
                     "-m",
@@ -111,8 +115,10 @@ def download(dirpath=WHEELS_DIRPATH):
                     filepath,
                 ],
                 stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                check=True,
+                stderr=subprocess.STDOUT
             )
-            os.remove(filepath)
-            logger.debug(process.stdout.decode("utf-8"))
+            logger.debug(compact(process.stdout.decode("utf-8")))
+            if process.returncode != 0:
+                logger.error("Unable to build a wheel for %s", filepath)
+            else:
+                os.remove(filepath)
