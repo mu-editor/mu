@@ -31,12 +31,9 @@ install_requires = [
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
     "PyQtChart==5.13.1"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
-    #
-    # FIXME: Maybe should be in a mode?
-    # qtconsole, pyserial
-    #
     "qtconsole==4.7.4",
     "pyserial==3.4",
+    "nudatus>=0.0.3",
     # `flake8` is actually a testing/packaging dependency that, among other
     # packages, brings in `pycodestyle` and `pyflakes` which are runtime
     # dependencies. For the sake of "locality", it is being declared here,
@@ -65,13 +62,6 @@ extras_require = {
         "pytest-faulthandler",
         "pytest-timeout",
         "coverage",
-        #
-        # Mode-specific modules needed for testing
-        # TODO -- maybe mode-based tests should be run
-        # under the runtime venv?
-        #
-        'black>=19.10b0;python_version > "3.5"',
-        "nudatus",
     ],
     "docs": [
         "sphinx",
