@@ -25,6 +25,10 @@ wheels_dirpath = os.path.dirname(wheels.__file__)
 logger = logging.getLogger(__name__)
 
 
+def compact(text):
+    """Remove double line spaces and anything else which might help"""
+    return "\n".join(line for line in text.splitlines() if line.strip())
+
 class SplashLogHandler(logging.NullHandler):
     """
     A simple log handler that does only one thing: use the referenced Qt signal
@@ -359,7 +363,7 @@ class VirtualEnvironment(object):
         Return True if the process succeeded, False otherwise
         """
         process = subprocess.run(list(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kwargs)
-        logger.debug("Process returned %d; output: %s", process.returncode, process.stdout)
+        logger.debug("Process returned %d; output: %s", process.returncode, compact(process.stdout.decode("utf-8")))
         return process.returncode == 0, process.stdout.decode("utf-8")
 
     def reset_pip(self):
@@ -657,7 +661,7 @@ class VirtualEnvironment(object):
             logger.warn(
                 "No wheels found in %s; downloading...", wheels_dirpath
             )
-            wheels.download()
+            wheels.download(interpreter=self.interpreter)
             wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
 
         if not wheel_filepaths:

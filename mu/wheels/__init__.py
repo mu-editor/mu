@@ -50,7 +50,7 @@ def compact(text):
     """Remove double line spaces and anything else which might help"""
     return "\n".join(line for line in text.splitlines() if line.strip())
 
-def download(dirpath=WHEELS_DIRPATH):
+def download(dirpath=WHEELS_DIRPATH, interpreter=sys.executable):
     #
     # Download the wheels needed for modes
     #
