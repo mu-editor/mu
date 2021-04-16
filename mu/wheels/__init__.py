@@ -19,9 +19,7 @@ logger = logging.getLogger(__name__)
 mode_packages = [
     ("pgzero", "pgzero>=1.2.1"),
     ("flask", "flask==1.1.2"),
-    ("serial", "pyserial>=3.0"),
     ("qtconsole", "qtconsole==4.7.4"),
-    ("nudatus", "nudatus>=0.0.3"),
     ("esptool", "esptool==3.*"),
 ]
 WHEELS_DIRPATH = os.path.dirname(__file__)

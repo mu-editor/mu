@@ -44,11 +44,11 @@ jobs:
       - name: Run tests
         if: runner.os == 'Linux'
         run: xvfb-run make check
-        timeout-minutes: 3
+        timeout-minutes: 5
       - name: Run tests
         if: runner.os != 'Linux'
         run: python make.py check
-        timeout-minutes: 3
+        timeout-minutes: 5
 
   build-arm:
     runs-on: ubuntu-latest
