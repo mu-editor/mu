@@ -520,7 +520,7 @@ class MicroPythonDeviceFileList(MuFileList):
                 local_filename = os.path.join(
                     self.home, source.currentItem().text()
                 )
-                msg = _("Copying '{}' to micro:bit.").format(local_filename)
+                msg = _("Copying '{}' to device.").format(local_filename)
                 logger.info(msg)
                 self.set_message.emit(msg)
                 self.put.emit(local_filename)
@@ -529,19 +529,22 @@ class MicroPythonDeviceFileList(MuFileList):
         """
         Fired when the put event is completed for the given filename.
         """
-        msg = _("'{}' successfully copied to micro:bit.").format(microbit_file)
+        msg = _("'{}' successfully copied to device.").format(microbit_file)
         self.set_message.emit(msg)
         self.list_files.emit()
 
     def contextMenuEvent(self, event):
+        menu_current_item = self.currentItem()
+        if menu_current_item is None:
+            return
         menu = QMenu(self)
         delete_action = menu.addAction(_("Delete (cannot be undone)"))
         action = menu.exec_(self.mapToGlobal(event.pos()))
         if action == delete_action:
             self.disable.emit()
-            microbit_filename = self.currentItem().text()
+            microbit_filename = menu_current_item.text()
             logger.info("Deleting {}".format(microbit_filename))
-            msg = _("Deleting '{}' from micro:bit.").format(microbit_filename)
+            msg = _("Deleting '{}' from device.").format(microbit_filename)
             logger.info(msg)
             self.set_message.emit(msg)
             self.delete.emit(microbit_filename)
@@ -550,9 +553,7 @@ class MicroPythonDeviceFileList(MuFileList):
         """
         Fired when the delete event is completed for the given filename.
         """
-        msg = _("'{}' successfully deleted from micro:bit.").format(
-            microbit_file
-        )
+        msg = _("'{}' successfully deleted from device.").format(microbit_file)
         self.set_message.emit(msg)
         self.list_files.emit()
 
@@ -586,7 +587,7 @@ class LocalFileList(MuFileList):
                 microbit_filename = source.currentItem().text()
                 local_filename = os.path.join(self.home, microbit_filename)
                 msg = _(
-                    "Getting '{}' from micro:bit. " "Copying to '{}'."
+                    "Getting '{}' from device. " "Copying to '{}'."
                 ).format(microbit_filename, local_filename)
                 logger.info(msg)
                 self.set_message.emit(msg)
@@ -597,16 +598,19 @@ class LocalFileList(MuFileList):
         Fired when the get event is completed for the given filename.
         """
         msg = _(
-            "Successfully copied '{}' " "from the micro:bit to your computer."
+            "Successfully copied '{}' " "from the device to your computer."
         ).format(microbit_file)
         self.set_message.emit(msg)
         self.list_files.emit()
 
     def contextMenuEvent(self, event):
-        menu = QMenu(self)
-        local_filename = self.currentItem().text()
+        menu_current_item = self.currentItem()
+        if menu_current_item is None:
+            return
+        local_filename = menu_current_item.text()
         # Get the file extension
         ext = os.path.splitext(local_filename)[1].lower()
+        menu = QMenu(self)
         open_internal_action = None
         # Mu micro:bit mode only handles .py & .hex
         if ext == ".py" or ext == ".hex":

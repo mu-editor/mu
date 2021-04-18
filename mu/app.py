@@ -122,7 +122,7 @@ class AnimatedSplash(QSplashScreen):
         lines = text.split("\n")
         lines.append(
             "This screen will close in a few seconds. "
-            + "Then a crash report tool will open in your browser."
+            "Then a crash report tool will open in your browser."
         )
         lines = lines[-12:]
         self.draw_text("\n".join(lines))
@@ -173,6 +173,7 @@ def excepthook(*exc_args):
     """
     logging.error("Unrecoverable error", exc_info=(exc_args))
     try:
+        log_file = base64.standard_b64encode(LOG_FILE.encode("utf-8"))
         error = base64.standard_b64encode(
             "".join(traceback.format_exception(*exc_args)).encode("utf-8")
         )
@@ -185,6 +186,7 @@ def excepthook(*exc_args):
                     "utf-8"
                 )
             ),  # platform
+            "f": log_file,  # location of log file
             "e": error,  # error message
         }
         args = urllib.parse.urlencode(params)
@@ -216,10 +218,15 @@ def setup_logging():
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG)
 
+    stdout_handler = logging.StreamHandler()
+    stdout_handler.setFormatter(formatter)
+    stdout_handler.setLevel(logging.DEBUG)
+
     # set up primary log
     log = logging.getLogger()
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
+    # log.addHandler(stdout_handler)
     sys.excepthook = excepthook
 
 
@@ -289,10 +296,7 @@ def run():
     app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
-    # Create the "window" we'll be looking at.
-    editor_window = Window()
-
-    def splash_context(app=app, editor_window=editor_window):
+    def splash_context():
         """
         Function context (to ensure garbage collection) for displaying the
         splash screen.
@@ -300,7 +304,6 @@ def run():
         # Display a friendly "splash" icon.
         splash = AnimatedSplash(load_movie("splash_screen"))
         splash.show()
-        app.processEvents()
 
         # Create a blocking thread upon which to run the StartupWorker and which
         # will process the events for animating the splash screen.
@@ -318,10 +321,13 @@ def run():
         thread.finished.connect(thread.deleteLater)
         thread.start()
         initLoop.exec()  # start processing the pending StartupWorker.
-        splash.finish(editor_window)
+        splash.close()
         splash.deleteLater()
 
     splash_context()
+
+    # Create the "window" we'll be looking at.
+    editor_window = Window()
 
     @editor_window.load_theme.connect
     def load_theme(theme):

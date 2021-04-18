@@ -43,8 +43,11 @@ WHEEL_FILENAME = "arrr-1.0.2-py3-none-any.whl"
 def venv_name():
     """Use a random venv name each time, at least partly to expose any
     hidden assumptions about the name of the venv directory
+
+    Force the name to have a space in it to expose possible fragilities that way
     """
-    return uuid.uuid1().hex[:4]
+    hex = uuid.uuid1().hex
+    return hex[:2] + " " + hex[2:4]
 
 
 @pytest.fixture
@@ -185,6 +188,11 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     expected_result = os.path.join(venv_site_packages, "arrr.py")
     result = venv.run_python("-c", "import arrr; print(arrr.__file__)").strip()
     assert os.path.samefile(result, expected_result)
+
+    #
+    # Issue #1372 -- venv creation fails for paths with a space
+    #
+    venv.ensure_interpreter_version()
 
 
 def test_create_virtual_environment_path(patched, venv_dirpath):
@@ -494,3 +502,25 @@ def test_run_python_nonblocking(venv):
         venv.run_python(*args, slots=venv.Slots(output=lambda x: x))
 
     mocked_start.assert_called_with(command, args)
+
+
+def test_reset_pip(venv, pipped):
+    """Ensure that we're using a new Pip object for every invocation"""
+    n_tries = random.randint(1, 5)
+    for i in range(n_tries):
+        venv.reset_pip()
+    assert pipped.call_count == n_tries
+
+
+def test_reset_pip_used(venv_dirpath):
+    with mock.patch("mu.virtual_environment.Pip") as mock_pip:
+        mock_pip.installed.return_value = []
+        venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+        with mock.patch.object(venv, "reset_pip") as mocked_reset:
+            venv.relocate(".")
+            venv.register_baseline_packages()
+            venv.install_user_packages([])
+            venv.remove_user_packages([])
+            venv.installed_packages()
+
+    assert mocked_reset.call_count == 5

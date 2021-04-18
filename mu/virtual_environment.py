@@ -110,7 +110,7 @@ class Process(QObject):
 
     def _set_up_run(self, **envvars):
         """Run the process with the command and args"""
-        self.process = QProcess(self)
+        self.process = QProcess()
         environment = QProcessEnvironment(self.environment)
         for k, v in envvars.items():
             environment.insert(k, v)
@@ -121,15 +121,24 @@ class Process(QObject):
         self._set_up_run(**envvars)
         self.process.start(command, args)
         self.wait(wait_for_s=wait_for_s)
-        return self.data()
+        output = self.data()
+        return output
 
     def run(self, command, args, **envvars):
+        logger.info(
+            "About to run %s with args %s and envvars %s",
+            command,
+            args,
+            envvars,
+        )
         self._set_up_run(**envvars)
         self.process.readyRead.connect(self._readyRead)
         self.process.started.connect(self._started)
         self.process.finished.connect(self._finished)
+        partial = functools.partial(self.process.start, command, args)
         QTimer.singleShot(
-            100, functools.partial(self.process.start, command, args)
+            1,
+            partial,
         )
 
     def wait(self, wait_for_s=30.0):
@@ -195,20 +204,11 @@ class Pip(object):
         params.extend(args)
 
         if slots.output is None:
-            logger.debug(
-                "About to run blocking: %s, %s, %s",
-                self.executable,
-                params,
-                wait_for_s,
-            )
             result = self.process.run_blocking(
                 self.executable, params, wait_for_s=wait_for_s
             )
             return result
         else:
-            logger.debug(
-                "About to run unblocking: %s, %s", self.executable, params
-            )
             if slots.started:
                 self.process.started.connect(slots.started)
             self.process.output.connect(slots.output)
@@ -226,7 +226,6 @@ class Pip(object):
         Any kwargs are passed as command-line switches. A value of None
         indicates a switch without a value (eg --upgrade)
         """
-        logger.debug("About to pip install: %r", packages)
         if isinstance(packages, str):
             return self.run(
                 "install", packages, wait_for_s=180.0, slots=slots, **kwargs
@@ -246,7 +245,6 @@ class Pip(object):
         Any kwargs are passed as command-line switches. A value of None
         indicates a switch without a value (eg --upgrade)
         """
-        logger.debug("About to pip uninstall: %r", packages)
         if isinstance(packages, str):
             return self.run(
                 "uninstall",
@@ -354,6 +352,9 @@ class VirtualEnvironment(object):
             time.strftime("%Y%m%d-%H%M%S"),
         )
 
+    def reset_pip(self):
+        self.pip = Pip(self.pip_executable)
+
     def relocate(self, dirpath):
         """
         Relocate sets up variables for, eg, the expected location and name of
@@ -371,9 +372,10 @@ class VirtualEnvironment(object):
         self.interpreter = os.path.join(
             self._bin_directory, "python" + self._bin_extension
         )
-        self.pip = Pip(
-            os.path.join(self._bin_directory, "pip" + self._bin_extension)
+        self.pip_executable = os.path.join(
+            self._bin_directory, "pip" + self._bin_extension
         )
+        self.reset_pip()
         logger.debug(
             "Virtual environment set up %s at %s", self.name, self.path
         )
@@ -388,7 +390,6 @@ class VirtualEnvironment(object):
         headless and the process will be run synchronously and output collected
         will be returned when the process is complete
         """
-
         if slots.output:
             if slots.started:
                 self.process.started.connect(slots.started)
@@ -440,7 +441,6 @@ class VirtualEnvironment(object):
                 )
                 self.ensure()
             except VirtualEnvironmentError:
-                logger.debug("Virtual environment not present or correct.")
                 new_dirpath = self._generate_dirpath()
                 logger.debug(
                     "Creating new virtual environment at %s.", new_dirpath
@@ -562,11 +562,11 @@ class VirtualEnvironment(object):
         """
         Ensure that pip is available.
         """
-        if os.path.isfile(self.pip.executable):
-            logger.info("Pip found at: %s", self.pip.executable)
+        if os.path.isfile(self.pip_executable):
+            logger.info("Pip found at: %s", self.pip_executable)
         else:
             message = (
-                "Pip not found where expected at: %s" % self.pip.executable
+                "Pip not found where expected at: %s" % self.pip_executable
             )
             logger.error(message)
             raise VirtualEnvironmentError(message)
@@ -604,15 +604,17 @@ class VirtualEnvironment(object):
         """
         kernel_name = '"Python/Mu ({})"'.format(self.name)
         logger.info("Installing Jupyter Kernel: %s", kernel_name)
-        return self.run_python(
-            "-m",
-            "ipykernel",
-            "install",
-            "--user",
-            "--name",
-            self.name,
-            "--display-name",
-            kernel_name,
+        logger.debug(
+            self.run_python(
+                "-m",
+                "ipykernel",
+                "install",
+                "--user",
+                "--name",
+                self.name,
+                "--display-name",
+                kernel_name,
+            )
         )
 
     def install_baseline_packages(self):
@@ -653,12 +655,14 @@ class VirtualEnvironment(object):
             raise VirtualEnvironmentError(
                 "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
             )
+        self.reset_pip()
         logger.debug(self.pip.install(wheel_filepaths))
 
     def register_baseline_packages(self):
         """
         Keep track of the baseline packages installed into the empty venv.
         """
+        self.reset_pip()
         packages = list(self.pip.installed())
         self.settings["baseline_packages"] = packages
 
@@ -673,6 +677,7 @@ class VirtualEnvironment(object):
         Install user defined packages.
         """
         logger.info("Installing user packages: %s", ", ".join(packages))
+        self.reset_pip()
         self.pip.install(
             packages,
             slots=slots,
@@ -684,6 +689,7 @@ class VirtualEnvironment(object):
         Remove user defined packages.
         """
         logger.info("Removing user packages: %s", ", ".join(packages))
+        self.reset_pip()
         self.pip.uninstall(
             packages,
             slots=slots,
@@ -711,6 +717,7 @@ class VirtualEnvironment(object):
             name for name, version in self.baseline_packages()
         ]
         user_packages = []
+        self.reset_pip()
         for package, version in self.pip.installed():
             if package not in baseline_packages:
                 user_packages.append(package)

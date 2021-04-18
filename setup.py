@@ -32,14 +32,12 @@ install_requires = [
     "PyQtChart==5.13.1"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
     #
-    # FIXME: Maybe should be in a mode?
-    # adafruit-board-toolkit, qtconsole, pyserial
     # adafruit-board-toolkit is used to find serial ports and help identify
-    # CircuitPython boards.
-    #
+    # CircuitPython boards in the CircuitPython mode.
     "adafruit-board-toolkit>=1.0.1",
     "qtconsole==4.7.4",
     "pyserial>=3.5",
+    "nudatus>=0.0.3",
     # `flake8` is actually a testing/packaging dependency that, among other
     # packages, brings in `pycodestyle` and `pyflakes` which are runtime
     # dependencies. For the sake of "locality", it is being declared here,
@@ -52,7 +50,7 @@ install_requires = [
     #
     # Needed for creating the runtime virtual environment
     #
-    "virtualenv",
+    "virtualenv>=16.0.0",
     #
     # Needed for packaging
     #
@@ -66,14 +64,8 @@ extras_require = {
         "pytest-cov",
         "pytest-random-order>=1.0.0",
         "pytest-faulthandler",
+        "pytest-timeout",
         "coverage",
-        #
-        # Mode-specific modules needed for testing
-        # TODO -- maybe mode-based tests should be run
-        # under the runtime venv?
-        #
-        'black>=19.10b0;python_version > "3.5"',
-        "nudatus",
     ],
     "docs": [
         "sphinx",
