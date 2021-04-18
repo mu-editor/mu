@@ -295,6 +295,7 @@ class Pip(object):
             name, version = line.split()[:2]
             yield name, version
 
+
 class SplashLogHandler(logging.NullHandler):
     """
     A simple log handler that does only one thing: use the referenced Qt signal
@@ -505,7 +506,10 @@ class VirtualEnvironment(object):
                 else:
                     raise
             finally:
-                logger.debug("Emitter: %s; Splash Handler; %s" % (emitter, splash_handler))
+                logger.debug(
+                    "Emitter: %s; Splash Handler; %s"
+                    % (emitter, splash_handler)
+                )
                 if emitter and splash_handler:
                     logger.removeHandler(splash_handler)
 
@@ -671,12 +675,10 @@ class VirtualEnvironment(object):
         Install a Jupyter kernel for Mu (the name of the kernel indicates this
         is a Mu related kernel).
         """
-        print("install_jupyter_kernel#1")
         kernel_name = self.name.replace(" ", "-")
         display_name = '"Python/Mu ({})"'.format(kernel_name)
         logger.info("Installing Jupyter Kernel: %s", kernel_name)
         ok, output = self.run_subprocess(self.interpreter, "-m", "pip", "list")
-        print("Pip List:", output)
         ok, output = self.run_subprocess(
             sys.executable,
             "-m",
@@ -688,7 +690,6 @@ class VirtualEnvironment(object):
             "--display-name",
             display_name,
         )
-        print("Ok / Output:", ok, output)
         if ok:
             logger.info("Installed Jupyter Kernel: %s", kernel_name)
         else:

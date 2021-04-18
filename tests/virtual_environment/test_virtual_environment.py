@@ -85,7 +85,11 @@ def patched():
     """
     with mock.patch.object(
         subprocess, "run"
-    ) as subprocess_run, mock.patch.object(VE, "run_python") as run_python, mock.patch.object(VE, "run_subprocess", return_value=(True, "")) as run_subprocess:
+    ) as subprocess_run, mock.patch.object(
+        VE, "run_python"
+    ) as run_python, mock.patch.object(
+        VE, "run_subprocess", return_value=(True, "")
+    ) as run_subprocess:
         yield subprocess_run, run_python, run_subprocess
 
 
@@ -269,8 +273,17 @@ def test_jupyter_kernel_installed(patched, venv):
             #
             # Check that we're calling `ipykernel install`
             #
-            expected_jupyter_args = (sys.executable, "-m", "ipykernel", "install")
-            print("run_subprocess / call_args:", run_subprocess, run_subprocess.call_args)
+            expected_jupyter_args = (
+                sys.executable,
+                "-m",
+                "ipykernel",
+                "install",
+            )
+            print(
+                "run_subprocess / call_args:",
+                run_subprocess,
+                run_subprocess.call_args,
+            )
             args, _ = run_subprocess.call_args
             assert expected_jupyter_args == args[: len(expected_jupyter_args)]
 
@@ -391,7 +404,9 @@ def test_venv_fails_after_three_tries(venv):
     with mock.patch.object(VE, "create"), mock.patch.object(
         VE,
         "ensure",
-        _ensure_venv([VEError("Failed"), VEError("Failed"), VEError("Failed")]),
+        _ensure_venv(
+            [VEError("Failed"), VEError("Failed"), VEError("Failed")]
+        ),
     ):
         with pytest.raises(VEError):
             venv.ensure_and_create()

@@ -40,7 +40,7 @@ from PyQt5.QtCore import (
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
 from . import i18n
-from .virtual_environment import venv, SplashLogHandler, logger as vlogger
+from .virtual_environment import venv, logger as vlogger
 from . import __version__
 from .logic import Editor, LOG_FILE, LOG_DIR, ENCODING
 from .interface import Window
@@ -145,11 +145,6 @@ class StartupWorker(QObject):
         called from here.
         """
         try:
-            #~ splash_handler = SplashLogHandler(self.display_text)
-            #~ splash_handler.setLevel(logging.INFO)
-            #~ print("vlogger handlers#2:", vlogger.handlers)
-            #~ vlogger.addHandler(splash_handler)
-            #~ print("vlogger handlers#3:", vlogger.handlers)
             venv.ensure_and_create(self.display_text)
             self.finished.emit()  # Always called last.
         except Exception as ex:
