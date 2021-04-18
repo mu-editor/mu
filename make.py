@@ -7,7 +7,8 @@ import subprocess
 
 PYTEST = "pytest"
 FLAKE8 = "flake8"
-TIDY = "black"
+BLACK = "black"
+BLACK_FLAGS = ["-l", "79"]
 PYGETTEXT = os.path.join(sys.base_prefix, "tools", "i18n", "pygettext.py")
 
 INCLUDE_PATTERNS = {"*.py"}
@@ -152,6 +153,7 @@ def flake8(*flake8_args):
 @export
 def tidy():
     """Tidy code with the 'black' formatter."""
+    clean()
     print("\nTidy")
     for target in [
         "setup.py",
@@ -161,7 +163,7 @@ def tidy():
         "tests",
         "utils",
     ]:
-        return_code = subprocess.run([TIDY, "-l", "79", target]).returncode
+        return_code = subprocess.run([BLACK, target] + BLACK_FLAGS).returncode
         if return_code != 0:
             return return_code
     return 0
@@ -170,10 +172,11 @@ def tidy():
 @export
 def black():
     """Check code with the 'black' formatter."""
+    clean()
     print("\nblack")
     # Black is no available in Python 3.5, in that case let the tests continue
     try:
-        subprocess.run([TIDY, "--version"])
+        subprocess.run([BLACK, "--version"])
     except FileNotFoundError as e:
         python_version = sys.version_info
         if python_version.major == 3 and python_version.minor == 5:
@@ -191,7 +194,7 @@ def black():
         "utils",
     ]:
         return_code = subprocess.run(
-            [TIDY, "--check", "-l", "79", target]
+            [BLACK, target, "--check"] + BLACK_FLAGS
         ).returncode
         if return_code != 0:
             return return_code
