@@ -2,6 +2,7 @@ import os
 import sys
 import datetime
 from collections import namedtuple
+import contextlib
 import functools
 import glob
 import logging
@@ -28,40 +29,6 @@ logger = logging.getLogger(__name__)
 def compact(text):
     """Remove double line spaces and anything else which might help"""
     return "\n".join(line for line in text.splitlines() if line.strip())
-
-class SplashLogHandler(logging.NullHandler):
-    """
-    A simple log handler that does only one thing: use the referenced Qt signal
-    to emit the log.
-    """
-
-    def __init__(self, emitter):
-        """
-        Returns an instance of the class that will use the Qt signal passed in
-        as emitter.
-        """
-        super().__init__()
-        self.setLevel(logging.DEBUG)
-        self.emitter = emitter
-
-    def emit(self, record):
-        """
-        Emits a record via the Qt signal.
-        """
-        timestamp = datetime.datetime.fromtimestamp(record.created)
-        messages = record.getMessage().splitlines()
-        for msg in messages:
-            output = "[{level}]({timestamp}) - {message}".format(
-                level=record.levelname, timestamp=timestamp, message=msg
-            )
-            self.emitter.emit(output)
-
-    def handle(self, record):
-        """
-        Handles the log record.
-        """
-        self.emit(record)
-
 
 class Process(QObject):
     """
@@ -439,19 +406,12 @@ class VirtualEnvironment(object):
 
         return False
 
-    def ensure_and_create(self, emitter=None):
+    def ensure_and_create(self):
         """
         If an emitter is provided, this will be used by a custom log handler
         to display logging events onto a splash screen.
         """
-        splash_handler = None
-        if emitter:
-            splash_handler = SplashLogHandler(emitter)
-            splash_handler.setLevel(logging.INFO)
-            logger.addHandler(splash_handler)
-            logger.info("Added log handler.")
-
-        n_retries = 3
+        n_retries = 2
         for n in range(n_retries):
             try:
                 logger.debug(
@@ -459,22 +419,27 @@ class VirtualEnvironment(object):
                 )
                 self.ensure()
             except VirtualEnvironmentError:
-                new_dirpath = self._generate_dirpath()
-                logger.debug(
-                    "Creating new virtual environment at %s.", new_dirpath
-                )
-                self.relocate(new_dirpath)
-                self.create()
+                #
+                # Recreate outside the exception handler to reduce the amount
+                # of noise in the logs as Python will report any exceptions here
+                # as a result of the exception we're catching
+                #
+                pass
             else:
                 logger.info("Virtual environment already exists.")
                 return
+
+            new_dirpath = self._generate_dirpath()
+            logger.debug(
+                "Creating new virtual environment at %s.", new_dirpath
+            )
+            self.relocate(new_dirpath)
+            self.create()
 
         # If we get here, there's a problem creating the virtual environment,
         # so attempt to signal this via the logger, wait for the log to be
         # displayed in the splash screen and then exit via the exception.
         logger.error("Unable to create a working virtual environment.")
-        if emitter and splash_handler:
-            logger.removeHandler(splash_handler)
         raise VirtualEnvironmentError(
             "Unable to create a working virtual environment."
         )
@@ -605,6 +570,17 @@ class VirtualEnvironment(object):
             logger.error(message)
             raise VirtualEnvironmentError(message)
 
+        logger.debug("About to upgrade pip; interpreter %s %s", self.interpreter, "exists" if os.path.exists(self.interpreter) else "doesn't exist")
+        ok, output = self.run_subprocess(
+            self.interpreter, "-m", "pip", "install", "--upgrade", "pip"
+        )
+        if ok:
+            logger.info("Upgraded pip")
+        else:
+            message = "Unable to upgrade pip"
+            logger.error(message)
+            raise VirtualEnvironmentError(message)
+
         self.install_baseline_packages()
         self.register_baseline_packages()
         self.install_jupyter_kernel()
@@ -661,8 +637,12 @@ class VirtualEnvironment(object):
             logger.warn(
                 "No wheels found in %s; downloading...", wheels_dirpath
             )
-            wheels.download(interpreter=self.interpreter)
-            wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+            try:
+                wheels.download(interpreter=self.interpreter, logger=logger)
+            except wheels.WheelsDownloadError as exc:
+                raise VirtualEnvironmentError(exc.message)
+            else:
+                wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
 
         if not wheel_filepaths:
             raise VirtualEnvironmentError(
