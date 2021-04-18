@@ -152,7 +152,6 @@ class SplashLogHandler(logging.NullHandler):
         """
         Emits a record via the Qt signal.
         """
-        timestamp = datetime.datetime.fromtimestamp(record.created)
         messages = record.getMessage().splitlines()
         for msg in messages:
             output = "[{level}] - {message}".format(
