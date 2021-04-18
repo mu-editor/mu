@@ -39,7 +39,6 @@ from PyQt5.QtCore import (
 )
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
-
 from . import i18n
 from .virtual_environment import venv, logger as vlogger
 from . import __version__
@@ -226,7 +225,7 @@ def setup_logging():
     log = logging.getLogger()
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
-    # log.addHandler(stdout_handler)
+    log.addHandler(stdout_handler)
     sys.excepthook = excepthook
 
 

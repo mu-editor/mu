@@ -1,6 +1,5 @@
 import os
 import sys
-import datetime
 from collections import namedtuple
 import functools
 import glob
@@ -25,38 +24,22 @@ wheels_dirpath = os.path.dirname(wheels.__file__)
 logger = logging.getLogger(__name__)
 
 
-class SplashLogHandler(logging.NullHandler):
-    """
-    A simple log handler that does only one thing: use the referenced Qt signal
-    to emit the log.
-    """
+class VirtualEnvironmentError(Exception):
+    def __init__(self, message):
+        self.message = message
 
-    def __init__(self, emitter):
-        """
-        Returns an instance of the class that will use the Qt signal passed in
-        as emitter.
-        """
-        super().__init__()
-        self.setLevel(logging.DEBUG)
-        self.emitter = emitter
 
-    def emit(self, record):
-        """
-        Emits a record via the Qt signal.
-        """
-        timestamp = datetime.datetime.fromtimestamp(record.created)
-        messages = record.getMessage().splitlines()
-        for msg in messages:
-            output = "[{level}]({timestamp}) - {message}".format(
-                level=record.levelname, timestamp=timestamp, message=msg
-            )
-            self.emitter.emit(output)
+class VirtualEnvironmentEnsureError(VirtualEnvironmentError):
+    pass
 
-    def handle(self, record):
-        """
-        Handles the log record.
-        """
-        self.emit(record)
+
+class VirtualEnvironmentCreateError(VirtualEnvironmentError):
+    pass
+
+
+def compact(text):
+    """Remove double line spaces and anything else which might help"""
+    return "\n".join(line for line in text.splitlines() if line.strip())
 
 
 class Process(QObject):
@@ -207,6 +190,7 @@ class Pip(object):
             result = self.process.run_blocking(
                 self.executable, params, wait_for_s=wait_for_s
             )
+            logger.debug("Process output: %s", result.strip())
             return result
         else:
             if slots.started:
@@ -312,8 +296,37 @@ class Pip(object):
             yield name, version
 
 
-class VirtualEnvironmentError(Exception):
-    pass
+class SplashLogHandler(logging.NullHandler):
+    """
+    A simple log handler that does only one thing: use the referenced Qt signal
+    to emit the log.
+    """
+
+    def __init__(self, emitter):
+        """
+        Returns an instance of the class that will use the Qt signal passed in
+        as emitter.
+        """
+        super().__init__()
+        self.setLevel(logging.DEBUG)
+        self.emitter = emitter
+
+    def emit(self, record):
+        """
+        Emits a record via the Qt signal.
+        """
+        messages = record.getMessage().splitlines()
+        for msg in messages:
+            output = "[{level}] - {message}".format(
+                level=record.levelname, message=msg
+            )
+            self.emitter.emit(output)
+
+    def handle(self, record):
+        """
+        Handles the log record.
+        """
+        self.emit(record)
 
 
 class VirtualEnvironment(object):
@@ -351,6 +364,24 @@ class VirtualEnvironment(object):
             "%s%s" % sys.version_info[:2],
             time.strftime("%Y%m%d-%H%M%S"),
         )
+
+    def run_subprocess(self, *args, **kwargs):
+        """Quick wrapper to run a subprocess and log the output
+
+        Return True if the process succeeded, False otherwise
+        """
+        process = subprocess.run(
+            list(args),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            **kwargs
+        )
+        logger.debug(
+            "Process returned %d; output: %s",
+            process.returncode,
+            compact(process.stdout.decode("utf-8")),
+        )
+        return process.returncode == 0, process.stdout.decode("utf-8")
 
     def reset_pip(self):
         self.pip = Pip(self.pip_executable)
@@ -399,7 +430,9 @@ class VirtualEnvironment(object):
             self.process.run(self.interpreter, args)
             return self.process
         else:
-            return self.process.run_blocking(self.interpreter, args)
+            output = self.process.run_blocking(self.interpreter, args)
+            logger.debug("Python output: %s", output.strip())
+            return output
 
     def _directory_is_venv(self):
         """
@@ -423,42 +456,62 @@ class VirtualEnvironment(object):
 
         return False
 
+    def quarantine_failed_venv(self):
+        error_dirpath = self.path + ".FAILED"
+        try:
+            os.rename(self.path, error_dirpath)
+        except OSError:
+            logger.exception(
+                "Unable to quarantine %s as %s", self.path, error_dirpath
+            )
+        else:
+            logger.info("Quarantined %s as %s", self.path, error_dirpath)
+
     def ensure_and_create(self, emitter=None):
-        """
-        If an emitter is provided, this will be used by a custom log handler
-        to display logging events onto a splash screen.
+        """Check whether we have a valid virtual environment in place and, if not,
+        create a new one. Allow a couple of tries in case we have temporary glitches
+        around the network, file contention etc.
         """
         splash_handler = None
         if emitter:
             splash_handler = SplashLogHandler(emitter)
+            splash_handler.setLevel(logging.INFO)
             logger.addHandler(splash_handler)
             logger.info("Added log handler.")
-        n_retries = 3
-        for n in range(n_retries):
+
+        n_tries = 2
+        n = 1
+        #
+        # First time around we'll have a path with nothing in it
+        # Jump straight to creation and let the ensure take over afterwards
+        # For the happy path we'll get a clean creation and a clean ensure
+        #
+        try_to_create = not os.path.exists(self.path)
+        while True:
+            logger.debug("Checking virtual environment; attempt #%d.", n)
             try:
-                logger.debug(
-                    "Checking virtual environment; attempt #%d.", 1 + n
-                )
+                if try_to_create:
+                    self.create()
                 self.ensure()
+                logger.info("Valid virtual environment found at %s", self.path)
+                self.settings.save()
+                break
+
             except VirtualEnvironmentError:
-                new_dirpath = self._generate_dirpath()
+                self.quarantine_failed_venv()
+                if n < n_tries:
+                    self.relocate(self._generate_dirpath())
+                    try_to_create = True
+                    n += 1
+                else:
+                    raise
+            finally:
                 logger.debug(
-                    "Creating new virtual environment at %s.", new_dirpath
+                    "Emitter: %s; Splash Handler; %s"
+                    % (emitter, splash_handler)
                 )
-                self.relocate(new_dirpath)
-                self.create()
-            else:
-                logger.info("Virtual environment already exists.")
-                return
-        # If we get here, there's a problem creating the virtual environment,
-        # so attempt to signal this via the logger, wait for the log to be
-        # displayed in the splash screen and then exit via the exception.
-        logger.error("Unable to create a working virtual environment.")
-        if emitter and splash_handler:
-            logger.removeHandler(splash_handler)
-        raise VirtualEnvironmentError(
-            "Unable to create a working virtual environment."
-        )
+                if emitter and splash_handler:
+                    logger.removeHandler(splash_handler)
 
     def ensure(self):
         """
@@ -475,17 +528,17 @@ class VirtualEnvironment(object):
         Ensure that the virtual environment path exists and is a valid venv.
         """
         if not os.path.exists(self.path):
-            message = "%s does not exist." % self.path
-            logger.error(message)
-            raise VirtualEnvironmentError(message)
+            raise VirtualEnvironmentEnsureError(
+                "%s does not exist." % self.path
+            )
         elif not os.path.isdir(self.path):
-            message = "%s exists but is not a directory." % self.path
-            logger.error(message)
-            raise VirtualEnvironmentError(message)
+            raise VirtualEnvironmentEnsureError(
+                "%s exists but is not a directory." % self.path
+            )
         elif not self._directory_is_venv():
-            message = "Directory %s exists but is not a venv." % self.path
-            logger.error(message)
-            raise VirtualEnvironmentError(message)
+            raise VirtualEnvironmentEnsureError(
+                "Directory %s exists but is not a venv." % self.path
+            )
         logger.info("Virtual Environment found at: %s", self.path)
 
     def ensure_interpreter(self):
@@ -501,12 +554,10 @@ class VirtualEnvironment(object):
         if os.path.isfile(self.interpreter):
             logger.info("Interpreter found at: %s", self.interpreter)
         else:
-            message = (
+            raise VirtualEnvironmentEnsureError(
                 "Interpreter not found where expected at: %s"
                 % self.interpreter
             )
-            logger.error(message)
-            raise VirtualEnvironmentError(message)
 
     def ensure_interpreter_version(self):
         """
@@ -519,26 +570,24 @@ class VirtualEnvironment(object):
         #
         # Can't use self.run_python as we're not yet within the Qt UI loop
         #
-        process = subprocess.run(
-            [
-                self.interpreter,
-                "-c",
-                'import sys; print("%s%s" % sys.version_info[:2])',
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            check=True,
+        ok, output = self.run_subprocess(
+            self.interpreter,
+            "-c",
+            'import sys; print("%s%s" % sys.version_info[:2])',
         )
-        venv_version = process.stdout.decode("utf-8").strip()
+        if not ok:
+            raise VirtualEnvironmentEnsureError(
+                "Failed to run venv interpreter %s" % self.interpreter
+            )
+
+        venv_version = output.strip()
         if current_version == venv_version:
             logger.info("Both interpreters at version %s", current_version)
         else:
-            message = (
+            raise VirtualEnvironmentEnsureError(
                 "Mu interpreter at version %s; venv interpreter at version %s."
                 % (current_version, venv_version)
             )
-            logger.error(message)
-            raise VirtualEnvironmentError(message)
 
     def ensure_key_modules(self):
         """
@@ -546,17 +595,13 @@ class VirtualEnvironment(object):
         """
         for module, *_ in wheels.mode_packages:
             logger.debug("Verifying import of: %s", module)
-            try:
-                subprocess.run(
-                    [self.interpreter, "-c", "import %s" % module],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    check=True,
+            ok, output = self.run_subprocess(
+                self.interpreter, "-c", "import %s" % module
+            )
+            if not ok:
+                raise VirtualEnvironmentEnsureError(
+                    "Failed to import: %s" % module
                 )
-            except subprocess.CalledProcessError:
-                message = "Failed to import: %s" % module
-                logger.error(message)
-                raise VirtualEnvironmentError(message)
 
     def ensure_pip(self):
         """
@@ -565,13 +610,23 @@ class VirtualEnvironment(object):
         if os.path.isfile(self.pip_executable):
             logger.info("Pip found at: %s", self.pip_executable)
         else:
-            message = (
+            raise VirtualEnvironmentEnsureError(
                 "Pip not found where expected at: %s" % self.pip_executable
             )
-            logger.error(message)
-            raise VirtualEnvironmentError(message)
 
     def create(self):
+        """Create a new virtualenv and install baseline packages & kernel
+
+        If a failure occurs, attempt to move the failed attempt out of the way
+        before re-raising the error.
+        """
+        self.create_venv()
+        self.upgrade_pip()
+        self.install_baseline_packages()
+        self.register_baseline_packages()
+        self.install_jupyter_kernel()
+
+    def create_venv(self):
         """
         Create a new virtualenv at the referenced path.
         """
@@ -579,43 +634,66 @@ class VirtualEnvironment(object):
         logger.info("Virtualenv name: {}".format(self.name))
 
         env = dict(os.environ)
-        subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "virtualenv",
-                "-p",
-                sys.executable,
-                "-q",
-                self.path,
-            ],
-            check=True,
+        ok, output = self.run_subprocess(
+            sys.executable,
+            "-m",
+            "virtualenv",
+            "-p",
+            sys.executable,
+            "-q",
+            self.path,
             env=env,
         )
-        # Set the path to the interpreter
-        self.install_baseline_packages()
-        self.register_baseline_packages()
-        self.install_jupyter_kernel()
+        if ok:
+            logger.info(
+                "Created virtual environment using %s at %s",
+                sys.executable,
+                self.path,
+            )
+        else:
+            raise VirtualEnvironmentCreateError(
+                "Unable to create a virtual environment using %s at %s"
+                % (sys.executable, self.path)
+            )
+
+    def upgrade_pip(self):
+        logger.debug(
+            "About to upgrade pip; interpreter %s %s",
+            self.interpreter,
+            "exists" if os.path.exists(self.interpreter) else "doesn't exist",
+        )
+        ok, output = self.run_subprocess(
+            self.interpreter, "-m", "pip", "install", "--upgrade", "pip"
+        )
+        if ok:
+            logger.info("Upgraded pip")
+        else:
+            raise VirtualEnvironmentCreateError("Unable to upgrade pip")
 
     def install_jupyter_kernel(self):
         """
         Install a Jupyter kernel for Mu (the name of the kernel indicates this
         is a Mu related kernel).
         """
-        kernel_name = '"Python/Mu ({})"'.format(self.name)
+        kernel_name = self.name.replace(" ", "-")
+        display_name = '"Python/Mu ({})"'.format(kernel_name)
         logger.info("Installing Jupyter Kernel: %s", kernel_name)
-        logger.debug(
-            self.run_python(
-                "-m",
-                "ipykernel",
-                "install",
-                "--user",
-                "--name",
-                self.name,
-                "--display-name",
-                kernel_name,
-            )
+        ok, output = self.run_subprocess(self.interpreter, "-m", "pip", "list")
+        ok, output = self.run_subprocess(
+            sys.executable,
+            "-m",
+            "ipykernel",
+            "install",
+            "--user",
+            "--name",
+            kernel_name,
+            "--display-name",
+            display_name,
         )
+        if ok:
+            logger.info("Installed Jupyter Kernel: %s", kernel_name)
+        else:
+            raise VirtualEnvironmentCreateError("Unable to install kernel")
 
     def install_baseline_packages(self):
         """
@@ -648,15 +726,22 @@ class VirtualEnvironment(object):
             logger.warn(
                 "No wheels found in %s; downloading...", wheels_dirpath
             )
-            wheels.download()
-            wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+            try:
+                wheels.download(interpreter=self.interpreter, logger=logger)
+            except wheels.WheelsDownloadError as exc:
+                raise VirtualEnvironmentCreateError(exc.message)
+            else:
+                wheel_filepaths = glob.glob(
+                    os.path.join(wheels_dirpath, "*.whl")
+                )
 
         if not wheel_filepaths:
-            raise VirtualEnvironmentError(
+            raise VirtualEnvironmentCreateError(
                 "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
             )
         self.reset_pip()
-        logger.debug(self.pip.install(wheel_filepaths))
+        logger.info("About to install from wheels")
+        self.pip.install(wheel_filepaths)
 
     def register_baseline_packages(self):
         """
@@ -701,18 +786,6 @@ class VirtualEnvironment(object):
         containing the referenced Python interpreter.
         """
         logger.info("Discovering installed third party modules in venv.")
-
-        #
-        # FIXME: Basically we need a way to distinguish between installed
-        # baseline packages and user-added packages. The baseline_packages
-        # in this class (or, later, from modes) are just the top-level classes:
-        # flask, pgzero etc. But they bring in many others further down. So:
-        # we either need to keep track of what's installed as part of the
-        # baseline install; or to keep track of what's installed by users.
-        # And then we have to hold those in the settings file
-        # The latter is probably easier.
-        #
-
         baseline_packages = [
             name for name, version in self.baseline_packages()
         ]
