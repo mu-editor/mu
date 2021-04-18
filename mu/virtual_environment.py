@@ -295,6 +295,38 @@ class Pip(object):
             name, version = line.split()[:2]
             yield name, version
 
+class SplashLogHandler(logging.NullHandler):
+    """
+    A simple log handler that does only one thing: use the referenced Qt signal
+    to emit the log.
+    """
+
+    def __init__(self, emitter):
+        """
+        Returns an instance of the class that will use the Qt signal passed in
+        as emitter.
+        """
+        super().__init__()
+        self.setLevel(logging.DEBUG)
+        self.emitter = emitter
+
+    def emit(self, record):
+        """
+        Emits a record via the Qt signal.
+        """
+        messages = record.getMessage().splitlines()
+        for msg in messages:
+            output = "[{level}] - {message}".format(
+                level=record.levelname, message=msg
+            )
+            self.emitter.emit(output)
+
+    def handle(self, record):
+        """
+        Handles the log record.
+        """
+        self.emit(record)
+
 
 class VirtualEnvironment(object):
     """
@@ -434,11 +466,18 @@ class VirtualEnvironment(object):
         else:
             logger.info("Quarantined %s as %s", self.path, error_dirpath)
 
-    def ensure_and_create(self):
+    def ensure_and_create(self, emitter=None):
         """Check whether we have a valid virtual environment in place and, if not,
         create a new one. Allow a couple of tries in case we have temporary glitches
         around the network, file contention etc.
         """
+        splash_handler = None
+        if emitter:
+            splash_handler = SplashLogHandler(emitter)
+            splash_handler.setLevel(logging.INFO)
+            logger.addHandler(splash_handler)
+            logger.info("Added log handler.")
+
         n_tries = 2
         n = 1
         #
@@ -454,6 +493,7 @@ class VirtualEnvironment(object):
                     self.create()
                 self.ensure()
                 logger.info("Valid virtual environment found at %s", self.path)
+                self.settings.save()
                 break
 
             except VirtualEnvironmentError:
@@ -464,8 +504,10 @@ class VirtualEnvironment(object):
                     n += 1
                 else:
                     raise
-
-        self.settings.save()
+            finally:
+                logger.debug("Emitter: %s; Splash Handler; %s" % (emitter, splash_handler))
+                if emitter and splash_handler:
+                    logger.removeHandler(splash_handler)
 
     def ensure(self):
         """
@@ -629,19 +671,24 @@ class VirtualEnvironment(object):
         Install a Jupyter kernel for Mu (the name of the kernel indicates this
         is a Mu related kernel).
         """
-        kernel_name = '"Python/Mu ({})"'.format(self.name)
+        print("install_jupyter_kernel#1")
+        kernel_name = self.name.replace(" ", "-")
+        display_name = '"Python/Mu ({})"'.format(kernel_name)
         logger.info("Installing Jupyter Kernel: %s", kernel_name)
+        ok, output = self.run_subprocess(self.interpreter, "-m", "pip", "list")
+        print("Pip List:", output)
         ok, output = self.run_subprocess(
-            self.interpreter,
+            sys.executable,
             "-m",
             "ipykernel",
             "install",
             "--user",
             "--name",
-            self.name,
-            "--display-name",
             kernel_name,
+            "--display-name",
+            display_name,
         )
+        print("Ok / Output:", ok, output)
         if ok:
             logger.info("Installed Jupyter Kernel: %s", kernel_name)
         else:

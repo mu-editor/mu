@@ -40,7 +40,7 @@ from PyQt5.QtCore import (
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
 from . import i18n
-from .virtual_environment import venv
+from .virtual_environment import venv, SplashLogHandler, logger as vlogger
 from . import __version__
 from .logic import Editor, LOG_FILE, LOG_DIR, ENCODING
 from .interface import Window
@@ -59,11 +59,6 @@ from .modes import (
 )
 from .interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 from . import settings
-
-#
-# Establish a master logger
-#
-logger = logging.getLogger("mu")
 
 
 class AnimatedSplash(QSplashScreen):
@@ -132,39 +127,6 @@ class AnimatedSplash(QSplashScreen):
         self.draw_text("\n".join(lines))
 
 
-class SplashLogHandler(logging.NullHandler):
-    """
-    A simple log handler that does only one thing: use the referenced Qt signal
-    to emit the log.
-    """
-
-    def __init__(self, emitter):
-        """
-        Returns an instance of the class that will use the Qt signal passed in
-        as emitter.
-        """
-        super().__init__()
-        self.setLevel(logging.DEBUG)
-        self.emitter = emitter
-
-    def emit(self, record):
-        """
-        Emits a record via the Qt signal.
-        """
-        messages = record.getMessage().splitlines()
-        for msg in messages:
-            output = "[{level}] - {message}".format(
-                level=record.levelname, message=msg
-            )
-            self.emitter.emit(output)
-
-    def handle(self, record):
-        """
-        Handles the log record.
-        """
-        self.emit(record)
-
-
 class StartupWorker(QObject):
     """
     A worker class for running blocking tasks on a separate thread during
@@ -183,10 +145,12 @@ class StartupWorker(QObject):
         called from here.
         """
         try:
-            splash_handler = SplashLogHandler(self.display_text)
-            splash_handler.setLevel(logging.INFO)
-            logger.addHandler(splash_handler)
-            venv.ensure_and_create()
+            #~ splash_handler = SplashLogHandler(self.display_text)
+            #~ splash_handler.setLevel(logging.INFO)
+            #~ print("vlogger handlers#2:", vlogger.handlers)
+            #~ vlogger.addHandler(splash_handler)
+            #~ print("vlogger handlers#3:", vlogger.handlers)
+            venv.ensure_and_create(self.display_text)
             self.finished.emit()  # Always called last.
         except Exception as ex:
             # Catch all exceptions just in case.
@@ -202,8 +166,9 @@ class StartupWorker(QObject):
             raise ex
         finally:
             # Always clean up the startup splash/venv logging handlers.
-            if splash_handler in logger.handlers:
-                logger.removeHandler(splash_handler)
+            if vlogger.handlers:
+                handler = vlogger.handlers[0]
+                vlogger.removeHandler(handler)
 
 
 def excepthook(*exc_args):
