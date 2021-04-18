@@ -1,6 +1,46 @@
 Release History
 ---------------
 
+1.1.0-beta.4
+============
+
+This is a beta release and may contain bugs or unfinished features. Please
+provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
+
+* During the beta phase, we're moving to a fortnightly release cadence. Since
+  this release is a week late, expect the next one in a week's time - 26th
+  April.
+* Carlos made many changes to clean up the specification for required modules
+  used by the installer. This will make supporting and tracking Mu's
+  dependencies MUCH easier. Thank you Carlos!
+* Huge thanks to Dan Halbert of Adafruit who contributed a significant amount
+  of refactoring to the CircuitPython mode. As a result Mu now uses the
+  `adafruit-board-toolkit` module for device identification, among many other
+  helpful changes
+  [described in Dan's pull request](https://github.com/mu-editor/mu/pull/1371).
+  Thank you Dan..!
+* Carlos was on fire... he also fixed a bug in the file-copy dialog when the
+  context menu was opened with an empty list of files.
+* Carlos (again), fixed some outstanding documentation issues for supporting
+  Raspbian Buster (and newer). These are now at https://mu.rtfd.io/.
+* Carlos (again, again) tidied up various aspects of the Makefile so there is
+  only a single source of truth for running various utilities and commands.
+* Logging was another focus for this release. Now that we have a few weeks
+  worth of crash reports we've been able to look at the parts of the
+  application that cause most grief and add extra-logging in various locations.
+  Tim put in a great effort to make sure the "first run" and other virtual
+  environment based aspects of Mu now have clearer and more useful logging and
+  throw more useful exceptions, closer to the source of the problem, for the
+  resulting crash report. Carlos ensured the IPython kernel installation was
+  properly logged.
+* We ensured various key packages were pinned to particular versions to
+  maximise compatibility with older versions of Python still found in schools.
+
+There are many pull requests and work items currently in flight and they'll be
+landing very soon as the overall quality and robustness of Mu significantly
+improves. Many thanks to everyone who continues to help, support and contribute
+to the ongoing development of Mu.
+
 1.1.0-beta.3
 ============
 
