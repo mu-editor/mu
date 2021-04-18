@@ -21,6 +21,7 @@ mode_packages = [
     ("flask", "flask==1.1.2"),
     ("qtconsole", "qtconsole==4.7.4"),
     ("esptool", "esptool==3.*"),
+    ("adafruit_board_toolkit", "adafruit-board-toolkit>=1.0.1"),
 ]
 WHEELS_DIRPATH = os.path.dirname(__file__)
 

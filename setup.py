@@ -31,8 +31,12 @@ install_requires = [
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
     "PyQtChart==5.13.1"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+    #
+    # adafruit-board-toolkit is used to find serial ports and help identify
+    # CircuitPython boards in the CircuitPython mode.
+    "adafruit-board-toolkit>=1.0.1",
     "qtconsole==4.7.4",
-    "pyserial==3.4",
+    "pyserial>=3.5",
     "nudatus>=0.0.3",
     # `flake8` is actually a testing/packaging dependency that, among other
     # packages, brings in `pycodestyle` and `pyflakes` which are runtime
