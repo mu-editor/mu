@@ -269,7 +269,7 @@ def test_jupyter_kernel_installed(patched, venv):
             #
             # Check that we're calling `ipykernel install`
             #
-            expected_jupyter_args = (venv.interpreter, "-m", "ipykernel", "install")
+            expected_jupyter_args = (sys.executable, "-m", "ipykernel", "install")
             print("run_subprocess / call_args:", run_subprocess, run_subprocess.call_args)
             args, _ = run_subprocess.call_args
             assert expected_jupyter_args == args[: len(expected_jupyter_args)]
