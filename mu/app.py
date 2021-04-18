@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
-import contextlib
 import datetime
 import time
 import platform
@@ -42,7 +41,7 @@ from PyQt5.QtCore import (
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
 from . import i18n
-from .virtual_environment import venv, logger as vlogger
+from .virtual_environment import venv
 from . import __version__
 from .logic import Editor, LOG_FILE, LOG_DIR, ENCODING
 from .interface import Window
@@ -66,6 +65,7 @@ from . import settings
 # Establish a master logger
 #
 logger = logging.getLogger("mu")
+
 
 class AnimatedSplash(QSplashScreen):
     """
@@ -132,6 +132,7 @@ class AnimatedSplash(QSplashScreen):
         lines = lines[-12:]
         self.draw_text("\n".join(lines))
 
+
 class SplashLogHandler(logging.NullHandler):
     """
     A simple log handler that does only one thing: use the referenced Qt signal
@@ -155,7 +156,7 @@ class SplashLogHandler(logging.NullHandler):
         messages = record.getMessage().splitlines()
         for msg in messages:
             output = "[{level}] - {message}".format(
-                level=record.levelname, timestamp=timestamp, message=msg
+                level=record.levelname, message=msg
             )
             self.emitter.emit(output)
 
@@ -164,6 +165,7 @@ class SplashLogHandler(logging.NullHandler):
         Handles the log record.
         """
         self.emit(record)
+
 
 class StartupWorker(QObject):
     """
@@ -266,7 +268,7 @@ def setup_logging():
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
     log.addHandler(stdout_handler)
-    #~ sys.excepthook = excepthook
+    # ~ sys.excepthook = excepthook
 
 
 def setup_modes(editor, view):

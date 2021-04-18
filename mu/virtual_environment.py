@@ -1,8 +1,6 @@
 import os
 import sys
-import datetime
 from collections import namedtuple
-import contextlib
 import functools
 import glob
 import logging
@@ -29,6 +27,7 @@ logger = logging.getLogger(__name__)
 def compact(text):
     """Remove double line spaces and anything else which might help"""
     return "\n".join(line for line in text.splitlines() if line.strip())
+
 
 class Process(QObject):
     """
@@ -329,8 +328,17 @@ class VirtualEnvironment(object):
 
         Return True if the process succeeded, False otherwise
         """
-        process = subprocess.run(list(args), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kwargs)
-        logger.debug("Process returned %d; output: %s", process.returncode, compact(process.stdout.decode("utf-8")))
+        process = subprocess.run(
+            list(args),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            **kwargs
+        )
+        logger.debug(
+            "Process returned %d; output: %s",
+            process.returncode,
+            compact(process.stdout.decode("utf-8")),
+        )
         return process.returncode == 0, process.stdout.decode("utf-8")
 
     def reset_pip(self):
@@ -503,7 +511,11 @@ class VirtualEnvironment(object):
         #
         # Can't use self.run_python as we're not yet within the Qt UI loop
         #
-        ok, output = self.run_subprocess(self.interpreter, "-c", 'import sys; print("%s%s" % sys.version_info[:2])')
+        ok, output = self.run_subprocess(
+            self.interpreter,
+            "-c",
+            'import sys; print("%s%s" % sys.version_info[:2])',
+        )
         if not ok:
             message = "Fail to run venv interpreter %s" % self.interpreter
             logger.error(message)
@@ -526,7 +538,9 @@ class VirtualEnvironment(object):
         """
         for module, *_ in wheels.mode_packages:
             logger.debug("Verifying import of: %s", module)
-            ok, output = self.run_subprocess(self.interpreter, "-c", "import %s" % module)
+            ok, output = self.run_subprocess(
+                self.interpreter, "-c", "import %s" % module
+            )
             if not ok:
                 message = "Failed to import: %s" % module
                 logger.error(message)
@@ -564,13 +578,24 @@ class VirtualEnvironment(object):
             env=env,
         )
         if ok:
-            logger.info("Created virtual environment using %s at %s", sys.executable, self.path)
+            logger.info(
+                "Created virtual environment using %s at %s",
+                sys.executable,
+                self.path,
+            )
         else:
-            message = "Unable to create a virtual environment using %s at %s" % (sys.executable, self.path)
+            message = (
+                "Unable to create a virtual environment using %s at %s"
+                % (sys.executable, self.path)
+            )
             logger.error(message)
             raise VirtualEnvironmentError(message)
 
-        logger.debug("About to upgrade pip; interpreter %s %s", self.interpreter, "exists" if os.path.exists(self.interpreter) else "doesn't exist")
+        logger.debug(
+            "About to upgrade pip; interpreter %s %s",
+            self.interpreter,
+            "exists" if os.path.exists(self.interpreter) else "doesn't exist",
+        )
         ok, output = self.run_subprocess(
             self.interpreter, "-m", "pip", "install", "--upgrade", "pip"
         )
@@ -642,7 +667,9 @@ class VirtualEnvironment(object):
             except wheels.WheelsDownloadError as exc:
                 raise VirtualEnvironmentError(exc.message)
             else:
-                wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+                wheel_filepaths = glob.glob(
+                    os.path.join(wheels_dirpath, "*.whl")
+                )
 
         if not wheel_filepaths:
             raise VirtualEnvironmentError(
