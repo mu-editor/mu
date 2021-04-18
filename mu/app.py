@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import os
-import datetime
 import time
 import platform
 import traceback

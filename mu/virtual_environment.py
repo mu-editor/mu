@@ -428,7 +428,9 @@ class VirtualEnvironment(object):
         try:
             os.rename(self.path, error_dirpath)
         except OSError:
-            logger.exception("Unable to quarantine %s as %s", self.path, error_dirpath)
+            logger.exception(
+                "Unable to quarantine %s as %s", self.path, error_dirpath
+            )
         else:
             logger.info("Quarantined %s as %s", self.path, error_dirpath)
 
@@ -451,17 +453,19 @@ class VirtualEnvironment(object):
                 if try_to_create:
                     self.create()
                 self.ensure()
-                return
+                logger.info("Valid virtual environment found at %s", self.path)
+                break
 
-            except VirtualEnvironmentError as exc:
+            except VirtualEnvironmentError:
                 self.quarantine_failed_venv()
                 if n < n_tries:
                     self.relocate(self._generate_dirpath())
                     try_to_create = True
                     n += 1
-                    continue
                 else:
                     raise
+
+        self.settings.save()
 
     def ensure(self):
         """
@@ -688,6 +692,7 @@ class VirtualEnvironment(object):
                 "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
             )
         self.reset_pip()
+        logger.info("About to install from wheels")
         self.pip.install(wheel_filepaths)
 
     def register_baseline_packages(self):
