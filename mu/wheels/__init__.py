@@ -34,7 +34,7 @@ mode_packages = [
     ("pgzero", "pgzero>=1.2.1"),
     ("flask", "flask==1.1.2"),
     ("qtconsole", "qtconsole==4.7.4"),
-    ("esptool", "esptoolxx==3.*"),
+    ("esptool", "esptool==3.*"),
 ]
 WHEELS_DIRPATH = os.path.dirname(__file__)
 

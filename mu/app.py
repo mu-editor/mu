@@ -267,7 +267,7 @@ def setup_logging():
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
     log.addHandler(stdout_handler)
-    # ~ sys.excepthook = excepthook
+    sys.excepthook = excepthook
 
 
 def setup_modes(editor, view):
