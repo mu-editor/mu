@@ -85,8 +85,12 @@ def patched():
     """
     with mock.patch.object(
         subprocess, "run"
-    ) as subprocess_run, mock.patch.object(VE, "run_python") as run_python:
-        yield subprocess_run, run_python
+    ) as subprocess_run, mock.patch.object(
+        VE, "run_python"
+    ) as run_python, mock.patch.object(
+        VE, "run_subprocess", return_value=(True, "")
+    ) as run_subprocess:
+        yield subprocess_run, run_python, run_subprocess
 
 
 @pytest.fixture
@@ -259,7 +263,7 @@ def test_base_packages_installed(patched, venv, test_wheels):
 
 def test_jupyter_kernel_installed(patched, venv):
     """Ensure when the venv is installed the Jupyter kernel is installed"""
-    _, run_python = patched
+    _, _, run_subprocess = patched
     #
     # Make sure the baseline package install doesn't interfere
     #
@@ -269,8 +273,18 @@ def test_jupyter_kernel_installed(patched, venv):
             #
             # Check that we're calling `ipykernel install`
             #
-            expected_jupyter_args = ("-m", "ipykernel", "install")
-            args, _ = run_python.call_args
+            expected_jupyter_args = (
+                sys.executable,
+                "-m",
+                "ipykernel",
+                "install",
+            )
+            print(
+                "run_subprocess / call_args:",
+                run_subprocess,
+                run_subprocess.call_args,
+            )
+            args, _ = run_subprocess.call_args
             assert expected_jupyter_args == args[: len(expected_jupyter_args)]
 
 
@@ -366,7 +380,7 @@ def test_venv_folder_created(venv):
     with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
         VE,
         "ensure",
-        _ensure_venv([True, VEError()]),
+        _ensure_venv([True, VEError("Failed")]),
     ):
         venv.ensure_and_create()
 
@@ -378,7 +392,7 @@ def test_venv_second_try(venv):
     with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
         VE,
         "ensure",
-        _ensure_venv([True, VEError()]),
+        _ensure_venv([True, VEError("Failed")]),
     ):
         venv.ensure_and_create()
 
@@ -390,7 +404,9 @@ def test_venv_fails_after_three_tries(venv):
     with mock.patch.object(VE, "create"), mock.patch.object(
         VE,
         "ensure",
-        _ensure_venv([VEError(), VEError(), VEError()]),
+        _ensure_venv(
+            [VEError("Failed"), VEError("Failed"), VEError("Failed")]
+        ),
     ):
         with pytest.raises(VEError):
             venv.ensure_and_create()
