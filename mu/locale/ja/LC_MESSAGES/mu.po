@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-04-04 10:12+0900\n"
-"PO-Revision-Date: 2021-04-04 10:30+0900\n"
+"POT-Creation-Date: 2021-04-19 22:26+0900\n"
+"PO-Revision-Date: 2021-04-19 22:39+0900\n"
 "Last-Translator: Minoru Inachi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -293,7 +293,7 @@ msgstr "現在の Mu 動作モード。"
 msgid "Detected new {} device: {}."
 msgstr "新規の {} デバイスを検出しました: {}"
 
-#: ./mu/interface/main.py:1322 ./mu/logic.py:1596
+#: ./mu/interface/main.py:1322 ./mu/logic.py:1594
 msgid "Detected new {} device."
 msgstr "新規の {} デバイスを検出しました。"
 
@@ -673,7 +673,7 @@ msgstr "すべての文字を変換できませんでした。ファイルの先
 msgid "Saved file: {}"
 msgstr "保存したファイル: {}"
 
-#: ./mu/logic.py:1242 ./mu/logic.py:1655
+#: ./mu/logic.py:1242 ./mu/logic.py:1653
 msgid "You cannot use the filename \"{}\""
 msgstr "ファイル名 \"{}\" は使えません"
 
@@ -705,43 +705,43 @@ msgstr "驚きました！ 問題は何も見つかりません。"
 msgid "There is un-saved work, exiting the application will cause you to lose it."
 msgstr "保存していないスクリプトがありますが、アプリケーションを終了すると消えてしまいます。"
 
-#: ./mu/logic.py:1424
+#: ./mu/logic.py:1422
 msgid "Could not find MicroPython runtime."
 msgstr "MicroPython ランタイムが見つかりません。"
 
-#: ./mu/logic.py:1425
+#: ./mu/logic.py:1423
 msgid "The micro:bit runtime you specified ('{}') does not exist. Please try again."
 msgstr "指定した micro:bit ランタイム('{}')は存在しません。もう一度やり直してください。"
 
-#: ./mu/logic.py:1549
+#: ./mu/logic.py:1547
 msgid "Changed to {} mode."
 msgstr "モードを {} に変更します。"
 
-#: ./mu/logic.py:1579
+#: ./mu/logic.py:1577
 msgid "Would you like to change Mu to the {} mode?"
 msgstr "Mu を {} モードに変更しますか？"
 
-#: ./mu/logic.py:1598
+#: ./mu/logic.py:1596
 msgid "Device changed to {}."
 msgstr "デバイスが {} に変わりました。"
 
-#: ./mu/logic.py:1634
+#: ./mu/logic.py:1632
 msgid "Cannot Set Breakpoint."
 msgstr "ブレイクポイントを設定できません。"
 
-#: ./mu/logic.py:1635
+#: ./mu/logic.py:1633
 msgid "Lines that are comments or some multi-line statements cannot have breakpoints."
 msgstr "コメント行や複数行のステートメントの一部はブレイクポイントに設定できません。"
 
-#: ./mu/logic.py:1658
+#: ./mu/logic.py:1656
 msgid "This name is already used by another part of Python. If you use that name, things are likely to break. Please try again with a different filename."
 msgstr "この名前はすでに Python の別のところで使われています。この名前を使うと Python のシステムを壊してしまう可能性があります。別のファイル名でもう一度やり直してください。"
 
-#: ./mu/logic.py:1680
+#: ./mu/logic.py:1678
 msgid "Could not rename file."
 msgstr "ファイル名を変更できませんでした。"
 
-#: ./mu/logic.py:1681
+#: ./mu/logic.py:1679
 msgid "A file of that name is already open in Mu."
 msgstr "この名前のファイルは Mu で既に開いています。"
 
@@ -749,35 +749,35 @@ msgstr "この名前のファイルは Mu で既に開いています。"
 msgid "Replaced \"{}\" with \"{}\"."
 msgstr "\"{}\" を \"{}\" で置換します。"
 
-#: ./mu/logic.py:1718
+#: ./mu/logic.py:1716
 msgid "Replaced {} matches of \"{}\" with \"{}\"."
 msgstr "{} 個の \"{}\" を \"{}\" で置換しました。"
 
-#: ./mu/logic.py:1723 ./mu/logic.py:1730 ./mu/logic.py:1749
+#: ./mu/logic.py:1721 ./mu/logic.py:1728 ./mu/logic.py:1747
 msgid "Could not find \"{}\"."
 msgstr "\"{}\" が見つかりませんでした。"
 
-#: ./mu/logic.py:1728 ./mu/logic.py:1747
+#: ./mu/logic.py:1726 ./mu/logic.py:1745
 msgid "Highlighting matches for \"{}\"."
 msgstr "検索した \"{}\" を強調表示しました。"
 
-#: ./mu/logic.py:1733 ./mu/logic.py:1752
+#: ./mu/logic.py:1731 ./mu/logic.py:1750
 msgid "You must provide something to find."
 msgstr "検索するものを指定してください。"
 
-#: ./mu/logic.py:1734 ./mu/logic.py:1753
+#: ./mu/logic.py:1732 ./mu/logic.py:1751
 msgid "Please try again, this time with something in the find box."
 msgstr "今度は検索ボックスに何かを入れて、もう一度お試しください。"
 
-#: ./mu/logic.py:1796
+#: ./mu/logic.py:1794
 msgid "Successfully cleaned the code. Use CTRL-Z to undo."
 msgstr "コードのクリーンアップに成功しました。元に戻すには CTRL-Z を使ってください。"
 
-#: ./mu/logic.py:1802
+#: ./mu/logic.py:1800
 msgid "Your code contains problems."
 msgstr "コード中に問題があります。"
 
-#: ./mu/logic.py:1803
+#: ./mu/logic.py:1801
 msgid "These must be fixed before tidying will work. Please use the 'Check' button to highlight these problems."
 msgstr "整頓する前に、これらの問題を修正する必要があります。「チェック」ボタンを使って、これらの問題をハイライトしてください。"
 
@@ -843,46 +843,46 @@ msgstr ""
 "\n"
 "最後に、デバイスのリセットボタンを押してから、もう一度試してください。"
 
-#: ./mu/modes/circuitpython.py:36
+#: ./mu/modes/circuitpython.py:37
 msgid "CircuitPython"
 msgstr ""
 
-#: ./mu/modes/circuitpython.py:38
+#: ./mu/modes/circuitpython.py:39
 msgid "Write code for boards running CircuitPython."
 msgstr "CircuitPython が動作するボードのコードを編集。"
 
-#: ./mu/modes/circuitpython.py:108 ./mu/modes/pyboard.py:86
+#: ./mu/modes/circuitpython.py:142 ./mu/modes/pyboard.py:86
 msgid "Serial"
 msgstr "シリアル"
 
-#: ./mu/modes/circuitpython.py:109 ./mu/modes/pyboard.py:87
+#: ./mu/modes/circuitpython.py:143 ./mu/modes/pyboard.py:87
 msgid "Open a serial connection to your device."
 msgstr "デバイスへのシリアル接続を開きます。"
 
-#: ./mu/modes/circuitpython.py:118 ./mu/modes/esp.py:102
+#: ./mu/modes/circuitpython.py:152 ./mu/modes/esp.py:102
 #: ./mu/modes/microbit.py:164 ./mu/modes/pyboard.py:96
 #: ./mu/modes/python3.py:174
 msgid "Plotter"
 msgstr "プロッター"
 
-#: ./mu/modes/circuitpython.py:119 ./mu/modes/esp.py:103
+#: ./mu/modes/circuitpython.py:153 ./mu/modes/esp.py:103
 #: ./mu/modes/microbit.py:165 ./mu/modes/pyboard.py:97
 msgid "Plot incoming REPL data."
 msgstr "REPL 入力のデータをプロットします。"
 
-#: ./mu/modes/circuitpython.py:156
+#: ./mu/modes/circuitpython.py:190
 msgid "Permission error running mount command"
 msgstr "mount コマンド実行中の権限エラー"
 
-#: ./mu/modes/circuitpython.py:157
+#: ./mu/modes/circuitpython.py:191
 msgid "The mount command (\"{}\") returned an error: {}. Mu will continue as if a device isn't plugged in."
 msgstr "mount コマンド(\"{}\")がエラーを返しました: {}。Mu はデバイスが接続されていないかのように動作を継続します。"
 
-#: ./mu/modes/circuitpython.py:226
+#: ./mu/modes/circuitpython.py:260
 msgid "Could not find an attached CircuitPython device."
 msgstr "CircuitPython デバイスが繋げられていないようです。"
 
-#: ./mu/modes/circuitpython.py:227
+#: ./mu/modes/circuitpython.py:261
 msgid ""
 "Python files for CircuitPython devices are stored on the device. Therefore, to edit these files you need to have the device plugged in. Until you plug in a device, Mu will use the directory found here:\n"
 "\n"
