@@ -1381,8 +1381,6 @@ class Editor(QObject):
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
             "zoom_level": self._view.zoom_position,
-            "venv_name": venv.name,
-            "venv_python": venv.interpreter,
             "window": {
                 "x": self._view.x(),
                 "y": self._view.y(),
