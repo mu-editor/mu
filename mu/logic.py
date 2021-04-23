@@ -167,6 +167,7 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("A good programmer asks questions."),
     _("A good programmer is willing to say, 'I don't know'."),
     _("Wisest are they that know they know nothing."),
+    _("The quick brown fox jumps over the lazy dogs."),
 ]
 
 NEWLINE = "\n"
