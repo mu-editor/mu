@@ -31,9 +31,9 @@ install_requires = [
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
     "PyQtChart==5.13.1"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
-    # FIXME: jupyter-client added for Py3.5 compatibility, to be dropped after
-    # Mu v1.1 release. So, qtconsole < 5 and jupyter-client < 6.2 (issue #1444)
-    "jupyter-client>=4.1,<6.2",
+    # FIXME: jupyter-client max version added for Py3.5 compatibility. It can
+    # be dropped, and qtconsole v5 used, after Mu v1.1 release (issue #1444).
+    "jupyter-client>=6.1.0,<6.2",
     "qtconsole==4.7.7",
     #
     # adafruit-board-toolkit is used to find serial ports and help identify
