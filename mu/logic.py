@@ -1139,7 +1139,9 @@ class Editor(QObject):
             self._load(path)
 
     def direct_load(self, path):
-        """ for loading files passed from command line or the OS launch"""
+        """
+        For loading files passed from command line or the OS launch.
+        """
         self._load(path)
 
     def load_cli(self, paths):

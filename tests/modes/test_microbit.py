@@ -207,9 +207,7 @@ def test_flash_with_attached_device_has_latest_firmware_v2(microbit):
         mm.copy_main.assert_called_once_with(b"foo")
 
 
-def test_flash_device_has_latest_firmware_encounters_serial_problem(
-    microbit,
-):
+def test_flash_device_has_latest_firmware_encounters_serial_problem(microbit):
     """
     If copy_main encounters an IOError (likely on Windows), revert to
     old-school flashing.

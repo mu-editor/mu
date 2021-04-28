@@ -378,9 +378,7 @@ def test_venv_folder_created(venv):
     """When not existing venv is ensured we create a new one"""
     os.rmdir(venv.path)
     with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
-        VE,
-        "ensure",
-        _ensure_venv([True, VEError("Failed")]),
+        VE, "ensure", _ensure_venv([True, VEError("Failed")])
     ):
         venv.ensure_and_create()
 
@@ -390,9 +388,7 @@ def test_venv_folder_created(venv):
 def test_venv_second_try(venv):
     """If the creation of a venv fails to produce a valid venv, try again"""
     with mock.patch.object(VE, "create") as mock_create, mock.patch.object(
-        VE,
-        "ensure",
-        _ensure_venv([True, VEError("Failed")]),
+        VE, "ensure", _ensure_venv([True, VEError("Failed")])
     ):
         venv.ensure_and_create()
 
