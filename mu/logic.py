@@ -1139,7 +1139,9 @@ class Editor(QObject):
             self._load(path)
 
     def direct_load(self, path):
-        """ for loading files passed from command line or the OS launch"""
+        """
+        For loading files passed from command line or the OS launch.
+        """
         self._load(path)
 
     def load_cli(self, paths):
@@ -1776,14 +1778,15 @@ class Editor(QObject):
         # Only works on Python, so abort.
         if tab.path and not self.has_python_extension(tab.path):
             return
-        from black import format_str, FileMode, PY36_VERSIONS
+        from black import format_str, FileMode, TargetVersion
 
         try:
             source_code = tab.text()
             logger.info("Tidy code.")
             logger.info(source_code)
             filemode = FileMode(
-                target_versions=PY36_VERSIONS, line_length=MAX_LINE_LENGTH
+                target_versions={TargetVersion.PY36},
+                line_length=MAX_LINE_LENGTH,
             )
             tidy_code = format_str(source_code, mode=filemode)
             # The following bypasses tab.setText which resets the undo history.

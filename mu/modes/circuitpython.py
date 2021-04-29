@@ -183,8 +183,7 @@ class CircuitPythonMode(MicroPythonMode):
                 except PermissionError as e:
                     logger.error(
                         "Received '{}' running command: {}".format(
-                            repr(e),
-                            mount_command,
+                            repr(e), mount_command
                         )
                     )
                     m = _("Permission error running mount command")
@@ -198,8 +197,7 @@ class CircuitPythonMode(MicroPythonMode):
                 except Exception as e:
                     logger.error(
                         "Received '{}' running command: {}".format(
-                            repr(e),
-                            mount_command,
+                            repr(e), mount_command
                         )
                     )
 

@@ -47,10 +47,7 @@ if sys.version_info[:2] == (3, 8) and platform.system() == "Darwin":
             "https://github.com/mu-editor/pygame/releases/download/2.0.1/"
             "pygame-2.0.1-cp38-cp38-macosx_10_9_intel.whl",
         ),
-        (
-            "numpy",
-            "numpy==1.20.1",
-        ),
+        ("numpy", "numpy==1.20.1"),
         (
             "pgzero",
             "https://github.com/mu-editor/pgzero/releases/download/mu-wheel/"

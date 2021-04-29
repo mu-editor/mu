@@ -122,11 +122,7 @@ class DebugMode(BaseMode):
             envars = self.editor.envars
             cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(
-                venv.interpreter,
-                tab.path,
-                cwd,
-                debugger=True,
-                envars=envars,
+                venv.interpreter, tab.path, cwd, debugger=True, envars=envars
             )
             self.runner.process.waitForStarted()
             self.runner.process.finished.connect(self.finished)

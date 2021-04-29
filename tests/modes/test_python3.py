@@ -377,9 +377,7 @@ def test_python_add_repl():
         pm.add_repl()
     mock_qthread.assert_called_once_with()
     mock_kernel_runner.assert_called_once_with(
-        kernel_name="name",
-        cwd=pm.workspace_dir(),
-        envars=editor.envars,
+        kernel_name="name", cwd=pm.workspace_dir(), envars=editor.envars
     )
     assert pm.kernel_thread == mock_qthread()
     assert pm.kernel_runner == mock_kernel_runner()
