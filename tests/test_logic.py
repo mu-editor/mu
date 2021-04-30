@@ -758,14 +758,7 @@ def test_devicelist_add_device_in_sorted_order(
     assert dl[1] == microbit_com1
 
     xyz_device = mu.logic.Device(
-        0x123B,
-        0x333A,
-        "COM1",
-        123456,
-        "ARM",
-        "ESP Mode",
-        "esp",
-        "xyz",
+        0x123B, 0x333A, "COM1", 123456, "ARM", "ESP Mode", "esp", "xyz"
     )
     dl.add_device(xyz_device)
     assert dl[2] == xyz_device

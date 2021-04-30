@@ -70,9 +70,7 @@ extras_require = {
         "pytest-timeout",
         "coverage",
     ],
-    "docs": [
-        "sphinx",
-    ],
+    "docs": ["sphinx"],
     "package": [
         # Wheel building and PyPI uploading
         "wheel",
