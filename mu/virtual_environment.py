@@ -119,10 +119,7 @@ class Process(QObject):
         self.process.started.connect(self._started)
         self.process.finished.connect(self._finished)
         partial = functools.partial(self.process.start, command, args)
-        QTimer.singleShot(
-            1,
-            partial,
-        )
+        QTimer.singleShot(1, partial)
 
     def wait(self, wait_for_s=30.0):
         finished = self.process.waitForFinished(1000 * wait_for_s)
@@ -763,11 +760,7 @@ class VirtualEnvironment(object):
         """
         logger.info("Installing user packages: %s", ", ".join(packages))
         self.reset_pip()
-        self.pip.install(
-            packages,
-            slots=slots,
-            upgrade=True,
-        )
+        self.pip.install(packages, slots=slots, upgrade=True)
 
     def remove_user_packages(self, packages, slots=Process.Slots()):
         """
@@ -775,10 +768,7 @@ class VirtualEnvironment(object):
         """
         logger.info("Removing user packages: %s", ", ".join(packages))
         self.reset_pip()
-        self.pip.uninstall(
-            packages,
-            slots=slots,
-        )
+        self.pip.uninstall(packages, slots=slots)
 
     def installed_packages(self):
         """
