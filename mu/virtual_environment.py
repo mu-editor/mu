@@ -134,7 +134,7 @@ class Process(QObject):
             raise VirtualEnvironmentError("Some error occurred")
 
     def data(self):
-        return self.process.readAll().data().decode("utf-8")
+        return self.process.readAll().data().decode(sys.stdout.encoding, errors="replace")
 
     def _started(self):
         self.started.emit()
@@ -376,9 +376,9 @@ class VirtualEnvironment(object):
         logger.debug(
             "Process returned %d; output: %s",
             process.returncode,
-            compact(process.stdout.decode("utf-8")),
+            compact(process.stdout.decode(sys.stdout.encoding, errors="replace"))
         )
-        return process.returncode == 0, process.stdout.decode("utf-8")
+        return process.returncode == 0, process.stdout.decode(sys.stdout.encoding, errors="replace")
 
     def reset_pip(self):
         self.pip = Pip(self.pip_executable)
