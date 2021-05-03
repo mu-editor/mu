@@ -135,7 +135,11 @@ class Process(QObject):
             raise VirtualEnvironmentError("Some error occurred")
 
     def data(self):
-        return self.process.readAll().data().decode(sys.stdout.encoding, errors="replace")
+        return (
+            self.process.readAll()
+            .data()
+            .decode(sys.stdout.encoding, errors="replace")
+        )
 
     def _started(self):
         self.started.emit()
@@ -377,9 +381,13 @@ class VirtualEnvironment(object):
         logger.debug(
             "Process returned %d; output: %s",
             process.returncode,
-            compact(process.stdout.decode(sys.stdout.encoding, errors="replace"))
+            compact(
+                process.stdout.decode(sys.stdout.encoding, errors="replace")
+            ),
         )
-        return process.returncode == 0, process.stdout.decode(sys.stdout.encoding, errors="replace")
+        return process.returncode == 0, process.stdout.decode(
+            sys.stdout.encoding, errors="replace"
+        )
 
     def reset_pip(self):
         self.pip = Pip(self.pip_executable)
@@ -467,7 +475,8 @@ class VirtualEnvironment(object):
             logger.info("Quarantined %s as %s", self.path, error_dirpath)
 
     def recreate(self):
-        """Recreate this virtual environment with updated baseline packages and the same user packages
+        """Recreate this virtual environment with updated baseline packages and the
+        same user packages
 
         The intended use is when the Mu version changes as this can bring with it
         additional and/or updated packages. The simplest thing to do is to switch
@@ -525,14 +534,20 @@ class VirtualEnvironment(object):
                 # If not, recreate the venv
                 #
                 else:
-                    venv_mu_version = self.settings.get("mu_version", "-no-version-")
+                    venv_mu_version = self.settings.get(
+                        "mu_version", "-no-version-"
+                    )
                     if venv_mu_version != mu_version:
-                        logger.warning("Venv created by Mu version %s; Current Mu is version %s", venv_mu_version, mu_version)
+                        logger.warning(
+                            "Venv created by Mu version %s; Current Mu is version %s",
+                            venv_mu_version,
+                            mu_version,
+                        )
                         self.recreate()
 
                 #
-                # In any situation (initial creation, recreation after Mu update, regular run)
-                # ensure that the venv is still valid
+                # In any situation (initial creation, recreation after Mu update,
+                # regular run) ensure that the venv is still valid
                 #
                 self.ensure()
                 logger.info("Valid virtual environment found at %s", self.path)
@@ -565,8 +580,9 @@ class VirtualEnvironment(object):
         """
         Ensure that virtual environment exists and is in a good state.
 
-        If any of these fails, they should raise a (subclass of) VirtualEnvironmentError
-        which will bubble up to `ensure_and_create` and be caught and acted on appropriately
+        If any of these fails, they should raise a (subclass of)
+        VirtualEnvironmentError which will bubble up to `ensure_and_create` and be
+        caught and acted on appropriately
         """
         self.ensure_path()
         self.ensure_interpreter()
@@ -676,7 +692,7 @@ class VirtualEnvironment(object):
         self.install_baseline_packages()
         self.register_baseline_packages()
         self.install_jupyter_kernel()
-        self.settings['mu_version'] = mu_version
+        self.settings["mu_version"] = mu_version
 
     def create_venv(self):
         """
