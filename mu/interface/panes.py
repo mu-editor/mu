@@ -192,7 +192,9 @@ class MicroPythonREPLPane(QTextEdit):
             to_paste = (
                 clipboard.text().replace("\n", "\r").replace("\r\r", "\r")
             )
-            self.connection.write(bytes(to_paste, "utf8"))
+            self.connection.write(b"\x05")  # Enter paste mode.
+            self.connection.write(bytes(to_paste, "utf8"))  # Paste the thing.
+            self.connection.write(b"\x04")  # Exit paste mode.
 
     def context_menu(self):
         """

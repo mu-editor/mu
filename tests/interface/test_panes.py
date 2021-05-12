@@ -42,9 +42,12 @@ def test_MicroPythonREPLPane_paste():
     with mock.patch("mu.interface.panes.QApplication", mock_application):
         rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
         rp.paste()
-    mock_repl_connection.write.assert_called_once_with(
-        bytes("paste me!", "utf8")
+    assert mock_repl_connection.write.call_count == 3
+    assert mock_repl_connection.write.call_args_list[0][0][0] == b"\x05"
+    assert mock_repl_connection.write.call_args_list[1][0][0] == bytes(
+        "paste me!", "utf8"
     )
+    assert mock_repl_connection.write.call_args_list[2][0][0] == b"\x04"
 
 
 def test_MicroPythonREPLPane_paste_handle_unix_newlines():
@@ -61,9 +64,12 @@ def test_MicroPythonREPLPane_paste_handle_unix_newlines():
     with mock.patch("mu.interface.panes.QApplication", mock_application):
         rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
         rp.paste()
-    mock_repl_connection.write.assert_called_once_with(
-        bytes("paste\rme!", "utf8")
+    assert mock_repl_connection.write.call_count == 3
+    assert mock_repl_connection.write.call_args_list[0][0][0] == b"\x05"
+    assert mock_repl_connection.write.call_args_list[1][0][0] == bytes(
+        "paste\rme!", "utf8"
     )
+    assert mock_repl_connection.write.call_args_list[2][0][0] == b"\x04"
 
 
 def test_MicroPythonREPLPane_paste_handle_windows_newlines():
@@ -80,9 +86,12 @@ def test_MicroPythonREPLPane_paste_handle_windows_newlines():
     with mock.patch("mu.interface.panes.QApplication", mock_application):
         rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
         rp.paste()
-    mock_repl_connection.write.assert_called_once_with(
-        bytes("paste\rme!", "utf8")
+    assert mock_repl_connection.write.call_count == 3
+    assert mock_repl_connection.write.call_args_list[0][0][0] == b"\x05"
+    assert mock_repl_connection.write.call_args_list[1][0][0] == bytes(
+        "paste\rme!", "utf8"
     )
+    assert mock_repl_connection.write.call_args_list[2][0][0] == b"\x04"
 
 
 def test_MicroPythonREPLPane_paste_only_works_if_something_to_paste():

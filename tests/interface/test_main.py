@@ -723,6 +723,109 @@ def test_Window_modified():
     assert w.modified
 
 
+def test_Window_on_context_menu_nothing_selected():
+    """
+    If the current tab has no selected text, there should be no QMenu created.
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = -1, -1, -1, -1
+    with mock.patch("mu.interface.main.QMenu") as mqm:
+        w.on_context_menu()
+        assert mqm.call_count == 0
+
+
+def test_Window_on_context_menu_has_selection_but_no_repl():
+    """
+    If the current tab has selected text, but there is no active REPL, there
+    should be no QMenu created.
+    """
+    w = mu.interface.main.Window()
+    w.repl = None
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 10, 10
+    with mock.patch("mu.interface.main.QMenu") as mqm:
+        w.on_context_menu()
+        assert mqm.call_count == 0
+
+
+def test_Window_on_context_menu():
+    """
+    If the current tab has selected text, and there is an active REPL, there
+    should be a QMenu created in the expected manner.
+    """
+    w = mu.interface.main.Window()
+    w.repl = True
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 10, 10
+    mock_menu = mock.MagicMock()
+    with mock.patch("mu.interface.main.QMenu", return_value=mock_menu) as mqm:
+        w.on_context_menu()
+        assert mqm.call_count == 1
+        mock_menu.addAction.assert_called_once_with(
+            "Copy selected text to REPL"
+        )
+        item = mock_menu.addAction()
+        item.triggered.connect.assert_called_once_with(w.copy_to_repl)
+        assert mock_menu.exec_.call_count == 1
+
+
+def test_Window_copy_to_repl_fragment():
+    """
+    If a fragment of text from a single line is selected, only paste that into
+    the REPL.
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 0, 5
+    mock_tab.text.return_value = "Hello world!"
+    w.repl_pane = mock.MagicMock()
+    with mock.patch("mu.interface.main.QApplication") as mock_app:
+        w.copy_to_repl()
+        mock_app.clipboard.assert_called_once_with()
+        clipboard = mock_app.clipboard()
+        clipboard.setText.assert_called_once_with("Hello")
+        w.repl_pane.paste.assert_called_once_with()
+        w.repl_pane.setFocus.assert_called_once_with()
+
+
+def test_Window_copy_to_repl_multi_line():
+    """
+    If multiple lines are selected, ensure whitespace is corrected and paste
+    them all into the REPL.
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 3, 17
+    mock_tab.text.return_value = """    def hello():
+        return "Hello"
+
+    print(hello())
+    """
+    w.repl_pane = mock.MagicMock()
+    with mock.patch("mu.interface.main.QApplication") as mock_app:
+        w.copy_to_repl()
+        mock_app.clipboard.assert_called_once_with()
+        clipboard = mock_app.clipboard()
+        expected = """def hello():
+    return "Hello"
+
+print(hello())"""
+        clipboard.setText.assert_called_once_with(expected)
+        w.repl_pane.paste.assert_called_once_with()
+        w.repl_pane.setFocus.assert_called_once_with()
+
+
 def test_Window_on_stdout_write():
     """
     Ensure the data_received signal is emitted with the data.

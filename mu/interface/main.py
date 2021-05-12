@@ -38,8 +38,9 @@ from PyQt5.QtWidgets import (
     QTabBar,
     QPushButton,
     QHBoxLayout,
+    QMenu,
 )
-from PyQt5.QtGui import QKeySequence, QStandardItemModel
+from PyQt5.QtGui import QKeySequence, QStandardItemModel, QCursor
 from mu import __version__
 from mu.interface.dialogs import (
     ModeSelector,
@@ -461,6 +462,8 @@ class Window(QMainWindow):
             # Bubble the signal up
             self.open_file.emit(file)
 
+        new_tab.context_menu.connect(self.on_context_menu)
+
         self.tabs.setCurrentIndex(new_tab_index)
         self.connect_zoom(new_tab)
         self.set_theme(self.theme)
@@ -502,6 +505,57 @@ class Window(QMainWindow):
             if widget.isModified():
                 return True
         return False
+
+    def on_context_menu(self):
+        """
+        Called when a user right-clicks on an editor pane.
+
+        If the REPL is active AND there is selected text in the current editor
+        pane, show a context menu.
+        """
+        if self.current_tab.getSelection() == (-1, -1, -1, -1):
+            # No text selected.
+            return
+        if hasattr(self, "repl") and self.repl:
+            menu = QMenu(self)
+            copy_to_repl = menu.addAction(_("Copy selected text to REPL"))
+            copy_to_repl.triggered.connect(self.copy_to_repl)
+            menu.exec_(QCursor.pos())
+
+    def copy_to_repl(self):
+        """
+        Copies currently selected text in the editor, into the active REPL
+        widget and sets focus to the REPL widget. The final line pasted into
+        the REPL waits for RETURN to be pressed by the user (this appears to be
+        the default behaviour for pasting into the REPL widget).
+        """
+        line_from, pos_from, line_to, pos_to = self.current_tab.getSelection()
+        lines = self.current_tab.text().split("\n")
+        if line_from == line_to:
+            # Paste a fragment from an individual line.
+            to_paste = lines[line_from][pos_from:pos_to]
+        else:
+            # Multi-line paste (paste all lines selected).
+            selected = lines[line_from : line_to + 1]
+            # Ensure the correct indentation.
+            # If the first line starts with whitespace, work out the number of
+            # spaces and deduct said number of whitespace from start of all
+            # other lines. That's perhaps the best we can do.
+            if selected and selected[0].startswith(" "):
+                indent = 0
+                for char in selected[0]:
+                    if char.isspace():
+                        indent += 1
+                    else:
+                        break
+                selected = [line[indent:] for line in selected]
+            to_paste = "\n".join(selected)
+        logger.info("Pasting to REPL")
+        logger.info("\n" + to_paste)
+        clipboard = QApplication.clipboard()
+        clipboard.setText(to_paste)
+        self.repl_pane.paste()
+        self.repl_pane.setFocus()
 
     def on_stdout_write(self, data):
         """
