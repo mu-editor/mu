@@ -516,7 +516,9 @@ class Window(QMainWindow):
         if self.current_tab.getSelection() == (-1, -1, -1, -1):
             # No text selected.
             return
-        if hasattr(self, "repl") and self.repl:
+        if (hasattr(self, "repl") and self.repl) or (
+            hasattr(self, "process_runner") and self.process_runner
+        ):
             menu = QMenu(self)
             copy_to_repl = menu.addAction(_("Copy selected text to REPL"))
             copy_to_repl.triggered.connect(self.copy_to_repl)
@@ -554,8 +556,12 @@ class Window(QMainWindow):
         logger.info("\n" + to_paste)
         clipboard = QApplication.clipboard()
         clipboard.setText(to_paste)
-        self.repl_pane.paste()
-        self.repl_pane.setFocus()
+        if hasattr(self, "repl_pane") and self.repl_pane:
+            self.repl_pane.paste()
+            self.repl_pane.setFocus()
+        elif hasattr(self, "process_runner") and self.process_runner:
+            self.process_runner.paste()
+            self.process_runner.setFocus()
 
     def on_stdout_write(self, data):
         """
