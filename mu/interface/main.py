@@ -38,7 +38,6 @@ from PyQt5.QtWidgets import (
     QTabBar,
     QPushButton,
     QHBoxLayout,
-    QMenu,
 )
 from PyQt5.QtGui import QKeySequence, QStandardItemModel, QCursor
 from mu import __version__
@@ -511,18 +510,28 @@ class Window(QMainWindow):
         Called when a user right-clicks on an editor pane.
 
         If the REPL is active AND there is selected text in the current editor
-        pane, show a context menu.
+        pane, modify the default context menu to include a paste to REPL
+        option. Otherwise, just display the default context menu.
         """
-        if self.current_tab.getSelection() == (-1, -1, -1, -1):
-            # No text selected.
-            return
-        if (hasattr(self, "repl") and self.repl) or (
-            hasattr(self, "process_runner") and self.process_runner
-        ):
-            menu = QMenu(self)
-            copy_to_repl = menu.addAction(_("Copy selected text to REPL"))
+        # Create a standard context menu.
+        menu = self.current_tab.createStandardContextMenu()
+        # Flag to indicate if there is a section of text highlighted.
+        has_selection = any([x > -1 for x in self.current_tab.getSelection()])
+        # Flag to indicate if the REPL pane is active.
+        has_repl = hasattr(self, "repl") and self.repl
+        # Flag to indicate if the Python process runner pane is active.
+        has_runner = hasattr(self, "process_runner") and self.process_runner
+        if has_selection and (has_repl or has_runner):
+            # Text selected with REPL/process context, so add the bespoke
+            # "copy to repl" item to the standard context menu to handle this
+            # situation.
+            actions = menu.actions()
+            copy_to_repl = QAction(_("Copy selected text to REPL"), menu)
             copy_to_repl.triggered.connect(self.copy_to_repl)
-            menu.exec_(QCursor.pos())
+            menu.insertAction(actions[0], copy_to_repl)
+            menu.insertSeparator(actions[0])
+        # Display menu.
+        menu.exec_(QCursor.pos())
 
     def copy_to_repl(self):
         """

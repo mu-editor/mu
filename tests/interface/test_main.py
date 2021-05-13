@@ -2,7 +2,7 @@
 """
 Tests for the user interface elements of Mu.
 """
-from PyQt5.QtWidgets import QAction, QWidget, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QAction, QWidget, QFileDialog, QMessageBox, QMenu
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon, QKeySequence
 from unittest import mock
@@ -732,9 +732,17 @@ def test_Window_on_context_menu_nothing_selected():
     w.tabs = mock.MagicMock()
     w.tabs.currentWidget.return_value = mock_tab
     mock_tab.getSelection.return_value = -1, -1, -1, -1
-    with mock.patch("mu.interface.main.QMenu") as mqm:
-        w.on_context_menu()
-        assert mqm.call_count == 0
+    menu = QMenu()
+    menu.insertAction = mock.MagicMock()
+    menu.insertSeparator = mock.MagicMock()
+    menu.exec_ = mock.MagicMock()
+    mock_tab.createStandardContextMenu = mock.MagicMock(return_value=menu)
+    w.on_context_menu()
+    assert mock_tab.createStandardContextMenu.call_count == 1
+    # No additional items added to the menu.
+    assert menu.insertAction.call_count == 0
+    assert menu.insertSeparator.call_count == 0
+    assert menu.exec_.call_count == 1
 
 
 def test_Window_on_context_menu_has_selection_but_no_repl():
@@ -748,9 +756,17 @@ def test_Window_on_context_menu_has_selection_but_no_repl():
     w.tabs = mock.MagicMock()
     w.tabs.currentWidget.return_value = mock_tab
     mock_tab.getSelection.return_value = 0, 0, 10, 10
-    with mock.patch("mu.interface.main.QMenu") as mqm:
-        w.on_context_menu()
-        assert mqm.call_count == 0
+    menu = QMenu()
+    menu.insertAction = mock.MagicMock()
+    menu.insertSeparator = mock.MagicMock()
+    menu.exec_ = mock.MagicMock()
+    mock_tab.createStandardContextMenu = mock.MagicMock(return_value=menu)
+    w.on_context_menu()
+    assert mock_tab.createStandardContextMenu.call_count == 1
+    # No additional items added to the menu.
+    assert menu.insertAction.call_count == 0
+    assert menu.insertSeparator.call_count == 0
+    assert menu.exec_.call_count == 1
 
 
 def test_Window_on_context_menu_with_repl():
@@ -764,16 +780,21 @@ def test_Window_on_context_menu_with_repl():
     w.tabs = mock.MagicMock()
     w.tabs.currentWidget.return_value = mock_tab
     mock_tab.getSelection.return_value = 0, 0, 10, 10
-    mock_menu = mock.MagicMock()
-    with mock.patch("mu.interface.main.QMenu", return_value=mock_menu) as mqm:
-        w.on_context_menu()
-        assert mqm.call_count == 1
-        mock_menu.addAction.assert_called_once_with(
-            "Copy selected text to REPL"
-        )
-        item = mock_menu.addAction()
-        item.triggered.connect.assert_called_once_with(w.copy_to_repl)
-        assert mock_menu.exec_.call_count == 1
+    menu = QMenu()
+    menu.insertAction = mock.MagicMock()
+    menu.insertSeparator = mock.MagicMock()
+    menu.exec_ = mock.MagicMock()
+    menu.actions = mock.MagicMock(
+        return_value=[
+            "foo",
+        ]
+    )
+    mock_tab.createStandardContextMenu = mock.MagicMock(return_value=menu)
+    w.on_context_menu()
+    assert mock_tab.createStandardContextMenu.call_count == 1
+    assert menu.insertAction.call_count == 1
+    assert menu.insertSeparator.call_count == 1
+    assert menu.exec_.call_count == 1
 
 
 def test_Window_on_context_menu_with_process_runner():
@@ -788,16 +809,21 @@ def test_Window_on_context_menu_with_process_runner():
     w.tabs = mock.MagicMock()
     w.tabs.currentWidget.return_value = mock_tab
     mock_tab.getSelection.return_value = 0, 0, 10, 10
-    mock_menu = mock.MagicMock()
-    with mock.patch("mu.interface.main.QMenu", return_value=mock_menu) as mqm:
-        w.on_context_menu()
-        assert mqm.call_count == 1
-        mock_menu.addAction.assert_called_once_with(
-            "Copy selected text to REPL"
-        )
-        item = mock_menu.addAction()
-        item.triggered.connect.assert_called_once_with(w.copy_to_repl)
-        assert mock_menu.exec_.call_count == 1
+    menu = QMenu()
+    menu.insertAction = mock.MagicMock()
+    menu.insertSeparator = mock.MagicMock()
+    menu.exec_ = mock.MagicMock()
+    menu.actions = mock.MagicMock(
+        return_value=[
+            "foo",
+        ]
+    )
+    mock_tab.createStandardContextMenu = mock.MagicMock(return_value=menu)
+    w.on_context_menu()
+    assert mock_tab.createStandardContextMenu.call_count == 1
+    assert menu.insertAction.call_count == 1
+    assert menu.insertSeparator.call_count == 1
+    assert menu.exec_.call_count == 1
 
 
 def test_Window_copy_to_repl_fragment():
