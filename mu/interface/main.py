@@ -519,8 +519,14 @@ class Window(QMainWindow):
         has_selection = any([x > -1 for x in self.current_tab.getSelection()])
         # Flag to indicate if the REPL pane is active.
         has_repl = hasattr(self, "repl") and self.repl
-        # Flag to indicate if the Python process runner pane is active.
-        has_runner = hasattr(self, "process_runner") and self.process_runner
+        # Flag to indicate if the Python process runner pane is active and in
+        # interactive Python3 mode (pasting into other "standard" Python modes
+        # doesn't make sense).
+        has_runner = (
+            hasattr(self, "process_runner")
+            and self.process_runner
+            and self.process_runner.is_interactive
+        )
         if has_selection and (has_repl or has_runner):
             # Text selected with REPL/process context, so add the bespoke
             # "copy to repl" item to the standard context menu to handle this

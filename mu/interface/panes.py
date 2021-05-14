@@ -841,6 +841,7 @@ class PythonProcessPane(QTextEdit):
         self.history_position = 0  # current position when navigation history.
         self.stdout_buffer = b""  # contains non-decoded bytes from stdout.
         self.reading_stdout = False  # flag showing if already reading stdout.
+        self.is_interactive = False  # flag if the process is interactive mode.
 
     def start_process(
         self,
@@ -875,6 +876,7 @@ class PythonProcessPane(QTextEdit):
         If python_args is given, these are passed as arguments to the Python
         interpreter used to launch the child process.
         """
+        self.is_interactive = interactive
         if not envars:  # Envars must be a list if not passed a value.
             envars = []
         envars = [(name, v) for (name, v) in envars if name != "PYTHONPATH"]
