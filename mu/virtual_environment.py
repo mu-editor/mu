@@ -516,14 +516,19 @@ class VirtualEnvironment(object):
 
         n_tries = 2
         n = 1
+
+        #
+        # First time around we'll have a path with nothing in it
+        # Jump straight to creation and let the ensure take over afterwards
+        # For the happy path we'll get a clean creation and a clean ensure
+        #
         try_to_create = not os.path.exists(self.path)
         while True:
             logger.debug("Checking virtual environment; attempt #%d.", n)
             try:
                 #
-                # First time around we'll have a path with nothing in it
-                # Jump straight to creation and let the ensure take over afterwards
-                # For the happy path we'll get a clean creation and a clean ensure
+                # try_to_create will be True if this is a brand new install
+                # or if we've failed to ensure at least once
                 #
                 if try_to_create:
                     self.create()
@@ -531,7 +536,8 @@ class VirtualEnvironment(object):
 
                 #
                 # Otherwise check whether the venv settings match the version of Mu
-                # If not, recreate the venv
+                # If not, recreate the venv with updated baseline packages and
+                # the existing user packages
                 #
                 else:
                     venv_mu_version = self.settings.get(
@@ -560,6 +566,11 @@ class VirtualEnvironment(object):
                 break
 
             except VirtualEnvironmentError as exc:
+                #
+                # If any of the ensure/create steps cause a VirtualEnvironmentError
+                # retry up to a maximum number in case we've just been unlucky
+                # with network, file contention etc.
+                #
                 logger.error(exc.message)
                 self.quarantine_venv()
                 if n < n_tries:
@@ -688,7 +699,6 @@ class VirtualEnvironment(object):
         before re-raising the error.
         """
         self.create_venv()
-        self.upgrade_pip()
         self.install_baseline_packages()
         self.register_baseline_packages()
         self.install_jupyter_kernel()
