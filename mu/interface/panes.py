@@ -192,9 +192,15 @@ class MicroPythonREPLPane(QTextEdit):
             to_paste = (
                 clipboard.text().replace("\n", "\r").replace("\r\r", "\r")
             )
-            self.connection.write(b"\x05")  # Enter paste mode.
-            self.connection.write(bytes(to_paste, "utf8"))  # Paste the thing.
-            self.connection.write(b"\x04")  # Exit paste mode.
+            if "\r" in to_paste:
+                # Enter MicroPython's paste mode for multi-line pastes so
+                # indentation isn't messed up.
+                self.connection.write(b"\x05")  # Enter paste mode.
+                self.connection.write(bytes(to_paste, "utf8"))  # Paste.
+                self.connection.write(b"\x04")  # Exit paste mode.
+            else:
+                # Only a fragment to paste, so just insert as is.
+                self.connection.write(bytes(to_paste, "utf8"))  # Paste.
 
     def context_menu(self):
         """
