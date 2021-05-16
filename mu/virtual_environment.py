@@ -375,19 +375,18 @@ class VirtualEnvironment(object):
         process = subprocess.run(
             list(args),
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
             **kwargs
         )
+        output = process.stdout.decode(sys.stdout.encoding, errors="replace") + process.stderr.decode(sys.stderr.encoding, errors="replace")
         logger.debug(
             "Process returned %d; output: %s",
             process.returncode,
             compact(
-                process.stdout.decode(sys.stdout.encoding, errors="replace")
-            ),
+                output
+            )
         )
-        return process.returncode == 0, process.stdout.decode(
-            sys.stdout.encoding, errors="replace"
-        )
+        return process.returncode == 0, output
 
     def reset_pip(self):
         self.pip = Pip(self.pip_executable)
@@ -482,10 +481,20 @@ class VirtualEnvironment(object):
         additional and/or updated packages. The simplest thing to do is to switch
         to a new venv and then pull in the packages the user had additionally installed
         """
-        _, user_packages = self.installed_packages()
         #
-        # Create a new virtual environment which will then become
-        # the current one. Install the (possibly updated) baseline packages
+        # Keep track of the user packages installed into the current venv
+        #
+        _, user_packages = self.installed_packages()
+
+        #
+        # Now, quarantine the current venv with
+        # a marker to say it's been superseded
+        #
+        self.quarantine_venv(reason="SUPERSEDED")
+
+        #
+        # Create a new venv which will then become the current one.
+        # Install the (possibly updated) baseline packages
         #
         self.relocate(self._generate_dirpath())
         self.create()
@@ -496,11 +505,6 @@ class VirtualEnvironment(object):
         logger.debug("About to reinstall user packages: %s", user_packages)
         self.install_user_packages(user_packages)
 
-        #
-        # Finally, quarantine the previous virtual environment with
-        # a marker to say it's been superseded
-        #
-        self.quarantine_venv(reason="SUPERSEDED")
 
     def ensure_and_create(self, emitter=None):
         """Check whether we have a valid virtual environment in place and, if not,
