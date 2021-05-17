@@ -420,6 +420,12 @@ class Window(QMainWindow):
             "Python (*.py)",
         )
         self.previous_folder = os.path.dirname(path)
+        # Ensure there's a .py extension if none is provided by the user.
+        # See issue #1571.
+        name, ext = os.path.splitext(os.path.basename(path))
+        if not ext:
+            # No extension, so add .py as default.
+            path += ".py"
         logger.debug("Getting save path: {}".format(path))
         return path
 
