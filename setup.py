@@ -53,7 +53,7 @@ install_requires = [
     #
     # Needed for creating the runtime virtual environment
     #
-    "virtualenv>=16.0.0",
+    "virtualenv>=16.7.6",
     #
     # Needed for packaging
     #
