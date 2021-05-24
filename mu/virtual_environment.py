@@ -378,13 +378,19 @@ class VirtualEnvironment(object):
             stderr=subprocess.PIPE,
             **kwargs
         )
-        output = "STDOUT: " + process.stdout.decode(sys.stdout.encoding, errors="replace") + "\nSTDERR: " + process.stderr.decode(sys.stderr.encoding, errors="replace")
+        stdout_output = process.stdout.decode(
+            sys.stdout.encoding, errors="replace"
+        )
+        stderr_output = process.stderr.decode(
+            sys.stderr.encoding, errors="replace"
+        )
+        output = stdout_output
+        if stderr_output:
+            output += "\n\nSTDERR: " + stderr_output
         logger.debug(
             "Process returned %d; output: %s",
             process.returncode,
-            compact(
-                output
-            )
+            compact(output),
         )
         return process.returncode == 0, output
 
@@ -504,7 +510,6 @@ class VirtualEnvironment(object):
         #
         logger.debug("About to reinstall user packages: %s", user_packages)
         self.install_user_packages(user_packages)
-
 
     def ensure_and_create(self, emitter=None):
         """Check whether we have a valid virtual environment in place and, if not,
