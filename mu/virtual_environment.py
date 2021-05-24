@@ -378,7 +378,7 @@ class VirtualEnvironment(object):
             stderr=subprocess.PIPE,
             **kwargs
         )
-        output = process.stdout.decode(sys.stdout.encoding, errors="replace") + process.stderr.decode(sys.stderr.encoding, errors="replace")
+        output = "STDOUT: " + process.stdout.decode(sys.stdout.encoding, errors="replace") + "\nSTDERR: " + process.stderr.decode(sys.stderr.encoding, errors="replace")
         logger.debug(
             "Process returned %d; output: %s",
             process.returncode,
@@ -737,20 +737,6 @@ class VirtualEnvironment(object):
                 "Unable to create a virtual environment using %s at %s"
                 % (sys.executable, self.path)
             )
-
-    def upgrade_pip(self):
-        logger.debug(
-            "About to upgrade pip; interpreter %s %s",
-            self.interpreter,
-            "exists" if os.path.exists(self.interpreter) else "doesn't exist",
-        )
-        ok, output = self.run_subprocess(
-            self.interpreter, "-m", "pip", "install", "--upgrade", "pip"
-        )
-        if ok:
-            logger.info("Upgraded pip")
-        else:
-            raise VirtualEnvironmentCreateError("Unable to upgrade pip")
 
     def install_jupyter_kernel(self):
         """
