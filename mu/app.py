@@ -295,6 +295,8 @@ def run():
     app.setApplicationVersion(__version__)
     app.setAttribute(Qt.AA_DontShowIconsInMenus)
 
+    1 / 0
+
     def splash_context():
         """
         Function context (to ensure garbage collection) for displaying the
