@@ -109,8 +109,8 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: rpios
-          username: ${{ secrets.PI_USERNAME }}
-          password: ${{ secrets.PI_PASSWORD }}
+          username: pi
+          password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
           script: |
             mkdir ~/mu && cd ~/mu
@@ -124,8 +124,8 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: rpios
-          username: ${{ secrets.PI_USERNAME }}
-          password: ${{ secrets.PI_PASSWORD }}
+          username: pi
+          password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
           # Purposely skip apt update, install version from image stale index
           script: sudo apt-get install -y python3-virtualenv
@@ -133,8 +133,8 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: rpios
-          username: ${{ secrets.PI_USERNAME }}
-          password: ${{ secrets.PI_PASSWORD }}
+          username: pi
+          password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
           command_timeout: 20m
           script: |
@@ -148,8 +148,8 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: rpios
-          username: ${{ secrets.PI_USERNAME }}
-          password: ${{ secrets.PI_PASSWORD }}
+          username: pi
+          password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
           script: |
             uname -a
@@ -161,8 +161,8 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: rpios
-          username: ${{ secrets.PI_USERNAME }}
-          password: ${{ secrets.PI_PASSWORD }}
+          username: pi
+          password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
           command_timeout: 25m
           script: xvfb-run python make.py check
