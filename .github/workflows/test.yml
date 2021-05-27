@@ -7,7 +7,7 @@ on:
     branches: '*'
 
 jobs:
-  build:
+  test:
     timeout-minutes: 30
     strategy:
       matrix:
@@ -50,7 +50,7 @@ jobs:
         run: python make.py check
         timeout-minutes: 5
 
-  build-arm:
+  test-arm:
     runs-on: ubuntu-latest
     name: Test Py 3.7 - arm-debian-buster
     steps:
@@ -88,3 +88,81 @@ jobs:
               xvfb-run python make.py check &&
               echo 'Finished successfully! :)'
             "
+
+  test-pios:
+    name: Test Raspbian ${{ matrix.docker-tag }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        docker-tag: ['stretch-2018-03-13', 'buster-2021-03-25']
+      fail-fast: false
+    services:
+      rpios:
+        # Custom made images for Mu: https://github.com/carlosperate/docker-qemu-rpi-os
+        image: ghcr.io/carlosperate/qemu-rpi-os-lite:${{ matrix.docker-tag }}-mu
+        ports: ["5022:5022"]
+    steps:
+      # This delay is a bit hacky, but can't find a way to signal when OS is ready
+      - name: Wait 2m30s for the docker image to start up QEMU and Raspberry Pi OS
+        run: sleep 150
+      - name: Clone project & setup it as the bash entry directory
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          script: |
+            mkdir ~/mu && cd ~/mu
+            git init
+            git remote add origin ${{ github.server_url }}/${{ github.repository }}.git
+            git fetch --progress --depth=1 origin ${{ github.sha }}
+            git checkout --progress FETCH_HEAD
+            echo "cd ~/mu" > ~/.bashrc_new && cat ~/.bashrc >> ~/.bashrc_new
+            rm ~/.bashrc && mv ~/.bashrc_new ~/.bashrc
+      - name: Install Mu extra apt dependencies
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          # Purposely skip apt update, install version from image stale index
+          script: sudo apt-get install -y python3-virtualenv
+      - name: Create venv and install Python dependencies
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          command_timeout: 20m
+          script: |
+            python3 -m virtualenv ~/mu/.venv -v --python=python3 --system-site-packages
+            echo "source ~/mu/.venv/bin/activate" > ~/.bashrc_new && cat ~/.bashrc >> ~/.bashrc_new
+            rm ~/.bashrc && mv ~/.bashrc_new ~/.bashrc
+            source .venv/bin/activate
+            python -m pip list
+            python -m pip install ."[dev]"
+      - name: Environment info
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          script: |
+            uname -a
+            cat /etc/os-release
+            python3 -c "import platform as p, sys; print(sys.executable, p.architecture(), p.machine(), sys.version, sep='\n')"
+            python3 -m pip --version
+            python3 -m pip list
+      - name: Run tests
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          command_timeout: 25m
+          script: xvfb-run python make.py check
