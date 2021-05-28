@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="59.619438mm"
+   height="59.619438mm"
+   viewBox="0 0 59.619438 59.619438"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.0.2-2 (e86c870879, 2021-01-15)"
+   sodipodi:docname="music.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8284271"
+     inkscape:cx="69.027419"
+     inkscape:cy="124.58119"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:snap-page="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     showguides="false"
+     inkscape:guide-bbox="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:snap-to-guides="true"
+     inkscape:snap-global="true">
+    <sodipodi:guide
+       position="29.809499,69.619441"
+       orientation="-1,0"
+       id="guide24"
+       inkscape:label=""
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="-9.9999998,29.809721"
+       orientation="0,1"
+       id="guide26"
+       inkscape:label=""
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="-19.894461,69.619437"
+       orientation="0,1"
+       id="guide879"
+       inkscape:label=""
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-237.38055)">
+    <ellipse
+       style="fill:none;stroke:#ffcc33;stroke-width:4.34999;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path871"
+       cx="29.809498"
+       cy="266.46942"
+       rx="2.4063713e-13"
+       ry="0.72084588" />
+    <circle
+       style="fill:none;stroke:#ffcc33;stroke-width:4.3585;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path853"
+       cx="29.809719"
+       cy="267.19028"
+       r="27.630468" />
+    <path
+       id="rect3405"
+       style="fill:#336699;fill-opacity:1;stroke:none;stroke-width:7.35084;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.638978"
+       d="M 159.35938 48.548828 C 158.47068 48.558899 157.52642 48.714173 156.54492 49.029297 L 99.042969 67.490234 C 89.541249 70.540903 89.595703 70.300505 89.595703 79.972656 L 89.595703 98.871094 L 89.595703 147.90234 A 24.041629 14.318913 0 0 0 74.246094 144.60352 A 24.041629 14.318913 0 0 0 50.205078 158.92188 A 24.041629 14.318913 0 0 0 74.246094 173.24219 A 24.041629 14.318913 0 0 0 98.287109 158.92188 A 24.041629 14.318913 0 0 0 98.287109 158.89648 L 98.287109 105.49023 C 98.5371 105.42964 98.787756 105.3671 99.042969 105.28516 L 156.54492 86.824219 C 156.80028 86.742231 157.05065 86.642965 157.30078 86.542969 L 157.30078 128.81055 A 24.041629 14.318913 0 0 0 141.95117 125.51172 A 24.041629 14.318913 0 0 0 117.91016 139.83008 A 24.041629 14.318913 0 0 0 141.95117 154.14844 A 24.041629 14.318913 0 0 0 165.99414 139.83008 A 24.041629 14.318913 0 0 0 165.99219 139.71094 L 165.99414 139.71094 L 165.99414 74.341797 L 165.99414 55.443359 C 165.99414 51.19021 163.21037 48.505187 159.35938 48.548828 z "
+       transform="matrix(0.26458333,0,0,0.26458333,0,237.38055)" />
+  </g>
+</svg>
