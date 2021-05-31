@@ -128,11 +128,24 @@ class Process(QObject):
         # If finished is False, it could be be because of an error
         # or because we've already finished before starting to wait!
         #
+        output = self.data()
         if (
             not finished
             and self.process.exitStatus() == self.process.CrashExit
         ):
-            raise VirtualEnvironmentError("Some error occurred")
+            logger.error(compact(output))
+            raise VirtualEnvironmentError("Process did not terminate naturally\n" +  output[-1800:])
+        else:
+            #
+            # We finished normally but we might still have an error-code on finish
+            #
+            logger.info("** Process completion; exitStatus = %s; CrashExit = %s; exitCode = %s", self.process.exitStatus(), self.process.CrashExit, self.process.exitCode())
+            if self.process.exitCode() != 0:
+                #
+                # There's an upper limit on URI size, so we'll come in under it
+                #
+                logger.error(compact(output))
+                raise VirtualEnvironmentError("Process finished but with an error condition:\n" + output[-1800:])
 
     def data(self):
         return (
