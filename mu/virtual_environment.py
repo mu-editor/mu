@@ -737,8 +737,9 @@ class VirtualEnvironment(object):
                 "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
             )
         self.reset_pip()
-        logger.info("About to install from wheels")
-        self.pip.install(wheel_filepaths)
+        for wheel in wheel_filepaths:
+            logger.info("About to install from wheels: {}".format(wheel))
+            self.pip.install(wheel, deps=False, index=False)
 
     def register_baseline_packages(self):
         """
