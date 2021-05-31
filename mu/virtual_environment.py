@@ -102,11 +102,15 @@ class Process(QObject):
         self.process.setProcessChannelMode(QProcess.MergedChannels)
 
     def run_blocking(self, command, args, wait_for_s=30.0, **envvars):
+        logger.info(
+            "About to run blocking %s with args %s and envvars %s",
+            command,
+            args,
+            envvars,
+        )
         self._set_up_run(**envvars)
         self.process.start(command, args)
-        self.wait(wait_for_s=wait_for_s)
-        output = self.data()
-        return output
+        return self.wait(wait_for_s=wait_for_s)
 
     def run(self, command, args, **envvars):
         logger.info(
@@ -135,17 +139,17 @@ class Process(QObject):
         ):
             logger.error(compact(output))
             raise VirtualEnvironmentError("Process did not terminate naturally\n" +  output[-1800:])
-        else:
+        elif self.process.exitCode() != 0:
             #
             # We finished normally but we might still have an error-code on finish
             #
-            logger.info("** Process completion; exitStatus = %s; CrashExit = %s; exitCode = %s", self.process.exitStatus(), self.process.CrashExit, self.process.exitCode())
-            if self.process.exitCode() != 0:
-                #
-                # There's an upper limit on URI size, so we'll come in under it
-                #
-                logger.error(compact(output))
-                raise VirtualEnvironmentError("Process finished but with an error condition:\n" + output[-1800:])
+            logger.error(compact(output))
+            #
+            # There's an upper limit on URI size, so we'll come in under it
+            #
+            raise VirtualEnvironmentError("Process finished but with an error condition:\n" + output[-1800:])
+
+        return output
 
     def data(self):
         return (
