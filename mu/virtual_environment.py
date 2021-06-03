@@ -101,11 +101,15 @@ class Process(QObject):
         self.process.setProcessChannelMode(QProcess.MergedChannels)
 
     def run_blocking(self, command, args, wait_for_s=30.0, **envvars):
+        logger.info(
+            "About to run blocking %s with args %s and envvars %s",
+            command,
+            args,
+            envvars,
+        )
         self._set_up_run(**envvars)
         self.process.start(command, args)
-        self.wait(wait_for_s=wait_for_s)
-        output = self.data()
-        return output
+        return self.wait(wait_for_s=wait_for_s)
 
     def run(self, command, args, **envvars):
         logger.info(
@@ -127,14 +131,36 @@ class Process(QObject):
         # If finished is False, it could be be because of an error
         # or because we've already finished before starting to wait!
         #
+        output = self.data()
         if (
             not finished
             and self.process.exitStatus() == self.process.CrashExit
         ):
-            raise VirtualEnvironmentError("Some error occurred")
+            logger.error(compact(output))
+            raise VirtualEnvironmentError(
+                "Process did not terminate naturally\n" + output[-1800:]
+            )
+        elif self.process.exitCode() != 0:
+            #
+            # We finished normally but we might still have an error-code on finish
+            #
+            logger.error(compact(output))
+            #
+            # There's an upper limit on URI size, so we'll come in under it
+            #
+            raise VirtualEnvironmentError(
+                "Process finished but with an error condition:\n"
+                + output[-1800:]
+            )
+
+        return output
 
     def data(self):
-        return self.process.readAll().data().decode("utf-8")
+        return (
+            self.process.readAll()
+            .data()
+            .decode(sys.stdout.encoding, errors="replace")
+        )
 
     def _started(self):
         self.started.emit()
@@ -370,15 +396,24 @@ class VirtualEnvironment(object):
         process = subprocess.run(
             list(args),
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
             **kwargs
         )
+        stdout_output = process.stdout.decode(
+            sys.stdout.encoding, errors="replace"
+        )
+        stderr_output = process.stderr.decode(
+            sys.stderr.encoding, errors="replace"
+        )
+        output = stdout_output
+        if stderr_output:
+            output += "\n\nSTDERR: " + stderr_output
         logger.debug(
             "Process returned %d; output: %s",
             process.returncode,
-            compact(process.stdout.decode("utf-8")),
+            compact(output),
         )
-        return process.returncode == 0, process.stdout.decode("utf-8")
+        return process.returncode == 0, output
 
     def reset_pip(self):
         self.pip = Pip(self.pip_executable)
