@@ -127,29 +127,41 @@ class Process(QObject):
 
     def wait(self, wait_for_s=30.0):
         finished = self.process.waitForFinished(1000 * wait_for_s)
-        #
-        # If finished is False, it could be be because of an error
-        # or because we've already finished before starting to wait!
-        #
+        exit_status = self.process.exitStatus()
+        exit_code = self.process.exitCode()
         output = self.data()
-        if (
-            not finished
-            and self.process.exitStatus() == self.process.CrashExit
-        ):
+        #
+        # if waitForFinished completes, either the process has successfully finished
+        # or it crashed, was terminated or timed out. If it does finish successfully
+        # we might still have an error code. In each case we might still have data
+        # from stdout/stderr. Unfortunately there's no way to determine that the
+        # process was timed out, as opposed to crashing in some other way
+        #
+        # The three elements in play are:
+        #
+        # finished (yes/no)
+        # exitStatus (normal (0) / crashed (1)) -- we don't currently distinguish
+        # exitCode (whatever the program returns; conventionally 0 => ok)
+        #
+        logger.debug("Finished: %s; exitStatus %s; exitCode %s", finished, exit_status, exit_code)
+
+        #
+        # Exceptions raised here will be caught by the crash-handler which will try to
+        # generate a URI out of it. There's an upper limit on URI size of ~2000
+        #
+        if not finished:
             logger.error(compact(output))
             raise VirtualEnvironmentError(
-                "Process did not terminate naturally\n" + output[-1800:]
+                "Process did not terminate normally:\n" + output[-1800:]
             )
-        elif self.process.exitCode() != 0:
+
+        if exit_code != 0:
             #
             # We finished normally but we might still have an error-code on finish
             #
             logger.error(compact(output))
-            #
-            # There's an upper limit on URI size, so we'll come in under it
-            #
             raise VirtualEnvironmentError(
-                "Process finished but with an error condition:\n"
+                ("Process finished but with error code %f:\n" % exit_code)
                 + output[-1800:]
             )
 
