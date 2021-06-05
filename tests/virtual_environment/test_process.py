@@ -55,12 +55,20 @@ def test_run_blocking_timeout():
     try:
         p.run_blocking(
             sys.executable,
-            ["-c", "import sys; sys.stdout.write('" + expected_stdout + "'); sys.stderr.write('" + expected_stderr + "'); time.sleep(0.2)"],
-            wait_for_s=0.1,
+            [
+                "-c",
+                "import sys; sys.stdout.write('"
+                + expected_stdout
+                + "'); sys.stderr.write('"
+                + expected_stderr
+                + "'); time.sleep(1.0)",
+            ],
+            wait_for_s=0.5,
         ).strip()
     except virtual_environment.VirtualEnvironmentError as exc:
         assert expected_stdout in exc.message
         assert expected_stderr in exc.message
+
 
 def test_run_blocking_error():
     """Ensure that a process raises a known exception on error"""
@@ -74,12 +82,18 @@ def test_run_blocking_error():
     try:
         p.run_blocking(
             sys.executable,
-            ["-c", "import sys; sys.stdout.write('" + expected_stdout + "'); sys.stderr.write('" + expected_stderr + "'); 1/0"]
+            [
+                "-c",
+                "import sys; sys.stdout.write('"
+                + expected_stdout
+                + "'); sys.stderr.write('"
+                + expected_stderr
+                + "'); 1/0",
+            ],
         ).strip()
     except virtual_environment.VirtualEnvironmentError as exc:
         assert expected_stdout in exc.message
         assert expected_stderr in exc.message
-
 
 
 def _QTimer_singleshot(delay, partial):

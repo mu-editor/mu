@@ -25,7 +25,7 @@ import uuid
 import logging
 from unittest import mock
 
-from PyQt5.QtCore import QTimer, QProcess
+# ~ from PyQt5.QtCore import QTimer, QProcess
 import pytest
 
 import mu.virtual_environment
@@ -494,27 +494,33 @@ def _QTimer_singleshot(delay, partial):
 
 
 def test_run_python_blocking(venv):
-    """Ensure that Python is run synchronously with the args passed"""
-    command = venv.interpreter
-    args = ("-c", "import sys; print(sys.executable)")
-    with mock.patch.object(
-        QTimer, "singleShot", _QTimer_singleshot
-    ), mock.patch.object(QProcess, "start") as mocked_start:
-        venv.run_python(*args)
+    """Ensure that Python is run synchronously with the args passed
 
-    mocked_start.assert_called_with(command, args)
+    NB all we're doing here is checking that run_python hands off to
+    Process.run with the correct parameters
+    """
+    command = venv.interpreter
+    args = (uuid.uuid1().hex, uuid.uuid1().hex)
+    with mock.patch.object(
+        mu.virtual_environment.Process, "run_blocking"
+    ) as mocked_run:
+        venv.run_python(*args)
+    mocked_run.assert_called_with(command, args)
 
 
 def test_run_python_nonblocking(venv):
-    """Ensure that a QProcess is started with the relevant params"""
-    command = venv.interpreter
-    args = ("-c", "import sys; print(sys.executable)")
-    with mock.patch.object(
-        QTimer, "singleShot", _QTimer_singleshot
-    ), mock.patch.object(QProcess, "start") as mocked_start:
-        venv.run_python(*args, slots=venv.Slots(output=lambda x: x))
+    """Ensure that Python is started asynchronously with the relevant params
 
-    mocked_start.assert_called_with(command, args)
+    NB all we're doing here is checking that run_python hands off to
+    Process.run with the correct parameters
+    """
+    command = venv.interpreter
+    args = (uuid.uuid1().hex, uuid.uuid1().hex)
+    with mock.patch.object(
+        mu.virtual_environment.Process, "run"
+    ) as mocked_run:
+        venv.run_python(*args, slots=venv.Slots(output=lambda x: x))
+    mocked_run.assert_called_with(command, args)
 
 
 def test_reset_pip(venv, pipped):
