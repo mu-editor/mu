@@ -167,6 +167,18 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     assert venv._directory_is_venv()
 
     #
+    # Check that we can still detect a venv when there's no .cfg file
+    # (Then replace the .cfg for later use by the venv!)
+    #
+    cfg_filepath = os.path.join(venv.path, "pyvenv.cfg")
+    if os.path.isfile(cfg_filepath):
+        renamed_filepath = cfg_filepath + ".xyz"
+        os.rename(cfg_filepath, renamed_filepath)
+        assert venv._directory_is_venv()
+        os.rename(renamed_filepath, cfg_filepath)
+
+
+    #
     # Check that we have an installed version of pip
     #
     expected_pip_filepath = os.path.join(venv_site_packages, "pip")
