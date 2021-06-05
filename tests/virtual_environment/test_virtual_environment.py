@@ -138,6 +138,9 @@ def test_splash_log_handler():
     assert signal.emit.call_count == 2
 
 
+def test_virtual_environment_str_contains_path(venv):
+    assert venv.path in str(venv)
+
 def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     """Ensure that we're actually creating a working virtual environment
     on the disk with wheels installed
