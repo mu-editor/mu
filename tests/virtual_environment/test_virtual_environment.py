@@ -230,6 +230,21 @@ def test_create_virtual_environment_name_obj(patched, venv_dirpath):
     assert venv.name == os.path.basename(venv_dirpath)
 
 
+def test_create_virtual_environment_failure(venv):
+    output = uuid.uuid1().hex
+    with mock.patch.object(
+        venv, "run_subprocess", return_value=(False, output)
+    ):
+        try:
+            venv.create()
+        except Exception as exc:
+            assert isinstance(
+                exc, mu.virtual_environment.VirtualEnvironmentCreateError
+            )
+            assert "nable to create" in exc.message
+            assert output in exc.message
+
+
 def test_download_wheels_if_not_present(venv, test_wheels):
     """If we try to install baseline package without any wheels
     ensure we try to download them
