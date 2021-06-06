@@ -492,19 +492,21 @@ def test_venv_folder_already_exists_not_directory(venv_dirpath):
 def test_ensure_interpreter(venv):
     """When venv exists but has no interpreter ensure we raise an exception"""
     assert not os.path.isfile(venv.interpreter)
-
     with pytest.raises(VEError, match="[Ii]nterpreter"):
         venv.ensure_interpreter()
 
 
-def test_ensure_interpreter_version(venv):
-    """When venv interpreter exists but for a different Py version raise an exception"""
-    mocked_process = mock.MagicMock()
-    mocked_process.stdout = b"x.y"
-    with mock.patch.object(subprocess, "run", return_value=mocked_process):
-        with pytest.raises(VEError, match="[Ii]nterpreter"):
+def test_ensure_interpreter_failed_to_run(venv):
+    """When venv interpreter can't be run raise an exception"""
+    with mock.patch.object(VE, "run_subprocess", return_value=(False, "x.y")):
+        with pytest.raises(VEError, match="Failed to run"):
             venv.ensure_interpreter_version()
 
+def test_ensure_interpreter_version(venv):
+    """When venv interpreter exists but for a different Py version raise an exception"""
+    with mock.patch.object(VE, "run_subprocess", return_value=(True, "x.y")):
+        with pytest.raises(VEError, match="[Ii]nterpreter at version"):
+            venv.ensure_interpreter_version()
 
 #
 # Ensure Key Modules
