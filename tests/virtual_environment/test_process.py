@@ -63,7 +63,7 @@ def test_run_blocking_timeout():
                 + expected_stderr
                 + "'); time.sleep(2.0)",
             ],
-            wait_for_s=1.0s,
+            wait_for_s=1.0,
         ).strip()
     except virtual_environment.VirtualEnvironmentError as exc:
         assert expected_stdout in exc.message
