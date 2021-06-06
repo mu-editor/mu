@@ -269,6 +269,25 @@ def test_download_wheels_if_not_present(venv, test_wheels):
     assert mock_download.called
 
 
+def test_download_wheels_failure(venv, test_wheels):
+    """If the wheels download fails, ensure that we raise a VirtualEnvironmentError
+    with the same message"""
+    message = uuid.uuid1().hex
+    wheels_dirpath = test_wheels
+    for filepath in glob.glob(os.path.join(wheels_dirpath, "*.whl")):
+        os.unlink(filepath)
+    assert not glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+    with mock.patch.object(
+        mu.wheels,
+        "download",
+        side_effect=mu.wheels.WheelsDownloadError(message),
+    ):
+        try:
+            venv.install_baseline_packages()
+        except VEError as exc:
+            assert message in exc.message
+
+
 def test_base_packages_installed(patched, venv, test_wheels):
     """Ensure that, when the venv is installed, the base packages are installed
     from wheels
