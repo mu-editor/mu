@@ -143,7 +143,12 @@ class Process(QObject):
         # exitStatus (normal (0) / crashed (1)) -- we don't currently distinguish
         # exitCode (whatever the program returns; conventionally 0 => ok)
         #
-        logger.debug("Finished: %s; exitStatus %s; exitCode %s", finished, exit_status, exit_code)
+        logger.debug(
+            "Finished: %s; exitStatus %s; exitCode %s",
+            finished,
+            exit_status,
+            exit_code,
+        )
 
         #
         # Exceptions raised here will be caught by the crash-handler which will try to
@@ -161,7 +166,7 @@ class Process(QObject):
             #
             logger.error(compact(output))
             raise VirtualEnvironmentError(
-                ("Process finished but with error code %f:\n" % exit_code)
+                ("Process finished but with error code %d:\n" % exit_code)
                 + output[-1800:]
             )
 
