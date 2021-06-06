@@ -141,6 +141,7 @@ def test_splash_log_handler():
 def test_virtual_environment_str_contains_path(venv):
     assert venv.path in str(venv)
 
+
 def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     """Ensure that we're actually creating a working virtual environment
     on the disk with wheels installed
@@ -176,7 +177,6 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
         os.rename(cfg_filepath, renamed_filepath)
         assert venv._directory_is_venv()
         os.rename(renamed_filepath, cfg_filepath)
-
 
     #
     # Check that we have an installed version of pip
@@ -422,6 +422,26 @@ def test_venv_fails_after_three_tries(venv):
     ):
         with pytest.raises(VEError):
             venv.ensure_and_create()
+
+
+def test_venv_ensure_and_create_splash_handler(venv):
+    """Ensure the splash handler is set up when calling ensure_and_create"""
+    with mock.patch.object(VE, "create"), mock.patch.object(
+        VE, "ensure"
+    ), mock.patch.object(mu.virtual_environment, "logger") as mock_logger:
+        venv.ensure_and_create(object)
+
+    all_args = mock_logger.addHandler.call_args
+    assert all_args is not None, "logger.addHandler not called at all"
+    args, _ = all_args
+    (handler,) = args
+    assert isinstance(handler, mu.virtual_environment.SplashLogHandler)
+
+    all_args = mock_logger.removeHandler.call_args
+    assert all_args is not None, "logger.removeHandler not called at all"
+    args, _ = all_args
+    (handler,) = args
+    assert isinstance(handler, mu.virtual_environment.SplashLogHandler)
 
 
 #
