@@ -320,21 +320,41 @@ def test_jupyter_kernel_installed(patched, venv):
             assert expected_jupyter_args == args[: len(expected_jupyter_args)]
 
 
+def test_jupyter_kernel_failure(patched, venv):
+    """Ensure when the Jupyter kernel fails to install we raise an exception and
+    include the output"""
+    output = uuid.uuid1().hex
+    with mock.patch.object(
+        venv, "run_subprocess", return_value=(False, output)
+    ):
+        try:
+            venv.install_jupyter_kernel()
+        except VEError as exc:
+            assert "nable to install kernel" in exc.message
+            assert output in exc.message
+
+
 def test_upgrade_pip_failure(venv):
     """Ensure that we raise an error with output when pip can't be upgraded"""
     output = uuid.uuid1().hex
-    with mock.patch.object(venv, "run_subprocess", return_value=(True, output)):
+    with mock.patch.object(
+        venv, "run_subprocess", return_value=(True, output)
+    ):
         venv.upgrade_pip()
+
 
 def test_upgrade_pip_success(venv):
     """Ensure that we raise an error with output when pip can't be upgraded"""
     output = uuid.uuid1().hex
-    with mock.patch.object(venv, "run_subprocess", return_value=(False, output)):
+    with mock.patch.object(
+        venv, "run_subprocess", return_value=(False, output)
+    ):
         try:
             venv.upgrade_pip()
         except VEError as exc:
             assert "nable to upgrade pip" in exc.message
             assert output in exc.message
+
 
 def test_install_user_packages(patched, venv):
     """Ensure that, given a list of packages, we pip install them
