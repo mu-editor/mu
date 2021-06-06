@@ -730,7 +730,6 @@ class VirtualEnvironment(object):
         kernel_name = self.name.replace(" ", "-")
         display_name = '"Python/Mu ({})"'.format(kernel_name)
         logger.info("Installing Jupyter Kernel: %s", kernel_name)
-        ## ?? ok, output = self.run_subprocess(self.interpreter, "-m", "pip", "list")
         ok, output = self.run_subprocess(
             sys.executable,
             "-m",

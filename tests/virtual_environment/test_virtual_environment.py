@@ -502,18 +502,37 @@ def test_ensure_interpreter_failed_to_run(venv):
         with pytest.raises(VEError, match="Failed to run"):
             venv.ensure_interpreter_version()
 
+
 def test_ensure_interpreter_version(venv):
     """When venv interpreter exists but for a different Py version raise an exception"""
     with mock.patch.object(VE, "run_subprocess", return_value=(True, "x.y")):
         with pytest.raises(VEError, match="[Ii]nterpreter at version"):
             venv.ensure_interpreter_version()
 
+
 #
 # Ensure Key Modules
 #
-@pytest.mark.skip("Not sure how to test this one yet")
-def test_ensure_key_modules(venv):
-    assert False
+def test_ensure_key_modules_failure(venv):
+    modules = [uuid.uuid1().hex, uuid.uuid1().hex, uuid.uuid1().hex]
+    output = uuid.uuid1().hex
+    with mock.patch.object(
+        mu.wheels, "mode_packages", modules
+    ), mock.patch.object(VE, "run_subprocess", return_value=(False, output)):
+        try:
+            venv.ensure_key_modules()
+        except VEError as exc:
+            assert "Failed to import" in exc.message
+            assert output in exc.message
+
+
+def test_ensure_key_modules_success(venv):
+    modules = [uuid.uuid1().hex, uuid.uuid1().hex, uuid.uuid1().hex]
+    output = uuid.uuid1().hex
+    with mock.patch.object(
+        mu.wheels, "mode_packages", modules
+    ), mock.patch.object(VE, "run_subprocess", return_value=(True, output)):
+        venv.ensure_key_modules()
 
 
 #
