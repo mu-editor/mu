@@ -157,7 +157,7 @@ class Process(QObject):
         if not finished:
             logger.error(compact(output))
             raise VirtualEnvironmentError(
-                "Process did not terminate normally:\n" + output[-1800:]
+                "Process did not terminate normally:\n" + output
             )
 
         if exit_code != 0:
@@ -167,7 +167,7 @@ class Process(QObject):
             logger.error(compact(output))
             raise VirtualEnvironmentError(
                 ("Process finished but with error code %d:\n" % exit_code)
-                + output[-1800:]
+                + output
             )
 
         return output
@@ -626,7 +626,7 @@ class VirtualEnvironment(object):
         )
         if not ok:
             raise VirtualEnvironmentEnsureError(
-                "Failed to run venv interpreter %s" % self.interpreter
+                "Failed to run venv interpreter %s\n%s" % (self.interpreter, output)
             )
 
         venv_version = output.strip()
@@ -649,7 +649,7 @@ class VirtualEnvironment(object):
             )
             if not ok:
                 raise VirtualEnvironmentEnsureError(
-                    "Failed to import: %s" % module
+                    "Failed to import: %s\n%s" % (module, output)
                 )
 
     def ensure_pip(self):
@@ -701,8 +701,8 @@ class VirtualEnvironment(object):
             )
         else:
             raise VirtualEnvironmentCreateError(
-                "Unable to create a virtual environment using %s at %s"
-                % (sys.executable, self.path)
+                "Unable to create a virtual environment using %s at %s\n%s"
+                % (sys.executable, self.path, output)
             )
 
     def upgrade_pip(self):
@@ -717,7 +717,7 @@ class VirtualEnvironment(object):
         if ok:
             logger.info("Upgraded pip")
         else:
-            raise VirtualEnvironmentCreateError("Unable to upgrade pip")
+            raise VirtualEnvironmentCreateError("Unable to upgrade pip\n%s" % output)
 
     def install_jupyter_kernel(self):
         """
@@ -727,7 +727,7 @@ class VirtualEnvironment(object):
         kernel_name = self.name.replace(" ", "-")
         display_name = '"Python/Mu ({})"'.format(kernel_name)
         logger.info("Installing Jupyter Kernel: %s", kernel_name)
-        ok, output = self.run_subprocess(self.interpreter, "-m", "pip", "list")
+        ## ?? ok, output = self.run_subprocess(self.interpreter, "-m", "pip", "list")
         ok, output = self.run_subprocess(
             sys.executable,
             "-m",
@@ -742,7 +742,7 @@ class VirtualEnvironment(object):
         if ok:
             logger.info("Installed Jupyter Kernel: %s", kernel_name)
         else:
-            raise VirtualEnvironmentCreateError("Unable to install kernel")
+            raise VirtualEnvironmentCreateError("Unable to install kernel\n%s" % output)
 
     def install_baseline_packages(self):
         """
