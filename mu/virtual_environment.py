@@ -5,9 +5,7 @@ import functools
 import glob
 import logging
 import subprocess
-import tempfile
 import time
-import zipfile
 
 from PyQt5.QtCore import (
     QObject,

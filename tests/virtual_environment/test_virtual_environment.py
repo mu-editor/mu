@@ -25,9 +25,10 @@ import uuid
 import logging
 from unittest import mock
 
-# ~ from PyQt5.QtCore import QTimer, QProcess
 import pytest
 
+import mu
+import mu.settings
 import mu.virtual_environment
 import mu.wheels
 
@@ -671,6 +672,7 @@ def test_reset_pip_used(venv_dirpath):
 
     assert mocked_reset.call_count == 5
 
+
 #
 # Quarantine
 #
@@ -683,17 +685,87 @@ def test_quarantine_success(venv):
     args, kwargs = mocked_rename.call_args
     assert args[0] == venv.path
 
+
 def test_quarantine_os_failure(venv):
     """Check that when a venv quarantine fails for OS reasons we carry on"""
-    with mock.patch.object(os, "rename", side_effect=OSError()) as mocked_rename:
+    with mock.patch.object(os, "rename", side_effect=OSError()):
         venv.quarantine_venv()
 
+
 def test_quarantine_other_failure(venv):
-    """Check that when a venv quarantine fails for other reasons we let the exception raise"""
-    class Error(Exception): pass
-    with mock.patch.object(os, "rename", side_effect=Error) as mocked_rename:
+    """Check that when a venv quarantine fails for other reasons we
+    let the exception raise"""
+
+    class Error(Exception):
+        pass
+
+    with mock.patch.object(os, "rename", side_effect=Error):
         try:
             venv.quarantine_venv()
         except Exception as exc:
             assert isinstance(exc, Error)
 
+
+#
+# Recreate on version change
+#
+def test_recreate_on_version_change(venv):
+    """Test that recreate is called when there is a mu version change"""
+    mu_version = uuid.uuid1().hex
+    settings = mu.settings.VirtualEnvironmentSettings()
+    settings["mu_version"] = mu_version
+    with mock.patch.object(venv, "settings", settings), mock.patch.object(
+        venv, "recreate"
+    ) as mocked_recreate, mock.patch.object(venv, "ensure"):
+        venv.ensure_and_create()
+
+    assert mocked_recreate.called
+
+
+def test_no_recreate_on_same_version(venv):
+    """Test that recreate is not called when there is no mu version change"""
+    mu_version = mu.__version__
+    settings = mu.settings.VirtualEnvironmentSettings()
+    settings["mu_version"] = mu_version
+    with mock.patch.object(venv, "settings", settings), mock.patch.object(
+        venv, "recreate"
+    ) as mocked_recreate, mock.patch.object(venv, "ensure"):
+        venv.ensure_and_create()
+
+    assert not mocked_recreate.called
+
+
+def test_recreate_steps(venv):
+    """Test that, if a recreate is invoked, it carries out the expected steps:
+
+    * Track installed user packages
+    * Quarantine existing venv
+    * Relocate to new paths
+    * Create a new path
+    * Reinstall user packages
+    """
+    user_packages = [uuid.uuid1().hex, uuid.uuid1().hex]
+    mu_version = uuid.uuid1().hex
+    settings = mu.settings.VirtualEnvironmentSettings()
+    settings["mu_version"] = mu_version
+
+    with mock.patch.object(venv, "settings", settings), mock.patch.object(
+        venv, "quarantine_venv"
+    ) as mocked_quarantine_venv, mock.patch.object(
+        venv, "installed_packages", return_value=(None, user_packages)
+    ) as mocked_installed_packages, mock.patch.object(
+        venv, "relocate"
+    ) as mocked_relocate, mock.patch.object(
+        venv, "create"
+    ) as mocked_create, mock.patch.object(
+        venv, "install_user_packages"
+    ) as mocked_install_user_packages, mock.patch.object(
+        venv, "ensure"
+    ):
+        venv.ensure_and_create()
+
+    assert mocked_installed_packages.called
+    assert mocked_quarantine_venv.called
+    assert mocked_relocate.called
+    assert mocked_create.called
+    mocked_install_user_packages.assert_called_with(user_packages)
