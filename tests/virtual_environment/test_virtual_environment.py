@@ -670,3 +670,30 @@ def test_reset_pip_used(venv_dirpath):
             venv.installed_packages()
 
     assert mocked_reset.call_count == 5
+
+#
+# Quarantine
+#
+def test_quarantine_success(venv):
+    """Check that when a venv is quarantined, an attempt is made to rename it"""
+    with mock.patch.object(os, "rename") as mocked_rename:
+        venv.quarantine_venv()
+
+    assert mocked_rename.called
+    args, kwargs = mocked_rename.call_args
+    assert args[0] == venv.path
+
+def test_quarantine_os_failure(venv):
+    """Check that when a venv quarantine fails for OS reasons we carry on"""
+    with mock.patch.object(os, "rename", side_effect=OSError()) as mocked_rename:
+        venv.quarantine_venv()
+
+def test_quarantine_other_failure(venv):
+    """Check that when a venv quarantine fails for other reasons we let the exception raise"""
+    class Error(Exception): pass
+    with mock.patch.object(os, "rename", side_effect=Error) as mocked_rename:
+        try:
+            venv.quarantine_venv()
+        except Exception as exc:
+            assert isinstance(exc, Error)
+
