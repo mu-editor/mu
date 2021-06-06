@@ -5,7 +5,9 @@ import functools
 import glob
 import logging
 import subprocess
+import tempfile
 import time
+import zipfile
 
 from PyQt5.QtCore import (
     QObject,
@@ -18,6 +20,7 @@ from PyQt5.QtCore import (
 from . import wheels
 from . import settings
 from . import config
+from . import __version__ as mu_version
 
 wheels_dirpath = os.path.dirname(wheels.__file__)
 
@@ -441,6 +444,7 @@ class VirtualEnvironment(object):
         the Python and Pip binaries, but doesn't access the file system. That's
         done by code in or called from `create`
         """
+        logger.debug("Relocating to %s", dirpath)
         self.path = str(dirpath)
         self.name = os.path.basename(self.path)
         self._bin_directory = os.path.join(
@@ -505,8 +509,8 @@ class VirtualEnvironment(object):
 
         return False
 
-    def quarantine_failed_venv(self):
-        error_dirpath = self.path + ".FAILED"
+    def quarantine_venv(self, reason="FAILED"):
+        error_dirpath = self.path + "." + reason
         try:
             os.rename(self.path, error_dirpath)
         except OSError:
@@ -515,6 +519,38 @@ class VirtualEnvironment(object):
             )
         else:
             logger.info("Quarantined %s as %s", self.path, error_dirpath)
+
+    def recreate(self):
+        """Recreate this virtual environment with updated baseline packages and the
+        same user packages
+
+        The intended use is when the Mu version changes as this can bring with it
+        additional and/or updated packages. The simplest thing to do is to switch
+        to a new venv and then pull in the packages the user had additionally installed
+        """
+        #
+        # Keep track of the user packages installed into the current venv
+        #
+        _, user_packages = self.installed_packages()
+
+        #
+        # Now, quarantine the current venv with
+        # a marker to say it's been superseded
+        #
+        self.quarantine_venv(reason="SUPERSEDED")
+
+        #
+        # Create a new venv which will then become the current one.
+        # Install the (possibly updated) baseline packages
+        #
+        self.relocate(self._generate_dirpath())
+        self.create()
+
+        #
+        # Now reinstall the original user packages
+        #
+        logger.debug("About to reinstall user packages: %s", user_packages)
+        self.install_user_packages(user_packages)
 
     def ensure_and_create(self, emitter=None):
         """Check whether we have a valid virtual environment in place and, if not,
@@ -539,15 +575,53 @@ class VirtualEnvironment(object):
         while True:
             logger.debug("Checking virtual environment; attempt #%d.", n)
             try:
+                #
+                # try_to_create will be True if this is a brand new install
+                # or if we've failed to ensure at least once
+                #
                 if try_to_create:
                     self.create()
+                    try_to_create = False
+
+                #
+                # Otherwise check whether the venv settings match the version of Mu
+                # If not, recreate the venv with updated baseline packages and
+                # the existing user packages
+                #
+                else:
+                    venv_mu_version = self.settings.get(
+                        "mu_version", "-no-version-"
+                    )
+                    if venv_mu_version != mu_version:
+                        logger.warning(
+                            "Venv created by Mu version %s; Current Mu is version %s",
+                            venv_mu_version,
+                            mu_version,
+                        )
+                        self.recreate()
+
+                #
+                # In any situation (initial creation, recreation after Mu update,
+                # regular run) ensure that the venv is still valid
+                #
                 self.ensure()
                 logger.info("Valid virtual environment found at %s", self.path)
+
+                #
+                # If we reach this point, ensure hasn't raised an exception and
+                # we're good to save settings and move on
+                #
                 self.settings.save()
                 break
 
-            except VirtualEnvironmentError:
-                self.quarantine_failed_venv()
+            except VirtualEnvironmentError as exc:
+                #
+                # If any of the ensure/create steps cause a VirtualEnvironmentError
+                # retry up to a maximum number in case we've just been unlucky
+                # with network, file contention etc.
+                #
+                logger.error(exc.message)
+                self.quarantine_venv()
                 if n < n_tries:
                     self.relocate(self._generate_dirpath())
                     try_to_create = True
@@ -565,6 +639,10 @@ class VirtualEnvironment(object):
     def ensure(self):
         """
         Ensure that virtual environment exists and is in a good state.
+
+        If any of these fails, they should raise a (subclass of)
+        VirtualEnvironmentError which will bubble up to `ensure_and_create` and be
+        caught and acted on appropriately
         """
         self.ensure_path()
         self.ensure_interpreter()
@@ -671,10 +749,10 @@ class VirtualEnvironment(object):
         before re-raising the error.
         """
         self.create_venv()
-        self.upgrade_pip()
         self.install_baseline_packages()
         self.register_baseline_packages()
         self.install_jupyter_kernel()
+        self.settings["mu_version"] = mu_version
 
     def create_venv(self):
         """
