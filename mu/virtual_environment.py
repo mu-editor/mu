@@ -157,7 +157,7 @@ class Process(QObject):
         if not finished:
             logger.error(compact(output))
             raise VirtualEnvironmentError(
-                "Process did not terminate normally:\n" + output
+                "Process did not terminate normally:\n" + compact(output)
             )
 
         if exit_code != 0:
@@ -166,8 +166,8 @@ class Process(QObject):
             #
             logger.error(compact(output))
             raise VirtualEnvironmentError(
-                ("Process finished but with error code %d:\n" % exit_code)
-                + output
+                "Process finished but with error code %d:\n%s"
+                % (exit_code, compact(output))
             )
 
         return output
@@ -626,7 +626,8 @@ class VirtualEnvironment(object):
         )
         if not ok:
             raise VirtualEnvironmentEnsureError(
-                "Failed to run venv interpreter %s\n%s" % (self.interpreter, output)
+                "Failed to run venv interpreter %s\n%s"
+                % (self.interpreter, compact(output))
             )
 
         venv_version = output.strip()
@@ -649,7 +650,7 @@ class VirtualEnvironment(object):
             )
             if not ok:
                 raise VirtualEnvironmentEnsureError(
-                    "Failed to import: %s\n%s" % (module, output)
+                    "Failed to import: %s\n%s" % (module, compact(output))
                 )
 
     def ensure_pip(self):
@@ -702,7 +703,7 @@ class VirtualEnvironment(object):
         else:
             raise VirtualEnvironmentCreateError(
                 "Unable to create a virtual environment using %s at %s\n%s"
-                % (sys.executable, self.path, output)
+                % (sys.executable, self.path, compact(output))
             )
 
     def upgrade_pip(self):
@@ -717,7 +718,9 @@ class VirtualEnvironment(object):
         if ok:
             logger.info("Upgraded pip")
         else:
-            raise VirtualEnvironmentCreateError("Unable to upgrade pip\n%s" % output)
+            raise VirtualEnvironmentCreateError(
+                "Unable to upgrade pip\n%s" % compact(output)
+            )
 
     def install_jupyter_kernel(self):
         """
@@ -742,7 +745,9 @@ class VirtualEnvironment(object):
         if ok:
             logger.info("Installed Jupyter Kernel: %s", kernel_name)
         else:
-            raise VirtualEnvironmentCreateError("Unable to install kernel\n%s" % output)
+            raise VirtualEnvironmentCreateError(
+                "Unable to install kernel\n%s" % compact(output)
+            )
 
     def install_baseline_packages(self):
         """
