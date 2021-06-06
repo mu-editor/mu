@@ -445,6 +445,33 @@ def test_venv_ensure_and_create_splash_handler(venv):
 
 
 #
+# Overall Ensure
+#
+def test_ensure(venv):
+    """Check that the ensure method calls all the necessary ensure components
+
+    This is necessarily a bit of an artificial test, but does at least give us
+    test coverage
+    """
+    with mock.patch.object(VE, "ensure_path") as m1, mock.patch.object(
+        VE, "ensure_interpreter"
+    ) as m2, mock.patch.object(
+        VE, "ensure_interpreter_version"
+    ) as m3, mock.patch.object(
+        VE, "ensure_pip"
+    ) as m4, mock.patch.object(
+        VE, "ensure_key_modules"
+    ) as m5:
+        venv.ensure()
+
+    m1.assert_called_with()
+    m2.assert_called_with()
+    m3.assert_called_with()
+    m4.assert_called_with()
+    m5.assert_called_with()
+
+
+#
 # Ensure Path
 #
 def test_venv_folder_already_exists(venv):
