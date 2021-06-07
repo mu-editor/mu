@@ -3,6 +3,7 @@
 Tests for the QProcess-based Process class
 """
 import sys
+import platform
 from unittest import mock
 import uuid
 
@@ -11,6 +12,10 @@ import pytest
 from PyQt5.QtCore import QTimer, QProcess
 
 from mu import virtual_environment
+
+is_arm = platform.machine().startswith("arm") or platform.machine().startswith(
+    "aarch"
+)
 
 
 def test_creation_environment():
@@ -43,6 +48,10 @@ def test_run_blocking():
     assert output == expected_output
 
 
+@pytest.mark.skipif(
+    is_arm,
+    reason="Unreliable on ARM probably because of slowness of test container",
+)
 def test_run_blocking_timeout():
     """Ensure that a process is run synchronously and times out"""
     p = virtual_environment.Process()
@@ -61,9 +70,9 @@ def test_run_blocking_timeout():
                 + expected_stdout
                 + "'); sys.stderr.write('"
                 + expected_stderr
-                + "'); time.sleep(10.0)",
+                + "'); time.sleep(1.0)",
             ],
-            wait_for_s=5.0,
+            wait_for_s=0.5,
         ).strip()
     except virtual_environment.VirtualEnvironmentError as exc:
         assert expected_stdout in exc.message
