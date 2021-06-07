@@ -60,7 +60,17 @@ def venv_dirpath(tmp_path, venv_name):
 
 
 @pytest.fixture
-def venv(venv_dirpath):
+def venv_settings():
+    """We've introduced a check between the installed and current versions
+    of mu. To ensure this doesn't trip every time we set up a faux settings
+    which always matches the current version"""
+    settings = mu.settings.VirtualEnvironmentSettings()
+    settings["mu_version"] = mu.__version__
+    yield settings
+
+
+@pytest.fixture
+def venv(venv_dirpath, venv_settings):
     """Generate a temporary venv"""
     logger = logging.getLogger(mu.virtual_environment.__name__)
     # Clean up the logging from an unknown previous state.
@@ -69,23 +79,15 @@ def venv(venv_dirpath):
         if isinstance(handler, mu.virtual_environment.SplashLogHandler):
             logger.removeHandler(handler)
 
-    yield mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+    venv.settings = venv_settings
+    yield venv
 
     # Now clean up the logging after the test.
     while logger.hasHandlers() and logger.handlers:
         handler = logger.handlers[0]
         if isinstance(handler, mu.virtual_environment.SplashLogHandler):
             logger.removeHandler(handler)
-
-
-@pytest.fixture
-def venv_settings():
-    """We've introduced a check between the installed and current versions
-    of mu. To ensure this doesn't trip every time we set up a faux settings
-    which always matches the current version"""
-    settings = mu.settings.VirtualEnvironmentSettings()
-    settings["mu_version"] = mu.__version__
-    yield settings
 
 
 @pytest.fixture
@@ -483,9 +485,9 @@ def test_venv_folder_created(venv):
     assert mock_create.called
 
 
-def test_venv_second_try(venv, venv_settings):
+def test_venv_second_try(venv):
     """If the creation of a venv fails to produce a valid venv, try again"""
-    with mock.patch.object(venv, "settings", venv_settings), mock.patch.object(
+    with mock.patch.object(
         VE, "create"
     ) as mock_create, mock.patch.object(
         VE, "ensure", _ensure_venv([True, VEError("Failed")])
@@ -531,12 +533,12 @@ def test_venv_ensure_and_create_splash_handler(venv):
 #
 # Ensure Path
 #
-def test_venv_folder_already_exists(venv, venv_settings):
+def test_venv_folder_already_exists(venv):
     """When all ensure tests pass, we have an existing venv so don't create it"""
     open(os.path.join(venv.path, "pyvenv.cfg"), "w").close()
     with mock.patch.object(VE, "ensure") as mock_ensure, mock.patch.object(
         VE, "create"
-    ) as mock_create, mock.patch.object(venv, "settings", venv_settings):
+    ) as mock_create:
         venv.ensure_and_create()
 
     assert not mock_create.called
