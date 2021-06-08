@@ -77,9 +77,7 @@ class AnimatedSplash(QSplashScreen):
         self.animation = animation
         self.animation.frameChanged.connect(self.set_frame)
         # Always on top.
-        super().__init__(
-            self.animation.currentPixmap(), Qt.WindowStaysOnTopHint
-        )
+        super().__init__(self.animation.currentPixmap(), Qt.WindowStaysOnTopHint)
         # Disable clicks.
         self.setEnabled(False)
         self.animation.start()
@@ -208,8 +206,7 @@ def setup_logging():
 
     # set logging format
     log_fmt = (
-        "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) "
-        "%(levelname)s: %(message)s"
+        "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) " "%(levelname)s: %(message)s"
     )
     formatter = logging.Formatter(log_fmt)
 
