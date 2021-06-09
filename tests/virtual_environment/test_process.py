@@ -47,6 +47,7 @@ def test_run_blocking():
     ).strip()
     assert output == expected_output
 
+
 def test_run_blocking_invalid_utf8():
     """Ensure that if the output of a function is not valid UTF-8 we carry on"""
     valid_utf8 = "£".encode("utf-8")
@@ -58,6 +59,7 @@ def test_run_blocking_invalid_utf8():
         sys.executable, ["-c", "import sys; print(b')"]
     ).strip()
     assert output == expected_output
+
 
 @pytest.mark.skipif(
     is_arm,

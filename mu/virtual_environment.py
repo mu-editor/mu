@@ -411,6 +411,7 @@ class VirtualEnvironment(object):
 
         Return True if the process succeeded, False otherwise
         """
+        logger.info("Running %s with kwargs %s", args, kwargs)
         process = subprocess.run(
             list(args),
             stdout=subprocess.PIPE,
