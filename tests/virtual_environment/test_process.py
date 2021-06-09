@@ -48,17 +48,17 @@ def test_run_blocking():
     assert output == expected_output
 
 
-def test_run_blocking_invalid_utf8():
-    """Ensure that if the output of a function is not valid UTF-8 we carry on"""
-    valid_utf8 = "£".encode("utf-8")
-    corrupted_utf8 = valid_utf8[0] + "\x00" + valid_utf8[-1]
-    expected_output = "ABC\ufffd\x00\ufffdDEF"
-    p = virtual_environment.Process()
-    expected_output = sys.executable
-    output = p.run_blocking(
-        sys.executable, ["-c", "import sys; print(b')"]
-    ).strip()
-    assert output == expected_output
+# ~ def test_run_blocking_invalid_utf8():
+# ~ """Ensure that if the output of a function is not valid UTF-8 we carry on"""
+# ~ valid_utf8 = "£".encode("utf-8")
+# ~ corrupted_utf8 = valid_utf8[0] + "\x00" + valid_utf8[-1]
+# ~ expected_output = "ABC\ufffd\x00\ufffdDEF"
+# ~ p = virtual_environment.Process()
+# ~ expected_output = sys.executable
+# ~ output = p.run_blocking(
+# ~ sys.executable, ["-c", "import sys; print(b')"]
+# ~ ).strip()
+# ~ assert output == expected_output
 
 
 @pytest.mark.skipif(
