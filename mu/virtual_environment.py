@@ -204,7 +204,7 @@ class Pip(object):
         self.process = Process()
 
     def run(
-        self, command, *args, wait_for_s=30.0, slots=Process.Slots(), **kwargs
+        self, command, *args, wait_for_s=120.0, slots=Process.Slots(), **kwargs
     ):
         """
         Run a command with args, treating kwargs as Posix switches.
