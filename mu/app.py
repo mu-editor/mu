@@ -264,6 +264,7 @@ def run():
     setup_logging()
     logging.info("\n\n-----------------\n\nStarting Mu {}".format(__version__))
     logging.info(platform.uname())
+    logging.info("Platform: {}".format(platform.platform()))
     logging.info("Python path: {}".format(sys.path))
     logging.info("Language code: {}".format(i18n.language_code))
 

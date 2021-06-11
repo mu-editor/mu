@@ -243,22 +243,23 @@ def test_base_packages_installed(patched, venv, test_wheels):
     from wheels
     """
     #
+    # Check that we're calling `pip install` with all the
+    # wheels in the wheelhouse
+    #
+    expected_args = glob.glob(
+        os.path.join(mu.virtual_environment.wheels_dirpath, "*.whl")
+    )
+    #
     # Make sure the juypter kernel install doesn't interfere
     #
     with mock.patch.object(VE, "install_jupyter_kernel"):
         with mock.patch.object(VE, "register_baseline_packages"):
             with mock.patch.object(PIP, "install") as mock_pip_install:
-                #
-                # Check that we're calling `pip install` with all the
-                # wheels in the wheelhouse
-                #
-                expected_args = glob.glob(
-                    os.path.join(
-                        mu.virtual_environment.wheels_dirpath, "*.whl"
-                    )
-                )
                 venv.create()
-                mock_pip_install.assert_called_once_with(expected_args)
+    for mock_call_args in mock_pip_install.call_args_list:
+        assert len(mock_call_args[0]) == 1
+        assert mock_call_args[0][0] in expected_args
+        assert mock_call_args[1] == {"deps": False, "index": False}
 
 
 def test_jupyter_kernel_installed(patched, venv):
