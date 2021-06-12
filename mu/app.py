@@ -175,7 +175,7 @@ def excepthook(*exc_args):
         log_file = base64.standard_b64encode(LOG_FILE.encode("utf-8"))
         error = base64.standard_b64encode(
             "".join(traceback.format_exception(*exc_args)).encode("utf-8")
-        )
+        )[-1800:]
         p = platform.uname()
         params = {
             "v": __version__,  # version

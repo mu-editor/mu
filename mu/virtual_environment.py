@@ -101,11 +101,15 @@ class Process(QObject):
         self.process.setProcessChannelMode(QProcess.MergedChannels)
 
     def run_blocking(self, command, args, wait_for_s=30.0, **envvars):
+        logger.info(
+            "About to run blocking %s with args %s and envvars %s",
+            command,
+            args,
+            envvars,
+        )
         self._set_up_run(**envvars)
         self.process.start(command, args)
-        self.wait(wait_for_s=wait_for_s)
-        output = self.data()
-        return output
+        return self.wait(wait_for_s=wait_for_s)
 
     def run(self, command, args, **envvars):
         logger.info(
@@ -123,18 +127,57 @@ class Process(QObject):
 
     def wait(self, wait_for_s=30.0):
         finished = self.process.waitForFinished(1000 * wait_for_s)
+        exit_status = self.process.exitStatus()
+        exit_code = self.process.exitCode()
+        output = self.data()
         #
-        # If finished is False, it could be be because of an error
-        # or because we've already finished before starting to wait!
+        # if waitForFinished completes, either the process has successfully finished
+        # or it crashed, was terminated or timed out. If it does finish successfully
+        # we might still have an error code. In each case we might still have data
+        # from stdout/stderr. Unfortunately there's no way to determine that the
+        # process was timed out, as opposed to crashing in some other way
         #
-        if (
-            not finished
-            and self.process.exitStatus() == self.process.CrashExit
-        ):
-            raise VirtualEnvironmentError("Some error occurred")
+        # The three elements in play are:
+        #
+        # finished (yes/no)
+        # exitStatus (normal (0) / crashed (1)) -- we don't currently distinguish
+        # exitCode (whatever the program returns; conventionally 0 => ok)
+        #
+        logger.debug(
+            "Finished: %s; exitStatus %s; exitCode %s",
+            finished,
+            exit_status,
+            exit_code,
+        )
+
+        #
+        # Exceptions raised here will be caught by the crash-handler which will try to
+        # generate a URI out of it. There's an upper limit on URI size of ~2000
+        #
+        if not finished:
+            logger.error(compact(output))
+            raise VirtualEnvironmentError(
+                "Process did not terminate normally:\n" + compact(output)
+            )
+
+        if exit_code != 0:
+            #
+            # We finished normally but we might still have an error-code on finish
+            #
+            logger.error(compact(output))
+            raise VirtualEnvironmentError(
+                "Process finished but with error code %d:\n%s"
+                % (exit_code, compact(output))
+            )
+
+        return output
 
     def data(self):
-        return self.process.readAll().data().decode("utf-8")
+        return (
+            self.process.readAll()
+            .data()
+            .decode(sys.stdout.encoding, errors="replace")
+        )
 
     def _started(self):
         self.started.emit()
@@ -370,15 +413,24 @@ class VirtualEnvironment(object):
         process = subprocess.run(
             list(args),
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.PIPE,
             **kwargs
         )
+        stdout_output = process.stdout.decode(
+            sys.stdout.encoding, errors="replace"
+        )
+        stderr_output = process.stderr.decode(
+            sys.stderr.encoding, errors="replace"
+        )
+        output = stdout_output
+        if stderr_output:
+            output += "\n\nSTDERR: " + stderr_output
         logger.debug(
             "Process returned %d; output: %s",
             process.returncode,
-            compact(process.stdout.decode("utf-8")),
+            compact(output),
         )
-        return process.returncode == 0, process.stdout.decode("utf-8")
+        return process.returncode == 0, output
 
     def reset_pip(self):
         self.pip = Pip(self.pip_executable)
@@ -574,7 +626,8 @@ class VirtualEnvironment(object):
         )
         if not ok:
             raise VirtualEnvironmentEnsureError(
-                "Failed to run venv interpreter %s" % self.interpreter
+                "Failed to run venv interpreter %s\n%s"
+                % (self.interpreter, compact(output))
             )
 
         venv_version = output.strip()
@@ -597,7 +650,7 @@ class VirtualEnvironment(object):
             )
             if not ok:
                 raise VirtualEnvironmentEnsureError(
-                    "Failed to import: %s" % module
+                    "Failed to import: %s\n%s" % (module, compact(output))
                 )
 
     def ensure_pip(self):
@@ -649,8 +702,8 @@ class VirtualEnvironment(object):
             )
         else:
             raise VirtualEnvironmentCreateError(
-                "Unable to create a virtual environment using %s at %s"
-                % (sys.executable, self.path)
+                "Unable to create a virtual environment using %s at %s\n%s"
+                % (sys.executable, self.path, compact(output))
             )
 
     def upgrade_pip(self):
@@ -665,7 +718,9 @@ class VirtualEnvironment(object):
         if ok:
             logger.info("Upgraded pip")
         else:
-            raise VirtualEnvironmentCreateError("Unable to upgrade pip")
+            raise VirtualEnvironmentCreateError(
+                "Unable to upgrade pip\n%s" % compact(output)
+            )
 
     def install_jupyter_kernel(self):
         """
@@ -675,7 +730,6 @@ class VirtualEnvironment(object):
         kernel_name = self.name.replace(" ", "-")
         display_name = '"Python/Mu ({})"'.format(kernel_name)
         logger.info("Installing Jupyter Kernel: %s", kernel_name)
-        ok, output = self.run_subprocess(self.interpreter, "-m", "pip", "list")
         ok, output = self.run_subprocess(
             sys.executable,
             "-m",
@@ -690,7 +744,9 @@ class VirtualEnvironment(object):
         if ok:
             logger.info("Installed Jupyter Kernel: %s", kernel_name)
         else:
-            raise VirtualEnvironmentCreateError("Unable to install kernel")
+            raise VirtualEnvironmentCreateError(
+                "Unable to install kernel\n%s" % compact(output)
+            )
 
     def install_baseline_packages(self):
         """
