@@ -77,7 +77,9 @@ class AnimatedSplash(QSplashScreen):
         self.animation = animation
         self.animation.frameChanged.connect(self.set_frame)
         # Always on top.
-        super().__init__(self.animation.currentPixmap(), Qt.WindowStaysOnTopHint)
+        super().__init__(
+            self.animation.currentPixmap(), Qt.WindowStaysOnTopHint
+        )
         # Disable clicks.
         self.setEnabled(False)
         self.animation.start()
@@ -168,8 +170,8 @@ def excepthook(*exc_args):
     """
     Log exception and exit cleanly.
     """
+    logging.error("Unrecoverable error", exc_info=(exc_args))
     if exc_args[0] != KeyboardInterrupt:
-        logging.error("Unrecoverable error", exc_info=(exc_args))
         try:
             log_file = base64.standard_b64encode(LOG_FILE.encode("utf-8"))
             error = base64.standard_b64encode(
@@ -180,9 +182,9 @@ def excepthook(*exc_args):
                 "v": __version__,  # version
                 "l": str(i18n.language_code),  # locale
                 "p": base64.standard_b64encode(
-                    " ".join([p.system, p.release, p.version, p.machine]).encode(
-                        "utf-8"
-                    )
+                    " ".join(
+                        [p.system, p.release, p.version, p.machine]
+                    ).encode("utf-8")
                 ),  # platform
                 "f": log_file,  # location of log file
                 "e": error,  # error message
@@ -206,7 +208,8 @@ def setup_logging():
 
     # set logging format
     log_fmt = (
-        "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) " "%(levelname)s: %(message)s"
+        "%(asctime)s - %(name)s:%(lineno)d(%(funcName)s) "
+        "%(levelname)s: %(message)s"
     )
     formatter = logging.Formatter(log_fmt)
 
