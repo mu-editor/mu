@@ -47,16 +47,53 @@ def test_run_blocking_timeout():
     """Ensure that a process is run synchronously and times out"""
     p = virtual_environment.Process()
     #
-    # If the process times out, it will return an empty string instead
-    # of "None" which would be actual output from print(time.sleep(...))
+    # If the process times out, it will raise a VirtualEnvironmentError
+    # whose message arg will contain any stdout
     #
-    expected_output = ""
-    output = p.run_blocking(
-        sys.executable,
-        ["-c", "import time; print(time.sleep(0.2))"],
-        wait_for_s=0.1,
-    ).strip()
-    assert output == expected_output
+    expected_stdout = uuid.uuid1().hex
+    expected_stderr = uuid.uuid1().hex
+    try:
+        p.run_blocking(
+            sys.executable,
+            [
+                "-c",
+                "import sys; sys.stdout.write('"
+                + expected_stdout
+                + "'); sys.stderr.write('"
+                + expected_stderr
+                + "'); time.sleep(2.0)",
+            ],
+            wait_for_s=1.0,
+        ).strip()
+    except virtual_environment.VirtualEnvironmentError as exc:
+        assert expected_stdout in exc.message
+        assert expected_stderr in exc.message
+
+
+def test_run_blocking_error():
+    """Ensure that a process raises a known exception on error"""
+    p = virtual_environment.Process()
+    #
+    # If the process errors out, it will raise a VirtualEnvironmentError
+    # whose message arg will contain any stdout and stderr
+    #
+    expected_stdout = uuid.uuid1().hex
+    expected_stderr = uuid.uuid1().hex
+    try:
+        p.run_blocking(
+            sys.executable,
+            [
+                "-c",
+                "import sys; sys.stdout.write('"
+                + expected_stdout
+                + "'); sys.stderr.write('"
+                + expected_stderr
+                + "'); 1/0",
+            ],
+        ).strip()
+    except virtual_environment.VirtualEnvironmentError as exc:
+        assert expected_stdout in exc.message
+        assert expected_stderr in exc.message
 
 
 def _QTimer_singleshot(delay, partial):

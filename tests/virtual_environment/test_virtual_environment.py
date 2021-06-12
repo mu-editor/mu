@@ -25,7 +25,7 @@ import uuid
 import logging
 from unittest import mock
 
-from PyQt5.QtCore import QTimer, QProcess
+# ~ from PyQt5.QtCore import QTimer, QProcess
 import pytest
 
 import mu.virtual_environment
@@ -138,6 +138,10 @@ def test_splash_log_handler():
     assert signal.emit.call_count == 2
 
 
+def test_virtual_environment_str_contains_path(venv):
+    assert venv.path in str(venv)
+
+
 def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     """Ensure that we're actually creating a working virtual environment
     on the disk with wheels installed
@@ -162,6 +166,17 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     # Check that we've created a virtual environment on disk
     #
     assert venv._directory_is_venv()
+
+    #
+    # Check that we can still detect a venv when there's no .cfg file
+    # (Then replace the .cfg for later use by the venv!)
+    #
+    cfg_filepath = os.path.join(venv.path, "pyvenv.cfg")
+    if os.path.isfile(cfg_filepath):
+        renamed_filepath = cfg_filepath + ".xyz"
+        os.rename(cfg_filepath, renamed_filepath)
+        assert venv._directory_is_venv()
+        os.rename(renamed_filepath, cfg_filepath)
 
     #
     # Check that we have an installed version of pip
@@ -196,7 +211,8 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
     #
     # Issue #1372 -- venv creation fails for paths with a space
     #
-    venv.ensure_interpreter_version()
+    with mock.patch.object(VE, "ensure_key_modules"):
+        venv.ensure()
 
 
 def test_create_virtual_environment_path(patched, venv_dirpath):
@@ -212,6 +228,21 @@ def test_create_virtual_environment_name_obj(patched, venv_dirpath):
     """Ensure a virtual environment object has a name."""
     venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
     assert venv.name == os.path.basename(venv_dirpath)
+
+
+def test_create_virtual_environment_failure(venv):
+    output = uuid.uuid1().hex
+    with mock.patch.object(
+        venv, "run_subprocess", return_value=(False, output)
+    ):
+        try:
+            venv.create()
+        except Exception as exc:
+            assert isinstance(
+                exc, mu.virtual_environment.VirtualEnvironmentCreateError
+            )
+            assert "nable to create" in exc.message
+            assert output in exc.message
 
 
 def test_download_wheels_if_not_present(venv, test_wheels):
@@ -236,6 +267,25 @@ def test_download_wheels_if_not_present(venv, test_wheels):
             pass
 
     assert mock_download.called
+
+
+def test_download_wheels_failure(venv, test_wheels):
+    """If the wheels download fails, ensure that we raise a VirtualEnvironmentError
+    with the same message"""
+    message = uuid.uuid1().hex
+    wheels_dirpath = test_wheels
+    for filepath in glob.glob(os.path.join(wheels_dirpath, "*.whl")):
+        os.unlink(filepath)
+    assert not glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+    with mock.patch.object(
+        mu.wheels,
+        "download",
+        side_effect=mu.wheels.WheelsDownloadError(message),
+    ):
+        try:
+            venv.install_baseline_packages()
+        except VEError as exc:
+            assert message in exc.message
 
 
 def test_base_packages_installed(patched, venv, test_wheels):
@@ -287,6 +337,42 @@ def test_jupyter_kernel_installed(patched, venv):
             )
             args, _ = run_subprocess.call_args
             assert expected_jupyter_args == args[: len(expected_jupyter_args)]
+
+
+def test_jupyter_kernel_failure(patched, venv):
+    """Ensure when the Jupyter kernel fails to install we raise an exception and
+    include the output"""
+    output = uuid.uuid1().hex
+    with mock.patch.object(
+        venv, "run_subprocess", return_value=(False, output)
+    ):
+        try:
+            venv.install_jupyter_kernel()
+        except VEError as exc:
+            assert "nable to install kernel" in exc.message
+            assert output in exc.message
+
+
+def test_upgrade_pip_failure(venv):
+    """Ensure that we raise an error with output when pip can't be upgraded"""
+    output = uuid.uuid1().hex
+    with mock.patch.object(
+        venv, "run_subprocess", return_value=(True, output)
+    ):
+        venv.upgrade_pip()
+
+
+def test_upgrade_pip_success(venv):
+    """Ensure that we raise an error with output when pip can't be upgraded"""
+    output = uuid.uuid1().hex
+    with mock.patch.object(
+        venv, "run_subprocess", return_value=(False, output)
+    ):
+        try:
+            venv.upgrade_pip()
+        except VEError as exc:
+            assert "nable to upgrade pip" in exc.message
+            assert output in exc.message
 
 
 def test_install_user_packages(patched, venv):
@@ -409,6 +495,26 @@ def test_venv_fails_after_three_tries(venv):
             venv.ensure_and_create()
 
 
+def test_venv_ensure_and_create_splash_handler(venv):
+    """Ensure the splash handler is set up when calling ensure_and_create"""
+    with mock.patch.object(VE, "create"), mock.patch.object(
+        VE, "ensure"
+    ), mock.patch.object(mu.virtual_environment, "logger") as mock_logger:
+        venv.ensure_and_create(object)
+
+    all_args = mock_logger.addHandler.call_args
+    assert all_args is not None, "logger.addHandler not called at all"
+    args, _ = all_args
+    (handler,) = args
+    assert isinstance(handler, mu.virtual_environment.SplashLogHandler)
+
+    all_args = mock_logger.removeHandler.call_args
+    assert all_args is not None, "logger.removeHandler not called at all"
+    args, _ = all_args
+    (handler,) = args
+    assert isinstance(handler, mu.virtual_environment.SplashLogHandler)
+
+
 #
 # Ensure Path
 #
@@ -456,26 +562,47 @@ def test_venv_folder_already_exists_not_directory(venv_dirpath):
 def test_ensure_interpreter(venv):
     """When venv exists but has no interpreter ensure we raise an exception"""
     assert not os.path.isfile(venv.interpreter)
-
     with pytest.raises(VEError, match="[Ii]nterpreter"):
         venv.ensure_interpreter()
 
 
+def test_ensure_interpreter_failed_to_run(venv):
+    """When venv interpreter can't be run raise an exception"""
+    with mock.patch.object(VE, "run_subprocess", return_value=(False, "x.y")):
+        with pytest.raises(VEError, match="Failed to run"):
+            venv.ensure_interpreter_version()
+
+
 def test_ensure_interpreter_version(venv):
     """When venv interpreter exists but for a different Py version raise an exception"""
-    mocked_process = mock.MagicMock()
-    mocked_process.stdout = b"x.y"
-    with mock.patch.object(subprocess, "run", return_value=mocked_process):
-        with pytest.raises(VEError, match="[Ii]nterpreter"):
+    with mock.patch.object(VE, "run_subprocess", return_value=(True, "x.y")):
+        with pytest.raises(VEError, match="[Ii]nterpreter at version"):
             venv.ensure_interpreter_version()
 
 
 #
 # Ensure Key Modules
 #
-@pytest.mark.skip("Not sure how to test this one yet")
-def test_ensure_key_modules(venv):
-    assert False
+def test_ensure_key_modules_failure(venv):
+    modules = [uuid.uuid1().hex, uuid.uuid1().hex, uuid.uuid1().hex]
+    output = uuid.uuid1().hex
+    with mock.patch.object(
+        mu.wheels, "mode_packages", modules
+    ), mock.patch.object(VE, "run_subprocess", return_value=(False, output)):
+        try:
+            venv.ensure_key_modules()
+        except VEError as exc:
+            assert "Failed to import" in exc.message
+            assert output in exc.message
+
+
+def test_ensure_key_modules_success(venv):
+    modules = [uuid.uuid1().hex, uuid.uuid1().hex, uuid.uuid1().hex]
+    output = uuid.uuid1().hex
+    with mock.patch.object(
+        mu.wheels, "mode_packages", modules
+    ), mock.patch.object(VE, "run_subprocess", return_value=(True, output)):
+        venv.ensure_key_modules()
 
 
 #
@@ -494,27 +621,33 @@ def _QTimer_singleshot(delay, partial):
 
 
 def test_run_python_blocking(venv):
-    """Ensure that Python is run synchronously with the args passed"""
-    command = venv.interpreter
-    args = ("-c", "import sys; print(sys.executable)")
-    with mock.patch.object(
-        QTimer, "singleShot", _QTimer_singleshot
-    ), mock.patch.object(QProcess, "start") as mocked_start:
-        venv.run_python(*args)
+    """Ensure that Python is run synchronously with the args passed
 
-    mocked_start.assert_called_with(command, args)
+    NB all we're doing here is checking that run_python hands off to
+    Process.run with the correct parameters
+    """
+    command = venv.interpreter
+    args = (uuid.uuid1().hex, uuid.uuid1().hex)
+    with mock.patch.object(
+        mu.virtual_environment.Process, "run_blocking"
+    ) as mocked_run:
+        venv.run_python(*args)
+    mocked_run.assert_called_with(command, args)
 
 
 def test_run_python_nonblocking(venv):
-    """Ensure that a QProcess is started with the relevant params"""
-    command = venv.interpreter
-    args = ("-c", "import sys; print(sys.executable)")
-    with mock.patch.object(
-        QTimer, "singleShot", _QTimer_singleshot
-    ), mock.patch.object(QProcess, "start") as mocked_start:
-        venv.run_python(*args, slots=venv.Slots(output=lambda x: x))
+    """Ensure that Python is started asynchronously with the relevant params
 
-    mocked_start.assert_called_with(command, args)
+    NB all we're doing here is checking that run_python hands off to
+    Process.run with the correct parameters
+    """
+    command = venv.interpreter
+    args = (uuid.uuid1().hex, uuid.uuid1().hex)
+    with mock.patch.object(
+        mu.virtual_environment.Process, "run"
+    ) as mocked_run:
+        venv.run_python(*args, slots=venv.Slots(output=lambda x: x))
+    mocked_run.assert_called_with(command, args)
 
 
 def test_reset_pip(venv, pipped):
