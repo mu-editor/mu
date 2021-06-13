@@ -25,9 +25,10 @@ import uuid
 import logging
 from unittest import mock
 
-# ~ from PyQt5.QtCore import QTimer, QProcess
 import pytest
 
+import mu
+import mu.settings
 import mu.virtual_environment
 import mu.wheels
 
@@ -59,7 +60,17 @@ def venv_dirpath(tmp_path, venv_name):
 
 
 @pytest.fixture
-def venv(venv_dirpath):
+def venv_settings():
+    """We've introduced a check between the installed and current versions
+    of mu. To ensure this doesn't trip every time we set up a faux settings
+    which always matches the current version"""
+    settings = mu.settings.VirtualEnvironmentSettings()
+    settings["mu_version"] = mu.__version__
+    yield settings
+
+
+@pytest.fixture
+def venv(venv_dirpath, venv_settings):
     """Generate a temporary venv"""
     logger = logging.getLogger(mu.virtual_environment.__name__)
     # Clean up the logging from an unknown previous state.
@@ -68,7 +79,9 @@ def venv(venv_dirpath):
         if isinstance(handler, mu.virtual_environment.SplashLogHandler):
             logger.removeHandler(handler)
 
-    yield mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+    venv = mu.virtual_environment.VirtualEnvironment(venv_dirpath)
+    venv.settings = venv_settings
+    yield venv
 
     # Now clean up the logging after the test.
     while logger.hasHandlers() and logger.handlers:
@@ -670,3 +683,119 @@ def test_reset_pip_used(venv_dirpath):
             venv.installed_packages()
 
     assert mocked_reset.call_count == 5
+
+
+#
+# Quarantine
+#
+def test_quarantine_success(venv):
+    """Check that when a venv is quarantined, an attempt is made to rename it"""
+    with mock.patch.object(os, "rename") as mocked_rename:
+        venv.quarantine_venv()
+
+    assert mocked_rename.called
+    args, kwargs = mocked_rename.call_args
+    assert args[0] == venv.path
+
+
+def test_quarantine_os_failure(venv):
+    """Check that when a venv quarantine fails for OS reasons we carry on"""
+    with mock.patch.object(os, "rename", side_effect=OSError()):
+        venv.quarantine_venv()
+
+
+def test_quarantine_other_failure(venv):
+    """Check that when a venv quarantine fails for other reasons we
+    let the exception raise"""
+
+    class Error(Exception):
+        pass
+
+    with mock.patch.object(os, "rename", side_effect=Error):
+        try:
+            venv.quarantine_venv()
+        except Exception as exc:
+            assert isinstance(exc, Error)
+
+
+#
+# Recreate on version change
+#
+def test_recreate_on_version_change(venv):
+    """Test that recreate is called when there is a mu version change"""
+    mu_version = uuid.uuid1().hex
+    settings = mu.settings.VirtualEnvironmentSettings()
+    settings["mu_version"] = mu_version
+    with mock.patch.object(venv, "settings", settings), mock.patch.object(
+        venv, "recreate"
+    ) as mocked_recreate, mock.patch.object(venv, "ensure"):
+        venv.ensure_and_create()
+
+    assert mocked_recreate.called
+
+
+def test_no_recreate_on_same_version(venv):
+    """Test that recreate is not called when there is no mu version change"""
+    mu_version = mu.__version__
+    settings = mu.settings.VirtualEnvironmentSettings()
+    settings["mu_version"] = mu_version
+    with mock.patch.object(venv, "settings", settings), mock.patch.object(
+        venv, "recreate"
+    ) as mocked_recreate, mock.patch.object(venv, "ensure"):
+        venv.ensure_and_create()
+
+    assert not mocked_recreate.called
+
+
+def test_recreate_steps(venv):
+    """Test that, if a recreate is invoked, it carries out the expected steps:
+
+    * Track installed user packages
+    * Quarantine existing venv
+    * Relocate to new paths
+    * Create a new path
+    * Reinstall user packages
+    """
+    user_packages = [uuid.uuid1().hex, uuid.uuid1().hex]
+    mu_version = uuid.uuid1().hex
+    settings = mu.settings.VirtualEnvironmentSettings()
+    settings["mu_version"] = mu_version
+
+    with mock.patch.object(venv, "settings", settings), mock.patch.object(
+        venv, "quarantine_venv"
+    ) as mocked_quarantine_venv, mock.patch.object(
+        venv, "installed_packages", return_value=(None, user_packages)
+    ) as mocked_installed_packages, mock.patch.object(
+        venv, "relocate"
+    ) as mocked_relocate, mock.patch.object(
+        venv, "create"
+    ) as mocked_create, mock.patch.object(
+        venv, "install_user_packages"
+    ) as mocked_install_user_packages, mock.patch.object(
+        venv, "ensure"
+    ):
+        venv.ensure_and_create()
+
+    assert mocked_installed_packages.called
+    assert mocked_quarantine_venv.called
+    assert mocked_relocate.called
+    assert mocked_create.called
+    mocked_install_user_packages.assert_called_with(user_packages)
+
+
+#
+# There are two places we return the outputs from subprocesses
+# decoded to utf-8 with errors replaced by the unicode "unknown" character:
+# The result of Process.wait (which can be invoked via .run_blocking); and
+# the result of VirtualEnvironment.run_subprocess
+#
+def test_subprocess_run_invalid_utf8(venv):
+    """Ensure that if the output of a run_subprocess call is not valid UTF-8 we
+    carry on as best we can"""
+    corrupted_utf8 = b"\xc2\x00\xa3"
+    expected_output = "\ufffd\x00\ufffd"
+    mocked_run_return = mock.Mock(stdout=corrupted_utf8, stderr=b"")
+    with mock.patch.object(subprocess, "run", return_value=mocked_run_return):
+        _, output = venv.run_subprocess("")
+
+    assert output == expected_output
