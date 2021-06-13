@@ -174,11 +174,8 @@ class Process(QObject):
         return output
 
     def data(self):
-        return (
-            self.process.readAll()
-            .data()
-            .decode(sys.stdout.encoding, errors="replace")
-        )
+        output = self.process.readAll().data()
+        return output.decode(sys.stdout.encoding, errors="replace")
 
     def _started(self):
         self.started.emit()

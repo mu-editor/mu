@@ -141,3 +141,21 @@ def test_wait_shows_failure():
         p.run(None, None)
         with pytest.raises(virtual_environment.VirtualEnvironmentError):
             p.wait()
+
+
+#
+# There are two places we return the outputs from subprocesses
+# decoded to utf-8 with errors replaced by the unicode "unknown" character:
+# The result of Process.wait (which can be invoked via .run_blocking); and
+# the result of VirtualEnvironment.run_subprocess
+#
+def test_run_blocking_invalid_utf8():
+    """Ensure that if the output of a QProcess run is not valid UTF-8 we
+    carry on as best we can"""
+    corrupted_utf8 = b"\xc2\x00\xa3"
+    expected_output = "\ufffd\x00\ufffd"
+    with mock.patch.object(QProcess, "readAll") as mocked_readAll:
+        mocked_readAll.return_value.data.return_value = corrupted_utf8
+        p = virtual_environment.Process()
+        output = p.run_blocking(sys.executable, ["-c", "print()"])
+    assert output == expected_output

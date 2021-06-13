@@ -781,3 +781,21 @@ def test_recreate_steps(venv):
     assert mocked_relocate.called
     assert mocked_create.called
     mocked_install_user_packages.assert_called_with(user_packages)
+
+
+#
+# There are two places we return the outputs from subprocesses
+# decoded to utf-8 with errors replaced by the unicode "unknown" character:
+# The result of Process.wait (which can be invoked via .run_blocking); and
+# the result of VirtualEnvironment.run_subprocess
+#
+def test_subprocess_run_invalid_utf8(venv):
+    """Ensure that if the output of a run_subprocess call is not valid UTF-8 we
+    carry on as best we can"""
+    corrupted_utf8 = b"\xc2\x00\xa3"
+    expected_output = "\ufffd\x00\ufffd"
+    mocked_run_return = mock.Mock(stdout=corrupted_utf8, stderr=b"")
+    with mock.patch.object(subprocess, "run", return_value=mocked_run_return):
+        _, output = venv.run_subprocess("")
+
+    assert output == expected_output
