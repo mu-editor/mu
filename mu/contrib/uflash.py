@@ -87,8 +87,9 @@ def strfunc(raw):
 
 def script_to_fs(script, microbit_version_id):
     """
-    Convert a Python script (in bytes format) into Intel Hex records within
-    the micro:bit MicroPython filesystem.
+    Convert a Python script (in bytes format) into Intel Hex records, which
+    location is configured within the micro:bit MicroPython filesystem and the
+    data is encoded in the filesystem format.
 
     For more info:
     https://github.com/bbcmicrobit/micropython/blob/v1.0.1/source/microbit/filesystem.c
@@ -116,8 +117,8 @@ def script_to_fs(script, microbit_version_id):
     chunk_size = 128  # Filesystem chunks configure in MP to 128 bytes
     chunk_data_size = 126  # 1st & last bytes are the prev/next chunk pointers
     fs_size = fs_end_address - fs_start_address
-    # Normally file data size depends on filename size and other files, but as
-    # uFlash only supports a single file with a know name we can calculate it
+    # Total file size depends on data and filename length, as uFlash only
+    # supports a single file with a known name (main.py) we can calculate it
     main_py_max_size = ((fs_size / chunk_size) * chunk_data_size) - 9
     if len(script) >= main_py_max_size:
         raise ValueError(
@@ -163,14 +164,58 @@ def script_to_fs(script, microbit_version_id):
 
     # For Python2 compatibility we need to explicitly convert to bytes
     data = b"".join([bytes(c) for c in chunks])
-    fs = bytes_to_ihex(fs_start_address, data, universal_data_record)
-    # Add this byte to include scratch page after fs
-    scratch = bytes_to_ihex(fs_end_address, b"\xfd", universal_data_record)
-    # If we are in the same Extended Linear Address range, remove record
+    fs_ihex = bytes_to_ihex(fs_start_address, data, universal_data_record)
+    # Add this byte after the fs flash area to configure the scratch page there
+    scratch_ihex = bytes_to_ihex(
+        fs_end_address, b"\xfd", universal_data_record
+    )
+    # Remove scratch Extended Linear Address record if we are in the same range
     ela_record_len = 16
-    if fs[:ela_record_len] == scratch[:ela_record_len]:
-        scratch = scratch[ela_record_len:]
-    return fs + "\n" + scratch + "\n"
+    if fs_ihex[:ela_record_len] == scratch_ihex[:ela_record_len]:
+        scratch_ihex = scratch_ihex[ela_record_len:]
+    return fs_ihex + "\n" + scratch_ihex + "\n"
+
+
+def pad_hex_string(hex_records_str, alignment=512):
+    """
+    Adds padding records to a string of Intel Hex records to align the total
+    size to the provided alignment value.
+    The Universal Hex format needs each section (a section contains the
+    micro:bit V1 or V2 data) to be aligned to a 512 byte boundary, as this is
+    the common USB block size (or a multiple of this value).
+    As a Universal/Intel Hex string only contains ASCII characters, the string
+    length must be multiple of 512, and padding records should be added to fit
+    this rule.
+    """
+    padding_needed = len(hex_records_str) % alignment
+    if padding_needed:
+        # As the padding record data is all "0xFF", the checksum is always 0xF4
+        max_data_chars = 32
+        max_padding_record = ":{:02x}00000C{}F4\n".format(
+            max_data_chars // 2, "F" * max_data_chars
+        )
+        min_padding_record = ":0000000CF4\n"
+        # As there is minimum record length we need to add it to the count
+        chars_needed = alignment - (
+            (len(hex_records_str) + len(min_padding_record)) % alignment
+        )
+        # Add as many full padding records as we can fit
+        while chars_needed >= len(max_padding_record):
+            hex_records_str += max_padding_record
+            chars_needed -= len(max_padding_record)
+        # Due to the string length of the smallest padding record we might
+        #
+        if chars_needed > max_data_chars:
+            chars_to_fit = chars_needed - (len(min_padding_record) * 2)
+            second_to_last_record = ":{:02x}00000C{}F4\n".format(
+                chars_to_fit // 2, "F" * chars_to_fit
+            )
+            hex_records_str += second_to_last_record
+            chars_needed -= len(second_to_last_record)
+        hex_records_str += ":{:02x}00000C{}F4\n".format(
+            chars_needed // 2, "F" * chars_needed
+        )
+    return hex_records_str
 
 
 def embed_fs_uhex(universal_hex_str, python_code=None):
@@ -216,6 +261,7 @@ def embed_fs_uhex(universal_hex_str, python_code=None):
         device_id = section[device_id_i : device_id_i + 4]
         # With the device ID we can encode the fs into hex records to inject
         fs_hex = script_to_fs(python_code, device_id)
+        fs_hex = pad_hex_string(fs_hex)
         # In all Sections the fs will be placed at the end of the hex, right
         # before the UICR, this is for compatibility with all DAPLink versions.
         # V1 memory layout in sequential order: MicroPython + fs + UICR
@@ -245,7 +291,7 @@ def bytes_to_ihex(addr, data, universal_data_record=False):
     Converts a byte array (of type bytes) into string of Intel Hex records from
     a given address.
 
-    In the Intel Hex format ach data record contains only the 2 LSB of the
+    In the Intel Hex format each data record contains only the 2 LSB of the
     address. To set the 2 MSB a Extended Linear Address record is needed first.
     As we don't know where in a Intel Hex file this will be injected, it
     creates a Extended Linear Address record at the top.
