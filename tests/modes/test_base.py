@@ -96,7 +96,7 @@ def test_base_mode_workspace_invalid_value():
         view = mock.MagicMock()
         bm = BaseMode(editor, view)
         assert bm.workspace_dir() == default_workspace
-        assert logger.warn.call_count == 1
+        assert logger.warning.call_count == 1
 
 
 def test_base_mode_workspace_invalid_json(tmp_path):
