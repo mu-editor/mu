@@ -38,8 +38,8 @@ install_requires = [
     #
     # adafruit-board-toolkit is used to find serial ports and help identify
     # CircuitPython boards in the CircuitPython mode.
-    "adafruit-board-toolkit>=1.0.1",
-    "pyserial>=3.5",
+    "adafruit-board-toolkit~=1.1",
+    "pyserial~=3.5",
     "nudatus>=0.0.3",
     # `flake8` is actually a testing/packaging dependency that, among other
     # packages, brings in `pycodestyle` and `pyflakes` which are runtime
@@ -53,7 +53,7 @@ install_requires = [
     #
     # Needed for creating the runtime virtual environment
     #
-    "virtualenv>=16.0.0",
+    "virtualenv>=16.7.6",
     #
     # Needed for packaging
     #
