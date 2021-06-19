@@ -224,7 +224,6 @@ def setup_logging():
     log = logging.getLogger()
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
-    sys.excepthook = excepthook
 
     # Only enable on-screen logging if the MU_LOG_TO_STDOUT env variable is set
     if "MU_LOG_TO_STDOUT" in os.environ:
@@ -232,6 +231,8 @@ def setup_logging():
         stdout_handler.setFormatter(formatter)
         stdout_handler.setLevel(logging.DEBUG)
         log.addHandler(stdout_handler)
+    else:
+        sys.excepthook = excepthook
 
 
 def setup_modes(editor, view):

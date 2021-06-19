@@ -5,7 +5,9 @@ import functools
 import glob
 import logging
 import subprocess
+import tempfile
 import time
+import zipfile
 
 from PyQt5.QtCore import (
     QObject,
@@ -228,7 +230,7 @@ class Pip(object):
             result = self.process.run_blocking(
                 self.executable, params, wait_for_s=wait_for_s
             )
-            logger.debug("Process output: %s", result.strip())
+            logger.debug("Process output: %s", compact(result.strip()))
             return result
         else:
             if slots.started:
@@ -545,8 +547,9 @@ class VirtualEnvironment(object):
         #
         # Now reinstall the original user packages
         #
-        logger.debug("About to reinstall user packages: %s", user_packages)
-        self.install_user_packages(user_packages)
+        if user_packages:
+            logger.debug("About to reinstall user packages: %s", user_packages)
+            self.install_user_packages(user_packages)
 
     def ensure_and_create(self, emitter=None):
         """Check whether we have a valid virtual environment in place and, if not,
@@ -822,6 +825,28 @@ class VirtualEnvironment(object):
                 "Unable to install kernel\n%s" % compact(output)
             )
 
+    def install_from_unpacked_wheels(self, dirpath):
+        #
+        # This command should install the baseline packages, picking up the
+        # precompiled wheels from the wheels path
+        #
+        # For dev purposes (where we might not have the wheels) warn where
+        # the wheels are not already present and download them
+        #
+        wheel_filepaths = glob.glob(os.path.join(dirpath, "*.whl"))
+        if not wheel_filepaths:
+            raise VirtualEnvironmentCreateError(
+                "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
+            )
+        self.reset_pip()
+        for wheel in wheel_filepaths:
+            logger.info(
+                "About to install from wheel: {}".format(
+                    os.path.basename(wheel)
+                )
+            )
+            self.pip.install(wheel, deps=False, index=False)
+
     def install_baseline_packages(self):
         """
         Install all packages needed for non-core activity.
@@ -836,40 +861,23 @@ class VirtualEnvironment(object):
         --upgrade is currently used with a thought to upgrade-releases of Mu.
         """
         logger.info("Installing baseline packages.")
-        logger.info(
-            "%s %s",
-            wheels_dirpath,
-            "exists" if os.path.isdir(wheels_dirpath) else "does not exist",
+        zipped_wheels_filepath = os.path.join(
+            wheels_dirpath, "%s.zip" % mu_version
         )
-        #
-        # This command should install the baseline packages, picking up the
-        # precompiled wheels from the wheels path
-        #
-        # For dev purposes (where we might not have the wheels) warn where
-        # the wheels are not already present and download them
-        #
-        wheel_filepaths = glob.glob(os.path.join(wheels_dirpath, "*.whl"))
-        if not wheel_filepaths:
-            logger.warning(
-                "No wheels found in %s; downloading...", wheels_dirpath
-            )
-            try:
-                wheels.download(interpreter=self.interpreter, logger=logger)
-            except wheels.WheelsDownloadError as exc:
-                raise VirtualEnvironmentCreateError(exc.message)
-            else:
-                wheel_filepaths = glob.glob(
-                    os.path.join(wheels_dirpath, "*.whl")
-                )
+        logger.info("Expecting zipped wheels at %s", zipped_wheels_filepath)
+        if not os.path.exists(zipped_wheels_filepath):
+            logger.warning("No zipped wheels found; downloading...")
+            wheels.download(zipped_wheels_filepath)
 
-        if not wheel_filepaths:
-            raise VirtualEnvironmentCreateError(
-                "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
-            )
-        self.reset_pip()
-        for wheel in wheel_filepaths:
-            logger.info("About to install from wheels: {}".format(wheel))
-            self.pip.install(wheel, deps=False, index=False)
+        with tempfile.TemporaryDirectory() as unpacked_wheels_dirpath:
+            #
+            # The wheel files are shipped in Mu-version-specific zip files to avoid
+            # cross-contamination when a Mu version change happens and we still have
+            # wheels from the previous installation.
+            #
+            with zipfile.ZipFile(zipped_wheels_filepath) as zip:
+                zip.extractall(unpacked_wheels_dirpath)
+            self.install_from_unpacked_wheels(unpacked_wheels_dirpath)
 
     def register_baseline_packages(self):
         """
