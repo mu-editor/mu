@@ -599,6 +599,52 @@ def test_Window_get_save_path():
     assert returned_path == path
 
 
+def test_Window_get_save_path_missing_extension():
+    """
+    Ensure that if the user enters a file without an extension, then append a
+    ".py" extension by default. See #1571.
+    """
+    mock_fd = mock.MagicMock()
+    path = "/foo/bar"  # Note lack of ".py" extension in path provided by user.
+    mock_fd.getSaveFileName = mock.MagicMock(return_value=(path, True))
+    w = mu.interface.main.Window()
+    w.widget = mock.MagicMock()
+    with mock.patch("mu.interface.main.QFileDialog", mock_fd):
+        returned_path = w.get_save_path("micropython")
+    mock_fd.getSaveFileName.assert_called_once_with(
+        w.widget,
+        "Save file",
+        "micropython",
+        "Python (*.py);;Other (*.*)",
+        "Python (*.py)",
+    )
+    assert w.previous_folder == "/foo"  # Note lack of filename.
+    assert returned_path == path + ".py"  # Note addition of ".py" extension.
+
+
+def test_Window_get_save_path_for_dot_file():
+    """
+    Ensure that if the user enters a dot file without an extension, then
+    no extension is appended. See commentary in #1572 for context.
+    """
+    mock_fd = mock.MagicMock()
+    path = "/foo/.bar"  # a dot file without an extension.
+    mock_fd.getSaveFileName = mock.MagicMock(return_value=(path, True))
+    w = mu.interface.main.Window()
+    w.widget = mock.MagicMock()
+    with mock.patch("mu.interface.main.QFileDialog", mock_fd):
+        returned_path = w.get_save_path("micropython")
+    mock_fd.getSaveFileName.assert_called_once_with(
+        w.widget,
+        "Save file",
+        "micropython",
+        "Python (*.py);;Other (*.*)",
+        "Python (*.py)",
+    )
+    assert w.previous_folder == "/foo"  # Note lack of filename.
+    assert returned_path == path  # Note lack of extension
+
+
 def test_Window_get_microbit_path():
     """
     Ensures the QFileDialog is called with the expected arguments and the
