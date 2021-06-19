@@ -950,3 +950,13 @@ def test_EditorPane_wheelEvent_with_modifier_ignored():
     ) as mw:
         ep.wheelEvent(None)
         assert mw.call_count == 0
+
+
+def test_EditorPane_contextMenuEvent():
+    """
+    Context menu raises the expected signal.
+    """
+    ep = mu.interface.editor.EditorPane(None, "baz")
+    ep.context_menu = mock.MagicMock()
+    ep.contextMenuEvent(None)
+    ep.context_menu.emit.assert_called_once_with()

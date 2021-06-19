@@ -30,7 +30,7 @@ def test_PANE_ZOOM_SIZES():
     assert len(expected_sizes) == len(mu.interface.panes.PANE_ZOOM_SIZES)
 
 
-def test_MicroPythonREPLPane_paste():
+def test_MicroPythonREPLPane_paste_fragment():
     """
     Pasting into the REPL should send bytes via the serial connection.
     """
@@ -42,9 +42,27 @@ def test_MicroPythonREPLPane_paste():
     with mock.patch("mu.interface.panes.QApplication", mock_application):
         rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
         rp.paste()
-    mock_repl_connection.write.assert_called_once_with(
-        bytes("paste me!", "utf8")
+    mock_repl_connection.write.assert_called_once_with(b"paste me!")
+
+
+def test_MicroPythonREPLPane_paste_multiline():
+    """
+    Pasting into the REPL should send bytes via the serial connection.
+    """
+    mock_repl_connection = mock.MagicMock()
+    mock_clipboard = mock.MagicMock()
+    mock_clipboard.text.return_value = "paste\nme!"
+    mock_application = mock.MagicMock()
+    mock_application.clipboard.return_value = mock_clipboard
+    with mock.patch("mu.interface.panes.QApplication", mock_application):
+        rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+        rp.paste()
+    assert mock_repl_connection.write.call_count == 3
+    assert mock_repl_connection.write.call_args_list[0][0][0] == b"\x05"
+    assert mock_repl_connection.write.call_args_list[1][0][0] == bytes(
+        "paste\rme!", "utf8"
     )
+    assert mock_repl_connection.write.call_args_list[2][0][0] == b"\x04"
 
 
 def test_MicroPythonREPLPane_paste_handle_unix_newlines():
@@ -61,9 +79,12 @@ def test_MicroPythonREPLPane_paste_handle_unix_newlines():
     with mock.patch("mu.interface.panes.QApplication", mock_application):
         rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
         rp.paste()
-    mock_repl_connection.write.assert_called_once_with(
-        bytes("paste\rme!", "utf8")
+    assert mock_repl_connection.write.call_count == 3
+    assert mock_repl_connection.write.call_args_list[0][0][0] == b"\x05"
+    assert mock_repl_connection.write.call_args_list[1][0][0] == bytes(
+        "paste\rme!", "utf8"
     )
+    assert mock_repl_connection.write.call_args_list[2][0][0] == b"\x04"
 
 
 def test_MicroPythonREPLPane_paste_handle_windows_newlines():
@@ -80,9 +101,12 @@ def test_MicroPythonREPLPane_paste_handle_windows_newlines():
     with mock.patch("mu.interface.panes.QApplication", mock_application):
         rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
         rp.paste()
-    mock_repl_connection.write.assert_called_once_with(
-        bytes("paste\rme!", "utf8")
+    assert mock_repl_connection.write.call_count == 3
+    assert mock_repl_connection.write.call_args_list[0][0][0] == b"\x05"
+    assert mock_repl_connection.write.call_args_list[1][0][0] == bytes(
+        "paste\rme!", "utf8"
     )
+    assert mock_repl_connection.write.call_args_list[2][0][0] == b"\x04"
 
 
 def test_MicroPythonREPLPane_paste_only_works_if_something_to_paste():
