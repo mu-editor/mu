@@ -37,6 +37,7 @@ VEError = mu.virtual_environment.VirtualEnvironmentError
 PIP = mu.virtual_environment.Pip
 
 HERE = os.path.dirname(__file__)
+ZIP_FILENAME = "wheels.zip"
 WHEEL_FILENAME = "arrr-1.0.2-py3-none-any.whl"
 
 
@@ -124,10 +125,11 @@ def workspace_dirpath(tmp_path):
 @pytest.fixture
 def test_wheels(tmp_path):
     wheels_dirpath = str(tmp_path / "wheels")
+    zip_filename = "%s.zip" % mu.__version__
     os.mkdir(wheels_dirpath)
     shutil.copyfile(
-        os.path.join(HERE, "wheels", WHEEL_FILENAME),
-        os.path.join(wheels_dirpath, WHEEL_FILENAME),
+        os.path.join(HERE, "wheels", ZIP_FILENAME),
+        os.path.join(wheels_dirpath, zip_filename),
     )
     with mock.patch.object(
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
@@ -269,7 +271,11 @@ def test_download_wheels_if_not_present(venv, test_wheels):
 
     with mock.patch.object(
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
-    ), mock.patch.object(mu.wheels, "download") as mock_download, mock.patch.object(venv, "install_from_zipped_wheels"):
+    ), mock.patch.object(
+        mu.wheels, "download"
+    ) as mock_download, mock.patch.object(
+        venv, "install_from_zipped_wheels"
+    ):
         try:
             venv.install_baseline_packages()
         #
