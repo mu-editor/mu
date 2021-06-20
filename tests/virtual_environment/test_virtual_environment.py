@@ -263,13 +263,13 @@ def test_download_wheels_if_not_present(venv, test_wheels):
     ensure we try to download them
     """
     wheels_dirpath = test_wheels
-    for filepath in glob.glob(os.path.join(wheels_dirpath, "*.whl")):
+    for filepath in glob.glob(os.path.join(wheels_dirpath, "*.zip")):
         os.unlink(filepath)
-    assert not glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+    assert not glob.glob(os.path.join(wheels_dirpath, "*.zip"))
 
     with mock.patch.object(
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
-    ), mock.patch.object(mu.wheels, "download") as mock_download:
+    ), mock.patch.object(mu.wheels, "download") as mock_download, mock.patch.object(venv, "install_from_zipped_wheels"):
         try:
             venv.install_baseline_packages()
         #

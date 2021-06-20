@@ -6,7 +6,6 @@ import sys
 import glob
 import logging
 import platform
-import shutil
 import subprocess
 import tempfile
 import zipfile
@@ -42,7 +41,7 @@ mode_packages = [
     ("esptool", "esptool==3.*"),
 ]
 WHEELS_DIRPATH = os.path.dirname(__file__)
-zip_filepath = os.path.join(WHEELS_DIRPATH, mu_version + ".zip")
+ZIP_FILEPATH = os.path.join(WHEELS_DIRPATH, mu_version + ".zip")
 
 # TODO: Temp app signing workaround https://github.com/mu-editor/mu/issues/1290
 if sys.version_info[:2] == (3, 8) and platform.system() == "Darwin":
@@ -150,7 +149,7 @@ def convert_sdists_to_wheels(dirpath, logger):
 
 def zip_wheels(zip_filepath, dirpath, logger=logger):
     """Zip all the wheels into an archive"""
-    logger.info("Building zip %s of wheels", zip_filepath)
+    logger.info("Building zip %s from wheels in %s", zip_filepath, dirpath)
     with zipfile.ZipFile(zip_filepath, "w") as z:
         for filepath in glob.glob(os.path.join(dirpath, "*.whl")):
             filename = os.path.basename(filepath)
@@ -158,20 +157,24 @@ def zip_wheels(zip_filepath, dirpath, logger=logger):
             z.write(filepath, filename)
 
 
-def download(zip_filepath=zip_filepath, logger=logger):
-    #
-    # We allow the logger to be overridden because output from the virtual_environment
-    # module logger goes to the splash screen, while output from this module's
-    # logger doesn't
-    #
+def download(zip_filepath=ZIP_FILEPATH, logger=logger):
+    """Download from PyPI, convert to wheels, and zip up
 
-    #
-    # Download the wheels needed for modes
-    #
+    To make all the libraries available for Mu modes (eg pygame zero, Flask etc.)
+    we `pip download` them to a temporary location and then pack them into a
+    zip file which is tagged with the current Mu version number
+
+    We allow `logger` to be overridden because output from the
+    virtual_environment module logger goes to the splash screen, while
+    output from this module's logger doesn't
+    """
     logger.info("Downloading wheels to %s", zip_filepath)
 
-    dirpath = os.path.dirname(zip_filepath)
-    remove_dist_files(dirpath, logger)
+    #
+    # Remove any leftover files from the place where the zip file
+    # will be -- usually the `wheels` package folder
+    #
+    remove_dist_files(os.path.dirname(zip_filepath), logger)
 
     with tempfile.TemporaryDirectory() as temp_dirpath:
         pip_download(temp_dirpath, logger)

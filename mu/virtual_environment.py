@@ -825,27 +825,24 @@ class VirtualEnvironment(object):
                 "Unable to install kernel\n%s" % compact(output)
             )
 
-    def install_from_unpacked_wheels(self, dirpath):
-        #
-        # This command should install the baseline packages, picking up the
-        # precompiled wheels from the wheels path
-        #
-        # For dev purposes (where we might not have the wheels) warn where
-        # the wheels are not already present and download them
-        #
-        wheel_filepaths = glob.glob(os.path.join(dirpath, "*.whl"))
-        if not wheel_filepaths:
-            raise VirtualEnvironmentCreateError(
-                "No wheels in %s; try `python -mmu.wheels`" % wheels_dirpath
-            )
-        self.reset_pip()
-        for wheel in wheel_filepaths:
-            logger.info(
-                "About to install from wheel: {}".format(
-                    os.path.basename(wheel)
+    def install_from_zipped_wheels(self, zipped_wheels_filepath):
+        with tempfile.TemporaryDirectory() as unpacked_wheels_dirpath:
+            #
+            # The wheel files are shipped in Mu-version-specific zip files to avoid
+            # cross-contamination when a Mu version change happens and we still have
+            # wheels from the previous installation.
+            #
+            with zipfile.ZipFile(zipped_wheels_filepath) as zip:
+                zip.extractall(unpacked_wheels_dirpath)
+
+            self.reset_pip()
+            for wheel in unpacked_wheels_dirpath:
+                logger.info(
+                    "About to install from wheel: {}".format(
+                        os.path.basename(wheel)
+                    )
                 )
-            )
-            self.pip.install(wheel, deps=False, index=False)
+                self.pip.install(wheel, deps=False, index=False)
 
     def install_baseline_packages(self):
         """
@@ -861,23 +858,19 @@ class VirtualEnvironment(object):
         --upgrade is currently used with a thought to upgrade-releases of Mu.
         """
         logger.info("Installing baseline packages.")
+        #
+        # TODO: Add semver check to ensure filepath is safe
+        #
         zipped_wheels_filepath = os.path.join(
             wheels_dirpath, "%s.zip" % mu_version
         )
+        print("Zipped wheels filepath:", zipped_wheels_filepath)
         logger.info("Expecting zipped wheels at %s", zipped_wheels_filepath)
         if not os.path.exists(zipped_wheels_filepath):
             logger.warning("No zipped wheels found; downloading...")
             wheels.download(zipped_wheels_filepath)
 
-        with tempfile.TemporaryDirectory() as unpacked_wheels_dirpath:
-            #
-            # The wheel files are shipped in Mu-version-specific zip files to avoid
-            # cross-contamination when a Mu version change happens and we still have
-            # wheels from the previous installation.
-            #
-            with zipfile.ZipFile(zipped_wheels_filepath) as zip:
-                zip.extractall(unpacked_wheels_dirpath)
-            self.install_from_unpacked_wheels(unpacked_wheels_dirpath)
+        self.install_from_zipped_wheels(zipped_wheels_filepath)
 
     def register_baseline_packages(self):
         """
