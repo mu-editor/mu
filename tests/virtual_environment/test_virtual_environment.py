@@ -287,9 +287,9 @@ def test_download_wheels_failure(venv, test_wheels):
     with the same message"""
     message = uuid.uuid1().hex
     wheels_dirpath = test_wheels
-    for filepath in glob.glob(os.path.join(wheels_dirpath, "*.whl")):
+    for filepath in glob.glob(os.path.join(wheels_dirpath, "*.zip")):
         os.unlink(filepath)
-    assert not glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+    assert not glob.glob(os.path.join(wheels_dirpath, "*.zip"))
     with mock.patch.object(
         mu.wheels,
         "download",
@@ -297,7 +297,7 @@ def test_download_wheels_failure(venv, test_wheels):
     ):
         try:
             venv.install_baseline_packages()
-        except VEError as exc:
+        except mu.wheels.WheelsDownloadError as exc:
             assert message in exc.message
 
 
