@@ -72,7 +72,7 @@ def test_animated_splash_init():
     asplash.animation.start.assert_called_once_with()
 
 
-def test_animated_splash_set_frame():  # run successfully
+def test_animated_splash_set_frame():
     """
     Ensure the splash screen's pixmap is updated with the animation's current
     pixmap.
@@ -91,7 +91,7 @@ def test_animated_splash_set_frame():  # run successfully
     asplash.setMask.assert_called_once_with(pixmap.mask())
 
 
-def test_animated_splash_draw_log():  # run successfully
+def test_animated_splash_draw_log():
     """
     Ensure the scrolling updates from the log handler are sliced properly and
     the expected text is shown in the right place on the splash screen.
@@ -116,7 +116,7 @@ def test_animated_splash_draw_log():  # run successfully
     )
 
 
-def test_animated_splash_failed():  # run successfully
+def test_animated_splash_failed():
     """
     When instructed to transition to a failed state, ensure the correct image
     is displayed along with the correct message.
@@ -161,7 +161,7 @@ def test_worker_run():
         assert not isinstance(handler, SplashLogHandler)
 
 
-def test_worker_fail():  # run successfully
+def test_worker_fail():
     """
     Ensure that exceptions encountered during Mu's start-up are handled in the
     expected manner.
@@ -183,10 +183,14 @@ def test_worker_fail():  # run successfully
     w.finished.emit.assert_called_once_with()
 
 
-def test_setup_logging():  # run successfully
+def test_setup_logging_without_envvar():
     """
     Ensure that logging is set up in some way.
+
+    Resetting the MU_LOG_TO_STDOUT env var ensures that the crash handler
+    will be enabled and stdout logging not
     """
+    os.environ.pop("MU_LOG_TO_STDOUT", "")
     with mock.patch("mu.app.TimedRotatingFileHandler") as log_conf, mock.patch(
         "mu.app.os.path.exists", return_value=False
     ), mock.patch("mu.app.logging") as logging, mock.patch(
@@ -205,7 +209,32 @@ def test_setup_logging():  # run successfully
         assert sys.excepthook == excepthook
 
 
-def test_run():  # run successfully
+def test_setup_logging_with_envvar():
+    """
+    Ensure that logging is set up in some way.
+
+    Setting the MU_LOG_TO_STDOUT env var ensures that the crash handler
+    will not be enabled and stdout logging will
+    """
+    os.environ["MU_LOG_TO_STDOUT"] = "1"
+    with mock.patch("mu.app.TimedRotatingFileHandler") as log_conf, mock.patch(
+        "mu.app.os.path.exists", return_value=False
+    ), mock.patch("mu.app.logging") as logging, mock.patch(
+        "mu.app.os.makedirs", return_value=None
+    ) as mkdir:
+        setup_logging()
+        mkdir.assert_called_once_with(LOG_DIR)
+        log_conf.assert_called_once_with(
+            LOG_FILE,
+            when="midnight",
+            backupCount=5,
+            delay=0,
+            encoding=ENCODING,
+        )
+        logging.getLogger.assert_called_once_with()
+        #~ assert sys.excepthook == excepthook
+
+def test_run():
     """
     Ensure the run function sets things up in the expected way.
 
@@ -333,7 +362,7 @@ def test_excepthook():
         assert browser.open.call_count == 1
 
 
-def test_excepthook_alamo():  # run successfully
+def test_excepthook_alamo():
     """
     If the crash reporting code itself encounters an error, then ensure this
     is logged before exiting.
@@ -352,7 +381,7 @@ def test_excepthook_alamo():  # run successfully
         exit.assert_called_once_with(1)
 
 
-def test_debug():  # run successfully
+def test_debug():
     """
     Ensure the debugger is run with the expected arguments given the filename
     and other arguments passed in via sys.argv.
@@ -368,7 +397,7 @@ def test_debug():  # run successfully
         )
 
 
-def test_debug_no_args():  # run successfully
+def test_debug_no_args():
     """
     If the debugger is accidentally started with no filename and/or associated
     args, then emit a friendly message to indicate the problem.
