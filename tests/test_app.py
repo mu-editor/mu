@@ -232,7 +232,8 @@ def test_setup_logging_with_envvar():
             encoding=ENCODING,
         )
         logging.getLogger.assert_called_once_with()
-        #~ assert sys.excepthook == excepthook
+        # ~ assert sys.excepthook == excepthook
+
 
 def test_run():
     """

@@ -19,7 +19,6 @@ import sys
 import os
 import glob
 import random
-import shutil
 import subprocess
 import uuid
 import logging
