@@ -835,7 +835,7 @@ class VirtualEnvironment(object):
                 zip.extractall(unpacked_wheels_dirpath)
 
             self.reset_pip()
-            for wheel in unpacked_wheels_dirpath:
+            for wheel in glob.glob(os.path.join(unpacked_wheels_dirpath, "*.whl")):
                 logger.info(
                     "About to install from wheel: {}".format(
                         os.path.basename(wheel)
