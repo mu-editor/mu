@@ -24,6 +24,7 @@ import subprocess
 import uuid
 import logging
 from unittest import mock
+import zipfile
 
 import pytest
 
@@ -39,6 +40,7 @@ PIP = mu.virtual_environment.Pip
 HERE = os.path.dirname(__file__)
 ZIP_FILENAME = "wheels.zip"
 WHEEL_FILENAME = "arrr-1.0.2-py3-none-any.whl"
+WHEEL_FILEPATH = os.path.join(HERE, "wheels", WHEEL_FILENAME)
 
 
 @pytest.fixture
@@ -127,10 +129,10 @@ def test_wheels(tmp_path):
     wheels_dirpath = str(tmp_path / "wheels")
     zip_filename = "%s.zip" % mu.__version__
     os.mkdir(wheels_dirpath)
-    shutil.copyfile(
-        os.path.join(HERE, "wheels", ZIP_FILENAME),
-        os.path.join(wheels_dirpath, zip_filename),
-    )
+
+    with zipfile.ZipFile(os.path.join(wheels_dirpath, zip_filename), "w") as z:
+        z.write(WHEEL_FILEPATH, WHEEL_FILENAME)
+
     with mock.patch.object(
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
     ):
@@ -315,20 +317,19 @@ def test_base_packages_installed(patched, venv, test_wheels):
     # Check that we're calling `pip install` with all the
     # wheels in the wheelhouse
     #
-    expected_args = glob.glob(
-        os.path.join(mu.virtual_environment.wheels_dirpath, "*.whl")
-    )
-    #
-    # Make sure the juypter kernel install doesn't interfere
-    #
-    with mock.patch.object(VE, "install_jupyter_kernel"):
-        with mock.patch.object(VE, "register_baseline_packages"):
-            with mock.patch.object(PIP, "install") as mock_pip_install:
-                venv.create()
-    for mock_call_args in mock_pip_install.call_args_list:
-        assert len(mock_call_args[0]) == 1
-        assert mock_call_args[0][0] in expected_args
-        assert mock_call_args[1] == {"deps": False, "index": False}
+    expected_args = [WHEEL_FILENAME]
+
+    with mock.patch.object(venv, "create_venv"), mock.patch.object(
+        venv, "register_baseline_packages"
+    ), mock.patch.object(venv, "install_jupyter_kernel"), mock.patch.object(
+        PIP, "install"
+    ) as mock_pip_install:
+        venv.create()
+
+    for (mock_args, mock_kwargs) in mock_pip_install.call_args_list:
+        assert len(mock_args) == 1
+        assert os.path.basename(mock_args[0]) in expected_args
+        assert mock_kwargs == {"deps": False, "index": False}
 
 
 def test_jupyter_kernel_installed(patched, venv):
