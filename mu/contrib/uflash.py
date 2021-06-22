@@ -3,7 +3,7 @@
 This module contains functions for turning a Python script into a .hex file
 and flashing it onto a BBC micro:bit.
 
-Copyright (c) 2015-2018 Nicholas H.Tollervey and others.
+Copyright (c) 2015-2020 Nicholas H.Tollervey and others.
 
 See the LICENSE file for more information, or visit:
 
@@ -43,8 +43,8 @@ microbit.  Accepts multiple input scripts and optionally one output directory.
 
 #: MAJOR, MINOR, RELEASE, STATUS [alpha, beta, final], VERSION of uflash
 _VERSION = (
-    1,
-    3,
+    2,
+    0,
     0,
 )
 
@@ -180,9 +180,11 @@ def pad_hex_string(hex_records_str, alignment=512):
     """
     Adds padding records to a string of Intel Hex records to align the total
     size to the provided alignment value.
+
     The Universal Hex format needs each section (a section contains the
     micro:bit V1 or V2 data) to be aligned to a 512 byte boundary, as this is
     the common USB block size (or a multiple of this value).
+
     As a Universal/Intel Hex string only contains ASCII characters, the string
     length must be multiple of 512, and padding records should be added to fit
     this rule.
@@ -332,7 +334,10 @@ def bytes_to_ihex(addr, data, universal_data_record=False):
 def unhexlify(blob):
     """
     Takes a hexlified script and turns it back into a string of Python code.
-    Although this function is no longer used, it is maintained here for Mu.
+
+    IMPORTANT!
+    Although this function is no longer used in the uflash cli commands,
+    it is called by extract_script, which is maintained for Mu access.
     """
     lines = blob.split("\n")[1:]
     output = []
@@ -362,6 +367,8 @@ def extract_script(embedded_hex):
     Given a hex file containing the MicroPython runtime and an embedded Python
     script, will extract the original Python script.
     Returns a string containing the original embedded script.
+
+    IMPORTANT!
     Although this function is no longer used, it is maintained here for Mu.
     """
     hex_lines = embedded_hex.split("\n")
@@ -618,7 +625,7 @@ def py2hex(argv=None):
 
     if args.runtime:
         raise NotImplementedError("The 'runtime' flag is no longer supported.")
-    if args.extract:
+    if args.minify:
         print(
             "The 'minify' flag is no longer supported, ignoring.",
             file=sys.stderr,
@@ -663,7 +670,7 @@ def main(argv=None):
         "-e",
         "--extract",
         action="store_true",
-        help=("This feature has been deprecated."),
+        help="This feature has been deprecated.",
     )
     parser.add_argument(
         "-w",
@@ -686,13 +693,13 @@ def main(argv=None):
         raise NotImplementedError("The 'runtime' flag is no longer supported.")
     if args.extract:
         raise NotImplementedError("The 'extract' flag is no longer supported.")
-    if args.extract:
+    if args.minify:
         print(
             "The 'minify' flag is no longer supported, ignoring.",
             file=sys.stderr,
         )
 
-    elif args.watch:
+    if args.watch:
         try:
             watch_file(
                 args.source,
