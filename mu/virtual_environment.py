@@ -628,10 +628,6 @@ class VirtualEnvironment(object):
                 else:
                     raise
             finally:
-                logger.debug(
-                    "Emitter: %s; Splash Handler; %s"
-                    % (emitter, splash_handler)
-                )
                 if emitter and splash_handler:
                     logger.removeHandler(splash_handler)
 

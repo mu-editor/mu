@@ -28,6 +28,9 @@ class WheelsBuildError(WheelsError):
 
 logger = logging.getLogger(__name__)
 
+WHEELS_DIRPATH = os.path.dirname(__file__)
+ZIP_FILEPATH = os.path.join(WHEELS_DIRPATH, mu_version + ".zip")
+
 #
 # List of base packages to support modes
 # The first element should be the importable name (so "serial" rather than "pyserial")
@@ -40,8 +43,6 @@ mode_packages = [
     ("qtconsole", "qtconsole==4.7.4"),
     ("esptool", "esptool==3.*"),
 ]
-WHEELS_DIRPATH = os.path.dirname(__file__)
-ZIP_FILEPATH = os.path.join(WHEELS_DIRPATH, mu_version + ".zip")
 
 # TODO: Temp app signing workaround https://github.com/mu-editor/mu/issues/1290
 if sys.version_info[:2] == (3, 8) and platform.system() == "Darwin":
@@ -57,7 +58,6 @@ if sys.version_info[:2] == (3, 8) and platform.system() == "Darwin":
             "https://github.com/mu-editor/pgzero/releases/download/mu-wheel/"
             "pgzero-1.2-py3-none-any.whl",
             "--no-index",
-            "--find-links=" + WHEELS_DIRPATH,
         ),
     ] + mode_packages[1:]
 
@@ -97,8 +97,11 @@ def pip_download(dirpath, logger):
                 sys.executable,
                 "-m",
                 "pip",
+                "--disable-pip-version-check",
                 "download",
                 "--destination-directory",
+                dirpath,
+                "--find-links",
                 dirpath,
                 pip_identifier,
             ]
