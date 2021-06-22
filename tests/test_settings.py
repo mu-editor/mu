@@ -222,7 +222,7 @@ def test_save_readonly(mocked_logger):
     settings.readonly = True
 
     settings.save()
-    assert mocked_logger.warn.called
+    assert mocked_logger.warning.called
     assert not settings.as_string.called
 
 
@@ -234,7 +234,7 @@ def test_save_no_filepath(mocked_logger):
     settings.filepath = None  # (just in case)
 
     settings.save()
-    assert mocked_logger.warn.called
+    assert mocked_logger.warning.called
     assert not settings.as_string.called
 
 
@@ -285,7 +285,7 @@ def test_load_file_not_found(mocked_logger):
     settings = mu.settings.SettingsBase()
     settings.load(filepath)
 
-    assert mocked_logger.warn.called
+    assert mocked_logger.warning.called
     assert settings.filepath == filepath
 
 

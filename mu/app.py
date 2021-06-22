@@ -171,29 +171,32 @@ def excepthook(*exc_args):
     Log exception and exit cleanly.
     """
     logging.error("Unrecoverable error", exc_info=(exc_args))
-    try:
-        log_file = base64.standard_b64encode(LOG_FILE.encode("utf-8"))
-        error = base64.standard_b64encode(
-            "".join(traceback.format_exception(*exc_args)).encode("utf-8")
-        )
-        p = platform.uname()
-        params = {
-            "v": __version__,  # version
-            "l": str(i18n.language_code),  # locale
-            "p": base64.standard_b64encode(
-                " ".join([p.system, p.release, p.version, p.machine]).encode(
-                    "utf-8"
-                )
-            ),  # platform
-            "f": log_file,  # location of log file
-            "e": error,  # error message
-        }
-        args = urllib.parse.urlencode(params)
-        webbrowser.open("https://codewith.mu/crash/?" + args)
-    except Exception as e:  # The Alamo of crash handling.
-        logging.error("Failed to report crash", exc_info=e)
-    sys.__excepthook__(*exc_args)
-    sys.exit(1)
+    if exc_args[0] != KeyboardInterrupt:
+        try:
+            log_file = base64.standard_b64encode(LOG_FILE.encode("utf-8"))
+            error = base64.standard_b64encode(
+                "".join(traceback.format_exception(*exc_args)).encode("utf-8")
+            )[-1800:]
+            p = platform.uname()
+            params = {
+                "v": __version__,  # version
+                "l": str(i18n.language_code),  # locale
+                "p": base64.standard_b64encode(
+                    " ".join(
+                        [p.system, p.release, p.version, p.machine]
+                    ).encode("utf-8")
+                ),  # platform
+                "f": log_file,  # location of log file
+                "e": error,  # error message
+            }
+            args = urllib.parse.urlencode(params)
+            webbrowser.open("https://codewith.mu/crash/?" + args)
+        except Exception as e:  # The Alamo of crash handling.
+            logging.error("Failed to report crash", exc_info=e)
+        sys.__excepthook__(*exc_args)
+        sys.exit(1)
+    else:  # It's harmless, don't sound the alarm.
+        sys.exit(0)
 
 
 def setup_logging():
@@ -217,16 +220,18 @@ def setup_logging():
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG)
 
-    stdout_handler = logging.StreamHandler()
-    stdout_handler.setFormatter(formatter)
-    stdout_handler.setLevel(logging.DEBUG)
-
     # set up primary log
     log = logging.getLogger()
     log.setLevel(logging.DEBUG)
     log.addHandler(handler)
-    log.addHandler(stdout_handler)
     sys.excepthook = excepthook
+
+    # Only enable on-screen logging if the MU_LOG_TO_STDOUT env variable is set
+    if "MU_LOG_TO_STDOUT" in os.environ:
+        stdout_handler = logging.StreamHandler()
+        stdout_handler.setFormatter(formatter)
+        stdout_handler.setLevel(logging.DEBUG)
+        log.addHandler(stdout_handler)
 
 
 def setup_modes(editor, view):
