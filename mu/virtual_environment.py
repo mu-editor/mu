@@ -95,7 +95,7 @@ class Process(QObject):
         self.environment.insert("PYTHONIOENCODING", "utf-8")
 
     def _set_up_run(self, **envvars):
-        """Run the process with the command and args"""
+        """Set up common elements of a QProcess run"""
         self.process = QProcess()
         environment = QProcessEnvironment(self.environment)
         for k, v in envvars.items():
@@ -104,6 +104,11 @@ class Process(QObject):
         self.process.setProcessChannelMode(QProcess.MergedChannels)
 
     def run_blocking(self, command, args, wait_for_s=30.0, **envvars):
+        """Run `command` with `args` via QProcess, passing `envvars` as
+        environment variables for the process.
+
+        Wait `wait_for_s` seconds for completion and return any stdout/stderr
+        """
         logger.info(
             "About to run blocking %s with args %s and envvars %s",
             command,
@@ -115,6 +120,8 @@ class Process(QObject):
         return self.wait(wait_for_s=wait_for_s)
 
     def run(self, command, args, **envvars):
+        """Run `command` asynchronously with `args` via QProcess, passing `envvars`
+        as environment variables for the process."""
         logger.info(
             "About to run %s with args %s and envvars %s",
             command,
@@ -129,6 +136,12 @@ class Process(QObject):
         QTimer.singleShot(1, partial)
 
     def wait(self, wait_for_s=30.0):
+        """Wait for the process to complete, optionally timing out.
+        Return any stdout/stderr.
+
+        If the process fails to complete in time or returns an error, raise a
+        VirtualEnvironmentError
+        """
         finished = self.process.waitForFinished(1000 * wait_for_s)
         exit_status = self.process.exitStatus()
         exit_code = self.process.exitCode()
@@ -176,6 +189,7 @@ class Process(QObject):
         return output
 
     def data(self):
+        """Return all the data from the running process, converted to unicode"""
         output = self.process.readAll().data()
         return output.decode(sys.stdout.encoding, errors="replace")
 
@@ -394,7 +408,7 @@ class VirtualEnvironment(object):
     @staticmethod
     def _generate_dirpath():
         """
-        Construct a unique virtual environment folder
+        Construct a unique virtual environment folder name
 
         To avoid clashing with previously-created virtual environments,
         construct one which includes the Python version and a timestamp
@@ -434,6 +448,9 @@ class VirtualEnvironment(object):
         return process.returncode == 0, output
 
     def reset_pip(self):
+        """To avoid a problem where the same Pip process is executed by different
+        threads, recreate the Pip process on demand
+        """
         self.pip = Pip(self.pip_executable)
 
     def relocate(self, dirpath):
@@ -508,6 +525,12 @@ class VirtualEnvironment(object):
         return False
 
     def quarantine_venv(self, reason="FAILED"):
+        """Rename an existing virtual environment folder out of the way to make
+        it clearer which is the current one.
+
+        NB if this fails (eg because of file locking) it won't matter: the folder
+        will not be used and will simply be a little distracting
+        """
         error_dirpath = self.path + "." + reason
         try:
             os.rename(self.path, error_dirpath)
@@ -751,7 +774,7 @@ class VirtualEnvironment(object):
 
     def create_venv(self):
         """
-        Create a new virtualenv at the referenced path.
+        Create a new virtualenv
         """
         logger.info("Creating virtualenv: {}".format(self.path))
         logger.info("Virtualenv name: {}".format(self.name))
@@ -779,26 +802,10 @@ class VirtualEnvironment(object):
                 % (sys.executable, self.path, compact(output))
             )
 
-    def upgrade_pip(self):
-        logger.debug(
-            "About to upgrade pip; interpreter %s %s",
-            self.interpreter,
-            "exists" if os.path.exists(self.interpreter) else "doesn't exist",
-        )
-        ok, output = self.run_subprocess(
-            self.interpreter, "-m", "pip", "install", "--upgrade", "pip"
-        )
-        if ok:
-            logger.info("Upgraded pip")
-        else:
-            raise VirtualEnvironmentCreateError(
-                "Unable to upgrade pip\n%s" % compact(output)
-            )
-
     def install_jupyter_kernel(self):
         """
         Install a Jupyter kernel for Mu (the name of the kernel indicates this
-        is a Mu related kernel).
+        is a Mu-related kernel).
         """
         kernel_name = self.name.replace(" ", "-")
         display_name = '"Python/Mu ({})"'.format(kernel_name)
@@ -822,6 +829,9 @@ class VirtualEnvironment(object):
             )
 
     def install_from_zipped_wheels(self, zipped_wheels_filepath):
+        """Take a zip containing wheels, unzip it and install the wheels into
+        the current virtualenv
+        """
         with tempfile.TemporaryDirectory() as unpacked_wheels_dirpath:
             #
             # The wheel files are shipped in Mu-version-specific zip files to avoid
@@ -832,6 +842,10 @@ class VirtualEnvironment(object):
                 zip.extractall(unpacked_wheels_dirpath)
 
             self.reset_pip()
+            #
+            # The wheels are installed one at a time as they reduces the possibility
+            # of the process installing them breaching its timeout
+            #
             for wheel in glob.glob(
                 os.path.join(unpacked_wheels_dirpath, "*.whl")
             ):
@@ -852,8 +866,6 @@ class VirtualEnvironment(object):
         no network access is needed. But if the wheels aren't found, because
         we're not running from an installer, then just pip install in the
         usual way.
-
-        --upgrade is currently used with a thought to upgrade-releases of Mu.
         """
         logger.info("Installing baseline packages.")
         #
@@ -862,7 +874,6 @@ class VirtualEnvironment(object):
         zipped_wheels_filepath = os.path.join(
             wheels_dirpath, "%s.zip" % mu_version
         )
-        print("Zipped wheels filepath:", zipped_wheels_filepath)
         logger.info("Expecting zipped wheels at %s", zipped_wheels_filepath)
         if not os.path.exists(zipped_wheels_filepath):
             logger.warning("No zipped wheels found; downloading...")
