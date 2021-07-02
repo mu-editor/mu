@@ -7,6 +7,10 @@ import glob
 import logging
 import platform
 import subprocess
+import tempfile
+import zipfile
+
+from .. import __version__ as mu_version
 
 
 class WheelsError(Exception):
@@ -24,6 +28,9 @@ class WheelsBuildError(WheelsError):
 
 logger = logging.getLogger(__name__)
 
+WHEELS_DIRPATH = os.path.dirname(__file__)
+ZIP_FILEPATH = os.path.join(WHEELS_DIRPATH, mu_version + ".zip")
+
 #
 # List of base packages to support modes
 # The first element should be the importable name (so "serial" rather than "pyserial")
@@ -36,7 +43,6 @@ mode_packages = [
     ("qtconsole", "qtconsole==4.7.4"),
     ("esptool", "esptool==3.*"),
 ]
-WHEELS_DIRPATH = os.path.dirname(__file__)
 
 # TODO: Temp app signing workaround https://github.com/mu-editor/mu/issues/1290
 if sys.version_info[:2] == (3, 8) and platform.system() == "Darwin":
@@ -52,7 +58,6 @@ if sys.version_info[:2] == (3, 8) and platform.system() == "Darwin":
             "https://github.com/mu-editor/pgzero/releases/download/mu-wheel/"
             "pgzero-1.2-py3-none-any.whl",
             "--no-index",
-            "--find-links=" + WHEELS_DIRPATH,
         ),
     ] + mode_packages[1:]
 
@@ -62,7 +67,7 @@ def compact(text):
     return "\n".join(line for line in text.splitlines() if line.strip())
 
 
-def remove_dist_files(dirpath):
+def remove_dist_files(dirpath, logger):
     #
     # Clear the directory of any existing wheels and source distributions
     # (this is especially important because there may have been wheels
@@ -79,28 +84,7 @@ def remove_dist_files(dirpath):
         os.remove(rm_filepath)
 
 
-def download(
-    dirpath=WHEELS_DIRPATH, interpreter=sys.executable, logger=logger
-):
-    #
-    # We allow the interpreter to be overridden so that the newly-created
-    # virtual environment can pass in its upgraded pip. This solves some issues
-    # on Linux with recent wheels
-    #
-
-    #
-    # We allow the logger to be overridden because output from the virtual_environment
-    # module logger goes to the splash screen, while output from this module's
-    # logger doesn't
-    #
-
-    #
-    # Download the wheels needed for modes
-    #
-    logger.info("Downloading wheels to %s", dirpath)
-
-    remove_dist_files(dirpath)
-
+def pip_download(dirpath, logger):
     for name, pip_identifier, *extra_flags in mode_packages:
         logger.info(
             "Running pip download for %s / %s / %s",
@@ -113,8 +97,11 @@ def download(
                 sys.executable,
                 "-m",
                 "pip",
+                "--disable-pip-version-check",
                 "download",
                 "--destination-directory",
+                dirpath,
+                "--find-links",
                 dirpath,
                 pip_identifier,
             ]
@@ -127,13 +114,15 @@ def download(
         #
         # If any wheel fails to download, remove any files already downloaded
         # (to ensure the download is triggered again) and raise an exception
+        # NB Probably not necessary now that we're using a temp directory
         #
         if process.returncode != 0:
-            remove_dist_files(dirpath)
             raise WheelsDownloadError(
                 "Pip was unable to download %s" % pip_identifier
             )
 
+
+def convert_sdists_to_wheels(dirpath, logger):
     #
     # Convert any sdists to wheels
     #
@@ -159,3 +148,38 @@ def download(
                 logger.warning("Unable to build a wheel for %s", filepath)
             else:
                 os.remove(filepath)
+
+
+def zip_wheels(zip_filepath, dirpath, logger=logger):
+    """Zip all the wheels into an archive"""
+    logger.info("Building zip %s from wheels in %s", zip_filepath, dirpath)
+    with zipfile.ZipFile(zip_filepath, "w") as z:
+        for filepath in glob.glob(os.path.join(dirpath, "*.whl")):
+            filename = os.path.basename(filepath)
+            logger.debug("Adding %s to zip", filename)
+            z.write(filepath, filename)
+
+
+def download(zip_filepath=ZIP_FILEPATH, logger=logger):
+    """Download from PyPI, convert to wheels, and zip up
+
+    To make all the libraries available for Mu modes (eg pygame zero, Flask etc.)
+    we `pip download` them to a temporary location and then pack them into a
+    zip file which is tagged with the current Mu version number
+
+    We allow `logger` to be overridden because output from the
+    virtual_environment module logger goes to the splash screen, while
+    output from this module's logger doesn't
+    """
+    logger.info("Downloading wheels to %s", zip_filepath)
+
+    #
+    # Remove any leftover files from the place where the zip file
+    # will be -- usually the `wheels` package folder
+    #
+    remove_dist_files(os.path.dirname(zip_filepath), logger)
+
+    with tempfile.TemporaryDirectory() as temp_dirpath:
+        pip_download(temp_dirpath, logger)
+        convert_sdists_to_wheels(temp_dirpath, logger)
+        zip_wheels(zip_filepath, temp_dirpath, logger)

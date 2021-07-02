@@ -19,11 +19,11 @@ import sys
 import os
 import glob
 import random
-import shutil
 import subprocess
 import uuid
 import logging
 from unittest import mock
+import zipfile
 
 import pytest
 
@@ -37,7 +37,9 @@ VEError = mu.virtual_environment.VirtualEnvironmentError
 PIP = mu.virtual_environment.Pip
 
 HERE = os.path.dirname(__file__)
+ZIP_FILENAME = "wheels.zip"
 WHEEL_FILENAME = "arrr-1.0.2-py3-none-any.whl"
+WHEEL_FILEPATH = os.path.join(HERE, "wheels", WHEEL_FILENAME)
 
 
 @pytest.fixture
@@ -124,11 +126,12 @@ def workspace_dirpath(tmp_path):
 @pytest.fixture
 def test_wheels(tmp_path):
     wheels_dirpath = str(tmp_path / "wheels")
+    zip_filename = "%s.zip" % mu.__version__
     os.mkdir(wheels_dirpath)
-    shutil.copyfile(
-        os.path.join(HERE, "wheels", WHEEL_FILENAME),
-        os.path.join(wheels_dirpath, WHEEL_FILENAME),
-    )
+
+    with zipfile.ZipFile(os.path.join(wheels_dirpath, zip_filename), "w") as z:
+        z.write(WHEEL_FILEPATH, WHEEL_FILENAME)
+
     with mock.patch.object(
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
     ):
@@ -263,13 +266,17 @@ def test_download_wheels_if_not_present(venv, test_wheels):
     ensure we try to download them
     """
     wheels_dirpath = test_wheels
-    for filepath in glob.glob(os.path.join(wheels_dirpath, "*.whl")):
+    for filepath in glob.glob(os.path.join(wheels_dirpath, "*.zip")):
         os.unlink(filepath)
-    assert not glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+    assert not glob.glob(os.path.join(wheels_dirpath, "*.zip"))
 
     with mock.patch.object(
         mu.virtual_environment, "wheels_dirpath", wheels_dirpath
-    ), mock.patch.object(mu.wheels, "download") as mock_download:
+    ), mock.patch.object(
+        mu.wheels, "download"
+    ) as mock_download, mock.patch.object(
+        venv, "install_from_zipped_wheels"
+    ):
         try:
             venv.install_baseline_packages()
         #
@@ -287,9 +294,9 @@ def test_download_wheels_failure(venv, test_wheels):
     with the same message"""
     message = uuid.uuid1().hex
     wheels_dirpath = test_wheels
-    for filepath in glob.glob(os.path.join(wheels_dirpath, "*.whl")):
+    for filepath in glob.glob(os.path.join(wheels_dirpath, "*.zip")):
         os.unlink(filepath)
-    assert not glob.glob(os.path.join(wheels_dirpath, "*.whl"))
+    assert not glob.glob(os.path.join(wheels_dirpath, "*.zip"))
     with mock.patch.object(
         mu.wheels,
         "download",
@@ -297,7 +304,7 @@ def test_download_wheels_failure(venv, test_wheels):
     ):
         try:
             venv.install_baseline_packages()
-        except VEError as exc:
+        except mu.wheels.WheelsDownloadError as exc:
             assert message in exc.message
 
 
@@ -309,20 +316,19 @@ def test_base_packages_installed(patched, venv, test_wheels):
     # Check that we're calling `pip install` with all the
     # wheels in the wheelhouse
     #
-    expected_args = glob.glob(
-        os.path.join(mu.virtual_environment.wheels_dirpath, "*.whl")
-    )
-    #
-    # Make sure the juypter kernel install doesn't interfere
-    #
-    with mock.patch.object(VE, "install_jupyter_kernel"):
-        with mock.patch.object(VE, "register_baseline_packages"):
-            with mock.patch.object(PIP, "install") as mock_pip_install:
-                venv.create()
-    for mock_call_args in mock_pip_install.call_args_list:
-        assert len(mock_call_args[0]) == 1
-        assert mock_call_args[0][0] in expected_args
-        assert mock_call_args[1] == {"deps": False, "index": False}
+    expected_args = [WHEEL_FILENAME]
+
+    with mock.patch.object(venv, "create_venv"), mock.patch.object(
+        venv, "register_baseline_packages"
+    ), mock.patch.object(venv, "install_jupyter_kernel"), mock.patch.object(
+        PIP, "install"
+    ) as mock_pip_install:
+        venv.create()
+
+    for (mock_args, mock_kwargs) in mock_pip_install.call_args_list:
+        assert len(mock_args) == 1
+        assert os.path.basename(mock_args[0]) in expected_args
+        assert mock_kwargs == {"deps": False, "index": False}
 
 
 def test_jupyter_kernel_installed(patched, venv):
@@ -363,28 +369,6 @@ def test_jupyter_kernel_failure(patched, venv):
             venv.install_jupyter_kernel()
         except VEError as exc:
             assert "nable to install kernel" in exc.message
-            assert output in exc.message
-
-
-def test_upgrade_pip_failure(venv):
-    """Ensure that we raise an error with output when pip can't be upgraded"""
-    output = uuid.uuid1().hex
-    with mock.patch.object(
-        venv, "run_subprocess", return_value=(True, output)
-    ):
-        venv.upgrade_pip()
-
-
-def test_upgrade_pip_success(venv):
-    """Ensure that we raise an error with output when pip can't be upgraded"""
-    output = uuid.uuid1().hex
-    with mock.patch.object(
-        venv, "run_subprocess", return_value=(False, output)
-    ):
-        try:
-            venv.upgrade_pip()
-        except VEError as exc:
-            assert "nable to upgrade pip" in exc.message
             assert output in exc.message
 
 
