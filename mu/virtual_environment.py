@@ -26,6 +26,8 @@ wheels_dirpath = os.path.dirname(wheels.__file__)
 
 logger = logging.getLogger(__name__)
 
+ENCODING = sys.stdout.encoding if hasattr(sys.stdout, "encoding") else "utf-8"
+
 
 class VirtualEnvironmentError(Exception):
     def __init__(self, message):
@@ -191,7 +193,7 @@ class Process(QObject):
     def data(self):
         """Return all the data from the running process, converted to unicode"""
         output = self.process.readAll().data()
-        return output.decode(sys.stdout.encoding, errors="replace")
+        return output.decode(ENCODING, errors="replace")
 
     def _started(self):
         self.started.emit()
@@ -431,12 +433,8 @@ class VirtualEnvironment(object):
             stderr=subprocess.PIPE,
             **kwargs
         )
-        stdout_output = process.stdout.decode(
-            sys.stdout.encoding, errors="replace"
-        )
-        stderr_output = process.stderr.decode(
-            sys.stderr.encoding, errors="replace"
-        )
+        stdout_output = process.stdout.decode(ENCODING, errors="replace")
+        stderr_output = process.stderr.decode(ENCODING, errors="replace")
         output = stdout_output
         if stderr_output:
             output += "\n\nSTDERR: " + stderr_output
