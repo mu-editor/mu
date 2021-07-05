@@ -39,6 +39,8 @@ provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
   to new files. This depended on the user's graphical shell. Mu now checks the
   output from the shell and, if requires, will add ``.py`` itself.
 * Various fixes to Mu's logging make it more robust, clear and useful.
+* Tiago fixed a late breaking bug in packaging Mu for OSX. All fixed in a
+  matter of hours. Amazing work!
 
 There are perhaps a couple more features we want to land in the coming weeks,
 and then we will start the work of ensuring internationalization is fully up
