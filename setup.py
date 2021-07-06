@@ -34,6 +34,10 @@ install_requires = [
     # FIXME: jupyter-client added for Py3.5 compatibility, to be dropped after
     # Mu v1.1 release. So, qtconsole < 5 and jupyter-client < 6.2 (issue #1444)
     "jupyter-client>=4.1,<6.2",
+    # FIXME: ipykernel max added for macOS 10.13 compatibility, min taken from
+    # qtconsole 4.7.7. Full line can be removed after Mu v1.1 release.
+    # Dependency mirrored for user venv in mu/wheels/__init__.py
+    "ipykernel>=4.1,<6",
     "qtconsole==4.7.7",
     #
     # adafruit-board-toolkit is used to find serial ports and help identify
