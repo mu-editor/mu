@@ -40,6 +40,10 @@ ZIP_FILEPATH = os.path.join(WHEELS_DIRPATH, mu_version + ".zip")
 mode_packages = [
     ("pgzero", "pgzero>=1.2.1"),
     ("flask", "flask==1.1.2"),
+    # FIXME: ipykernel max ver added for macOS 10.13 compatibility, min taken
+    # from qtconsole 4.7.7. Full line can be removed after Mu v1.1 release.
+    # Dependency mirrored in setup.py install_requires.
+    ("ipykernel", "ipykernel>=4.1,<6"),
     ("qtconsole", "qtconsole==4.7.4"),
     ("esptool", "esptool==3.*"),
 ]
