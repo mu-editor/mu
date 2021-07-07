@@ -33,7 +33,7 @@ clean:
 	rm -rf lib
 	rm -rf *.mp4
 	rm -rf .git/avatar/*
-	rm -r venv-pup
+	rm -rf venv-pup
 	find . \( -name '*.py[co]' -o -name dropin.cache \) -delete
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
