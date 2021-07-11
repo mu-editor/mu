@@ -177,8 +177,7 @@ def test_pgzero_stop_game():
     mock_runner = mock.MagicMock()
     pm.runner = mock_runner
     pm.stop_game()
-    mock_runner.process.kill.assert_called_once_with()
-    mock_runner.process.waitForFinished.assert_called_once_with()
+    mock_runner.stop_process.assert_called_once_with()
     assert pm.runner is None
     view.remove_python_runner.assert_called_once_with()
 

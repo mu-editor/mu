@@ -1801,6 +1801,31 @@ def test_PythonProcessPane_start_process_custom_python_args():
     ppp.process.start.assert_called_once_with(runner, expected_args)
 
 
+def test_PythonProcessPane_stop_process():
+    """
+    Ensure that a process is terminated on PythonProcessPane.stop_process
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.stop_process()
+    ppp.process.terminate.assert_called_once_with()
+    ppp.process.waitForFinished.assert_called_once_with(10)
+
+
+def test_PythonProcessPane_stop_process_with_error():
+    """
+    If killing the child process encounters a problem (perhaps the
+    process is already dead), then log this and tidy up.
+    """
+    ppp = mu.interface.panes.PythonProcessPane()
+    ppp.process = mock.MagicMock()
+    ppp.process.waitForFinished.return_value = False
+    ppp.stop_process()
+    ppp.process.terminate.assert_called_once_with()
+    ppp.process.kill.assert_called_once_with()
+    ppp.process.waitForFinished.call_count == 2
+
+
 def test_PythonProcessPane_finished():
     """
     Check the functionality to handle the process finishing is correct.
