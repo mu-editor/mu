@@ -855,11 +855,7 @@ def test_Window_on_context_menu_with_repl():
     menu.insertAction = mock.MagicMock()
     menu.insertSeparator = mock.MagicMock()
     menu.exec_ = mock.MagicMock()
-    menu.actions = mock.MagicMock(
-        return_value=[
-            "foo",
-        ]
-    )
+    menu.actions = mock.MagicMock(return_value=["foo"])
     mock_tab.createStandardContextMenu = mock.MagicMock(return_value=menu)
     w.on_context_menu()
     assert mock_tab.createStandardContextMenu.call_count == 1
@@ -885,11 +881,7 @@ def test_Window_on_context_menu_with_process_runner():
     menu.insertAction = mock.MagicMock()
     menu.insertSeparator = mock.MagicMock()
     menu.exec_ = mock.MagicMock()
-    menu.actions = mock.MagicMock(
-        return_value=[
-            "foo",
-        ]
-    )
+    menu.actions = mock.MagicMock(return_value=["foo"])
     mock_tab.createStandardContextMenu = mock.MagicMock(return_value=menu)
     w.on_context_menu()
     assert mock_tab.createStandardContextMenu.call_count == 1
