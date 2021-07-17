@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2021-06-18 23:49+0900\n"
-"PO-Revision-Date: 2021-06-19 00:06+0900\n"
+"POT-Creation-Date: 2021-07-17 15:34+0900\n"
+"PO-Revision-Date: 2021-07-17 00:06+0900\n"
 "Last-Translator: Minoru Inachi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -85,7 +85,7 @@ msgstr ""
 "&nbsp;4. 「ブラウズ」ボタンを使って .bin ファイルを選択<br/>"
 "&nbsp;5. 「ファームウェアの消去と転送」を押す"
 
-#: ./mu/interface/dialogs.py:285 ./mu/modes/web.py:83
+#: ./mu/interface/dialogs.py:285 ./mu/modes/web.py:82
 msgid "Browse"
 msgstr "ブラウズ"
 
@@ -93,7 +93,7 @@ msgstr "ブラウズ"
 msgid "Erase && write firmware"
 msgstr "ファームウェアの消去と転送"
 
-#: ./mu/interface/dialogs.py:460 ./mu/interface/main.py:1276
+#: ./mu/interface/dialogs.py:460 ./mu/interface/main.py:1358
 msgid "Mu Administration"
 msgstr "Mu 環境設定"
 
@@ -137,7 +137,7 @@ msgstr "すべて置換しますか？"
 msgid "Third Party Package Status"
 msgstr "サードパーティパッケージの状態"
 
-#: ./mu/interface/editor.py:311 ./mu/logic.py:1308
+#: ./mu/interface/editor.py:319 ./mu/logic.py:1308
 msgid "untitled"
 msgstr "無題"
 
@@ -237,139 +237,143 @@ msgstr "ファイルを閉じる"
 msgid "Mu {}"
 msgstr ""
 
-#: ./mu/interface/main.py:523
+#: ./mu/interface/main.py:542
+msgid "Copy selected text to REPL"
+msgstr "選択したテキストを REPL にコピー"
+
+#: ./mu/interface/main.py:605
 msgid "Filesystem on "
 msgstr "ファイルシステム: "
 
-#: ./mu/interface/main.py:574
+#: ./mu/interface/main.py:656
 msgid "Python3 data tuple"
 msgstr "Python3 データタプル"
 
-#: ./mu/interface/main.py:586
+#: ./mu/interface/main.py:668
 msgid "Python3 (Jupyter)"
 msgstr ""
 
-#: ./mu/interface/main.py:593
+#: ./mu/interface/main.py:675
 msgid "{} REPL"
 msgstr ""
 
-#: ./mu/interface/main.py:612
+#: ./mu/interface/main.py:694
 msgid "{} Plotter"
 msgstr "{} プロッター"
 
-#: ./mu/interface/main.py:662
+#: ./mu/interface/main.py:744
 msgid "Running: {}"
 msgstr "実行中: {}"
 
-#: ./mu/interface/main.py:711
+#: ./mu/interface/main.py:793
 msgid "Debug Inspector"
 msgstr "デバッグインスペクター"
 
-#: ./mu/interface/main.py:723
+#: ./mu/interface/main.py:805
 msgid "Name"
 msgstr "名前"
 
-#: ./mu/interface/main.py:723
+#: ./mu/interface/main.py:805
 msgid "Value"
 msgstr "値"
 
-#: ./mu/interface/main.py:761
+#: ./mu/interface/main.py:843
 msgid "(A list of {} items.)"
 msgstr "({} 項目のリスト。)"
 
-#: ./mu/interface/main.py:780
+#: ./mu/interface/main.py:862
 msgid "(A dict of {} items.)"
 msgstr "({} 項目の辞書。)"
 
-#: ./mu/interface/main.py:961
+#: ./mu/interface/main.py:1043
 msgid "Mu"
 msgstr ""
 
-#: ./mu/interface/main.py:1263
+#: ./mu/interface/main.py:1345
 msgid "Mu's current mode of behaviour."
 msgstr "現在の Mu 動作モード。"
 
-#: ./mu/interface/main.py:1318
+#: ./mu/interface/main.py:1400
 msgid "Detected new {} device: {}."
 msgstr "新規の {} デバイスを検出しました: {}"
 
-#: ./mu/interface/main.py:1322 ./mu/logic.py:1596
+#: ./mu/interface/main.py:1404 ./mu/logic.py:1596
 msgid "Detected new {} device."
 msgstr "新規の {} デバイスを検出しました。"
 
-#: ./mu/interface/panes.py:489
+#: ./mu/interface/panes.py:497
 msgid "File already exists; overwrite it?"
 msgstr "ファイルが既にあります。上書きしますか？"
 
-#: ./mu/interface/panes.py:490
+#: ./mu/interface/panes.py:498
 msgid "File already exists"
 msgstr "ファイルが既にあります"
 
-#: ./mu/interface/panes.py:523
+#: ./mu/interface/panes.py:531
 msgid "Copying '{}' to device."
 msgstr "'{}' をデバイスにコピー中。"
 
-#: ./mu/interface/panes.py:532
+#: ./mu/interface/panes.py:540
 msgid "'{}' successfully copied to device."
 msgstr "'{}' のデバイスへのコピーが成功しました。"
 
-#: ./mu/interface/panes.py:541
+#: ./mu/interface/panes.py:549
 msgid "Delete (cannot be undone)"
 msgstr "削除 (元に戻せません)"
 
-#: ./mu/interface/panes.py:547
+#: ./mu/interface/panes.py:555
 msgid "Deleting '{}' from device."
 msgstr "デバイスから '{}' を削除中。"
 
-#: ./mu/interface/panes.py:556
+#: ./mu/interface/panes.py:564
 msgid "'{}' successfully deleted from device."
 msgstr "'{}' のデバイスからの削除が成功しました。"
 
-#: ./mu/interface/panes.py:589
+#: ./mu/interface/panes.py:597
 msgid "Getting '{}' from device. Copying to '{}'."
 msgstr "デバイスから '{}' を取得中。'{}' にコピー中。"
 
-#: ./mu/interface/panes.py:600
+#: ./mu/interface/panes.py:608
 msgid "Successfully copied '{}' from the device to your computer."
 msgstr "デバイスからコンピュータへの '{}' のコピーが成功しました。"
 
-#: ./mu/interface/panes.py:617
+#: ./mu/interface/panes.py:625
 msgid "Open in Mu"
 msgstr "Mu で開く"
 
-#: ./mu/interface/panes.py:620
+#: ./mu/interface/panes.py:628
 msgid "Write to main.py on device"
 msgstr "main.py をデバイスに書き込む"
 
-#: ./mu/interface/panes.py:623
+#: ./mu/interface/panes.py:631
 msgid "Open"
 msgstr "開く"
 
-#: ./mu/interface/panes.py:629
+#: ./mu/interface/panes.py:637
 msgid "Opening '{}'"
 msgstr "'{}' を読込み中"
 
-#: ./mu/interface/panes.py:672
+#: ./mu/interface/panes.py:680
 msgid "Files on your device:"
 msgstr "デバイスのファイル:"
 
-#: ./mu/interface/panes.py:674
+#: ./mu/interface/panes.py:682
 msgid "Files on your computer:"
 msgstr "コンピュータのファイル:"
 
-#: ./mu/interface/panes.py:746
+#: ./mu/interface/panes.py:754
 msgid "There was a problem getting the list of files on the device. Please check Mu's logs for technical information. Alternatively, try unplugging/plugging-in your device and/or restarting Mu."
 msgstr "micro:bit 内のファイルのリストを取得する際に問題が発生しました。技術的な情報は Mu のログを確認してください。または micro:bit のプラグを抜き差しするか、Muを再起動してみてください。"
 
-#: ./mu/interface/panes.py:761
+#: ./mu/interface/panes.py:769
 msgid "There was a problem copying the file '{}' onto the device. Please check Mu's logs for more information."
 msgstr "micro:bit にファイル '{}' をコピーしている際に問題が発生しました。詳しくは Mu のログを確認してください。"
 
-#: ./mu/interface/panes.py:773
+#: ./mu/interface/panes.py:781
 msgid "There was a problem deleting '{}' from the device. Please check Mu's logs for more information."
 msgstr "micro:bit 内のファイル '{}' を削除している際にに問題が発生しました。詳しくは Mu のログを確認してください。"
 
-#: ./mu/interface/panes.py:785
+#: ./mu/interface/panes.py:793
 msgid "There was a problem getting '{}' from the device. Please check Mu's logs for more information."
 msgstr "micro:bit 内のファイル '{}' を取得している際に問題が発生しました。詳しくは Mu のログを確認してください。"
 
@@ -903,7 +907,7 @@ msgid "Debug your Python 3 code."
 msgstr "Python 3 コードをデバッグします。"
 
 #: ./mu/modes/debugger.py:61 ./mu/modes/pygamezero.py:123
-#: ./mu/modes/python3.py:207 ./mu/modes/web.py:137
+#: ./mu/modes/python3.py:207 ./mu/modes/web.py:136
 msgid "Stop"
 msgstr "停止"
 
@@ -943,11 +947,11 @@ msgstr "ステップアウト"
 msgid "Step out of a function."
 msgstr "関数からステップアウトします。"
 
-#: ./mu/modes/debugger.py:162
+#: ./mu/modes/debugger.py:161
 msgid "Your script has finished running."
 msgstr "スクリプトの実行を終了しました。"
 
-#: ./mu/modes/debugger.py:267
+#: ./mu/modes/debugger.py:266
 msgid ""
 "Unable to connect to the Python debugger.\n"
 "\n"
@@ -955,15 +959,15 @@ msgstr ""
 "Python デバッガーに接続できません。\n"
 "\n"
 
-#: ./mu/modes/debugger.py:356
+#: ./mu/modes/debugger.py:355
 msgid "Debugger info: {}"
 msgstr "デバッガー情報: {}"
 
-#: ./mu/modes/debugger.py:363
+#: ./mu/modes/debugger.py:362
 msgid "Debugger warning: {}"
 msgstr "デバッガー警告: {}"
 
-#: ./mu/modes/debugger.py:371
+#: ./mu/modes/debugger.py:370
 msgid "Debugger error: {}"
 msgstr "デバッガーエラー: {}"
 
@@ -976,7 +980,7 @@ msgid "Write MicroPython on ESP8266/ESP32 boards."
 msgstr "ESP8266/ESP32 ボードの MicroPython を編集。"
 
 #: ./mu/modes/esp.py:71 ./mu/modes/python3.py:150 ./mu/modes/python3.py:199
-#: ./mu/modes/web.py:76 ./mu/modes/web.py:129
+#: ./mu/modes/web.py:75 ./mu/modes/web.py:128
 msgid "Run"
 msgstr "実行"
 
@@ -1220,7 +1224,7 @@ msgstr "プレイ"
 msgid "Play your Pygame Zero game."
 msgstr "Pygame Zero ゲームをプレイします。"
 
-#: ./mu/modes/pygamezero.py:72 ./mu/modes/web.py:104
+#: ./mu/modes/pygamezero.py:72 ./mu/modes/web.py:103
 msgid "Images"
 msgstr "イメージ"
 
@@ -1288,75 +1292,75 @@ msgstr "スクリプトまたは REPL からのデータをプロットします
 msgid "Stop your Python script."
 msgstr "Python スクリプトを停止します。"
 
-#: ./mu/modes/python3.py:281
+#: ./mu/modes/python3.py:280
 msgid "Starting iPython REPL."
 msgstr "iPython REPL を始動します。"
 
-#: ./mu/modes/python3.py:286
+#: ./mu/modes/python3.py:285
 msgid "Stopping iPython REPL (this may take a short amount of time)."
 msgstr "iPython REPL を停止(少し時間がかかります)。"
 
-#: ./mu/modes/python3.py:378
+#: ./mu/modes/python3.py:377
 msgid "REPL started."
 msgstr "REPL が始動しました。"
 
-#: ./mu/modes/python3.py:387
+#: ./mu/modes/python3.py:386
 msgid "REPL stopped."
 msgstr "REPL が停止しました。"
 
-#: ./mu/modes/web.py:59
+#: ./mu/modes/web.py:58
 msgid "Web"
 msgstr ""
 
-#: ./mu/modes/web.py:61
+#: ./mu/modes/web.py:60
 msgid "Build simple websites with the \"Flask\" web framework."
 msgstr "Web フレームワーク「Flask」でシンプルな Web サイトを構築。"
 
-#: ./mu/modes/web.py:77 ./mu/modes/web.py:130
+#: ./mu/modes/web.py:76 ./mu/modes/web.py:129
 msgid "Run the web server."
 msgstr "web サーバを実行します。"
 
-#: ./mu/modes/web.py:84
+#: ./mu/modes/web.py:83
 msgid "Open your website in a browser."
 msgstr "ブラウザで web サイトを開きます。"
 
-#: ./mu/modes/web.py:90
+#: ./mu/modes/web.py:89
 msgid "Templates"
 msgstr "テンプレート"
 
-#: ./mu/modes/web.py:91
+#: ./mu/modes/web.py:90
 msgid "Load HTML templates used by your website."
 msgstr "web サイトで使う HTML テンプレートを読み込みます。"
 
-#: ./mu/modes/web.py:97
+#: ./mu/modes/web.py:96
 msgid "CSS"
 msgstr ""
 
-#: ./mu/modes/web.py:98
+#: ./mu/modes/web.py:97
 msgid "Load CSS files used by your website."
 msgstr "web サイトで使う CSS ファイルを読み込みます。"
 
-#: ./mu/modes/web.py:105
+#: ./mu/modes/web.py:104
 msgid "Open the directory containing images used by your website."
 msgstr "web サイトで使う画像のあるディレクトリを開きます。"
 
-#: ./mu/modes/web.py:138
+#: ./mu/modes/web.py:137
 msgid "Stop the web server."
 msgstr "web サーバを停止します。"
 
-#: ./mu/modes/web.py:158
+#: ./mu/modes/web.py:157
 msgid "This is not a Python file!"
 msgstr "これは Python ファイルではありません！"
 
-#: ./mu/modes/web.py:159
+#: ./mu/modes/web.py:158
 msgid "Mu is only able to serve a Python file. Please make sure the current tab in Mu is the one for your web application and then try again."
 msgstr "Mu は Python ファイルしか扱えません。Mu の現在のタブが Web アプリケーションのタブであることを確認してから、もう一度試してみてください。"
 
-#: ./mu/modes/web.py:266
+#: ./mu/modes/web.py:256
 msgid "Cannot Open Website - Server not Running."
 msgstr "Web サイトを開ません - サーバが動作していません。"
 
-#: ./mu/modes/web.py:267
+#: ./mu/modes/web.py:257
 msgid "You must have the local web server running in order to view your website in a browser. Click on the 'Run' button to start the server and then try again."
 msgstr "ブラウザで Web サイトを表示するには、ローカルの Web サーバーが起動している必要があります。「実行」ボタンをクリックしてサーバーを起動して、もう一度試してください。"
 
