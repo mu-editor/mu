@@ -65,7 +65,7 @@ def get_default_workspace():
             )
             workspace_dir = settings_workspace
         else:
-            logger.warn(
+            logger.warning(
                 "Workspace {} in the settings file is not a valid "
                 "directory; using default {}".format(
                     settings_workspace, workspace_dir

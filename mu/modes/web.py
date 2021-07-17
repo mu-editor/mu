@@ -19,7 +19,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import logging
 import webbrowser
-import signal
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, FLASK_APIS
 from mu.resources import load_icon
@@ -192,16 +191,7 @@ class WebMode(BaseMode):
         """
         logger.debug("Stopping Flask app.")
         if self.runner:
-            try:
-                pid = self.runner.process.processId()
-                os.kill(pid, signal.SIGINT)
-            except Exception as ex:
-                # Couldn't kill child process. Perhaps it's already finished
-                # because it encountered an error. In any case, log this for
-                # debugging purposes.
-                logger.error("Problem stopping local web server.")
-                logger.error(ex)
-            self.runner.process.waitForFinished()
+            self.runner.stop_process()
             self.runner = None
         self.view.remove_python_runner()
 

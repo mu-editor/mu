@@ -85,8 +85,10 @@ class EditorPane(QsciScintilla):
     Represents the text editor.
     """
 
-    # Signal fired when a script or hex is droped on this editor
+    # Signal fired when a script or hex is droped on this editor.
     open_file = pyqtSignal(str)
+    # Signal fired when a context menu is requested.
+    context_menu = pyqtSignal()
 
     def __init__(self, path, text, newline=NEWLINE):
         super().__init__()
@@ -122,6 +124,12 @@ class EditorPane(QsciScintilla):
         self.setModified(False)
         self.breakpoint_handles = set()
         self.configure()
+
+    def contextMenuEvent(self, event):
+        """
+        A context menu (right click) has been actioned.
+        """
+        self.context_menu.emit()
 
     def wheelEvent(self, event):
         """

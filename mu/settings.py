@@ -155,7 +155,7 @@ class SettingsBase(object):
         # If this settings file is tagged readonly don't try to save it
         #
         if self.readonly:
-            logger.warn("Settings is readonly; won't save")
+            logger.warning("Settings is readonly; won't save")
             return
 
         #
@@ -163,7 +163,7 @@ class SettingsBase(object):
         #
         saving_to_filepath = getattr(self, "filepath", None)
         if not saving_to_filepath:
-            logger.warn("No filepath set; won't save")
+            logger.warning("No filepath set; won't save")
             return
 
         logger.debug("Saving to %s", saving_to_filepath)
@@ -217,7 +217,7 @@ class SettingsBase(object):
                     serialised_settings = {}
                 self.update(serialised_settings)
         except FileNotFoundError:
-            logger.warn("No settings file found at %s; skipping", filepath)
+            logger.warning("No settings file found at %s; skipping", filepath)
         except OSError:
             logger.exception("Unable to read file at %s; skipping", filepath)
 

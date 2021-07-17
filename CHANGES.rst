@@ -1,6 +1,53 @@
 Release History
 ---------------
 
+1.1.0-beta.5
+============
+
+This is a beta release and may contain bugs or unfinished features. Please
+provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
+
+* We had hoped for a regular (fortnightly) release tempo. Due to the voluntary
+  nature of Mu's development and because some of the updates in this release
+  were quite challenging (see below), this release is a LOT later than we had
+  planned.
+* Several of us made minor updates and fixes (such as ensuring various packages
+  had explicit dependency versions listed, updating versions for Mu's own
+  dependencies and so on).
+* Right clicking on highlighted text in the editor, with the REPL active, now
+  has an additional option added to the context menu: to correctly paste the
+  text from the editor into the REPL. Thanks to Professor Chris Rogers of
+  Tufts University for suggesting this feature.
+* The multi-talented Dan Halbert of Adafruit very kindly fixed a bug in the
+  Adafruit board handling when on run on new Apple M1 hardware. Thank you Dan
+  for your valuable contribution.
+* A huge amount of work by Tim and Carlos has gone into analysing the crash
+  reports from recent beta releases of Mu. This has resulted in significant
+  effort to address many of the bugs encountered, many of which related to
+  edge cases encountered by the new virtual environment feature. Tim and Carlos
+  have created many fixes and checks to ensure these bugs are either completely
+  fixed or are, at least, mitigated in more helpful ways. This has been a
+  challenging and "fiddly" bit of work, so kudos and thanks, as always, to both
+  Tim and Carlos for their continued efforts.
+* Carlos has also updated the version of MicroPython used in the BBC micro:bit
+  mode to the latest 2.0.0-beta.5 version.
+* In addition, Carlos has ensured that the micro:bit mode flashes files onto
+  the micro:bit using the correctly memory aligned hex string.
+* Github user ajs256 has ensured the crash reporter doesn't kick in when a
+  ``KeyboardInterrupt`` is triggered in Mu (CTRL-C).
+* Sometimes in Mu for Linux, the expected ``.py`` file extension wasn't added
+  to new files. This depended on the user's graphical shell. Mu now checks the
+  output from the shell and, if requires, will add ``.py`` itself.
+* Various fixes to Mu's logging make it more robust, clear and useful.
+* Tiago fixed a late breaking bug in packaging Mu for OSX. All fixed in a
+  matter of hours. Amazing work!
+
+There are perhaps a couple more features we want to land in the coming weeks,
+and then we will start the work of ensuring internationalization is fully up
+to date, the website reflects the new features and various changes, and PUP
+will be able to produce redistributable appimages for Linux. Then we will have
+reached 1.1.0-final. :-)
+
 1.1.0-beta.4
 ============
 

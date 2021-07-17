@@ -39,7 +39,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QHBoxLayout,
 )
-from PyQt5.QtGui import QKeySequence, QStandardItemModel
+from PyQt5.QtGui import QKeySequence, QStandardItemModel, QCursor
 from mu import __version__
 from mu.interface.dialogs import (
     ModeSelector,
@@ -420,6 +420,13 @@ class Window(QMainWindow):
             "Python (*.py)",
         )
         self.previous_folder = os.path.dirname(path)
+        # Ensure there's a .py extension if none is provided by the user.
+        # See issue #1571.
+        name, ext = os.path.splitext(os.path.basename(path))
+        if (not name.startswith(".")) and (not ext):
+            # The file is not a . (dot) file and there's no extension, so add
+            # .py as default.
+            path += ".py"
         logger.debug("Getting save path: {}".format(path))
         return path
 
@@ -460,6 +467,8 @@ class Window(QMainWindow):
         def on_open_file(file):
             # Bubble the signal up
             self.open_file.emit(file)
+
+        new_tab.context_menu.connect(self.on_context_menu)
 
         self.tabs.setCurrentIndex(new_tab_index)
         self.connect_zoom(new_tab)
@@ -502,6 +511,79 @@ class Window(QMainWindow):
             if widget.isModified():
                 return True
         return False
+
+    def on_context_menu(self):
+        """
+        Called when a user right-clicks on an editor pane.
+
+        If the REPL is active AND there is selected text in the current editor
+        pane, modify the default context menu to include a paste to REPL
+        option. Otherwise, just display the default context menu.
+        """
+        # Create a standard context menu.
+        menu = self.current_tab.createStandardContextMenu()
+        # Flag to indicate if there is a section of text highlighted.
+        has_selection = any([x > -1 for x in self.current_tab.getSelection()])
+        # Flag to indicate if the REPL pane is active.
+        has_repl = hasattr(self, "repl") and self.repl
+        # Flag to indicate if the Python process runner pane is active and in
+        # interactive Python3 mode (pasting into other "standard" Python modes
+        # doesn't make sense).
+        has_runner = (
+            hasattr(self, "process_runner")
+            and self.process_runner
+            and self.process_runner.is_interactive
+        )
+        if has_selection and (has_repl or has_runner):
+            # Text selected with REPL/process context, so add the bespoke
+            # "copy to repl" item to the standard context menu to handle this
+            # situation.
+            actions = menu.actions()
+            copy_to_repl = QAction(_("Copy selected text to REPL"), menu)
+            copy_to_repl.triggered.connect(self.copy_to_repl)
+            menu.insertAction(actions[0], copy_to_repl)
+            menu.insertSeparator(actions[0])
+        # Display menu.
+        menu.exec_(QCursor.pos())
+
+    def copy_to_repl(self):
+        """
+        Copies currently selected text in the editor, into the active REPL
+        widget and sets focus to the REPL widget. The final line pasted into
+        the REPL waits for RETURN to be pressed by the user (this appears to be
+        the default behaviour for pasting into the REPL widget).
+        """
+        line_from, pos_from, line_to, pos_to = self.current_tab.getSelection()
+        lines = self.current_tab.text().split("\n")
+        if line_from == line_to:
+            # Paste a fragment from an individual line.
+            to_paste = lines[line_from][pos_from:pos_to]
+        else:
+            # Multi-line paste (paste all lines selected).
+            selected = lines[line_from : line_to + 1]
+            # Ensure the correct indentation.
+            # If the first line starts with whitespace, work out the number of
+            # spaces and deduct said number of whitespace from start of all
+            # other lines. That's perhaps the best we can do.
+            if selected and selected[0].startswith(" "):
+                indent = 0
+                for char in selected[0]:
+                    if char.isspace():
+                        indent += 1
+                    else:
+                        break
+                selected = [line[indent:] for line in selected]
+            to_paste = "\n".join(selected)
+        logger.info("Pasting to REPL")
+        logger.info("\n" + to_paste)
+        clipboard = QApplication.clipboard()
+        clipboard.setText(to_paste)
+        if hasattr(self, "repl_pane") and self.repl_pane:
+            self.repl_pane.paste()
+            self.repl_pane.setFocus()
+        elif hasattr(self, "process_runner") and self.process_runner:
+            self.process_runner.paste()
+            self.process_runner.setFocus()
 
     def on_stdout_write(self, data):
         """

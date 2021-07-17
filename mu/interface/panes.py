@@ -192,7 +192,15 @@ class MicroPythonREPLPane(QTextEdit):
             to_paste = (
                 clipboard.text().replace("\n", "\r").replace("\r\r", "\r")
             )
-            self.connection.write(bytes(to_paste, "utf8"))
+            if "\r" in to_paste:
+                # Enter MicroPython's paste mode for multi-line pastes so
+                # indentation isn't messed up.
+                self.connection.write(b"\x05")  # Enter paste mode.
+                self.connection.write(bytes(to_paste, "utf8"))  # Paste.
+                self.connection.write(b"\x04")  # Exit paste mode.
+            else:
+                # Only a fragment to paste, so just insert as is.
+                self.connection.write(bytes(to_paste, "utf8"))  # Paste.
 
     def context_menu(self):
         """
@@ -833,6 +841,7 @@ class PythonProcessPane(QTextEdit):
         self.history_position = 0  # current position when navigation history.
         self.stdout_buffer = b""  # contains non-decoded bytes from stdout.
         self.reading_stdout = False  # flag showing if already reading stdout.
+        self.is_interactive = False  # flag if the process is interactive mode.
 
     def start_process(
         self,
@@ -867,6 +876,7 @@ class PythonProcessPane(QTextEdit):
         If python_args is given, these are passed as arguments to the Python
         interpreter used to launch the child process.
         """
+        self.is_interactive = interactive
         if not envars:  # Envars must be a list if not passed a value.
             envars = []
         envars = [(name, v) for (name, v) in envars if name != "PYTHONPATH"]
@@ -939,6 +949,18 @@ class PythonProcessPane(QTextEdit):
             self.process.setProcessEnvironment(env)
             self.process.start(interpreter, args)
             self.running = True
+
+    def stop_process(self):
+        if self.process:
+            self.process.terminate()
+            terminated = self.process.waitForFinished(10)
+            if not terminated:
+                self.process.kill()
+                self.process.waitForFinished()
+            self.running = False
+
+    def _del_(self):
+        self.stop_process()
 
     def finished(self, code, status):
         """

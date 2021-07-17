@@ -3,7 +3,6 @@
 Tests for the flask based web mode.
 """
 import os
-import signal
 from mu.modes.web import WebMode, CODE_TEMPLATE
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, FLASK_APIS
 from unittest import mock
@@ -161,34 +160,9 @@ def test_stop_server():
     view = mock.MagicMock()
     wm = WebMode(editor, view)
     mock_runner = mock.MagicMock()
-    mock_runner.process.processId.return_value = 666  # ;-)
     wm.runner = mock_runner
-    with mock.patch("os.kill") as mock_kill:
-        wm.stop_server()
-        mock_kill.assert_called_once_with(666, signal.SIGINT)
-    mock_runner.process.waitForFinished.assert_called_once_with()
-    assert wm.runner is None
-    view.remove_python_runner.assert_called_once_with()
-
-
-def test_stop_server_with_error():
-    """
-    If killing the server's child process encounters a problem (perhaps the
-    process is already dead), then log this and tidy up.
-    """
-    editor = mock.MagicMock()
-    view = mock.MagicMock()
-    wm = WebMode(editor, view)
-    mock_runner = mock.MagicMock()
-    mock_runner.process.processId.return_value = 666  # ;-)
-    wm.runner = mock_runner
-    with mock.patch(
-        "os.kill", side_effect=Exception("Bang")
-    ) as mock_kill, mock.patch("mu.modes.web.logger.error") as mock_log:
-        wm.stop_server()
-        mock_kill.assert_called_once_with(666, signal.SIGINT)
-        assert mock_log.call_count == 2
-    mock_runner.process.waitForFinished.assert_called_once_with()
+    wm.stop_server()
+    mock_runner.stop_process.assert_called_once_with()
     assert wm.runner is None
     view.remove_python_runner.assert_called_once_with()
 
