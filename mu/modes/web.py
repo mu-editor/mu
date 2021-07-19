@@ -166,6 +166,23 @@ class WebMode(BaseMode):
             # If needed, save the script.
             if tab.isModified():
                 self.editor.save_tab_to_file(tab)
+            # Check for template files.
+            template_path = os.path.join(
+                os.path.dirname(os.path.abspath(tab.path)), "templates"
+            )
+            if not os.path.isdir(template_path):
+                # Oops... show a helpful message and stop.
+                msg = _("Cannot find template directory!")
+                info = _(
+                    "To serve your web application, there needs to be a "
+                    "'templates' directory in the same place as your web "
+                    "application's Python code. Please fix this and try "
+                    "again. (Hint: Mu was expecting the `templates` directory "
+                    "to be here: " + template_path + ")"
+                )
+                self.view.show_message(msg, info)
+                self.stop_server()
+                return
             logger.debug(tab.text())
             envars = self.editor.envars
             envars.append(("FLASK_APP", os.path.basename(tab.path)))
