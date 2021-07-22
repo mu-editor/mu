@@ -1,0 +1,65 @@
+name: Bug Report
+description: Report a problem with the Mu editor.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+
+        Please answer each question below to the best of your ability.
+        It's okay to leave some blank if it doesn't apply to your problem.
+  - type: input
+    attributes:
+      label: What were you trying to do?
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: What steps did you take to trigger the issue?
+    validations:
+      required: false
+  - type: input
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: What actually happened?
+    validations:
+      required: false
+  - type: input
+    attributes:
+      label: Operating System Version
+    validations:
+      required: false
+  - type: input
+    attributes:
+      label: Mu Version
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Other Info
+      description: You can put any info here that you think might help us track down the bug.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Editor Log
+      description: |
+        Please remember to attach a **copy of the full log files for Mu**. You
+        can get the logs by clicking on the cog icon in the bottom right of the
+        editor window.
+        Click on the logs and use CTRL-A to select all, then CTRL-C to copy and
+        CTRL-V to paste the contents into the issue.
+        If Mu doesn't open, you can find the logs in one of these locations,
+        depending on your OS:
+        * Windows: `%LOCALAPPDATA%\python\mu\Logs`
+        * macOS: `~/Library/Logs/mu`
+        * Linux: `~/.cache/mu/`
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: Thank you for contributing to Mu! :-)

@@ -250,11 +250,18 @@ class FileTabs(QTabWidget):
         # It does mean we assume all tabs are EditorPane
         @widget.modificationChanged.connect
         def on_modified():
-            if widget.isModified():
-                state_lbl.setPixmap(load_pixmap("document-dirty.svg"))
-            else:
-                # This icon is actually empty
-                state_lbl.setPixmap(load_pixmap("document.svg"))
+            # Wrapped in a try/except because sometimes state_lbl is destroyed
+            # by Qt before widget is GC'd by Python. Since there's no way to
+            # easily check the status of state_lbl, wrapping in a try/except
+            # for a RuntimeError is the simplest possible solution.
+            try:
+                if widget.isModified():
+                    state_lbl.setPixmap(load_pixmap("document-dirty.svg"))
+                else:
+                    # This icon is actually empty
+                    state_lbl.setPixmap(load_pixmap("document.svg"))
+            except RuntimeError:  # pragma: no cover
+                pass
 
         # Setup our own close button since we are overriding the built in one
         close_btn = QPushButton(container)

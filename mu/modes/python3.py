@@ -256,8 +256,7 @@ class PythonMode(BaseMode):
         """
         logger.debug("Stopping script.")
         if self.runner:
-            self.runner.process.kill()
-            self.runner.process.waitForFinished()
+            self.runner.stop_process()
             self.runner = None
         self.view.remove_python_runner()
         self.set_buttons(plotter=True, repl=True)
