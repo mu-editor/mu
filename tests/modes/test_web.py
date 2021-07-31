@@ -136,6 +136,23 @@ def test_start_server_not_python_file():
     assert view.add_python3_runner.call_count == 0
 
 
+def test_start_server_no_templates():
+    """
+    If the user attempts to start the server from a location without a
+    templates directory, then complain and abort.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab.path = "foo.py"
+    wm = WebMode(editor, view)
+    wm.stop_server = mock.MagicMock()
+    with mock.patch("os.path.isdir", return_value=False):
+        wm.start_server()
+    assert view.show_message.call_count == 1
+    wm.stop_server.assert_called_once_with()
+    assert view.add_python3_runner.call_count == 0
+
+
 def test_start_server():
     """
     The server is started and stored as the runner associated with the mode.
@@ -146,7 +163,8 @@ def test_start_server():
     view.current_tab.isModified.return_value = True
     wm = WebMode(editor, view)
     wm.stop_server = mock.MagicMock()
-    wm.start_server()
+    with mock.patch("os.path.isdir", return_value=True):
+        wm.start_server()
     assert view.add_python3_runner.call_count == 1
     view.add_python3_runner().process.waitForStarted.assert_called_once_with()
 
