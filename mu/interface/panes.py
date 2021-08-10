@@ -44,7 +44,6 @@ from PyQt5.QtWidgets import (
     QGridLayout,
     QLabel,
     QMenu,
-    QApplication,
     QTreeView,
 )
 from PyQt5.QtGui import (
@@ -183,15 +182,12 @@ class MicroPythonREPLPane(QTextEdit):
             r"\x1B\[(?P<count>[\d]*)(;?[\d]*)*(?P<action>[A-Za-z])"
         )
 
-    def paste(self):
+    def insertFromMimeData(self, source):
         """
-        Grabs clipboard contents then sends to the REPL.
+        Insert mime data by sending it to the REPL
         """
-        clipboard = QApplication.clipboard()
-        if clipboard and clipboard.text():
-            to_paste = (
-                clipboard.text().replace("\n", "\r").replace("\r\r", "\r")
-            )
+        if source and source.text():
+            to_paste = source.text().replace("\n", "\r").replace("\r\r", "\r")
             if "\r" in to_paste:
                 # Enter MicroPython's paste mode for multi-line pastes so
                 # indentation isn't messed up.
@@ -991,14 +987,13 @@ class PythonProcessPane(QTextEdit):
         menu.addAction("Paste", self.paste, paste_keys)
         menu.exec_(QCursor.pos())
 
-    def paste(self):
+    def insertFromMimeData(self, source):
         """
-        Grabs clipboard contents then writes to the REPL.
+        Insert mime data by sending it to the REPL
         """
-        clipboard = QApplication.clipboard()
-        if clipboard and clipboard.text():
+        if source and source.text():
             # normalize for Windows line-ends.
-            text = "\n".join(clipboard.text().splitlines())
+            text = "\n".join(source.text().splitlines())
             if text:
                 self.parse_paste(text)
 
