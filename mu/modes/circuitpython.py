@@ -200,6 +200,12 @@ class CircuitPythonMode(MicroPythonMode):
                             repr(e), mount_command
                         )
                     )
+            if os.path.exists('/mnt/chromeos'):
+                # We're on ChromeOS
+                if os.path.exists('/mnt/chromeos/removable/CIRCUITPY/'):
+                    device_dir = '/mnt/chromeos/removable/CIRCUITPY/'
+                else:
+                    self.view.show_message('If your Circuit Python device is plugged in, you need to "Share with Linux" on the CIRCUITPY drive in the "Files" app then restart Mu.')
 
         elif os.name == "nt":
             # We're on Windows.
