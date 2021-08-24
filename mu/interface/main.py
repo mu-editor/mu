@@ -1083,12 +1083,21 @@ class Window(QMainWindow):
         Makes the editor 80% of the width*height of the screen and centres it
         when none of x, y, w and h is passed in; otherwise uses the passed in
         values to position and size the editor window.
+
+        If the X or Y value will be off the screen, these are reset to None
+        (thus stopping the window being drawn in a hard-to-reach place). See
+        issue #1613 for context.
         """
         screen_width, screen_height = self.screen_size()
         w = int(screen_width * 0.8) if w is None else w
         h = int(screen_height * 0.8) if h is None else h
         self.resize(w, h)
         size = self.geometry()
+        # Ensure the window isn't added off the screen.
+        if x and (x <= 0 or x > screen_width):
+            x = None
+        if y and (y <= 0 or y > screen_height):
+            y = None
         x = (screen_width - size.width()) / 2 if x is None else x
         y = (screen_height - size.height()) / 2 if y is None else y
         self.move(x, y)
