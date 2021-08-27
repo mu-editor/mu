@@ -717,6 +717,7 @@ class VirtualEnvironment(object):
             self.interpreter,
             "-c",
             'import sys; print("%s%s" % sys.version_info[:2])',
+            shell=True if self._is_windows else False,
         )
         if not ok:
             raise VirtualEnvironmentEnsureError(
@@ -740,7 +741,10 @@ class VirtualEnvironment(object):
         for module, *_ in wheels.mode_packages:
             logger.debug("Verifying import of: %s", module)
             ok, output = self.run_subprocess(
-                self.interpreter, "-c", "import %s" % module
+                self.interpreter,
+                "-c",
+                "import %s" % module,
+                shell=True if self._is_windows else False,
             )
             if not ok:
                 raise VirtualEnvironmentEnsureError(
