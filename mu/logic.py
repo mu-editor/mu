@@ -765,6 +765,7 @@ class Editor(QObject):
         self.envars = []  # See restore session and show_admin
         self.minify = False
         self.microbit_runtime = ""
+        self.user_locale = ""  # user defined language locale
         self.connected_devices = DeviceList(self.modes, parent=self)
         self.current_device = None
         self.find = ""
@@ -918,6 +919,11 @@ class Editor(QObject):
         if "venv_path" in old_session:
             venv.relocate(old_session["venv_path"])
             venv.ensure()
+
+        if "locale" in old_session:
+            self.user_locale = old_session["locale"].strip()
+            if self.user_locale:
+                i18n.set_language(self.user_locale)
 
         old_window = old_session.get("window", {})
         self._view.size_window(**old_window)
@@ -1382,6 +1388,7 @@ class Editor(QObject):
                 "w": self._view.width(),
                 "h": self._view.height(),
             },
+            "locale": self.user_locale,
         }
         save_session(session)
         logger.info("Quitting.\n\n")
@@ -1401,6 +1408,7 @@ class Editor(QObject):
             "envars": envars,
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
+            "locale": self.user_locale,
         }
         baseline_packages, user_packages = venv.installed_packages()
         packages = user_packages
@@ -1438,6 +1446,8 @@ class Editor(QObject):
                 ]
                 old_packages = [p.lower() for p in user_packages]
                 self.sync_package_state(old_packages, new_packages)
+            if "locale" in new_settings:
+                self.user_locale = new_settings["locale"]
         else:
             logger.info("No admin settings changed.")
 
