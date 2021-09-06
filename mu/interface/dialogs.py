@@ -263,7 +263,7 @@ class LocaleWidget(QWidget):
         label = QLabel(
             _(
                 "Please select the language for Mu's user interface from the "
-                "choices listed below. <strong>Restart MU for these changes "
+                "choices listed below. <strong>Restart Mu for these changes "
                 "to take effect.</strong>"
             )
         )
