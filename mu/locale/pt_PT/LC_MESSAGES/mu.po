@@ -6,13 +6,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-07-15 12:49+0100\n"
-"PO-Revision-Date: 2018-07-15 20:32+0100\n"
+"PO-Revision-Date: 2021-09-09 22:57+0100\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
-"X-Generator: Poedit 2.0.9\n"
+"X-Generator: Poedit 3.0\n"
 "Last-Translator: \n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Language: pt_PT\n"
@@ -1307,3 +1307,12 @@ msgstr "REPL iniciado."
 #: mu/modes/python3.py:328
 msgid "REPL stopped."
 msgstr "REPL terminado."
+
+
+#: added by Vasco
+msgid "Tidy"
+msgstr "Arrumar"
+
+#: added by Vasco
+msgid "Tidy up the layout of your code."
+msgstr "Arrumar a formatação do código."
