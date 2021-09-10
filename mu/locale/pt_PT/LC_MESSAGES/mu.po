@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-07-15 12:49+0100\n"
-"PO-Revision-Date: 2021-09-09 22:57+0100\n"
+"PO-Revision-Date: 2021-09-10 01:02+0100\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,7 +23,8 @@ msgstr "Log em {}."
 
 #: mu/app.py:183
 msgid "Debugger requires a Python script filename to run."
-msgstr "O diagnóstico necessita do nome de um script Python."
+msgstr ""
+"O diagnóstico necessita que dês um nome de ficheiro à tua rotina Python."
 
 #: mu/debugger/client.py:106
 msgid ""
@@ -41,7 +42,7 @@ msgstr "A ligação a 'localhost' falhou."
 
 #: mu/interface/dialogs.py:55
 msgid "Select Mode"
-msgstr "Seleciona o modo"
+msgstr "Seleciona o Modo"
 
 #: mu/interface/dialogs.py:57
 msgid ""
@@ -60,7 +61,9 @@ msgstr ""
 #: mu/interface/dialogs.py:107
 msgid ""
 "When reporting a bug, copy and paste the content of the following log file."
-msgstr "Quando registares um bug, inclui o conteúdo deste ficheiro."
+msgstr ""
+"Quando registares um problema na aplicação ('bug'), inclui o conteúdo desta "
+"janela."
 
 #: mu/interface/dialogs.py:127
 msgid ""
@@ -70,9 +73,9 @@ msgid ""
 "Each separate enviroment variable should be on a new line and of the form:\n"
 "NAME=VALUE"
 msgstr ""
-"Estas variáveis de ambiente estarão definidas de cada vez que executares um "
-"script Python 3. Cada variável deve estar numa linha, sendo definida da "
-"forma:\n"
+"Estas variáveis de ambiente estarão definidas de cada vez que executares uma "
+"rotina Python 3. Cada variável deve estar escrita numa linha, sendo definida "
+"da forma:\n"
 "\n"
 "NOME=VALOR"
 
@@ -86,7 +89,7 @@ msgid ""
 "means use the default):"
 msgstr ""
 "Substituir o MicroPython embebido com o seguinte ficheiro 'hex' (se vazio, "
-"não haverá substituição)"
+"não haverá substituição):"
 
 #: mu/interface/dialogs.py:175 mu/interface/main.py:974
 msgid "Mu Administration"
@@ -94,7 +97,7 @@ msgstr "Administração do Mu"
 
 #: mu/interface/dialogs.py:186
 msgid "Current Log"
-msgstr "Log Actual"
+msgstr "Log Atual"
 
 #: mu/interface/dialogs.py:189
 msgid "Python3 Environment"
@@ -138,7 +141,7 @@ msgstr "Novo"
 
 #: mu/interface/main.py:72
 msgid "Create a new Python script."
-msgstr "Cria um script Python novo."
+msgstr "Cria uma nova rotina Python."
 
 #: mu/interface/main.py:73
 msgid "Load"
@@ -146,7 +149,7 @@ msgstr "Carregar"
 
 #: mu/interface/main.py:74
 msgid "Load a Python script."
-msgstr "Carrega um script Python."
+msgstr "Carrega uma rotina Python de um ficheiro."
 
 #: mu/interface/main.py:75
 msgid "Save"
@@ -154,7 +157,7 @@ msgstr "Guardar"
 
 #: mu/interface/main.py:76
 msgid "Save the current Python script."
-msgstr "Guarda o script Python visível."
+msgstr "Guarda a rotina Python visível num ficheiro."
 
 #: mu/interface/main.py:85
 msgid "Zoom-in"
@@ -170,7 +173,7 @@ msgstr "Diminuir"
 
 #: mu/interface/main.py:88
 msgid "Zoom out (to make the text smaller)."
-msgstr "Diminui o tamanho do texto Mu."
+msgstr "Diminui o tamanho do texto do Mu."
 
 #: mu/interface/main.py:89
 msgid "Theme"
@@ -186,7 +189,7 @@ msgstr "Verificar"
 
 #: mu/interface/main.py:94
 msgid "Check your code for mistakes."
-msgstr "Verifica se o teu código tem enganos."
+msgstr "Verifica se o teu código tem problemas."
 
 #: mu/interface/main.py:95
 msgid "Help"
@@ -194,7 +197,7 @@ msgstr "Ajuda"
 
 #: mu/interface/main.py:96
 msgid "Show help about Mu in a browser."
-msgstr "Mostra ajuda acerca do Mu no teu browser web."
+msgstr "Mostra ajuda acerca do Mu no teu 'browser'."
 
 #: mu/interface/main.py:97
 msgid "Quit"
@@ -779,7 +782,7 @@ msgstr ""
 
 #: mu/logic.py:1131
 msgid "Changed to {} mode."
-msgstr "Activado o modo {}."
+msgstr "Ativado o modo {}."
 
 #: mu/logic.py:1176
 msgid "Detected new {} device."
@@ -1082,7 +1085,7 @@ msgstr "O teu script é muito grande e o compactador não está disponível"
 
 #: mu/modes/microbit.py:288
 msgid "Your script is too long!"
-msgstr "O teu script é muito grande!"
+msgstr "A tua rotina é muito grande - tem muitas linhas!"
 
 #: mu/modes/microbit.py:368
 msgid "Flashing \"{}\" onto the micro:bit."
@@ -1104,7 +1107,7 @@ msgid ""
 "\n"
 "https://codewith.mu/"
 msgstr ""
-"O teu dispositivo é mais recente que esta versão do Mu. Por favor, actualiza "
+"O teu dispositivo é mais recente que esta versão do Mu. Por favor, atualiza "
 "o Mu.\n"
 "\n"
 "https://codewith.mu/"
@@ -1155,7 +1158,7 @@ msgid ""
 "can be active at any time. Toggle the file system off and try again."
 msgstr ""
 "O REPL e os ficheiros utilizam a mesma ligação USB. Só um deles pode estar "
-"activo de cada vez. Desactiva os ficheiros e tenta novamente."
+"ativo de cada vez. Desativa os ficheiros e tenta novamente."
 
 #: mu/modes/microbit.py:552
 msgid "The plotter and file system cannot work at the same time."
@@ -1167,7 +1170,7 @@ msgid ""
 "one can be active at any time. Toggle the file system off and try again."
 msgstr ""
 "O gráfico e os ficheiros utilizam a mesma ligação USB. Só um deles pode "
-"estar activo de cada vez. Desactiva os ficheiros e tenta novamente."
+"estar ativo de cada vez. Desativa os ficheiros e tenta novamente."
 
 #: mu/modes/microbit.py:566
 msgid "File system cannot work at the same time as the REPL or plotter."
@@ -1181,7 +1184,7 @@ msgid ""
 "Toggle the REPL and plotter off and try again."
 msgstr ""
 "Os ficheiros, REPL e gráfico utilizam a mesma ligação USB. Só um deles pode "
-"estar activo de cada vez. Desactiva o REPL e o gráfico, e tenta novamente."
+"estar ativo de cada vez. Desativa o REPL e o gráfico, e tenta novamente."
 
 #: mu/modes/microbit.py:590
 msgid ""
@@ -1267,7 +1270,7 @@ msgstr "Correr"
 
 #: mu/modes/python3.py:114 mu/modes/python3.py:159
 msgid "Run your Python script."
-msgstr "Executa o teu script Python."
+msgstr "Executa o teu código Python."
 
 #: mu/modes/python3.py:120
 msgid "Debug"
@@ -1308,11 +1311,53 @@ msgstr "REPL iniciado."
 msgid "REPL stopped."
 msgstr "REPL terminado."
 
-
 #: added by Vasco
 msgid "Tidy"
 msgstr "Arrumar"
 
 #: added by Vasco
 msgid "Tidy up the layout of your code."
-msgstr "Arrumar a formatação do código."
+msgstr "Arruma a formatação do teu código."
+
+#: added by Vasco
+msgid "Third Party Packages"
+msgstr "Pacotes de terceiros"
+
+#: added by Vasco
+msgid "Write code for boards running CircuitPython."
+msgstr "Escrever CircuitPython para placas Microcontroladoras/FPGA."
+
+#: added by Vasco
+msgid "Write MicroPython on ESP8266/ESP32 boards."
+msgstr "Escrever MicroPython em placas ESP8266/ESP32."
+
+#: added by Vasco
+msgid "Write MicroPython directly on Lego Spike devices."
+msgstr "Escrever MicroPython em dispostivos Lego Spike."
+
+#: added by Vasco
+msgid "Use MicroPython on the Pyboard line of boards."
+msgstr "Escrever MicroPython em placas Pyboard."
+
+#: added by Vasco
+msgid "Write MicroPython directly on a Raspberry Pi Pico."
+msgstr "Escrever MicroPython num Raspberry Pi Pico."
+
+#: added by Vasco
+msgid "Build simple websites with the \"Flask\" web framework."
+msgstr "Criar websites simples com componentes \"Flask\"."
+
+#: added by Vasco
+msgid ""
+"The packages shown below will be available to import in Python 3 mode. "
+"Delete a package from the list to remove its availability.\n"
+"\n"
+"Each separate package name should be on a new line. Packages are installed "
+"from PyPI (see: https://pypi.org/)."
+msgstr ""
+"Os pacotes listados em baixo estão disponíveis para serem importados no modo "
+"Python 3. Se um pacote for apagado da lista ele deixará de estar "
+"disponível.\n"
+"\n"
+"Cada pacote deve estar escrito numa linha. Os pacotes são instalados a "
+"partir do PyPi (ver site https://pypi.org/)."
