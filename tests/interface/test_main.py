@@ -1716,6 +1716,31 @@ def test_Window_autosize_window():
     w.move.assert_called_once_with(x, y)
 
 
+def test_Window_autosize_window_off_screen():
+    """
+    Check the correct calculations take place and methods are called so the
+    window is resized and positioned correctly even if the passed in X/Y
+    coordinates would put the window OFF the screen. See issue #1613 for
+    context.
+    """
+    mock_qdw = _qdesktopwidget_mock(1024, 768)
+    w = mu.interface.main.Window()
+    w.resize = mock.MagicMock(return_value=None)
+    mock_size = mock.MagicMock()
+    mock_size.width = mock.MagicMock(return_value=819)
+    mock_size.height = mock.MagicMock(return_value=614)
+    w.geometry = mock.MagicMock(return_value=mock_size)
+    w.move = mock.MagicMock(return_value=None)
+    with mock.patch("mu.interface.main.QDesktopWidget", mock_qdw):
+        w.size_window(x=-20, y=9999)
+    mock_qdw.assert_called_once_with()
+    w.resize.assert_called_once_with(int(1024 * 0.8), int(768 * 0.8))
+    w.geometry.assert_called_once_with()
+    x = (1024 - 819) / 2
+    y = (768 - 614) / 2
+    w.move.assert_called_once_with(x, y)
+
+
 def test_Window_reset_annotations():
     """
     Ensure the current tab has its annotations reset.
