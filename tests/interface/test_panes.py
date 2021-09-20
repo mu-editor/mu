@@ -37,11 +37,8 @@ def test_MicroPythonREPLPane_paste_fragment():
     mock_repl_connection = mock.MagicMock()
     mock_clipboard = mock.MagicMock()
     mock_clipboard.text.return_value = "paste me!"
-    mock_application = mock.MagicMock()
-    mock_application.clipboard.return_value = mock_clipboard
-    with mock.patch("mu.interface.panes.QApplication", mock_application):
-        rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
-        rp.paste()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.insertFromMimeData(mock_clipboard)
     mock_repl_connection.write.assert_called_once_with(b"paste me!")
 
 
@@ -52,11 +49,8 @@ def test_MicroPythonREPLPane_paste_multiline():
     mock_repl_connection = mock.MagicMock()
     mock_clipboard = mock.MagicMock()
     mock_clipboard.text.return_value = "paste\nme!"
-    mock_application = mock.MagicMock()
-    mock_application.clipboard.return_value = mock_clipboard
-    with mock.patch("mu.interface.panes.QApplication", mock_application):
-        rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
-        rp.paste()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.insertFromMimeData(mock_clipboard)
     assert mock_repl_connection.write.call_count == 3
     assert mock_repl_connection.write.call_args_list[0][0][0] == b"\x05"
     assert mock_repl_connection.write.call_args_list[1][0][0] == bytes(
@@ -74,11 +68,8 @@ def test_MicroPythonREPLPane_paste_handle_unix_newlines():
     mock_repl_connection = mock.MagicMock()
     mock_clipboard = mock.MagicMock()
     mock_clipboard.text.return_value = "paste\nme!"
-    mock_application = mock.MagicMock()
-    mock_application.clipboard.return_value = mock_clipboard
-    with mock.patch("mu.interface.panes.QApplication", mock_application):
-        rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
-        rp.paste()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.insertFromMimeData(mock_clipboard)
     assert mock_repl_connection.write.call_count == 3
     assert mock_repl_connection.write.call_args_list[0][0][0] == b"\x05"
     assert mock_repl_connection.write.call_args_list[1][0][0] == bytes(
@@ -96,11 +87,8 @@ def test_MicroPythonREPLPane_paste_handle_windows_newlines():
     mock_repl_connection = mock.MagicMock()
     mock_clipboard = mock.MagicMock()
     mock_clipboard.text.return_value = "paste\r\nme!"
-    mock_application = mock.MagicMock()
-    mock_application.clipboard.return_value = mock_clipboard
-    with mock.patch("mu.interface.panes.QApplication", mock_application):
-        rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
-        rp.paste()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.insertFromMimeData(mock_clipboard)
     assert mock_repl_connection.write.call_count == 3
     assert mock_repl_connection.write.call_args_list[0][0][0] == b"\x05"
     assert mock_repl_connection.write.call_args_list[1][0][0] == bytes(
@@ -116,11 +104,8 @@ def test_MicroPythonREPLPane_paste_only_works_if_something_to_paste():
     mock_repl_connection = mock.MagicMock()
     mock_clipboard = mock.MagicMock()
     mock_clipboard.text.return_value = ""
-    mock_application = mock.MagicMock()
-    mock_application.clipboard.return_value = mock_clipboard
-    with mock.patch("mu.interface.panes.QApplication", mock_application):
-        rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
-        rp.paste()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.insertFromMimeData(mock_clipboard)
     assert mock_repl_connection.write.call_count == 0
 
 
@@ -1904,11 +1889,7 @@ def test_PythonProcessPane_paste():
     ppp.parse_paste = mock.MagicMock()
     mock_clipboard = mock.MagicMock()
     mock_clipboard.text.return_value = "Hello"
-    with mock.patch(
-        "mu.interface.panes.QApplication.clipboard",
-        return_value=mock_clipboard,
-    ):
-        ppp.paste()
+    ppp.insertFromMimeData(mock_clipboard)
     ppp.parse_paste.assert_called_once_with("Hello")
 
 
@@ -1921,11 +1902,7 @@ def test_PythonProcessPane_paste_normalize_windows_newlines():
     ppp.parse_paste = mock.MagicMock()
     mock_clipboard = mock.MagicMock()
     mock_clipboard.text.return_value = "h\r\ni"
-    with mock.patch(
-        "mu.interface.panes.QApplication.clipboard",
-        return_value=mock_clipboard,
-    ):
-        ppp.paste()
+    ppp.insertFromMimeData(mock_clipboard)
     ppp.parse_paste.assert_called_once_with("h\ni")
 
 
