@@ -300,7 +300,7 @@ def test_FileTabs_addTab():
     mock_layout.setContentsMargins.assert_called_once_with(0, 0, 0, 0)
     mock_layout.setSpacing.assert_called_once_with(6)
     # Check the icons were loaded
-    mock_load_icon.assert_called_once_with("close-tab.svg")
+    mock_load_icon.assert_called_once_with("close-tab")
     mock_load_pixmap.assert_called_once_with("document.svg")
     # We assume the tab id is 0 based on looking at Qt's source
     # and the fact the bar was previously empty
@@ -1484,14 +1484,14 @@ def test_Window_set_checker_icon():
     with mock.patch("mu.interface.main.QTimer", mock_timer_class), mock.patch(
         "mu.interface.main.load_icon", mock_load_icon
     ):
-        w.set_checker_icon("check-good.png")
+        w.set_checker_icon("check-good")
         # Fake a timeout
         mock_timer.timeout.emit()
     mock_timer_class.assert_called_once_with()
     mock_timer.start.assert_called_once_with(500)
     mock_timer.stop.assert_called_once_with()
     mock_load_icon.assert_has_calls(
-        [mock.call("check-good.png"), mock.call("check.png")]
+        [mock.call("check-good"), mock.call("check")]
     )
     assert w.button_bar.slots["check"].setIcon.call_count == 2
 
