@@ -2213,12 +2213,14 @@ def test_show_admin():
         "envars": "name=value",
         "minify": True,
         "microbit_runtime": "/foo/bar",
+        "locale": "",
     }
     new_settings = {
         "envars": "name=value",
         "minify": True,
         "microbit_runtime": "/foo/bar",
         "packages": "baz\n",
+        "locale": "",
     }
     view.show_admin.return_value = new_settings
     with mock.patch.object(
@@ -2283,12 +2285,14 @@ def test_show_admin_missing_microbit_runtime():
         "envars": "name=value",
         "minify": True,
         "microbit_runtime": "/foo/bar",
+        "locale": "",
     }
     new_settings = {
         "envars": "name=value",
         "minify": True,
         "microbit_runtime": "/foo/bar",
         "packages": "baz\n",
+        "locale": "",
     }
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()
