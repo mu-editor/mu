@@ -300,8 +300,8 @@ def test_FileTabs_addTab():
     mock_layout.setContentsMargins.assert_called_once_with(0, 0, 0, 0)
     mock_layout.setSpacing.assert_called_once_with(6)
     # Check the icons were loaded
-    mock_load_icon.assert_called_once_with("close-tab.svg")
-    mock_load_pixmap.assert_called_once_with("document.svg")
+    mock_load_icon.assert_called_once_with("close-tab")
+    mock_load_pixmap.assert_called_once_with("document", size=QSize(12, 12))
     # We assume the tab id is 0 based on looking at Qt's source
     # and the fact the bar was previously empty
     right = mu.interface.main.QTabBar.RightSide
