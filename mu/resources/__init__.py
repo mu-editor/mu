@@ -37,8 +37,11 @@ def load_icon(name):
     return QIcon(path(name))
 
 
-def load_pixmap(name):
+def load_pixmap(name, size=None):
     """Load a pixmap from the resources directory."""
+    if size is not None:
+        icon = load_icon(name)
+        return icon.pixmap(size)
     return QPixmap(path(name))
 
 
