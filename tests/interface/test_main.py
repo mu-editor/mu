@@ -254,6 +254,8 @@ def test_FileTabs_addTab():
     qtw.removeTab = mock.MagicMock()
     qtw.tabBar = mock.MagicMock(return_value=mock_tabbar)
     qtw.widget = mock.MagicMock(return_value=None)
+    iconSize = QSize(12, 12)
+    qtw.iconSize = mock.MagicMock(return_value=iconSize)
     mock_window = mock.MagicMock()
     qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
     ep = mu.interface.editor.EditorPane("/foo/bar.py", "baz")
@@ -301,7 +303,7 @@ def test_FileTabs_addTab():
     mock_layout.setSpacing.assert_called_once_with(6)
     # Check the icons were loaded
     mock_load_icon.assert_called_once_with("close-tab")
-    mock_load_pixmap.assert_called_once_with("document", size=QSize(12, 12))
+    mock_load_pixmap.assert_called_once_with("document", size=iconSize)
     # We assume the tab id is 0 based on looking at Qt's source
     # and the fact the bar was previously empty
     right = mu.interface.main.QTabBar.RightSide
