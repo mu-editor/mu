@@ -270,7 +270,7 @@ class FileTabs(QTabWidget):
         close_btn.setFlat(True)
         # Bit of a weird size but we want to avoid giant tabs
         close_btn.setIconSize(QSize(10, 10))
-        close_btn.setIcon(load_icon("close-tab.svg"))
+        close_btn.setIcon(load_icon("close-tab"))
         close_btn.show()
 
         # Handle 'clicked' events
@@ -981,7 +981,7 @@ class Window(QMainWindow):
 
         @timer.timeout.connect
         def reset():
-            self.button_bar.slots["check"].setIcon(load_icon("check.png"))
+            self.button_bar.slots["check"].setIcon(load_icon("check"))
             timer.stop()
 
         timer.start(500)

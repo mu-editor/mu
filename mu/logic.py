@@ -1344,9 +1344,9 @@ class Editor(QObject):
                     _("Awesome! Zero problems found."),
                 ]
                 self.show_status_message(random.choice(ok_messages))
-                self._view.set_checker_icon("check-good.png")
+                self._view.set_checker_icon("check-good")
             else:
-                self._view.set_checker_icon("check-bad.png")
+                self._view.set_checker_icon("check-bad")
         else:
             self._view.reset_annotations()
 
