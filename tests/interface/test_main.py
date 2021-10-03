@@ -1711,8 +1711,8 @@ def test_Window_autosize_window():
     mock_qdw.assert_called_once_with()
     w.resize.assert_called_once_with(int(1024 * 0.8), int(768 * 0.8))
     w.geometry.assert_called_once_with()
-    x = (1024 - 819) / 2
-    y = (768 - 614) / 2
+    x = (1024 - 819) // 2
+    y = (768 - 614) // 2
     w.move.assert_called_once_with(x, y)
 
 
@@ -1736,8 +1736,8 @@ def test_Window_autosize_window_off_screen():
     mock_qdw.assert_called_once_with()
     w.resize.assert_called_once_with(int(1024 * 0.8), int(768 * 0.8))
     w.geometry.assert_called_once_with()
-    x = (1024 - 819) / 2
-    y = (768 - 614) / 2
+    x = (1024 - 819) // 2
+    y = (768 - 614) // 2
     w.move.assert_called_once_with(x, y)
 
 
