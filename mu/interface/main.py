@@ -1100,8 +1100,8 @@ class Window(QMainWindow):
             x = None
         if y and (y <= 0 or y > screen_height):
             y = None
-        x = (screen_width - size.width()) / 2 if x is None else x
-        y = (screen_height - size.height()) / 2 if y is None else y
+        x = (screen_width - size.width()) // 2 if x is None else x
+        y = (screen_height - size.height()) // 2 if y is None else y
         self.move(x, y)
 
     def reset_annotations(self):
