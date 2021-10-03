@@ -969,6 +969,8 @@ class Window(QMainWindow):
             self.repl_pane.set_theme(theme)
         if hasattr(self, "plotter") and self.plotter:
             self.plotter_pane.set_theme(theme)
+        if hasattr(self, "runner") and self.runner:
+            self.process_runner.set_theme(theme)
 
     def set_checker_icon(self, icon):
         """
