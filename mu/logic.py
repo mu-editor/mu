@@ -260,7 +260,17 @@ def sniff_encoding(filepath):
     else:
         match = ENCODING_COOKIE_RE.match(uline)
         if match:
-            return match.group(1)
+            cookie_codec = match.group(1)
+            try:
+                codecs.lookup(cookie_codec)
+            except LookupError:
+                logger.warning(
+                    "Encoding cookie has invalid codec name: {}".format(
+                        cookie_codec
+                    )
+                )
+            else:
+                return cookie_codec
 
     #
     # Fall back to the locale default
@@ -318,7 +328,7 @@ def read_and_decode(filepath):
             text = btext.decode(encoding)
             logger.info("Decoded with %s", encoding)
             break
-        except UnicodeDecodeError:
+        except (UnicodeDecodeError, LookupError):
             continue
     else:
         raise UnicodeDecodeError(encoding, btext, 0, 0, "Unable to decode")

@@ -370,13 +370,26 @@ def test_sniff_encoding_from_cookie():
         assert mu.logic.sniff_encoding("foo.py") == "latin-1"
 
 
-def test_sniff_encoding_from_bad_cookie():
+def test_sniff_encoding_from_bad_cookie_encoding():
     """
     If there's a cookie present but we can't even read it, then return None.
     """
     encoding_cookie = "# -*- coding: silly-你好 -*-".encode("utf-8")
     mock_locale = mock.MagicMock()
     mock_locale.getpreferredencoding.return_value = "ascii"
+    with mock.patch(
+        "mu.logic.open", mock.mock_open(read_data=encoding_cookie)
+    ), mock.patch("mu.logic.locale", mock_locale):
+        assert mu.logic.sniff_encoding("foo.py") is None
+
+
+def test_sniff_encoding_from_bad_cookie_name():
+    """
+    If there's a cookie present but we can't even read it, then return None.
+    """
+    encoding_cookie = "# -*- coding: invalid-codec -*-".encode("utf-8")
+    mock_locale = mock.MagicMock()
+    mock_locale.getpreferredencoding.return_value = "utf-8"
     with mock.patch(
         "mu.logic.open", mock.mock_open(read_data=encoding_cookie)
     ), mock.patch("mu.logic.locale", mock_locale):
