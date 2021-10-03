@@ -974,6 +974,8 @@ class Window(QMainWindow):
             self.repl_pane.set_theme(theme)
         if hasattr(self, "plotter") and self.plotter:
             self.plotter_pane.set_theme(theme)
+        if hasattr(self, "runner") and self.runner:
+            self.process_runner.set_theme(theme)
 
     def set_checker_icon(self, icon):
         """
@@ -984,7 +986,7 @@ class Window(QMainWindow):
 
         @timer.timeout.connect
         def reset():
-            self.button_bar.slots["check"].setIcon(load_icon("check.png"))
+            self.button_bar.slots["check"].setIcon(load_icon("check"))
             timer.stop()
 
         timer.start(500)
@@ -1103,8 +1105,8 @@ class Window(QMainWindow):
             x = None
         if y and (y <= 0 or y > screen_height):
             y = None
-        x = (screen_width - size.width()) / 2 if x is None else x
-        y = (screen_height - size.height()) / 2 if y is None else y
+        x = (screen_width - size.width()) // 2 if x is None else x
+        y = (screen_height - size.height()) // 2 if y is None else y
         self.move(x, y)
 
     def reset_annotations(self):

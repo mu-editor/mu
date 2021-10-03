@@ -1484,14 +1484,14 @@ def test_Window_set_checker_icon():
     with mock.patch("mu.interface.main.QTimer", mock_timer_class), mock.patch(
         "mu.interface.main.load_icon", mock_load_icon
     ):
-        w.set_checker_icon("check-good.png")
+        w.set_checker_icon("check-good")
         # Fake a timeout
         mock_timer.timeout.emit()
     mock_timer_class.assert_called_once_with()
     mock_timer.start.assert_called_once_with(500)
     mock_timer.stop.assert_called_once_with()
     mock_load_icon.assert_has_calls(
-        [mock.call("check-good.png"), mock.call("check.png")]
+        [mock.call("check-good"), mock.call("check")]
     )
     assert w.button_bar.slots["check"].setIcon.call_count == 2
 
@@ -1711,8 +1711,8 @@ def test_Window_autosize_window():
     mock_qdw.assert_called_once_with()
     w.resize.assert_called_once_with(int(1024 * 0.8), int(768 * 0.8))
     w.geometry.assert_called_once_with()
-    x = (1024 - 819) / 2
-    y = (768 - 614) / 2
+    x = (1024 - 819) // 2
+    y = (768 - 614) // 2
     w.move.assert_called_once_with(x, y)
 
 
@@ -1736,8 +1736,8 @@ def test_Window_autosize_window_off_screen():
     mock_qdw.assert_called_once_with()
     w.resize.assert_called_once_with(int(1024 * 0.8), int(768 * 0.8))
     w.geometry.assert_called_once_with()
-    x = (1024 - 819) / 2
-    y = (768 - 614) / 2
+    x = (1024 - 819) // 2
+    y = (768 - 614) // 2
     w.move.assert_called_once_with(x, y)
 
 

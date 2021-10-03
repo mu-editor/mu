@@ -165,6 +165,7 @@ class MicroPythonREPLPane(QTextEdit):
         super().__init__(parent)
         self.connection = connection
         self.setFont(Font().load())
+        self.font_size = DEFAULT_FONT_SIZE
         self.setAcceptRichText(False)
         self.setReadOnly(False)
         self.setUndoRedoEnabled(False)
@@ -215,7 +216,7 @@ class MicroPythonREPLPane(QTextEdit):
         menu.exec_(QCursor.pos())
 
     def set_theme(self, theme):
-        pass
+        self.set_font_size(self.font_size)
 
     def send(self, msg):
         self.connection.write(msg)
@@ -462,6 +463,7 @@ class MicroPythonREPLPane(QTextEdit):
         """
         Sets the font size for all the textual elements in this pane.
         """
+        self.font_size = new_size
         font = self.font()
         font.setPointSize(new_size)
         self.setFont(font)
@@ -824,6 +826,7 @@ class PythonProcessPane(QTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFont(Font().load())
+        self.font_size = DEFAULT_FONT_SIZE
         self.setAcceptRichText(False)
         self.setReadOnly(False)
         self.setUndoRedoEnabled(False)
@@ -1286,6 +1289,7 @@ class PythonProcessPane(QTextEdit):
         """
         Sets the font size for all the textual elements in this pane.
         """
+        self.font_size = new_size
         f = self.font()
         f.setPointSize(new_size)
         self.setFont(f)
@@ -1297,7 +1301,7 @@ class PythonProcessPane(QTextEdit):
         self.set_font_size(PANE_ZOOM_SIZES[size])
 
     def set_theme(self, theme):
-        pass
+        self.set_font_size(self.font_size)
 
 
 class DebugInspectorItem(QStandardItem):

@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from pkg_resources import resource_filename, resource_string
 from PyQt5.QtGui import QPixmap, QIcon, QMovie
 from PyQt5.QtCore import QDir
+import os
 
 
 # The following lines add the images and css directories to the search path.
@@ -27,13 +28,18 @@ QDir.addSearchPath("images", resource_filename(__name__, "images"))
 QDir.addSearchPath("css", resource_filename(__name__, "css"))
 
 
-def path(name, resource_dir="images/"):
+def path(name, resource_dir="images/", ext=""):
     """Return the filename for the referenced image."""
-    return resource_filename(__name__, resource_dir + name)
+    return resource_filename(__name__, resource_dir + name + ext)
 
 
 def load_icon(name):
     """Load an icon from the resources directory."""
+    svg_path = path(name, ext=".svg")
+    if os.path.exists(svg_path):
+        svg_icon = QIcon(svg_path)
+        if svg_icon:
+            return svg_icon
     return QIcon(path(name))
 
 
