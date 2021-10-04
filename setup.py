@@ -38,6 +38,11 @@ install_requires = [
     # qtconsole 4.7.7. Full line can be removed after Mu v1.1 release.
     # Dependency mirrored for user venv in mu/wheels/__init__.py
     "ipykernel>=4.1,<6",
+    # FIXME: ipykernel<6 depends on ipython_genutils, but it isn't explicitly
+    # declared as a dependency. It also depends on traitlets, which
+    # incidentally brought ipython_genutils, but in v5.1 it was dropped, so as
+    # a workaround we need to manually specify it here.
+    "ipython_genutils>=0.2.0",
     "qtconsole==4.7.7",
     #
     # adafruit-board-toolkit is used to find serial ports and help identify
