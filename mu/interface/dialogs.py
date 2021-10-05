@@ -543,7 +543,9 @@ class AdminDialog(QDialog):
         # Configure local.
         self.locale_widget = LocaleWidget(self)
         self.locale_widget.setup(settings.get("locale"))
-        self.tabs.addTab(self.locale_widget, _("Select Language"))
+        self.tabs.addTab(
+            self.locale_widget, load_icon("language.svg"), _("Select Language")
+        )
         self.log_widget.log_text_area.setFocus()
 
     def settings(self):
