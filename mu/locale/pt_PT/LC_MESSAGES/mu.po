@@ -1311,43 +1311,49 @@ msgstr "REPL iniciado."
 msgid "REPL stopped."
 msgstr "REPL terminado."
 
-#: added by Vasco
+#: lines below added by Vasco - waiting for senior revision
+
+#: mu/interface/main.py:154
 msgid "Tidy"
 msgstr "Arrumar"
 
-#: added by Vasco
+#: mu/interface/main.py:155
 msgid "Tidy up the layout of your code."
 msgstr "Arruma a formatação do teu código."
 
-#: added by Vasco
+#: mu/interface/dialogs.py:489
 msgid "Third Party Packages"
 msgstr "Pacotes de terceiros"
 
-#: added by Vasco
+#: mu/interface/dialogs.py:595
+msgid "Third Party Package Status"
+msgstr "Estado dos pacotes de terceiros"
+
+#: mu/modes/circuitpython.py:39
 msgid "Write code for boards running CircuitPython."
 msgstr "Escrever CircuitPython para placas Microcontroladoras/FPGA."
 
-#: added by Vasco
+#: mu/modes/esp.py:38
 msgid "Write MicroPython on ESP8266/ESP32 boards."
-msgstr "Escrever MicroPython em placas ESP8266/ESP32."
+msgstr "Escreve MicroPython em placas ESP8266/ESP32."
 
-#: added by Vasco
+#: mu/modes/lego.py:36
 msgid "Write MicroPython directly on Lego Spike devices."
-msgstr "Escrever MicroPython em dispostivos Lego Spike."
+msgstr "Escreve MicroPython em dispostivos Lego Spike."
 
-#: added by Vasco
+#: mu/modes/pyboard.py:34
 msgid "Use MicroPython on the Pyboard line of boards."
-msgstr "Escrever MicroPython em placas Pyboard."
+msgstr "Escreve MicroPython em placas Pyboard."
 
-#: added by Vasco
+#: mu/modes/pico.py:36
 msgid "Write MicroPython directly on a Raspberry Pi Pico."
-msgstr "Escrever MicroPython num Raspberry Pi Pico."
+msgstr "Escreve MicroPython num Raspberry Pi Pico."
 
-#: added by Vasco
+#: mu/modes/web.py:60
 msgid "Build simple websites with the \"Flask\" web framework."
-msgstr "Criar websites simples com componentes \"Flask\"."
+msgstr "Cria websites simples com componentes \"Flask\"."
 
-#: added by Vasco
+#: mu/interface/dialogs.py:219
 msgid ""
 "The packages shown below will be available to import in Python 3 mode. "
 "Delete a package from the list to remove its availability.\n"
