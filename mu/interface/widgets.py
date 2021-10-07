@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtWidgets import (
     QHBoxLayout,
     QWidget,
@@ -49,10 +49,9 @@ class DeviceSelector(QWidget):
         self.device_changed.connect(self._update_view)
 
         # Status indicator icon
-        self.connected_icon = load_pixmap("chip-connected").scaledToHeight(24)
-        self.disconnected_icon = load_pixmap(
-            "chip-disconnected"
-        ).scaledToHeight(24)
+        size = QSize(24, 24)
+        self.connected_icon = load_pixmap("chip-connected", size=size)
+        self.disconnected_icon = load_pixmap("chip-disconnected", size=size)
         self.connection_status = QLabel()
         self.connection_status.setPixmap(self.disconnected_icon)
         if icon_first:

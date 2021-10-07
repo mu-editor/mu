@@ -143,8 +143,7 @@ class DebugMode(BaseMode):
         """
         logger.debug("Stopping debugger.")
         if self.runner:
-            self.runner.process.kill()
-            self.runner.process.waitForFinished()
+            self.runner.stop_process()
             self.runner = None
             self.debugger = None
             self.view.remove_python_runner()

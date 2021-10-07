@@ -230,6 +230,55 @@ class PackagesWidget(QWidget):
         widget_layout.addWidget(self.text_area)
 
 
+class LocaleWidget(QWidget):
+    """
+    Used for manually setting the locale (and thus the language) used by Mu.
+    """
+
+    LANGUAGES = {
+        _("Automatically detect"): "",
+        "English": "en",
+        "Deutsch": "de_DE",
+        "Español": "es",
+        "Français": "fr",
+        "日本語": "ja",
+        "Polskie": "pl",
+        "Português (Br)": "pt_BR",
+        "Português (Pt)": "pt_PT",
+        "Slovenský": "sk_SK",
+        "Svenska": "sv",
+        "tiếng Việt": "vi",
+        "中文": "zh_CN",
+    }
+
+    def setup(self, locale):
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+        self.drop_down = QComboBox()
+        for k, v in self.LANGUAGES.items():
+            self.drop_down.addItem(k, v)
+        index = self.drop_down.findData(locale)
+        if index > -1:
+            self.drop_down.setCurrentIndex(index)
+        label = QLabel(
+            _(
+                "Please select the language for Mu's user interface from the "
+                "choices listed below. <strong>Restart Mu for these changes "
+                "to take effect.</strong>"
+            )
+        )
+        label.setWordWrap(True)
+        widget_layout.addWidget(label)
+        widget_layout.addWidget(self.drop_down)
+        widget_layout.addStretch()
+
+    def get_locale(self):
+        """
+        Return the user-selected language code.
+        """
+        return self.LANGUAGES.get(self.drop_down.currentText(), "")
+
+
 class ESPFirmwareFlasherWidget(QWidget):
     """
     Used for configuring how to interact with the ESP:
@@ -491,6 +540,12 @@ class AdminDialog(QDialog):
             self.esp_widget = ESPFirmwareFlasherWidget(self)
             self.esp_widget.setup(mode, device_list)
             self.tabs.addTab(self.esp_widget, _("ESP Firmware flasher"))
+        # Configure local.
+        self.locale_widget = LocaleWidget(self)
+        self.locale_widget.setup(settings.get("locale"))
+        self.tabs.addTab(
+            self.locale_widget, load_icon("language.svg"), _("Select Language")
+        )
         self.log_widget.log_text_area.setFocus()
 
     def settings(self):
@@ -509,6 +564,7 @@ class AdminDialog(QDialog):
             ] = self.microbit_widget.runtime_path.text()
         if self.package_widget:
             settings["packages"] = self.package_widget.text_area.toPlainText()
+        settings["locale"] = self.locale_widget.get_locale()
         return settings
 
 

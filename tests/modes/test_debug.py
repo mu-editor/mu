@@ -118,8 +118,7 @@ def test_debug_stop():
     dm.stop()
     assert dm.runner is None
     assert dm.debugger is None
-    mock_runner.process.kill.assert_called_once_with()
-    mock_runner.process.waitForFinished.assert_called_once_with()
+    mock_runner.stop_process.assert_called_once_with()
     view.remove_python_runner.assert_called_once_with()
     view.remove_debug_inspector.assert_called_once_with()
     editor.change_mode.assert_called_once_with("python")

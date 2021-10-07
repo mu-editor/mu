@@ -227,7 +227,7 @@ QScrollBar::sub-line:horizontal {
     border-top: 1px solid #b4b4b4;    /* Border */
     border-right: 1px solid #b4b4b4;  /* Border */
     subcontrol-position: left;
-    image: url(images:scroll-left.png);
+    image: url(images:scroll-left.svg);
 }
 
 QScrollBar::add-line:horizontal, QAbstractScrollArea::corner {
@@ -237,19 +237,19 @@ QScrollBar::add-line:horizontal, QAbstractScrollArea::corner {
 }
 
 QScrollBar::add-line:horizontal {
-    image: url(images:scroll-right.png);
+    image: url(images:scroll-right.svg);
 }
 
 QScrollBar::sub-line:vertical {
     border-left: 1px solid #b4b4b4;   /* Border */
     border-bottom: 1px solid #b4b4b4; /* Border */
-    image: url(images:scroll-up.png);
+    image: url(images:scroll-up.svg);
 }
 
 QScrollBar::add-line:vertical {
     border-left: 1px solid #b4b4b4;   /* Border */
     border-top: 1px solid #b4b4b4;    /* Border */
-    image: url(images:scroll-down.png);
+    image: url(images:scroll-down.svg);
 }
 
 QDockWidget::title {
@@ -283,11 +283,11 @@ QTreeView::item, QListWidget::item {
 }
 
 QTreeView::branch:has-children:open {
-    image: url(images:scroll-down.png);
+    image: url(images:scroll-down.svg);
 }
 
 QTreeView::branch:has-children:closed {
-    image: url(images:scroll-right.png);
+    image: url(images:scroll-right.svg);
 }
 
 QComboBox {
@@ -303,7 +303,7 @@ QComboBox::drop-down {
 }
 
 QComboBox::down-arrow {
-    image: url(images:dropdown-arrow.png);
+    image: url(images:dropdown-arrow.svg);
 }
 
 QGroupBox {

@@ -146,6 +146,47 @@ def test_workspace_dir_posix_missing():
                 assert am.workspace_dir() == "foo"
 
 
+def test_workspace_dir_posix_chromeos_exists():
+    """
+    Simulate being on os.name == 'posix' and a check in /mnt/chromeos/removable returns
+    a record associated with a CIRCUITPY device.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    am = CircuitPythonMode(editor, view)
+    with open("tests/modes/chromeos_devpath_exists.txt", "rb") as fixture_file:
+        fixture = fixture_file.read()
+        with mock.patch("os.name", "posix"):
+            with mock.patch(
+                "mu.modes.circuitpython.check_output", return_value=fixture
+            ):
+                with mock.patch("os.path.exists", return_value=True):
+                    assert (
+                        am.workspace_dir()
+                        == "/mnt/chromeos/removable/CIRCUITPY/"
+                    )
+
+
+def test_workspace_dir_posix_chromeos_missing():
+    """
+    Simulate being on os.name == 'posix' and a check in /mnt/chromeos/removable returns
+    no records associated with a CIRCUITPY device.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    am = CircuitPythonMode(editor, view)
+    with open(
+        "tests/modes/chromeos_devpath_missing.txt", "rb"
+    ) as fixture_file:
+        fixture = fixture_file.read()
+        with mock.patch("os.name", "posix"):
+            with mock.patch(
+                "mu.modes.circuitpython.check_output", return_value=fixture
+            ):
+                with mock.patch("os.path.exists", return_value=False):
+                    assert am.workspace_dir().endswith("mu_code")
+
+
 @pytest.fixture
 def windll():
     """
