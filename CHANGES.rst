@@ -1,6 +1,59 @@
 Release History
 ---------------
 
+1.1.0-beta.6
+============
+
+This is a beta release and may contain bugs or unfinished features. Please
+provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
+
+* Another delayed release due to busy-ness of the volunteer team involved in
+  Mu. Thank you for your patience, bug reports and code patches.
+* There have been the usual minor bug fixes and clean ups from various regular
+  contributors and some new ones too. Thank you for your careful and well
+  targetted changes.
+* Carlos (@carlosperate) fixed some packaging problems relating to the iPython
+  kernel bundled with Mu.
+* Martin (@dybber) fixed a couple of problems relating to the stopping of
+  child processes (Flask and scripts stopped via KeyboardInterrupt in Linux).
+* The web mode checks for the availability of templates in the local directory
+  tree before starting up. If a template directory isn't found in the expected
+  location, then the user sees a helpful message describing the problem and
+  what they need to do to fix it.
+* Mu's splash screen no longer always appears on top of everything else on the
+  user's desktop. The splash screen now also logs the progress of installing
+  the various packages needed on first install. Thanks to Carlos for these
+  changes.
+* A new admin/settings option has been added to allow users to manually change
+  the translation Mu uses for its interface. Updating this setting requires a
+  restart of Mu. Zander (@ZanderBrown) contributed the icon/glyph to indicate
+  the relevant tab is for translation related settings (not entirely obvious
+  if Mu's UI is using a language you don't understand and you're looking for
+  the setting that relates to translations). The icon makes this clear.
+* On some desktop windowing systems there is a bug that means windows re-open
+  at a position higher up the screen, and so may appear off the top of the
+  screen. We've ensured this never happens with Mu. If Mu starts with any
+  part of the window off the screen, the window is moved to be within the
+  dimensions of the screen. This was a weird one to track down and fix.
+* Many thanks to Ethan Spoelstra (@espoelstra) who contributed a change so
+  Crostini on ChromeOS is used to return the correct CIRCUITPY path if it
+  exists.
+* Huge thanks to Keith Packard (@keith-packard) for several contributions to
+  this release of Mu. Keith refactored the way in which Mu handles pasting in
+  the REPL window so it works correctly and more broadly across operating
+  systems.
+* Keith also fixed some font related issues in the REPL.
+* Keith was on fire with a couple more contributions relating to SVG icons in
+  the buttons in Mu. We're very grateful to Ben Williams (@Rybec) for putting
+  in the work to make our button icons SVG files. Keith made the code changes
+  to implement this.
+* Thanks to Miro Hrončok (@hroncok) for pointing out a change in Python 10
+  which would break some of our UI calls into PyQt, and who provided a patch to
+  fix things.
+* Some minor clarifications in our developer documentation
+  (https://mu.rtfd.io).
+
+
 1.1.0-beta.5
 ============
 
@@ -39,6 +92,8 @@ provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
   to new files. This depended on the user's graphical shell. Mu now checks the
   output from the shell and, if requires, will add ``.py`` itself.
 * Various fixes to Mu's logging make it more robust, clear and useful.
+* Tiago fixed a late breaking bug in packaging Mu for OSX. All fixed in a
+  matter of hours. Amazing work!
 
 There are perhaps a couple more features we want to land in the coming weeks,
 and then we will start the work of ensuring internationalization is fully up

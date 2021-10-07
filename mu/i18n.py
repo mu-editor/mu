@@ -13,3 +13,12 @@ localedir = os.path.abspath(os.path.join(os.path.dirname(__file__), "locale"))
 gettext.translation(
     "mu", localedir=localedir, languages=[language_code], fallback=True
 ).install()
+
+
+def set_language(language_code, localedir=localedir):
+    """
+    Utility function to allow admin pane updates to change the locale.
+    """
+    gettext.translation(
+        "mu", localedir=localedir, languages=[language_code], fallback=True
+    ).install()

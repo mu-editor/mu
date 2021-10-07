@@ -373,6 +373,7 @@ def test_AdminDialog_setup_python_mode():
     log = "this is the contents of a log file"
     settings = {
         "envars": "name=value",
+        "locale": "",
     }
     packages = "foo\nbar\nbaz\n"
     mock_window = QWidget()
@@ -399,6 +400,7 @@ def test_AdminDialog_setup_microbit_mode():
     settings = {
         "minify": True,
         "microbit_runtime": "/foo/bar",
+        "locale": "",
     }
     packages = "foo\nbar\nbaz\n"
     mock_window = QWidget()
@@ -420,7 +422,9 @@ def test_AdminDialog_setup():
     file and envars.
     """
     log = "this is the contents of a log file"
-    settings = {}
+    settings = {
+        "locale": "",
+    }
     packages = "foo\nbar\nbaz\n"
     mock_window = QWidget()
     mode = mock.MagicMock()

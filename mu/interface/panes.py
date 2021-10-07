@@ -44,7 +44,6 @@ from PyQt5.QtWidgets import (
     QGridLayout,
     QLabel,
     QMenu,
-    QApplication,
     QTreeView,
 )
 from PyQt5.QtGui import (
@@ -166,6 +165,7 @@ class MicroPythonREPLPane(QTextEdit):
         super().__init__(parent)
         self.connection = connection
         self.setFont(Font().load())
+        self.font_size = DEFAULT_FONT_SIZE
         self.setAcceptRichText(False)
         self.setReadOnly(False)
         self.setUndoRedoEnabled(False)
@@ -183,15 +183,12 @@ class MicroPythonREPLPane(QTextEdit):
             r"\x1B\[(?P<count>[\d]*)(;?[\d]*)*(?P<action>[A-Za-z])"
         )
 
-    def paste(self):
+    def insertFromMimeData(self, source):
         """
-        Grabs clipboard contents then sends to the REPL.
+        Insert mime data by sending it to the REPL
         """
-        clipboard = QApplication.clipboard()
-        if clipboard and clipboard.text():
-            to_paste = (
-                clipboard.text().replace("\n", "\r").replace("\r\r", "\r")
-            )
+        if source and source.text():
+            to_paste = source.text().replace("\n", "\r").replace("\r\r", "\r")
             if "\r" in to_paste:
                 # Enter MicroPython's paste mode for multi-line pastes so
                 # indentation isn't messed up.
@@ -219,7 +216,7 @@ class MicroPythonREPLPane(QTextEdit):
         menu.exec_(QCursor.pos())
 
     def set_theme(self, theme):
-        pass
+        self.set_font_size(self.font_size)
 
     def send(self, msg):
         self.connection.write(msg)
@@ -466,6 +463,7 @@ class MicroPythonREPLPane(QTextEdit):
         """
         Sets the font size for all the textual elements in this pane.
         """
+        self.font_size = new_size
         font = self.font()
         font.setPointSize(new_size)
         self.setFont(font)
@@ -828,6 +826,7 @@ class PythonProcessPane(QTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFont(Font().load())
+        self.font_size = DEFAULT_FONT_SIZE
         self.setAcceptRichText(False)
         self.setReadOnly(False)
         self.setUndoRedoEnabled(False)
@@ -950,6 +949,18 @@ class PythonProcessPane(QTextEdit):
             self.process.start(interpreter, args)
             self.running = True
 
+    def stop_process(self):
+        if self.process:
+            self.process.terminate()
+            terminated = self.process.waitForFinished(10)
+            if not terminated:
+                self.process.kill()
+                self.process.waitForFinished()
+            self.running = False
+
+    def _del_(self):
+        self.stop_process()
+
     def finished(self, code, status):
         """
         Handle when the child process finishes.
@@ -979,14 +990,13 @@ class PythonProcessPane(QTextEdit):
         menu.addAction("Paste", self.paste, paste_keys)
         menu.exec_(QCursor.pos())
 
-    def paste(self):
+    def insertFromMimeData(self, source):
         """
-        Grabs clipboard contents then writes to the REPL.
+        Insert mime data by sending it to the REPL
         """
-        clipboard = QApplication.clipboard()
-        if clipboard and clipboard.text():
+        if source and source.text():
             # normalize for Windows line-ends.
-            text = "\n".join(clipboard.text().splitlines())
+            text = "\n".join(source.text().splitlines())
             if text:
                 self.parse_paste(text)
 
@@ -1279,6 +1289,7 @@ class PythonProcessPane(QTextEdit):
         """
         Sets the font size for all the textual elements in this pane.
         """
+        self.font_size = new_size
         f = self.font()
         f.setPointSize(new_size)
         self.setFont(f)
@@ -1290,7 +1301,7 @@ class PythonProcessPane(QTextEdit):
         self.set_font_size(PANE_ZOOM_SIZES[size])
 
     def set_theme(self, theme):
-        pass
+        self.set_font_size(self.font_size)
 
 
 class DebugInspectorItem(QStandardItem):

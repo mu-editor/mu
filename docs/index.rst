@@ -23,23 +23,26 @@ Mu: A Python Code Editor
 Quickstart
 ----------
 
-Mu works with Python 3.6 or above.
+Mu works with Python 3.5 to 3.8 (both inclusive). You need to have one of these
+Python versions installed in order to work on developing Mu
+(`here is a comprehensive guide for how to do this <https://realpython.com/installing-python/>`_).
+We also assume you know how to `use Python virtual environments <https://docs.python.org/3/library/venv.html>`_.
 
 Clone the repository::
 
     git clone https://github.com/mu-editor/mu.git
 
-(Recommended) Upgrade local pip::
+Create a virtualenv and activate it. Then, upgrade ``pip``::
 
-    pip install --upgrade pip
+    python -m pip install --upgrade pip
 
-Make a virtualenv, then install the requirements::
+Install Mu and its development dependencies::
 
     pip install -e ".[dev]"
 
 Start Mu::
 
-    python run.py
+    mu-editor
 
 Run the test suite::
 
