@@ -254,6 +254,8 @@ def test_FileTabs_addTab():
     qtw.removeTab = mock.MagicMock()
     qtw.tabBar = mock.MagicMock(return_value=mock_tabbar)
     qtw.widget = mock.MagicMock(return_value=None)
+    iconSize = QSize(12, 12)
+    qtw.iconSize = mock.MagicMock(return_value=iconSize)
     mock_window = mock.MagicMock()
     qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
     ep = mu.interface.editor.EditorPane("/foo/bar.py", "baz")
@@ -300,8 +302,8 @@ def test_FileTabs_addTab():
     mock_layout.setContentsMargins.assert_called_once_with(0, 0, 0, 0)
     mock_layout.setSpacing.assert_called_once_with(6)
     # Check the icons were loaded
-    mock_load_icon.assert_called_once_with("close-tab.svg")
-    mock_load_pixmap.assert_called_once_with("document.svg")
+    mock_load_icon.assert_called_once_with("close-tab")
+    mock_load_pixmap.assert_called_once_with("document", size=iconSize)
     # We assume the tab id is 0 based on looking at Qt's source
     # and the fact the bar was previously empty
     right = mu.interface.main.QTabBar.RightSide
@@ -1484,14 +1486,14 @@ def test_Window_set_checker_icon():
     with mock.patch("mu.interface.main.QTimer", mock_timer_class), mock.patch(
         "mu.interface.main.load_icon", mock_load_icon
     ):
-        w.set_checker_icon("check-good.png")
+        w.set_checker_icon("check-good")
         # Fake a timeout
         mock_timer.timeout.emit()
     mock_timer_class.assert_called_once_with()
     mock_timer.start.assert_called_once_with(500)
     mock_timer.stop.assert_called_once_with()
     mock_load_icon.assert_has_calls(
-        [mock.call("check-good.png"), mock.call("check.png")]
+        [mock.call("check-good"), mock.call("check")]
     )
     assert w.button_bar.slots["check"].setIcon.call_count == 2
 
@@ -1711,8 +1713,8 @@ def test_Window_autosize_window():
     mock_qdw.assert_called_once_with()
     w.resize.assert_called_once_with(int(1024 * 0.8), int(768 * 0.8))
     w.geometry.assert_called_once_with()
-    x = (1024 - 819) / 2
-    y = (768 - 614) / 2
+    x = (1024 - 819) // 2
+    y = (768 - 614) // 2
     w.move.assert_called_once_with(x, y)
 
 
@@ -1736,8 +1738,8 @@ def test_Window_autosize_window_off_screen():
     mock_qdw.assert_called_once_with()
     w.resize.assert_called_once_with(int(1024 * 0.8), int(768 * 0.8))
     w.geometry.assert_called_once_with()
-    x = (1024 - 819) / 2
-    y = (768 - 614) / 2
+    x = (1024 - 819) // 2
+    y = (768 - 614) // 2
     w.move.assert_called_once_with(x, y)
 
 

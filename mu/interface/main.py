@@ -211,6 +211,8 @@ class FileTabs(QTabWidget):
         self.setTabsClosable(False)
         self.setMovable(True)
         self.currentChanged.connect(self.change_tab)
+        # Shrink icons to avoid giant tabs
+        self.setIconSize(self.iconSize() * 0.75)
 
     def removeTab(self, tab_id):
         """
@@ -243,7 +245,7 @@ class FileTabs(QTabWidget):
         # Counterintuitively QImage doesn't show an image, QLabel does
         state_lbl = QLabel(container)
         box.addWidget(state_lbl)
-        state_lbl.setPixmap(load_pixmap("document.svg"))
+        state_lbl.setPixmap(load_pixmap("document", size=self.iconSize()))
 
         # Watch for status change to update the dirty indicator
         # We watch here as it's far easier to keep track of state_lbl
@@ -256,10 +258,14 @@ class FileTabs(QTabWidget):
             # for a RuntimeError is the simplest possible solution.
             try:
                 if widget.isModified():
-                    state_lbl.setPixmap(load_pixmap("document-dirty.svg"))
+                    state_lbl.setPixmap(
+                        load_pixmap("document-dirty", size=self.iconSize())
+                    )
                 else:
                     # This icon is actually empty
-                    state_lbl.setPixmap(load_pixmap("document.svg"))
+                    state_lbl.setPixmap(
+                        load_pixmap("document", size=self.iconSize())
+                    )
             except RuntimeError:  # pragma: no cover
                 pass
 
@@ -268,9 +274,8 @@ class FileTabs(QTabWidget):
         box.addWidget(close_btn)
         close_btn.setToolTip(_("Close file"))
         close_btn.setFlat(True)
-        # Bit of a weird size but we want to avoid giant tabs
-        close_btn.setIconSize(QSize(10, 10))
-        close_btn.setIcon(load_icon("close-tab.svg"))
+        close_btn.setIconSize(self.iconSize())
+        close_btn.setIcon(load_icon("close-tab"))
         close_btn.show()
 
         # Handle 'clicked' events
@@ -969,6 +974,8 @@ class Window(QMainWindow):
             self.repl_pane.set_theme(theme)
         if hasattr(self, "plotter") and self.plotter:
             self.plotter_pane.set_theme(theme)
+        if hasattr(self, "runner") and self.runner:
+            self.process_runner.set_theme(theme)
 
     def set_checker_icon(self, icon):
         """
@@ -979,7 +986,7 @@ class Window(QMainWindow):
 
         @timer.timeout.connect
         def reset():
-            self.button_bar.slots["check"].setIcon(load_icon("check.png"))
+            self.button_bar.slots["check"].setIcon(load_icon("check"))
             timer.stop()
 
         timer.start(500)
@@ -1098,8 +1105,8 @@ class Window(QMainWindow):
             x = None
         if y and (y <= 0 or y > screen_height):
             y = None
-        x = (screen_width - size.width()) / 2 if x is None else x
-        y = (screen_height - size.height()) / 2 if y is None else y
+        x = (screen_width - size.width()) // 2 if x is None else x
+        y = (screen_height - size.height()) // 2 if y is None else y
         self.move(x, y)
 
     def reset_annotations(self):
@@ -1370,7 +1377,7 @@ class StatusBar(QStatusBar):
         # Logs viewer
         self.logs_label = QLabel()
         self.logs_label.setObjectName("AdministrationLabel")
-        self.logs_label.setPixmap(load_pixmap("logs").scaledToHeight(24))
+        self.logs_label.setPixmap(load_pixmap("logs", size=QSize(24, 24)))
         self.logs_label.setToolTip(_("Mu Administration"))
         self.addPermanentWidget(self.logs_label)
 

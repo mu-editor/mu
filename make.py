@@ -222,6 +222,7 @@ def clean():
     _rmtree("coverage")
     _rmtree("docs/build")
     _rmtree("lib")
+    _rmtree("venv-pup")
     _rmfiles(".", "*.pyc")
     return 0
 
