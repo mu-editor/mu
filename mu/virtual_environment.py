@@ -875,7 +875,7 @@ class VirtualEnvironment(object):
         logger.info("Expecting zipped wheels at %s", zipped_wheels_filepath)
         if not os.path.exists(zipped_wheels_filepath):
             logger.warning("No zipped wheels found; downloading...")
-            wheels.download(zipped_wheels_filepath)
+            wheels.download(zipped_wheels_filepath, logger)
 
         self.install_from_zipped_wheels(zipped_wheels_filepath)
 
