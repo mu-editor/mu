@@ -15,8 +15,8 @@ all:
 	@echo "make publish-test - publish the project to PyPI test instance."
 	@echo "make publish-live - publish the project to PyPI production."
 	@echo "make docs - run sphinx to create project documentation."
-	@echo "make translate - create a messages.pot file for translations."
-	@echo "make translateall - as with translate but for all API strings."
+	@echo "make translate-prep LOCALE=xx_XX - create/update a mu.po file for translation."
+	@echo "make translate-compile LOCALE=xx_XX - commit translations in the mu.po file."
 	@echo "make win32 - create a 32bit Windows installer for Mu."
 	@echo "make win64 - create a 64bit Windows installer for Mu."
 	@echo "make macos - create a macOS native application for Mu."
@@ -38,6 +38,7 @@ clean:
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
 	find . | grep -E "(__pycache__)" | xargs rm -rf
+	rm -f ./mu/locale/messages.pot
 
 run: clean
 ifeq ($(VIRTUAL_ENV),)
@@ -83,15 +84,27 @@ docs: clean
 	@echo file://`pwd`/docs/_build/html/index.html
 	@echo "\n"
 
-translate:
-	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils -o -path ./mu/modes/api \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pygettext
-	@echo "\nNew messages.pot file created."
-	@echo "Remember to update the translation strings found in the locale directory."
+translate-need-locale:
+ifndef LOCALE
+	@echo "Need LOCALE=xx_XX argument (or the LOCALE env var set)."
+	@false
+endif
 
-translateall:
-	pygettext mu/* mu/debugger/* mu/modes/* mu/resources/*
-	@echo "\nNew messages.pot file created."
-	@echo "Remember to update the translation strings found in the locale directory."
+translate-extract:
+	find ./mu -type f -name '*.py' | grep -v -e ./mu/modes/api -e ./mu/contrib | sort | xargs pybabel extract -o ./mu/locale/messages.pot
+
+translate-prep: translate-need-locale translate-extract
+	@if [ -f ./mu/locale/$(LOCALE)/LC_MESSAGES/mu.po ];\
+	then\
+		pybabel update -i ./mu/locale/messages.pot -o ./mu/locale/$(LOCALE)/LC_MESSAGES/mu.po --locale=$(LOCALE);\
+	else\
+		pybabel init -i ./mu/locale/messages.pot -o ./mu/locale/$(LOCALE)/LC_MESSAGES/mu.po --locale=$(LOCALE);\
+	fi
+	@echo "Created/updated ./mu/locale/$(LOCALE)/LC_MESSAGES/mu.po."
+	@echo "Review translation strings and finalize with 'make translate-compile'"
+
+translate-compile: translate-need-locale
+	pybabel compile -i ./mu/locale/$(LOCALE)/LC_MESSAGES/mu.po -o ./mu/locale/$(LOCALE)/LC_MESSAGES/mu.mo --locale=$(LOCALE)
 
 win32: check
 	@echo "\nBuilding 32bit Windows MSI installer."
