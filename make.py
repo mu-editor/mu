@@ -291,7 +291,7 @@ def _translate_extract():
         _MESSAGES_POT_FILENAME,
         *_translate_filenames(),
     ]
-    return subprocess.run(cmd, shell=True).returncode
+    return subprocess.run(cmd).returncode
 
 
 @export
@@ -315,7 +315,7 @@ def translate_done(locale=''):
         mu_mo_filename,
         f'--locale={locale}',
     ]
-    return subprocess.run(cmd, shell=True).returncode
+    return subprocess.run(cmd).returncode
 
 
 @export
