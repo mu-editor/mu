@@ -323,6 +323,20 @@ def translate_done(locale=""):
 
 
 @export
+def translate_test(locale=""):
+    """Run translate_done and lauch Mu in the given LOCALE."""
+    result = translate_done(locale)
+    if result != 0:
+        raise RuntimeError("Failed compiling the mu.po file.")
+
+    local_env = dict(os.environ)
+    local_env["LANG"] = _translate_locale(locale)
+    return subprocess.run(
+        [sys.executable, "-m", "mu"], env=local_env
+    ).returncode
+
+
+@export
 def run():
     """Run Mu from within a virtual environment"""
     clean()

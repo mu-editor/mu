@@ -17,6 +17,7 @@ all:
 	@echo "make docs - run sphinx to create project documentation."
 	@echo "make translate_begin LOCALE=xx_XX - create/update a mu.po file for translation."
 	@echo "make translate_done LOCALE=xx_XX - compile translation strings in mu.po to mu.mo file."
+	@echo "make translate_test LOCALE=xx_XX - run translate_done and launch Mu in the given LOCALE."
 	@echo "make win32 - create a 32bit Windows installer for Mu."
 	@echo "make win64 - create a 64bit Windows installer for Mu."
 	@echo "make macos - create a macOS native application for Mu."
@@ -89,6 +90,9 @@ translate_begin:
 
 translate_done:
 	@python make.py translate_done LOCALE=$(LOCALE)
+
+translate_test:
+	@python make.py translate_test LOCALE=$(LOCALE)
 
 win32: check
 	@echo "\nBuilding 32bit Windows MSI installer."
