@@ -208,14 +208,14 @@ def clean():
     return 0
 
 
-def _translate_locale(locale):
-    """Returns `value` from `locale` expected to be like 'LOCALE=value'."""
-    match = re.search(r"^LOCALE=(.*)$", locale)
+def _translate_lang(lang):
+    """Returns `value` from `lang` expected to be like 'LANG=value'."""
+    match = re.search(r"^LANG=(.*)$", lang)
     if not match:
-        raise RuntimeError("Need LOCALE=xx_XX argument.")
+        raise RuntimeError("Need LANG=xx_XX argument.")
     value = match.group(1)
     if not value:
-        raise RuntimeError("Need LOCALE=xx_XX argument.")
+        raise RuntimeError("Need LANG=xx_XX argument.")
     return value
 
 
@@ -224,16 +224,16 @@ _MESSAGES_POT_FILENAME = os.path.join(_MU_LOCALE_DIRNAME, "messages.pot")
 
 
 @export
-def translate_begin(locale=""):
+def translate_begin(lang=""):
     """Create/update a mu.po file for translation."""
-    locale = _translate_locale(locale)
+    lang = _translate_lang(lang)
     result = _translate_extract()
     if result != 0:
         raise RuntimeError("Failed creating the messages catalog file.")
 
     mu_po_filename = os.path.join(
         _MU_LOCALE_DIRNAME,
-        locale,
+        lang,
         "LC_MESSAGES",
         "mu.po",
     )
@@ -245,7 +245,7 @@ def translate_begin(locale=""):
         _MESSAGES_POT_FILENAME,
         "-o",
         mu_po_filename,
-        "--locale={locale}".format(locale=locale),
+        "--locale={locale}".format(locale=lang),
     ]
     result = subprocess.run(cmd).returncode
 
@@ -299,13 +299,13 @@ def _translate_extract():
 
 
 @export
-def translate_done(locale=""):
+def translate_done(lang=""):
     """Compile translation strings in mu.po to mu.mo file."""
-    locale = _translate_locale(locale)
+    lang = _translate_lang(lang)
 
     lc_messages_dirname = os.path.join(
         _MU_LOCALE_DIRNAME,
-        locale,
+        lang,
         "LC_MESSAGES",
     )
     mu_po_filename = os.path.join(lc_messages_dirname, "mu.po")
@@ -317,20 +317,20 @@ def translate_done(locale=""):
         mu_po_filename,
         "-o",
         mu_mo_filename,
-        "--locale={locale}".format(locale=locale),
+        "--locale={locale}".format(locale=lang),
     ]
     return subprocess.run(cmd).returncode
 
 
 @export
-def translate_test(locale=""):
-    """Run translate_done and lauch Mu in the given LOCALE."""
-    result = translate_done(locale)
+def translate_test(lang=""):
+    """Run translate_done and lauch Mu in the given LANG."""
+    result = translate_done(lang)
     if result != 0:
         raise RuntimeError("Failed compiling the mu.po file.")
 
     local_env = dict(os.environ)
-    local_env["LANG"] = _translate_locale(locale)
+    local_env["LANG"] = _translate_lang(lang)
     return subprocess.run(
         [sys.executable, "-m", "mu"], env=local_env
     ).returncode

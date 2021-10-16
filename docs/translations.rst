@@ -8,7 +8,7 @@ simple and there exist plenty of tools to help you.
 You can contribute in three ways:
 
 * Improve or extend an existing translation.
-* Create a completely new translation for a new locale.
+* Create a completely new translation for a new language.
 * Make a translation of `Mu's website <https://codewith.mu/>`_ (see the
   :doc:`website` guide for how to do this).
 
@@ -50,9 +50,9 @@ Open a CLI shell,
 change the working directory to Mu's repository root,
 and run::
 
-    $ make translate_begin LOCALE=xx_XX
+    $ make translate_begin LANG=xx_XX
 
-Where ``xx_XX`` is the identifier for the target locale.
+Where ``xx_XX`` is the identifier for the target language.
 
 This creates (or updates, if it already exists) the ``mu.po`` file under the
 ``mu/locale/xx_XX/LC_MESSAGES/`` directory --
@@ -75,10 +75,10 @@ Use a tool of your choice to edit the ``mu.po`` file:
 As you progress,
 check the translation results by launching Mu with::
 
-    $ make translate_test LOCALE=xx_XX
+    $ make translate_test LANG=xx_XX
 
 As before,
-``xx_XX`` is the identifier for the target locale.
+``xx_XX`` is the identifier for the target language.
 
 When done checking,
 quit Mu,
