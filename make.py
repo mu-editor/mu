@@ -245,11 +245,16 @@ def translate_begin(locale=""):
         _MESSAGES_POT_FILENAME,
         "-o",
         mu_po_filename,
-        f"--locale={locale}",
+        "--locale={locale}".format(locale=locale),
     ]
     result = subprocess.run(cmd).returncode
 
-    print(f"{'Updated' if update else 'Created'} {mu_po_filename!r}.")
+    print(
+        "{action} {mu_po_filename}.".format(
+            action="Updated" if update else "Created",
+            mu_po_filename=repr(mu_po_filename),
+        )
+    )
     print(
         "Review its translation strings "
         "and finalize with 'make translate_done'."
@@ -312,7 +317,7 @@ def translate_done(locale=""):
         mu_po_filename,
         "-o",
         mu_mo_filename,
-        f"--locale={locale}",
+        "--locale={locale}".format(locale=locale),
     ]
     return subprocess.run(cmd).returncode
 
