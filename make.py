@@ -2,6 +2,7 @@
 import os
 import sys
 import fnmatch
+import re
 import shutil
 import subprocess
 
@@ -54,27 +55,6 @@ def _walk(
 
         if not recurse:
             break
-
-
-def _process_code(executable, use_python, *args):
-    """Perform some action (check, translate etc.) across the .py files
-    in the codebase, skipping docs and build artefacts
-    """
-    if use_python:
-        execution = [sys.executable, executable]
-    else:
-        execution = [executable]
-    returncodes = set()
-    for filepath in _walk(".", INCLUDE_PATTERNS, EXCLUDE_PATTERNS, False):
-        p = subprocess.run(execution + [filepath] + list(args))
-        returncodes.add(p.returncode)
-    for filepath in _walk("mu", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
-        p = subprocess.run(execution + [filepath] + list(args))
-        returncodes.add(p.returncode)
-    for filepath in _walk("tests", INCLUDE_PATTERNS, EXCLUDE_PATTERNS):
-        p = subprocess.run(execution + [filepath] + list(args))
-        returncodes.add(p.returncode)
-    return max(returncodes)
 
 
 def _rmtree(dirpath, cascade_errors=False):
@@ -224,46 +204,118 @@ def clean():
     _rmtree("lib")
     _rmtree("venv-pup")
     _rmfiles(".", "*.pyc")
+    _rmfiles("mu/locale", "*.pot")
     return 0
 
 
-@export
-def translate():
-    """Translate"""
-    if not os.path.exists(PYGETTEXT):
-        raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
+def _translate_locale(locale):
+    """Returns `value` from `locale` expected to be like 'LOCALE=value'."""
+    match = re.search(r'^LOCALE=(.*)$', locale)
+    if not match:
+        raise RuntimeError("Need LOCALE=xx_XX argument.")
+    value = match.group(1)
+    if not value:
+        raise RuntimeError("Need LOCALE=xx_XX argument.")
+    return value
 
-    result = _process_code(PYGETTEXT, True)
-    print("\nNew messages.pot file created.")
-    print(
-        "Remember to update the translation strings"
-        "found in the locale directory."
+
+_MU_LOCALE_DIRNAME = os.path.join('mu', 'locale')
+_MESSAGES_POT_FILENAME = os.path.join(_MU_LOCALE_DIRNAME, 'messages.pot')
+
+@export
+def translate_begin(locale=''):
+    """Create/update a mu.po file for translation."""
+    locale = _translate_locale(locale)
+    result = _translate_extract()
+    if result != 0:
+        raise RuntimeError("Failed creating the messages catalog file.")
+
+    mu_po_filename = os.path.join(
+        _MU_LOCALE_DIRNAME,
+        locale,
+        'LC_MESSAGES',
+        'mu.po',
     )
+    update = os.path.exists(mu_po_filename)
+    cmd = [
+		'pybabel',
+        'update' if update else 'init',
+        '-i',
+        _MESSAGES_POT_FILENAME,
+        '-o',
+        mu_po_filename,
+        f'--locale={locale}',
+    ]
+    result = subprocess.run(cmd, shell=True).returncode
+
+    print(f"{'Updated' if update else 'Created'} {mu_po_filename!r}.")
+    print(
+        "Review its translation strings "
+        "and finalize with 'make translate_done'."
+    )
+
     return result
 
 
-@export
-def translateall():
-    """Translate All The Things"""
-    if not os.path.exists(PYGETTEXT):
-        raise RuntimeError("pygettext.py could not be found at %s" % PYGETTEXT)
+_TRANSLATE_IGNORE_DIRNAMES = {
+    os.path.join('mu', 'modes', 'api'),
+    os.path.join('mu', 'contrib'),
+}
 
-    result = subprocess.run(
-        [
-            sys.executable,
-            PYGETTEXT,
-            "mu/*",
-            "mu/debugger/*",
-            "mu/modes/*",
-            "mu/resources/*",
-        ]
-    ).returncode
-    print("\nNew messages.pot file created.")
-    print(
-        "Remember to update the translation strings"
-        "found in the locale directory."
+
+def _translate_ignore(dirname):
+    """Return True if `dirname` files should be excluded from translation."""
+    return any(dirname.startswith(dn) for dn in _TRANSLATE_IGNORE_DIRNAMES)
+
+
+def _translate_filenames():
+    """Returns a sorted list of filenames with translatable strings."""
+    py_filenames = []
+    for dirname, _, filenames in os.walk('mu'):
+        if _translate_ignore(dirname):
+            continue
+        py_filenames.extend(
+            os.path.join(dirname, fn)
+            for fn in filenames
+            if fn.endswith('.py')
+        )
+    return sorted(py_filenames)
+
+
+def _translate_extract():
+    """Creates the message catalog template messages.pot file."""
+    cmd = [
+		'pybabel',
+        'extract',
+        '-o',
+        _MESSAGES_POT_FILENAME,
+        *_translate_filenames(),
+    ]
+    return subprocess.run(cmd, shell=True).returncode
+
+
+@export
+def translate_done(locale=''):
+    """Compile translation strings in mu.po to mu.mo file."""
+    locale = _translate_locale(locale)
+
+    lc_messages_dirname = os.path.join(
+        _MU_LOCALE_DIRNAME,
+        locale,
+        'LC_MESSAGES',
     )
-    return result
+    mu_po_filename = os.path.join(lc_messages_dirname, 'mu.po')
+    mu_mo_filename = os.path.join(lc_messages_dirname, 'mu.mo')
+    cmd = [
+		'pybabel',
+        'compile',
+        '-i',
+        mu_po_filename,
+        '-o',
+        mu_mo_filename,
+        f'--locale={locale}',
+    ]
+    return subprocess.run(cmd, shell=True).returncode
 
 
 @export
