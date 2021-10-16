@@ -210,7 +210,7 @@ def clean():
 
 def _translate_locale(locale):
     """Returns `value` from `locale` expected to be like 'LOCALE=value'."""
-    match = re.search(r'^LOCALE=(.*)$', locale)
+    match = re.search(r"^LOCALE=(.*)$", locale)
     if not match:
         raise RuntimeError("Need LOCALE=xx_XX argument.")
     value = match.group(1)
@@ -219,11 +219,12 @@ def _translate_locale(locale):
     return value
 
 
-_MU_LOCALE_DIRNAME = os.path.join('mu', 'locale')
-_MESSAGES_POT_FILENAME = os.path.join(_MU_LOCALE_DIRNAME, 'messages.pot')
+_MU_LOCALE_DIRNAME = os.path.join("mu", "locale")
+_MESSAGES_POT_FILENAME = os.path.join(_MU_LOCALE_DIRNAME, "messages.pot")
+
 
 @export
-def translate_begin(locale=''):
+def translate_begin(locale=""):
     """Create/update a mu.po file for translation."""
     locale = _translate_locale(locale)
     result = _translate_extract()
@@ -233,18 +234,18 @@ def translate_begin(locale=''):
     mu_po_filename = os.path.join(
         _MU_LOCALE_DIRNAME,
         locale,
-        'LC_MESSAGES',
-        'mu.po',
+        "LC_MESSAGES",
+        "mu.po",
     )
     update = os.path.exists(mu_po_filename)
     cmd = [
-		'pybabel',
-        'update' if update else 'init',
-        '-i',
+        "pybabel",
+        "update" if update else "init",
+        "-i",
         _MESSAGES_POT_FILENAME,
-        '-o',
+        "-o",
         mu_po_filename,
-        f'--locale={locale}',
+        f"--locale={locale}",
     ]
     result = subprocess.run(cmd).returncode
 
@@ -258,8 +259,8 @@ def translate_begin(locale=''):
 
 
 _TRANSLATE_IGNORE_DIRNAMES = {
-    os.path.join('mu', 'modes', 'api'),
-    os.path.join('mu', 'contrib'),
+    os.path.join("mu", "modes", "api"),
+    os.path.join("mu", "contrib"),
 }
 
 
@@ -271,13 +272,11 @@ def _translate_ignore(dirname):
 def _translate_filenames():
     """Returns a sorted list of filenames with translatable strings."""
     py_filenames = []
-    for dirname, _, filenames in os.walk('mu'):
+    for dirname, _, filenames in os.walk("mu"):
         if _translate_ignore(dirname):
             continue
         py_filenames.extend(
-            os.path.join(dirname, fn)
-            for fn in filenames
-            if fn.endswith('.py')
+            os.path.join(dirname, fn) for fn in filenames if fn.endswith(".py")
         )
     return sorted(py_filenames)
 
@@ -285,9 +284,9 @@ def _translate_filenames():
 def _translate_extract():
     """Creates the message catalog template messages.pot file."""
     cmd = [
-		'pybabel',
-        'extract',
-        '-o',
+        "pybabel",
+        "extract",
+        "-o",
         _MESSAGES_POT_FILENAME,
         *_translate_filenames(),
     ]
@@ -295,25 +294,25 @@ def _translate_extract():
 
 
 @export
-def translate_done(locale=''):
+def translate_done(locale=""):
     """Compile translation strings in mu.po to mu.mo file."""
     locale = _translate_locale(locale)
 
     lc_messages_dirname = os.path.join(
         _MU_LOCALE_DIRNAME,
         locale,
-        'LC_MESSAGES',
+        "LC_MESSAGES",
     )
-    mu_po_filename = os.path.join(lc_messages_dirname, 'mu.po')
-    mu_mo_filename = os.path.join(lc_messages_dirname, 'mu.mo')
+    mu_po_filename = os.path.join(lc_messages_dirname, "mu.po")
+    mu_mo_filename = os.path.join(lc_messages_dirname, "mu.mo")
     cmd = [
-		'pybabel',
-        'compile',
-        '-i',
+        "pybabel",
+        "compile",
+        "-i",
         mu_po_filename,
-        '-o',
+        "-o",
         mu_mo_filename,
-        f'--locale={locale}',
+        f"--locale={locale}",
     ]
     return subprocess.run(cmd).returncode
 
