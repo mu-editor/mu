@@ -246,7 +246,7 @@ def translate_begin(locale=''):
         mu_po_filename,
         f'--locale={locale}',
     ]
-    result = subprocess.run(cmd, shell=True).returncode
+    result = subprocess.run(cmd).returncode
 
     print(f"{'Updated' if update else 'Created'} {mu_po_filename!r}.")
     print(
