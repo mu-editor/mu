@@ -85,6 +85,7 @@ extras_require = {
         "wheel",
         "twine",
     ],
+    "i18n": ["babel"],
     "utils": ["scrapy", "beautifulsoup4", "requests"],
 }
 
@@ -92,6 +93,7 @@ extras_require["dev"] = (
     extras_require["tests"]
     + extras_require["docs"]
     + extras_require["package"]
+    + extras_require["i18n"]
 )
 
 extras_require["all"] = list(
