@@ -30,6 +30,7 @@ into your virtualenv with::
 
     * ``[tests]`` specifies the testing dependencies, needed by ``make test``.
     * ``[docs]`` specifies the doc building dependencies, needed by ``make docs``.
+    * ``[i18n]`` specifies the translation dependencies, needed by ``make translate_*``.
     * ``[package]`` specifies the packaging dependencies needed by ``make win32``,
       ``make win64``, ``make macos``, or ``make dist``.
 

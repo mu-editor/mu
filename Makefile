@@ -15,8 +15,9 @@ all:
 	@echo "make publish-test - publish the project to PyPI test instance."
 	@echo "make publish-live - publish the project to PyPI production."
 	@echo "make docs - run sphinx to create project documentation."
-	@echo "make translate - create a messages.pot file for translations."
-	@echo "make translateall - as with translate but for all API strings."
+	@echo "make translate_begin LANG=xx_XX - create/update a mu.po file for translation."
+	@echo "make translate_done LANG=xx_XX - compile translation strings in mu.po to mu.mo file."
+	@echo "make translate_test LANG=xx_XX - run translate_done and launch Mu in the given LANG."
 	@echo "make win32 - create a 32bit Windows installer for Mu."
 	@echo "make win64 - create a 64bit Windows installer for Mu."
 	@echo "make macos - create a macOS native application for Mu."
@@ -38,6 +39,7 @@ clean:
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
 	find . | grep -E "(__pycache__)" | xargs rm -rf
+	rm -f ./mu/locale/messages.pot
 
 run: clean
 ifeq ($(VIRTUAL_ENV),)
@@ -83,15 +85,14 @@ docs: clean
 	@echo file://`pwd`/docs/_build/html/index.html
 	@echo "\n"
 
-translate:
-	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils -o -path ./mu/modes/api \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pygettext
-	@echo "\nNew messages.pot file created."
-	@echo "Remember to update the translation strings found in the locale directory."
+translate_begin:
+	@python make.py translate_begin LANG=$(LANG)
 
-translateall:
-	pygettext mu/* mu/debugger/* mu/modes/* mu/resources/*
-	@echo "\nNew messages.pot file created."
-	@echo "Remember to update the translation strings found in the locale directory."
+translate_done:
+	@python make.py translate_done LANG=$(LANG)
+
+translate_test:
+	@python make.py translate_test LANG=$(LANG)
 
 win32: check
 	@echo "\nBuilding 32bit Windows MSI installer."
