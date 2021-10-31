@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-09-07 18:34+CEST\n"
+"POT-Creation-Date: 2018-09-07 18:34+0200\n"
 "PO-Revision-Date: 2018-09-11 18:23+0200\n"
 "Last-Translator: ABIX Edukacja - Adam Jurkiewicz <biuro@abixedukacja.eu>\n"
 "Language-Team: polski <pypolska@python.org>\n"
