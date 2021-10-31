@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-07-25 09:39+CEST\n"
+"POT-Creation-Date: 2018-07-25 09:39+0200\n"
 "PO-Revision-Date: 2018-07-25 12:07+0200\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
