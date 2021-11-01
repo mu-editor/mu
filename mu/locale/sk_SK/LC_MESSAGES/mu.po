@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mu 1.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-01 20:17+0000\n"
+"POT-Creation-Date: 2021-11-01 21:43+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Miroslav Biňas <mirek@cnl.sk>\n"
 "Language: sk_SK\n"
@@ -671,6 +671,10 @@ msgid ""
 msgstr ""
 "Syntaktická chyba. Python nemôže pochopiť tento riadok. Skontrolujte "
 "chýbajúce znaky!"
+
+#: mu/logic.py:576
+msgid " compatible"
+msgstr ""
 
 #: mu/logic.py:995
 msgid ""

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mu Chinese\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-01 20:18+0000\n"
+"POT-Creation-Date: 2021-11-01 21:43+0000\n"
 "PO-Revision-Date: 2018-11-19 13:46+0800\n"
 "Last-Translator: 管宁川John <Guan.NingChuan@Gmail.Com>\n"
 "Language: zh_CN\n"
@@ -668,6 +668,10 @@ msgid ""
 "Syntax error. Python cannot understand this line. Check for missing "
 "characters!"
 msgstr "语法错误。 Python 无法理解这一行。 检查缺少的字符！"
+
+#: mu/logic.py:576
+msgid " compatible"
+msgstr ""
 
 #: mu/logic.py:995
 msgid ""
