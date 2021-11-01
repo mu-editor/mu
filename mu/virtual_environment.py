@@ -700,11 +700,18 @@ class VirtualEnvironment(object):
             # When packaged as a Linux AppImage, Mu Editor is mounted
             # on a random(ish) path each time it runs. This breaks the
             # existing venv: its interpreter symlinks to a path that
-            # likely no longer exists. This horrible hack fixes that
-            # by re-symlinking to the now valid interpreter path.
+            # likely no longer exists. Fix that by re-symlinking to
+            # the current and now valid interpreter path.
             # PS: This is a horrible hack and it seems to work! :)
             logger.info("No interpreter found at: %s", self.interpreter)
-            os.unlink(self.interpreter)
+            try:
+                os.unlink(self.interpreter)
+            except OSError as exc:
+                logger.warning(
+                    "Unlinking %s failed: %s. Moving on.",
+                    self.interpreter,
+                    exc,
+                )
             os.symlink(sys.executable, self.interpreter)
             logger.info(
                 "Symlinked %s to AppImage's %s",
