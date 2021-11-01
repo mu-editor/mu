@@ -800,16 +800,17 @@ class VirtualEnvironment(object):
         logger.info("Virtualenv name: {}".format(self.name))
 
         env = dict(os.environ)
-        ok, output = self.run_subprocess(
+        args = filter(None, (
             sys.executable,
             "-m",
             "virtualenv",
             "-p",
             sys.executable,
             "-q",
-            self.path,
-            env=env,
-        )
+            "" if self._is_windows else "--symlinks",
+            self.path
+        ))
+        ok, output = self.run_subprocess(*args, env=env)
         if ok:
             logger.info(
                 "Created virtual environment using %s at %s",
