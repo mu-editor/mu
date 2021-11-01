@@ -573,7 +573,7 @@ class Device:
         if self.board_name:
             return self.board_name
         else:
-            return self.long_mode_name + " device"
+            return self.long_mode_name + _(" compatible")
 
     def __eq__(self, other):
         """
