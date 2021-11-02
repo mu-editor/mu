@@ -120,7 +120,7 @@ macos: check
 	ls -la ./build/pup/
 	ls -la ./dist/
 
-linux: check
+linux:
 	@echo "\nFetching wheels."
 	python -m mu.wheels
 	@echo "\nPackaging Mu into a Linux AppImage."
