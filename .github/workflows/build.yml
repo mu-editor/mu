@@ -48,8 +48,10 @@ jobs:
       - name: Build Linux AppImage
         if: runner.os == 'Linux'
         run: |
-          make linux
-          mv dist/*.appimage upload/
+          sudo apt-get update
+          sudo apt-get install -y libxkbcommon-x11-0 xvfb
+          xvfb-run make linux
+          mv dist/*.AppImage upload/
       - name: Upload Mu installer
         uses: actions/upload-artifact@v1
         with:
