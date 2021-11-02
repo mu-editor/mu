@@ -2,7 +2,7 @@ name: Build Mu
 
 on:
   push:
-    branches: 'master'
+    branches: ['master', 'linux-appimage-packaging-ci']
   pull_request:
     branches: '*'
 
@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-10.15, windows-2016]
+        os: [macos-10.15, windows-2016, ubuntu-18.04]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: Build ${{ matrix.os }}
@@ -45,6 +45,11 @@ jobs:
         run: |
           make macos
           mv dist/*.dmg upload/
+      - name: Build Linux AppImage
+        if: runner.os == 'Linux'
+        run: |
+          make linux
+          mv dist/*.appimage upload/
       - name: Upload Mu installer
         uses: actions/upload-artifact@v1
         with:
