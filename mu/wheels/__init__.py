@@ -5,7 +5,6 @@ import os
 import sys
 import glob
 import logging
-import platform
 import subprocess
 import tempfile
 import zipfile
