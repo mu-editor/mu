@@ -53,23 +53,6 @@ mode_packages = [
     ("esptool", "esptool==3.*"),
 ]
 
-# TODO: Temp app signing workaround https://github.com/mu-editor/mu/issues/1290
-if sys.version_info[:2] == (3, 8) and platform.system() == "Darwin":
-    mode_packages = [
-        (
-            "pygame",
-            "https://github.com/mu-editor/pygame/releases/download/2.0.1/"
-            "pygame-2.0.1-cp38-cp38-macosx_10_9_intel.whl",
-        ),
-        ("numpy", "numpy==1.20.1"),
-        (
-            "pgzero",
-            "https://github.com/mu-editor/pgzero/releases/download/mu-wheel/"
-            "pgzero-1.2-py3-none-any.whl",
-            "--no-index",
-        ),
-    ] + mode_packages[1:]
-
 
 def compact(text):
     """Remove double line spaces and anything else which might help"""
