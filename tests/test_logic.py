@@ -675,9 +675,9 @@ def test_device__init(adafruit_feather):
 def test_device_name(esp_device, adafruit_feather):
     """
     Test that devices without a boardname (such as the esp_device),
-    are the long mode name with " device" appended
+    are the long mode name with " compatible" appended
     """
-    assert esp_device.name == "ESP MicroPython device"
+    assert esp_device.name == "ESP MicroPython compatible"
     assert adafruit_feather.name == "Adafruit Feather"
 
 
@@ -3485,7 +3485,7 @@ def test_device_with_no_board_name_is_mode_name(esp_device):
     Test that when no board name is given, the board name is the same
     as the mode name.
     """
-    assert esp_device.name == "ESP MicroPython device"
+    assert esp_device.name == "ESP MicroPython compatible"
 
 
 def test_com1_equality(microbit_com1):
