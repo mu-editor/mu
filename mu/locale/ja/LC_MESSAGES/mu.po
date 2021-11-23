@@ -23,7 +23,7 @@ msgid ""
 "machine's resources and try again."
 msgstr ""
 "接続がタイムアウトしました。マシンが遅いかビジーになっているようです。"
-"マシンのリソースを解放して再度試しください。"
+"マシンのリソースを解放して再度試してください。"
 
 #: mu/debugger/client.py:132
 msgid ""
