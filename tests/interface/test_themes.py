@@ -47,10 +47,10 @@ def test_theme_apply_to():
     lexer.setEolFill = mock.MagicMock(return_value=None)
     lexer.setPaper = mock.MagicMock(return_value=None)
     theme.apply_to(lexer)
-    assert lexer.setFont.call_count == 17
-    assert lexer.setColor.call_count == 16
-    assert lexer.setEolFill.call_count == 16
-    assert lexer.setPaper.call_count == 16
+    assert lexer.setFont.call_count == 21
+    assert lexer.setColor.call_count == 20
+    assert lexer.setEolFill.call_count == 20
+    assert lexer.setPaper.call_count == 20
 
 
 def test_Font_loading():

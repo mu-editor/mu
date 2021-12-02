@@ -129,6 +129,7 @@ class DayTheme(Theme):
     SingleQuotedString = DoubleQuotedString = Font(color="#800000")
     SingleQuotedFString = DoubleQuotedFString = Font(color="#800000")
     TripleSingleQuotedString = TripleDoubleQuotedString = Font(color="#060")
+    TripleSingleQuotedFString = TripleDoubleQuotedFString = Font(color="#060")
     Number = Font(color="#00008B")
     Decorator = Font(color="#cc6600")
     Default = Identifier = Font()
@@ -198,6 +199,9 @@ class NightTheme(Theme):
     TripleSingleQuotedString = TripleDoubleQuotedString = Font(
         color="#f0c674", paper="#222"
     )
+    TripleSingleQuotedFString = TripleDoubleQuotedFString = Font(
+        color="#f0c674", paper="#222"
+    )
     Number = Font(color="#b5bd68", paper="#222")
     Decorator = Font(color="#cc6666", paper="#222")
     Default = Identifier = Font(color="#DDD", paper="#222")
@@ -262,6 +266,9 @@ class ContrastTheme(Theme):
         color="#AAA", paper="black"
     )
     TripleSingleQuotedString = TripleDoubleQuotedString = Font(
+        color="#AAA", paper="black"
+    )
+    TripleSingleQuotedFString = TripleDoubleQuotedFString = Font(
         color="#AAA", paper="black"
     )
     Number = Font(color="#AAA", paper="black")
