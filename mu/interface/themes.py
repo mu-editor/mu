@@ -127,6 +127,7 @@ class DayTheme(Theme):
     Comment = CommentBlock = Font(color="gray")
     Keyword = Font(color="#005050", bold=True)
     SingleQuotedString = DoubleQuotedString = Font(color="#800000")
+    SingleQuotedFString = DoubleQuotedFString = Font(color="#800000")
     TripleSingleQuotedString = TripleDoubleQuotedString = Font(color="#060")
     Number = Font(color="#00008B")
     Decorator = Font(color="#cc6600")
@@ -189,6 +190,9 @@ class NightTheme(Theme):
     Comment = CommentBlock = CommentLine = Font(color="#969896", paper="#222")
     Keyword = Font(color="#73a46a", bold=True, paper="#222")
     SingleQuotedString = DoubleQuotedString = Font(
+        color="#f0c674", paper="#222"
+    )
+    SingleQuotedFString = DoubleQuotedFString = Font(
         color="#f0c674", paper="#222"
     )
     TripleSingleQuotedString = TripleDoubleQuotedString = Font(
@@ -254,6 +258,9 @@ class ContrastTheme(Theme):
     Comment = CommentBlock = Font(color="#AAA", paper="black")
     Keyword = Font(color="#EEE", bold=True, paper="black")
     SingleQuotedString = DoubleQuotedString = Font(color="#AAA", paper="black")
+    SingleQuotedFString = DoubleQuotedFString = Font(
+        color="#AAA", paper="black"
+    )
     TripleSingleQuotedString = TripleDoubleQuotedString = Font(
         color="#AAA", paper="black"
     )
