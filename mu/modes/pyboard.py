@@ -31,7 +31,7 @@ class PyboardMode(MicroPythonMode):
 
     name = _("Pyboard MicroPython")
     short_name = "pyboard"
-    description = _("Use MicroPython on the Pyboard line of boards.")
+    description = _("Use MicroPython on the Pyboard line of boards")
     icon = "pyboard"
     save_timeout = 0
     connected = True
