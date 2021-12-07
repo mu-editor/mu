@@ -1438,7 +1438,7 @@ msgid "Pyboard MicroPython"
 msgstr "MicroPython pyboard"
 
 #: mu/modes/pyboard.py:34
-msgid "Use MicroPython on the Pyboard line of boards."
+msgid "Use MicroPython on the Pyboard line of boards"
 msgstr "Escreve MicroPython em dispositivos pyboard."
 
 #: mu/modes/pyboard.py:177
