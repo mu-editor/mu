@@ -349,11 +349,11 @@ def extract_envars(raw):
     Returns a list of environment variables given a string containing
     NAME=VALUE definitions on separate lines.
     """
-    result = []
+    result = {}
     for line in raw.split("\n"):
         definition = line.split("=", 1)
         if len(definition) == 2:
-            result.append([definition[0].strip(), definition[1].strip()])
+            result[definition[0].strip()] = definition[1].strip()
     return result
 
 
@@ -772,7 +772,7 @@ class Editor(QObject):
         self.mode = "python"
         self.python_extensions = [".py", ".pyw"]
         self.modes = {}
-        self.envars = []  # See restore session and show_admin
+        self.envars = {}  # See restore session and show_admin
         self.minify = False
         self.microbit_runtime = ""
         self.user_locale = ""  # user defined language locale
@@ -899,7 +899,10 @@ class Editor(QObject):
                 self.direct_load(old_path)
             logger.info("Loaded files.")
         if "envars" in old_session:
-            self.envars = old_session["envars"]
+            old_envars = old_session["envars"]
+            if isinstance(old_envars, list):
+                old_envars = dict(old_envars)
+            self.envars = old_envars
             logger.info(
                 "User defined environment variables: " "{}".format(self.envars)
             )
@@ -1412,7 +1415,10 @@ class Editor(QObject):
         """
         logger.info("Showing admin with logs from {}".format(LOG_FILE))
         envars = "\n".join(
-            ["{}={}".format(name, value) for name, value in self.envars]
+            [
+                "{}={}".format(name, value)
+                for name, value in self.envars.items()
+            ]
         )
         settings = {
             "envars": envars,

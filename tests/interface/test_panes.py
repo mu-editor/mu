@@ -1707,7 +1707,7 @@ def test_PythonProcessPane_start_process_user_environment_variables():
     ):
         mock_sys.platform = "darwin"
         ppp = mu.interface.panes.PythonProcessPane()
-        envars = [["name", "value"]]
+        envars = {"name": "value"}
         ppp.start_process(
             interpreter,
             script_filename,

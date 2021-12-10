@@ -876,9 +876,11 @@ class PythonProcessPane(QTextEdit):
         interpreter used to launch the child process.
         """
         self.is_interactive = interactive
-        if not envars:  # Envars must be a list if not passed a value.
-            envars = []
-        envars = [(name, v) for (name, v) in envars if name != "PYTHONPATH"]
+        if not envars:  # Envars must be a dict if not passed a value.
+            envars = {}
+        envars = {
+            name: v for (name, v) in envars.items() if name != "PYTHONPATH"
+        }
         self.script = ""
         if script_name:
             self.script = os.path.abspath(os.path.normcase(script_name))
@@ -908,7 +910,7 @@ class PythonProcessPane(QTextEdit):
             logger.info(
                 "Running with environment variables: " "{}".format(envars)
             )
-            for name, value in envars:
+            for name, value in envars.items():
                 env.insert(name, value)
         logger.info("Working directory: {}".format(working_directory))
         self.process.setWorkingDirectory(working_directory)

@@ -456,7 +456,7 @@ def test_extract_envars():
     """
     raw = "FOO=BAR\n BAZ = Q=X    \n\n\n"
     expected = mu.logic.extract_envars(raw)
-    assert expected == [["FOO", "BAR"], ["BAZ", "Q=X"]]
+    assert expected == {"FOO": "BAR", "BAZ": "Q=X"}
 
 
 def test_check_flake():
@@ -803,7 +803,7 @@ def test_editor_init():
         assert e.theme == "day"
         assert e.mode == "python"
         assert e.modes == {}
-        assert e.envars == []
+        assert e.envars == {}
         assert e.minify is False
         assert e.microbit_runtime == ""
         # assert e.connected_devices == set()
@@ -889,7 +889,7 @@ def test_editor_restore_session_existing_runtime():
     assert ed.theme == theme
     assert ed._view.add_tab.call_count == len(file_contents)
     ed._view.set_theme.assert_called_once_with(theme)
-    assert ed.envars == [["name", "value"]]
+    assert ed.envars == {"name": "value"}
     assert ed.minify is False
     assert ed.microbit_runtime == "/foo"
     assert ed._view.zoom_position == 5
@@ -911,7 +911,7 @@ def test_editor_restore_session_missing_runtime():
     assert ed.theme == theme
     assert ed._view.add_tab.call_count == len(file_contents)
     ed._view.set_theme.assert_called_once_with(theme)
-    assert ed.envars == [["name", "value"]]
+    assert ed.envars == {"name": "value"}
     assert ed.minify is False
     assert ed.microbit_runtime == ""  # File does not exist so set to ''
 
@@ -2212,7 +2212,7 @@ def test_show_admin():
     ed = mu.logic.Editor(view)
     ed.modes = {"python": mock.MagicMock()}
     ed.sync_package_state = mock.MagicMock()
-    ed.envars = [["name", "value"]]
+    ed.envars = {"name": "value"}
     ed.minify = True
     ed.microbit_runtime = "/foo/bar"
     settings = {
@@ -2242,7 +2242,7 @@ def test_show_admin():
             )
             assert view.show_admin.call_count == 1
             assert view.show_admin.call_args[0][1] == settings
-            assert ed.envars == [["name", "value"]]
+            assert ed.envars == {"name": "value"}
             assert ed.minify is True
             assert ed.microbit_runtime == "/foo/bar"
             # Expect package names to be normalised to lowercase.
@@ -2259,7 +2259,7 @@ def test_show_admin_no_change():
     ed = mu.logic.Editor(view)
     ed.modes = {"python": mock.MagicMock()}
     ed.sync_package_state = mock.MagicMock()
-    ed.envars = [["name", "value"]]
+    ed.envars = {"name": "value"}
     ed.minify = True
     ed.microbit_runtime = "/foo/bar"
     new_settings = {}
@@ -2284,7 +2284,7 @@ def test_show_admin_missing_microbit_runtime():
     ed = mu.logic.Editor(view)
     ed.modes = {"python": mock.MagicMock()}
     ed.sync_package_state = mock.MagicMock()
-    ed.envars = [["name", "value"]]
+    ed.envars = {"name": "value"}
     ed.minify = True
     ed.microbit_runtime = "/foo/bar"
     settings = {
@@ -2314,7 +2314,7 @@ def test_show_admin_missing_microbit_runtime():
             )
             assert view.show_admin.call_count == 1
             assert view.show_admin.call_args[0][1] == settings
-            assert ed.envars == [["name", "value"]]
+            assert ed.envars == {"name": "value"}
             assert ed.minify is True
             assert ed.microbit_runtime == ""
             assert view.show_message.call_count == 1
