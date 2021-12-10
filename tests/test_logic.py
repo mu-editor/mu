@@ -1006,6 +1006,17 @@ def test_restore_session_open_tabs_in_the_same_order():
     assert direct_load_calls_args == settings_paths
 
 
+def test_editor_restore_session_list_envars():
+    """
+    If envars is a list in the old session, convert it to a dict.
+    """
+    ed = mocked_editor()
+    with generate_session(envars=[["name", "value"]]):
+        ed.restore_session()
+
+    assert ed.envars == {"name": "value"}
+
+
 def test_editor_restore_saved_window_geometry():
     """
     Window geometry specified in the session file is restored properly.
