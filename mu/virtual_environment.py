@@ -780,6 +780,7 @@ class VirtualEnvironment(object):
         env = dict(os.environ)
         ok, output = self.run_subprocess(
             sys.executable,
+            "-I",
             "-m",
             "virtualenv",
             "-p",
