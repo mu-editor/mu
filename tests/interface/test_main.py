@@ -624,6 +624,20 @@ def test_Window_get_save_path_missing_extension():
     assert returned_path == path + ".py"  # Note addition of ".py" extension.
 
 
+def test_Window_get_save_path_empty_path():
+    """
+    Avoid appending a ".py" extension if the path is empty. See #1880.
+    """
+    mock_fd = mock.MagicMock()
+    path = ""  # Empty, as when user cancels Save As / Rename Tab.
+    mock_fd.getSaveFileName = mock.MagicMock(return_value=(path, True))
+    w = mu.interface.main.Window()
+    w.widget = mock.MagicMock()
+    with mock.patch("mu.interface.main.QFileDialog", mock_fd):
+        returned_path = w.get_save_path("micropython")
+    assert returned_path == ""  # Note lack of addition of ".py" extension.
+
+
 def test_Window_get_save_path_for_dot_file():
     """
     Ensure that if the user enters a dot file without an extension, then
