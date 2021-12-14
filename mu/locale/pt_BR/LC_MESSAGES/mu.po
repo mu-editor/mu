@@ -319,7 +319,7 @@ msgstr "Em execução: {}"
 
 #: mu/interface/main.py:805
 msgid "Debug Inspector"
-msgstr "Inspector de depuração"
+msgstr "Inspetor de depuração"
 
 #: mu/interface/main.py:817
 msgid "Name"
@@ -789,7 +789,7 @@ msgstr ""
 "Este arquivo existe?\n"
 "Em caso afirmativo, será que você tem permissões para lê-lo?\n"
 "\n"
-"Por favvor verifique isso e tente novamente."
+"Por favor, verifique isso e tente novamente."
 
 #: mu/logic.py:1080
 msgid "Is this a {} file?"
@@ -814,7 +814,7 @@ msgid ""
 "Error saving file to disk. Ensure you have permission to write the file "
 "and sufficient disk space."
 msgstr ""
-"Erro ao salvar o arquivo no disco. Verifice se você tem permissões para "
+"Erro ao salvar o arquivo no disco. Verifique se você tem permissões para "
 "salvar o arquivo e se há espaço livre disponível."
 
 #: mu/logic.py:1215
@@ -880,7 +880,7 @@ msgid ""
 "The micro:bit runtime you specified ('{}') does not exist. Please try "
 "again."
 msgstr ""
-"O \"runtime\" micro:bit que você indicou ('{}') não existe. Tenta "
+"O \"runtime\" micro:bit que você indicou ('{}') não existe. Tente "
 "novamente, por favor."
 
 #: mu/logic.py:1569
