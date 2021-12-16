@@ -4,6 +4,7 @@ Tests for the Python3 mode.
 """
 import sys
 import os
+from jupyter_client import kernelspec
 from mu.modes.python3 import PythonMode, KernelRunner, make_kernel_spec
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from mu.virtual_environment import venv
@@ -23,7 +24,7 @@ def test_make_kernel_spec():
                 with mock.patch("os.mkdir") as mkdir:
                     with mock.patch("json.dump") as dump:
                         make_kernel_spec(mock_dir)
-    mkdir.assert_called_once_with(mock_dir)
+    mkdir.assert_called_with(mock_dir, 511)
     json_path = os.path.join(mock_dir, "kernel.json")
     opener.assert_called_once_with(json_path, "w")
     expected = {
@@ -96,9 +97,10 @@ def test_kernel_runner_kernel_spec_creation():
         assert kr.repl_kernel_manager.kernel_name == "test_kernel_name"
         assert kr.repl_kernel_manager.kernel_spec.argv[0] == venv.interpreter
     finally:
-        kr.repl_kernel_manager.kernel_spec_manager.remove_kernel_spec(
-            kernel_name
-        )
+        if kernel_name in kernelspec.find_kernel_specs():
+            kr.repl_kernel_manager.kernel_spec_manager.remove_kernel_spec(
+                kernel_name
+            )
 
 
 def test_kernel_runner_stop_kernel():

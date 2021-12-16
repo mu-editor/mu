@@ -36,11 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 def make_kernel_spec(kernel_dir):
-    try:
-        if not os.path.exists(kernel_dir):
-            os.mkdir(kernel_dir)
-    except FileExistsError:
-        pass
+    os.makedirs(kernel_dir, exist_ok=True)
     spec = {
         "argv": [
             venv.interpreter,
