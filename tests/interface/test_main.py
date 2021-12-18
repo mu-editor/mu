@@ -27,6 +27,8 @@ def test_ButtonBar_init():
     mock_context_menu_policy = mock.MagicMock(return_value=None)
     mock_object_name = mock.MagicMock(return_value=None)
     mock_reset = mock.MagicMock(return_value=None)
+    dpi = 72
+    mock_qdw = _qdesktopwidget_mock(1024, 768, dpi=72)
     with mock.patch(
         "mu.interface.main.ButtonBar.setMovable", mock_movable
     ), mock.patch(
@@ -40,10 +42,14 @@ def test_ButtonBar_init():
         "mu.interface.main.ButtonBar.setObjectName", mock_object_name
     ), mock.patch(
         "mu.interface.main.ButtonBar.reset", mock_reset
+    ), mock.patch(
+        "mu.interface.main.QDesktopWidget", mock_qdw
     ):
         mu.interface.main.ButtonBar(None)
         mock_movable.assert_called_once_with(False)
-        mock_icon_size.assert_called_once_with(QSize(64, 64))
+        size = mu.interface.panes.PANE_ZOOM_SIZES["m"]
+        icon_size = int(size * 3 * dpi / 72 + 0.5)
+        mock_icon_size.assert_called_once_with(QSize(icon_size, icon_size))
         mock_tool_button_size.assert_called_once_with(3)
         mock_context_menu_policy.assert_called_once_with(Qt.PreventContextMenu)
         mock_object_name.assert_called_once_with("StandardToolBar")
@@ -93,25 +99,29 @@ def test_ButtonBar_change_mode():
         assert mock_add_separator.call_count == 5
 
 
-def test_ButtonBar_set_responsive_mode():
+def test_ButtonBar_set_zoom():
     """
     Does the button bar shrink in compact mode and grow out of it?
     """
+    dpi = 72
+    mock_qdw = _qdesktopwidget_mock(1024, 768, dpi=72)
     mock_icon_size = mock.MagicMock(return_value=None)
-    with mock.patch("mu.interface.main.ButtonBar.setIconSize", mock_icon_size):
+    with mock.patch(
+        "mu.interface.main.ButtonBar.setIconSize", mock_icon_size
+    ), mock.patch("mu.interface.main.QDesktopWidget", mock_qdw):
         bb = mu.interface.main.ButtonBar(None)
         bb.setStyleSheet = mock.MagicMock()
-        bb.set_responsive_mode(1124, 800)
-        mock_icon_size.assert_called_with(QSize(64, 64))
-        default_font = str(mu.interface.themes.DEFAULT_FONT_SIZE)
-        style = "QWidget{font-size: " + default_font + "px;}"
+        bb.set_zoom("xxxl")
+        size = mu.interface.panes.PANE_ZOOM_SIZES["xxxl"]
+        icon_size = int(size * 3 * dpi / 72 + 0.5)
+        mock_icon_size.assert_called_with(QSize(icon_size, icon_size))
+        style = "QWidget{font-size: " + str(size) + "pt;}"
         bb.setStyleSheet.assert_called_with(style)
-        bb.set_responsive_mode(939, 800)
-        mock_icon_size.assert_called_with(QSize(48, 48))
-        bb.setStyleSheet.assert_called_with(style)
-        bb.set_responsive_mode(939, 599)
-        mock_icon_size.assert_called_with(QSize(32, 32))
-        style = "QWidget{font-size: " + str(10) + "px;}"
+        bb.set_zoom("xs")
+        size = mu.interface.panes.PANE_ZOOM_SIZES["xs"]
+        icon_size = int(size * 3 * dpi / 72 + 0.5)
+        mock_icon_size.assert_called_with(QSize(icon_size, icon_size))
+        style = "QWidget{font-size: " + str(size) + "pt;}"
         bb.setStyleSheet.assert_called_with(style)
 
 
@@ -367,21 +377,6 @@ def test_Window_wheelEvent_zoom_out():
         w.wheelEvent(mock_event)
         w.zoom_out.assert_called_once_with()
         mock_event.ignore.assert_called_once_with()
-
-
-def test_Window_resizeEvent():
-    """
-    Ensure resize events are passed along to the button bar.
-    """
-    resizeEvent = mock.MagicMock()
-    size = mock.MagicMock()
-    size.width.return_value = 1024
-    size.height.return_value = 768
-    resizeEvent.size.return_value = size
-    w = mu.interface.main.Window()
-    w.button_bar = mock.MagicMock()
-    w.resizeEvent(resizeEvent)
-    w.button_bar.set_responsive_mode.assert_called_with(1024, 768)
 
 
 def test_Window_select_mode_selected():
@@ -1695,7 +1690,7 @@ def test_Window_update_title():
     w.setWindowTitle.assert_called_once_with("Mu - foo.py")
 
 
-def _qdesktopwidget_mock(width, height):
+def _qdesktopwidget_mock(width, height, dpi=72):
     """
     Create and return a usable mock for QDesktopWidget that supports the
     QDesktopWidget().screenGeometry() use case: it returns a mocked QRect
@@ -1706,6 +1701,8 @@ def _qdesktopwidget_mock(width, height):
     mock_screen.width = mock.MagicMock(return_value=width)
     mock_screen.height = mock.MagicMock(return_value=height)
     mock_sg.screenGeometry = mock.MagicMock(return_value=mock_screen)
+    mock_sg.physicalDpiX = mock.MagicMock(return_value=dpi)
+    mock_sg.logicalDpiX = mock.MagicMock(return_value=dpi)
     return mock.MagicMock(return_value=mock_sg)
 
 
