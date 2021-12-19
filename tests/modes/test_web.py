@@ -185,6 +185,25 @@ def test_stop_server():
     view.remove_python_runner.assert_called_once_with()
 
 
+def test_start_server_no_duplicate_envars():
+    """
+    Check that we don't add repeated envars to the Python3 Environment.
+    """
+    editor = mock.MagicMock()
+    editor.envars = {}
+    view = mock.MagicMock()
+    view.current_tab.path = "foo.py"
+    view.current_tab.isModified.return_value = True
+    wm = WebMode(editor, view)
+    wm.stop_server = mock.MagicMock()
+    with mock.patch("os.path.isdir", return_value=True):
+        wm.start_server()
+    assert len(editor.envars) == 4
+    with mock.patch("os.path.isdir", return_value=True):
+        wm.start_server()
+    assert len(editor.envars) == 4
+
+
 def test_stop():
     """
     Ensure that this method, called when Mu is quitting, stops the local
