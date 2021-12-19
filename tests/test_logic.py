@@ -1017,6 +1017,25 @@ def test_editor_restore_session_list_envars():
     assert ed.envars == {"name": "value"}
 
 
+def test_editor_restore_session_duplicated_list_envars():
+    """
+    If envars is a list with duplicates in the old session, convert it to a
+    dict of unique entries.
+    """
+    ed = mocked_editor()
+    with generate_session(
+        envars=[
+            ["name", "value"],
+            ["name", "value"],
+            ["name2", "value2"],
+            ["name2", "value2"],
+        ]
+    ):
+        ed.restore_session()
+
+    assert ed.envars == {"name": "value", "name2": "value2"}
+
+
 def test_editor_restore_saved_window_geometry():
     """
     Window geometry specified in the session file is restored properly.
