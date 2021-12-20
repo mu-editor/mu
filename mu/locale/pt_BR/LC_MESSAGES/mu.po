@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  \n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-12-13 22:01-0300\n"
+"POT-Creation-Date: 2021-12-20 10:54+0000\n"
 "PO-Revision-Date: 2021-12-13 21:06-0300\n"
 "Last-Translator: Rafael Fontenelle <rafaelff@gnome.org>\n"
 "Language: pt_BR\n"
@@ -189,7 +189,7 @@ msgstr "Substituir todos?"
 msgid "Third Party Package Status"
 msgstr "Status de pacote de terceiros"
 
-#: mu/interface/editor.py:319 mu/logic.py:1324
+#: mu/interface/editor.py:319 mu/logic.py:1327
 msgid "untitled"
 msgstr "sem nome"
 
@@ -349,7 +349,7 @@ msgstr "Modo atual de operação do Mu."
 msgid "Detected new {} device: {}."
 msgstr "Detectado um novo dispositivo {}: {}."
 
-#: mu/interface/main.py:1427 mu/logic.py:1616
+#: mu/interface/main.py:1427 mu/logic.py:1622
 msgid "Detected new {} device."
 msgstr "Detectado um novo dispositivo {}."
 
@@ -736,10 +736,10 @@ msgstr ""
 
 # https://github.com/mu-editor/mu/issues/1922
 #: mu/logic.py:576
-msgid " compatible"
-msgstr " (compatível)"
+msgid "{} compatible"
+msgstr "Compatível com {}"
 
-#: mu/logic.py:995
+#: mu/logic.py:998
 msgid ""
 "The file contains characters Mu expects to be encoded as {0} or as the "
 "computer's default encoding {1}, but which are encoded in some other way."
@@ -755,19 +755,19 @@ msgstr ""
 "Se o arquivo foi produzido por outro programa ou aplicação, tente "
 "salvá-lo novamente com a codificação {0}."
 
-#: mu/logic.py:1023
+#: mu/logic.py:1026
 msgid "The file \"{}\" is already open."
 msgstr "O arquivo \"{}\" já está aberto."
 
-#: mu/logic.py:1035
+#: mu/logic.py:1038
 msgid "Mu cannot read the characters in {}"
 msgstr "O Mu não consegue ler os caracteres em {}"
 
-#: mu/logic.py:1061
+#: mu/logic.py:1064
 msgid "Mu was not able to open this file"
 msgstr "O Mu não conseguiu abrir este arquivo"
 
-#: mu/logic.py:1062
+#: mu/logic.py:1065
 msgid ""
 "Currently Mu only works with Python source files or hex files created "
 "with embedded MicroPython code."
@@ -775,11 +775,11 @@ msgstr ""
 "O Mu só trabalha com arquivos fontes Python ou arquivos \"hex\" com "
 "código MicroPython embutidos."
 
-#: mu/logic.py:1070
+#: mu/logic.py:1073
 msgid "Could not load {}"
 msgstr "Não foi possível abrir {}"
 
-#: mu/logic.py:1072
+#: mu/logic.py:1075
 msgid ""
 "Does this file exist?\n"
 "If it does, do you have permission to read it?\n"
@@ -791,11 +791,11 @@ msgstr ""
 "\n"
 "Por favor, verifique isso e tente novamente."
 
-#: mu/logic.py:1080
+#: mu/logic.py:1083
 msgid "Is this a {} file?"
 msgstr "Este é um arquivo {}?"
 
-#: mu/logic.py:1081
+#: mu/logic.py:1084
 msgid ""
 "It looks like this could be a {} file.\n"
 "\n"
@@ -805,11 +805,11 @@ msgstr ""
 "\n"
 "Deseja alterar o Mu para o modo {}?"
 
-#: mu/logic.py:1208
+#: mu/logic.py:1211
 msgid "Could not save file (disk problem)"
 msgstr "Não foi possível salvar o arquivo (problema no disco)"
 
-#: mu/logic.py:1209
+#: mu/logic.py:1212
 msgid ""
 "Error saving file to disk. Ensure you have permission to write the file "
 "and sufficient disk space."
@@ -817,11 +817,11 @@ msgstr ""
 "Erro ao salvar o arquivo no disco. Verifique se você tem permissões para "
 "salvar o arquivo e se há espaço livre disponível."
 
-#: mu/logic.py:1215
+#: mu/logic.py:1218
 msgid "Could not save file (encoding problem)"
 msgstr "Não foi possível salvar o arquivo (problema de codificação)"
 
-#: mu/logic.py:1217
+#: mu/logic.py:1220
 msgid ""
 "Unable to convert all the characters. If you have an encoding line at the"
 " top of the file, remove it and try again."
@@ -829,15 +829,15 @@ msgstr ""
 "Não foi possível converter todos os caracteres. Se existe uma linha de "
 "codificação no topo do arquivo, remove-a e tenta novamente."
 
-#: mu/logic.py:1228
+#: mu/logic.py:1231
 msgid "Saved file: {}"
 msgstr "Arquivo salvo: {}"
 
-#: mu/logic.py:1260 mu/logic.py:1675
+#: mu/logic.py:1263 mu/logic.py:1681
 msgid "You cannot use the filename \"{}\""
 msgstr "Você não pode utilizar o nome \"{}\""
 
-#: mu/logic.py:1263
+#: mu/logic.py:1266
 msgid ""
 "This name is already used by another part of Python. If you use this "
 "name, things are likely to break. Please try again with a different "
@@ -847,35 +847,35 @@ msgstr ""
 "nome, provavelmente algumas coisas vão falhar. Tenta novamente com um "
 "nome diferente, por favor."
 
-#: mu/logic.py:1340
+#: mu/logic.py:1343
 msgid "Good job! No problems found."
 msgstr "Bom trabalho! Nenhum problema encontrado."
 
-#: mu/logic.py:1341
+#: mu/logic.py:1344
 msgid "Hurrah! Checker turned up no problems."
 msgstr "Boa! A verificação não apresentou nenhum problema."
 
-#: mu/logic.py:1342
+#: mu/logic.py:1345
 msgid "Nice one! Zero problems detected."
 msgstr "Boa! Zero problemas detectados."
 
-#: mu/logic.py:1343
+#: mu/logic.py:1346
 msgid "Well done! No problems here."
 msgstr "Muito bem! Não há problemas por aqui."
 
-#: mu/logic.py:1344
+#: mu/logic.py:1347
 msgid "Awesome! Zero problems found."
 msgstr "Maravilhoso! Zero problemas encontrados."
 
-#: mu/logic.py:1370
+#: mu/logic.py:1373
 msgid "There is un-saved work, exiting the application will cause you to lose it."
 msgstr "Você tem trabalho não salvo. Se sair do Mu você irá perdê-lo."
 
-#: mu/logic.py:1442
+#: mu/logic.py:1448
 msgid "Could not find MicroPython runtime."
 msgstr "O \"runtime\" MicroPython não foi encontrado."
 
-#: mu/logic.py:1443
+#: mu/logic.py:1449
 msgid ""
 "The micro:bit runtime you specified ('{}') does not exist. Please try "
 "again."
@@ -883,23 +883,23 @@ msgstr ""
 "O \"runtime\" micro:bit que você indicou ('{}') não existe. Tente "
 "novamente, por favor."
 
-#: mu/logic.py:1569
+#: mu/logic.py:1575
 msgid "Changed to {} mode."
 msgstr "Alterado para o modo {}."
 
-#: mu/logic.py:1599
+#: mu/logic.py:1605
 msgid "Would you like to change Mu to the {} mode?"
 msgstr "Você gostaria de alterar o Mu para o modo {}?"
 
-#: mu/logic.py:1618
+#: mu/logic.py:1624
 msgid "Device changed to {}."
 msgstr "Dispositivo alterado para {}."
 
-#: mu/logic.py:1654
+#: mu/logic.py:1660
 msgid "Cannot Set Breakpoint."
 msgstr "Não posso marcar o ponto de interrupção."
 
-#: mu/logic.py:1655
+#: mu/logic.py:1661
 msgid ""
 "Lines that are comments or some multi-line statements cannot have "
 "breakpoints."
@@ -907,7 +907,7 @@ msgstr ""
 "As linhas de comentário e algumas instruções multilinha não podem ter "
 "pontos de interrupção."
 
-#: mu/logic.py:1678
+#: mu/logic.py:1684
 msgid ""
 "This name is already used by another part of Python. If you use that "
 "name, things are likely to break. Please try again with a different "
@@ -917,47 +917,47 @@ msgstr ""
 "provavelmente algumas coisas vão falhar. Tenta novamente com um nome "
 "diferente, por favor."
 
-#: mu/logic.py:1700
+#: mu/logic.py:1706
 msgid "Could not rename file."
 msgstr "Não foi possível renomear o arquivo."
 
-#: mu/logic.py:1701
+#: mu/logic.py:1707
 msgid "A file of that name is already open in Mu."
 msgstr "Já existe um arquivo aberto pelo Mu com esse nome."
 
-#: mu/logic.py:1733
+#: mu/logic.py:1739
 msgid "Replaced \"{}\" with \"{}\"."
 msgstr "\"{}\" substituído por \"{}\"."
 
-#: mu/logic.py:1738
+#: mu/logic.py:1744
 msgid "Replaced {} matches of \"{}\" with \"{}\"."
 msgstr "{} substituições de \"{}\" por \"{}\"."
 
-#: mu/logic.py:1743 mu/logic.py:1750 mu/logic.py:1769
+#: mu/logic.py:1749 mu/logic.py:1756 mu/logic.py:1775
 msgid "Could not find \"{}\"."
 msgstr "Não foi possível encontrar \"{}\"."
 
-#: mu/logic.py:1748 mu/logic.py:1767
+#: mu/logic.py:1754 mu/logic.py:1773
 msgid "Highlighting matches for \"{}\"."
 msgstr "Realce das correspondências para \"{}\"."
 
-#: mu/logic.py:1753 mu/logic.py:1772
+#: mu/logic.py:1759 mu/logic.py:1778
 msgid "You must provide something to find."
 msgstr "Você tem que indicar algo para localizar."
 
-#: mu/logic.py:1754 mu/logic.py:1773
+#: mu/logic.py:1760 mu/logic.py:1779
 msgid "Please try again, this time with something in the find box."
 msgstr "Tenta novamente, por favor, desta vez com algo na caixa de localização."
 
-#: mu/logic.py:1817
+#: mu/logic.py:1823
 msgid "Successfully cleaned the code. Use CTRL-Z to undo."
 msgstr "Limpeza do código efetuada com sucesso. Use CTRL-Z para desfazer."
 
-#: mu/logic.py:1823
+#: mu/logic.py:1829
 msgid "Your code contains problems."
 msgstr "Seu código contém problemas."
 
-#: mu/logic.py:1824
+#: mu/logic.py:1830
 msgid ""
 "These must be fixed before tidying will work. Please use the 'Check' "
 "button to highlight these problems."
