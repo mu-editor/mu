@@ -928,6 +928,18 @@ def test_EditorPane_toggle_comments_selection_follows_len_change():
     ep.setSelection.assert_called_once_with(0, 0, 2, 4)
 
 
+def test_EditorPane_toggle_comments_handle_crlf_newline():
+    """
+    Check that stray "\r\n" line endings don't lead to deleting the first
+    character of the following line.
+    """
+    ep = mu.interface.editor.EditorPane(None, "test\r\nline 2\n")
+    ep.hasSelectedText = mock.MagicMock(return_value=False)
+    ep.toggle_comments()
+    assert ep.text() == "# test\nline 2\n"
+    assert ep.selectedText() == "# test"
+
+
 def test_EditorPane_wheelEvent():
     """ """
     ep = mu.interface.editor.EditorPane(None, "baz")
