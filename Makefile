@@ -40,6 +40,7 @@ clean:
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
 	find . | grep -E "(__pycache__)" | xargs rm -rf
 	rm -f ./mu/locale/messages.pot
+	rm -f ./mu/wheels/*.zip
 
 run: clean
 ifeq ($(VIRTUAL_ENV),)

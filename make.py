@@ -205,6 +205,7 @@ def clean():
     _rmtree("venv-pup")
     _rmfiles(".", "*.pyc")
     _rmfiles("mu/locale", "*.pot")
+    _rmfiles("mu/wheels", "*.zip")
     return 0
 
 
