@@ -632,7 +632,8 @@ class EditorPane(QsciScintilla):
             # Toggle the line currently containing the cursor.
             line_number, column = self.getCursorPosition()
             logger.info("Toggling line {}".format(line_number))
-            line_content = self.text(line_number)
+            # Replace CRLF line endings that we add when run on Windows
+            line_content = self.text(line_number).replace("\r\n", "\n")
             new_line = self.toggle_line(line_content)
             self.setSelection(line_number, 0, line_number, len(line_content))
             self.replaceSelectedText(new_line)

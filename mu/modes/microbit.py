@@ -326,7 +326,7 @@ class MicrobitMode(MicroPythonMode):
                     _("Cannot save a custom hex file to a local directory."),
                     _(
                         "When a custom hex file is configured in the settings "
-                        "a local directory cannot be used to saved the final "
+                        "a local directory cannot be used to save the final "
                         "hex file."
                     ),
                 )

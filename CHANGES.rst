@@ -1,6 +1,68 @@
 Release History
 ---------------
 
+1.1.0-beta.7
+============
+
+This is a beta release and may contain bugs or unfinished features. Please
+provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
+
+* We expect this release to be the last beta before the final 1.1 release in
+  the new year of 2022. Season's greetings to everyone using or contributing to
+  Mu, and here's wishing you all a flourishing and fulfilling 2022.
+* As always there have been the usual minor bug fixes and clean ups from the
+  core team of maintainers. Thank you so much for all that you do to support
+  the continued development of Mu.
+* Thanks to the ever-green @keith-packard for his contribution to ensure icons
+  on the button bar continuously scale based on the window width. This looks
+  really smooth and slick.
+* Tinsel laden @tmontes has made a number of contributions around tooling for
+  internationalization (i18n) of Mu. These include using the
+  `Babel <http://babel.pocoo.org/en/latest/>`_
+  package for generating the required translation files from our source code,
+  and updating the ``Makefile`` (and ``make.py``) so the process can be automated.
+* Xmassy @xbecas is a new joiner to the core team and we're very please to have
+  him with us since he has done a **huge** amount of work on updating and
+  curating the translation files needed for i18n. Thanks to his work,
+  translators for all the other existing locales need not have to go through
+  the string generation/update steps (he's done that for you already!).
+* Both @xbecas and @tmontes have made extensive updates to our pt-PT
+  (Portuguese) translation. Feliz Natal e Próspero Ano Novo.
+* This was swiftly followed by a welcome contribution by @rffontenelle the
+  red-nosed translator, who made extensive updates to the pt-BR
+  (Brazilian Portuguese) translation. Many thanks Rafael, you continue to
+  demonstrate why the Brazilian FLOSS community is such a vibrant place, and
+  we hope your work will help beginner coders in Brazil take their first steps
+  to join your community. Boas Festas!
+* Now that the upstream PyGame / PyGameZero packages have been updated and
+  repackaged, @tmontes has ensured we use these (rather than our own custom
+  builds) in our installers for Windows and OSX. Many thanks to our friends and
+  collaborators in those projects (cc/ @illume and @lordmauve).
+* Once in royal @devdanzin's repos, stood some lowly bugs to fix. These include
+  ensuring empty path handling is properly handled by ``get_save_path``, correct
+  highlighting of both f-strings and triple quoted strings in the editor
+  widget, fixing a comment-toggling bug that deleted the first character of the
+  next line under certain circumstances and more robust handling of environment
+  variables. Wow, @devdanzin was on fire..! (...and has further work in
+  development, thank you so much for your continued contributions.)
+* Carolling @carlosperate has put a huge effort in. He has triaged various
+  crash reports, administered our continuous integration pipeline, and reviewed
+  and merged much of the work described above. He also ensured our version
+  numbering for Mu is no longer odd, and meets the guidelines set out in
+  `PEP440 <https://www.python.org/dev/peps/pep-0440/>`_.
+* Good Tim Golden (@tjguk) fast typed out, a venv that's crisp and even. His
+  outstanding work on making Python virtual environments work in some of the
+  most inhospitable computing environments ever found is miraculous. Tim's
+  genius is to know exactly the right intervention to make, and in this case
+  his epic addition of ``-I`` to the Mu codebase will help ensure the user's
+  virtual environments are properly isolated.
+* @tiago has updated the `pup <https://github.com/mu-editor/pup>`_ packager we
+  use to create our installer. This should fix a problem found on the new
+  ARM based Macs. He has also made significant progress on a cross-distro Linux
+  package which we hope will make an appearance in the not-too-distant future.
+* Finally, Nicholas (@ntoll) promises never to do another Christmas themed
+  changelog.
+
 1.1.0-beta.6
 ============
 

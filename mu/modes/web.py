@@ -185,10 +185,10 @@ class WebMode(BaseMode):
                 return
             logger.debug(tab.text())
             envars = self.editor.envars
-            envars.append(("FLASK_APP", os.path.basename(tab.path)))
-            envars.append(("FLASK_ENV", "development"))
-            envars.append(("LC_ALL", "en_GB.UTF8"))
-            envars.append(("LANG", "en_GB.UTF8"))
+            envars["FLASK_APP"] = os.path.basename(tab.path)
+            envars["FLASK_ENV"] = "development"
+            envars["LC_ALL"] = "en_GB.UTF8"
+            envars["LANG"] = "en_GB.UTF8"
             args = ["-m", "flask", "run"]
             cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(
