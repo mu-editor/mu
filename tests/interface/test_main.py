@@ -102,16 +102,20 @@ def test_ButtonBar_set_responsive_mode():
         bb = mu.interface.main.ButtonBar(None)
         bb.setStyleSheet = mock.MagicMock()
         bb.set_responsive_mode(1124, 800)
-        mock_icon_size.assert_called_with(QSize(64, 64))
-        default_font = str(mu.interface.themes.DEFAULT_FONT_SIZE)
-        style = "QWidget{font-size: " + default_font + "px;}"
+        mock_icon_size.assert_called_with(QSize(46, 46))
+        style = (
+            "QWidget{font-size: "
+            + str(mu.interface.themes.DEFAULT_FONT_SIZE)
+            + "px;}"
+        )
         bb.setStyleSheet.assert_called_with(style)
         bb.set_responsive_mode(939, 800)
-        mock_icon_size.assert_called_with(QSize(48, 48))
+        mock_icon_size.assert_called_with(QSize(39, 39))
+        style = "QWidget{font-size: " + str(11) + "px;}"
         bb.setStyleSheet.assert_called_with(style)
         bb.set_responsive_mode(939, 599)
-        mock_icon_size.assert_called_with(QSize(32, 32))
-        style = "QWidget{font-size: " + str(10) + "px;}"
+        mock_icon_size.assert_called_with(QSize(39, 39))
+        style = "QWidget{font-size: " + str(11) + "px;}"
         bb.setStyleSheet.assert_called_with(style)
 
 
