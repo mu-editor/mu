@@ -49,7 +49,7 @@ else
 endif
 
 flake8:
-	flake8
+	@python make.py flake8
 
 test: clean
 	export LANG=en_GB.utf8
