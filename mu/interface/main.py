@@ -168,14 +168,9 @@ class ButtonBar(QToolBar):
         """
         Compact button bar for when window is very small.
         """
-        font_size = DEFAULT_FONT_SIZE
-        if width < 1124 and height > 600:
-            self.setIconSize(QSize(48, 48))
-        elif height < 600 and width < 940:
-            font_size = 10
-            self.setIconSize(QSize(32, 32))
-        else:
-            self.setIconSize(QSize(64, 64))
+        font_size = min(DEFAULT_FONT_SIZE, width // 80)
+        icon_size = min(64, width // 24)
+        self.setIconSize(QSize(icon_size, icon_size))
         stylesheet = "QWidget{font-size: " + str(font_size) + "px;}"
         self.setStyleSheet(stylesheet)
 
@@ -435,7 +430,7 @@ class Window(QMainWindow):
         # Ensure there's a .py extension if none is provided by the user.
         # See issue #1571.
         name, ext = os.path.splitext(os.path.basename(path))
-        if (not name.startswith(".")) and (not ext):
+        if name and (not name.startswith(".")) and (not ext):
             # The file is not a . (dot) file and there's no extension, so add
             # .py as default.
             path += ".py"

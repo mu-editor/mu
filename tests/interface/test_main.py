@@ -102,16 +102,20 @@ def test_ButtonBar_set_responsive_mode():
         bb = mu.interface.main.ButtonBar(None)
         bb.setStyleSheet = mock.MagicMock()
         bb.set_responsive_mode(1124, 800)
-        mock_icon_size.assert_called_with(QSize(64, 64))
-        default_font = str(mu.interface.themes.DEFAULT_FONT_SIZE)
-        style = "QWidget{font-size: " + default_font + "px;}"
+        mock_icon_size.assert_called_with(QSize(46, 46))
+        style = (
+            "QWidget{font-size: "
+            + str(mu.interface.themes.DEFAULT_FONT_SIZE)
+            + "px;}"
+        )
         bb.setStyleSheet.assert_called_with(style)
         bb.set_responsive_mode(939, 800)
-        mock_icon_size.assert_called_with(QSize(48, 48))
+        mock_icon_size.assert_called_with(QSize(39, 39))
+        style = "QWidget{font-size: " + str(11) + "px;}"
         bb.setStyleSheet.assert_called_with(style)
         bb.set_responsive_mode(939, 599)
-        mock_icon_size.assert_called_with(QSize(32, 32))
-        style = "QWidget{font-size: " + str(10) + "px;}"
+        mock_icon_size.assert_called_with(QSize(39, 39))
+        style = "QWidget{font-size: " + str(11) + "px;}"
         bb.setStyleSheet.assert_called_with(style)
 
 
@@ -622,6 +626,20 @@ def test_Window_get_save_path_missing_extension():
     )
     assert w.previous_folder == "/foo"  # Note lack of filename.
     assert returned_path == path + ".py"  # Note addition of ".py" extension.
+
+
+def test_Window_get_save_path_empty_path():
+    """
+    Avoid appending a ".py" extension if the path is empty. See #1880.
+    """
+    mock_fd = mock.MagicMock()
+    path = ""  # Empty, as when user cancels Save As / Rename Tab.
+    mock_fd.getSaveFileName = mock.MagicMock(return_value=(path, True))
+    w = mu.interface.main.Window()
+    w.widget = mock.MagicMock()
+    with mock.patch("mu.interface.main.QFileDialog", mock_fd):
+        returned_path = w.get_save_path("micropython")
+    assert returned_path == ""  # Note lack of addition of ".py" extension.
 
 
 def test_Window_get_save_path_for_dot_file():
