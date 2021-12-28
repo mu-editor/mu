@@ -205,10 +205,16 @@ def clean():
     print("\nClean")
     _rmtree("build")
     _rmtree("dist")
-    _rmtree("coverage")
-    _rmtree("docs/build")
+    _rmtree(".eggs")
+    _rmtree("docs/_build")
+    _rmtree(".pytest_cache")
     _rmtree("lib")
-    _rmtree("venv-pup")
+    _rmtree(".git/avatar/")  # Created with `make video`
+    _rmtree("venv-pup")  # Created wth `make macos/win64`
+    # TODO: recursive __pycache__ directories
+    _rmfiles(".", ".coverage")
+    _rmfiles(".", "*.egg-info")
+    _rmfiles(".", "*.mp4")  # Created with `make video`
     _rmfiles(".", "*.pyc")
     _rmfiles("mu/locale", "*.pot")
     return 0
@@ -451,8 +457,12 @@ def docs():
     """Build the docs"""
     cwd = os.getcwd()
     os.chdir("docs")
+    if os.name == "nt":
+        cmds = ["cmd", "/c", "make.bat", "html"]
+    else:
+        cmds = ["make", "html"]
     try:
-        return subprocess.run(["cmd", "/c", "make.bat", "html"]).returncode
+        return subprocess.run(cmds).returncode
     except Exception:
         return 1
     finally:
