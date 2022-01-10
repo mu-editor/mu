@@ -6,30 +6,34 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mu 1.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-01 21:43+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Miroslav Biňas <mirek@cnl.sk>\n"
-"Language: sk_SK\n"
+"POT-Creation-Date: 2022-01-08 20:28+0100\n"
+"PO-Revision-Date: 2022-01-10 15:01+0100\n"
+"Last-Translator: Mirek Biňas <mirek@cnl.sk>\n"
 "Language-Team: Slovak\n"
-"Plural-Forms: nplurals=3; plural=(n==1?0:((n>=2&&n<=4)?1:2))\n"
+"Language: sk_SK\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1?0:((n>=2&&n<=4)?1:2));\n"
 "Generated-By: Babel 2.9.1\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: mu/debugger/client.py:118
 msgid ""
 "Connection timed out. Is your machine slow or busy? Free up some of the "
 "machine's resources and try again."
 msgstr ""
+"Časový limit pre spojenie vypršal. Nie je váš počítač pomalý alebo "
+"zaneprázdnený? Pokúste sa uvoľniť niektoré zdroje na vašom počítači a skúste to "
+"znova."
 
 #: mu/debugger/client.py:132
 msgid ""
 "Could not find localhost.\n"
 "Ensure you have '127.0.0.1 localhost' in your /etc/hosts file."
 msgstr ""
-"localhost sa nepodarilo nájsť.\n"
-"Uistite sa, že máte záznam '127.0.0.1 localhost' vo súbore /etc/hosts."
+"Nepodarilo sa  nájsť localhost.\n"
+"Uistite sa, že máte záznam '127.0.0.1 localhost' v súbore /etc/hosts."
 
 #: mu/interface/dialogs.py:75
 msgid "Select Mode"
@@ -37,94 +41,121 @@ msgstr "Zvoľte režim"
 
 #: mu/interface/dialogs.py:78
 msgid ""
-"Please select the desired mode then click \"OK\". Otherwise, click "
-"\"Cancel\"."
+"Please select the desired mode then click \"OK\". Otherwise, click \"Cancel\"."
 msgstr ""
-"Zvoľte si prosím požadovaný režim a potom kliknite na \"OK\". V opačnom "
-"prípade kliknite na \"Zrušiť\"."
+"Zvoľte si prosím požadovaný režim a potom kliknite na tlačidlo \"OK\". V opačnom "
+"prípade kliknite na tlačidlo \"Zrušiť\"."
 
 #: mu/interface/dialogs.py:99
 msgid ""
-"Change mode at any time by clicking the \"Mode\" button containing Mu's "
-"logo."
+"Change mode at any time by clicking the \"Mode\" button containing Mu's logo."
 msgstr ""
-"Režim môžete zmeniť kedykoľvek kliknutím na tlačidlo \"Režim\" s logom "
-"editora Mu."
+"Režim môžete zmeniť kedykoľvek kliknutím na tlačidlo \"Režim\" s logom editora "
+"Mu."
 
 #: mu/interface/dialogs.py:138
-msgid ""
-"When reporting a bug, copy and paste the content of the following log "
-"file."
+msgid "When reporting a bug, copy and paste the content of the following log file."
 msgstr "Pri nahlasovaní chyby skopírujte a vložte obsah tohto záznamníka."
 
 #: mu/interface/dialogs.py:162
 msgid ""
-"The environment variables shown below will be set each time you run a "
-"Python 3 script.\n"
+"The environment variables shown below will be set each time you run a Python 3 "
+"script.\n"
 "\n"
-"Each separate enviroment variable should be on a new line and of the "
-"form:\n"
+"Each separate enviroment variable should be on a new line and of the form:\n"
 "NAME=VALUE"
 msgstr ""
-"Premenné prostredia, ktoré sa nachádzajú nižšie, budú nastavené vždy, keď"
-" spustíte Python 3 skript.\n"
+"Premenné prostredia, ktoré sa nachádzajú nižšie, budú nastavené vždy, keď "
+"spustíte Python 3 skript.\n"
 "\n"
-"Každá premenná prostredia by sa mala nachádzať na novom riadku vo "
-"formáte:\n"
+"Každá premenná prostredia by sa mala nachádzať na novom riadku vo formáte:\n"
 "NÁZOV=HODNOTA"
 
 #: mu/interface/dialogs.py:188
 msgid "Minify Python code before flashing?"
-msgstr ""
+msgstr "Minifikovať Python kód pred jeho zapísaním?"
 
 #: mu/interface/dialogs.py:192
 msgid ""
-"Override the built-in MicroPython runtime with the following hex file "
-"(empty means use the default):"
+"Override the built-in MicroPython runtime with the following hex file (empty "
+"means use the default):"
 msgstr ""
+"Prepísať vstavaný MicroPython s nasledujúcim hex súborom (ak nič neuvediete, "
+"použije sa predvolené nastavenie):"
 
 #: mu/interface/dialogs.py:218
 msgid ""
-"The packages shown below will be available to import in Python 3 mode. "
-"Delete a package from the list to remove its availability.\n"
+"The packages shown below will be available to import in Python 3 mode. Delete a "
+"package from the list to remove its availability.\n"
 "\n"
-"Each separate package name should be on a new line. Packages are "
-"installed from PyPI (see: https://pypi.org/)."
+"Each separate package name should be on a new line. Packages are installed from "
+"PyPI (see: https://pypi.org/)."
 msgstr ""
+"Balíky zobrazené nižšie bude možné importovať v režime Python 3. Odstránením "
+"balíka zo zoznamu odstránite jeho dostupnosť.\n"
+"\n"
+"Názov každého samostatného balíka by sa mal nachádzať na novom riadku. Balíky sú "
+"nainštalované z PyPI (pozri: https://pypi.org/)."
 
 #: mu/interface/dialogs.py:239
 msgid "Automatically detect"
-msgstr ""
+msgstr "Rozpoznať automaticky"
 
 #: mu/interface/dialogs.py:264
 msgid ""
-"Please select the language for Mu's user interface from the choices "
-"listed below. <strong>Restart Mu for these changes to take "
-"effect.</strong>"
+"Please select the language for Mu's user interface from the choices listed "
+"below. <strong>Restart Mu for these changes to take effect.</strong>"
 msgstr ""
+"Vyberte si prosím jazyk používateľského rozhrania Mu z možností uvedených "
+"nižšie. <strong>Aby sa tieto zmeny prejavili, reštartujte Mu.</strong>"
 
 #: mu/interface/dialogs.py:295
 msgid "How to flash MicroPython to your device"
-msgstr ""
+msgstr "Ako zapísať MicroPython do vášho zariadenia"
 
 #: mu/interface/dialogs.py:302
 msgid ""
-"&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. "
-"Download firmware from the <a href=\"https://micropython.org/download\" "
-"style=\"color:#039be5;\">https://micropython.org/download</a><br/>&nbsp;3."
-" Connect your device<br/>&nbsp;4. Load the .bin file below using the "
-"'Browse' button<br/>&nbsp;5. Press 'Erase & write firmware'"
+"&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. Download "
+"firmware from the <a href=\"https://micropython.org/download\" style=\"color:"
+"#039be5;\">https://micropython.org/download</a><br/>&nbsp;3. Connect your "
+"device<br/>&nbsp;4. Load the .bin file below using the 'Browse' button<br/"
+">&nbsp;5. Press 'Erase & write firmware'"
 msgstr ""
+"&nbsp;1. Zistite typ zariadenia (ESP8266 alebo ESP32)<br />&nbsp;2. Stiahnite si "
+"firmvér zo stránky <a href=\"https://micropython.org/download\" style=\"color:"
+"#039be5;\">https://micropython.org/download</a><br/>&nbsp;3. Pripojte svoje "
+"zariadenie<br/>&nbsp;4. Pomocou tlačidla 'Prehliadať' načítajte .bin súbor<br/"
+">&nbsp;5. Stlačte 'Vymazať a zapísať firmvér'"
+
+#: mu/interface/dialogs.py:325
+msgid "Device:"
+msgstr "Zariadenie:"
+
+#: mu/interface/dialogs.py:328
+msgid "Choose device type:"
+msgstr "Vyberte typ zariadenia:"
+
+#: mu/interface/dialogs.py:332
+msgid "Firmware (.bin):"
+msgstr "Firmvér (.bin):"
 
 #: mu/interface/dialogs.py:334 mu/modes/web.py:82
 msgid "Browse"
-msgstr ""
+msgstr "Prehliadať"
 
 #: mu/interface/dialogs.py:335
 msgid "Erase && write firmware"
-msgstr ""
+msgstr "Vymazať a zapísať firmvér"
 
-#: mu/interface/dialogs.py:509 mu/interface/main.py:1381
+#: mu/interface/dialogs.py:374
+msgid "Select MicroPython firmware (.bin)"
+msgstr "Vyberte MicroPython firmvér (.bin)"
+
+#: mu/interface/dialogs.py:376
+msgid "Firmware (*.bin)"
+msgstr "Firmvér (.bin)"
+
+#: mu/interface/dialogs.py:509 mu/interface/main.py:1376
 msgid "Mu Administration"
 msgstr "Správa Mu"
 
@@ -146,11 +177,11 @@ msgstr "Balíky tretích strán"
 
 #: mu/interface/dialogs.py:542
 msgid "ESP Firmware flasher"
-msgstr ""
+msgstr "Zapisovač firmvéru do ESP"
 
 #: mu/interface/dialogs.py:547
 msgid "Select Language"
-msgstr ""
+msgstr "Vybrať jazyk"
 
 #: mu/interface/dialogs.py:585
 msgid "Find / Replace"
@@ -172,9 +203,9 @@ msgstr "Nahradiť všetky?"
 msgid "Third Party Package Status"
 msgstr "Stav balíku tretích strán"
 
-#: mu/interface/editor.py:319 mu/logic.py:1324
+#: mu/interface/editor.py:319 mu/logic.py:1327
 msgid "untitled"
-msgstr "bez mena"
+msgstr "bez názvu"
 
 #: mu/interface/main.py:99
 msgid "Mode"
@@ -182,7 +213,7 @@ msgstr "Režim"
 
 #: mu/interface/main.py:100
 msgid "Change Mu's mode of behaviour."
-msgstr "Zmeniť režim správania Mu."
+msgstr "Zmení režim správania Mu."
 
 #: mu/interface/main.py:105
 msgid "New"
@@ -190,7 +221,7 @@ msgstr "Nový"
 
 #: mu/interface/main.py:106
 msgid "Create a new Python script."
-msgstr "Vytvoriť nový skript v jazyku Python."
+msgstr "Vytvorí nový skript v jazyku Python."
 
 #: mu/interface/main.py:110
 msgid "Load"
@@ -198,7 +229,7 @@ msgstr "Nahrať"
 
 #: mu/interface/main.py:111
 msgid "Load a Python script."
-msgstr "Nahrať skript v jazyku Python."
+msgstr "Nahrá skript v jazyku Python."
 
 #: mu/interface/main.py:115
 msgid "Save"
@@ -206,7 +237,7 @@ msgstr "Uložiť"
 
 #: mu/interface/main.py:116
 msgid "Save the current Python script."
-msgstr "Uložiť aktuálny skript v jazyku Python."
+msgstr "Uloží aktuálny skript v jazyku Python."
 
 #: mu/interface/main.py:130
 msgid "Zoom-in"
@@ -214,7 +245,7 @@ msgstr "Priblížiť"
 
 #: mu/interface/main.py:131
 msgid "Zoom in (to make the text bigger)."
-msgstr "Priblížiť (aby bol text väčší)."
+msgstr "Priblíženie (aby bol text väčší)."
 
 #: mu/interface/main.py:135
 msgid "Zoom-out"
@@ -222,7 +253,7 @@ msgstr "Oddialiť"
 
 #: mu/interface/main.py:136
 msgid "Zoom out (to make the text smaller)."
-msgstr "Oddialiť (aby bol text menší)."
+msgstr "Oddialenie (aby bol text menší)."
 
 #: mu/interface/main.py:140
 msgid "Theme"
@@ -230,7 +261,7 @@ msgstr "Téma"
 
 #: mu/interface/main.py:141
 msgid "Toggle theme between day, night or high contrast."
-msgstr "Prepnúť tému medzi dennou, nočnou alebo vysokým kontrastom."
+msgstr "Prepne tému medzi dennou, nočnou alebo vysokým kontrastom."
 
 #: mu/interface/main.py:148
 msgid "Check"
@@ -238,16 +269,16 @@ msgstr "Skontrolovať"
 
 #: mu/interface/main.py:149
 msgid "Check your code for mistakes."
-msgstr "Skontrolovať, či sa vo vašom kóde nenachádzajú chyby."
+msgstr "Skontroluje, či sa vo vašom kóde nenachádzajú chyby."
 
 #: mu/interface/main.py:154
 msgid "Tidy"
-msgstr ""
+msgstr "Upratať"
 
 # upratať, naformátovať kód
 #: mu/interface/main.py:155
 msgid "Tidy up the layout of your code."
-msgstr ""
+msgstr "Naformátuje kód."
 
 #: mu/interface/main.py:159
 msgid "Help"
@@ -255,7 +286,7 @@ msgstr "Pomocník"
 
 #: mu/interface/main.py:160
 msgid "Show help about Mu in a browser."
-msgstr "Zobraziť pomocníka o Mu v prehliadači."
+msgstr "Zobrazí pomocníka o Mu v prehliadači."
 
 #: mu/interface/main.py:164
 msgid "Quit"
@@ -263,84 +294,83 @@ msgstr "Ukončiť"
 
 #: mu/interface/main.py:164
 msgid "Quit Mu."
-msgstr "Ukonžiť Mu."
+msgstr "Ukončí Mu."
 
-#: mu/interface/main.py:275
+#: mu/interface/main.py:270
 msgid "Close file"
-msgstr ""
+msgstr "Zatvoriť súbor"
 
-#: mu/interface/main.py:316
+#: mu/interface/main.py:311
 msgid "Mu {}"
 msgstr "Mu {}"
 
-#: mu/interface/main.py:554
+#: mu/interface/main.py:549
 msgid "Copy selected text to REPL"
-msgstr ""
+msgstr "Skopírovať vybratý text do REPL"
 
-#: mu/interface/main.py:617
+#: mu/interface/main.py:612
 msgid "Filesystem on "
 msgstr "Súborový systém na "
 
-#: mu/interface/main.py:668
+#: mu/interface/main.py:663
 msgid "Python3 data tuple"
 msgstr ""
 
-#: mu/interface/main.py:680
+#: mu/interface/main.py:675
 msgid "Python3 (Jupyter)"
 msgstr "Python3 (Jupyter)"
 
-#: mu/interface/main.py:687
+#: mu/interface/main.py:682
 msgid "{} REPL"
 msgstr "{} REPL"
 
-#: mu/interface/main.py:706
+#: mu/interface/main.py:701
 msgid "{} Plotter"
-msgstr "{} Zapisovač"
+msgstr "{} Ploter"
 
-#: mu/interface/main.py:756
+#: mu/interface/main.py:751
 msgid "Running: {}"
-msgstr ""
+msgstr "Spustený: {}"
 
-#: mu/interface/main.py:805
+#: mu/interface/main.py:800
 msgid "Debug Inspector"
-msgstr ""
+msgstr "Inšpektor ladenia"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:812
 msgid "Name"
 msgstr "Názov"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:812
 msgid "Value"
 msgstr "Hodnota"
 
-#: mu/interface/main.py:855
+#: mu/interface/main.py:850
 msgid "(A list of {} items.)"
 msgstr "(Zoznam s počtom položiek {}.)"
 
-#: mu/interface/main.py:874
+#: mu/interface/main.py:869
 msgid "(A dict of {} items.)"
 msgstr "(Slovník s počtom položiek {}.)"
 
-#: mu/interface/main.py:1057
+#: mu/interface/main.py:1052
 msgid "Mu"
 msgstr "Mu"
 
-#: mu/interface/main.py:1368
+#: mu/interface/main.py:1363
 msgid "Mu's current mode of behaviour."
-msgstr ""
+msgstr "Aktuálny režim správania sa editora Mu."
 
-#: mu/interface/main.py:1423
-#, fuzzy
+#: mu/interface/main.py:1418
 msgid "Detected new {} device: {}."
-msgstr "Bolo rozpoznané nové zariadenie {}."
+msgstr "Bolo rozpoznané nové zariadenie {}: {}."
 
-#: mu/interface/main.py:1427 mu/logic.py:1616
+#: mu/interface/main.py:1422 mu/logic.py:1622
 msgid "Detected new {} device."
 msgstr "Bolo rozpoznané nové zariadenie {}."
 
 #: mu/interface/panes.py:495
 msgid "File already exists; overwrite it?"
-msgstr ""
+msgstr "Súbor už existuje; chcete ho prepísať?"
 
 #: mu/interface/panes.py:496
 msgid "File already exists"
@@ -348,31 +378,31 @@ msgstr "Súbor už existuje"
 
 #: mu/interface/panes.py:529
 msgid "Copying '{}' to device."
-msgstr ""
+msgstr "Na zariadenie sa kopíruje súbor '{}'."
 
 #: mu/interface/panes.py:538
 msgid "'{}' successfully copied to device."
-msgstr ""
+msgstr "Na zariadenie bol úspešne prekopírovaný súbor '{}'."
 
 #: mu/interface/panes.py:547
 msgid "Delete (cannot be undone)"
-msgstr ""
+msgstr "Odstrániť (nedá sa vrátiť)"
 
 #: mu/interface/panes.py:553
 msgid "Deleting '{}' from device."
-msgstr ""
+msgstr "Zo zariadenia sa odstraňuje súbor '{}'."
 
 #: mu/interface/panes.py:562
 msgid "'{}' successfully deleted from device."
-msgstr ""
+msgstr "Zo zariadenia bol úspešne odstránený súbor '{}'."
 
 #: mu/interface/panes.py:595
 msgid "Getting '{}' from device. Copying to '{}'."
-msgstr ""
+msgstr "Zo zariadenia sa získava '{}'. Kopíruje sa do '{}'."
 
 #: mu/interface/panes.py:606
 msgid "Successfully copied '{}' from the device to your computer."
-msgstr ""
+msgstr "Zo zariadenia bol úspešne prekopírovaný súbor '{}' na váš počítač."
 
 #: mu/interface/panes.py:623
 msgid "Open in Mu"
@@ -380,7 +410,7 @@ msgstr "Otvoriť v Mu"
 
 #: mu/interface/panes.py:626
 msgid "Write to main.py on device"
-msgstr ""
+msgstr "Zapísať do súboru main.py na zariadení"
 
 #: mu/interface/panes.py:629
 msgid "Open"
@@ -400,33 +430,42 @@ msgstr "Súbory na vašom počítači:"
 
 #: mu/interface/panes.py:752
 msgid ""
-"There was a problem getting the list of files on the device. Please check"
-" Mu's logs for technical information. Alternatively, try unplugging"
-"/plugging-in your device and/or restarting Mu."
+"There was a problem getting the list of files on the device. Please check Mu's "
+"logs for technical information. Alternatively, try unplugging/plugging-in your "
+"device and/or restarting Mu."
 msgstr ""
+"Pri získavaní zoznamu súborov z vášho zariadenia sa vyskytol problém. Pre ďalšie "
+"technické informácie o tomto probléme prosím skontrolujte záznamník editora Mu . "
+"Prípadne môžete vyskúšať odpojiť/pripojiť vaše zariadenie a/alebo reštartovať Mu."
 
 #: mu/interface/panes.py:767
 msgid ""
-"There was a problem copying the file '{}' onto the device. Please check "
-"Mu's logs for more information."
+"There was a problem copying the file '{}' onto the device. Please check Mu's "
+"logs for more information."
 msgstr ""
+"Pri kopírovaní súboru '{}' na zariadenie nastala chyba. Pre viac informácií "
+"prosím skontrolujte záznamník editora Mu."
 
 #: mu/interface/panes.py:779
 msgid ""
-"There was a problem deleting '{}' from the device. Please check Mu's logs"
-" for more information."
+"There was a problem deleting '{}' from the device. Please check Mu's logs for "
+"more information."
 msgstr ""
+"Pri mazaní súboru '{}' z vášho zariadenia nastala chyba. Pre viac informácií "
+"prosím skontrolujte záznamník editora Mu."
 
 #: mu/interface/panes.py:791
 msgid ""
-"There was a problem getting '{}' from the device. Please check Mu's logs "
-"for more information."
+"There was a problem getting '{}' from the device. Please check Mu's logs for "
+"more information."
 msgstr ""
+"Pri získavaní súboru '{}' zo zariadenia nastala chyba. Pre viac informácií "
+"prosím skontrolujte záznamník editora Mu."
 
 #: mu/interface/widgets.py:70 mu/interface/widgets.py:141
 #: mu/interface/widgets.py:154
 msgid "No device connected."
-msgstr ""
+msgstr "Nie je pripojené žiadne zariadenie."
 
 #: mu/logic.py:90
 msgid "Hello, World!"
@@ -434,13 +473,15 @@ msgstr "Ahoj, svet!"
 
 #: mu/logic.py:91
 msgid ""
-"This editor is free software written in Python. You can modify it, add "
-"features or fix bugs if you like."
+"This editor is free software written in Python. You can modify it, add features "
+"or fix bugs if you like."
 msgstr ""
+"Tento editor je otvorený softvér napísaný v jazyku Python. Ak chcete, môžete ho "
+"upravovať, pridávať nové funkcie alebo opravovať chyby."
 
 #: mu/logic.py:95
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
-msgstr ""
+msgstr "Tento editor sa volá Mu (vyslovuje sa ako 'mjú' alebo 'mú')."
 
 #: mu/logic.py:96
 msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
@@ -448,15 +489,19 @@ msgstr "Google, Facebook, NASA, Pixar, Disney a mnohí ďalší používajú Pyt
 
 #: mu/logic.py:97
 msgid ""
-"Programming is a form of magic. Learn to cast the right spells with code "
-"and you'll be a wizard."
+"Programming is a form of magic. Learn to cast the right spells with code and "
+"you'll be a wizard."
 msgstr ""
+"Programovanie je forma mágie. Naučte sa používať správne kúzla pomocou kódu a "
+"stanete sa čarodejníkom."
 
 #: mu/logic.py:101
 msgid ""
-"REPL stands for read, evaluate, print, loop. It's a fun way to talk to "
-"your computer! :-)"
+"REPL stands for read, evaluate, print, loop. It's a fun way to talk to your "
+"computer! :-)"
 msgstr ""
+"REPL je skratka pre read, evaluate, print, loop. Predstavuje zábavný spôsob, ako "
+"môžete komunikovať so svojím počítačom! :-)"
 
 #: mu/logic.py:105
 msgid "Be brave, break things, learn and have fun!"
@@ -464,7 +509,7 @@ msgstr ""
 
 #: mu/logic.py:106
 msgid "Make your software both useful AND fun. Empower your users."
-msgstr ""
+msgstr "Urobte svoj softvér užitočným aj zábavným. Posilnite svojich používateľov."
 
 #: mu/logic.py:107
 msgid "For the Zen of Python: import this"
@@ -472,17 +517,15 @@ msgstr ""
 
 #: mu/logic.py:108
 msgid "Diversity promotes creativity."
-msgstr ""
+msgstr "Rozmanitosť podporuje kreativitu."
 
 #: mu/logic.py:109
 msgid "An open mind, spirit of adventure and respect for diversity are key."
-msgstr ""
+msgstr "Kľúčom je otvorená myseľ, dobrodružný duch a rešpekt k rozmanitosti."
 
 #: mu/logic.py:110
-msgid ""
-"Don't worry if it doesn't work. Learn the lesson, fix it and try again! "
-":-)"
-msgstr ""
+msgid "Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
+msgstr "Netrápte sa, ak to nefunguje. Poučte sa, opravte to a skúste znova! :-)"
 
 #: mu/logic.py:114
 msgid "Coding is collaboration."
@@ -495,12 +538,11 @@ msgstr ""
 #: mu/logic.py:116
 msgid "In theory, theory and practice are the same. In practice, they're not. ;-)"
 msgstr ""
-"Teória hovorí, že teória a prax sú rovnaké. Prax však hovorí, že nie sú. "
-";-)"
+"Teória hovorí, že teória a prax sú rovnaké. Prax však hovorí, že nie sú. ;-)"
 
 #: mu/logic.py:120
 msgid "Debugging is twice as hard as writing the code in the first place."
-msgstr ""
+msgstr "Ladenie je dvakrát náročnejšie ako písanie kódu."
 
 #: mu/logic.py:121
 msgid "It's fun to program."
@@ -508,47 +550,48 @@ msgstr "Programovanie je sranda."
 
 #: mu/logic.py:122
 msgid "Programming has more to do with problem solving than writing code."
-msgstr ""
+msgstr "Programovanie má viac do činenia s riešením problémov ako s písaním kódu."
 
 #: mu/logic.py:123
 msgid "Start with your users' needs."
-msgstr ""
+msgstr "Začnite s potrebami vašich používateľov."
 
 #: mu/logic.py:124
 msgid "Try to see things from your users' point of view."
-msgstr ""
+msgstr "Snažte sa vidieť veci z pohľadu vašich používateľov."
 
 #: mu/logic.py:125
 msgid "Put yourself in your users' shoes."
-msgstr ""
+msgstr "Snažte sa vidieť veci z pohľadu vašich používateľov."
 
 #: mu/logic.py:126
 msgid ""
-"Explaining a programming problem to a friend often reveals the solution. "
-":-)"
+"Explaining a programming problem to a friend often reveals the solution. :-)"
 msgstr ""
 "Vysvetlenie programátorského problému kamarátovi častokrát odhalí jeho "
 "riešenie. :-)"
 
 #: mu/logic.py:130
 msgid "If you don't know, ask. Nobody to ask? Just look it up."
-msgstr "Ak niečo nevieš, tak sa pýtaj. Niet koho? Stačí sa rozhliadnuť."
+msgstr "Ak niečo nevieš, tak sa pýtaj. Niet koho? Tak si to nájdi."
 
 #: mu/logic.py:131
 msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
 msgstr ""
+"Zložitosť je nepriateľ. KISS - keep it simple, stupid! (sprav to krátke a "
+"jednoduché)"
 
 #: mu/logic.py:132
 msgid "Beautiful is better than ugly."
-msgstr ""
+msgstr "Krásny je lepší ako škaredý."
 
 #: mu/logic.py:133
 msgid "Explicit is better than implicit."
-msgstr ""
+msgstr "Explicitný je lepší ako implicitný."
 
 #: mu/logic.py:134
 msgid "Simple is better than complex. Complex is better than complicated."
-msgstr ""
+msgstr "Jednoduché je lepšie ako zložité. Zložité je lepšie ako komplikované."
 
 #: mu/logic.py:135
 msgid "Flat is better than nested."
@@ -564,13 +607,15 @@ msgstr "Čitateľnosť sa počíta."
 
 #: mu/logic.py:138
 msgid ""
-"Special cases aren't special enough to break the rules. Although "
-"practicality beats purity."
+"Special cases aren't special enough to break the rules. Although practicality "
+"beats purity."
 msgstr ""
+"Špeciálne prípady nie sú natoľko špeciálne, aby porušovali pravidlá. Aj keď "
+"praktickosť poráža čistotu."
 
 #: mu/logic.py:142
 msgid "Errors should never pass silently. Unless explicitly silenced."
-msgstr ""
+msgstr "Chyby by nikdy nemali prejsť ticho. Pokiaľ nie sú vyslovene umlčané."
 
 #: mu/logic.py:143
 msgid "In the face of ambiguity, refuse the temptation to guess."
@@ -579,22 +624,24 @@ msgstr ""
 #: mu/logic.py:144
 msgid "There should be one-- and preferably only one --obvious way to do it."
 msgstr ""
+"Mal by existovať jeden – a pokiaľ možno len jeden – zrejmý spôsob, ako to urobiť."
 
 #: mu/logic.py:145
 msgid "Now is better than never. Although never is often better than *right* now."
 msgstr ""
+"Teraz je lepšie ako nikdy. Hoc nikdy je častokrát lepšie než *práve* teraz."
 
 #: mu/logic.py:149
 msgid "If the implementation is hard to explain, it's a bad idea."
-msgstr ""
+msgstr "Ak sa implementácia ťažko vysvetľuje, je to zlý nápad."
 
 #: mu/logic.py:150
 msgid "If the implementation is easy to explain, it may be a good idea."
-msgstr ""
+msgstr "Ak sa dá implementácia jednoducho vysvetliť, môže to byť dobrý nápad."
 
 #: mu/logic.py:151
 msgid "Namespaces are one honking great idea -- let's do more of those!"
-msgstr ""
+msgstr "Menné priestory sú skvelý nápad -- robme ich viac!"
 
 #: mu/logic.py:152
 msgid "Mu was created by Nicholas H.Tollervey."
@@ -606,11 +653,10 @@ msgstr "Aby ste pochopili, čo je to rekurzia, musíte najprv pochopiť rekurzii
 
 #: mu/logic.py:154
 msgid ""
-"Algorithm: a word used by programmers when they don't want to explain "
-"what they did."
+"Algorithm: a word used by programmers when they don't want to explain what they "
+"did."
 msgstr ""
-"Algoritmus: slovo používané programátormi, keď nechcú vysvetliť, čo "
-"spravili."
+"Algoritmus: slovo používané programátormi, keď nechcú vysvetliť, čo spravili."
 
 #: mu/logic.py:158
 msgid "Programmers count from zero."
@@ -618,19 +664,19 @@ msgstr "Programátori počítajú od nuly."
 
 #: mu/logic.py:159
 msgid "Simplicity is the ultimate sophistication."
-msgstr ""
+msgstr "Jednoduchosť je najvyššia sofistikovanosť."
 
 #: mu/logic.py:160
 msgid "A good programmer is humble."
-msgstr ""
+msgstr "Dobrý programátor je pokorný."
 
 #: mu/logic.py:161
 msgid "A good programmer is playful."
-msgstr ""
+msgstr "Dobrý programátor je hravý."
 
 #: mu/logic.py:162
 msgid "A good programmer learns to learn."
-msgstr ""
+msgstr "Dobrý programátor sa učí učiť sa."
 
 #: mu/logic.py:163
 msgid "A good programmer thinks beyond the obvious."
@@ -666,210 +712,233 @@ msgstr " nad týmto riadkom"
 
 #: mu/logic.py:509
 msgid ""
-"Syntax error. Python cannot understand this line. Check for missing "
-"characters!"
+"Syntax error. Python cannot understand this line. Check for missing characters!"
 msgstr ""
-"Syntaktická chyba. Python nemôže pochopiť tento riadok. Skontrolujte "
-"chýbajúce znaky!"
+"Syntaktická chyba. Python nemôže pochopiť tento riadok. Skontrolujte chýbajúce "
+"znaky!"
 
 #: mu/logic.py:576
-msgid " compatible"
-msgstr ""
+msgid "{} compatible"
+msgstr "{} kompatibilné"
 
-#: mu/logic.py:995
+#: mu/logic.py:998
 msgid ""
 "The file contains characters Mu expects to be encoded as {0} or as the "
-"computer's default encoding {1}, but which are encoded in some other way."
+"computer's default encoding {1}, but which are encoded in some other way.\n"
 "\n"
-"\n"
-"If this file was saved in another application, re-save the file via the "
-"'Save as' option and set the encoding to {0}"
+"If this file was saved in another application, re-save the file via the 'Save "
+"as' option and set the encoding to {0}"
 msgstr ""
+"Súbor obsahuje znaky, o ktorých Mu očakáva, že budú zakódované ako {0} alebo ako "
+"predvolené kódovanie počítača {1}. Sú však zakódované iným spôsobom.\n"
+"\n"
+"Ak bol tento súbor uložený v inej aplikácii, uložte ho znova pomocou možnosti "
+"'Uložiť ako' a nastavte kódovanie na {0}"
 
-#: mu/logic.py:1023
+#: mu/logic.py:1026
 msgid "The file \"{}\" is already open."
 msgstr "Súbor \"{}\" je už otvorený."
 
-#: mu/logic.py:1035
+#: mu/logic.py:1038
 msgid "Mu cannot read the characters in {}"
-msgstr ""
+msgstr "Mu nemôže čítať znaky v {}"
 
-#: mu/logic.py:1061
+#: mu/logic.py:1064
 msgid "Mu was not able to open this file"
 msgstr "Mu sa nepodarilo otvoriť tento súbor"
 
-#: mu/logic.py:1062
+#: mu/logic.py:1065
 msgid ""
-"Currently Mu only works with Python source files or hex files created "
-"with embedded MicroPython code."
+"Currently Mu only works with Python source files or hex files created with "
+"embedded MicroPython code."
 msgstr ""
+"Aktuálne dokáže Mu pracovať so zdrojovými súbormi jazyka Python alebo s hex "
+"súbormi vytvorenými pomocou kódu v jazyku MicroPython."
 
-#: mu/logic.py:1070
+#: mu/logic.py:1073
 msgid "Could not load {}"
 msgstr "Nepodarilo sa načítať {}"
 
-#: mu/logic.py:1072
+#: mu/logic.py:1075
 msgid ""
 "Does this file exist?\n"
 "If it does, do you have permission to read it?\n"
 "\n"
 "Please check and try again."
 msgstr ""
+"Existuje tento súbor?\n"
+"Ak áno, máte povolenie na jeho čítanie?\n"
+"\n"
+"Skontrolujte ho prosím a skúste to znova."
 
-#: mu/logic.py:1080
+#: mu/logic.py:1083
 msgid "Is this a {} file?"
 msgstr "Je {} súbor?"
 
-#: mu/logic.py:1081
+#: mu/logic.py:1084
 msgid ""
 "It looks like this could be a {} file.\n"
 "\n"
 "Would you like to change Mu to the {}mode?"
 msgstr ""
+"Zdá sa, že sa jedná o súbor typu {}.\n"
+"Chcete prepnúť Mu do režimu {}?"
 
-#: mu/logic.py:1208
+#: mu/logic.py:1211
 msgid "Could not save file (disk problem)"
 msgstr "Nepodarilo sa uložiť súbor (problém s diskom)"
 
-#: mu/logic.py:1209
+#: mu/logic.py:1212
 msgid ""
-"Error saving file to disk. Ensure you have permission to write the file "
-"and sufficient disk space."
+"Error saving file to disk. Ensure you have permission to write the file and "
+"sufficient disk space."
 msgstr ""
+"Pri ukladaní súboru na disk došlo ku chybe. Uistite sa, že máte právo na zápis "
+"súboru a dostatok miesta na disku."
 
-#: mu/logic.py:1215
+#: mu/logic.py:1218
 msgid "Could not save file (encoding problem)"
-msgstr ""
+msgstr "Nepodarilo sa uložiť súbor (problém s kódovaním)"
 
-#: mu/logic.py:1217
+#: mu/logic.py:1220
 msgid ""
-"Unable to convert all the characters. If you have an encoding line at the"
-" top of the file, remove it and try again."
+"Unable to convert all the characters. If you have an encoding line at the top of "
+"the file, remove it and try again."
 msgstr ""
+"Nie je možné konvertovať všetky znaky. Ak máte v prvom riadku súboru uvedené "
+"kódovania, odstráňte ho a skúste to znova."
 
-#: mu/logic.py:1228
+#: mu/logic.py:1231
 msgid "Saved file: {}"
 msgstr "Uložený súbor: {}"
 
-#: mu/logic.py:1260 mu/logic.py:1675
+#: mu/logic.py:1263 mu/logic.py:1681
 msgid "You cannot use the filename \"{}\""
 msgstr "Nemôžete použiť \"{}\" ako názov súboru"
 
-#: mu/logic.py:1263
+#: mu/logic.py:1266
 msgid ""
-"This name is already used by another part of Python. If you use this "
-"name, things are likely to break. Please try again with a different "
-"filename."
+"This name is already used by another part of Python. If you use this name, "
+"things are likely to break. Please try again with a different filename."
 msgstr ""
+"Tento názov už používa iná časť jazyka Python. Ak ho použijete, je veľmi "
+"pravdepodobné, že sa niektoré veci pokazia. Skúste to prosím znova s iným názvom "
+"súboru."
 
-#: mu/logic.py:1340
+#: mu/logic.py:1343
 msgid "Good job! No problems found."
 msgstr "Dobrá práca! Neboli nájdené žiadne problémy."
 
-#: mu/logic.py:1341
+#: mu/logic.py:1344
 msgid "Hurrah! Checker turned up no problems."
 msgstr "Hurá! Kontrola nehlási žiadne problémy."
 
-#: mu/logic.py:1342
+#: mu/logic.py:1345
 msgid "Nice one! Zero problems detected."
 msgstr "Pekne! Nebol zistený žiadny problém."
 
-#: mu/logic.py:1343
+#: mu/logic.py:1346
 msgid "Well done! No problems here."
 msgstr "Výborne! Bez problémov."
 
-#: mu/logic.py:1344
+#: mu/logic.py:1347
 msgid "Awesome! Zero problems found."
 msgstr "Úžasné! Nula nájdených problémov."
 
-#: mu/logic.py:1370
+#: mu/logic.py:1373
 msgid "There is un-saved work, exiting the application will cause you to lose it."
-msgstr ""
+msgstr "Vaša práca nie je uložená. Ukončením aplikácie ju stratíte."
 
-#: mu/logic.py:1442
+#: mu/logic.py:1448
 msgid "Could not find MicroPython runtime."
-msgstr ""
+msgstr "Nepodarilo sa nájsť runtime pre MicroPython."
 
-#: mu/logic.py:1443
+#: mu/logic.py:1449
 msgid ""
-"The micro:bit runtime you specified ('{}') does not exist. Please try "
-"again."
+"The micro:bit runtime you specified ('{}') does not exist. Please try again."
 msgstr ""
+"Runtime pre micro:bit, ktorý ste špecifikovali ('{}'), neexistuje. Skúste to "
+"prosím znova."
 
-#: mu/logic.py:1569
+#: mu/logic.py:1575
 msgid "Changed to {} mode."
-msgstr ""
+msgstr "Režim bol zmenený na {}."
 
-#: mu/logic.py:1599
+#: mu/logic.py:1605
 msgid "Would you like to change Mu to the {} mode?"
 msgstr "Chcete zmeniť režim Mu na {}?"
 
-#: mu/logic.py:1618
+#: mu/logic.py:1624
 msgid "Device changed to {}."
-msgstr ""
+msgstr "Zariadenie bolo zmenené na {}."
 
-#: mu/logic.py:1654
+#: mu/logic.py:1660
 msgid "Cannot Set Breakpoint."
-msgstr ""
+msgstr "Nie je možné nastaviť bod prerušenia."
 
-#: mu/logic.py:1655
+#: mu/logic.py:1661
 msgid ""
-"Lines that are comments or some multi-line statements cannot have "
-"breakpoints."
+"Lines that are comments or some multi-line statements cannot have breakpoints."
 msgstr ""
+"Riadky, ktoré sú komentármi alebo niektoré viacriadkové príkazy, nemôžu mať bod "
+"prerušenia."
 
-#: mu/logic.py:1678
+#: mu/logic.py:1684
 msgid ""
-"This name is already used by another part of Python. If you use that "
-"name, things are likely to break. Please try again with a different "
-"filename."
+"This name is already used by another part of Python. If you use that name, "
+"things are likely to break. Please try again with a different filename."
 msgstr ""
+"Tento názov už používa iná časť jazyka Python. Ak ho použijete, je veľmi "
+"pravdepodobné, že sa niektoré veci pokazia. Skúste to prosím znova s iným názvom "
+"súboru."
 
-#: mu/logic.py:1700
+#: mu/logic.py:1706
 msgid "Could not rename file."
 msgstr "Súbor sa nepodarilo premenovať."
 
-#: mu/logic.py:1701
+#: mu/logic.py:1707
 msgid "A file of that name is already open in Mu."
 msgstr "Súbor s týmto názvom je už v Mu otvorený."
 
-#: mu/logic.py:1733
+#: mu/logic.py:1739
 msgid "Replaced \"{}\" with \"{}\"."
-msgstr ""
+msgstr "\"{}\" bolo nahradené s \"{}\"."
 
-#: mu/logic.py:1738
+#: mu/logic.py:1744
 msgid "Replaced {} matches of \"{}\" with \"{}\"."
-msgstr ""
+msgstr "Nahradených {} zhôd výrazu \"{}\" výrazom \"{}\"."
 
-#: mu/logic.py:1743 mu/logic.py:1750 mu/logic.py:1769
+#: mu/logic.py:1749 mu/logic.py:1756 mu/logic.py:1775
 msgid "Could not find \"{}\"."
-msgstr ""
-
-#: mu/logic.py:1748 mu/logic.py:1767
-msgid "Highlighting matches for \"{}\"."
-msgstr ""
-
-#: mu/logic.py:1753 mu/logic.py:1772
-msgid "You must provide something to find."
-msgstr ""
+msgstr "Nepodarilo sa nájsť \"{}\"."
 
 #: mu/logic.py:1754 mu/logic.py:1773
-msgid "Please try again, this time with something in the find box."
-msgstr ""
+msgid "Highlighting matches for \"{}\"."
+msgstr "Zvýrazňujú sa zhody pre \"{}\"."
 
-#: mu/logic.py:1817
-msgid "Successfully cleaned the code. Use CTRL-Z to undo."
-msgstr ""
+#: mu/logic.py:1759 mu/logic.py:1778
+msgid "You must provide something to find."
+msgstr "Pre vyhľadávanie musíte niečo zadať."
+
+#: mu/logic.py:1760 mu/logic.py:1779
+msgid "Please try again, this time with something in the find box."
+msgstr "Skúste to prosím znova, ale tentoraz s niečím v poli pre vyhľadávanie."
 
 #: mu/logic.py:1823
+msgid "Successfully cleaned the code. Use CTRL-Z to undo."
+msgstr "Kód bol úspešne uprataný. Stlačte CTRL-Z pre vrátenie zmien."
+
+#: mu/logic.py:1829
 msgid "Your code contains problems."
 msgstr "Váš kód obsahuje chyby."
 
-#: mu/logic.py:1824
+#: mu/logic.py:1830
 msgid ""
-"These must be fixed before tidying will work. Please use the 'Check' "
-"button to highlight these problems."
+"These must be fixed before tidying will work. Please use the 'Check' button to "
+"highlight these problems."
 msgstr ""
+"Tieto musia byť opravené ešte predtým, než bude upratovanie fungovať. Ak chcete "
+"tieto chyby zvýrazniť, použite tlačidlo \"Skontrolovať\"."
 
 #: mu/modes/base.py:115
 msgid "Cannot connect to device on port {}"
@@ -881,23 +950,32 @@ msgstr "# Tu napíšte svoj kód :-)"
 
 #: mu/modes/base.py:332
 msgid "Data Flood Detected!"
-msgstr ""
+msgstr "Bola zistená záplava údajmi!"
 
 #: mu/modes/base.py:333
 msgid ""
-"The plotter is flooded with data which will make Mu unresponsive and "
-"freeze. As a safeguard, the plotter has been stopped.\n"
+"The plotter is flooded with data which will make Mu unresponsive and freeze. As "
+"a safeguard, the plotter has been stopped.\n"
 "\n"
-"Flooding is when chunks of data of more than 1024 bytes are repeatedly "
-"sent to the plotter.\n"
+"Flooding is when chunks of data of more than 1024 bytes are repeatedly sent to "
+"the plotter.\n"
 "\n"
-"To fix this, make sure your code prints small tuples of data between "
-"calls to 'sleep' for a very short period of time."
+"To fix this, make sure your code prints small tuples of data between calls to "
+"'sleep' for a very short period of time."
 msgstr ""
+"Ploter je zaplavený údajmi, ktoré spôsobia, že Mu prestane reagovať a zamrzne. Z "
+"bezpečnostných dôvodov bol preto zapisovač zastavený.\n"
+"\n"
+"K záplave dochádza vtedy, keď sa do zapisovača opakovane odosielajú časti údajov "
+"s veľkosťou viac ako 1024 bajtov.\n"
+"\n"
+"Ak chcete tento problém odstrániť, uistite sa, že váš kód vypisuje malé n-tice "
+"údajov medzi volaniami funkcie na uspatie na veľmi krátky čas."
 
 #: mu/modes/base.py:508 mu/modes/base.py:558
 msgid "Click on the device's reset button, wait a few seconds and then try again."
 msgstr ""
+"Stlačte reset tlačidlo na vašom zariadení, počkajte pár sekúnd a skúste to znova."
 
 #: mu/modes/base.py:516 mu/modes/base.py:566
 msgid "Could not find an attached device."
@@ -907,90 +985,110 @@ msgstr "Nepodarilo sa nájsť pripojené zariadenie."
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
-"It must have a version of MicroPython (or CircuitPython) flashed onto it "
-"before the REPL will work.\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it before "
+"the REPL will work.\n"
 "\n"
-"Finally, press the device's reset button and wait a few seconds before "
-"trying again."
+"Finally, press the device's reset button and wait a few seconds before trying "
+"again."
 msgstr ""
+"Uistite sa prosím, že je zariadenie pripojené k tomuto počítaču.\n"
+"\n"
+"Predtým, ako bude REPL fungovať, musí byť na zariadení zapísaný MicroPython "
+"(alebo CircuitPython).\n"
+"\n"
+"Nakoniec stlačte na zariadení tlačidlo reset, počkajte niekoľko sekúnd a skúste "
+"to znova."
 
 #: mu/modes/base.py:567
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
-"It must have a version of MicroPython (or CircuitPython) flashed onto it "
-"before the Plotter will work.\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it before "
+"the Plotter will work.\n"
 "\n"
-"Finally, press the device's reset button and wait a few seconds before "
-"trying again."
+"Finally, press the device's reset button and wait a few seconds before trying "
+"again."
 msgstr ""
+"Uistite sa prosím, že je zariadenie pripojené k tomuto počítaču.\n"
+"\n"
+"Predtým, ako bude ploter fungovať, musí byť na zariadení zapísaný MicroPython "
+"(alebo CircuitPython).\n"
+"\n"
+"Nakoniec stlačte na zariadení tlačidlo reset, počkajte niekoľko sekúnd a skúste "
+"to znova."
 
 #: mu/modes/circuitpython.py:37
-#, fuzzy
 msgid "CircuitPython"
-msgstr "Adafruit CircuitPython"
+msgstr "CircuitPython"
 
 #: mu/modes/circuitpython.py:39
 msgid "Write code for boards running CircuitPython."
-msgstr ""
+msgstr "Programujte dosky, na ktorých beží CircuitPython."
 
 #: mu/modes/circuitpython.py:142 mu/modes/pyboard.py:86
 msgid "Serial"
-msgstr ""
+msgstr "Sériová linka"
 
 #: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87
 msgid "Open a serial connection to your device."
-msgstr ""
+msgstr "Otvorí spojenie cez sériovú linku s vašim zariadením."
 
 #: mu/modes/circuitpython.py:152 mu/modes/esp.py:102 mu/modes/microbit.py:164
 #: mu/modes/pyboard.py:96 mu/modes/python3.py:174
 msgid "Plotter"
-msgstr "Zapisovač"
+msgstr "Ploter"
 
 #: mu/modes/circuitpython.py:153 mu/modes/esp.py:103 mu/modes/microbit.py:165
 #: mu/modes/pyboard.py:97
 msgid "Plot incoming REPL data."
-msgstr "Zapísať prichádzajúce REPL dáta."
+msgstr "Vykreslí prichádzajúce údaje z REPL."
 
 #: mu/modes/circuitpython.py:189
 msgid "Permission error running mount command"
-msgstr ""
+msgstr "Chyba povolenia pri spustení príkazu mount"
 
 #: mu/modes/circuitpython.py:190
 msgid ""
-"The mount command (\"{}\") returned an error: {}. Mu will continue as if "
-"a device isn't plugged in."
+"The mount command (\"{}\") returned an error: {}. Mu will continue as if a "
+"device isn't plugged in."
 msgstr ""
+"Príkaz pre pripojenie (\"{}\") vrátil chybu: {}. Mu bude pokračovať, ako keby "
+"zariadenie nebolo pripojené."
 
 #: mu/modes/circuitpython.py:208
 msgid ""
-"If your Circuit Python device is plugged in, you need to \"Share with "
-"Linux\" on the CIRCUITPY drive in the \"Files\" app then restart Mu."
+"If your Circuit Python device is plugged in, you need to \"Share with Linux\" on "
+"the CIRCUITPY drive in the \"Files\" app then restart Mu."
 msgstr ""
 
 #: mu/modes/circuitpython.py:269
-#, fuzzy
 msgid "Could not find an attached CircuitPython device."
-msgstr "Nepodarilo sa nájsť pripojené zariadenie."
+msgstr "Nepodarilo sa nájsť pripojené CircuitPython zariadenie."
 
 #: mu/modes/circuitpython.py:270
 msgid ""
-"Python files for CircuitPython devices are stored on the device. "
-"Therefore, to edit these files you need to have the device plugged in. "
-"Until you plug in a device, Mu will use the directory found here:\n"
+"Python files for CircuitPython devices are stored on the device. Therefore, to "
+"edit these files you need to have the device plugged in. Until you plug in a "
+"device, Mu will use the directory found here:\n"
 "\n"
 " {}\n"
 "\n"
 "...to store your code."
 msgstr ""
+"Python súbory pre CircuitPython zariadenia sú uložené priamo na zariadení. Ak "
+"ich chcete upravovať, musíte mať toto zariadenie pripojené. Pokiaľ zariadenie "
+"nepripojíte, Mu bude na ukladanie vášho kódu používať priečinok, ktorý nájdete "
+"tu:\n"
+"\n"
+"{}"
 
 #: mu/modes/debugger.py:39
 msgid "Graphical Debugger"
-msgstr ""
+msgstr "Grafické ladenie"
 
 #: mu/modes/debugger.py:41
 msgid "Debug your Python 3 code."
-msgstr ""
+msgstr "Ladiť váš Python 3 kód."
 
 #: mu/modes/debugger.py:61 mu/modes/pygamezero.py:123 mu/modes/python3.py:207
 #: mu/modes/web.py:136
@@ -1003,11 +1101,11 @@ msgstr "Zastaví spustený kód."
 
 #: mu/modes/debugger.py:68
 msgid "Continue"
-msgstr "Pokračovať."
+msgstr "Pokračovať"
 
 #: mu/modes/debugger.py:69
 msgid "Continue to run your Python script."
-msgstr ""
+msgstr "Pokračovať vo vašom Python skripte."
 
 #: mu/modes/debugger.py:75
 msgid "Step Over"
@@ -1019,19 +1117,19 @@ msgstr ""
 
 #: mu/modes/debugger.py:82
 msgid "Step In"
-msgstr ""
+msgstr "Vstúpiť"
 
 #: mu/modes/debugger.py:83
 msgid "Step into a function."
-msgstr ""
+msgstr "Vstúpi do funkcie."
 
 #: mu/modes/debugger.py:89
 msgid "Step Out"
-msgstr ""
+msgstr "Vystúpiť"
 
 #: mu/modes/debugger.py:90
 msgid "Step out of a function."
-msgstr ""
+msgstr "Vystúpi z funkcie."
 
 #: mu/modes/debugger.py:161
 msgid "Your script has finished running."
@@ -1042,6 +1140,8 @@ msgid ""
 "Unable to connect to the Python debugger.\n"
 "\n"
 msgstr ""
+"Nepodarilo sa pripojiť k ladiacemu programu jazyka Python.\n"
+"\n"
 
 #: mu/modes/debugger.py:355
 msgid "Debugger info: {}"
@@ -1070,7 +1170,7 @@ msgstr "Spustiť"
 
 #: mu/modes/esp.py:72
 msgid "Run your code directly on the {board_name} via the REPL."
-msgstr ""
+msgstr "Spustí váš kód priamo na doske {board_name} cez REPL."
 
 #: mu/modes/esp.py:81 mu/modes/microbit.py:145
 msgid "Files"
@@ -1078,85 +1178,96 @@ msgstr "Súbory"
 
 #: mu/modes/esp.py:82
 msgid "Access the file system on {board_name}."
-msgstr ""
+msgstr "Pristúpi k súborovému systému na zariadení {board_name}."
 
 #: mu/modes/esp.py:90 mu/modes/microbit.py:152 mu/modes/python3.py:164
 msgid "REPL"
 msgstr "REPL"
 
 #: mu/modes/esp.py:91
-#, fuzzy
 msgid "Use the REPL to live-code on the {board_name}."
-msgstr "Použiť REPL na živé programovanie na zariadení micro:bit."
+msgstr "Použite REPL na živé programovanie na doske {board_name}."
 
 #: mu/modes/esp.py:129 mu/modes/microbit.py:519
 msgid "REPL and file system cannot work at the same time."
-msgstr "REPL a súborový systém nemôžu pracovať naraz."
+msgstr "REPL a súborový systém nemôžu pracovať súčasne."
 
 #: mu/modes/esp.py:130 mu/modes/microbit.py:520
 msgid ""
-"The REPL and file system both use the same USB serial connection. Only "
-"one can be active at any time. Toggle the file system off and try again."
+"The REPL and file system both use the same USB serial connection. Only one can "
+"be active at any time. Toggle the file system off and try again."
 msgstr ""
+"REPL spolu so súborovým systémom používajú rovnaké sériové spojenie cez USB. "
+"Naraz môže byť aktívne len jedno. Vypnite súborový systém a skúste to znova."
 
 #: mu/modes/esp.py:149 mu/modes/microbit.py:539
 msgid "The plotter and file system cannot work at the same time."
-msgstr ""
+msgstr "Ploter a súborový systém nemôžu pracovať súčasne."
 
 #: mu/modes/esp.py:152 mu/modes/microbit.py:542
 msgid ""
-"The plotter and file system both use the same USB serial connection. Only"
-" one can be active at any time. Toggle the file system off and try again."
+"The plotter and file system both use the same USB serial connection. Only one "
+"can be active at any time. Toggle the file system off and try again."
 msgstr ""
+"Ploter spolu so súborovým systémom používajú rovnaké sériové spojenie cez USB. "
+"Naraz môže byť aktívne len jedno. Vypnite súborový systém a skúste to znova."
 
 #: mu/modes/esp.py:180
 msgid "Cannot run anything without any active editor tabs."
-msgstr ""
+msgstr "Nič sa nedá spustiť bez aktívnych kariet editora."
 
 #: mu/modes/esp.py:181
 msgid ""
-"Running transfers the content of the current tab onto the device. It "
-"seems like you don't have  any tabs open."
+"Running transfers the content of the current tab onto the device. It seems like "
+"you don't have  any tabs open."
 msgstr ""
+"Spúšťa sa prenos obsahu aktuálnej karty do zariadenia. Zdá sa, že nemáte "
+"otvorené žiadne karty."
 
 #: mu/modes/esp.py:200 mu/modes/microbit.py:556
 msgid "File system cannot work at the same time as the REPL or plotter."
-msgstr ""
+msgstr "Súborový systém nemôže pracovať súčasne s REPL alebo plottrom."
 
 #: mu/modes/esp.py:204 mu/modes/microbit.py:560
 msgid ""
-"The file system and the REPL and plotter use the same USB serial "
-"connection. Toggle the REPL and plotter off and try again."
+"The file system and the REPL and plotter use the same USB serial connection. "
+"Toggle the REPL and plotter off and try again."
 msgstr ""
+"Súborový systém, REPL a ploter používajú rovnaké sériové pripojenie cez USB. "
+"Vypnite REPL a zapisovač a skúste to znova."
 
 #: mu/modes/esp.py:231
-#, fuzzy
 msgid "Could not find an attached {board_name}"
-msgstr "Nepodarilo sa nájsť pripojené zariadenie."
+msgstr "Nepodarilo sa nájsť pripojenú dosku {board_name}"
 
 #: mu/modes/esp.py:234 mu/modes/microbit.py:585
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
-"The device must have MicroPython flashed onto it before the file system "
-"will work.\n"
+"The device must have MicroPython flashed onto it before the file system will "
+"work.\n"
 "\n"
-"Finally, press the device's reset button and wait a few seconds before "
-"trying again."
+"Finally, press the device's reset button and wait a few seconds before trying "
+"again."
 msgstr ""
+"Uistite sa prosím, že je zariadenie pripojené k počítaču.\n"
+"\n"
+"Aby súborový systém fungoval, musí byť na zariadení zapísaný MicroPython.\n"
+"\n"
+"Nakoniec stlačte na zariadení tlačidlo reset a pred ďalším vyskúšaním počkajte "
+"niekoľko sekúnd."
 
 #: mu/modes/esp.py:259
 msgid "{board_name} board"
-msgstr ""
+msgstr "doska {board_name}"
 
 #: mu/modes/lego.py:33
-#, fuzzy
 msgid "Lego MicroPython"
-msgstr "ESP MicroPython"
+msgstr "Lego MicroPython"
 
 #: mu/modes/lego.py:36
 msgid "Write MicroPython directly on Lego Spike devices."
-msgstr ""
+msgstr "Programujte zariadenia Lego Spike priamo v jazyku MicroPython."
 
 #: mu/modes/microbit.py:111
 msgid "BBC micro:bit"
@@ -1164,76 +1275,85 @@ msgstr "BBC micro:bit"
 
 #: mu/modes/microbit.py:113
 msgid "Write MicroPython for the BBC micro:bit."
-msgstr "Programujte v jazyku MicroPython na BBC micro:bit."
+msgstr "Programujte BBC micro:bit v jazyku MicroPython."
 
 #: mu/modes/microbit.py:138
 msgid "Flash"
-msgstr ""
+msgstr "Zapísať"
 
 #: mu/modes/microbit.py:139
 msgid "Flash your code onto the micro:bit."
-msgstr ""
+msgstr "Zapíše váš kód na micro:bit."
 
 #: mu/modes/microbit.py:146
 msgid "Access the file system on the micro:bit."
-msgstr ""
+msgstr "Prístup k súborovému systému na zariadení micro:bit."
 
 #: mu/modes/microbit.py:153
 msgid "Use the REPL to live-code on the micro:bit."
-msgstr "Použiť REPL na živé programovanie na zariadení micro:bit."
+msgstr "Spustí živé programovanie (REPL) na zariadení micro:bit."
 
 #: mu/modes/microbit.py:190
 msgid "Your script is too long and code minification is disabled"
-msgstr ""
+msgstr "Váš skript je príliš dlhý a minifikácia kódu je vypnutá"
 
 #: mu/modes/microbit.py:194
 msgid "Your script is too long and the minifier isn't available"
-msgstr ""
+msgstr "Váš skript je príliš dlhý a minifikátor kódu nie je dostupný"
 
 #: mu/modes/microbit.py:206
 msgid "Problem minifying script"
-msgstr ""
+msgstr "Problém pri minifkovaní skriptu"
 
 #: mu/modes/microbit.py:218
 msgid "Our minifier tried but your script is too long!"
-msgstr ""
+msgstr "Náš minifikátor to skúsil, ale váš skript je príliš dlhý!"
 
 #: mu/modes/microbit.py:286
 msgid "Unable to flash \"{}\""
-msgstr ""
+msgstr "Nedá sa zapísať \"{}\""
 
 #: mu/modes/microbit.py:307 mu/modes/microbit.py:584
 msgid "Could not find an attached BBC micro:bit."
-msgstr ""
+msgstr "Nepodarilo sa nájsť pripojený BBC micro:bit."
 
 #: mu/modes/microbit.py:308
 msgid ""
-"Please ensure you leave enough time for the BBC micro:bit to be attached "
-"and configured correctly by your computer. This may take several seconds."
-" Alternatively, try removing and re-attaching the device or saving your "
-"work and restarting Mu if the device remains unfound."
+"Please ensure you leave enough time for the BBC micro:bit to be attached and "
+"configured correctly by your computer. This may take several seconds. "
+"Alternatively, try removing and re-attaching the device or saving your work and "
+"restarting Mu if the device remains unfound."
 msgstr ""
+"Uistite sa prosím, že ste nechali dostatok času pre pripojenie a správne "
+"nastavenie zariadenia BBC micro:bit vašim počítačom. Môže to trvať niekoľko "
+"sekúnd. Prípadne sa pokúste zariadenie znova odpojiť a pripojiť alebo uložte "
+"svoju prácu a reštartujte Mu, ak sa zariadenie stále nenašlo."
 
 #: mu/modes/microbit.py:326
 msgid "Cannot save a custom hex file to a local directory."
-msgstr ""
+msgstr "Nie je možné uložiť vlastný hex súbor do lokálneho priečinku."
 
 #: mu/modes/microbit.py:327
 msgid ""
-"When a custom hex file is configured in the settings a local directory "
-"cannot be used to saved the final hex file."
+"When a custom hex file is configured in the settings a local directory cannot be "
+"used to save the final hex file."
 msgstr ""
+"Ak je v nastaveniach nakonfigurovaný vlastný hex súbor, na uloženie výsledného "
+"hex súboru nie je možné použiť lokálny priečinok."
 
 #: mu/modes/microbit.py:336
 msgid "Cannot use a custom hex file without micro:bit port."
-msgstr ""
+msgstr "Nie je možné použiť vlastný hex súbor bez portu na micro:bit."
 
 #: mu/modes/microbit.py:337
 msgid ""
-"Mu was unable to detect the micro:bit serial port. Normally this is okay,"
-" as Mu can inject the Python code into the hex to flash. However, this "
-"cannot be done with a custom hex file."
+"Mu was unable to detect the micro:bit serial port. Normally this is okay, as Mu "
+"can inject the Python code into the hex to flash. However, this cannot be done "
+"with a custom hex file."
 msgstr ""
+"Mu sa nepodarilo zistiť sériový port micro:bit-u. Za normálnych okolností je to "
+"v poriadku, pretože Mu môže vložiť kód v jazyku Python do hex súboru na "
+"zapísanie. To však nie je možné urobiť s vlastným hex súborom."
 
 #: mu/modes/microbit.py:390
 msgid "Unsupported BBC micro:bit."
@@ -1241,38 +1361,43 @@ msgstr "Nepodporovaný BBC micro:bit."
 
 #: mu/modes/microbit.py:391
 msgid ""
-"Your device is newer than this version of Mu. Please update Mu to the "
-"latest version to support this device.\n"
+"Your device is newer than this version of Mu. Please update Mu to the latest "
+"version to support this device.\n"
 "\n"
 "https://codewith.mu/"
 msgstr ""
+"Vaše zariadenie je novšie ako táto verzia Mu. Aktualizujte prosím Mu na "
+"najnovšiu verziu, aby podporovala toto zariadenie.\n"
+"\n"
+"https://codewith.mu/"
 
 #: mu/modes/microbit.py:425 mu/modes/microbit.py:446
 msgid "Flashing the micro:bit"
-msgstr ""
+msgstr "Zapisuje sa na micro:bit"
 
 #: mu/modes/microbit.py:427
-#, fuzzy
 msgid "Runtime"
-msgstr "bez mena"
+msgstr ""
 
 #: mu/modes/microbit.py:458
 msgid "Finished flashing."
-msgstr ""
+msgstr "Zapisovanie bolo dokončené."
 
 #: mu/modes/microbit.py:490
 msgid "Copied code onto micro:bit."
-msgstr ""
+msgstr "Kód bol skopírovaný na micro:bit."
 
 #: mu/modes/microbit.py:498
 msgid "There was a problem flashing the micro:bit."
-msgstr ""
+msgstr "Pri zapisovaní na micro:bit sa vyskytol problém."
 
 #: mu/modes/microbit.py:499
 msgid ""
-"Please do not disconnect the device until flashing has completed. Please "
-"check the logs for more information."
+"Please do not disconnect the device until flashing has completed. Please check "
+"the logs for more information."
 msgstr ""
+"Prosím neodpájajte zariadenie, pokiaľ nie je zapisovanie ukončené. Ďalšie "
+"informácie nájdete v záznamníku."
 
 #: mu/modes/microbit.py:601
 msgid "micro:bit"
@@ -1280,35 +1405,40 @@ msgstr "micro:bit"
 
 #: mu/modes/pico.py:33
 msgid "RP2040"
-msgstr ""
+msgstr "RP2040"
 
 #: mu/modes/pico.py:36
 msgid "Write MicroPython directly on a Raspberry Pi Pico."
-msgstr ""
+msgstr "Programujte Raspberry Pi Pico priamo v jazyku MicroPython."
 
 #: mu/modes/pyboard.py:32
 msgid "Pyboard MicroPython"
-msgstr ""
+msgstr "Pyboard MicroPython"
 
 #: mu/modes/pyboard.py:34
-msgid "Use MicroPython on the Pyboard line of boards"
-msgstr ""
+msgid "Use MicroPython on the Pyboard line of boards."
+msgstr "Použite MicroPython na doskách radu Pyboard."
 
 #: mu/modes/pyboard.py:177
-#, fuzzy
 msgid "Could not find an attached PyBoard device."
-msgstr "Nepodarilo sa nájsť pripojené zariadenie."
+msgstr "Nepodarilo sa nájsť pripojené PyBoard zariadenie."
 
 #: mu/modes/pyboard.py:178
 msgid ""
 "Python files for PyBoard MicroPython devices are stored on the device. "
-"Therefore, to edit these files you need to have the device plugged in. "
-"Until you plug in a device, Mu will use the directory found here:\n"
+"Therefore, to edit these files you need to have the device plugged in. Until you "
+"plug in a device, Mu will use the directory found here:\n"
 "\n"
 " {}\n"
 "\n"
 "...to store your code."
 msgstr ""
+"Python súbory pre PyBoard zariadenia s jazykom MicroPython sú uložené priamo na "
+"zariadení. Ak ich chcete upravovať, musíte mať toto zariadenie pripojené. Pokiaľ "
+"zariadenie nepripojíte, Mu bude na ukladanie vášho kódu používať priečinok, "
+"ktorý nájdete tu:\n"
+"\n"
+"{}"
 
 #: mu/modes/pygamezero.py:35
 msgid "Pygame Zero"
@@ -1324,7 +1454,7 @@ msgstr "Hrať"
 
 #: mu/modes/pygamezero.py:66 mu/modes/pygamezero.py:116
 msgid "Play your Pygame Zero game."
-msgstr ""
+msgstr "Spustí vašu Pygame Zero hru."
 
 #: mu/modes/pygamezero.py:72 mu/modes/web.py:103
 msgid "Images"
@@ -1332,7 +1462,7 @@ msgstr "Obrázky"
 
 #: mu/modes/pygamezero.py:73
 msgid "Show the images used by Pygame Zero."
-msgstr "Zobraziť obrázky používané knižnicou Pygame Zero."
+msgstr "Zobrazí obrázky používané knižnicou Pygame Zero."
 
 #: mu/modes/pygamezero.py:79
 msgid "Fonts"
@@ -1340,7 +1470,7 @@ msgstr "Písma"
 
 #: mu/modes/pygamezero.py:80
 msgid "Show the fonts used by Pygame Zero."
-msgstr "Zobraziť písma používané knižnicou Pygame Zero"
+msgstr "Zobrazí písma používané knižnicou Pygame Zero."
 
 #: mu/modes/pygamezero.py:86
 msgid "Sounds"
@@ -1348,7 +1478,7 @@ msgstr "Zvuky"
 
 #: mu/modes/pygamezero.py:87
 msgid "Show the sounds used by Pygame Zero."
-msgstr "Zobraziť zvuky používané knižnicou Pygame Zero."
+msgstr "Zobrazí zvuky používané knižnicou Pygame Zero."
 
 #: mu/modes/pygamezero.py:93
 msgid "Music"
@@ -1356,11 +1486,11 @@ msgstr "Hudba"
 
 #: mu/modes/pygamezero.py:94
 msgid "Show the music used by Pygame Zero."
-msgstr "Zobraziť hudbu používanú knižnicou Pygame Zero."
+msgstr "Zobrazí hudbu používanú knižnicou Pygame Zero."
 
 #: mu/modes/pygamezero.py:124
 msgid "Stop your Pygame Zero game."
-msgstr "Zastaviť vašu Pygame Zero hru."
+msgstr "Zastaví vašu Pygame Zero hru."
 
 #: mu/modes/python3.py:133
 msgid "Python 3"
@@ -1372,7 +1502,7 @@ msgstr "Programujte pomocou štandardného Python 3."
 
 #: mu/modes/python3.py:151 mu/modes/python3.py:200
 msgid "Run your Python script."
-msgstr "Spustiť váš skript v jazyku Python."
+msgstr "Spustí váš skript v jazyku Python."
 
 #: mu/modes/python3.py:157
 msgid "Debug"
@@ -1384,7 +1514,7 @@ msgstr "Ladiť váš skript v jazyku Python."
 
 #: mu/modes/python3.py:165
 msgid "Use the REPL for live coding."
-msgstr "Použiť REPL na živé programovanie."
+msgstr "Spustí REPL na živé programovanie."
 
 #: mu/modes/python3.py:175
 msgid "Plot data from your script or the REPL."
@@ -1400,155 +1530,102 @@ msgstr "Spúšťa sa iPython REPL."
 
 #: mu/modes/python3.py:285
 msgid "Stopping iPython REPL (this may take a short amount of time)."
-msgstr ""
+msgstr "Zastavuje sa iPython REPL (môže to chvíľu trvať)."
 
 #: mu/modes/python3.py:377
 msgid "REPL started."
-msgstr ""
+msgstr "REPL bol spustený."
 
 #: mu/modes/python3.py:386
 msgid "REPL stopped."
-msgstr ""
+msgstr "REPL bol zastavený."
 
 #: mu/modes/web.py:58
 msgid "Web"
-msgstr ""
+msgstr "Web"
 
 #: mu/modes/web.py:60
 msgid "Build simple websites with the \"Flask\" web framework."
-msgstr ""
+msgstr "Vytvárajte jednoduché webové stránky so softvérovým rámcom \"Flask\"."
 
 #: mu/modes/web.py:76 mu/modes/web.py:129
 msgid "Run the web server."
-msgstr ""
+msgstr "Spustí webový server."
 
 #: mu/modes/web.py:83
-#, fuzzy
 msgid "Open your website in a browser."
-msgstr "Zobraziť pomocníka o Mu v prehliadači."
+msgstr "Otvorí vašu webovú stránku v prehliadači."
 
 #: mu/modes/web.py:89
 msgid "Templates"
-msgstr ""
+msgstr "Šablóny"
 
 #: mu/modes/web.py:90
 msgid "Load HTML templates used by your website."
-msgstr ""
+msgstr "Načíta HTML šablóny použité vo vašej webovej stránke."
 
 #: mu/modes/web.py:96
 msgid "CSS"
-msgstr ""
+msgstr "CSS"
 
 #: mu/modes/web.py:97
 msgid "Load CSS files used by your website."
-msgstr ""
+msgstr "Načíta CSS súbory použité vo vašej webovej stránke."
 
 #: mu/modes/web.py:104
 msgid "Open the directory containing images used by your website."
-msgstr ""
+msgstr "Otvorí priečinok obsahujúci obrázky použité vo vašej webovej stránke."
 
 #: mu/modes/web.py:137
 msgid "Stop the web server."
-msgstr ""
+msgstr "Zastaví webový server."
 
 #: mu/modes/web.py:157
 msgid "This is not a Python file!"
-msgstr ""
+msgstr "Toto nie je Python súbor!"
 
 #: mu/modes/web.py:158
 msgid ""
-"Mu is only able to serve a Python file. Please make sure the current tab "
-"in Mu is the one for your web application and then try again."
+"Mu is only able to serve a Python file. Please make sure the current tab in Mu "
+"is the one for your web application and then try again."
 msgstr ""
 
 #: mu/modes/web.py:175
 msgid "Cannot find template directory!"
-msgstr ""
+msgstr "Nepodarilo sa nájsť priečinok so šablónami!"
 
 #: mu/modes/web.py:176
 msgid ""
-"To serve your web application, there needs to be a 'templates' directory "
-"in the same place as your web application's Python code. Please fix this "
-"and try again. (Hint: Mu was expecting the `templates` directory to be "
-"here: )"
+"To serve your web application, there needs to be a 'templates' directory in the "
+"same place as your web application's Python code. Please fix this and try again. "
+"(Hint: Mu was expecting the `templates` directory to be here: )"
 msgstr ""
 
 #: mu/modes/web.py:273
 msgid "Cannot Open Website - Server not Running."
-msgstr ""
+msgstr "Webová stránka sa nedá otvoriť - server nie je spustený."
 
 #: mu/modes/web.py:274
 msgid ""
-"You must have the local web server running in order to view your website "
-"in a browser. Click on the 'Run' button to start the server and then try "
-"again."
+"You must have the local web server running in order to view your website in a "
+"browser. Click on the 'Run' button to start the server and then try again."
 msgstr ""
-
-#~ msgid "Copying '{}' to micro:bit."
-#~ msgstr ""
-
-#~ msgid "'{}' successfully copied to micro:bit."
-#~ msgstr ""
-
-#~ msgid "Deleting '{}' from micro:bit."
-#~ msgstr ""
-
-#~ msgid "'{}' successfully deleted from micro:bit."
-#~ msgstr ""
-
-#~ msgid "Getting '{}' from micro:bit. Copying to '{}'."
-#~ msgstr ""
-
-#~ msgid "Successfully copied '{}' from the micro:bit to your computer."
-#~ msgstr ""
-
-#~ msgid "Use CircuitPython on Adafruit's line of boards."
-#~ msgstr ""
-
-#~ msgid "Could not find an attached Adafruit CircuitPython device."
-#~ msgstr ""
-
-#~ msgid ""
-#~ "Python files for Adafruit CircuitPython "
-#~ "devices are stored on the device. "
-#~ "Therefore, to edit these files you "
-#~ "need to have the device plugged "
-#~ "in. Until you plug in a device,"
-#~ " Mu will use the directory found "
-#~ "here:\n"
-#~ "\n"
-#~ " {}\n"
-#~ "\n"
-#~ "...to store your code."
-#~ msgstr ""
-
-#~ msgid "Run your code directly on the ESP8266/ESP32 via the REPL."
-#~ msgstr ""
-
-#~ msgid "Access the file system on ESP8266/ESP32."
-#~ msgstr ""
+"Ak chcete zobraziť vašu webovú stránku v prehliadači, musíte mať spustený "
+"lokálny webový server. Spustite ho kliknutím na tlačidlo 'Spustiť' a potom to "
+"skúste to znova."
 
 #~ msgid "Use the REPL to live-code on the ESP8266/ESP32."
 #~ msgstr "Použiť REPL na živé kódenie na doskách ESP8266/ESP32."
 
-#~ msgid "Could not find an attached ESP8266/ESP32."
-#~ msgstr ""
-
 #~ msgid "ESP board"
 #~ msgstr "Doska ESP"
-
-#~ msgid "Problem with script"
-#~ msgstr ""
-
-#~ msgid "{} [{}:{}]"
-#~ msgstr ""
 
 #~ msgid "Your script is too long!"
 #~ msgstr "Váš skript je príliš dlhý!"
 
-#~ msgid "Flashing \"{}\" onto the micro:bit."
+#~ msgid ""
+#~ "Running in debug mode. Use the Stop, Continue, and Step toolbar buttons to "
+#~ "debug the script"
 #~ msgstr ""
-
-#~ msgid " Runtime: {}"
-#~ msgstr ""
-
+#~ "Spustené v režime ladenia. Na ladenie skriptu použite tlačidlá Zastaviť, "
+#~ "Pokračovať a Krokovať, ktoré nájdete na paneli nástrojov."
