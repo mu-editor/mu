@@ -1,7 +1,7 @@
 # Russian (Russia) translations for PROJECT.
-# Copyright (C) 2021 ORGANIZATION
+# Copyright (C) 2022
 # This file is distributed under the same license as the PROJECT project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+# ufofrommars@mail.ru, 2022.
 #
 msgid ""
 msgstr ""
@@ -255,7 +255,7 @@ msgstr "Проверка вашего кода на ошибки."
 
 #: mu/interface/main.py:154
 msgid "Tidy"
-msgstr "Порядок"
+msgstr "Отформатировать код"
 
 #: mu/interface/main.py:155
 msgid "Tidy up the layout of your code."
@@ -563,7 +563,7 @@ msgstr ""
 
 #: mu/logic.py:130
 msgid "If you don't know, ask. Nobody to ask? Just look it up."
-msgstr "Если не знаете, спросите. Не у кого спросить? Просто взгляните ещё раз."
+msgstr "Если не знаете, спросите. Не у кого спросить? Просто попробуйте поискать ответ в интернете."
 
 #: mu/logic.py:131
 msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
@@ -1175,7 +1175,7 @@ msgstr "REPL"
 
 #: mu/modes/esp.py:91
 msgid "Use the REPL to live-code on the {board_name}."
-msgstr "Используйте REPL для живого исполнения кода на {board_name}."
+msgstr "Используйте REPL для немедленного исполнения кода на {board_name}."
 
 #: mu/modes/esp.py:129 mu/modes/microbit.py:519
 msgid "REPL and file system cannot work at the same time."
@@ -1283,7 +1283,7 @@ msgstr "Доступ к файловой системе на micro: bit."
 
 #: mu/modes/microbit.py:153
 msgid "Use the REPL to live-code on the micro:bit."
-msgstr "Используйте REPL для live-кода на micro: bit."
+msgstr "Используйте REPL для немедленного выполнения кода на micro:bit."
 
 #: mu/modes/microbit.py:190
 msgid "Your script is too long and code minification is disabled"
