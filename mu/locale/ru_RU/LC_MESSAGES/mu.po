@@ -131,7 +131,7 @@ msgstr ""
 
 #: mu/interface/dialogs.py:334 mu/modes/web.py:82
 msgid "Browse"
-msgstr "Выбор"
+msgstr "Обзор"
 
 #: mu/interface/dialogs.py:335
 msgid "Erase && write firmware"
