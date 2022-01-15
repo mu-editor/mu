@@ -113,7 +113,7 @@ msgstr ""
 
 #: mu/interface/dialogs.py:295
 msgid "How to flash MicroPython to your device"
-msgstr "Как ваше устройство прошить MicroPython"
+msgstr "Как записать файл прошивки MicroPython на ваше устройство"
 
 #: mu/interface/dialogs.py:302
 msgid ""
