@@ -135,7 +135,7 @@ msgstr "Обзор"
 
 #: mu/interface/dialogs.py:335
 msgid "Erase && write firmware"
-msgstr "Стереть и записать прошивку"
+msgstr "Очистить устройство и записать прошивку"
 
 #: mu/interface/dialogs.py:509 mu/interface/main.py:1381
 msgid "Mu Administration"
@@ -147,7 +147,7 @@ msgstr "Текущий лог"
 
 #: mu/interface/dialogs.py:527
 msgid "Python3 Environment"
-msgstr "Среда Python3"
+msgstr "Переменные окружения скриптов Python3"
 
 #: mu/interface/dialogs.py:534
 msgid "BBC micro:bit Settings"
@@ -195,11 +195,11 @@ msgstr "Режим"
 
 #: mu/interface/main.py:100
 msgid "Change Mu's mode of behaviour."
-msgstr "Измените режим поведения Mu."
+msgstr "Выбор режима работы редактора Mu."
 
 #: mu/interface/main.py:105
 msgid "New"
-msgstr "Новый"
+msgstr "Новый скрипт"
 
 #: mu/interface/main.py:106
 msgid "Create a new Python script."
@@ -207,7 +207,7 @@ msgstr "Создать новый Python скрипт."
 
 #: mu/interface/main.py:110
 msgid "Load"
-msgstr "Загрузить"
+msgstr "Открыть файл"
 
 #: mu/interface/main.py:111
 msgid "Load a Python script."
@@ -215,7 +215,7 @@ msgstr "Загрузить скрипт Python."
 
 #: mu/interface/main.py:115
 msgid "Save"
-msgstr "Сохранить"
+msgstr "Сохранить файл"
 
 #: mu/interface/main.py:116
 msgid "Save the current Python script."
@@ -223,19 +223,19 @@ msgstr "Сохранить текущий скрипт Python."
 
 #: mu/interface/main.py:130
 msgid "Zoom-in"
-msgstr "Увеличение"
+msgstr "Увеличить текст"
 
 #: mu/interface/main.py:131
 msgid "Zoom in (to make the text bigger)."
-msgstr "Увеличение (сделать текст больше)."
+msgstr "Сделать текст больше."
 
 #: mu/interface/main.py:135
 msgid "Zoom-out"
-msgstr "Уменьшение"
+msgstr "Уменьшить текст"
 
 #: mu/interface/main.py:136
 msgid "Zoom out (to make the text smaller)."
-msgstr "Уменьшение (сделать текст меньше)"
+msgstr "Сделать текст меньше"
 
 #: mu/interface/main.py:140
 msgid "Theme"
@@ -247,7 +247,7 @@ msgstr "Переключайте тему между дневной, ночно�
 
 #: mu/interface/main.py:148
 msgid "Check"
-msgstr "Проверить"
+msgstr "Проверить код"
 
 #: mu/interface/main.py:149
 msgid "Check your code for mistakes."
