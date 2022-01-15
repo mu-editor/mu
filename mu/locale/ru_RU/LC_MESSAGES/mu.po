@@ -936,7 +936,7 @@ msgstr "# Напишите здесь свой код :-)"
 
 #: mu/modes/base.py:332
 msgid "Data Flood Detected!"
-msgstr "Обнаружен Флуд данных!"
+msgstr "Обнаружен спам данными!"
 
 #: mu/modes/base.py:333
 msgid ""
@@ -952,16 +952,17 @@ msgstr ""
 "Плоттер переполнен данными, из-за которых Mu перестает отвечать на запросы и "
 "зависает. В качестве меры предосторожности плоттер был остановлен.\n"
 "\n"
-"Флуд - это когда на плоттер повторно отправляются блоки данных размером более "
+"Спам данными - это когда на плоттер повторно отправляются блоки данных размером более "
 "1024 байтов.\n"
 "\n"
-"Чтобы исправить это, убедитесь, что ваш код печатает небольшие кортежи данных "
-"между вызовами «сна» в течение очень короткого периода времени."
+"Чтобы исправить это, убедитесь, что ваш код печатает небольшие кортежи данных, "
+"а между вызовами \"print()\" есть вызовы \"time.sleep()\" с очень маленькими "
+"значениями в качестве аргумента."
 
 #: mu/modes/base.py:508 mu/modes/base.py:558
 msgid "Click on the device's reset button, wait a few seconds and then try again."
 msgstr ""
-"Нажмите кнопку сброса устройства, подождите несколько секунд и повторите "
+"Нажмите кнопку сброса на устройстве, подождите несколько секунд и повторите "
 "попытку."
 
 #: mu/modes/base.py:516 mu/modes/base.py:566
@@ -980,7 +981,7 @@ msgid ""
 msgstr ""
 "Убедитесь, что устройство подключено к этому компьютеру.\n"
 "\n"
-"Прежде чем REPL заработает, на нем должна быть установлена версия MicroPython "
+"Прежде чем REPL заработает, на устройстве должна быть установлена версия MicroPython "
 "(или CircuitPython).\n"
 "\n"
 "Наконец, нажмите кнопку сброса устройства и подождите несколько секунд, прежде "
@@ -998,7 +999,7 @@ msgid ""
 msgstr ""
 "Убедитесь, что устройство подключено к этому компьютеру.\n"
 "\n"
-"Прежде чем плоттер заработает, на нем должна быть установлена версия "
+"Прежде чем плоттер заработает, на устройстве должна быть установлена версия "
 "MicroPython (или CircuitPython).\n"
 "\n"
 "Наконец, нажмите кнопку сброса устройства и подождите несколько секунд, прежде "
@@ -1095,7 +1096,7 @@ msgstr "Продолжить"
 
 #: mu/modes/debugger.py:69
 msgid "Continue to run your Python script."
-msgstr "Продолжайте запуск своего скрипта Python."
+msgstr "Продолжить выполнение скрипта."
 
 #: mu/modes/debugger.py:75
 msgid "Step Over"
@@ -1107,7 +1108,7 @@ msgstr "Пропустить строку кода."
 
 #: mu/modes/debugger.py:82
 msgid "Step In"
-msgstr "Шагнуть в"
+msgstr "Шаг с заходом"
 
 #: mu/modes/debugger.py:83
 msgid "Step into a function."
@@ -1115,7 +1116,7 @@ msgstr "Шагнуть в функцию."
 
 #: mu/modes/debugger.py:89
 msgid "Step Out"
-msgstr "Выйти"
+msgstr "Шаг с выходом"
 
 #: mu/modes/debugger.py:90
 msgid "Step out of a function."
@@ -1286,7 +1287,7 @@ msgstr "Используйте REPL для live-кода на micro: bit."
 
 #: mu/modes/microbit.py:190
 msgid "Your script is too long and code minification is disabled"
-msgstr "Ваш скрипт слишком длинный, и минимизация кода отключена"
+msgstr "Ваш скрипт слишком длинный, и минификация кода отключена"
 
 #: mu/modes/microbit.py:194
 msgid "Your script is too long and the minifier isn't available"
@@ -1294,7 +1295,7 @@ msgstr "Ваш скрипт слишком длинный, а минификат
 
 #: mu/modes/microbit.py:206
 msgid "Problem minifying script"
-msgstr "Проблема с уменьшением скрипта"
+msgstr "Проблема с минификацией скрипта"
 
 #: mu/modes/microbit.py:218
 msgid "Our minifier tried but your script is too long!"
@@ -1302,7 +1303,7 @@ msgstr "Наш минификатор пытался уменьшить код, 
 
 #: mu/modes/microbit.py:286
 msgid "Unable to flash \"{}\""
-msgstr "Невозможно прошить \"{}\""
+msgstr "Невозможно записать файл \"{}\""
 
 #: mu/modes/microbit.py:307 mu/modes/microbit.py:584
 msgid "Could not find an attached BBC micro:bit."
@@ -1315,10 +1316,11 @@ msgid ""
 "Alternatively, try removing and re-attaching the device or saving your work and "
 "restarting Mu if the device remains unfound."
 msgstr ""
-"Пожалуйста, убедитесь, что у вас достаточно времени для подключения и настройки "
-"BBC micro: bit на вашем компьютере. Это может занять несколько секунд. В "
-"качестве альтернативы попробуйте удалить и снова подключить устройство или "
-"сохранить свою работу и перезапустить Mu, если устройство не обнаружено."
+"Пожалуйста, убедитесь, что BBC micro:bit подключён к компьютеру "
+"достаточно времени, чтобы система могла его настроить. Это может занять "
+"несколько секунд. В качестве альтернативы попробуйте удалить и снова "
+"подключить устройство или сохранить свою работу и перезапустить Mu, "
+"если устройство не обнаружено."
 
 #: mu/modes/microbit.py:326
 msgid "Cannot save a custom hex file to a local directory."
