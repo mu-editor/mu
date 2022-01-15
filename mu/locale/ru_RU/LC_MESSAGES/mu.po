@@ -259,7 +259,7 @@ msgstr "Порядок"
 
 #: mu/interface/main.py:155
 msgid "Tidy up the layout of your code."
-msgstr "Приведите в порядок расположение вашего кода."
+msgstr "Отформатировать код скрипта утилитой \"Black"\."
 
 #: mu/interface/main.py:159
 msgid "Help"
@@ -271,11 +271,11 @@ msgstr "Открыть страницу помощи Mu в браузере."
 
 #: mu/interface/main.py:164
 msgid "Quit"
-msgstr "Выйти"
+msgstr "Выход"
 
 #: mu/interface/main.py:164
 msgid "Quit Mu."
-msgstr "Выйти из Mu."
+msgstr "Закрыть редактор Mu."
 
 #: mu/interface/main.py:275
 msgid "Close file"
@@ -287,7 +287,7 @@ msgstr "Mu {}"
 
 #: mu/interface/main.py:554
 msgid "Copy selected text to REPL"
-msgstr "Копировать выделенный текст в REPL"
+msgstr "Вставить выделенный текст в REPL"
 
 #: mu/interface/main.py:617
 msgid "Filesystem on "
@@ -327,11 +327,11 @@ msgstr "Значение"
 
 #: mu/interface/main.py:855
 msgid "(A list of {} items.)"
-msgstr "(Список {} элементов.)"
+msgstr "(Список из {} элементов.)"
 
 #: mu/interface/main.py:874
 msgid "(A dict of {} items.)"
-msgstr "(Словарь {} элементов.)"
+msgstr "(Словарь, содержащий {} ключей.)"
 
 #: mu/interface/main.py:1057
 msgid "Mu"
@@ -339,7 +339,7 @@ msgstr "Mu"
 
 #: mu/interface/main.py:1368
 msgid "Mu's current mode of behaviour."
-msgstr "Текущий режим поведения Mu."
+msgstr "Текущий режим работы редактора Mu."
 
 #: mu/interface/main.py:1423
 msgid "Detected new {} device: {}."
@@ -367,7 +367,7 @@ msgstr "'{}' успешно скопировано на устройство."
 
 #: mu/interface/panes.py:547
 msgid "Delete (cannot be undone)"
-msgstr "Удалить (нельзя отменить)"
+msgstr "Удалить (это действие невозможно отменить)"
 
 #: mu/interface/panes.py:553
 msgid "Deleting '{}' from device."
@@ -416,7 +416,7 @@ msgid ""
 "device and/or restarting Mu."
 msgstr ""
 "Не удалось получить список файлов на устройстве. Пожалуйста, проверьте логи Mu "
-"для получения технической информации. Или попробуйте отключить / подключить "
+"для получения детальной информации. Или попробуйте отключить / подключить "
 "ваше устройство и / или перезапустить Mu."
 
 #: mu/interface/panes.py:767
@@ -489,7 +489,7 @@ msgstr ""
 
 #: mu/logic.py:105
 msgid "Be brave, break things, learn and have fun!"
-msgstr "Будьте смелыми, ломайте вещи, учитесь и получайте удовольствие!"
+msgstr "Будьте смелыми, ошибайтесь, учитесь и получайте удовольствие!"
 
 #: mu/logic.py:106
 msgid "Make your software both useful AND fun. Empower your users."
