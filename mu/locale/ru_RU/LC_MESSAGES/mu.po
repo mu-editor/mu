@@ -515,7 +515,7 @@ msgstr ""
 msgid ""
 "Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
 msgstr ""
-"Не волнуйтесь, если это не сработает. Выучите урок, исправьте и попробуйте еще "
+"Не волнуйтесь, если ваше решение не работает. Извлеките из этого урок, исправьте ошибку и попробуйте еще "
 "раз! :-)"
 
 #: mu/logic.py:114
@@ -532,7 +532,7 @@ msgstr "Теоретически теория и практика совпада
 
 #: mu/logic.py:120
 msgid "Debugging is twice as hard as writing the code in the first place."
-msgstr "В первую очередь, отладка в два раза сложнее, чем написание кода."
+msgstr "Отладка в два раза сложнее, чем написание самого кода"
 
 #: mu/logic.py:121
 msgid "It's fun to program."
@@ -545,7 +545,7 @@ msgstr ""
 
 #: mu/logic.py:123
 msgid "Start with your users' needs."
-msgstr "Начните с ваших пользовательских потребностей."
+msgstr "Начните с потребностей ваших пользователей."
 
 #: mu/logic.py:124
 msgid "Try to see things from your users' point of view."
@@ -693,7 +693,7 @@ msgstr "Хороший программист готов сказать: «Я н
 
 #: mu/logic.py:169
 msgid "Wisest are they that know they know nothing."
-msgstr "Мудрее те, кто ничего не знает."
+msgstr "Мудры те, кто знает, что ничего не знает."
 
 #: mu/logic.py:464
 msgid " above this line"
@@ -714,8 +714,8 @@ msgid ""
 "If this file was saved in another application, re-save the file via the 'Save "
 "as' option and set the encoding to {0}"
 msgstr ""
-"Файл содержит символы, которые Mu не узнаёт как {0} или как кодировку "
-"компьютера по умолчанию {1}, но которые имеют другую кодировку.\n"
+"Файл содержит символы, которые не удалось распознать как {0} или как системную "
+"кодировку по умолчанию {1}.\n"
 "\n"
 "Если этот файл был сохранен в другом приложении, повторно сохраните файл с "
 "помощью меню \"Сохранить как\" и установите кодировку {0}"
@@ -758,7 +758,7 @@ msgstr ""
 
 #: mu/logic.py:1080
 msgid "Is this a {} file?"
-msgstr "{} - это файл?"
+msgstr "Это файл формата {}?"
 
 #: mu/logic.py:1081
 msgid ""
@@ -780,7 +780,7 @@ msgid ""
 "sufficient disk space."
 msgstr ""
 "Ошибка при сохранении файла на диск. Убедитесь, что у вас есть разрешение на "
-"запись в файл и достаточно места на диске."
+"запись и на диске достаточно места."
 
 #: mu/logic.py:1215
 msgid "Could not save file (encoding problem)"
@@ -847,7 +847,7 @@ msgstr ""
 
 #: mu/logic.py:1569
 msgid "Changed to {} mode."
-msgstr "Перешел в режим {}."
+msgstr "Режим работы изменён на {}."
 
 #: mu/logic.py:1599
 msgid "Would you like to change Mu to the {} mode?"
@@ -912,7 +912,7 @@ msgstr ""
 
 #: mu/logic.py:1817
 msgid "Successfully cleaned the code. Use CTRL-Z to undo."
-msgstr "Код очищен успешно. Для отмены используйте CTRL-Z."
+msgstr "Код успешно отформатирован. Для отмены используйте CTRL-Z."
 
 #: mu/logic.py:1823
 msgid "Your code contains problems."
@@ -923,8 +923,8 @@ msgid ""
 "These must be fixed before tidying will work. Please use the 'Check' button to "
 "highlight these problems."
 msgstr ""
-"Их необходимо исправить, прежде чем начнется очистка. Пожалуйста, используйте "
-"кнопку «Проверить», чтобы выделить эти проблемы."
+"Их необходимо исправить, прежде чем начнется автоматическое форматирование. "
+"Пожалуйста, используйте кнопку «Проверить», чтобы найти и подсветить эти проблемы."
 
 #: mu/modes/base.py:115
 msgid "Cannot connect to device on port {}"
