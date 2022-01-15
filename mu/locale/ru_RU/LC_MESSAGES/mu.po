@@ -126,7 +126,7 @@ msgstr ""
 "&nbsp; 1. Определите тип устройства (ESP8266 или ESP32) <br /> 2. Загрузите "
 "прошивку со страницы <a href=\"https://micropython.org/download\" style=\"color:"
 "#039be5;\"> https://micropython.org/download </a> <br/> &nbsp; 3. Подключите "
-"устройство <br/> &nbsp; 4. Загрузите файл .bin ниже, используя кнопку \"Обзор\" "
+"устройство <br/> &nbsp; 4. Используя кнопку \"Обзор\", выберите файл прошивки (.bin) "
 "<br/> &nbsp; 5. Нажмите \"Стереть и записать прошивку\"."
 
 #: mu/interface/dialogs.py:334 mu/modes/web.py:82
