@@ -1,13 +1,13 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2021 ORGANIZATION
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+# Copyright (C) 2022 ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-20 18:56+0900\n"
-"PO-Revision-Date: 2021-11-20 20:36+0900\n"
+"POT-Creation-Date: 2022-01-30 10:36+0900\n"
+"PO-Revision-Date: 2022-01-30 11:02+0900\n"
 "Last-Translator: Minoru Inachi\n"
 "Language: ja\n"
 "Language-Team: \n"
@@ -138,7 +138,7 @@ msgstr "ブラウズ"
 msgid "Erase && write firmware"
 msgstr "ファームウェアの消去と転送"
 
-#: mu/interface/dialogs.py:509 mu/interface/main.py:1381
+#: mu/interface/dialogs.py:509 mu/interface/main.py:1376
 msgid "Mu Administration"
 msgstr "Mu の管理"
 
@@ -186,7 +186,7 @@ msgstr "すべて置換しますか？"
 msgid "Third Party Package Status"
 msgstr "サードパーティパッケージの状態"
 
-#: mu/interface/editor.py:319 mu/logic.py:1324
+#: mu/interface/editor.py:319 mu/logic.py:1327
 msgid "untitled"
 msgstr "無題"
 
@@ -278,75 +278,75 @@ msgstr "終了"
 msgid "Quit Mu."
 msgstr "Mu を終了します。"
 
-#: mu/interface/main.py:275
+#: mu/interface/main.py:270
 msgid "Close file"
 msgstr "ファイルを閉じる"
 
-#: mu/interface/main.py:316
+#: mu/interface/main.py:311
 msgid "Mu {}"
 msgstr ""
 
-#: mu/interface/main.py:554
+#: mu/interface/main.py:549
 msgid "Copy selected text to REPL"
 msgstr "選択したテキストを REPL にコピー"
 
-#: mu/interface/main.py:617
+#: mu/interface/main.py:612
 msgid "Filesystem on "
 msgstr "ファイルシステム: "
 
-#: mu/interface/main.py:668
+#: mu/interface/main.py:663
 msgid "Python3 data tuple"
 msgstr "Python3 データタプル"
 
-#: mu/interface/main.py:680
+#: mu/interface/main.py:675
 msgid "Python3 (Jupyter)"
 msgstr ""
 
-#: mu/interface/main.py:687
+#: mu/interface/main.py:682
 msgid "{} REPL"
 msgstr ""
 
-#: mu/interface/main.py:706
+#: mu/interface/main.py:701
 msgid "{} Plotter"
 msgstr "{} プロッター"
 
-#: mu/interface/main.py:756
+#: mu/interface/main.py:751
 msgid "Running: {}"
 msgstr "実行中: {}"
 
-#: mu/interface/main.py:805
+#: mu/interface/main.py:800
 msgid "Debug Inspector"
 msgstr "デバッグインスペクター"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:812
 msgid "Name"
 msgstr "名前"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:812
 msgid "Value"
 msgstr "値"
 
-#: mu/interface/main.py:855
+#: mu/interface/main.py:850
 msgid "(A list of {} items.)"
 msgstr "({} 項目のリスト。)"
 
-#: mu/interface/main.py:874
+#: mu/interface/main.py:869
 msgid "(A dict of {} items.)"
 msgstr "({} 項目の辞書。)"
 
-#: mu/interface/main.py:1057
+#: mu/interface/main.py:1052
 msgid "Mu"
 msgstr ""
 
-#: mu/interface/main.py:1368
+#: mu/interface/main.py:1363
 msgid "Mu's current mode of behaviour."
 msgstr "現在の Mu 動作モード。"
 
-#: mu/interface/main.py:1423
+#: mu/interface/main.py:1418
 msgid "Detected new {} device: {}."
 msgstr "新規の {} デバイスを検出しました: {}"
 
-#: mu/interface/main.py:1427 mu/logic.py:1616
+#: mu/interface/main.py:1422 mu/logic.py:1622
 msgid "Detected new {} device."
 msgstr "新規の {} デバイスを検出しました。"
 
@@ -696,10 +696,10 @@ msgid ""
 msgstr "文法エラー。Python はこの行を理解できません。間違った綴りがないか調べてください！"
 
 #: mu/logic.py:576
-msgid " compatible"
-msgstr " 互換"
+msgid "{} compatible"
+msgstr "{} 互換"
 
-#: mu/logic.py:995
+#: mu/logic.py:998
 msgid ""
 "The file contains characters Mu expects to be encoded as {0} or as the "
 "computer's default encoding {1}, but which are encoded in some other way."
@@ -713,19 +713,19 @@ msgstr ""
 "このファイルが別のアプリケーションで保存されたのであれば、「別名で保存」オプションで"
 "エンコーディングを {0} を設定して再保存してください。"
 
-#: mu/logic.py:1023
+#: mu/logic.py:1026
 msgid "The file \"{}\" is already open."
 msgstr "ファイル \"{}\" は既に開いています。"
 
-#: mu/logic.py:1035
+#: mu/logic.py:1038
 msgid "Mu cannot read the characters in {}"
 msgstr "Mu は {} の文字を読み込めませんでした。"
 
-#: mu/logic.py:1061
+#: mu/logic.py:1064
 msgid "Mu was not able to open this file"
 msgstr "Mu はこのファイルを開けませんでした"
 
-#: mu/logic.py:1062
+#: mu/logic.py:1065
 msgid ""
 "Currently Mu only works with Python source files or hex files created "
 "with embedded MicroPython code."
@@ -733,11 +733,11 @@ msgstr ""
 "現在のところ Mu は Python ソースファイルまたは MicroPython コードが埋め込まれた "
 "hex ファイルだけを扱えます。"
 
-#: mu/logic.py:1070
+#: mu/logic.py:1073
 msgid "Could not load {}"
 msgstr "ファイル {} を読み込めません。"
 
-#: mu/logic.py:1072
+#: mu/logic.py:1075
 msgid ""
 "Does this file exist?\n"
 "If it does, do you have permission to read it?\n"
@@ -749,11 +749,11 @@ msgstr ""
 "\n"
 "以上を確認して、再度試してみてください。"
 
-#: mu/logic.py:1080
+#: mu/logic.py:1083
 msgid "Is this a {} file?"
 msgstr "これは {} ファイルですか？"
 
-#: mu/logic.py:1081
+#: mu/logic.py:1084
 msgid ""
 "It looks like this could be a {} file.\n"
 "\n"
@@ -763,11 +763,11 @@ msgstr ""
 "\n"
 "Mu を {} モードに変更しますか？"
 
-#: mu/logic.py:1208
+#: mu/logic.py:1211
 msgid "Could not save file (disk problem)"
 msgstr "ファイルを保存できませんでした(ディスクの問題)。"
 
-#: mu/logic.py:1209
+#: mu/logic.py:1212
 msgid ""
 "Error saving file to disk. Ensure you have permission to write the file "
 "and sufficient disk space."
@@ -775,11 +775,11 @@ msgstr ""
 "ディスクへのファイルの保存でエラーになりました。ファイルの書込み権とディスクの空きが"
 "十分にあるかを確認してください。"
 
-#: mu/logic.py:1215
+#: mu/logic.py:1218
 msgid "Could not save file (encoding problem)"
 msgstr "ファイルを保存できませんでした(エンコーディングの問題)。"
 
-#: mu/logic.py:1217
+#: mu/logic.py:1220
 msgid ""
 "Unable to convert all the characters. If you have an encoding line at the"
 " top of the file, remove it and try again."
@@ -787,15 +787,15 @@ msgstr ""
 "すべての文字を変換できませんでした。ファイルの先頭にエンコーディング行がある場合は、"
 "それを削除してもう一度やり直してください。"
 
-#: mu/logic.py:1228
+#: mu/logic.py:1231
 msgid "Saved file: {}"
 msgstr "保存したファイル: {}"
 
-#: mu/logic.py:1260 mu/logic.py:1675
+#: mu/logic.py:1263 mu/logic.py:1681
 msgid "You cannot use the filename \"{}\""
 msgstr "ファイル名 \"{}\" は使えません"
 
-#: mu/logic.py:1263
+#: mu/logic.py:1266
 msgid ""
 "This name is already used by another part of Python. If you use this "
 "name, things are likely to break. Please try again with a different "
@@ -804,63 +804,63 @@ msgstr ""
 "この名前はすでに Python の別のところで使われています。この名前を使うと Python "
 "のシステムを壊してしまう可能性があります。別のファイル名でもう一度やり直してください。"
 
-#: mu/logic.py:1340
+#: mu/logic.py:1343
 msgid "Good job! No problems found."
 msgstr "よくできました！ 問題は見つかりませんでした。"
 
-#: mu/logic.py:1341
+#: mu/logic.py:1344
 msgid "Hurrah! Checker turned up no problems."
 msgstr "バンザイ！ チェッカは問題を検出しませんでした。"
 
-#: mu/logic.py:1342
+#: mu/logic.py:1345
 msgid "Nice one! Zero problems detected."
 msgstr "良いですね！ 問題の検出はゼロです。"
 
-#: mu/logic.py:1343
+#: mu/logic.py:1346
 msgid "Well done! No problems here."
 msgstr "よくやりました！ 問題ありません。"
 
-#: mu/logic.py:1344
+#: mu/logic.py:1347
 msgid "Awesome! Zero problems found."
 msgstr "驚ろきました！ 問題は何も見つかりません。"
 
-#: mu/logic.py:1370
+#: mu/logic.py:1373
 msgid "There is un-saved work, exiting the application will cause you to lose it."
 msgstr "保存していないスクリプトがありますが、アプリケーションを終了すると消えてしまいます。"
 
-#: mu/logic.py:1442
+#: mu/logic.py:1448
 msgid "Could not find MicroPython runtime."
 msgstr "MicroPython ランタイムが見つかりません。"
 
-#: mu/logic.py:1443
+#: mu/logic.py:1449
 msgid ""
 "The micro:bit runtime you specified ('{}') does not exist. Please try "
 "again."
 msgstr "指定した micro:bit ランタイムは存在しません。もう一度やり直してください。"
 
-#: mu/logic.py:1569
+#: mu/logic.py:1575
 msgid "Changed to {} mode."
 msgstr "モードを {} に変更します。"
 
-#: mu/logic.py:1599
+#: mu/logic.py:1605
 msgid "Would you like to change Mu to the {} mode?"
 msgstr "Mu を {} モードに変更しますか？"
 
-#: mu/logic.py:1618
+#: mu/logic.py:1624
 msgid "Device changed to {}."
 msgstr "モードを {} に変更します。"
 
-#: mu/logic.py:1654
+#: mu/logic.py:1660
 msgid "Cannot Set Breakpoint."
 msgstr "ブレイクポイントを設定できません。"
 
-#: mu/logic.py:1655
+#: mu/logic.py:1661
 msgid ""
 "Lines that are comments or some multi-line statements cannot have "
 "breakpoints."
 msgstr "コメント行や複数行のステートメントの一部はブレイクポイントに設定できません。"
 
-#: mu/logic.py:1678
+#: mu/logic.py:1684
 msgid ""
 "This name is already used by another part of Python. If you use that "
 "name, things are likely to break. Please try again with a different "
@@ -869,47 +869,47 @@ msgstr ""
 "この名前はすでに Python の別のところで使われています。この名前を使うと Python "
 "のシステムを壊してしまう可能性があります。別のファイル名でもう一度やり直してください。"
 
-#: mu/logic.py:1700
+#: mu/logic.py:1706
 msgid "Could not rename file."
 msgstr "ファイル名を変更できませんでした。"
 
-#: mu/logic.py:1701
+#: mu/logic.py:1707
 msgid "A file of that name is already open in Mu."
 msgstr "この名前のファイルは Mu で既に開いています。"
 
-#: mu/logic.py:1733
+#: mu/logic.py:1739
 msgid "Replaced \"{}\" with \"{}\"."
 msgstr "\"{}\" を \"{}\" で置換する。"
 
-#: mu/logic.py:1738
+#: mu/logic.py:1744
 msgid "Replaced {} matches of \"{}\" with \"{}\"."
 msgstr "{} 個の \"{}\" を \"{}\" で置換しました。"
 
-#: mu/logic.py:1743 mu/logic.py:1750 mu/logic.py:1769
+#: mu/logic.py:1749 mu/logic.py:1750 mu/logic.py:1775
 msgid "Could not find \"{}\"."
 msgstr "\"{}\" が見つかりませんでした。"
 
-#: mu/logic.py:1748 mu/logic.py:1767
+#: mu/logic.py:1754 mu/logic.py:1773
 msgid "Highlighting matches for \"{}\"."
 msgstr "検索した \"{}\" を強調表示しました。"
 
-#: mu/logic.py:1753 mu/logic.py:1772
+#: mu/logic.py:1759 mu/logic.py:1778
 msgid "You must provide something to find."
 msgstr "検索するものを指定してください。"
 
-#: mu/logic.py:1754 mu/logic.py:1773
+#: mu/logic.py:1760 mu/logic.py:1779
 msgid "Please try again, this time with something in the find box."
 msgstr "今度は検索ボックスに何かを入れて、もう一度お試しください。"
 
-#: mu/logic.py:1817
+#: mu/logic.py:1823
 msgid "Successfully cleaned the code. Use CTRL-Z to undo."
 msgstr ""
 
-#: mu/logic.py:1823
+#: mu/logic.py:1829
 msgid "Your code contains problems."
 msgstr ""
 
-#: mu/logic.py:1824
+#: mu/logic.py:1830
 msgid ""
 "These must be fixed before tidying will work. Please use the 'Check' "
 "button to highlight these problems."
@@ -1307,7 +1307,7 @@ msgstr "ローカルディレクトリにカスタム hex ファイルを保存�
 #: mu/modes/microbit.py:327
 msgid ""
 "When a custom hex file is configured in the settings a local directory "
-"cannot be used to saved the final hex file."
+"cannot be used to save the final hex file."
 msgstr ""
 "カスタム hex ファイルが設定されている場合、最終的な hex ファイルを保存するために"
 "ローカルディレクトリは使えません。"
