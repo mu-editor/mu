@@ -322,14 +322,14 @@ class ESPFirmwareFlasherWidget(QWidget):
         widget_layout.addWidget(grp_instructions)
 
         # Device type, firmware path, flash button
-        device_selector_label = QLabel("Device:")
+        device_selector_label = QLabel(_("Device:"))
         self.device_selector = DeviceSelector(show_label=True, icon_first=True)
         self.device_selector.set_device_list(device_list)
-        device_type_label = QLabel("Choose device type:")
+        device_type_label = QLabel(_("Choose device type:"))
         self.device_type = QComboBox(self)
         self.device_type.addItem("ESP8266")
         self.device_type.addItem("ESP32")
-        firmware_label = QLabel("Firmware (.bin):")
+        firmware_label = QLabel(_("Firmware (.bin):"))
         self.txtFolder = QLineEdit()
         self.btnFolder = QPushButton(_("Browse"))
         self.btnExec = QPushButton(_("Erase && write firmware"))
@@ -371,9 +371,9 @@ class ESPFirmwareFlasherWidget(QWidget):
         # open dialog and set to foldername
         filename = QFileDialog.getOpenFileName(
             self,
-            "Select MicroPython firmware (.bin)",
+            _("Select MicroPython firmware (.bin)"),
             os.path.expanduser("."),
-            "Firmware (*.bin)",
+            _("Firmware (*.bin)"),
         )
         if filename:
             filename = filename[0].replace("/", os.sep)
