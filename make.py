@@ -217,6 +217,7 @@ def clean():
     _rmfiles(".", "*.mp4")  # Created with `make video`
     _rmfiles(".", "*.pyc")
     _rmfiles("mu/locale", "*.pot")
+    _rmfiles("mu/wheels", "*.zip")
     return 0
 
 
