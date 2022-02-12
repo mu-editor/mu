@@ -245,6 +245,7 @@ class LocaleWidget(QWidget):
         "Polskie": "pl",
         "Português (Br)": "pt_BR",
         "Português (Pt)": "pt_PT",
+        "русский язык": "ru_RU",
         "Slovenský": "sk_SK",
         "Svenska": "sv",
         "tiếng Việt": "vi",
