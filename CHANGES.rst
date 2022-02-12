@@ -1,6 +1,25 @@
 Release History
 ---------------
 
+1.1.0 (final)
+=============
+
+What a journey to get to the 1.1.0 release of Mu. Many thanks to all the
+contributors who have made this version possible. All your efforts, no matter
+large or small, are really appreciated.
+
+Please provide bug reports or feedback via:
+
+https://github.com/mu-editor/mu/issues/new
+
+* Minor clean ups in the Makefile.
+* Thank you to @microbit-mark for updating the board IDs to support version
+  2.2 of the device.
+* Updates to the Chinese translation by @CSharperMantle. 謝謝。
+* Updates to the Slovak translation by @bletvaska. Ďakujem.
+* The foundations of a brand new Russian translation of Mu by @grovz with
+  contributions from @iamdbychkov. спасибо!
+
 1.1.0-beta.7
 ============
 
