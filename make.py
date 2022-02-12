@@ -94,7 +94,9 @@ def test(*pytest_args):
     """
     print("\ntest")
     os.environ["LANG"] = "en_GB.utf8"
-    return subprocess.run([PYTEST] + list(pytest_args)).returncode
+    return subprocess.run(
+        [sys.executable, "-m", PYTEST] + list(pytest_args)
+    ).returncode
 
 
 @export
@@ -107,6 +109,8 @@ def coverage():
     os.environ["LANG"] = "en_GB.utf8"
     return subprocess.run(
         [
+            sys.executable,
+            "-m",
             PYTEST,
             "-v",
             "--cov-config",
@@ -127,7 +131,7 @@ def flake8(*flake8_args):
     """
     print("\nflake8")
     os.environ["PYFLAKES_BUILTINS"] = "_"
-    return subprocess.run([FLAKE8]).returncode
+    return subprocess.run([sys.executable, "-m", FLAKE8]).returncode
 
 
 @export
@@ -143,7 +147,9 @@ def tidy():
         "tests",
         "utils",
     ]:
-        return_code = subprocess.run([BLACK, target] + BLACK_FLAGS).returncode
+        return_code = subprocess.run(
+            [sys.executable, "-m", BLACK, target] + BLACK_FLAGS
+        ).returncode
         if return_code != 0:
             return return_code
     return 0
@@ -156,8 +162,8 @@ def black():
     print("\nblack")
     # Black is no available in Python 3.5, in that case let the tests continue
     try:
-        subprocess.run([BLACK, "--version"])
-    except FileNotFoundError as e:
+        import black as black_  # noqa: F401
+    except ImportError as e:
         python_version = sys.version_info
         if python_version.major == 3 and python_version.minor == 5:
             print("Black checks are not available in Python 3.5.")
@@ -174,7 +180,7 @@ def black():
         "utils",
     ]:
         return_code = subprocess.run(
-            [BLACK, target, "--check"] + BLACK_FLAGS
+            [sys.executable, "-m", BLACK, target, "--check"] + BLACK_FLAGS
         ).returncode
         if return_code != 0:
             return return_code
@@ -199,10 +205,16 @@ def clean():
     print("\nClean")
     _rmtree("build")
     _rmtree("dist")
-    _rmtree("coverage")
-    _rmtree("docs/build")
+    _rmtree(".eggs")
+    _rmtree("docs/_build")
+    _rmtree(".pytest_cache")
     _rmtree("lib")
-    _rmtree("venv-pup")
+    _rmtree(".git/avatar/")  # Created with `make video`
+    _rmtree("venv-pup")  # Created wth `make macos/win64`
+    # TODO: recursive __pycache__ directories
+    _rmfiles(".", ".coverage")
+    _rmfiles(".", "*.egg-info")
+    _rmfiles(".", "*.mp4")  # Created with `make video`
     _rmfiles(".", "*.pyc")
     _rmfiles("mu/locale", "*.pot")
     return 0
@@ -364,7 +376,16 @@ def publish_test():
     dist()
     print("Packaging complete; upload to PyPI")
     return subprocess.run(
-        ["twine", "upload", "-r", "test", "--sign", "dist/*"]
+        [
+            sys.executable,
+            "-m",
+            "twine",
+            "upload",
+            "-r",
+            "test",
+            "--sign",
+            "dist/*",
+        ]
     ).returncode
 
 
@@ -373,7 +394,9 @@ def publish_live():
     """Upload to PyPI"""
     dist()
     print("Packaging complete; upload to PyPI")
-    return subprocess.run(["twine", "upload", "--sign", "dist/*"]).returncode
+    return subprocess.run(
+        [sys.executable, "-m", "twine", "upload", "--sign", "dist/*"]
+    ).returncode
 
 
 _PUP_PBS_URLs = {
@@ -434,8 +457,12 @@ def docs():
     """Build the docs"""
     cwd = os.getcwd()
     os.chdir("docs")
+    if os.name == "nt":
+        cmds = ["cmd", "/c", "make.bat", "html"]
+    else:
+        cmds = ["make", "html"]
     try:
-        return subprocess.run(["cmd", "/c", "make.bat", "html"]).returncode
+        return subprocess.run(cmds).returncode
     except Exception:
         return 1
     finally:
