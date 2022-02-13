@@ -1,16 +1,17 @@
-# SOME DESCRIPTIVE TITLE.
+# Japanese translations for PROJECT.
 # Copyright (C) 2022 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-01-30 10:36+0900\n"
-"PO-Revision-Date: 2022-01-30 11:02+0900\n"
+"POT-Creation-Date: 2022-02-13 12:39+0900\n"
+"PO-Revision-Date: 2022-02-13 13:09+0900\n"
 "Last-Translator: Minoru Inachi\n"
 "Language: ja\n"
-"Language-Team: \n"
+"Language-Team: ja <LL@li.org>\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -103,7 +104,7 @@ msgstr ""
 msgid "Automatically detect"
 msgstr "自動検出"
 
-#: mu/interface/dialogs.py:264
+#: mu/interface/dialogs.py:265
 msgid ""
 "Please select the language for Mu's user interface from the choices "
 "listed below. <strong>Restart Mu for these changes to take "
@@ -112,11 +113,11 @@ msgstr ""
 "Mu のユーザーインターフェイスの言語を以下の選択肢から選択してください。"
 "<strong>これらの変更を有効にするには、Muを再起動してください。</strong>"
 
-#: mu/interface/dialogs.py:295
+#: mu/interface/dialogs.py:296
 msgid "How to flash MicroPython to your device"
 msgstr "MicroPython をデバイスに転送する方法"
 
-#: mu/interface/dialogs.py:302
+#: mu/interface/dialogs.py:303
 msgid ""
 "&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. "
 "Download firmware from the <a href=\"https://micropython.org/download\" "
@@ -130,59 +131,79 @@ msgstr ""
 "&nbsp;4. 「ブラウズ」ボタンを使って .bin ファイルを選択<br/>"
 "&nbsp;5. 「ファームウェアの消去と転送」を押す"
 
-#: mu/interface/dialogs.py:334 mu/modes/web.py:82
+#: mu/interface/dialogs.py:326
+msgid "Device:"
+msgstr "デバイス:"
+
+#: mu/interface/dialogs.py:329
+msgid "Choose device type:"
+msgstr "デバイス種別の選択:"
+
+#: mu/interface/dialogs.py:333
+msgid "Firmware (.bin):"
+msgstr "ファームウェア(.bin):"
+
+#: mu/interface/dialogs.py:335 mu/modes/web.py:82
 msgid "Browse"
 msgstr "ブラウズ"
 
-#: mu/interface/dialogs.py:335
+#: mu/interface/dialogs.py:336
 msgid "Erase && write firmware"
 msgstr "ファームウェアの消去と転送"
 
-#: mu/interface/dialogs.py:509 mu/interface/main.py:1376
+#: mu/interface/dialogs.py:375
+msgid "Select MicroPython firmware (.bin)"
+msgstr "MicroPython ファームウェアの選択(.bin)"
+
+#: mu/interface/dialogs.py:377
+msgid "Firmware (*.bin)"
+msgstr "ファームウェア(.bin)"
+
+#: mu/interface/dialogs.py:510 mu/interface/main.py:1376
 msgid "Mu Administration"
 msgstr "Mu の管理"
 
-#: mu/interface/dialogs.py:523
+#: mu/interface/dialogs.py:524
 msgid "Current Log"
 msgstr "現在のログ"
 
-#: mu/interface/dialogs.py:527
+#: mu/interface/dialogs.py:528
 msgid "Python3 Environment"
 msgstr "Python3 環境"
 
-#: mu/interface/dialogs.py:534
+#: mu/interface/dialogs.py:535
 msgid "BBC micro:bit Settings"
 msgstr "BBC micro:bit 設定"
 
-#: mu/interface/dialogs.py:538
+#: mu/interface/dialogs.py:539
 msgid "Third Party Packages"
 msgstr "サードパーティパッケージ"
 
-#: mu/interface/dialogs.py:542
+#: mu/interface/dialogs.py:543
 msgid "ESP Firmware flasher"
 msgstr "ESP ファームウェア転送"
 
-#: mu/interface/dialogs.py:547
+#: mu/interface/dialogs.py:548
 msgid "Select Language"
 msgstr "言語の選択"
 
-#: mu/interface/dialogs.py:585
+#: mu/interface/dialogs.py:586
 msgid "Find / Replace"
 msgstr "検索 / 置換"
 
-#: mu/interface/dialogs.py:589
+#: mu/interface/dialogs.py:590
 msgid "Find:"
 msgstr "検索"
 
-#: mu/interface/dialogs.py:596
+#: mu/interface/dialogs.py:597
 msgid "Replace (optional):"
 msgstr "置換(オプション)"
 
-#: mu/interface/dialogs.py:602
+#: mu/interface/dialogs.py:603
 msgid "Replace all?"
 msgstr "すべて置換しますか？"
 
-#: mu/interface/dialogs.py:651
+#: mu/interface/dialogs.py:652
 msgid "Third Party Package Status"
 msgstr "サードパーティパッケージの状態"
 
@@ -885,7 +906,7 @@ msgstr "\"{}\" を \"{}\" で置換する。"
 msgid "Replaced {} matches of \"{}\" with \"{}\"."
 msgstr "{} 個の \"{}\" を \"{}\" で置換しました。"
 
-#: mu/logic.py:1749 mu/logic.py:1750 mu/logic.py:1775
+#: mu/logic.py:1749 mu/logic.py:1756 mu/logic.py:1775
 msgid "Could not find \"{}\"."
 msgstr "\"{}\" が見つかりませんでした。"
 
@@ -1386,7 +1407,7 @@ msgid "Pyboard MicroPython"
 msgstr ""
 
 #: mu/modes/pyboard.py:34
-msgid "Use MicroPython on the Pyboard line of boards"
+msgid "Use MicroPython on the Pyboard line of boards."
 msgstr "ボードの Pyboard ラインで MicroPython を利用。"
 
 #: mu/modes/pyboard.py:177
