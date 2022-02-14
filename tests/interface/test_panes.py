@@ -1736,7 +1736,7 @@ def test_PythonProcessPane_start_process_user_environment_variables():
     assert mock_environment.insert.call_args_list[4][0] == ("name", "value")
 
 
-@pytest.mark.skip(True, reason="Only used by debugger; now refactored")
+@pytest.mark.skip(reason="Only used by debugger; now refactored")
 def test_PythonProcessPane_start_process_custom_runner():
     """
     Ensure that if the runner is set, it is used as the command to start the
