@@ -40,8 +40,7 @@ mode_packages = [
     ("pgzero", "pgzero>=1.2.1"),
     # Flask v1 depends on Jinja v2, which doesn't have an upper bound limit in
     # MarkupSafe, and v2.1 is not compatible with Jinja v2
-    ("markupsafe", "markupsafe<2.1"),
-    ("flask", "flask==1.1.4"),
+    ("flask", "flask==2.0.3"),
     # The version of ipykernel here should match to the version used by
     # qtconsole at the version specified in setup.py
     # FIXME: ipykernel max ver added for macOS 10.13 compatibility, min taken
