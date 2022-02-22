@@ -1,6 +1,21 @@
 Release History
 ---------------
 
+1.1.1
+=====
+
+Inevitably, while testing 1.1.0 we found we'd missed something and caught a
+late breaking bug.
+
+Please provide bug reports or feedback via:
+
+https://github.com/mu-editor/mu/issues/new
+
+* Thanks to @MinoruInachi (with feedback from @odaki) for a revised Japanese
+  translation for Mu.
+* Due to complicated dependency problems, we've updated the bundled version of
+  Flask to 1.1.4. Thanks to @carlosperate for quickly resolving this problem.
+
 1.1.0 (final)
 =============
 
