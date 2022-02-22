@@ -38,6 +38,9 @@ ZIP_FILEPATH = os.path.join(WHEELS_DIRPATH, mu_version + ".zip")
 #
 mode_packages = [
     ("pgzero", "pgzero>=1.2.1"),
+    # Flask v1 depends on Jinja v2, which doesn't have an upper bound limit in
+    # MarkupSafe, and v2.1 is not compatible with Jinja v2
+    ("markupsafe", "markupsafe<2.1"),
     ("flask", "flask==1.1.4"),
     # The version of ipykernel here should match to the version used by
     # qtconsole at the version specified in setup.py
