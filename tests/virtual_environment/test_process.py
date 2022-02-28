@@ -66,11 +66,11 @@ def test_run_blocking_timeout():
             sys.executable,
             [
                 "-c",
-                "import sys; sys.stdout.write('"
+                "import sys, time; sys.stdout.write('"
                 + expected_stdout
-                + "'); sys.stderr.write('"
+                + "'); sys.stdout.flush(); sys.stderr.write('"
                 + expected_stderr
-                + "'); time.sleep(1.0)",
+                + "'); sys.stderr.flush(); time.sleep(2.0)",
             ],
             wait_for_s=0.5,
         ).strip()
