@@ -38,6 +38,7 @@ jobs:
           sudo apt-get install -y libxkbcommon-x11-0 xvfb
       - name: Install Mu dependencies
         run: |
+          pip install -U setuptools
           pip install .[dev]
           pip list
         timeout-minutes: 10
