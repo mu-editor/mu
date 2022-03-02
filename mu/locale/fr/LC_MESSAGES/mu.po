@@ -76,7 +76,7 @@ msgstr ""
 
 #: mu/interface/dialogs.py:183
 msgid "Minify Python code before flashing?"
-msgstr "Compresser le code Python avant de le flasher?"
+msgstr "Minifier le code Python avant de le flasher?"
 
 #: mu/interface/dialogs.py:187
 msgid ""
@@ -402,7 +402,7 @@ msgstr ""
 
 #: mu/logic.py:99
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
-msgstr "Cet éditeur s'appelle Mu (ça se prononce 'miou' ou 'mou')."
+msgstr "Cet éditeur s'appelle Mu (ça se prononce 'mu' ou 'miou')."
 
 #: mu/logic.py:100
 msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
@@ -714,7 +714,7 @@ msgstr ""
 
 #: mu/logic.py:934
 msgid "Is this a {} file?"
-msgstr "{} est un fichier?"
+msgstr "Est-ce que c'est un fichier {}?"
 
 #: mu/logic.py:935
 msgid ""
@@ -722,7 +722,7 @@ msgid ""
 "\n"
 "Would you like to change Mu to the {}mode?"
 msgstr ""
-"Ca ressemble a un fichier {}.\n"
+"Ça ressemble a un fichier {}.\n"
 "\n"
 "Veux-tu changer le mode de Mu en {}?"
 
@@ -971,7 +971,7 @@ msgstr "Écris du code pour les périphériques avec CircuitPython."
 
 #: mu/modes/circuitpython.py:84
 msgid "Serial"
-msgstr "Série"
+msgstr "Port série"
 
 #: mu/modes/circuitpython.py:85
 msgid "Open a serial connection to your device."
