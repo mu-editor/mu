@@ -7,15 +7,6 @@ import mu.interface.themes
 import mu.interface.editor
 
 
-def test_patch_osx_mojave_font_issue_552():
-    with mock.patch("platform.platform", return_value="Windows"):
-        assert not mu.interface.themes.should_patch_osx_mojave_font()
-    with mock.patch(
-        "platform.platform", return_value="Darwin-18.0.0-x86_64-i386-64bit"
-    ):
-        assert mu.interface.themes.should_patch_osx_mojave_font()
-
-
 def test_constants():
     """
     Ensure the expected constant values exist.
@@ -56,29 +47,29 @@ def test_theme_apply_to():
     lexer.setEolFill = mock.MagicMock(return_value=None)
     lexer.setPaper = mock.MagicMock(return_value=None)
     theme.apply_to(lexer)
-    assert lexer.setFont.call_count == 17
-    assert lexer.setColor.call_count == 16
-    assert lexer.setEolFill.call_count == 16
-    assert lexer.setPaper.call_count == 16
+    fstrings = 4 if hasattr(lexer, "DoubleQuotedFString") else 0
+    assert lexer.setFont.call_count == 17 + fstrings
+    assert lexer.setColor.call_count == 16 + fstrings
+    assert lexer.setEolFill.call_count == 16 + fstrings
+    assert lexer.setPaper.call_count == 16 + fstrings
 
 
 def test_Font_loading():
-    with mock.patch("mu.interface.themes.FONT_NAME", "Source Code Pro"):
+    mu.interface.themes.Font._DATABASE = None
+    try:
+        with mock.patch("mu.interface.themes.QFontDatabase") as db:
+            mu.interface.themes.Font().load()
+            mu.interface.themes.Font(bold=True).load()
+            mu.interface.themes.Font(italic=True).load()
+            mu.interface.themes.Font(bold=True, italic=True).load()
+    finally:
         mu.interface.themes.Font._DATABASE = None
-        try:
-            with mock.patch("mu.interface.themes.QFontDatabase") as db:
-                mu.interface.themes.Font().load()
-                mu.interface.themes.Font(bold=True).load()
-                mu.interface.themes.Font(italic=True).load()
-                mu.interface.themes.Font(bold=True, italic=True).load()
-        finally:
-            mu.interface.themes.Font._DATABASE = None
-        db.assert_called_once_with()
-        db().font.assert_has_calls(
-            [
-                mock.call("Source Code Pro", "Regular", 14),
-                mock.call("Source Code Pro", "Semibold", 14),
-                mock.call("Source Code Pro", "Italic", 14),
-                mock.call("Source Code Pro", "Semibold Italic", 14),
-            ]
-        )
+    db.assert_called_once_with()
+    db().font.assert_has_calls(
+        [
+            mock.call("Source Code Pro", "Regular", 14),
+            mock.call("Source Code Pro", "Semibold", 14),
+            mock.call("Source Code Pro", "Italic", 14),
+            mock.call("Source Code Pro", "Semibold Italic", 14),
+        ]
+    )

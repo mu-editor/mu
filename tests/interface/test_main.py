@@ -2,16 +2,17 @@
 """
 Tests for the user interface elements of Mu.
 """
-from PyQt5.QtWidgets import QAction, QWidget, QFileDialog, QMessageBox
-from PyQt5.QtCore import Qt, QSize, QIODevice
+from PyQt5.QtWidgets import QAction, QWidget, QFileDialog, QMessageBox, QMenu
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon, QKeySequence
 from unittest import mock
+import pytest
 from mu import __version__
 from tests.test_app import DumSig
 import mu.interface.main
 import mu.interface.themes
 import mu.interface.editor
-import pytest
+from mu.interface.panes import CHARTS, PlotterPane
 import sys
 
 
@@ -101,16 +102,20 @@ def test_ButtonBar_set_responsive_mode():
         bb = mu.interface.main.ButtonBar(None)
         bb.setStyleSheet = mock.MagicMock()
         bb.set_responsive_mode(1124, 800)
-        mock_icon_size.assert_called_with(QSize(64, 64))
-        default_font = str(mu.interface.themes.DEFAULT_FONT_SIZE)
-        style = "QWidget{font-size: " + default_font + "px;}"
+        mock_icon_size.assert_called_with(QSize(46, 46))
+        style = (
+            "QWidget{font-size: "
+            + str(mu.interface.themes.DEFAULT_FONT_SIZE)
+            + "px;}"
+        )
         bb.setStyleSheet.assert_called_with(style)
         bb.set_responsive_mode(939, 800)
-        mock_icon_size.assert_called_with(QSize(48, 48))
+        mock_icon_size.assert_called_with(QSize(39, 39))
+        style = "QWidget{font-size: " + str(11) + "px;}"
         bb.setStyleSheet.assert_called_with(style)
         bb.set_responsive_mode(939, 599)
-        mock_icon_size.assert_called_with(QSize(32, 32))
-        style = "QWidget{font-size: " + str(10) + "px;}"
+        mock_icon_size.assert_called_with(QSize(39, 39))
+        style = "QWidget{font-size: " + str(11) + "px;}"
         bb.setStyleSheet.assert_called_with(style)
 
 
@@ -253,6 +258,8 @@ def test_FileTabs_addTab():
     qtw.removeTab = mock.MagicMock()
     qtw.tabBar = mock.MagicMock(return_value=mock_tabbar)
     qtw.widget = mock.MagicMock(return_value=None)
+    iconSize = QSize(12, 12)
+    qtw.iconSize = mock.MagicMock(return_value=iconSize)
     mock_window = mock.MagicMock()
     qtw.nativeParentWidget = mock.MagicMock(return_value=mock_window)
     ep = mu.interface.editor.EditorPane("/foo/bar.py", "baz")
@@ -299,8 +306,8 @@ def test_FileTabs_addTab():
     mock_layout.setContentsMargins.assert_called_once_with(0, 0, 0, 0)
     mock_layout.setSpacing.assert_called_once_with(6)
     # Check the icons were loaded
-    mock_load_icon.assert_called_once_with("close-tab.svg")
-    mock_load_pixmap.assert_called_once_with("document.svg")
+    mock_load_icon.assert_called_once_with("close-tab")
+    mock_load_pixmap.assert_called_once_with("document", size=iconSize)
     # We assume the tab id is 0 based on looking at Qt's source
     # and the fact the bar was previously empty
     right = mu.interface.main.QTabBar.RightSide
@@ -598,6 +605,66 @@ def test_Window_get_save_path():
     assert returned_path == path
 
 
+def test_Window_get_save_path_missing_extension():
+    """
+    Ensure that if the user enters a file without an extension, then append a
+    ".py" extension by default. See #1571.
+    """
+    mock_fd = mock.MagicMock()
+    path = "/foo/bar"  # Note lack of ".py" extension in path provided by user.
+    mock_fd.getSaveFileName = mock.MagicMock(return_value=(path, True))
+    w = mu.interface.main.Window()
+    w.widget = mock.MagicMock()
+    with mock.patch("mu.interface.main.QFileDialog", mock_fd):
+        returned_path = w.get_save_path("micropython")
+    mock_fd.getSaveFileName.assert_called_once_with(
+        w.widget,
+        "Save file",
+        "micropython",
+        "Python (*.py);;Other (*.*)",
+        "Python (*.py)",
+    )
+    assert w.previous_folder == "/foo"  # Note lack of filename.
+    assert returned_path == path + ".py"  # Note addition of ".py" extension.
+
+
+def test_Window_get_save_path_empty_path():
+    """
+    Avoid appending a ".py" extension if the path is empty. See #1880.
+    """
+    mock_fd = mock.MagicMock()
+    path = ""  # Empty, as when user cancels Save As / Rename Tab.
+    mock_fd.getSaveFileName = mock.MagicMock(return_value=(path, True))
+    w = mu.interface.main.Window()
+    w.widget = mock.MagicMock()
+    with mock.patch("mu.interface.main.QFileDialog", mock_fd):
+        returned_path = w.get_save_path("micropython")
+    assert returned_path == ""  # Note lack of addition of ".py" extension.
+
+
+def test_Window_get_save_path_for_dot_file():
+    """
+    Ensure that if the user enters a dot file without an extension, then
+    no extension is appended. See commentary in #1572 for context.
+    """
+    mock_fd = mock.MagicMock()
+    path = "/foo/.bar"  # a dot file without an extension.
+    mock_fd.getSaveFileName = mock.MagicMock(return_value=(path, True))
+    w = mu.interface.main.Window()
+    w.widget = mock.MagicMock()
+    with mock.patch("mu.interface.main.QFileDialog", mock_fd):
+        returned_path = w.get_save_path("micropython")
+    mock_fd.getSaveFileName.assert_called_once_with(
+        w.widget,
+        "Save file",
+        "micropython",
+        "Python (*.py);;Other (*.*)",
+        "Python (*.py)",
+    )
+    assert w.previous_folder == "/foo"  # Note lack of filename.
+    assert returned_path == path  # Note lack of extension
+
+
 def test_Window_get_microbit_path():
     """
     Ensures the QFileDialog is called with the expected arguments and the
@@ -628,7 +695,7 @@ def test_Window_add_tab():
     new_tab_index = 999
     w.tabs = mock.MagicMock()
     w.tabs.addTab = mock.MagicMock(return_value=new_tab_index)
-    w.tabs.currentIndex = mock.MagicMock(return_value=new_tab_index)
+    w.tabs.indexOf = mock.MagicMock(return_value=new_tab_index)
     w.tabs.setCurrentIndex = mock.MagicMock(return_value=None)
     w.tabs.setTabText = mock.MagicMock(return_value=None)
     w.connect_zoom = mock.MagicMock(return_value=None)
@@ -722,16 +789,196 @@ def test_Window_modified():
     assert w.modified
 
 
-def test_Window_on_serial_read():
+def test_Window_on_context_menu_nothing_selected():
     """
-    When data is received the data_received signal should emit it.
+    If the current tab has no selected text, there should be no QMenu created.
     """
     w = mu.interface.main.Window()
-    w.serial = mock.MagicMock()
-    w.serial.readAll.return_value = b"Hello"
-    w.data_received = mock.MagicMock()
-    w.on_serial_read()
-    w.data_received.emit.assert_called_once_with(b"Hello")
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = -1, -1, -1, -1
+    menu = QMenu()
+    menu.insertAction = mock.MagicMock()
+    menu.insertSeparator = mock.MagicMock()
+    menu.exec_ = mock.MagicMock()
+    mock_tab.createStandardContextMenu = mock.MagicMock(return_value=menu)
+    w.on_context_menu()
+    assert mock_tab.createStandardContextMenu.call_count == 1
+    # No additional items added to the menu.
+    assert menu.insertAction.call_count == 0
+    assert menu.insertSeparator.call_count == 0
+    assert menu.exec_.call_count == 1
+
+
+def test_Window_on_context_menu_has_selection_but_no_repl():
+    """
+    If the current tab has selected text, but there is no active REPL, there
+    should be no QMenu created.
+    """
+    w = mu.interface.main.Window()
+    w.repl = None
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 10, 10
+    menu = QMenu()
+    menu.insertAction = mock.MagicMock()
+    menu.insertSeparator = mock.MagicMock()
+    menu.exec_ = mock.MagicMock()
+    mock_tab.createStandardContextMenu = mock.MagicMock(return_value=menu)
+    w.on_context_menu()
+    assert mock_tab.createStandardContextMenu.call_count == 1
+    # No additional items added to the menu.
+    assert menu.insertAction.call_count == 0
+    assert menu.insertSeparator.call_count == 0
+    assert menu.exec_.call_count == 1
+
+
+def test_Window_on_context_menu_has_selection_but_no_interactive_process():
+    """
+    If the current tab has selected text, but there is no process in
+    interactive mode, there should be no QMenu created.
+    """
+    w = mu.interface.main.Window()
+    w.process_runner = mock.MagicMock()
+    w.process_runner.is_interactive = False
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 10, 10
+    menu = QMenu()
+    menu.insertAction = mock.MagicMock()
+    menu.insertSeparator = mock.MagicMock()
+    menu.exec_ = mock.MagicMock()
+    mock_tab.createStandardContextMenu = mock.MagicMock(return_value=menu)
+    w.on_context_menu()
+    assert mock_tab.createStandardContextMenu.call_count == 1
+    # No additional items added to the menu.
+    assert menu.insertAction.call_count == 0
+    assert menu.insertSeparator.call_count == 0
+    assert menu.exec_.call_count == 1
+
+
+def test_Window_on_context_menu_with_repl():
+    """
+    If the current tab has selected text, and there is an active REPL, there
+    should be a QMenu created in the expected manner.
+    """
+    w = mu.interface.main.Window()
+    w.repl = True
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 10, 10
+    menu = QMenu()
+    menu.insertAction = mock.MagicMock()
+    menu.insertSeparator = mock.MagicMock()
+    menu.exec_ = mock.MagicMock()
+    menu.actions = mock.MagicMock(return_value=["foo"])
+    mock_tab.createStandardContextMenu = mock.MagicMock(return_value=menu)
+    w.on_context_menu()
+    assert mock_tab.createStandardContextMenu.call_count == 1
+    assert menu.insertAction.call_count == 1
+    assert menu.insertSeparator.call_count == 1
+    assert menu.exec_.call_count == 1
+
+
+def test_Window_on_context_menu_with_process_runner():
+    """
+    If the current tab has selected text, and there is an active
+    PythonProcessRunner, there should be a QMenu created in the expected
+    manner.
+    """
+    w = mu.interface.main.Window()
+    w.process_runner = mock.MagicMock()
+    w.process_runner.is_interactive = True
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 10, 10
+    menu = QMenu()
+    menu.insertAction = mock.MagicMock()
+    menu.insertSeparator = mock.MagicMock()
+    menu.exec_ = mock.MagicMock()
+    menu.actions = mock.MagicMock(return_value=["foo"])
+    mock_tab.createStandardContextMenu = mock.MagicMock(return_value=menu)
+    w.on_context_menu()
+    assert mock_tab.createStandardContextMenu.call_count == 1
+    assert menu.insertAction.call_count == 1
+    assert menu.insertSeparator.call_count == 1
+    assert menu.exec_.call_count == 1
+
+
+def test_Window_copy_to_repl_fragment():
+    """
+    If a fragment of text from a single line is selected, only paste that into
+    the REPL.
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 0, 5
+    mock_tab.text.return_value = "Hello world!"
+    w.repl_pane = mock.MagicMock()
+    with mock.patch("mu.interface.main.QApplication") as mock_app:
+        w.copy_to_repl()
+        mock_app.clipboard.assert_called_once_with()
+        clipboard = mock_app.clipboard()
+        clipboard.setText.assert_called_once_with("Hello")
+        w.repl_pane.paste.assert_called_once_with()
+        w.repl_pane.setFocus.assert_called_once_with()
+
+
+def test_Window_copy_to_repl_with_python_runner():
+    """
+    If a fragment of text from a single line is selected, only paste that into
+    the active PythonProcessRunner.
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 0, 5
+    mock_tab.text.return_value = "Hello world!"
+    w.process_runner = mock.MagicMock()
+    with mock.patch("mu.interface.main.QApplication") as mock_app:
+        w.copy_to_repl()
+        mock_app.clipboard.assert_called_once_with()
+        clipboard = mock_app.clipboard()
+        clipboard.setText.assert_called_once_with("Hello")
+        w.process_runner.paste.assert_called_once_with()
+        w.process_runner.setFocus.assert_called_once_with()
+
+
+def test_Window_copy_to_repl_multi_line():
+    """
+    If multiple lines are selected, ensure whitespace is corrected and paste
+    them all into the REPL.
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 3, 17
+    mock_tab.text.return_value = """    def hello():
+        return "Hello"
+
+    print(hello())
+    """
+    w.repl_pane = mock.MagicMock()
+    with mock.patch("mu.interface.main.QApplication") as mock_app:
+        w.copy_to_repl()
+        mock_app.clipboard.assert_called_once_with()
+        clipboard = mock_app.clipboard()
+        expected = """def hello():
+    return "Hello"
+
+print(hello())"""
+        clipboard.setText.assert_called_once_with(expected)
+        w.repl_pane.paste.assert_called_once_with()
+        w.repl_pane.setFocus.assert_called_once_with()
 
 
 def test_Window_on_stdout_write():
@@ -742,76 +989,6 @@ def test_Window_on_stdout_write():
     w.data_received = mock.MagicMock()
     w.on_stdout_write(b"hello")
     w.data_received.emit.assert_called_once_with(b"hello")
-
-
-def test_Window_open_serial_link():
-    """
-    Ensure the serial port is opened in the expected manner.
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=True)
-    mock_serial.readyRead = mock.MagicMock()
-    mock_serial.readyRead.connect = mock.MagicMock(return_value=None)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch("mu.interface.main.QSerialPort", mock_serial_class):
-        w = mu.interface.main.Window()
-        w.open_serial_link("COM0")
-        assert w.input_buffer == []
-    mock_serial.setPortName.assert_called_once_with("COM0")
-    mock_serial.setBaudRate.assert_called_once_with(115200)
-    mock_serial.open.assert_called_once_with(QIODevice.ReadWrite)
-    mock_serial.readyRead.connect.assert_called_once_with(w.on_serial_read)
-
-
-def test_Window_open_serial_link_unable_to_connect():
-    """
-    If serial.open fails raise an IOError.
-    """
-    mock_serial = mock.MagicMock()
-    mock_serial.setPortName = mock.MagicMock(return_value=None)
-    mock_serial.setBaudRate = mock.MagicMock(return_value=None)
-    mock_serial.open = mock.MagicMock(return_value=False)
-    mock_serial_class = mock.MagicMock(return_value=mock_serial)
-    with mock.patch("mu.interface.main.QSerialPort", mock_serial_class):
-        with pytest.raises(IOError):
-            w = mu.interface.main.Window()
-            w.open_serial_link("COM0")
-
-
-def test_Window_open_serial_link_DTR_unset():
-    """
-    If data terminal ready (DTR) is unset (as can be the case on some
-    Windows / Qt combinations) then fall back to PySerial to correct. See
-    issues #281 and #302 for details.
-    """
-    mock_qt_serial = mock.MagicMock()
-    mock_qt_serial.isDataTerminalReady.return_value = False
-    mock_py_serial = mock.MagicMock()
-    mock_serial_class = mock.MagicMock(return_value=mock_qt_serial)
-    with mock.patch("mu.interface.main.QSerialPort", mock_serial_class):
-        with mock.patch("mu.interface.main.serial", mock_py_serial):
-            w = mu.interface.main.Window()
-            w.open_serial_link("COM0")
-    mock_qt_serial.close.assert_called_once_with()
-    assert mock_qt_serial.open.call_count == 2
-    mock_py_serial.Serial.assert_called_once_with("COM0")
-    mock_pyser = mock_py_serial.Serial("COM0")
-    assert mock_pyser.dtr is True
-    mock_pyser.close.assert_called_once_with()
-
-
-def test_Window_close_serial_link():
-    """
-    Ensure the serial link is closed / cleaned up as expected.
-    """
-    mock_serial = mock.MagicMock()
-    w = mu.interface.main.Window()
-    w.serial = mock_serial
-    w.close_serial_link()
-    mock_serial.close.assert_called_once_with()
-    assert w.serial is None
 
 
 def test_Window_add_filesystem():
@@ -895,49 +1072,18 @@ def test_Window_add_micropython_repl():
     MicroPython based REPL.
     """
     w = mu.interface.main.Window()
-    w.theme = mock.MagicMock()
     w.add_repl = mock.MagicMock()
+    mock_connection = mock.MagicMock()
 
-    def side_effect(self, w=w):
-        w.serial = mock.MagicMock()
-
-    w.open_serial_link = mock.MagicMock(side_effect=side_effect)
-    w.data_received = mock.MagicMock()
     mock_repl = mock.MagicMock()
     mock_repl_class = mock.MagicMock(return_value=mock_repl)
     with mock.patch("mu.interface.main.MicroPythonREPLPane", mock_repl_class):
-        w.add_micropython_repl("COM0", "Test REPL")
-    mock_repl_class.assert_called_once_with(serial=w.serial)
-    w.open_serial_link.assert_called_once_with("COM0")
-    assert w.serial.write.call_count == 2
-    assert w.serial.write.call_args_list[0][0][0] == b"\x02"
-    assert w.serial.write.call_args_list[1][0][0] == b"\x03"
-    w.data_received.connect.assert_called_once_with(mock_repl.process_bytes)
-    w.add_repl.assert_called_once_with(mock_repl, "Test REPL")
+        w.add_micropython_repl("Test REPL", mock_connection)
+    mock_repl_class.assert_called_once_with(mock_connection)
 
-
-def test_Window_add_micropython_repl_no_interrupt():
-    """
-    Ensure the expected object is instantiated and add_repl is called for a
-    MicroPython based REPL.
-    """
-    w = mu.interface.main.Window()
-    w.theme = mock.MagicMock()
-    w.add_repl = mock.MagicMock()
-
-    def side_effect(self, w=w):
-        w.serial = mock.MagicMock()
-
-    w.open_serial_link = mock.MagicMock(side_effect=side_effect)
-    w.data_received = mock.MagicMock()
-    mock_repl = mock.MagicMock()
-    mock_repl_class = mock.MagicMock(return_value=mock_repl)
-    with mock.patch("mu.interface.main.MicroPythonREPLPane", mock_repl_class):
-        w.add_micropython_repl("COM0", "Test REPL", False)
-    mock_repl_class.assert_called_once_with(serial=w.serial)
-    w.open_serial_link.assert_called_once_with("COM0")
-    assert w.serial.write.call_count == 0
-    w.data_received.connect.assert_called_once_with(mock_repl.process_bytes)
+    mock_connection.data_received.connect.assert_called_once_with(
+        mock_repl.process_tty_data
+    )
     w.add_repl.assert_called_once_with(mock_repl, "Test REPL")
 
 
@@ -947,24 +1093,22 @@ def test_Window_add_micropython_plotter():
     a MicroPython based plotter.
     """
     w = mu.interface.main.Window()
-    w.theme = mock.MagicMock()
     w.add_plotter = mock.MagicMock()
+    mock_connection = mock.MagicMock()
 
-    def side_effect(self, w=w):
-        w.serial = mock.MagicMock()
-
-    w.open_serial_link = mock.MagicMock(side_effect=side_effect)
-    w.data_received = mock.MagicMock()
     mock_plotter = mock.MagicMock()
     mock_plotter_class = mock.MagicMock(return_value=mock_plotter)
-    mock_mode = mock.MagicMock()
+    mock_data_flood_handler = mock.MagicMock()
     with mock.patch("mu.interface.main.PlotterPane", mock_plotter_class):
-        w.add_micropython_plotter("COM0", "MicroPython Plotter", mock_mode)
+        w.add_micropython_plotter(
+            "MicroPython Plotter", mock_connection, mock_data_flood_handler
+        )
     mock_plotter_class.assert_called_once_with()
-    w.open_serial_link.assert_called_once_with("COM0")
-    w.data_received.connect.assert_called_once_with(mock_plotter.process_bytes)
+    mock_connection.data_received.connect.assert_called_once_with(
+        mock_plotter.process_tty_data
+    )
     mock_plotter.data_flood.connect.assert_called_once_with(
-        mock_mode.on_data_flood
+        mock_data_flood_handler
     )
     w.add_plotter.assert_called_once_with(mock_plotter, "MicroPython Plotter")
 
@@ -982,7 +1126,9 @@ def test_Window_add_python3_plotter():
     mock_mode = mock.MagicMock()
     with mock.patch("mu.interface.main.PlotterPane", mock_plotter_class):
         w.add_python3_plotter(mock_mode)
-    w.data_received.connect.assert_called_once_with(mock_plotter.process_bytes)
+    w.data_received.connect.assert_called_once_with(
+        mock_plotter.process_tty_data
+    )
     mock_plotter.data_flood.connect.assert_called_once_with(
         mock_mode.on_data_flood
     )
@@ -1049,6 +1195,30 @@ def test_Window_add_plotter():
     w.addDockWidget.assert_called_once_with(Qt.BottomDockWidgetArea, mock_dock)
 
 
+@pytest.mark.skipif(not CHARTS, reason="QtChart unavailable")
+def test_Window_remember_plotter_position():
+    """
+    Check that opening plotter, changing the area it's docked to, then closing
+    it makes the next plotter open at the same area.
+    """
+    w = mu.interface.main.Window()
+    w.theme = mock.MagicMock()
+    pane = PlotterPane()
+    w.add_plotter(pane, "Test Plotter")
+    dock_area = w.dockWidgetArea(w.plotter)
+    assert dock_area == 8  # Bottom
+    w.removeDockWidget(w.plotter)
+    w.addDockWidget(Qt.LeftDockWidgetArea, w.plotter)
+    dock_area = w.dockWidgetArea(w.plotter)
+    assert dock_area == 1  # Left
+    w.remove_plotter()
+    assert w.plotter is None
+    pane2 = PlotterPane()
+    w.add_plotter(pane2, "Test Plotter 2")
+    dock_area = w.dockWidgetArea(w.plotter)
+    assert dock_area == 1  # Reopened on left
+
+
 def test_Window_add_python3_runner():
     """
     Ensure a Python 3 runner (to capture stdin/out/err) is displayed correctly.
@@ -1066,7 +1236,7 @@ def test_Window_add_python3_runner():
     with mock.patch(
         "mu.interface.main.PythonProcessPane", mock_process_class
     ), mock.patch("mu.interface.main.QDockWidget", mock_dock_class):
-        result = w.add_python3_runner(name, path)
+        result = w.add_python3_runner(name, path, ".")
         assert result == mock_process_runner
     assert w.process_runner == mock_process_runner
     assert w.runner == mock_dock
@@ -1124,12 +1294,13 @@ def test_Window_update_debug_inspector():
     }
     w = mu.interface.main.Window()
     w.debug_model = mock.MagicMock()
+    w.debug_model.rowCount.return_value = 0
     mock_standard_item = mock.MagicMock()
     with mock.patch(
         "mu.interface.main.DebugInspectorItem", mock_standard_item
     ):
         w.update_debug_inspector(locals_dict)
-    w.debug_model.clear.assert_called_once_with()
+    w.debug_model.rowCount.assert_called_once_with()
     w.debug_model.setHorizontalHeaderLabels(["Name", "Value"])
     # You just have to believe this is correct. I checked! :-)
     assert mock_standard_item.call_count == 22
@@ -1143,6 +1314,7 @@ def test_Window_update_debug_inspector_with_exception():
     locals_dict = {"bar": "['this', 'is', 'a', 'list']"}
     w = mu.interface.main.Window()
     w.debug_model = mock.MagicMock()
+    w.debug_model.rowCount.return_value = 0
     mock_standard_item = mock.MagicMock()
     mock_eval = mock.MagicMock(side_effect=Exception("BOOM!"))
     with mock.patch(
@@ -1163,6 +1335,7 @@ def test_Window_remove_filesystem():
     mock_fs.setParent = mock.MagicMock(return_value=None)
     mock_fs.deleteLater = mock.MagicMock(return_value=None)
     w.fs = mock_fs
+    w.dockWidgetArea = mock.MagicMock()
     w.remove_filesystem()
     mock_fs.setParent.assert_called_once_with(None)
     mock_fs.deleteLater.assert_called_once_with()
@@ -1178,26 +1351,12 @@ def test_Window_remove_repl():
     mock_repl.setParent = mock.MagicMock(return_value=None)
     mock_repl.deleteLater = mock.MagicMock(return_value=None)
     w.repl = mock_repl
-    w.serial = mock.MagicMock()
+    w.dockWidgetArea = mock.MagicMock()
     w.remove_repl()
     mock_repl.setParent.assert_called_once_with(None)
     mock_repl.deleteLater.assert_called_once_with()
+    assert w.dockWidgetArea.call_count == 1
     assert w.repl is None
-    assert w.serial is None
-
-
-def test_Window_remove_repl_active_plotter():
-    """
-    When removing the repl, if the plotter is active, retain the serial
-    connection.
-    """
-    w = mu.interface.main.Window()
-    w.repl = mock.MagicMock()
-    w.plotter = mock.MagicMock()
-    w.serial = mock.MagicMock()
-    w.remove_repl()
-    assert w.repl is None
-    assert w.serial
 
 
 def test_Window_remove_plotter():
@@ -1208,27 +1367,13 @@ def test_Window_remove_plotter():
     mock_plotter = mock.MagicMock()
     mock_plotter.setParent = mock.MagicMock(return_value=None)
     mock_plotter.deleteLater = mock.MagicMock(return_value=None)
+    w.dockWidgetArea = mock.MagicMock()
     w.plotter = mock_plotter
-    w.serial = mock.MagicMock()
     w.remove_plotter()
     mock_plotter.setParent.assert_called_once_with(None)
     mock_plotter.deleteLater.assert_called_once_with()
+    assert w.dockWidgetArea.call_count == 1
     assert w.plotter is None
-    assert w.serial is None
-
-
-def test_Window_remove_plotter_active_repl():
-    """
-    When removing the plotter, if the repl is active, retain the serial
-    connection.
-    """
-    w = mu.interface.main.Window()
-    w.repl = mock.MagicMock()
-    w.plotter = mock.MagicMock()
-    w.serial = mock.MagicMock()
-    w.remove_plotter()
-    assert w.plotter is None
-    assert w.serial
 
 
 def test_Window_remove_python_runner():
@@ -1241,9 +1386,12 @@ def test_Window_remove_python_runner():
     mock_runner.setParent = mock.MagicMock(return_value=None)
     mock_runner.deleteLater = mock.MagicMock(return_value=None)
     w.runner = mock_runner
+    w.process_runner = mock.MagicMock()
+    w.dockWidgetArea = mock.MagicMock()
     w.remove_python_runner()
     mock_runner.setParent.assert_called_once_with(None)
     mock_runner.deleteLater.assert_called_once_with()
+    assert w.dockWidgetArea.call_count == 1
     assert w.process_runner is None
     assert w.runner is None
 
@@ -1260,12 +1408,14 @@ def test_Window_remove_debug_inspector():
     w.inspector = mock_inspector
     w.debug_inspector = mock_debug_inspector
     w.debug_model = mock_model
+    w.dockWidgetArea = mock.MagicMock()
     w.remove_debug_inspector()
     assert w.debug_inspector is None
     assert w.debug_model is None
     assert w.inspector is None
     mock_inspector.setParent.assert_called_once_with(None)
     mock_inspector.deleteLater.assert_called_once_with()
+    assert w.dockWidgetArea.call_count == 1
 
 
 def test_Window_set_theme():
@@ -1354,14 +1504,14 @@ def test_Window_set_checker_icon():
     with mock.patch("mu.interface.main.QTimer", mock_timer_class), mock.patch(
         "mu.interface.main.load_icon", mock_load_icon
     ):
-        w.set_checker_icon("check-good.png")
+        w.set_checker_icon("check-good")
         # Fake a timeout
         mock_timer.timeout.emit()
     mock_timer_class.assert_called_once_with()
     mock_timer.start.assert_called_once_with(500)
     mock_timer.stop.assert_called_once_with()
     mock_load_icon.assert_has_calls(
-        [mock.call("check-good.png"), mock.call("check.png")]
+        [mock.call("check-good"), mock.call("check")]
     )
     assert w.button_bar.slots["check"].setIcon.call_count == 2
 
@@ -1377,10 +1527,10 @@ def test_Window_show_admin():
     mock_admin_display.return_value = mock_admin_box
     with mock.patch("mu.interface.main.AdminDialog", mock_admin_display):
         w = mu.interface.main.Window()
-        result = w.show_admin("log", "envars", "packages")
+        result = w.show_admin("log", "envars", "packages", "mode", "devices")
         mock_admin_display.assert_called_once_with(w)
         mock_admin_box.setup.assert_called_once_with(
-            "log", "envars", "packages"
+            "log", "envars", "packages", "mode", "devices"
         )
         mock_admin_box.exec.assert_called_once_with()
         assert result == "this is the expected result"
@@ -1397,10 +1547,10 @@ def test_Window_show_admin_cancelled():
     mock_admin_display.return_value = mock_admin_box
     with mock.patch("mu.interface.main.AdminDialog", mock_admin_display):
         w = mu.interface.main.Window()
-        result = w.show_admin("log", "envars", "packages")
+        result = w.show_admin("log", "envars", "packages", "mode", "devices")
         mock_admin_display.assert_called_once_with(w)
         mock_admin_box.setup.assert_called_once_with(
-            "log", "envars", "packages"
+            "log", "envars", "packages", "mode", "devices"
         )
         mock_admin_box.exec.assert_called_once_with()
         assert result == {}
@@ -1416,10 +1566,9 @@ def test_Window_sync_packages():
         w = mu.interface.main.Window()
         to_remove = {"foo"}
         to_add = {"bar"}
-        module_dir = "baz"
-        w.sync_packages(to_remove, to_add, module_dir)
+        w.sync_packages(to_remove, to_add)
         dialog = mock_package_dialog()
-        dialog.setup.assert_called_once_with(to_remove, to_add, module_dir)
+        dialog.setup.assert_called_once_with(to_remove, to_add)
         dialog.exec.assert_called_once_with()
 
 
@@ -1582,8 +1731,33 @@ def test_Window_autosize_window():
     mock_qdw.assert_called_once_with()
     w.resize.assert_called_once_with(int(1024 * 0.8), int(768 * 0.8))
     w.geometry.assert_called_once_with()
-    x = (1024 - 819) / 2
-    y = (768 - 614) / 2
+    x = (1024 - 819) // 2
+    y = (768 - 614) // 2
+    w.move.assert_called_once_with(x, y)
+
+
+def test_Window_autosize_window_off_screen():
+    """
+    Check the correct calculations take place and methods are called so the
+    window is resized and positioned correctly even if the passed in X/Y
+    coordinates would put the window OFF the screen. See issue #1613 for
+    context.
+    """
+    mock_qdw = _qdesktopwidget_mock(1024, 768)
+    w = mu.interface.main.Window()
+    w.resize = mock.MagicMock(return_value=None)
+    mock_size = mock.MagicMock()
+    mock_size.width = mock.MagicMock(return_value=819)
+    mock_size.height = mock.MagicMock(return_value=614)
+    w.geometry = mock.MagicMock(return_value=mock_size)
+    w.move = mock.MagicMock(return_value=None)
+    with mock.patch("mu.interface.main.QDesktopWidget", mock_qdw):
+        w.size_window(x=-20, y=9999)
+    mock_qdw.assert_called_once_with()
+    w.resize.assert_called_once_with(int(1024 * 0.8), int(768 * 0.8))
+    w.geometry.assert_called_once_with()
+    x = (1024 - 819) // 2
+    y = (768 - 614) // 2
     w.move.assert_called_once_with(x, y)
 
 
@@ -1832,6 +2006,27 @@ def test_Window_connect_find_replace():
     shortcut.activated.connect.assert_called_once_with(mock_handler)
 
 
+def test_Window_connect_find_again():
+    """
+    Ensure a shortcut is created with the expected shortcut and handler
+    function.
+    """
+    window = mu.interface.main.Window()
+    mock_handlers = mock.MagicMock(), mock.MagicMock()
+    mock_shortcut = mock.MagicMock()
+    mock_sequence = mock.MagicMock()
+    ksf = mock.MagicMock("F3")
+    # ksb = mock.MagicMock("Shift+F3")
+    with mock.patch("mu.interface.main.QShortcut", mock_shortcut), mock.patch(
+        "mu.interface.main.QKeySequence", mock_sequence
+    ):
+        window.connect_find_again(mock_handlers, "F3")
+    mock_sequence.assert_has_calls((mock.call("F3"), mock.call("Shift+F3")))
+    shortcut = mock_shortcut(ksf, window)
+    shortcut.activated.connect.assert_called_with(mock_handlers[1])
+    assert shortcut.activated.connect.call_count == 2
+
+
 def test_Window_show_find_replace():
     """
     The find/replace dialog is setup with the right arguments and, if
@@ -1917,6 +2112,22 @@ def test_Window_replace_text_global_missing():
     assert w.replace_text("foo", "bar", True) == 0
 
 
+def test_Window_replace_text_highlight_text_correct_selection():
+    """
+    Check that replace_text and highlight_text are actually highlighting text
+    without regex matching.
+    """
+    view = mu.interface.main.Window()
+    text = "ofafefifoof."
+    tab = mu.interface.editor.EditorPane("path", text)
+    with mock.patch("mu.interface.Window.current_tab") as current:
+        current.findFirst = tab.findFirst
+        view.highlight_text("f.")
+        assert tab.selectedText() == "f."
+        assert view.replace_text("of.", "", False)
+        assert tab.selectedText() == "of."
+
+
 def test_Window_highlight_text():
     """
     Given target_text, highlights the first instance via Scintilla's findFirst
@@ -1927,8 +2138,28 @@ def test_Window_highlight_text():
     mock_tab.findFirst.return_value = True
     w.tabs = mock.MagicMock()
     w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 0, 0
     assert w.highlight_text("foo")
-    mock_tab.findFirst.assert_called_once_with("foo", True, True, False, True)
+    mock_tab.findFirst.assert_called_once_with(
+        "foo", False, True, False, True, forward=True, index=-1, line=-1
+    )
+
+
+def test_Window_highlight_text_backward():
+    """
+    Given target_text, highlights the first instance via Scintilla's findFirst
+    method.
+    """
+    w = mu.interface.main.Window()
+    mock_tab = mock.MagicMock()
+    mock_tab.findFirst.return_value = True
+    w.tabs = mock.MagicMock()
+    w.tabs.currentWidget.return_value = mock_tab
+    mock_tab.getSelection.return_value = 0, 0, 0, 0
+    assert w.highlight_text("foo", forward=False)
+    mock_tab.findFirst.assert_called_once_with(
+        "foo", False, True, False, True, forward=False, index=0, line=0
+    )
 
 
 def test_Window_highlight_text_no_tab():
@@ -1938,6 +2169,7 @@ def test_Window_highlight_text_no_tab():
     w = mu.interface.main.Window()
     w.tabs = mock.MagicMock()
     w.tabs.currentWidget.return_value = None
+    w.tabs.currentWidget.getSelection.return_value = 0, 0, 0, 0
     assert w.highlight_text("foo") is False
 
 
@@ -1971,6 +2203,23 @@ def test_Window_toggle_comments():
     w.tabs.currentWidget.return_value = mock_tab
     w.toggle_comments()
     mock_tab.toggle_comments.assert_called_once_with()
+
+
+def test_Window_show_hide_device_selector():
+    """
+    Ensure that the device_selector is shown as expected.
+    """
+    window = mu.interface.main.Window()
+    theme = "night"
+    breakpoint_toggle = mock.MagicMock()
+    window.setup(breakpoint_toggle, theme)
+
+    window.show_device_selector()
+    assert not (window.status_bar.device_selector.isHidden())
+    window.hide_device_selector()
+    assert window.status_bar.device_selector.isHidden()
+    window.show_device_selector()
+    assert not (window.status_bar.device_selector.isHidden())
 
 
 def test_StatusBar_init():
@@ -2054,3 +2303,61 @@ def test_StatusBar_set_mode():
     sb.mode_label.setText = mock.MagicMock()
     sb.set_mode(mode)
     sb.mode_label.setText.assert_called_once_with(mode)
+
+
+@pytest.fixture
+def microbit():
+    """
+    Fixture for easy setup of microbit device in tests
+    """
+    microbit = mu.logic.Device(
+        0x0D28,
+        0x0204,
+        "COM1",
+        123456,
+        "ARM",
+        "BBC micro:bit",
+        "microbit",
+        None,
+    )
+    return microbit
+
+
+@pytest.fixture
+def adafruit_feather():
+    """
+    Fixture for easy setup of adafruit feather device in tests
+    """
+    adafruit_feather = mu.logic.Device(
+        0x239A,
+        0x800B,
+        "COM1",
+        123456,
+        "ARM",
+        "CircuitPython",
+        "circuitpython",
+        "Adafruit Feather",
+    )
+    return adafruit_feather
+
+
+def test_StatusBar_device_connected_microbit(microbit):
+    """
+    Test that a message is displayed when a new device is connected
+    (with no board_name set)
+    """
+    sb = mu.interface.main.StatusBar()
+    sb.set_message = mock.MagicMock()
+    sb.device_connected(microbit)
+    assert sb.set_message.call_count == 1
+
+
+def test_StatusBar_device_connected_adafruit_feather(adafruit_feather):
+    """
+    Test that a message is displayed when a new device is connected
+    (with board_name set)
+    """
+    sb = mu.interface.main.StatusBar()
+    sb.set_message = mock.MagicMock()
+    sb.device_connected(adafruit_feather)
+    assert sb.set_message.call_count == 1

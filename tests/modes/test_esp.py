@@ -4,6 +4,7 @@ import pytest
 from unittest import mock
 from mu.modes.esp import ESPMode
 from mu.modes.api import ESP_APIS, SHARED_APIS
+from mu.logic import Device
 
 
 @pytest.fixture
@@ -30,7 +31,8 @@ def test_ESPMode_actions(esp_mode):
     """
     Sanity check for mode actions.
     """
-    actions = esp_mode.actions()
+    with mock.patch("mu.modes.esp.CHARTS", True):
+        actions = esp_mode.actions()
     assert len(actions) == 4
     assert actions[0]["name"] == "run"
     assert actions[0]["handler"] == esp_mode.run
@@ -40,6 +42,21 @@ def test_ESPMode_actions(esp_mode):
     assert actions[2]["handler"] == esp_mode.toggle_repl
     assert actions[3]["name"] == "plotter"
     assert actions[3]["handler"] == esp_mode.toggle_plotter
+
+
+def test_ESPMode_actions_no_charts(esp_mode):
+    """
+    Sanity check for mode actions.
+    """
+    with mock.patch("mu.modes.esp.CHARTS", False):
+        actions = esp_mode.actions()
+    assert len(actions) == 3
+    assert actions[0]["name"] == "run"
+    assert actions[0]["handler"] == esp_mode.run
+    assert actions[1]["name"] == "files"
+    assert actions[1]["handler"] == esp_mode.toggle_files
+    assert actions[2]["name"] == "repl"
+    assert actions[2]["handler"] == esp_mode.toggle_repl
 
 
 def test_api(esp_mode):
@@ -57,11 +74,15 @@ def test_add_fs(fm, qthread, esp_mode):
     It's possible to add the file system pane if the REPL is inactive.
     """
     esp_mode.view.current_tab = None
-    esp_mode.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    esp_mode.find_device = mock.MagicMock(
+        return_value=("COM0", "12345", "ESP8266")
+    )
     esp_mode.add_fs()
     workspace = esp_mode.workspace_dir()
     esp_mode.view.add_filesystem.assert_called_once_with(
-        workspace, esp_mode.file_manager, "ESP board"
+        workspace,
+        esp_mode.file_manager,
+        "{board_name} board".format(board_name=esp_mode.board_name),
     )
     assert esp_mode.fs
 
@@ -73,11 +94,15 @@ def test_add_fs_project_path(fm, qthread, esp_mode):
     It's possible to add the file system pane if the REPL is inactive.
     """
     esp_mode.view.current_tab.path = "foo"
-    esp_mode.find_device = mock.MagicMock(return_value=("COM0", "12345"))
+    esp_mode.find_device = mock.MagicMock(
+        return_value=("COM0", "12345", "ESP8266")
+    )
     esp_mode.add_fs()
     workspace = os.path.dirname(os.path.abspath("foo"))
     esp_mode.view.add_filesystem.assert_called_once_with(
-        workspace, esp_mode.file_manager, "ESP board"
+        workspace,
+        esp_mode.file_manager,
+        "{board_name} board".format(board_name=esp_mode.board_name),
     )
     assert esp_mode.fs
 
@@ -86,7 +111,7 @@ def test_add_fs_no_device(esp_mode):
     """
     If there's no device attached then ensure a helpful message is displayed.
     """
-    esp_mode.find_device = mock.MagicMock(return_value=(None, None))
+    esp_mode.editor.current_device = None
     esp_mode.add_fs()
     assert esp_mode.view.show_message.call_count == 1
 
@@ -229,7 +254,7 @@ def test_run_no_device(esp_mode):
     Ensure an error message is displayed if attempting to run a script
     and no device is found.
     """
-    esp_mode.find_device = mock.MagicMock(return_value=(None, None))
+    esp_mode.editor.current_device = None
     esp_mode.run()
     assert esp_mode.view.show_message.call_count == 1
 
@@ -239,8 +264,12 @@ def test_run(esp_mode):
     Ensure run/repl/files buttons are disabled while flashing.
     """
     esp_mode.set_buttons = mock.MagicMock()
-    esp_mode.find_device = mock.MagicMock(return_value=("COM0", "12345"))
-    esp_mode.run()
+    esp_mode.find_device = mock.MagicMock(
+        return_value=("COM0", "12345", "ESP8266")
+    )
+    mock_connection_class = mock.MagicMock()
+    with mock.patch("mu.modes.base.REPLConnection", mock_connection_class):
+        esp_mode.run()
     esp_mode.set_buttons.assert_called_once_with(files=False)
 
 
@@ -307,3 +336,42 @@ def test_toggle_plotter_with_fs(esp_mode):
     esp_mode.fs = True
     esp_mode.toggle_plotter(None)
     assert esp_mode.view.show_message.call_count == 1
+
+
+def test_deactivate(esp_mode):
+    """
+    Ensure Filesystem pane is hidden, when MicroPython-mode is
+    deactivated.
+    """
+    esp_mode.remove_fs = mock.MagicMock()
+    esp_mode.activate()
+    esp_mode.fs = True
+    esp_mode.deactivate()
+    esp_mode.remove_fs.assert_called_once_with()
+
+
+@pytest.fixture()
+def sparkfunESP32():
+    return Device(
+        0x0403,
+        0x6015,
+        "COM0",
+        "123456",
+        "Sparkfun ESP32 Thing",
+        "ESP MicroPython",
+        "esp",
+    )
+
+
+def test_device_changed(esp_mode, sparkfunESP32):
+    """
+    Ensure Filesystem pane is reconnected, when the user changes
+    device.
+    """
+    esp_mode.add_fs = mock.MagicMock()
+    esp_mode.remove_fs = mock.MagicMock()
+    esp_mode.activate()
+    esp_mode.fs = True
+    esp_mode.device_changed(sparkfunESP32)
+    esp_mode.remove_fs.assert_called_once_with()
+    esp_mode.add_fs.assert_called_once_with()

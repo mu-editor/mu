@@ -258,12 +258,16 @@ def test_EditorPane_set_theme():
 
 def test_EditorPane_set_zoom():
     """
-    Ensure the t-shirt size is turned into a call to parent's zoomTo.
+    Ensure the t-shirt size is turned into a call to parent's zoomTo,
+    and the margin width are adjusted properly.
     """
     ep = mu.interface.editor.EditorPane("/foo/bar.py", "baz")
     ep.zoomTo = mock.MagicMock()
+    ep.setMarginWidth = mock.MagicMock()
     ep.set_zoom("xl")
     ep.zoomTo.assert_called_once_with(8)
+    ep.setMarginWidth.assert_any_call(0, 60)
+    ep.setMarginWidth.call_count = 3
 
 
 def test_EditorPane_label():
@@ -924,9 +928,20 @@ def test_EditorPane_toggle_comments_selection_follows_len_change():
     ep.setSelection.assert_called_once_with(0, 0, 2, 4)
 
 
+def test_EditorPane_toggle_comments_handle_crlf_newline():
+    """
+    Check that stray "\r\n" line endings don't lead to deleting the first
+    character of the following line.
+    """
+    ep = mu.interface.editor.EditorPane(None, "test\r\nline 2\n")
+    ep.hasSelectedText = mock.MagicMock(return_value=False)
+    ep.toggle_comments()
+    assert ep.text() == "# test\nline 2\n"
+    assert ep.selectedText() == "# test"
+
+
 def test_EditorPane_wheelEvent():
-    """
-    """
+    """ """
     ep = mu.interface.editor.EditorPane(None, "baz")
     mock_app = mock.MagicMock()
     mock_app.keyboardModifiers.return_value = []
@@ -938,8 +953,7 @@ def test_EditorPane_wheelEvent():
 
 
 def test_EditorPane_wheelEvent_with_modifier_ignored():
-    """
-    """
+    """ """
     ep = mu.interface.editor.EditorPane(None, "baz")
     mock_app = mock.MagicMock()
     mock_app.keyboardModifiers.return_value = ["CTRL"]
@@ -948,3 +962,13 @@ def test_EditorPane_wheelEvent_with_modifier_ignored():
     ) as mw:
         ep.wheelEvent(None)
         assert mw.call_count == 0
+
+
+def test_EditorPane_contextMenuEvent():
+    """
+    Context menu raises the expected signal.
+    """
+    ep = mu.interface.editor.EditorPane(None, "baz")
+    ep.context_menu = mock.MagicMock()
+    ep.contextMenuEvent(None)
+    ep.context_menu.emit.assert_called_once_with()

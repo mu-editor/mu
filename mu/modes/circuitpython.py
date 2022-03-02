@@ -18,10 +18,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
 import ctypes
+import logging
 from subprocess import check_output
 from mu.modes.base import MicroPythonMode
 from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
+from mu.logic import Device
+from adafruit_board_toolkit import circuitpython_serial
+
+logger = logging.getLogger(__name__)
 
 
 class CircuitPythonMode(MicroPythonMode):
@@ -30,47 +35,100 @@ class CircuitPythonMode(MicroPythonMode):
     """
 
     name = _("CircuitPython")
+    short_name = "circuitpython"
     description = _("Write code for boards running CircuitPython.")
     icon = "circuitpython"
     save_timeout = 0  #: No auto-save on CP boards. Will restart.
     connected = True  #: is the board connected.
     force_interrupt = False  #: NO keyboard interrupt on serial connection.
-    valid_boards = [
-        (0x2B04, 0xC00C),  # Particle Argon
-        (0x2B04, 0xC00D),  # Particle Boron
-        (0x2B04, 0xC00E),  # Particle Xenon
-        (0x239A, None),  # Any Adafruit Boards
-        # Non-Adafruit boards
-        (0x1209, 0xBAB1),  # Electronic Cats Meow Meow
-        (0x1209, 0xBAB2),  # Electronic Cats CatWAN USBStick
-        (0x1209, 0xBAB3),  # Electronic Cats Bast Pro Mini M0
-        (0x1B4F, 0x8D22),  # SparkFun SAMD21 Mini Breakout
-        (0x1B4F, 0x8D23),  # SparkFun SAMD21 Dev Breakout
-        (0x1209, 0x2017),  # Mini SAM M4
-        (0x1209, 0x7102),  # Mini SAM M0
-    ]
+
     # Modules built into CircuitPython which mustn't be used as file names
     # for source code.
     module_names = {
-        "storage",
-        "os",
-        "touchio",
-        "microcontroller",
-        "bitbangio",
-        "digitalio",
-        "audiobusio",
-        "multiterminal",
-        "nvm",
-        "pulseio",
-        "usb_hid",
+        "_bleio",
+        "_eve",
+        "_pew",
+        "_pixelbuf",
+        "_stage",
+        "_typing",
+        "adafruit_bus_device",
+        "aesio",
+        "alarm",
+        "array",
         "analogio",
-        "time",
-        "busio",
-        "random",
+        "audiobusio",
+        "audiocore",
         "audioio",
-        "sys",
-        "math",
+        "audiomixer",
+        "audiomp3",
+        "audiopwmio",
+        "binascii",
+        "bitbangio",
+        "bitmaptools",
+        "bitops",
+        "board",
         "builtins",
+        "busio",
+        "camera",
+        "canio",
+        "collections",
+        "countio",
+        "digitalio",
+        "displayio",
+        "dualbank",
+        "errno",
+        "fontio",
+        "framebufferio",
+        "frequencyio",
+        "gamepad",
+        "gamepadshift",
+        "gc",
+        "gnss",
+        "hashlib",
+        "i2cperipheral",
+        "io",
+        "ipaddress",
+        "json",
+        "math",
+        "memorymonitor",
+        "microcontroller",
+        "msgpack",
+        "multiterminal",
+        "neopixel_write",
+        "network",
+        "nvm",
+        "os",
+        "ps2io",
+        "pulseio",
+        "pwmio",
+        "random",
+        "re",
+        "rgbmatrix",
+        "rotaryio",
+        "rtc",
+        "sdcardio",
+        "sdioio",
+        "sharpdisplay",
+        "socket",
+        "socketpool",
+        "ssl",
+        "storage",
+        "struct",
+        "supervisor",
+        "sys",
+        "terminalio",
+        "time",
+        "touchio",
+        "uheap",
+        "usb_cdc",
+        "usb_hid",
+        "usb_midi",
+        "ustack",
+        "vectorio",
+        "watchdog",
+        "wifi",
+        "wiznet",
+        "zlib",
     }
 
     def actions(self):
@@ -114,10 +172,46 @@ class CircuitPythonMode(MicroPythonMode):
                     mount_output = check_output(mount_command).splitlines()
                     mounted_volumes = [x.split()[2] for x in mount_output]
                     for volume in mounted_volumes:
-                        if volume.endswith(b"CIRCUITPY"):
+                        tail = os.path.split(volume)[-1]
+                        if tail.startswith(b"CIRCUITPY") or tail.startswith(
+                            b"PYBFLASH"
+                        ):
                             device_dir = volume.decode("utf-8")
+                            break
                 except FileNotFoundError:
-                    next
+                    pass
+                except PermissionError as e:
+                    logger.error(
+                        "Received '{}' running command: {}".format(
+                            repr(e), mount_command
+                        )
+                    )
+                    m = _("Permission error running mount command")
+                    info = _(
+                        'The mount command ("{}") returned an error: '
+                        "{}. Mu will continue as if a device isn't "
+                        "plugged in."
+                    ).format(mount_command, repr(e))
+                    self.view.show_message(m, info)
+                # Avoid crashing Mu, the workspace dir will be set to default
+                except Exception as e:
+                    logger.error(
+                        "Received '{}' running command: {}".format(
+                            repr(e), mount_command
+                        )
+                    )
+            if os.path.exists("/mnt/chromeos"):
+                # We're on ChromeOS
+                if os.path.exists("/mnt/chromeos/removable/CIRCUITPY/"):
+                    device_dir = "/mnt/chromeos/removable/CIRCUITPY/"
+                else:
+                    m = _(
+                        "If your Circuit Python device is plugged in,"
+                        + ' you need to "Share with Linux" on the CIRCUITPY drive'
+                        + ' in the "Files" app then restart Mu.'
+                    )
+                    self.view.show_message(m)
+
         elif os.name == "nt":
             # We're on Windows.
 
@@ -184,6 +278,34 @@ class CircuitPythonMode(MicroPythonMode):
                 self.view.show_message(m, info.format(wd))
                 self.connected = False
             return wd
+
+    def compatible_board(self, port):
+        """Use adafruit_board_toolkit to find out whether a board is running
+        CircuitPython. The toolkit sees if the CDC Interface name is appropriate.
+        """
+
+        pid = port.productIdentifier()
+        vid = port.vendorIdentifier()
+        manufacturer = port.manufacturer()
+        serial_number = port.serialNumber()
+        port_name = self.port_path(port.portName())
+
+        # Find all the CircuitPython REPL comports,
+        # and see if any of their device names match the one passed in.
+        for comport in circuitpython_serial.repl_comports():
+            if comport.device == port_name:
+                return Device(
+                    vid,
+                    pid,
+                    port_name,
+                    serial_number,
+                    manufacturer,
+                    self.name,
+                    self.short_name,
+                    "CircuitPython board",
+                )
+        # No match.
+        return None
 
     def api(self):
         """

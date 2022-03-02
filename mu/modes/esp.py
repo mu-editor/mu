@@ -33,18 +33,31 @@ class ESPMode(MicroPythonMode):
     """
 
     name = _("ESP MicroPython")
+    short_name = "esp"
+    board_name = "ESP8266/ESP32"
     description = _("Write MicroPython on ESP8266/ESP32 boards.")
     icon = "esp"
     fs = None
 
-    # There are many boards which use ESP microcontrollers but they often use
-    # the same USB / serial chips (which actually define the Vendor ID and
-    # Product ID for the connected devices.
+    # The below list defines the supported devices, however, many
+    # devices are using the exact same FTDI USB-interface, with vendor
+    # ID 0x403 without reporting their own VID/PID
+
+    # In some instances we can recognize the device not on VID/PID,
+    # but on manufacturer ID, that's what the third column is for.
+    # These more specific device specifications, should be listed
+    # before the generic FTDI VID/PID's
     valid_boards = [
-        # VID  , PID
-        (0x1A86, 0x7523),  # HL-340
-        (0x10C4, 0xEA60),  # CP210x
-        (0x0403, 0x6015),  # Sparkfun ESP32 VID, PID
+        # VID  , PID,    Manufacturer string, Device name
+        (0x1A86, 0x7523, None, "HL-340"),
+        (0x10C4, 0xEA60, None, "CP210x"),
+        (0x0403, 0x6001, "M5STACK Inc.", "M5Stack ESP32 device"),
+        (0x0403, 0x6001, None, None),  # FT232/FT245 (XinaBox CW01, CW02)
+        (0x0403, 0x6010, None, None),  # FT2232C/D/L/HL/Q (ESP-WROVER-KIT)
+        (0x0403, 0x6011, None, None),  # FT4232
+        (0x0403, 0x6014, None, None),  # FT232H
+        (0x0403, 0x6015, None, None),  # FT X-Series (Sparkfun ESP32)
+        (0x0403, 0x601C, None, None),  # FT4222H
     ]
 
     def actions(self):
@@ -57,16 +70,18 @@ class ESPMode(MicroPythonMode):
                 "name": "run",
                 "display_name": _("Run"),
                 "description": _(
-                    "Run your code directly on the ESP8266/ESP32"
+                    "Run your code directly on the {board_name}"
                     " via the REPL."
-                ),
+                ).format(board_name=self.board_name),
                 "handler": self.run,
                 "shortcut": "F5",
             },
             {
                 "name": "files",
                 "display_name": _("Files"),
-                "description": _("Access the file system on ESP8266/ESP32."),
+                "description": _(
+                    "Access the file system on {board_name}."
+                ).format(board_name=self.board_name),
                 "handler": self.toggle_files,
                 "shortcut": "F4",
             },
@@ -74,8 +89,8 @@ class ESPMode(MicroPythonMode):
                 "name": "repl",
                 "display_name": _("REPL"),
                 "description": _(
-                    "Use the REPL to live-code on the " "ESP8266/ESP32."
-                ),
+                    "Use the REPL to live-code on the {board_name}."
+                ).format(board_name=self.board_name),
                 "handler": self.toggle_repl,
                 "shortcut": "Ctrl+Shift+I",
             },
@@ -173,8 +188,8 @@ class ESPMode(MicroPythonMode):
         python_script = tab.text().split("\n")
         if not self.repl:
             self.toggle_repl(None)
-        if self.repl:
-            self.view.repl_pane.send_commands(python_script)
+        if self.repl and self.connection:
+            self.connection.send_commands(python_script)
 
     def toggle_files(self, event):
         """
@@ -209,11 +224,13 @@ class ESPMode(MicroPythonMode):
         """
 
         # Find serial port the ESP8266/ESP32 is connected to
-        device_port, serial_number = self.find_device()
+        device = self.editor.current_device
 
         # Check for MicroPython device
-        if not device_port:
-            message = _("Could not find an attached ESP8266/ESP32.")
+        if not device:
+            message = _("Could not find an attached {board_name}").format(
+                board_name=self.board_name
+            )
             information = _(
                 "Please make sure the device is plugged "
                 "into this computer.\n\nThe device must "
@@ -226,7 +243,7 @@ class ESPMode(MicroPythonMode):
             self.view.show_message(message, information)
             return
         self.file_manager_thread = QThread(self)
-        self.file_manager = FileManager(device_port)
+        self.file_manager = FileManager(device.port)
         self.file_manager.moveToThread(self.file_manager_thread)
         self.file_manager_thread.started.connect(self.file_manager.on_start)
 
@@ -237,7 +254,9 @@ class ESPMode(MicroPythonMode):
         else:
             path = self.workspace_dir()
         self.fs = self.view.add_filesystem(
-            path, self.file_manager, _("ESP board")
+            path,
+            self.file_manager,
+            _("{board_name} board").format(board_name=self.board_name),
         )
         self.fs.set_message.connect(self.editor.show_status_message)
         self.fs.set_warning.connect(self.view.show_message)
@@ -259,3 +278,20 @@ class ESPMode(MicroPythonMode):
         """
         self.set_buttons(files=True)
         super().on_data_flood()
+
+    def deactivate(self):
+        """
+        Invoked whenever the mode is deactivated.
+        """
+        super().deactivate()
+        if self.fs:
+            self.remove_fs()
+
+    def device_changed(self, new_device):
+        """
+        Invoked when the user changes device.
+        """
+        super().device_changed(new_device)
+        if self.fs:
+            self.remove_fs()
+            self.add_fs()

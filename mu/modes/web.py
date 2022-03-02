@@ -19,11 +19,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import logging
 import webbrowser
-import signal
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, FLASK_APIS
 from mu.resources import load_icon
 from mu.logic import read_and_decode
+from ..virtual_environment import venv
 
 
 logger = logging.getLogger(__name__)
@@ -56,6 +56,7 @@ class WebMode(BaseMode):
     """
 
     name = _("Web")
+    short_name = "web"
     description = _('Build simple websites with the "Flask" web framework.')
     icon = "web"
     runner = None
@@ -165,14 +166,38 @@ class WebMode(BaseMode):
             # If needed, save the script.
             if tab.isModified():
                 self.editor.save_tab_to_file(tab)
+            # Check for template files.
+            template_path = os.path.join(
+                os.path.dirname(os.path.abspath(tab.path)), "templates"
+            )
+            if not os.path.isdir(template_path):
+                # Oops... show a helpful message and stop.
+                msg = _("Cannot find template directory!")
+                info = _(
+                    "To serve your web application, there needs to be a "
+                    "'templates' directory in the same place as your web "
+                    "application's Python code. Please fix this and try "
+                    "again. (Hint: Mu was expecting the `templates` directory "
+                    "to be here: " + template_path + ")"
+                )
+                self.view.show_message(msg, info)
+                self.stop_server()
+                return
             logger.debug(tab.text())
             envars = self.editor.envars
-            envars.append(("FLASK_APP", os.path.basename(tab.path)))
-            envars.append(("FLASK_ENV", "development"))
+            envars["FLASK_APP"] = os.path.basename(tab.path)
+            envars["FLASK_ENV"] = "development"
+            envars["LC_ALL"] = "en_GB.UTF8"
+            envars["LANG"] = "en_GB.UTF8"
             args = ["-m", "flask", "run"]
             cwd = os.path.dirname(tab.path)
             self.runner = self.view.add_python3_runner(
-                "", cwd, interactive=False, envars=envars, python_args=args
+                venv.interpreter,
+                "",
+                cwd,
+                interactive=False,
+                envars=envars,
+                python_args=args,
             )
             logger.debug("Starting Flask app.")
             self.runner.process.waitForStarted()
@@ -183,16 +208,7 @@ class WebMode(BaseMode):
         """
         logger.debug("Stopping Flask app.")
         if self.runner:
-            try:
-                pid = self.runner.process.processId()
-                os.kill(pid, signal.SIGINT)
-            except Exception as ex:
-                # Couldn't kill child process. Perhaps it's already finished
-                # because it encountered an error. In any case, log this for
-                # debugging purposes.
-                logger.error("Problem stopping local web server.")
-                logger.error(ex)
-            self.runner.process.waitForFinished()
+            self.runner.stop_process()
             self.runner = None
         self.view.remove_python_runner()
 

@@ -3,7 +3,6 @@
 Tests for the flask based web mode.
 """
 import os
-import signal
 from mu.modes.web import WebMode, CODE_TEMPLATE
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, FLASK_APIS
 from unittest import mock
@@ -137,6 +136,23 @@ def test_start_server_not_python_file():
     assert view.add_python3_runner.call_count == 0
 
 
+def test_start_server_no_templates():
+    """
+    If the user attempts to start the server from a location without a
+    templates directory, then complain and abort.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab.path = "foo.py"
+    wm = WebMode(editor, view)
+    wm.stop_server = mock.MagicMock()
+    with mock.patch("os.path.isdir", return_value=False):
+        wm.start_server()
+    assert view.show_message.call_count == 1
+    wm.stop_server.assert_called_once_with()
+    assert view.add_python3_runner.call_count == 0
+
+
 def test_start_server():
     """
     The server is started and stored as the runner associated with the mode.
@@ -147,7 +163,8 @@ def test_start_server():
     view.current_tab.isModified.return_value = True
     wm = WebMode(editor, view)
     wm.stop_server = mock.MagicMock()
-    wm.start_server()
+    with mock.patch("os.path.isdir", return_value=True):
+        wm.start_server()
     assert view.add_python3_runner.call_count == 1
     view.add_python3_runner().process.waitForStarted.assert_called_once_with()
 
@@ -161,36 +178,30 @@ def test_stop_server():
     view = mock.MagicMock()
     wm = WebMode(editor, view)
     mock_runner = mock.MagicMock()
-    mock_runner.process.processId.return_value = 666  # ;-)
     wm.runner = mock_runner
-    with mock.patch("os.kill") as mock_kill:
-        wm.stop_server()
-        mock_kill.assert_called_once_with(666, signal.SIGINT)
-    mock_runner.process.waitForFinished.assert_called_once_with()
+    wm.stop_server()
+    mock_runner.stop_process.assert_called_once_with()
     assert wm.runner is None
     view.remove_python_runner.assert_called_once_with()
 
 
-def test_stop_server_with_error():
+def test_start_server_no_duplicate_envars():
     """
-    If killing the server's child process encounters a problem (perhaps the
-    process is already dead), then log this and tidy up.
+    Check that we don't add repeated envars to the Python3 Environment.
     """
     editor = mock.MagicMock()
+    editor.envars = {}
     view = mock.MagicMock()
+    view.current_tab.path = "foo.py"
+    view.current_tab.isModified.return_value = True
     wm = WebMode(editor, view)
-    mock_runner = mock.MagicMock()
-    mock_runner.process.processId.return_value = 666  # ;-)
-    wm.runner = mock_runner
-    with mock.patch(
-        "os.kill", side_effect=Exception("Bang")
-    ) as mock_kill, mock.patch("mu.modes.web.logger.error") as mock_log:
-        wm.stop_server()
-        mock_kill.assert_called_once_with(666, signal.SIGINT)
-        assert mock_log.call_count == 2
-    mock_runner.process.waitForFinished.assert_called_once_with()
-    assert wm.runner is None
-    view.remove_python_runner.assert_called_once_with()
+    wm.stop_server = mock.MagicMock()
+    with mock.patch("os.path.isdir", return_value=True):
+        wm.start_server()
+    assert len(editor.envars) == 4
+    with mock.patch("os.path.isdir", return_value=True):
+        wm.start_server()
+    assert len(editor.envars) == 4
 
 
 def test_stop():

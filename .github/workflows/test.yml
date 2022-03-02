@@ -1,0 +1,168 @@
+name: Run tests
+
+on:
+  push:
+    branches: '*'
+  pull_request:
+    branches: '*'
+
+jobs:
+  test:
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-latest, macos-10.15, macos-latest, windows-2016, windows-latest]
+        python-version: ['3.5', '3.6', '3.7', '3.8']
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    name: Test Py ${{ matrix.python-version }} - ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python info
+        run: |
+          python -c "import sys; print(sys.version)"
+          python -c "import platform, struct; print(platform.machine(), struct.calcsize('P') * 8)"
+          python -c "import sys; print(sys.executable)"
+          python -m pip --version
+          pip --version
+          pip config list
+          pip freeze
+      - name: Prepare Ubuntu
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxkbcommon-x11-0 xvfb
+      - name: Install Mu dependencies
+        run: |
+          pip install .[dev]
+          pip list
+        timeout-minutes: 10
+      - name: Run tests
+        if: runner.os == 'Linux'
+        run: xvfb-run make check
+        timeout-minutes: 5
+      - name: Run tests
+        if: runner.os != 'Linux'
+        run: python make.py check
+        timeout-minutes: 5
+
+  test-arm:
+    runs-on: ubuntu-latest
+    name: Test Py 3.7 - arm-debian-buster
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: 'linux/arm64,linux/arm/v7,linux/arm/v6'
+      - name: Check Debian image info
+        uses: docker://multiarch/debian-debootstrap:armhf-buster
+        with:
+          args: /bin/bash -c "uname -a && cat /etc/os-release"
+      - name: Install dependencies and run tests
+        uses: docker://multiarch/debian-debootstrap:armhf-buster
+        with:
+          args: >
+            bash -c "
+              apt-get update &&
+              apt-get install -y python3 python3-pip python3-virtualenv &&
+              apt-get install -y python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg python3-pyqt5.qtchart &&
+              apt-get install -y libxmlsec1-dev libxml2 libxml2-dev libxkbcommon-x11-0 libatlas-base-dev &&
+              apt-get install -y git xvfb &&
+              python3 -m virtualenv venv --python=python3 --system-site-packages &&
+              source venv/bin/activate &&
+              python -c \"import platform, struct, sys; print(platform.machine(), struct.calcsize('P') * 8, sys.version)\" &&
+              python -m pip --version &&
+              python -m pip config set global.extra-index-url https://www.piwheels.org/simple &&
+              python -m pip config list &&
+              python -m pip list &&
+              python -m pip install .[dev] &&
+              python -m pip list &&
+              QT_QPA_PLATFORM=\"offscreen\" &&
+              xvfb-run python make.py check &&
+              echo 'Finished successfully! :)'
+            "
+
+  test-pios:
+    name: Test Raspbian ${{ matrix.docker-tag }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        docker-tag: ['stretch-2018-03-13', 'buster-2021-03-25']
+      fail-fast: false
+    services:
+      rpios:
+        # Custom made images for Mu: https://github.com/carlosperate/docker-qemu-rpi-os
+        image: ghcr.io/carlosperate/qemu-rpi-os-lite:${{ matrix.docker-tag }}-mu
+        ports: ["5022:5022"]
+    steps:
+      # This delay is a bit hacky, but can't find a way to signal when OS is ready
+      - name: Wait 2m30s for the docker image to start up QEMU and Raspberry Pi OS
+        run: sleep 150
+      - name: Clone project & setup it as the bash entry directory
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          script: |
+            mkdir ~/mu && cd ~/mu
+            git init
+            git remote add origin ${{ github.server_url }}/${{ github.repository }}.git
+            git fetch --progress --depth=1 origin ${{ github.sha }}
+            git checkout --progress FETCH_HEAD
+            echo "cd ~/mu" > ~/.bashrc_new && cat ~/.bashrc >> ~/.bashrc_new
+            rm ~/.bashrc && mv ~/.bashrc_new ~/.bashrc
+      - name: Install Mu extra apt dependencies
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          # Purposely skip apt update, install version from image stale index
+          script: sudo apt-get install -y python3-virtualenv
+      - name: Create venv and install Python dependencies
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          command_timeout: 20m
+          script: |
+            python3 -m virtualenv ~/mu/.venv -v --python=python3 --system-site-packages
+            echo "source ~/mu/.venv/bin/activate" > ~/.bashrc_new && cat ~/.bashrc >> ~/.bashrc_new
+            rm ~/.bashrc && mv ~/.bashrc_new ~/.bashrc
+            source .venv/bin/activate
+            python -m pip list
+            python -m pip install ."[dev]"
+      - name: Environment info
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          script: |
+            uname -a
+            cat /etc/os-release
+            python3 -c "import platform as p, sys; print(sys.executable, p.architecture(), p.machine(), sys.version, sep='\n')"
+            python3 -m pip --version
+            python3 -m pip list
+      - name: Run tests
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          command_timeout: 25m
+          script: xvfb-run python make.py check

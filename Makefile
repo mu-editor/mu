@@ -15,8 +15,9 @@ all:
 	@echo "make publish-test - publish the project to PyPI test instance."
 	@echo "make publish-live - publish the project to PyPI production."
 	@echo "make docs - run sphinx to create project documentation."
-	@echo "make translate - create a messages.pot file for translations."
-	@echo "make translateall - as with translate but for all API strings."
+	@echo "make translate_begin LANG=xx_XX - create/update a mu.po file for translation."
+	@echo "make translate_done LANG=xx_XX - compile translation strings in mu.po to mu.mo file."
+	@echo "make translate_test LANG=xx_XX - run translate_done and launch Mu in the given LANG."
 	@echo "make win32 - create a 32bit Windows installer for Mu."
 	@echo "make win64 - create a 64bit Windows installer for Mu."
 	@echo "make macos - create a macOS native application for Mu."
@@ -27,18 +28,18 @@ clean:
 	rm -rf dist
 	rm -rf .coverage
 	rm -rf .eggs
+	rm -rf *.egg-info
 	rm -rf docs/_build
 	rm -rf .pytest_cache
 	rm -rf lib
-	rm -rf pynsist_pkgs
-	rm -rf pynsist_tkinter*
-	rm -rf macOS
 	rm -rf *.mp4
 	rm -rf .git/avatar/*
+	rm -rf venv-pup
 	find . \( -name '*.py[co]' -o -name dropin.cache \) -delete
 	find . \( -name '*.bak' -o -name dropin.cache \) -delete
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
 	find . | grep -E "(__pycache__)" | xargs rm -rf
+	rm -f ./mu/locale/messages.pot
 
 run: clean
 ifeq ($(VIRTUAL_ENV),)
@@ -51,22 +52,20 @@ flake8:
 	flake8
 
 test: clean
-	pytest --random-order
+	export LANG=en_GB.utf8
+	pytest -v --random-order
 
 coverage: clean
-	pytest --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
+	export LANG=en_GB.utf8
+	pytest -v --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
 
-tidy: clean
-	@echo "\nTidying code with black..."
-	black -l 79 setup.py 
-	black -l 79 win_installer.py
-	black -l 79 make.py
-	black -l 79 mu 
-	black -l 79 package 
-	black -l 79 tests
-	black -l 79 utils 
+tidy: 
+	python make.py tidy
 
-check: clean tidy flake8 coverage
+black:
+	python make.py black
+
+check: clean black flake8 coverage
 
 dist: check
 	@echo "\nChecks pass, good to package..."
@@ -86,30 +85,43 @@ docs: clean
 	@echo file://`pwd`/docs/_build/html/index.html
 	@echo "\n"
 
-translate:
-	find . \( -name _build -o -name var -o -path ./docs -o -path ./mu/contrib -o -path ./utils -o -path ./mu/modes/api \) -type d -prune -o -name '*.py' -print0 | $(XARGS) pygettext
-	@echo "\nNew messages.pot file created."
-	@echo "Remember to update the translation strings found in the locale directory."
+translate_begin:
+	@python make.py translate_begin LANG=$(LANG)
 
-translateall:
-	pygettext mu/* mu/debugger/* mu/modes/* mu/resources/*
-	@echo "\nNew messages.pot file created."
-	@echo "Remember to update the translation strings found in the locale directory."
+translate_done:
+	@python make.py translate_done LANG=$(LANG)
+
+translate_test:
+	@python make.py translate_test LANG=$(LANG)
 
 win32: check
-	@echo "\nBuilding 32bit Windows installer."
-	python win_installer.py 32 setup.py
+	@echo "\nBuilding 32bit Windows MSI installer."
+	python make.py win32
 
 win64: check
-	@echo "\nBuilding 64bit Windows installer."
-	python win_installer.py 64 setup.py
+	@echo "\nBuilding 64bit Windows MSI installer."
+	python make.py win64
 
 macos: check
+	@echo "\nFetching wheels."
+	python -m mu.wheels
 	@echo "\nPackaging Mu into a macOS native application."
-	python setup.py macos --support-pkg=https://github.com/mu-editor/mu_portable_python_macos/releases/download/0.0.6/python3-reduced.tar.gz
+	python -m virtualenv venv-pup
+	# Don't activate venv-pup because:
+	# 1. Not really needed.
+	# 2. Previously active venv would be "gone" on venv-pup deactivation.
+	./venv-pup/bin/pip install pup
+	# HACK
+	# 1. Use a custom dmgbuild to address `hdiutil detach` timeouts.
+	./venv-pup/bin/pip uninstall -y dmgbuild
+	./venv-pup/bin/pip install git+https://github.com/tmontes/dmgbuild.git@mu-pup-ci-hack
+	./venv-pup/bin/pup package --launch-module=mu --nice-name="Mu Editor" --icon-path=./package/icons/mac_icon.icns --license-path=./LICENSE .
+	rm -r venv-pup
+	ls -la ./build/pup/
+	ls -la ./dist/
 
 video: clean
 	@echo "\nFetching contributor avatars."
 	python utils/avatar.py
 	@echo "\nMaking video of source commits."
-	gource --user-image-dir .git/avatar/ --title "The Making of Mu" --logo ~/Pictures/icon.png --font-size 24 --file-idle-time 0 --key -1280x720 -s 0.1 --auto-skip-seconds .1 --multi-sampling --stop-at-end --hide mouse,progress --output-ppm-stream - --output-framerate 30 | ffmpeg -y -r 30 -f image2pipe -vcodec ppm -i - -b 65536K movie.mp4
+	gource --user-image-dir .git/avatar/ --title "The Making of Mu" --logo docs/icon_small.png --font-size 24 --file-idle-time 0 --key -1280x720 -s 0.1 --auto-skip-seconds .1 --multi-sampling --stop-at-end --hide mouse,progress --output-ppm-stream - --output-framerate 30 | ffmpeg -y -r 30 -f image2pipe -vcodec ppm -i - -b 65536K movie.mp4

@@ -30,6 +30,7 @@ into your virtualenv with::
 
     * ``[tests]`` specifies the testing dependencies, needed by ``make test``.
     * ``[docs]`` specifies the doc building dependencies, needed by ``make docs``.
+    * ``[i18n]`` specifies the translation dependencies, needed by ``make translate_*``.
     * ``[package]`` specifies the packaging dependencies needed by ``make win32``,
       ``make win64``, ``make macos``, or ``make dist``.
 
@@ -88,22 +89,27 @@ working development environment:
 
     sudo apt-get install python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg python3-dev python3-gpiozero python3-pgzero libxmlsec1-dev libxml2 libxml2-dev
 
-2. Create a virtualenv that uses Python 3 and allows the virtualenv access
+2. If you are running Raspbian Buster or newer you can also install this
+   optional package::
+   
+    sudo apt-get install python3-pyqt5.qtchart
+
+3. Create a virtualenv that uses Python 3 and allows the virtualenv access
    to the packages installed on your system via the ``--system-site-packages``
    flag::
 
     sudo pip3 install virtualenv
     virtualenv -p /usr/bin/python3 --system-site-packages ~/mu-venv
 
-3. Activate the virtual environment ::
+4. Activate the virtual environment ::
 
     source ~/mu-venv/bin/activate
 
-4. Clone mu::
+5. Clone mu::
 
     (mu-venv) $ git clone https://github.com/mu-editor/mu.git ~/mu-source
 
-5. With the virtualenv enabled, pip install the Python packages for the
+6. With the virtualenv enabled, pip install the Python packages for the
    Raspberry Pi with::
 
     (mu-venv) $ cd ~/mu-source
@@ -174,8 +180,7 @@ code coverage.)
 .. warning::
 
     In order to use the MicroPython REPL via USB serial you may need to add
-    yourself to the ``dialout`` group on Linux, or, if you're on some versions
-    of Windows, install the `Windows serial driver <https://os.mbed.com/handbook/Windows-serial-configuration>`_.
+    yourself to the ``dialout`` group on Linux.
 
 Before Submitting
 +++++++++++++++++

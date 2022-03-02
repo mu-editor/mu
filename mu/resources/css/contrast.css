@@ -38,8 +38,8 @@ QListWidget, QTreeView, QTreeView::branch {
 }
 
 QTextEdit, QPlainTextEdit, QLineEdit {
-    background-color: white;
-    color: black;
+    background-color: black;
+    color: white;
     border: 2px solid white;
 }
 
@@ -123,6 +123,11 @@ QStatusBar QLabel {
     margin: 0;
 }
 
+#DeviceSelector QComboBox {
+    padding: 4px 25px 4px 3px;
+    margin: 2px;
+}
+
 #AdministrationLabel:hover, #AdministrationLabel:focus {
     background: #666;
 }
@@ -179,6 +184,10 @@ QPushButton:pressed {
     background: #111;
 }
 
+QPushButton:disabled {
+    background:#aaa;
+}
+
 QAbstractScrollArea::corner {
     border-top: 1px solid #555;    /* Border */
     border-left: 1px solid #555;   /* Border */
@@ -226,7 +235,7 @@ QScrollBar::sub-line:horizontal {
     border-top: 1px solid #555;    /* Border */
     border-right: 1px solid #555;  /* Border */
     subcontrol-position: left;
-    image: url(images:scroll-left.png);
+    image: url(images:scroll-left.svg);
 }
 
 QScrollBar::add-line:horizontal, QAbstractScrollArea::corner {
@@ -236,19 +245,19 @@ QScrollBar::add-line:horizontal, QAbstractScrollArea::corner {
 }
 
 QScrollBar::add-line:horizontal {
-    image: url(images:scroll-right.png);
+    image: url(images:scroll-right.svg);
 }
 
 QScrollBar::sub-line:vertical {
     border-left: 1px solid #555;   /* Border */
     border-bottom: 1px solid #555; /* Border */
-    image: url(images:scroll-up.png);
+    image: url(images:scroll-up.svg);
 }
 
 QScrollBar::add-line:vertical {
     border-left: 1px solid #555;   /* Border */
     border-top: 1px solid #555;    /* Border */
-    image: url(images:scroll-down.png);
+    image: url(images:scroll-down.svg);
 }
 
 QDockWidget::title {
@@ -262,12 +271,15 @@ QDockWidget > QWidget {
     border-bottom: 1px solid #555;   /* Border */
 }
 
-QMainWindow::separator:horizontal {
-    width: 2px;
+QMainWindow::separator:horizontal,
+QMainWindow::separator:vertical {
+    width: 8px;
+    background: #333;
 }
 
-QMainWindow::separator:vertical {
-    height: 2px;
+QMainWindow::separator:horizontal:hover,
+QMainWindow::separator:vertical:hover {
+    background: white;
 }
 
 QHeaderView::section {
@@ -280,9 +292,35 @@ QTreeView::item, QListWidget::item {
 }
 
 QTreeView::branch:has-children:open {
-    image: url(images:scroll-down.png);
+    image: url(images:scroll-down.svg);
 }
 
 QTreeView::branch:has-children:closed {
-    image: url(images:scroll-right.png);
+    image: url(images:scroll-right.svg);
+}
+
+QComboBox {
+    padding: 2px;
+    border: 1px solid white;
+}
+
+QComboBox::drop-down {
+    border: 0;
+    width: 15px;
+    image: unset;
+    padding-right: 2px;
+}
+
+QComboBox::down-arrow {
+    image: url(images:dropdown-arrow-contrast.svg);
+}
+
+QGroupBox {
+    border: 1px solid white;
+    margin-top: 1ex; /* leave space at the top for the title */
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 8px;
 }

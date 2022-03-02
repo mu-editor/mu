@@ -21,34 +21,62 @@ with open(os.path.join(base_dir, "CHANGES.rst"), encoding="utf8") as f:
 
 
 install_requires = [
-    'PyQt5==5.12.1;"arm" not in platform_machine',
-    'QScintilla==2.11.1;"arm" not in platform_machine',
-    'PyQtChart==5.12;"arm" not in platform_machine',
+    #
+    # The core 'install_requires' should only be things
+    # which are needed for the main editor to function.
+    #
+    "PyQt5==5.13.2"
+    + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+    "QScintilla==2.11.3"
+    + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+    "PyQtChart==5.13.1"
+    + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+    # FIXME: jupyter-client added for Py3.5 compatibility, to be dropped after
+    # Mu v1.1 release. So, qtconsole < 5 and jupyter-client < 6.2 (issue #1444)
+    "jupyter-client>=4.1,<6.2",
+    # FIXME: ipykernel max added for macOS 10.13 compatibility, min taken from
+    # qtconsole 4.7.7. Full line can be removed after Mu v1.1 release.
+    # Dependency mirrored for user venv in mu/wheels/__init__.py
+    "ipykernel>=4.1,<6",
+    # FIXME: ipykernel<6 depends on ipython_genutils, but it isn't explicitly
+    # declared as a dependency. It also depends on traitlets, which
+    # incidentally brought ipython_genutils, but in v5.1 it was dropped, so as
+    # a workaround we need to manually specify it here.
+    "ipython_genutils>=0.2.0",
+    "qtconsole==4.7.7",
+    #
+    # adafruit-board-toolkit is used to find serial ports and help identify
+    # CircuitPython boards in the CircuitPython mode.
+    "adafruit-board-toolkit~=1.1",
+    "pyserial~=3.5",
+    "nudatus>=0.0.3",
     # `flake8` is actually a testing/packaging dependency that, among other
     # packages, brings in `pycodestyle` and `pyflakes` which are runtime
     # dependencies. For the sake of "locality", it is being declared here,
     # though. Regarding these packages' versions, please refer to:
     # http://flake8.pycqa.org/en/latest/faq.html#why-does-flake8-use-ranges-for-its-dependencies
-    "flake8 >= 3.7.8",
-    "pycodestyle >= 2.5.0, < 2.6.0",
-    "pyflakes >= 2.1.0, < 2.2.0",
-    "pyserial==3.4",
-    "qtconsole==4.4.3",
-    "pgzero==1.2",
+    "flake8 >= 3.8.3",
+    "black>=19.10b0;python_version>'3.5'",
     "appdirs>=1.4.3",
     "semver>=2.8.0",
-    "nudatus>=0.0.3",
-    'black>=18.9b0;python_version > "3.5"',
-    "Flask==1.0.2",
+    #
+    # Needed for creating the runtime virtual environment
+    #
+    "virtualenv>=16.7.6",
+    #
+    # Needed for packaging
+    #
+    "wheel",
 ]
 
 
 extras_require = {
     "tests": [
-        "pytest",
+        "pytest>=4.6",
         "pytest-cov",
         "pytest-random-order>=1.0.0",
         "pytest-faulthandler",
+        "pytest-timeout",
         "coverage",
     ],
     "docs": ["sphinx"],
@@ -56,12 +84,8 @@ extras_require = {
         # Wheel building and PyPI uploading
         "wheel",
         "twine",
-        # Windows native packaging (see win_installer.py).
-        'requests==2.21.0;platform_system == "Windows"',
-        'yarg==0.1.9;platform_system == "Windows"',
-        # macOS native packaging (see Makefile)
-        'briefcase==0.2.9;platform_system == "Darwin"',
     ],
+    "i18n": ["babel"],
     "utils": ["scrapy", "beautifulsoup4", "requests"],
 }
 
@@ -69,6 +93,7 @@ extras_require["dev"] = (
     extras_require["tests"]
     + extras_require["docs"]
     + extras_require["package"]
+    + extras_require["i18n"]
 )
 
 extras_require["all"] = list(
@@ -93,9 +118,12 @@ setup(
         "mu.debugger",
         "mu.interface",
         "mu.modes.api",
+        "mu.wheels",
     ],
+    python_requires=">=3.5,<3.9",
     install_requires=install_requires,
     extras_require=extras_require,
+    package_data={"mu.wheels": ["*.whl", "*.zip"]},
     include_package_data=True,
     zip_safe=False,
     classifiers=[
@@ -113,6 +141,8 @@ setup(
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Education",
         "Topic :: Games/Entertainment",
         "Topic :: Software Development",
@@ -122,8 +152,4 @@ setup(
         "Topic :: Text Editors :: Integrated Development Environments (IDE)",
     ],
     entry_points={"console_scripts": ["mu-editor = mu.app:run"]},
-    options={  # Briefcase packaging options for OSX
-        "app": {"formal_name": "mu-editor", "bundle": "mu.codewith.editor"},
-        "macos": {"icon": "package/icons/mac_icon"},
-    },
 )
