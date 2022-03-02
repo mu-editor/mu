@@ -1,16 +1,17 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) 2018 ORGANIZATION
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+# Japanese translations for PROJECT.
+# Copyright (C) 2022 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-01 21:42+0000\n"
-"PO-Revision-Date: 2018-07-13 05:42+0900\n"
+"POT-Creation-Date: 2022-02-13 12:39+0900\n"
+"PO-Revision-Date: 2022-02-13 13:09+0900\n"
 "Last-Translator: Minoru Inachi\n"
 "Language: ja\n"
-"Language-Team: \n"
+"Language-Team: ja <LL@li.org>\n"
 "Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -21,13 +22,17 @@ msgstr ""
 msgid ""
 "Connection timed out. Is your machine slow or busy? Free up some of the "
 "machine's resources and try again."
-msgstr "接続がタイムアウトしました。マシンが遅いかビジーになっているようです。マシンのリソースを解放して再度試しください。"
+msgstr ""
+"接続がタイムアウトしました。マシンが遅いかビジーになっているようです。"
+"マシンのリソースを解放して再度試してください。"
 
 #: mu/debugger/client.py:132
 msgid ""
 "Could not find localhost.\n"
 "Ensure you have '127.0.0.1 localhost' in your /etc/hosts file."
-msgstr "localhostが見つかりません。/etc/hosts ファイルに '127.0.0.1 localhost' があるか確認してください。"
+msgstr ""
+"localhost が見つかりません。\n"
+"/etc/hosts ファイルに '127.0.0.1 localhost' があるか確認してください。"
 
 #: mu/interface/dialogs.py:75
 msgid "Select Mode"
@@ -37,19 +42,23 @@ msgstr "モードの選択"
 msgid ""
 "Please select the desired mode then click \"OK\". Otherwise, click "
 "\"Cancel\"."
-msgstr "使うモードを選択して \"OK\" をクリックしてください。モードを変更しない場合は \"CANCEL\" をクリックしてください。"
+msgstr ""
+"使うモードを選択して \"OK\" をクリックしてください。モードを変更しない場合は "
+"\"CANCEL\" をクリックしてください。"
 
 #: mu/interface/dialogs.py:99
 msgid ""
 "Change mode at any time by clicking the \"Mode\" button containing Mu's "
 "logo."
-msgstr "Mu のロゴのついた \"モード\" ボタンをクリックすることにより、いつでもモードを変更できます。"
+msgstr ""
+"Mu のロゴのついた \"モード\" ボタンをクリックすることにより、いつでもモードを変更できます。"
 
 #: mu/interface/dialogs.py:138
 msgid ""
 "When reporting a bug, copy and paste the content of the following log "
 "file."
-msgstr "バグの報告の際には、以下のログファイルの内容をコピー＆ペーストしてください。"
+msgstr ""
+"バグの報告の際には、以下のログファイルの内容をコピー＆ペーストしてください。"
 
 #: mu/interface/dialogs.py:162
 msgid ""
@@ -73,7 +82,9 @@ msgstr "転送の前に Python コードを縮小しますか？"
 msgid ""
 "Override the built-in MicroPython runtime with the following hex file "
 "(empty means use the default):"
-msgstr "組込みの MicroPython ランタイムを以下の hex ファイルで上書きする(空であればデフォルトのものを利用):"
+msgstr ""
+"組込みの MicroPython ランタイムを以下の hex ファイルで上書きする(空であれば"
+"デフォルトのものを利用):"
 
 #: mu/interface/dialogs.py:218
 msgid ""
@@ -83,23 +94,30 @@ msgid ""
 "Each separate package name should be on a new line. Packages are "
 "installed from PyPI (see: https://pypi.org/)."
 msgstr ""
+"以下に示すパッケージが Python 3 モードでインポートできます。パッケージを"
+"利用できなくするには、この一覧からパッケージを削除してください。\n"
+"\n"
+"各パッケージ名は改行してください。パッケージは PyPI からインストールされます"
+"(参照: https://pypi.org/)。"
 
 #: mu/interface/dialogs.py:239
 msgid "Automatically detect"
-msgstr ""
+msgstr "自動検出"
 
-#: mu/interface/dialogs.py:264
+#: mu/interface/dialogs.py:265
 msgid ""
 "Please select the language for Mu's user interface from the choices "
 "listed below. <strong>Restart Mu for these changes to take "
 "effect.</strong>"
 msgstr ""
+"Mu のユーザーインターフェイスの言語を以下の選択肢から選択してください。"
+"<strong>これらの変更を有効にするには、Muを再起動してください。</strong>"
 
-#: mu/interface/dialogs.py:295
+#: mu/interface/dialogs.py:296
 msgid "How to flash MicroPython to your device"
-msgstr ""
+msgstr "MicroPython をデバイスに転送する方法"
 
-#: mu/interface/dialogs.py:302
+#: mu/interface/dialogs.py:303
 msgid ""
 "&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. "
 "Download firmware from the <a href=\"https://micropython.org/download\" "
@@ -107,64 +125,89 @@ msgid ""
 " Connect your device<br/>&nbsp;4. Load the .bin file below using the "
 "'Browse' button<br/>&nbsp;5. Press 'Erase & write firmware'"
 msgstr ""
+"&nbsp;1. デバイスタイプを選択(ESP8266 または ESP32)<br />"
+"&nbsp;2. <a href=\"https://micropython.org/download\" style=\"color:#039be5;\">https://micropython.org/download</a> からファームウェアをダウンロード<br/>"
+"&nbsp;3. デバイスを接続<br/>"
+"&nbsp;4. 「ブラウズ」ボタンを使って .bin ファイルを選択<br/>"
+"&nbsp;5. 「ファームウェアの消去と転送」を押す"
 
-#: mu/interface/dialogs.py:334 mu/modes/web.py:82
+#: mu/interface/dialogs.py:326
+msgid "Device:"
+msgstr "デバイス:"
+
+#: mu/interface/dialogs.py:329
+msgid "Choose device type:"
+msgstr "デバイス種別の選択:"
+
+#: mu/interface/dialogs.py:333
+msgid "Firmware (.bin):"
+msgstr "ファームウェア(.bin):"
+
+#: mu/interface/dialogs.py:335 mu/modes/web.py:82
 msgid "Browse"
-msgstr ""
+msgstr "ブラウズ"
 
-#: mu/interface/dialogs.py:335
+#: mu/interface/dialogs.py:336
 msgid "Erase && write firmware"
-msgstr ""
+msgstr "ファームウェアの消去と転送"
 
-#: mu/interface/dialogs.py:509 mu/interface/main.py:1381
+#: mu/interface/dialogs.py:375
+msgid "Select MicroPython firmware (.bin)"
+msgstr "MicroPython ファームウェアの選択(.bin)"
+
+#: mu/interface/dialogs.py:377
+msgid "Firmware (*.bin)"
+msgstr "ファームウェア(.bin)"
+
+#: mu/interface/dialogs.py:510 mu/interface/main.py:1376
 msgid "Mu Administration"
-msgstr "Mu 管理"
+msgstr "Mu の管理"
 
-#: mu/interface/dialogs.py:523
+#: mu/interface/dialogs.py:524
 msgid "Current Log"
 msgstr "現在のログ"
 
-#: mu/interface/dialogs.py:527
+#: mu/interface/dialogs.py:528
 msgid "Python3 Environment"
 msgstr "Python3 環境"
 
-#: mu/interface/dialogs.py:534
+#: mu/interface/dialogs.py:535
 msgid "BBC micro:bit Settings"
 msgstr "BBC micro:bit 設定"
 
-#: mu/interface/dialogs.py:538
+#: mu/interface/dialogs.py:539
 msgid "Third Party Packages"
-msgstr ""
+msgstr "サードパーティパッケージ"
 
-#: mu/interface/dialogs.py:542
+#: mu/interface/dialogs.py:543
 msgid "ESP Firmware flasher"
-msgstr ""
+msgstr "ESP ファームウェア転送"
 
-#: mu/interface/dialogs.py:547
+#: mu/interface/dialogs.py:548
 msgid "Select Language"
-msgstr ""
+msgstr "言語の選択"
 
-#: mu/interface/dialogs.py:585
+#: mu/interface/dialogs.py:586
 msgid "Find / Replace"
 msgstr "検索 / 置換"
 
-#: mu/interface/dialogs.py:589
+#: mu/interface/dialogs.py:590
 msgid "Find:"
 msgstr "検索"
 
-#: mu/interface/dialogs.py:596
+#: mu/interface/dialogs.py:597
 msgid "Replace (optional):"
 msgstr "置換(オプション)"
 
-#: mu/interface/dialogs.py:602
+#: mu/interface/dialogs.py:603
 msgid "Replace all?"
 msgstr "すべて置換しますか？"
 
-#: mu/interface/dialogs.py:651
+#: mu/interface/dialogs.py:652
 msgid "Third Party Package Status"
-msgstr ""
+msgstr "サードパーティパッケージの状態"
 
-#: mu/interface/editor.py:319 mu/logic.py:1324
+#: mu/interface/editor.py:319 mu/logic.py:1327
 msgid "untitled"
 msgstr "無題"
 
@@ -234,11 +277,11 @@ msgstr "コードの間違いをチェックします。"
 
 #: mu/interface/main.py:154
 msgid "Tidy"
-msgstr ""
+msgstr "整形"
 
 #: mu/interface/main.py:155
 msgid "Tidy up the layout of your code."
-msgstr ""
+msgstr "コードのレイアウトを整形します。"
 
 #: mu/interface/main.py:159
 msgid "Help"
@@ -256,77 +299,75 @@ msgstr "終了"
 msgid "Quit Mu."
 msgstr "Mu を終了します。"
 
-#: mu/interface/main.py:275
+#: mu/interface/main.py:270
 msgid "Close file"
-msgstr ""
+msgstr "ファイルを閉じる"
 
-#: mu/interface/main.py:316
+#: mu/interface/main.py:311
 msgid "Mu {}"
 msgstr ""
 
-#: mu/interface/main.py:554
+#: mu/interface/main.py:549
 msgid "Copy selected text to REPL"
-msgstr ""
+msgstr "選択したテキストを REPL にコピー"
 
-#: mu/interface/main.py:617
-#, fuzzy
+#: mu/interface/main.py:612
 msgid "Filesystem on "
-msgstr "micro:bit のファイルシステム"
+msgstr "ファイルシステム: "
 
-#: mu/interface/main.py:668
+#: mu/interface/main.py:663
 msgid "Python3 data tuple"
 msgstr "Python3 データタプル"
 
-#: mu/interface/main.py:680
+#: mu/interface/main.py:675
 msgid "Python3 (Jupyter)"
 msgstr ""
 
-#: mu/interface/main.py:687
+#: mu/interface/main.py:682
 msgid "{} REPL"
 msgstr ""
 
-#: mu/interface/main.py:706
+#: mu/interface/main.py:701
 msgid "{} Plotter"
 msgstr "{} プロッター"
 
-#: mu/interface/main.py:756
+#: mu/interface/main.py:751
 msgid "Running: {}"
 msgstr "実行中: {}"
 
-#: mu/interface/main.py:805
+#: mu/interface/main.py:800
 msgid "Debug Inspector"
-msgstr "デバッグインスペクタ"
+msgstr "デバッグインスペクター"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:812
 msgid "Name"
 msgstr "名前"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:812
 msgid "Value"
 msgstr "値"
 
-#: mu/interface/main.py:855
+#: mu/interface/main.py:850
 msgid "(A list of {} items.)"
-msgstr "(項目 {} のリスト。)"
+msgstr "({} 項目のリスト。)"
 
-#: mu/interface/main.py:874
+#: mu/interface/main.py:869
 msgid "(A dict of {} items.)"
-msgstr "(項目 {} の辞書。)"
+msgstr "({} 項目の辞書。)"
 
-#: mu/interface/main.py:1057
+#: mu/interface/main.py:1052
 msgid "Mu"
 msgstr ""
 
-#: mu/interface/main.py:1368
+#: mu/interface/main.py:1363
 msgid "Mu's current mode of behaviour."
-msgstr "Mu の現在の動作モード。"
+msgstr "現在の Mu 動作モード。"
 
-#: mu/interface/main.py:1423
-#, fuzzy
+#: mu/interface/main.py:1418
 msgid "Detected new {} device: {}."
-msgstr "新規の {} デバイスを検出しました。"
+msgstr "新規の {} デバイスを検出しました: {}"
 
-#: mu/interface/main.py:1427 mu/logic.py:1616
+#: mu/interface/main.py:1422 mu/logic.py:1622
 msgid "Detected new {} device."
 msgstr "新規の {} デバイスを検出しました。"
 
@@ -339,38 +380,32 @@ msgid "File already exists"
 msgstr "ファイルが既にあります"
 
 #: mu/interface/panes.py:529
-#, fuzzy
 msgid "Copying '{}' to device."
-msgstr "micro:bit にコピー中。"
+msgstr "'{}' をデバイスにコピー中。"
 
 #: mu/interface/panes.py:538
-#, fuzzy
 msgid "'{}' successfully copied to device."
-msgstr "'{}' micro:bit へのコピーが成功しました。"
+msgstr "'{}' のデバイスへのコピーが成功しました。"
 
 #: mu/interface/panes.py:547
 msgid "Delete (cannot be undone)"
 msgstr "削除 (元に戻せません)"
 
 #: mu/interface/panes.py:553
-#, fuzzy
 msgid "Deleting '{}' from device."
-msgstr "micro:bit から '{}' を削除中。"
+msgstr "デバイスから '{}' を削除中。"
 
 #: mu/interface/panes.py:562
-#, fuzzy
 msgid "'{}' successfully deleted from device."
-msgstr "'{}' micro:bit から '{}' の削除が成功しました。"
+msgstr "'{}' をデバイスから削除するのに成功しました。"
 
 #: mu/interface/panes.py:595
-#, fuzzy
 msgid "Getting '{}' from device. Copying to '{}'."
-msgstr "micro:bit から '{}' を取得中。{} にコピー中。"
+msgstr "デバイスから '{}' を取得中。{} にコピー中。"
 
 #: mu/interface/panes.py:606
-#, fuzzy
 msgid "Successfully copied '{}' from the device to your computer."
-msgstr "micro:bit からコンピュータへの '{}' のコピーが成功しました。"
+msgstr "デバイスからコンピュータへの '{}' のコピーが成功しました。"
 
 #: mu/interface/panes.py:623
 msgid "Open in Mu"
@@ -378,7 +413,7 @@ msgstr "Mu で開く"
 
 #: mu/interface/panes.py:626
 msgid "Write to main.py on device"
-msgstr ""
+msgstr "main.py をデバイスに書き込む"
 
 #: mu/interface/panes.py:629
 msgid "Open"
@@ -386,52 +421,54 @@ msgstr "開く"
 
 #: mu/interface/panes.py:635
 msgid "Opening '{}'"
-msgstr "開き中 '{}'"
+msgstr "'{}' を読込み中"
 
 #: mu/interface/panes.py:678
-#, fuzzy
 msgid "Files on your device:"
-msgstr "コンピュータのファイル:"
+msgstr "デバイスのファイル:"
 
 #: mu/interface/panes.py:680
 msgid "Files on your computer:"
 msgstr "コンピュータのファイル:"
 
 #: mu/interface/panes.py:752
-#, fuzzy
 msgid ""
 "There was a problem getting the list of files on the device. Please check"
 " Mu's logs for technical information. Alternatively, try unplugging"
 "/plugging-in your device and/or restarting Mu."
 msgstr ""
-"micro:bit 内のファイルのリストを取得する際に問題が発生しました。技術的な情報は Mu のログを確認してください。または "
-"micro:bit のプラグを抜き差しするか、Muを再起動してみてください。"
+"デバイス内のファイルのリストを取得する際に問題が発生しました。技術的な情報は Mu "
+"のログを確認してください。あるいは、デバイスのプラグを抜き差しするか、Muを再起動"
+"してみてください。"
 
 #: mu/interface/panes.py:767
-#, fuzzy
 msgid ""
 "There was a problem copying the file '{}' onto the device. Please check "
 "Mu's logs for more information."
-msgstr "micro:bit にファイル '{}' をコピーしている際に問題が発生しました。詳しくは Mu のログを確認してください。"
+msgstr ""
+"デバイスにファイル '{}' をコピーしている際に問題が発生しました。詳しくは Mu のログを"
+"確認してください。"
 
 #: mu/interface/panes.py:779
-#, fuzzy
 msgid ""
 "There was a problem deleting '{}' from the device. Please check Mu's logs"
 " for more information."
-msgstr "micro:bit 内のファイル '{}' を削除している際にに問題が発生しました。詳しくは Mu のログを確認してください。"
+msgstr ""
+"デバイス内のファイル '{}' を削除している際にに問題が発生しました。詳しくは Mu のログを"
+"確認してください。"
 
 #: mu/interface/panes.py:791
-#, fuzzy
 msgid ""
 "There was a problem getting '{}' from the device. Please check Mu's logs "
 "for more information."
-msgstr "micro:bit 内のファイル '{}' を取得している際に問題が発生しました。詳しくは Mu のログを確認してください。"
+msgstr ""
+"デバイス内のファイル '{}' を取得している際に問題が発生しました。詳しくは Mu のログを"
+"確認してください。"
 
 #: mu/interface/widgets.py:70 mu/interface/widgets.py:141
 #: mu/interface/widgets.py:154
 msgid "No device connected."
-msgstr ""
+msgstr "デバイスが接続されていません。"
 
 #: mu/logic.py:90
 msgid "Hello, World!"
@@ -441,7 +478,9 @@ msgstr ""
 msgid ""
 "This editor is free software written in Python. You can modify it, add "
 "features or fix bugs if you like."
-msgstr "このエディタは Python で作成したフリーソフトウェアです。あなたの好きなように変更、機能追加、バグ修正できます。"
+msgstr ""
+"このエディタは Python で作成したフリーソフトウェアです。あなたの好きなように変更、"
+"機能追加、バグ修正できます。"
 
 #: mu/logic.py:95
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
@@ -455,7 +494,8 @@ msgstr "Google, Facebook, NASA, Pixar, Disney など多くが Python を使っ�
 msgid ""
 "Programming is a form of magic. Learn to cast the right spells with code "
 "and you'll be a wizard."
-msgstr "プログラミングは魔法の一種。正しいスペルをコードで書く方法を学ぶと魔法使いになれる。"
+msgstr ""
+"プログラミングは魔法の一種。正しいスペルをコードで書く方法を学ぶと魔法使いになれる。"
 
 #: mu/logic.py:101
 msgid ""
@@ -489,7 +529,8 @@ msgstr "開かれた心、冒険の精神、多様性の尊重が重要です。
 msgid ""
 "Don't worry if it doesn't work. Learn the lesson, fix it and try again! "
 ":-)"
-msgstr "動作しなくても心配するな。その失敗から学び、修正してやり直すのだ！ :-)"
+msgstr ""
+"動作しなくても心配するな。その失敗から学び、修正してやり直すのだ！ :-)"
 
 #: mu/logic.py:114
 msgid "Coding is collaboration."
@@ -531,7 +572,8 @@ msgstr "ユーザの立場で考えてください。"
 msgid ""
 "Explaining a programming problem to a friend often reveals the solution. "
 ":-)"
-msgstr "友人にプログラムの問題の問題を説明することで、解決策が明らかになることはよくある。 :-)"
+msgstr ""
+"友人にプログラムの問題の問題を説明することで、解決策が明らかになることはよくある。 :-)"
 
 #: mu/logic.py:130
 msgid "If you don't know, ask. Nobody to ask? Just look it up."
@@ -569,7 +611,9 @@ msgstr "読みやすいことは善である。"
 msgid ""
 "Special cases aren't special enough to break the rules. Although "
 "practicality beats purity."
-msgstr "特殊であることはルールを破る理由にならない。しかし、実用性を求めると自然さが失われることがある。"
+msgstr ""
+"特殊であることはルールを破る理由にならない。しかし、実用性を求めると自然さが"
+"失われることがある。"
 
 #: mu/logic.py:142
 msgid "Errors should never pass silently. Unless explicitly silenced."
@@ -611,7 +655,8 @@ msgstr "再帰とは何かを理解するためには、まず再帰を理解す
 msgid ""
 "Algorithm: a word used by programmers when they don't want to explain "
 "what they did."
-msgstr "アルゴリズム: プログラマーが何をしているかを説明したくないときに使う言葉。"
+msgstr ""
+"アルゴリズム: プログラマーが何をしているかを説明したくないときに使う言葉。"
 
 #: mu/logic.py:158
 msgid "Programmers count from zero."
@@ -672,10 +717,10 @@ msgid ""
 msgstr "文法エラー。Python はこの行を理解できません。間違った綴りがないか調べてください！"
 
 #: mu/logic.py:576
-msgid " compatible"
-msgstr ""
+msgid "{} compatible"
+msgstr "{} 互換"
 
-#: mu/logic.py:995
+#: mu/logic.py:998
 msgid ""
 "The file contains characters Mu expects to be encoded as {0} or as the "
 "computer's default encoding {1}, but which are encoded in some other way."
@@ -684,32 +729,36 @@ msgid ""
 "If this file was saved in another application, re-save the file via the "
 "'Save as' option and set the encoding to {0}"
 msgstr ""
-"Mu が前提としているファイルエンコーディングは {0} かコンピュータのデフォルトの {1} ですが、他の方法でエンコードされています。\n"
-"このファイルが別のアプリケーションで保存されたのであれば、「別名で保存」オプションでエンコーディングを {0} を設定して再保存してください。"
+"Mu が前提としているファイルエンコーディングは {0} かコンピュータのデフォルトの {1} "
+"ですが、他の方法でエンコードされています。\n"
+"このファイルが別のアプリケーションで保存されたのであれば、「別名で保存」オプションで"
+"エンコーディングを {0} を設定して再保存してください。"
 
-#: mu/logic.py:1023
+#: mu/logic.py:1026
 msgid "The file \"{}\" is already open."
 msgstr "ファイル \"{}\" は既に開いています。"
 
-#: mu/logic.py:1035
+#: mu/logic.py:1038
 msgid "Mu cannot read the characters in {}"
 msgstr "Mu は {} の文字を読み込めませんでした。"
 
-#: mu/logic.py:1061
+#: mu/logic.py:1064
 msgid "Mu was not able to open this file"
 msgstr "Mu はこのファイルを開けませんでした"
 
-#: mu/logic.py:1062
+#: mu/logic.py:1065
 msgid ""
 "Currently Mu only works with Python source files or hex files created "
 "with embedded MicroPython code."
-msgstr "現在のところ Mu は Python ソースファイルまたは MicroPython コードが埋め込まれた hex ファイルだけを扱えます。"
+msgstr ""
+"現在のところ Mu は Python ソースファイルまたは MicroPython コードが埋め込まれた "
+"hex ファイルだけを扱えます。"
 
-#: mu/logic.py:1070
+#: mu/logic.py:1073
 msgid "Could not load {}"
 msgstr "ファイル {} を読み込めません。"
 
-#: mu/logic.py:1072
+#: mu/logic.py:1075
 msgid ""
 "Does this file exist?\n"
 "If it does, do you have permission to read it?\n"
@@ -721,11 +770,11 @@ msgstr ""
 "\n"
 "以上を確認して、再度試してみてください。"
 
-#: mu/logic.py:1080
+#: mu/logic.py:1083
 msgid "Is this a {} file?"
 msgstr "これは {} ファイルですか？"
 
-#: mu/logic.py:1081
+#: mu/logic.py:1084
 msgid ""
 "It looks like this could be a {} file.\n"
 "\n"
@@ -735,35 +784,39 @@ msgstr ""
 "\n"
 "Mu を {} モードに変更しますか？"
 
-#: mu/logic.py:1208
+#: mu/logic.py:1211
 msgid "Could not save file (disk problem)"
 msgstr "ファイルを保存できませんでした(ディスクの問題)。"
 
-#: mu/logic.py:1209
+#: mu/logic.py:1212
 msgid ""
 "Error saving file to disk. Ensure you have permission to write the file "
 "and sufficient disk space."
-msgstr "ディスクへのファイルの保存でエラーになりました。ファイルの書込み権とディスクの空きが十分にあるかを確認してください。"
+msgstr ""
+"ディスクへのファイルの保存でエラーになりました。ファイルの書込み権とディスクの空きが"
+"十分にあるかを確認してください。"
 
-#: mu/logic.py:1215
+#: mu/logic.py:1218
 msgid "Could not save file (encoding problem)"
 msgstr "ファイルを保存できませんでした(エンコーディングの問題)。"
 
-#: mu/logic.py:1217
+#: mu/logic.py:1220
 msgid ""
 "Unable to convert all the characters. If you have an encoding line at the"
 " top of the file, remove it and try again."
-msgstr "すべての文字を変換できませんでした。ファイルの先頭にエンコーディング行がある場合は、それを削除してもう一度やり直してください。"
+msgstr ""
+"すべての文字を変換できませんでした。ファイルの先頭にエンコーディング行がある場合は、"
+"それを削除してもう一度やり直してください。"
 
-#: mu/logic.py:1228
+#: mu/logic.py:1231
 msgid "Saved file: {}"
 msgstr "保存したファイル: {}"
 
-#: mu/logic.py:1260 mu/logic.py:1675
+#: mu/logic.py:1263 mu/logic.py:1681
 msgid "You cannot use the filename \"{}\""
 msgstr "ファイル名 \"{}\" は使えません"
 
-#: mu/logic.py:1263
+#: mu/logic.py:1266
 msgid ""
 "This name is already used by another part of Python. If you use this "
 "name, things are likely to break. Please try again with a different "
@@ -772,64 +825,63 @@ msgstr ""
 "この名前はすでに Python の別のところで使われています。この名前を使うと Python "
 "のシステムを壊してしまう可能性があります。別のファイル名でもう一度やり直してください。"
 
-#: mu/logic.py:1340
+#: mu/logic.py:1343
 msgid "Good job! No problems found."
 msgstr "よくできました！ 問題は見つかりませんでした。"
 
-#: mu/logic.py:1341
+#: mu/logic.py:1344
 msgid "Hurrah! Checker turned up no problems."
 msgstr "バンザイ！ チェッカは問題を検出しませんでした。"
 
-#: mu/logic.py:1342
+#: mu/logic.py:1345
 msgid "Nice one! Zero problems detected."
 msgstr "良いですね！ 問題の検出はゼロです。"
 
-#: mu/logic.py:1343
+#: mu/logic.py:1346
 msgid "Well done! No problems here."
 msgstr "よくやりました！ 問題ありません。"
 
-#: mu/logic.py:1344
+#: mu/logic.py:1347
 msgid "Awesome! Zero problems found."
 msgstr "驚ろきました！ 問題は何も見つかりません。"
 
-#: mu/logic.py:1370
+#: mu/logic.py:1373
 msgid "There is un-saved work, exiting the application will cause you to lose it."
 msgstr "保存していないスクリプトがありますが、アプリケーションを終了すると消えてしまいます。"
 
-#: mu/logic.py:1442
+#: mu/logic.py:1448
 msgid "Could not find MicroPython runtime."
 msgstr "MicroPython ランタイムが見つかりません。"
 
-#: mu/logic.py:1443
+#: mu/logic.py:1449
 msgid ""
 "The micro:bit runtime you specified ('{}') does not exist. Please try "
 "again."
 msgstr "指定した micro:bit ランタイムは存在しません。もう一度やり直してください。"
 
-#: mu/logic.py:1569
+#: mu/logic.py:1575
 msgid "Changed to {} mode."
 msgstr "モードを {} に変更します。"
 
-#: mu/logic.py:1599
+#: mu/logic.py:1605
 msgid "Would you like to change Mu to the {} mode?"
 msgstr "Mu を {} モードに変更しますか？"
 
-#: mu/logic.py:1618
-#, fuzzy
+#: mu/logic.py:1624
 msgid "Device changed to {}."
 msgstr "モードを {} に変更します。"
 
-#: mu/logic.py:1654
+#: mu/logic.py:1660
 msgid "Cannot Set Breakpoint."
 msgstr "ブレイクポイントを設定できません。"
 
-#: mu/logic.py:1655
+#: mu/logic.py:1661
 msgid ""
 "Lines that are comments or some multi-line statements cannot have "
 "breakpoints."
 msgstr "コメント行や複数行のステートメントの一部はブレイクポイントに設定できません。"
 
-#: mu/logic.py:1678
+#: mu/logic.py:1684
 msgid ""
 "This name is already used by another part of Python. If you use that "
 "name, things are likely to break. Please try again with a different "
@@ -838,47 +890,47 @@ msgstr ""
 "この名前はすでに Python の別のところで使われています。この名前を使うと Python "
 "のシステムを壊してしまう可能性があります。別のファイル名でもう一度やり直してください。"
 
-#: mu/logic.py:1700
+#: mu/logic.py:1706
 msgid "Could not rename file."
 msgstr "ファイル名を変更できませんでした。"
 
-#: mu/logic.py:1701
+#: mu/logic.py:1707
 msgid "A file of that name is already open in Mu."
 msgstr "この名前のファイルは Mu で既に開いています。"
 
-#: mu/logic.py:1733
+#: mu/logic.py:1739
 msgid "Replaced \"{}\" with \"{}\"."
 msgstr "\"{}\" を \"{}\" で置換する。"
 
-#: mu/logic.py:1738
+#: mu/logic.py:1744
 msgid "Replaced {} matches of \"{}\" with \"{}\"."
 msgstr "{} 個の \"{}\" を \"{}\" で置換しました。"
 
-#: mu/logic.py:1743 mu/logic.py:1750 mu/logic.py:1769
+#: mu/logic.py:1749 mu/logic.py:1756 mu/logic.py:1775
 msgid "Could not find \"{}\"."
 msgstr "\"{}\" が見つかりませんでした。"
 
-#: mu/logic.py:1748 mu/logic.py:1767
+#: mu/logic.py:1754 mu/logic.py:1773
 msgid "Highlighting matches for \"{}\"."
 msgstr "検索した \"{}\" を強調表示しました。"
 
-#: mu/logic.py:1753 mu/logic.py:1772
+#: mu/logic.py:1759 mu/logic.py:1778
 msgid "You must provide something to find."
 msgstr "検索するものを指定してください。"
 
-#: mu/logic.py:1754 mu/logic.py:1773
+#: mu/logic.py:1760 mu/logic.py:1779
 msgid "Please try again, this time with something in the find box."
 msgstr "今度は検索ボックスに何かを入れて、もう一度お試しください。"
 
-#: mu/logic.py:1817
+#: mu/logic.py:1823
 msgid "Successfully cleaned the code. Use CTRL-Z to undo."
 msgstr ""
 
-#: mu/logic.py:1823
+#: mu/logic.py:1829
 msgid "Your code contains problems."
 msgstr ""
 
-#: mu/logic.py:1824
+#: mu/logic.py:1830
 msgid ""
 "These must be fixed before tidying will work. Please use the 'Check' "
 "button to highlight these problems."
@@ -907,11 +959,14 @@ msgid ""
 "To fix this, make sure your code prints small tuples of data between "
 "calls to 'sleep' for a very short period of time."
 msgstr ""
-"Mu が無反応でフリーズしてしまうぐらいのデータが溢れています。セーフガードとしてプロッタを停止させました。\n"
+"Mu が無反応でフリーズしてしまうぐらいのデータが溢れています。セーフガードとして"
+"プロッタを停止させました。\n"
 "\n"
-"溢れているとは、1024バイトを超えるデータセットがプロッターに繰り返し送信されている状態です。\n"
+"溢れているとは、1024バイトを超えるデータセットがプロッターに繰り返し送信されている"
+"状態です。\n"
 "\n"
-"これを解決するには、非常に短時間の 'sleep' 呼び出しの合間にデータの小さなタプルをプリントするようにしてください。"
+"これを解決するには、非常に短時間の 'sleep' 呼び出しの合間にデータの小さなタプルを"
+"プリントするようにしてください。"
 
 #: mu/modes/base.py:508 mu/modes/base.py:558
 msgid "Click on the device's reset button, wait a few seconds and then try again."
@@ -933,7 +988,8 @@ msgid ""
 msgstr ""
 "デバイスがこのコンピュータに繋げられているかを確認してください。\n"
 "\n"
-"REPL が動作するには、MicroPython (または CircuitPython)がデバイスに転送されている必要があります。\n"
+"REPL が動作するには、MicroPython (または CircuitPython)がデバイスに転送"
+"されている必要があります。\n"
 "\n"
 "最後に、デバイスのリセットボタンを押してから、もう一度試してください。"
 
@@ -949,7 +1005,8 @@ msgid ""
 msgstr ""
 "デバイスがこのコンピュータに繋げられているかを確認してください。\n"
 "\n"
-"プロッターが動作するには、MicroPython (または CircuitPython)がデバイスに転送されている必要があります。\n"
+"プロッターが動作するには、MicroPython (または CircuitPython)がデバイスに"
+"転送されている必要があります。\n"
 "\n"
 "最後に、デバイスのリセットボタンを押してから、もう一度試してください。"
 
@@ -959,7 +1016,7 @@ msgstr ""
 
 #: mu/modes/circuitpython.py:39
 msgid "Write code for boards running CircuitPython."
-msgstr ""
+msgstr "CircuitPython が動作するボードのコードを編集。"
 
 #: mu/modes/circuitpython.py:142 mu/modes/pyboard.py:86
 msgid "Serial"
@@ -981,27 +1038,29 @@ msgstr "REPL 入力のデータをプロットします。"
 
 #: mu/modes/circuitpython.py:189
 msgid "Permission error running mount command"
-msgstr ""
+msgstr "mount コマンド実行中の権限エラー"
 
 #: mu/modes/circuitpython.py:190
 msgid ""
 "The mount command (\"{}\") returned an error: {}. Mu will continue as if "
 "a device isn't plugged in."
 msgstr ""
+"mount コマンド(\"{}\")がエラーを返しました: {}。Mu はデバイスが接続されていないかの"
+"ように動作を継続します。"
 
 #: mu/modes/circuitpython.py:208
 msgid ""
 "If your Circuit Python device is plugged in, you need to \"Share with "
 "Linux\" on the CIRCUITPY drive in the \"Files\" app then restart Mu."
 msgstr ""
+"CircuitPython デバイスが接続されている場合、\"ファイル\" アプリで CIRCUITPY "
+"ドライブを \"Linuxで共有\" してから Mu を再起動する必要があります。"
 
 #: mu/modes/circuitpython.py:269
-#, fuzzy
 msgid "Could not find an attached CircuitPython device."
 msgstr "CircuitPython デバイスが繋げられていないようです。"
 
 #: mu/modes/circuitpython.py:270
-#, fuzzy
 msgid ""
 "Python files for CircuitPython devices are stored on the device. "
 "Therefore, to edit these files you need to have the device plugged in. "
@@ -1011,9 +1070,9 @@ msgid ""
 "\n"
 "...to store your code."
 msgstr ""
-"Adafruit CircuitPython デバイスの Python "
-"ファイルはデバイス内に保存するので、デバイスが接続されている必要があります。デバイスを接続するまで、Mu "
-"はコードを保存するために次のディレクトリを使います:\n"
+"CircuitPython デバイスの Python ファイルはデバイス内に保存するので、"
+"デバイスが接続されている必要があります。デバイスを接続するまで、Mu はコードを保存"
+"するために次のディレクトリを使います:\n"
 "\n"
 " {}"
 
@@ -1096,7 +1155,7 @@ msgstr ""
 
 #: mu/modes/esp.py:38
 msgid "Write MicroPython on ESP8266/ESP32 boards."
-msgstr ""
+msgstr "ESP8266/ESP32 ボードの MicroPython を編集。"
 
 #: mu/modes/esp.py:71 mu/modes/python3.py:150 mu/modes/python3.py:199
 #: mu/modes/web.py:75 mu/modes/web.py:128
@@ -1105,25 +1164,23 @@ msgstr "実行"
 
 #: mu/modes/esp.py:72
 msgid "Run your code directly on the {board_name} via the REPL."
-msgstr ""
+msgstr "REPL を介して {board_name} 上で直にコードを実行します。"
 
 #: mu/modes/esp.py:81 mu/modes/microbit.py:145
 msgid "Files"
 msgstr "ファイル"
 
 #: mu/modes/esp.py:82
-#, fuzzy
 msgid "Access the file system on {board_name}."
-msgstr "micro:bit にあるファイルにアクセスします。"
+msgstr "{board_name} にあるファイルにアクセスします。"
 
 #: mu/modes/esp.py:90 mu/modes/microbit.py:152 mu/modes/python3.py:164
 msgid "REPL"
 msgstr ""
 
 #: mu/modes/esp.py:91
-#, fuzzy
 msgid "Use the REPL to live-code on the {board_name}."
-msgstr "micro:bit を対話モードで利用します。"
+msgstr "{board_name} を対話モードで利用します。"
 
 #: mu/modes/esp.py:129 mu/modes/microbit.py:519
 msgid "REPL and file system cannot work at the same time."
@@ -1134,8 +1191,8 @@ msgid ""
 "The REPL and file system both use the same USB serial connection. Only "
 "one can be active at any time. Toggle the file system off and try again."
 msgstr ""
-"REPL とファイルシステムはどちらも USB "
-"シリアル接続を利用しますが、有効にできるのは常にどちらか一方です。ファイルシステムの利用を止めて、もう一度試してください。"
+"REPL とファイルシステムはどちらも USB シリアル接続を利用しますが、有効にできるのは"
+"常にどちらか一方です。ファイルシステムの利用を止めて、もう一度試してください。"
 
 #: mu/modes/esp.py:149 mu/modes/microbit.py:539
 msgid "The plotter and file system cannot work at the same time."
@@ -1146,18 +1203,19 @@ msgid ""
 "The plotter and file system both use the same USB serial connection. Only"
 " one can be active at any time. Toggle the file system off and try again."
 msgstr ""
-"プロッターとファイルシステムはどちらも USB "
-"シリアル接続を利用しますが、有効にできるのは常にどちらか一方です。ファイルシステムの利用を止めて、もう一度試してください。"
+"プロッターとファイルシステムはどちらも USB シリアル接続を利用しますが、有効にできるのは"
+"常にどちらか一方です。ファイルシステムの利用を止めて、もう一度試してください。"
 
 #: mu/modes/esp.py:180
 msgid "Cannot run anything without any active editor tabs."
-msgstr ""
+msgstr "アクティブなエディタタブがなければ何も実行できません。"
 
 #: mu/modes/esp.py:181
 msgid ""
 "Running transfers the content of the current tab onto the device. It "
 "seems like you don't have  any tabs open."
 msgstr ""
+"現在開いているタブの内容をデバイスに転送中。タブが何も開かれていないようです。"
 
 #: mu/modes/esp.py:200 mu/modes/microbit.py:556
 msgid "File system cannot work at the same time as the REPL or plotter."
@@ -1167,10 +1225,11 @@ msgstr "ファイルシステムは REPL やプロッターと同時に利用で
 msgid ""
 "The file system and the REPL and plotter use the same USB serial "
 "connection. Toggle the REPL and plotter off and try again."
-msgstr "ファイルシステムと REPL とプロッターは同じ USB シリアル接続を利用します。REPL とプロッターの利用を止めて、再度試してください。"
+msgstr ""
+"ファイルシステムと REPL とプロッターは同じ USB シリアル接続を利用します。"
+"REPL とプロッターの利用を止めて、再度試してください。"
 
 #: mu/modes/esp.py:231
-#, fuzzy
 msgid "Could not find an attached {board_name}"
 msgstr "デバイスが繋げられていないようです。"
 
@@ -1192,7 +1251,7 @@ msgstr ""
 
 #: mu/modes/esp.py:259
 msgid "{board_name} board"
-msgstr ""
+msgstr "{board_name} ボード"
 
 #: mu/modes/lego.py:33
 msgid "Lego MicroPython"
@@ -1200,7 +1259,7 @@ msgstr ""
 
 #: mu/modes/lego.py:36
 msgid "Write MicroPython directly on Lego Spike devices."
-msgstr ""
+msgstr "Lego Spike デバイスで直接 MicroPython を編集。"
 
 #: mu/modes/microbit.py:111
 msgid "BBC micro:bit"
@@ -1227,7 +1286,6 @@ msgid "Use the REPL to live-code on the micro:bit."
 msgstr "micro:bit を対話モードで利用します。"
 
 #: mu/modes/microbit.py:190
-#, fuzzy
 msgid "Your script is too long and code minification is disabled"
 msgstr "スクリプトが長すぎて縮小できません"
 
@@ -1236,7 +1294,6 @@ msgid "Your script is too long and the minifier isn't available"
 msgstr "スクリプトが長すぎて縮小できません"
 
 #: mu/modes/microbit.py:206
-#, fuzzy
 msgid "Problem minifying script"
 msgstr "スクリプトに問題があります"
 
@@ -1250,7 +1307,7 @@ msgstr "\"{}\" を転送できません"
 
 #: mu/modes/microbit.py:307 mu/modes/microbit.py:584
 msgid "Could not find an attached BBC micro:bit."
-msgstr "BBC micro:bit が繋げられていないようです"
+msgstr "BBC micro:bit が繋げられていないようです。"
 
 #: mu/modes/microbit.py:308
 msgid ""
@@ -1259,23 +1316,26 @@ msgid ""
 " Alternatively, try removing and re-attaching the device or saving your "
 "work and restarting Mu if the device remains unfound."
 msgstr ""
-"BBC micro:bit "
-"を正しく繋げている場合でも、コンピュータがそれを認識するのに十分な時間をおいてください。これには数秒かかることがあります。それでもデバイスが認識されない場合は、デバイス一度取り外して再度繋げるか、スクリプトを保存して"
-" Mu を再起動してみてください。"
+"BBC micro:bit を正しく繋げている場合でも、コンピュータがそれを認識するのに十分な"
+"時間をおいてください。これには数秒かかることがあります。それでもデバイスが認識されない"
+"場合は、デバイス一度取り外して再度繋げるか、スクリプトを保存して Mu を再起動してみて"
+"ください。"
 
 #: mu/modes/microbit.py:326
 msgid "Cannot save a custom hex file to a local directory."
-msgstr ""
+msgstr "ローカルディレクトリにカスタム hex ファイルを保存できません。"
 
 #: mu/modes/microbit.py:327
 msgid ""
 "When a custom hex file is configured in the settings a local directory "
-"cannot be used to saved the final hex file."
+"cannot be used to save the final hex file."
 msgstr ""
+"カスタム hex ファイルが設定されている場合、最終的な hex ファイルを保存するために"
+"ローカルディレクトリは使えません。"
 
 #: mu/modes/microbit.py:336
 msgid "Cannot use a custom hex file without micro:bit port."
-msgstr ""
+msgstr "micro:bit ポートなしではカスタム hex ファイルを利用できません。"
 
 #: mu/modes/microbit.py:337
 msgid ""
@@ -1283,6 +1343,9 @@ msgid ""
 " as Mu can inject the Python code into the hex to flash. However, this "
 "cannot be done with a custom hex file."
 msgstr ""
+"Mu は micro:bit のシリアルポートを検出できませんでした。通常は Mu が Python "
+"コードを hex に注入して転送できるので、これは問題ありません。しかし、カスタム "
+"hex ファイルの場合はダメです。"
 
 #: mu/modes/microbit.py:390
 msgid "Unsupported BBC micro:bit."
@@ -1295,19 +1358,18 @@ msgid ""
 "\n"
 "https://codewith.mu/"
 msgstr ""
-"デバイスがこの Mu のバージョンで扱うには新しすぎます。このデバイスをサポートするために Mu を最新バージョンにアップデートしてください。\n"
+"デバイスがこの Mu のバージョンで扱うには新しすぎます。このデバイスをサポートするために "
+"Mu を最新バージョンにアップデートしてください。\n"
 "\n"
 "https://codewith.mu/"
 
 #: mu/modes/microbit.py:425 mu/modes/microbit.py:446
-#, fuzzy
 msgid "Flashing the micro:bit"
 msgstr "micro:bit に \"{}\" を転送中。"
 
 #: mu/modes/microbit.py:427
-#, fuzzy
 msgid "Runtime"
-msgstr "無題"
+msgstr "ランタイム"
 
 #: mu/modes/microbit.py:458
 msgid "Finished flashing."
@@ -1325,7 +1387,8 @@ msgstr "micro:bit への転送で問題が発生しました。"
 msgid ""
 "Please do not disconnect the device until flashing has completed. Please "
 "check the logs for more information."
-msgstr "転送が完了するまでデバイスを取り外さないでください。詳しくは Mu のログを確認してください。"
+msgstr ""
+"転送が完了するまでデバイスを取り外さないでください。詳しくは Mu のログを確認してください。"
 
 #: mu/modes/microbit.py:601
 msgid "micro:bit"
@@ -1337,24 +1400,21 @@ msgstr ""
 
 #: mu/modes/pico.py:36
 msgid "Write MicroPython directly on a Raspberry Pi Pico."
-msgstr ""
+msgstr "Raspberry Pi Pico の MicroPython を編集。"
 
 #: mu/modes/pyboard.py:32
 msgid "Pyboard MicroPython"
 msgstr ""
 
 #: mu/modes/pyboard.py:34
-#, fuzzy
-msgid "Use MicroPython on the Pyboard line of boards"
-msgstr "Adafruit がサポートするボードの CircuitPython を使います。"
+msgid "Use MicroPython on the Pyboard line of boards."
+msgstr "ボードの Pyboard ラインで MicroPython を利用。"
 
 #: mu/modes/pyboard.py:177
-#, fuzzy
 msgid "Could not find an attached PyBoard device."
 msgstr "デバイスが繋げられていないようです。"
 
 #: mu/modes/pyboard.py:178
-#, fuzzy
 msgid ""
 "Python files for PyBoard MicroPython devices are stored on the device. "
 "Therefore, to edit these files you need to have the device plugged in. "
@@ -1364,9 +1424,9 @@ msgid ""
 "\n"
 "...to store your code."
 msgstr ""
-"Adafruit CircuitPython デバイスの Python "
-"ファイルはデバイス内に保存するので、デバイスが接続されている必要があります。デバイスを接続するまで、Mu "
-"はコードを保存するために次のディレクトリを使います:\n"
+"PyBoard MicroPython デバイス用の Python ファイルはデバイスに保存されています。"
+"したがって、これらのファイルを編集するには、デバイスが接続されている必要があります。"
+"デバイスを接続するまで、Mu はコードを格納するために次のディレクトリを使います:\n"
 "\n"
 " {}"
 
@@ -1476,24 +1536,23 @@ msgstr ""
 
 #: mu/modes/web.py:60
 msgid "Build simple websites with the \"Flask\" web framework."
-msgstr ""
+msgstr "Web フレームワーク「Flask」でシンプルな Web サイトを構築。"
 
 #: mu/modes/web.py:76 mu/modes/web.py:129
 msgid "Run the web server."
-msgstr ""
+msgstr "web サーバを実行します。"
 
 #: mu/modes/web.py:83
-#, fuzzy
 msgid "Open your website in a browser."
 msgstr "Mu のヘルプをWebブラウザで表示します。"
 
 #: mu/modes/web.py:89
 msgid "Templates"
-msgstr ""
+msgstr "テンプレート"
 
 #: mu/modes/web.py:90
 msgid "Load HTML templates used by your website."
-msgstr ""
+msgstr "web サイトで使う HTML テンプレートを読み込みます。"
 
 #: mu/modes/web.py:96
 msgid "CSS"
@@ -1501,29 +1560,31 @@ msgstr ""
 
 #: mu/modes/web.py:97
 msgid "Load CSS files used by your website."
-msgstr ""
+msgstr "web サイトで使う CSS ファイルを読み込みます。"
 
 #: mu/modes/web.py:104
 msgid "Open the directory containing images used by your website."
-msgstr ""
+msgstr "web サイトで使う画像のあるディレクトリを開きます。"
 
 #: mu/modes/web.py:137
 msgid "Stop the web server."
-msgstr ""
+msgstr "web サーバを停止します。"
 
 #: mu/modes/web.py:157
 msgid "This is not a Python file!"
-msgstr ""
+msgstr "これは Python ファイルではありません！"
 
 #: mu/modes/web.py:158
 msgid ""
 "Mu is only able to serve a Python file. Please make sure the current tab "
 "in Mu is the one for your web application and then try again."
 msgstr ""
+"Mu は Python ファイルしか扱えません。Mu の現在のタブが Web アプリケーションの"
+"タブであることを確認してから、もう一度試してみてください。"
 
 #: mu/modes/web.py:175
 msgid "Cannot find template directory!"
-msgstr ""
+msgstr "テンプレートのディレクトリが見つかりません！"
 
 #: mu/modes/web.py:176
 msgid ""
@@ -1532,10 +1593,13 @@ msgid ""
 "and try again. (Hint: Mu was expecting the `templates` directory to be "
 "here: )"
 msgstr ""
+"Web アプリケーションを動かすには、Webアプリケーションの Python コードと同じ場所に "
+"'template' ディレクトリがある必要があります。これを修正して、もう一度試してみて"
+"ください。(ヒント: Mu は `templates` ディレクトリがここにあると思っていました: )"
 
 #: mu/modes/web.py:273
 msgid "Cannot Open Website - Server not Running."
-msgstr ""
+msgstr "Web サイトを開ません - サーバが動作していません。"
 
 #: mu/modes/web.py:274
 msgid ""
@@ -1543,25 +1607,6 @@ msgid ""
 "in a browser. Click on the 'Run' button to start the server and then try "
 "again."
 msgstr ""
-
-#~ msgid "Logging to {}"
-#~ msgstr "ログ出力先: {}"
-
-#~ msgid "Debugger requires a Python script filename to run."
-#~ msgstr "デバッガは実行のために Python スクリプトのファイル名を必要とします。"
-
-#~ msgid "Files on your micro:bit:"
-#~ msgstr "micro:bit のファイル:"
-
-#~ msgid "Adafruit CircuitPython"
-#~ msgstr ""
-
-#~ msgid "{} [{}:{}]"
-#~ msgstr ""
-
-#~ msgid "Your script is too long!"
-#~ msgstr "スクリプトが長すぎます！"
-
-#~ msgid " Runtime: {}"
-#~ msgstr "ランタイム: {}"
+"ブラウザで Web サイトを表示するには、ローカルの Web サーバーが起動している必要が"
+"あります。「実行」ボタンをクリックしてサーバーを起動して、もう一度試してください。"
 

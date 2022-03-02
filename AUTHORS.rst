@@ -18,6 +18,7 @@ These include (but are not limited to):
 * Zander Brown
 * Alistair Broomhead (alistair.broomhead@gmail.com)
 * Frank Morton (fmorton@mac.com)
+* Keith Packard (keithp@keithp.com)
 
 We welcome contributions from anyone! Please see :doc:`contributing` for more
 information.

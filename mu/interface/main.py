@@ -61,6 +61,7 @@ from mu.interface.panes import (
     MicroPythonREPLPane,
     FileSystemPane,
     PlotterPane,
+    SnekREPLPane,
 )
 from mu.interface.editor import EditorPane
 from mu.interface.widgets import DeviceSelector
@@ -639,6 +640,16 @@ class Window(QMainWindow):
         """
         repl_pane = MicroPythonREPLPane(connection)
         connection.data_received.connect(repl_pane.process_tty_data)
+        self.add_repl(repl_pane, name)
+
+    def add_snek_repl(
+        self, name, connection, force_interrupt=True, wait_input=False
+    ):
+        """
+        Adds a Snek based REPL pane to the application.
+        """
+        repl_pane = SnekREPLPane(connection)
+        connection.data_received.connect(repl_pane.process_bytes)
         self.add_repl(repl_pane, name)
 
     def add_micropython_plotter(self, name, connection, data_flood_handler):
