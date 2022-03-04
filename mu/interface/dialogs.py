@@ -242,6 +242,7 @@ class LocaleWidget(QWidget):
         "Español": "es",
         "Français": "fr",
         "日本語": "ja",
+        "Nederlands": "nl",
         "Polskie": "pl",
         "Português (Br)": "pt_BR",
         "Português (Pt)": "pt_PT",
@@ -545,7 +546,7 @@ class AdminDialog(QDialog):
         self.locale_widget = LocaleWidget(self)
         self.locale_widget.setup(settings.get("locale"))
         self.tabs.addTab(
-            self.locale_widget, load_icon("language.svg"), _("Select Language")
+            self.locale_widget, load_icon("language"), _("Select Language")
         )
         self.log_widget.log_text_area.setFocus()
 
