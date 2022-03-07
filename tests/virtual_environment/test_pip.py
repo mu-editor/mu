@@ -11,8 +11,6 @@ import pytest
 
 import mu.virtual_environment
 
-VE = mu.virtual_environment.VirtualEnvironment
-
 HERE = os.path.dirname(__file__)
 
 
