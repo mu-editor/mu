@@ -5,12 +5,12 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"Project-Id-Version: Mu Editor\n"
+"Report-Msgid-Bugs-To: vasco.mora@gmail.com\n"
 "POT-Creation-Date: 2022-03-03 14:23+0000\n"
 "PO-Revision-Date: 2022-03-04 18:24+0100\n"
 "Last-Translator: \n"
-"Language-Team: nl <LL@li.org>\n"
+"Language-Team: \n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -37,19 +37,19 @@ msgstr ""
 
 #: mu/interface/dialogs.py:75
 msgid "Select Mode"
-msgstr "Kies Modus"
+msgstr "Selecteer Modus"
 
 #: mu/interface/dialogs.py:78
 msgid ""
 "Please select the desired mode then click \"OK\". Otherwise, click \"Cancel\"."
 msgstr ""
-"Kies a.u.b. de gewenste modus en klik dan op \"OK\". Anders, kies \"Annuleren\"."
+"Selecteer de gewenste modus en klik dan op \"OK\". Anders, kies \"Annuleren\"."
 
 #: mu/interface/dialogs.py:99
 msgid ""
 "Change mode at any time by clicking the \"Mode\" button containing Mu's logo."
 msgstr ""
-"Verander de modus op ieder moment door op de \"Modus\" knop met Mu's logo te "
+"Verander de modus op ieder moment door op de \"Modus\" knop met het Mu logo te "
 "klikken."
 
 #: mu/interface/dialogs.py:138
@@ -70,7 +70,7 @@ msgstr ""
 "De omgevingsvariabelen hieronder getoond zullen ingesteld worden iedere keer "
 "als je een Python 3 script uitvoert.\n"
 "\n"
-"Elke afzonderlijke omgevingsvariabele moet op een nieuwe lijn komen en van het "
+"Elke afzonderlijke omgevingsvariabele moet op een nieuwe regel komen en van het "
 "volgende formaat zijn:\n"
 "NAME=VALUE"
 
@@ -98,7 +98,7 @@ msgstr ""
 "modus. Verwijder een pakket uit de lijst om de beschikbaarheid te verwijderen.\n"
 "\n"
 "Elke afzonderlijke pakketnaam moet op een nieuwe regel staan. Pakketten worden "
-"geÃ¯nstalleerd vanuit PyPI (zie: https://pypi.org/)."
+"geïnstalleerd vanuit PyPI (zie: https://pypi.org/)."
 
 #: mu/interface/dialogs.py:239
 msgid "Automatically detect"
@@ -114,7 +114,7 @@ msgstr ""
 
 #: mu/interface/dialogs.py:296
 msgid "How to flash MicroPython to your device"
-msgstr "Hoe u MicroPython naar uw apparaat kunt flashen"
+msgstr "Hoe kunt u MicroPython flashen naar uw apparaat"
 
 #: mu/interface/dialogs.py:303
 msgid ""
@@ -164,7 +164,7 @@ msgstr "Mu Administratie"
 
 #: mu/interface/dialogs.py:524
 msgid "Current Log"
-msgstr "Huidig â€‹â€‹logboek"
+msgstr "Huidig logboek"
 
 #: mu/interface/dialogs.py:528
 msgid "Python3 Environment"
@@ -252,7 +252,7 @@ msgstr "Zoom in (om de tekst groter te maken)."
 
 #: mu/interface/main.py:136
 msgid "Zoom-out"
-msgstr "Zoom-out"
+msgstr "Zoom-uit"
 
 #: mu/interface/main.py:137
 msgid "Zoom out (to make the text smaller)."
@@ -284,7 +284,7 @@ msgstr "Maak de lay-out van uw code netjes."
 
 #: mu/interface/main.py:160
 msgid "Help"
-msgstr "Hulp"
+msgstr "Help"
 
 #: mu/interface/main.py:161
 msgid "Show help about Mu in a browser."
@@ -372,7 +372,7 @@ msgstr "Nieuw {} apparaat gedetecteerd."
 
 #: mu/interface/panes.py:657
 msgid "File already exists; overwrite it?"
-msgstr "Bestand bestaat al; overschrijf het?"
+msgstr "Bestand bestaat al; bestand overschrijven?"
 
 #: mu/interface/panes.py:658
 msgid "File already exists"
@@ -380,7 +380,7 @@ msgstr "Bestand bestaat al"
 
 #: mu/interface/panes.py:691
 msgid "Copying '{}' to device."
-msgstr "'{}' kopiÃ«ren naar apparaat."
+msgstr "'{}' kopiëren naar apparaat."
 
 #: mu/interface/panes.py:700
 msgid "'{}' successfully copied to device."
@@ -400,7 +400,7 @@ msgstr "'{}' succesvol verwijderd van apparaat."
 
 #: mu/interface/panes.py:757
 msgid "Getting '{}' from device. Copying to '{}'."
-msgstr "'{}' ophalen van het apparaat. KopiÃ«ren naar '{}'."
+msgstr "'{}' ophalen van het apparaat. kopiëren naar '{}'."
 
 #: mu/interface/panes.py:768
 msgid "Successfully copied '{}' from the device to your computer."
@@ -446,7 +446,7 @@ msgid ""
 "There was a problem copying the file '{}' onto the device. Please check Mu's "
 "logs for more information."
 msgstr ""
-"Er is een probleem opgetreden bij het kopiÃ«ren van het bestand '{}' naar het "
+"Er is een probleem opgetreden bij het kopiëren van het bestand '{}' naar het "
 "apparaat. Raadpleeg de logboeken van Mu voor meer informatie."
 
 #: mu/interface/panes.py:941
@@ -488,15 +488,15 @@ msgstr "Deze editor heet Mu (je zegt het 'mew' of 'moo')."
 
 #: mu/logic.py:96
 msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
-msgstr "Google, Facebook, NASA, Pixar, Disney en nog veel meer gebruiken Python."
+msgstr "Google, Facebook, NASA, Pixar, Disney en nog veel meer organisaties gebruiken Python."
 
 #: mu/logic.py:97
 msgid ""
 "Programming is a form of magic. Learn to cast the right spells with code and "
 "you'll be a wizard."
 msgstr ""
-"Programmeren is een vorm van magie. Leer de juiste spreuken te gebruiken met "
-"code en je zult een tovenaar zijn."
+"Programmeren is een vorm van magie. Leer de juiste code-spreuken te gebruiken en "
+"je wordt een tovenaar."
 
 #: mu/logic.py:101
 msgid ""
@@ -512,7 +512,7 @@ msgstr "Wees dapper, breek dingen, leer en heb plezier!"
 
 #: mu/logic.py:106
 msgid "Make your software both useful AND fun. Empower your users."
-msgstr "Maak uw software zowel nuttig ALS leuk. Geef kracht aan uw gebruikers."
+msgstr "Maak uw software zowel nuttig ALS leuk. Help uw gebruikers."
 
 #: mu/logic.py:107
 msgid "For the Zen of Python: import this"
@@ -525,8 +525,7 @@ msgstr "Diversiteit bevordert de creativiteit."
 #: mu/logic.py:109
 msgid "An open mind, spirit of adventure and respect for diversity are key."
 msgstr ""
-"Een open geest, een avontuurlijke geest en respect voor diversiteit staan â€‹â€‹"
-"centraal."
+"Een open en avontuurlijke geest en respect voor diversiteit zijn zeer belangrijk"
 
 #: mu/logic.py:110
 msgid ""
@@ -584,7 +583,7 @@ msgstr ""
 #: mu/logic.py:130
 msgid "If you don't know, ask. Nobody to ask? Just look it up."
 msgstr ""
-"Als je het niet weet, vraag het dan. Niemand om te vragen? Zoek het maar op."
+"Als je het niet weet, vraag het dan. Niemand om te vragen? Zoek het op."
 
 #: mu/logic.py:131
 msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
@@ -608,7 +607,7 @@ msgstr "Plat is beter dan genest."
 
 #: mu/logic.py:136
 msgid "Sparse is better than dense."
-msgstr "Spaar is beter dan dicht."
+msgstr "Spaarzaam is beter dan dicht."
 
 #: mu/logic.py:137
 msgid "Readability counts."
@@ -629,13 +628,12 @@ msgstr ""
 
 #: mu/logic.py:143
 msgid "In the face of ambiguity, refuse the temptation to guess."
-msgstr "Weiger in het licht van dubbelzinnigheid de verleiding om te raden."
+msgstr "Weiger de verleiding om te raden vanwege ambiguïteit."
 
 #: mu/logic.py:144
 msgid "There should be one-- and preferably only one --obvious way to do it."
 msgstr ""
-"Er zou Ã©Ã©n - en bij voorkeur slechts Ã©Ã©n - voor de hand liggende manier moeten "
-"zijn om het te doen."
+"Er zou één - en bij voorkeur slechts één - voor de hand liggende manier moeten zijn om het te doen."
 
 #: mu/logic.py:145
 msgid "Now is better than never. Although never is often better than *right* now."
@@ -652,7 +650,7 @@ msgstr ""
 
 #: mu/logic.py:151
 msgid "Namespaces are one honking great idea -- let's do more of those!"
-msgstr "Naamruimten zijn een geweldig idee - laten we er meer van doen!"
+msgstr "Ruimte voor namen zijn een geweldig idee - laten we er meer van doen!"
 
 #: mu/logic.py:152
 msgid "Mu was created by Nicholas H.Tollervey."
@@ -712,11 +710,11 @@ msgstr "Een goede programmeur stelt vragen."
 
 #: mu/logic.py:168
 msgid "A good programmer is willing to say, 'I don't know'."
-msgstr "Een goede programmeur is bereid te zeggen: 'Ik weet het niet'."
+msgstr "Een goede programmeur is bereid om te zeggen: 'Ik weet het niet'."
 
 #: mu/logic.py:169
 msgid "Wisest are they that know they know nothing."
-msgstr "Wijst zijn zij die weten dat ze niets weten."
+msgstr "Wijs zijn zij die weten dat ze niets weten."
 
 #: mu/logic.py:464
 msgid " above this line"
@@ -726,8 +724,7 @@ msgstr " boven deze lijn"
 msgid ""
 "Syntax error. Python cannot understand this line. Check for missing characters!"
 msgstr ""
-"Syntax error. Python kan deze regel niet begrijpen. Controleer op ontbrekende "
-"tekens!"
+"Syntax error. Python begrijpt deze regel niet. Controleer op ontbrekende tekens!"
 
 #: mu/logic.py:576
 msgid "{} compatible"
@@ -796,7 +793,7 @@ msgid ""
 msgstr ""
 "Het lijkt erop dat dit een {} bestand kan zijn.\n"
 "\n"
-"Wilt u Mu in de {}modus zetten?"
+"Wilt u Mu wijzigen naar de {}modus?"
 
 #: mu/logic.py:1211
 msgid "Could not save file (disk problem)"
@@ -845,7 +842,7 @@ msgstr "Goed gedaan! Geen problemen gevonden."
 
 #: mu/logic.py:1344
 msgid "Hurrah! Checker turned up no problems."
-msgstr "Hoera! Checker leverde geen problemen op."
+msgstr "Hoera! De controle leverde geen problemen op."
 
 #: mu/logic.py:1345
 msgid "Nice one! Zero problems detected."
@@ -862,7 +859,7 @@ msgstr "Geweldig! Nul problemen gevonden."
 #: mu/logic.py:1373
 msgid "There is un-saved work, exiting the application will cause you to lose it."
 msgstr ""
-"Er is niet-opgeslagen werk, als u de toepassing verlaat, raakt u het kwijt."
+"Er is niet-opgeslagen werk, als u de toepassing stopt, raakt u het kwijt."
 
 #: mu/logic.py:1448
 msgid "Could not find MicroPython runtime."
@@ -1047,7 +1044,7 @@ msgstr "Serieel"
 
 #: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87 mu/modes/snek.py:380
 msgid "Open a serial connection to your device."
-msgstr "Open een seriÃ«le verbinding met uw apparaat."
+msgstr "Open een seriële verbinding met uw apparaat."
 
 #: mu/modes/circuitpython.py:152 mu/modes/esp.py:102 mu/modes/microbit.py:164
 #: mu/modes/pyboard.py:96 mu/modes/python3.py:174 mu/modes/snek.py:403
@@ -1061,14 +1058,14 @@ msgstr "Plot inkomende REPL-gegevens."
 
 #: mu/modes/circuitpython.py:189
 msgid "Permission error running mount command"
-msgstr "Toestemmingsfout bij het uitvoeren van de opdracht mount"
+msgstr "Toestemmingsfout bij het plaatsen van de opdracht"
 
 #: mu/modes/circuitpython.py:190
 msgid ""
 "The mount command (\"{}\") returned an error: {}. Mu will continue as if a "
 "device isn't plugged in."
 msgstr ""
-"Het mount-commando (\"{}\") heeft een fout geretourneerd: {}. Mu gaat verder "
+"Het plaatsings-commando (\"{}\") heeft een fout geretourneerd: {}. Mu gaat verder "
 "alsof een apparaat niet is aangesloten."
 
 #: mu/modes/circuitpython.py:208
@@ -1093,13 +1090,14 @@ msgid ""
 "\n"
 "...to store your code."
 msgstr ""
-"Python files for CircuitPython devices are stored on the device. Therefore, to "
-"edit these files you need to have the device plugged in. Until you plug in a "
-"device, Mu will use the directory found here:\n"
+"Python-bestanden voor CircuitPython-apparaten worden op het apparaat "
+"opgeslagen. Om deze bestanden te kunnen bewerken, moet het apparaat daarom zijn "
+"aangesloten. Totdat u een apparaat aansluit, gebruikt Mu de map die u hier "
+"vindt:\n"
 "\n"
 " {}\n"
 "\n"
-"...to store your code."
+"...om uw code op te slaan."
 
 #: mu/modes/debugger.py:39
 msgid "Graphical Debugger"
@@ -1216,8 +1214,8 @@ msgid ""
 "The REPL and file system both use the same USB serial connection. Only one can "
 "be active at any time. Toggle the file system off and try again."
 msgstr ""
-"De REPL en het bestandssysteem gebruiken beide dezelfde seriÃ«le USB-verbinding. "
-"Er kan er maar Ã©Ã©n tegelijk actief zijn. Schakel het bestandssysteem uit en "
+"De REPL en het bestandssysteem gebruiken beide dezelfde seriële USB-verbinding. "
+"Er kan er maar éen actief zijn. Schakel het bestandssysteem uit en "
 "probeer het opnieuw."
 
 #: mu/modes/esp.py:149 mu/modes/microbit.py:539
@@ -1229,8 +1227,8 @@ msgid ""
 "The plotter and file system both use the same USB serial connection. Only one "
 "can be active at any time. Toggle the file system off and try again."
 msgstr ""
-"De plotter en het bestandssysteem gebruiken beide dezelfde seriÃ«le USB-"
-"aansluiting. Er kan er maar Ã©Ã©n tegelijk actief zijn. Schakel het "
+"De plotter en het bestandssysteem gebruiken beide dezelfde seriële USB-"
+"aansluiting. Er kan er maar één actief zijn. Schakel het "
 "bestandssysteem uit en probeer het opnieuw."
 
 #: mu/modes/esp.py:180 mu/modes/snek.py:420
@@ -1255,7 +1253,7 @@ msgid ""
 "The file system and the REPL and plotter use the same USB serial connection. "
 "Toggle the REPL and plotter off and try again."
 msgstr ""
-"Het bestandssysteem en de REPL en plotter gebruiken dezelfde seriÃ«le USB-"
+"Het bestandssysteem en de REPL en plotter gebruiken dezelfde seriële USB-"
 "verbinding. Schakel de REPL en plotter uit en probeer het opnieuw."
 
 #: mu/modes/esp.py:231
@@ -1374,7 +1372,7 @@ msgid ""
 "can inject the Python code into the hex to flash. However, this cannot be done "
 "with a custom hex file."
 msgstr ""
-"Mu kon de micro:bit seriÃ«le poort niet detecteren. Normaal gesproken is dit in "
+"Mu kon de micro:bit seriële poort niet detecteren. Normaal gesproken is dit in "
 "orde, omdat Mu de Python-code in de hex kan injecteren om te flashen. Dit kan "
 "echter niet worden gedaan met een aangepast hex-bestand."
 
@@ -1619,7 +1617,7 @@ msgstr "Bouw eenvoudige websites met het webframework \"Flask\"."
 
 #: mu/modes/web.py:76 mu/modes/web.py:129
 msgid "Run the web server."
-msgstr "Voer de webserver uit."
+msgstr "Start de webserver."
 
 #: mu/modes/web.py:83
 msgid "Open your website in a browser."
@@ -1671,8 +1669,8 @@ msgid ""
 "same place as your web application's Python code. Please fix this and try "
 "again. (Hint: Mu was expecting the `templates` directory to be here: )"
 msgstr ""
-"Om uw webtoepassing te bedienen, moet er een map 'templates' zijn op dezelfde "
-"plaats als de Python-code van uw webtoepassing. Los dit op en probeer het "
+"Om uw webtoepassing te bedienen, moet er een map 'templates' aanwezig zijn op dezelfde "
+"plaats als de Python-code van uw webtoepassing. Verhelp dit en probeer het "
 "opnieuw. (Hint: Mu verwachtte dat de directory `templates` hier zou zijn: )"
 
 #: mu/modes/web.py:273
