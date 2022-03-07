@@ -123,7 +123,7 @@ class MicrobitMode(MicroPythonMode):
     valid_boards = [(0x0D28, 0x0204, None, "BBC micro:bit")]
 
     # Board IDs of supported boards.
-    valid_board_ids = [0x9900, 0x9901, 0x9904]
+    valid_board_ids = [0x9900, 0x9901, 0x9904, 0x9905, 0x9906]
 
     python_script = ""
 

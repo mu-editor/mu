@@ -1113,6 +1113,49 @@ def test_Window_add_micropython_plotter():
     w.add_plotter.assert_called_once_with(mock_plotter, "MicroPython Plotter")
 
 
+def test_Window_add_snek_repl():
+    """
+    Ensure the expected object is instantiated and add_repl is called for a
+    Snek based REPL.
+    """
+    w = mu.interface.main.Window()
+    w.add_repl = mock.MagicMock()
+    mock_connection = mock.MagicMock()
+
+    mock_repl = mock.MagicMock()
+    mock_repl_class = mock.MagicMock(return_value=mock_repl)
+    with mock.patch("mu.interface.main.SnekREPLPane", mock_repl_class):
+        w.add_snek_repl("Test REPL", mock_connection)
+    mock_repl_class.assert_called_once_with(mock_connection)
+
+    mock_connection.data_received.connect.assert_called_once_with(
+        mock_repl.process_bytes
+    )
+    w.add_repl.assert_called_once_with(mock_repl, "Test REPL")
+
+
+def test_Window_add_snek_repl_no_interrupt():
+    """
+    Ensure the expected object is instantiated and add_repl is called for a
+    Snek based REPL.
+    """
+    w = mu.interface.main.Window()
+    w.add_repl = mock.MagicMock()
+    mock_connection = mock.MagicMock()
+
+    mock_repl = mock.MagicMock()
+    mock_repl_class = mock.MagicMock(return_value=mock_repl)
+    with mock.patch("mu.interface.main.SnekREPLPane", mock_repl_class):
+        w.add_snek_repl("Test REPL", mock_connection, force_interrupt=False)
+    mock_repl_class.assert_called_once_with(mock_connection)
+
+    assert mock_connection.send_interrupt.call_count == 0
+    mock_connection.data_received.connect.assert_called_once_with(
+        mock_repl.process_bytes
+    )
+    w.add_repl.assert_called_once_with(mock_repl, "Test REPL")
+
+
 def test_Window_add_python3_plotter():
     """
     Ensure the plotter is created correctly when in Python 3 mode.
