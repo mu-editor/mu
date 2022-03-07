@@ -11,9 +11,6 @@ import pytest
 
 import mu.virtual_environment
 
-HERE = os.path.dirname(__file__)
-
-
 @pytest.fixture(autouse=True)
 def cleanup_logger():
     """
