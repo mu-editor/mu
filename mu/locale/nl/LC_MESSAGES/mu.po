@@ -64,7 +64,7 @@ msgid ""
 "The environment variables shown below will be set each time you run a Python 3 "
 "script.\n"
 "\n"
-"Each separate enviroment variable should be on a new line and of the form:\n"
+"Each separate environment variable should be on a new line and of the form:\n"
 "NAME=VALUE"
 msgstr ""
 "De omgevingsvariabelen hieronder getoond zullen ingesteld worden iedere keer "
@@ -98,7 +98,7 @@ msgstr ""
 "modus. Verwijder een pakket uit de lijst om de beschikbaarheid te verwijderen.\n"
 "\n"
 "Elke afzonderlijke pakketnaam moet op een nieuwe regel staan. Pakketten worden "
-"geïnstalleerd vanuit PyPI (zie: https://pypi.org/)."
+"geï¿½nstalleerd vanuit PyPI (zie: https://pypi.org/)."
 
 #: mu/interface/dialogs.py:239
 msgid "Automatically detect"
@@ -380,7 +380,7 @@ msgstr "Bestand bestaat al"
 
 #: mu/interface/panes.py:691
 msgid "Copying '{}' to device."
-msgstr "'{}' kopiëren naar apparaat."
+msgstr "'{}' kopiï¿½ren naar apparaat."
 
 #: mu/interface/panes.py:700
 msgid "'{}' successfully copied to device."
@@ -400,7 +400,7 @@ msgstr "'{}' succesvol verwijderd van apparaat."
 
 #: mu/interface/panes.py:757
 msgid "Getting '{}' from device. Copying to '{}'."
-msgstr "'{}' ophalen van het apparaat. kopiëren naar '{}'."
+msgstr "'{}' ophalen van het apparaat. kopiï¿½ren naar '{}'."
 
 #: mu/interface/panes.py:768
 msgid "Successfully copied '{}' from the device to your computer."
@@ -446,7 +446,7 @@ msgid ""
 "There was a problem copying the file '{}' onto the device. Please check Mu's "
 "logs for more information."
 msgstr ""
-"Er is een probleem opgetreden bij het kopiëren van het bestand '{}' naar het "
+"Er is een probleem opgetreden bij het kopiï¿½ren van het bestand '{}' naar het "
 "apparaat. Raadpleeg de logboeken van Mu voor meer informatie."
 
 #: mu/interface/panes.py:941
@@ -628,12 +628,12 @@ msgstr ""
 
 #: mu/logic.py:143
 msgid "In the face of ambiguity, refuse the temptation to guess."
-msgstr "Weiger de verleiding om te raden vanwege ambiguïteit."
+msgstr "Weiger de verleiding om te raden vanwege ambiguï¿½teit."
 
 #: mu/logic.py:144
 msgid "There should be one-- and preferably only one --obvious way to do it."
 msgstr ""
-"Er zou één - en bij voorkeur slechts één - voor de hand liggende manier moeten zijn om het te doen."
+"Er zou ï¿½ï¿½n - en bij voorkeur slechts ï¿½ï¿½n - voor de hand liggende manier moeten zijn om het te doen."
 
 #: mu/logic.py:145
 msgid "Now is better than never. Although never is often better than *right* now."
@@ -1044,7 +1044,7 @@ msgstr "Serieel"
 
 #: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87 mu/modes/snek.py:380
 msgid "Open a serial connection to your device."
-msgstr "Open een seriële verbinding met uw apparaat."
+msgstr "Open een seriï¿½le verbinding met uw apparaat."
 
 #: mu/modes/circuitpython.py:152 mu/modes/esp.py:102 mu/modes/microbit.py:164
 #: mu/modes/pyboard.py:96 mu/modes/python3.py:174 mu/modes/snek.py:403
@@ -1214,8 +1214,8 @@ msgid ""
 "The REPL and file system both use the same USB serial connection. Only one can "
 "be active at any time. Toggle the file system off and try again."
 msgstr ""
-"De REPL en het bestandssysteem gebruiken beide dezelfde seriële USB-verbinding. "
-"Er kan er maar éen actief zijn. Schakel het bestandssysteem uit en "
+"De REPL en het bestandssysteem gebruiken beide dezelfde seriï¿½le USB-verbinding. "
+"Er kan er maar ï¿½en actief zijn. Schakel het bestandssysteem uit en "
 "probeer het opnieuw."
 
 #: mu/modes/esp.py:149 mu/modes/microbit.py:539
@@ -1227,8 +1227,8 @@ msgid ""
 "The plotter and file system both use the same USB serial connection. Only one "
 "can be active at any time. Toggle the file system off and try again."
 msgstr ""
-"De plotter en het bestandssysteem gebruiken beide dezelfde seriële USB-"
-"aansluiting. Er kan er maar één actief zijn. Schakel het "
+"De plotter en het bestandssysteem gebruiken beide dezelfde seriï¿½le USB-"
+"aansluiting. Er kan er maar ï¿½ï¿½n actief zijn. Schakel het "
 "bestandssysteem uit en probeer het opnieuw."
 
 #: mu/modes/esp.py:180 mu/modes/snek.py:420
@@ -1253,7 +1253,7 @@ msgid ""
 "The file system and the REPL and plotter use the same USB serial connection. "
 "Toggle the REPL and plotter off and try again."
 msgstr ""
-"Het bestandssysteem en de REPL en plotter gebruiken dezelfde seriële USB-"
+"Het bestandssysteem en de REPL en plotter gebruiken dezelfde seriï¿½le USB-"
 "verbinding. Schakel de REPL en plotter uit en probeer het opnieuw."
 
 #: mu/modes/esp.py:231
@@ -1372,7 +1372,7 @@ msgid ""
 "can inject the Python code into the hex to flash. However, this cannot be done "
 "with a custom hex file."
 msgstr ""
-"Mu kon de micro:bit seriële poort niet detecteren. Normaal gesproken is dit in "
+"Mu kon de micro:bit seriï¿½le poort niet detecteren. Normaal gesproken is dit in "
 "orde, omdat Mu de Python-code in de hex kan injecteren om te flashen. Dit kan "
 "echter niet worden gedaan met een aangepast hex-bestand."
 
