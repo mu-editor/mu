@@ -19,6 +19,6 @@ def set_language(language_code, localedir=localedir):
     gettext.translation(
         "mu", localedir=localedir, languages=[language_code], fallback=True
     ).install(names=["pgettext"])
-    
+
 
 set_language(language_code)
