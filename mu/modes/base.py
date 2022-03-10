@@ -48,6 +48,7 @@ MODULE_NAMES.add("builtins")
 def get_default_workspace():
     """
     Return the location on the filesystem for opening and closing files.
+    
     The default is to use a directory in the users home folder, however
     in some network systems this in inaccessible. This allows a key in the
     settings file to be used to set a custom path.
