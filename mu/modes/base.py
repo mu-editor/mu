@@ -226,7 +226,7 @@ class BaseMode(QObject):
         """
         return NotImplemented
 
-    def workspace_dir():
+    def workspace_dir(self):
         """
         Return the location on the filesystem for opening and closing files.
 
@@ -305,7 +305,7 @@ class BaseMode(QObject):
         CSV data and is named with a timestamp for easy identification.
         """
         # Save the raw data as CSV
-        data_dir = os.path.join(self.get_default_workspace(), "data_capture")
+        data_dir = os.path.join(get_default_workspace(), "data_capture")
         if not os.path.exists(data_dir):
             logger.debug("Creating directory: {}".format(data_dir))
             os.makedirs(data_dir)
