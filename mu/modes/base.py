@@ -45,6 +45,35 @@ MODULE_NAMES.add("sys")
 MODULE_NAMES.add("builtins")
 
 
+def get_default_workspace():
+    """
+    Return the location on the filesystem for opening and closing files.
+    The default is to use a directory in the users home folder, however
+    in some network systems this in inaccessible. This allows a key in the
+    settings file to be used to set a custom path.
+    """
+    workspace_dir = os.path.join(config.HOME_DIRECTORY, config.WORKSPACE_NAME)
+    settings_workspace = settings.settings.get("workspace")
+
+    if settings_workspace:
+        if os.path.isdir(settings_workspace):
+            logger.info(
+                "Using workspace {} from settings file".format(
+                    settings_workspace
+                )
+            )
+            workspace_dir = settings_workspace
+        else:
+            logger.warning(
+                "Workspace {} in the settings file is not a valid "
+                "directory; using default {}".format(
+                    settings_workspace, workspace_dir
+                )
+            )
+
+    return workspace_dir
+
+
 class REPLConnection(QObject):
     serial = None
     data_received = pyqtSignal(bytes)
@@ -197,7 +226,6 @@ class BaseMode(QObject):
         """
         return NotImplemented
 
-    @staticmethod
     def workspace_dir():
         """
         Return the location on the filesystem for opening and closing files.
@@ -206,28 +234,7 @@ class BaseMode(QObject):
         in some network systems this in inaccessible. This allows a key in the
         settings file to be used to set a custom path.
         """
-        workspace_dir = os.path.join(
-            config.HOME_DIRECTORY, config.WORKSPACE_NAME
-        )
-        settings_workspace = settings.settings.get("workspace")
-
-        if settings_workspace:
-            if os.path.isdir(settings_workspace):
-                logger.info(
-                    "Using workspace {} from settings file".format(
-                        settings_workspace
-                    )
-                )
-                workspace_dir = settings_workspace
-            else:
-                logger.warning(
-                    "Workspace {} in the settings file is not a valid "
-                    "directory; using default {}".format(
-                        settings_workspace, workspace_dir
-                    )
-                )
-
-        return workspace_dir
+        return get_default_workspace()
 
     def assets_dir(self, asset_type):
         """
@@ -298,7 +305,7 @@ class BaseMode(QObject):
         CSV data and is named with a timestamp for easy identification.
         """
         # Save the raw data as CSV
-        data_dir = os.path.join(self.workspace_dir(), "data_capture")
+        data_dir = os.path.join(self.get_default_workspace(), "data_capture")
         if not os.path.exists(data_dir):
             logger.debug("Creating directory: {}".format(data_dir))
             os.makedirs(data_dir)
