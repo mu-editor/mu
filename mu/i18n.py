@@ -10,10 +10,6 @@ language_code = QLocale.system().name()
 # Configure locale and language
 # Define where the translation assets are to be found.
 localedir = os.path.abspath(os.path.join(os.path.dirname(__file__), "locale"))
-gettext.translation(
-    "mu", localedir=localedir, languages=[language_code], fallback=True
-).install()
-gettext.install("mu", localedir=localedir, names=["pgettext"])
 
 
 def set_language(language_code, localedir=localedir):
@@ -22,4 +18,7 @@ def set_language(language_code, localedir=localedir):
     """
     gettext.translation(
         "mu", localedir=localedir, languages=[language_code], fallback=True
-    ).install()
+    ).install(names=["pgettext"])
+    
+
+set_language(language_code)
