@@ -48,7 +48,7 @@ MODULE_NAMES.add("builtins")
 def get_default_workspace():
     """
     Return the location on the filesystem for opening and closing files.
-    
+
     The default is to use a directory in the users home folder, however
     in some network systems this in inaccessible. This allows a key in the
     settings file to be used to set a custom path.
@@ -59,17 +59,13 @@ def get_default_workspace():
     if settings_workspace:
         if os.path.isdir(settings_workspace):
             logger.info(
-                "Using workspace {} from settings file".format(
-                    settings_workspace
-                )
+                "Using workspace {} from settings file".format(settings_workspace)
             )
             workspace_dir = settings_workspace
         else:
             logger.warning(
                 "Workspace {} in the settings file is not a valid "
-                "directory; using default {}".format(
-                    settings_workspace, workspace_dir
-                )
+                "directory; using default {}".format(settings_workspace, workspace_dir)
             )
 
     return workspace_dir
@@ -430,9 +426,7 @@ class MicroPythonMode(BaseMode):
                     continue
                 if with_logging:
                     logger.info("Found device on port: {}".format(device.port))
-                    logger.info(
-                        "Serial number: {}".format(device.serial_number)
-                    )
+                    logger.info("Serial number: {}".format(device.serial_number))
                     if device.board_name:
                         logger.info("Board type: {}".format(device.board_name))
                 devices.append(device)
@@ -492,9 +486,7 @@ class MicroPythonMode(BaseMode):
         if device:
             try:
                 if not self.connection:
-                    self.connection = REPLConnection(
-                        device.port, self.baudrate
-                    )
+                    self.connection = REPLConnection(device.port, self.baudrate)
                     self.connection.open()
                     if self.force_interrupt:
                         self.connection.send_interrupt()
@@ -543,9 +535,7 @@ class MicroPythonMode(BaseMode):
         if device:
             try:
                 if not self.connection:
-                    self.connection = REPLConnection(
-                        device.port, self.baudrate
-                    )
+                    self.connection = REPLConnection(device.port, self.baudrate)
                     self.connection.open()
                 self.view.add_micropython_plotter(
                     self.name, self.connection, self.on_data_flood

@@ -89,9 +89,7 @@ class ModeSelector(QDialog):
         self.mode_list.setIconSize(QSize(48, 48))
         for name, item in modes.items():
             if not item.is_debugger:
-                litem = ModeItem(
-                    item.name, item.description, item.icon, self.mode_list
-                )
+                litem = ModeItem(item.name, item.description, item.icon, self.mode_list)
                 if item.icon == current_mode:
                     self.mode_list.setCurrentItem(litem)
         self.mode_list.sortItems()
@@ -103,9 +101,7 @@ class ModeSelector(QDialog):
         )
         instructions.setWordWrap(True)
         widget_layout.addWidget(instructions)
-        button_box = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        )
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         widget_layout.addWidget(button_box)
@@ -293,9 +289,7 @@ class ESPFirmwareFlasherWidget(QWidget):
         self.setLayout(widget_layout)
 
         # Instructions
-        grp_instructions = QGroupBox(
-            _("How to flash MicroPython to your device")
-        )
+        grp_instructions = QGroupBox(_("How to flash MicroPython to your device"))
         grp_instructions_vbox = QVBoxLayout()
         grp_instructions.setLayout(grp_instructions_vbox)
         # Note: we have to specify the link color here, to something
@@ -333,7 +327,9 @@ class ESPFirmwareFlasherWidget(QWidget):
         self.device_type.addItem("ESP32")
         firmware_label = QLabel(_("Firmware (.bin):"))
         self.txtFolder = QLineEdit()
-        self.btnFolder = QPushButton(pgettext("dialogs|ESPFirwareFlasherWidget", "Browse"))
+        self.btnFolder = QPushButton(
+            pgettext("dialogs|ESPFirwareFlasherWidget", "Browse")
+        )
         self.btnExec = QPushButton(_("Erase && write firmware"))
         self.btnExec.setEnabled(False)
         form_set = QGridLayout()
@@ -513,9 +509,7 @@ class AdminDialog(QDialog):
         self.setLayout(widget_layout)
         self.tabs = QTabWidget()
         widget_layout.addWidget(self.tabs)
-        button_box = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        )
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         widget_layout.addWidget(button_box)
@@ -561,9 +555,7 @@ class AdminDialog(QDialog):
             settings["envars"] = self.envar_widget.text_area.toPlainText()
         if self.microbit_widget:
             settings["minify"] = self.microbit_widget.minify.isChecked()
-            settings[
-                "microbit_runtime"
-            ] = self.microbit_widget.runtime_path.text()
+            settings["microbit_runtime"] = self.microbit_widget.runtime_path.text()
         if self.package_widget:
             settings["packages"] = self.package_widget.text_area.toPlainText()
         settings["locale"] = self.locale_widget.get_locale()
@@ -604,9 +596,7 @@ class FindReplaceDialog(QDialog):
         self.replace_all_flag = QCheckBox(_("Replace all?"))
         self.replace_all_flag.setChecked(replace_flag)
         widget_layout.addWidget(self.replace_all_flag)
-        button_box = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        )
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         widget_layout.addWidget(button_box)
@@ -702,9 +692,7 @@ class PackageDialog(QDialog):
         elif command == "install":
             pip_fn = venv.install_user_packages
         else:
-            raise RuntimeError(
-                "Invalid pip command: %s %s" % (command, packages)
-            )
+            raise RuntimeError("Invalid pip command: %s %s" % (command, packages))
         pip_fn(
             packages,
             slots=venv.Slots(
