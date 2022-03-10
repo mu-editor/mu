@@ -6,25 +6,22 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Mu Chinese\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-01 21:43+0000\n"
+"POT-Creation-Date: 2022-03-10 10:45+0000\n"
 "PO-Revision-Date: 2022-02-02 18:39+0800\n"
 "Last-Translator: Rong \"Mantle\" Bao <baorong2005@126.com>\n"
-"Language-Team: 管宁川John (Guan.NingChuan@Gmail.Com)\n"
 "Language: zh_CN\n"
+"Language-Team: 管宁川John (Guan.NingChuan@Gmail.Com)\n"
+"Plural-Forms: nplurals=1; plural=0\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.9.1\n"
-"X-Generator: Poedit 3.0.1\n"
 
 #: mu/debugger/client.py:118
 msgid ""
 "Connection timed out. Is your machine slow or busy? Free up some of the "
 "machine's resources and try again."
-msgstr ""
-"连接超时。是你的电脑运行太慢还是运行的东西太多？尝试清理内存或CPU占用再试一次"
-"吧。"
+msgstr "连接超时。是你的电脑运行太慢还是运行的东西太多？尝试清理内存或CPU占用再试一次吧。"
 
 #: mu/debugger/client.py:132
 msgid ""
@@ -40,25 +37,29 @@ msgstr "选择模式"
 
 #: mu/interface/dialogs.py:78
 msgid ""
-"Please select the desired mode then click \"OK\". Otherwise, click \"Cancel\"."
+"Please select the desired mode then click \"OK\". Otherwise, click "
+"\"Cancel\"."
 msgstr "请选择所需模式，然后单击“确定”。否则，请单击“取消”。"
 
 #: mu/interface/dialogs.py:99
 msgid ""
-"Change mode at any time by clicking the \"Mode\" button containing Mu's logo."
+"Change mode at any time by clicking the \"Mode\" button containing Mu's "
+"logo."
 msgstr "通过点击有Mu图标的“模式”按钮来随时更改模式。"
 
 #: mu/interface/dialogs.py:138
 msgid ""
-"When reporting a bug, copy and paste the content of the following log file."
+"When reporting a bug, copy and paste the content of the following log "
+"file."
 msgstr "反馈 bug 时，复制并粘贴以下日志文件的内容。"
 
 #: mu/interface/dialogs.py:162
 msgid ""
-"The environment variables shown below will be set each time you run a Python 3 "
-"script.\n"
+"The environment variables shown below will be set each time you run a "
+"Python 3 script.\n"
 "\n"
-"Each separate environment variable should be on a new line and of the form:\n"
+"Each separate environment variable should be on a new line and of the "
+"form:\n"
 "NAME=VALUE"
 msgstr ""
 "每次运行 Python 3 脚本时都会设置下面的环境变量。\n"
@@ -72,17 +73,17 @@ msgstr "在刷入之前简化 Python 代码？"
 
 #: mu/interface/dialogs.py:192
 msgid ""
-"Override the built-in MicroPython runtime with the following hex file (empty "
-"means use the default):"
+"Override the built-in MicroPython runtime with the following hex file "
+"(empty means use the default):"
 msgstr "使用下面的hex文件重写内置的 MicroPython 运行环境（留空使用默认文件）："
 
 #: mu/interface/dialogs.py:218
 msgid ""
-"The packages shown below will be available to import in Python 3 mode. Delete a "
-"package from the list to remove its availability.\n"
+"The packages shown below will be available to import in Python 3 mode. "
+"Delete a package from the list to remove its availability.\n"
 "\n"
-"Each separate package name should be on a new line. Packages are installed from "
-"PyPI (see: https://pypi.org/)."
+"Each separate package name should be on a new line. Packages are "
+"installed from PyPI (see: https://pypi.org/)."
 msgstr ""
 "下列包在 Python 3 模式中可以导入。从以下列表中移除包以将其禁用。\n"
 "\n"
@@ -92,334 +93,355 @@ msgstr ""
 msgid "Automatically detect"
 msgstr "自动检测"
 
-#: mu/interface/dialogs.py:264
+#: mu/interface/dialogs.py:266
 msgid ""
-"Please select the language for Mu's user interface from the choices listed "
-"below. <strong>Restart Mu for these changes to take effect.</strong>"
+"Please select the language for Mu's user interface from the choices "
+"listed below. <strong>Restart Mu for these changes to take "
+"effect.</strong>"
 msgstr ""
 
-#: mu/interface/dialogs.py:295
+#: mu/interface/dialogs.py:297
 msgid "How to flash MicroPython to your device"
 msgstr "如何将 MicroPython 刷入到你的设备"
 
-#: mu/interface/dialogs.py:302
+#: mu/interface/dialogs.py:304
 msgid ""
-"&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. Download "
-"firmware from the <a href=\"https://micropython.org/download\" style=\"color:"
-"#039be5;\">https://micropython.org/download</a><br/>&nbsp;3. Connect your "
-"device<br/>&nbsp;4. Load the .bin file below using the 'Browse' button<br/"
-">&nbsp;5. Press 'Erase & write firmware'"
+"&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. "
+"Download firmware from the <a href=\"https://micropython.org/download\" "
+"style=\"color:#039be5;\">https://micropython.org/download</a><br/>&nbsp;3."
+" Connect your device<br/>&nbsp;4. Load the .bin file below using the "
+"'Browse' button<br/>&nbsp;5. Press 'Erase & write firmware'"
 msgstr ""
-"&nbsp;1. 确定设备类型（ ESP8266 或 ESP32 ）<br />&nbsp;2. 从 <a href=\"https://"
-"micropython.org/download\" style=\"color:#039be5;\">https://micropython.org/"
-"download</a> 下载固件<br/>&nbsp;3. 连接设备<br/>&nbsp;4. 用“浏览”按钮加载 .bin "
-"文件<br/>&nbsp;5. 点击“擦除 & 写入固件”"
+"&nbsp;1. 确定设备类型（ ESP8266 或 ESP32 ）<br />&nbsp;2. 从 <a "
+"href=\"https://micropython.org/download\" "
+"style=\"color:#039be5;\">https://micropython.org/download</a> "
+"下载固件<br/>&nbsp;3. 连接设备<br/>&nbsp;4. 用“浏览”按钮加载 .bin 文件<br/>&nbsp;5. 点击“擦除 "
+"& 写入固件”"
 
-#: mu/interface/dialogs.py:334 mu/modes/web.py:82
+#: mu/interface/dialogs.py:327
+msgid "Device:"
+msgstr ""
+
+#: mu/interface/dialogs.py:330
+msgid "Choose device type:"
+msgstr ""
+
+#: mu/interface/dialogs.py:334
+msgid "Firmware (.bin):"
+msgstr ""
+
+#: mu/interface/dialogs.py:336
+msgctxt "dialogs|ESPFirwareFlasherWidget"
 msgid "Browse"
 msgstr "浏览"
 
-#: mu/interface/dialogs.py:335
+#: mu/interface/dialogs.py:337
 msgid "Erase && write firmware"
 msgstr "擦除 & 写入固件"
 
-#: mu/interface/dialogs.py:509 mu/interface/main.py:1381
+#: mu/interface/dialogs.py:376
+msgid "Select MicroPython firmware (.bin)"
+msgstr ""
+
+#: mu/interface/dialogs.py:378
+msgid "Firmware (*.bin)"
+msgstr ""
+
+#: mu/interface/dialogs.py:511 mu/interface/main.py:1387
 msgid "Mu Administration"
 msgstr "Mu 管理"
 
-#: mu/interface/dialogs.py:523
+#: mu/interface/dialogs.py:525
 msgid "Current Log"
 msgstr "当前日志"
 
-#: mu/interface/dialogs.py:527
+#: mu/interface/dialogs.py:529
 msgid "Python3 Environment"
 msgstr "Python3 环境变量"
 
-#: mu/interface/dialogs.py:534
+#: mu/interface/dialogs.py:536
 msgid "BBC micro:bit Settings"
 msgstr "BBC micro:bit 设置"
 
-#: mu/interface/dialogs.py:538
+#: mu/interface/dialogs.py:540
 msgid "Third Party Packages"
 msgstr "第三方包"
 
-#: mu/interface/dialogs.py:542
+#: mu/interface/dialogs.py:544
 msgid "ESP Firmware flasher"
 msgstr "ESP 固件刷入器"
 
-#: mu/interface/dialogs.py:547
+#: mu/interface/dialogs.py:549
 msgid "Select Language"
 msgstr ""
 
-#: mu/interface/dialogs.py:585
+#: mu/interface/dialogs.py:587
 msgid "Find / Replace"
 msgstr "查找 / 替换"
 
-#: mu/interface/dialogs.py:589
+#: mu/interface/dialogs.py:591
 msgid "Find:"
 msgstr "查找："
 
-#: mu/interface/dialogs.py:596
+#: mu/interface/dialogs.py:598
 msgid "Replace (optional):"
 msgstr "替换（可选）:"
 
-#: mu/interface/dialogs.py:602
+#: mu/interface/dialogs.py:604
 msgid "Replace all?"
 msgstr "全部替换？"
 
-#: mu/interface/dialogs.py:651
+#: mu/interface/dialogs.py:653
 msgid "Third Party Package Status"
 msgstr "第三方包状态"
 
-#: mu/interface/editor.py:319 mu/logic.py:1324
+#: mu/interface/editor.py:319 mu/logic.py:1327
 msgid "untitled"
 msgstr "无标题"
 
-#: mu/interface/main.py:99
+#: mu/interface/main.py:100
 msgid "Mode"
 msgstr "模式"
 
-#: mu/interface/main.py:100
+#: mu/interface/main.py:101
 msgid "Change Mu's mode of behaviour."
 msgstr "改变Mu的运行模式。"
 
-#: mu/interface/main.py:105
+#: mu/interface/main.py:106
 msgid "New"
 msgstr "新建"
 
-#: mu/interface/main.py:106
+#: mu/interface/main.py:107
 msgid "Create a new Python script."
 msgstr "创建一个新的 Python 脚本。"
 
-#: mu/interface/main.py:110
+#: mu/interface/main.py:111
 msgid "Load"
 msgstr "加载"
 
-#: mu/interface/main.py:111
+#: mu/interface/main.py:112
 msgid "Load a Python script."
 msgstr "加载一个 Python 脚本。"
 
-#: mu/interface/main.py:115
+#: mu/interface/main.py:116
 msgid "Save"
 msgstr "保存"
 
-#: mu/interface/main.py:116
+#: mu/interface/main.py:117
 msgid "Save the current Python script."
 msgstr "保存当前 Python 脚本。"
 
-#: mu/interface/main.py:130
+#: mu/interface/main.py:131
 msgid "Zoom-in"
 msgstr "放大"
 
-#: mu/interface/main.py:131
+#: mu/interface/main.py:132
 msgid "Zoom in (to make the text bigger)."
 msgstr "放大编辑器文本。"
 
-#: mu/interface/main.py:135
+#: mu/interface/main.py:136
 msgid "Zoom-out"
 msgstr "缩小"
 
-#: mu/interface/main.py:136
+#: mu/interface/main.py:137
 msgid "Zoom out (to make the text smaller)."
 msgstr "缩小编辑器文本。"
 
-#: mu/interface/main.py:140
+#: mu/interface/main.py:141
 msgid "Theme"
 msgstr "主题"
 
-#: mu/interface/main.py:141
+#: mu/interface/main.py:142
 msgid "Toggle theme between day, night or high contrast."
 msgstr "切换日间、夜间或者高对比度的主题。"
 
-#: mu/interface/main.py:148
+#: mu/interface/main.py:149
 msgid "Check"
 msgstr "检查"
 
-#: mu/interface/main.py:149
+#: mu/interface/main.py:150
 msgid "Check your code for mistakes."
 msgstr "检查代码中的错误。"
 
-#: mu/interface/main.py:154
+#: mu/interface/main.py:155
 msgid "Tidy"
 msgstr "格式化"
 
-#: mu/interface/main.py:155
+#: mu/interface/main.py:156
 msgid "Tidy up the layout of your code."
 msgstr "整理代码格式。"
 
-#: mu/interface/main.py:159
+#: mu/interface/main.py:160
 msgid "Help"
 msgstr "帮助"
 
-#: mu/interface/main.py:160
+#: mu/interface/main.py:161
 msgid "Show help about Mu in a browser."
 msgstr "在浏览器中显示关于Mu的帮助内容。"
 
-#: mu/interface/main.py:164
+#: mu/interface/main.py:165
 msgid "Quit"
 msgstr "退出"
 
-#: mu/interface/main.py:164
+#: mu/interface/main.py:165
 msgid "Quit Mu."
 msgstr "退出 Mu 。"
 
-#: mu/interface/main.py:275
+#: mu/interface/main.py:271
 msgid "Close file"
 msgstr "关闭文件"
 
-#: mu/interface/main.py:316
+#: mu/interface/main.py:312
 msgid "Mu {}"
 msgstr "Mu {}"
 
-#: mu/interface/main.py:554
+#: mu/interface/main.py:550
 msgid "Copy selected text to REPL"
 msgstr "复制选中的文字到 REPL"
 
-#: mu/interface/main.py:617
+#: mu/interface/main.py:613
 msgid "Filesystem on "
 msgstr "micro:bit 上的文件系统 "
 
-#: mu/interface/main.py:668
+#: mu/interface/main.py:674
 msgid "Python3 data tuple"
 msgstr "Python3 数据元组"
 
-#: mu/interface/main.py:680
+#: mu/interface/main.py:686
 msgid "Python3 (Jupyter)"
 msgstr "Python3（Jupyter）"
 
-#: mu/interface/main.py:687
+#: mu/interface/main.py:693
 msgid "{} REPL"
 msgstr "{} REPL"
 
-#: mu/interface/main.py:706
+#: mu/interface/main.py:712
 msgid "{} Plotter"
 msgstr "{} 绘图器"
 
-#: mu/interface/main.py:756
+#: mu/interface/main.py:762
 msgid "Running: {}"
 msgstr "运行：{}"
 
-#: mu/interface/main.py:805
+#: mu/interface/main.py:811
 msgid "Debug Inspector"
 msgstr "调试检查器"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:823
 msgid "Name"
 msgstr "名称"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:823
 msgid "Value"
 msgstr "值"
 
-#: mu/interface/main.py:855
+#: mu/interface/main.py:861
 msgid "(A list of {} items.)"
 msgstr "（ {} 项的列表(list)。）"
 
-#: mu/interface/main.py:874
+#: mu/interface/main.py:880
 msgid "(A dict of {} items.)"
 msgstr "（ {} 项的字典(dict)。）"
 
-#: mu/interface/main.py:1057
+#: mu/interface/main.py:1063
 msgid "Mu"
 msgstr "Mu"
 
-#: mu/interface/main.py:1368
+#: mu/interface/main.py:1374
 msgid "Mu's current mode of behaviour."
 msgstr "Mu 当前的运行模式。"
 
-#: mu/interface/main.py:1423
+#: mu/interface/main.py:1429
 msgid "Detected new {} device: {}."
 msgstr "检测到新的 {} 设备：{}。"
 
-#: mu/interface/main.py:1427 mu/logic.py:1616
+#: mu/interface/main.py:1433 mu/logic.py:1622
 msgid "Detected new {} device."
 msgstr "检测到新的 {} 设备。"
 
-#: mu/interface/panes.py:495
+#: mu/interface/panes.py:657
 msgid "File already exists; overwrite it?"
 msgstr "文件已存在，是否覆盖？"
 
-#: mu/interface/panes.py:496
+#: mu/interface/panes.py:658
 msgid "File already exists"
 msgstr "文件已存在"
 
-#: mu/interface/panes.py:529
+#: mu/interface/panes.py:691
 msgid "Copying '{}' to device."
 msgstr "正在将“{}”复制到设备。"
 
-#: mu/interface/panes.py:538
+#: mu/interface/panes.py:700
 msgid "'{}' successfully copied to device."
 msgstr "已成功将“{}”复制到设备。"
 
-#: mu/interface/panes.py:547
+#: mu/interface/panes.py:709
 msgid "Delete (cannot be undone)"
 msgstr "删除（无法撤销）"
 
-#: mu/interface/panes.py:553
+#: mu/interface/panes.py:715
 msgid "Deleting '{}' from device."
 msgstr "正在从设备中删除“{}”。"
 
-#: mu/interface/panes.py:562
+#: mu/interface/panes.py:724
 msgid "'{}' successfully deleted from device."
 msgstr "已成功从设备中删除“{}”。"
 
-#: mu/interface/panes.py:595
+#: mu/interface/panes.py:757
 msgid "Getting '{}' from device. Copying to '{}'."
 msgstr "正从设备中获取“{}”并复制到“{}”。"
 
-#: mu/interface/panes.py:606
+#: mu/interface/panes.py:768
 msgid "Successfully copied '{}' from the device to your computer."
 msgstr "已成功将“{}”从设备复制到你的电脑上。"
 
-#: mu/interface/panes.py:623
+#: mu/interface/panes.py:785
 msgid "Open in Mu"
 msgstr "在 Mu 中打开"
 
-#: mu/interface/panes.py:626
+#: mu/interface/panes.py:788
 msgid "Write to main.py on device"
 msgstr "写入到设备上的 main.py"
 
-#: mu/interface/panes.py:629
+#: mu/interface/panes.py:791
 msgid "Open"
 msgstr "打开"
 
-#: mu/interface/panes.py:635
+#: mu/interface/panes.py:797
 msgid "Opening '{}'"
 msgstr "正在打开“{}”"
 
-#: mu/interface/panes.py:678
+#: mu/interface/panes.py:840
 msgid "Files on your device:"
 msgstr "设备上的文件："
 
-#: mu/interface/panes.py:680
+#: mu/interface/panes.py:842
 msgid "Files on your computer:"
 msgstr "电脑上的文件："
 
-#: mu/interface/panes.py:752
+#: mu/interface/panes.py:914
 msgid ""
-"There was a problem getting the list of files on the device. Please check Mu's "
-"logs for technical information. Alternatively, try unplugging/plugging-in your "
-"device and/or restarting Mu."
-msgstr ""
-"获取设备上的文件列表时出现问题。 请查看Mu的日志以获取技术信息。 或者尝试重新插拔"
-"设备和/或重启 Mu 。"
+"There was a problem getting the list of files on the device. Please check"
+" Mu's logs for technical information. Alternatively, try unplugging"
+"/plugging-in your device and/or restarting Mu."
+msgstr "获取设备上的文件列表时出现问题。 请查看Mu的日志以获取技术信息。 或者尝试重新插拔设备和/或重启 Mu 。"
 
-#: mu/interface/panes.py:767
+#: mu/interface/panes.py:929
 msgid ""
-"There was a problem copying the file '{}' onto the device. Please check Mu's "
-"logs for more information."
+"There was a problem copying the file '{}' onto the device. Please check "
+"Mu's logs for more information."
 msgstr "将文件“{}”复制到设备上时出现问题。 请查看 Mu 的日志以获取更多信息。"
 
-#: mu/interface/panes.py:779
+#: mu/interface/panes.py:941
 msgid ""
-"There was a problem deleting '{}' from the device. Please check Mu's logs for "
-"more information."
+"There was a problem deleting '{}' from the device. Please check Mu's logs"
+" for more information."
 msgstr "从设备删除“{}”时出现问题。 请查看 Mu 的日志以获取更多信息。"
 
-#: mu/interface/panes.py:791
+#: mu/interface/panes.py:953
 msgid ""
-"There was a problem getting '{}' from the device. Please check Mu's logs for "
-"more information."
+"There was a problem getting '{}' from the device. Please check Mu's logs "
+"for more information."
 msgstr "从设备获取“{}\"时出现问题。 请查看 Mu 的日志以获取更多信息。"
 
 #: mu/interface/widgets.py:70 mu/interface/widgets.py:141
@@ -433,10 +455,9 @@ msgstr "你好，世界！"
 
 #: mu/logic.py:91
 msgid ""
-"This editor is free software written in Python. You can modify it, add features "
-"or fix bugs if you like."
-msgstr ""
-"这个编辑器是用 Python 编写的自由软件。 您可以根据需要修改，添加功能或修复错误。"
+"This editor is free software written in Python. You can modify it, add "
+"features or fix bugs if you like."
+msgstr "这个编辑器是用 Python 编写的自由软件。 您可以根据需要修改，添加功能或修复错误。"
 
 #: mu/logic.py:95
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
@@ -448,17 +469,15 @@ msgstr "谷歌、Facebook、NASA、皮克斯、迪士尼等等都在使用Python
 
 #: mu/logic.py:97
 msgid ""
-"Programming is a form of magic. Learn to cast the right spells with code and "
-"you'll be a wizard."
+"Programming is a form of magic. Learn to cast the right spells with code "
+"and you'll be a wizard."
 msgstr "编程是一种魔法。 通过学习使用代码施放正确的法术，你将成为一名魔法师。"
 
 #: mu/logic.py:101
 msgid ""
-"REPL stands for read, evaluate, print, loop. It's a fun way to talk to your "
-"computer! :-)"
-msgstr ""
-"REPL 代表“读取(Read)-求值(Evaluate)-打印(Print)”的循环(Loop)。 这是与您的计算机"
-"交谈的一个有趣方式！:-)"
+"REPL stands for read, evaluate, print, loop. It's a fun way to talk to "
+"your computer! :-)"
+msgstr "REPL 代表“读取(Read)-求值(Evaluate)-打印(Print)”的循环(Loop)。 这是与您的计算机交谈的一个有趣方式！:-)"
 
 #: mu/logic.py:105
 msgid "Be brave, break things, learn and have fun!"
@@ -482,7 +501,8 @@ msgstr "开阔思路、冒险精神及尊重是多样性的关键。"
 
 #: mu/logic.py:110
 msgid ""
-"Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
+"Don't worry if it doesn't work. Learn the lesson, fix it and try again! "
+":-)"
 msgstr "如果它不起作用，别担心。 看看教程，修复它，然后再试一次！:-)"
 
 #: mu/logic.py:114
@@ -523,7 +543,8 @@ msgstr "让自己站在用户的位置上。"
 
 #: mu/logic.py:126
 msgid ""
-"Explaining a programming problem to a friend often reveals the solution. :-)"
+"Explaining a programming problem to a friend often reveals the solution. "
+":-)"
 msgstr "与朋友讨论编程中遇到的问题，通常会获得新的解决方案。:-)"
 
 #: mu/logic.py:130
@@ -560,8 +581,8 @@ msgstr "可读性应当被重视。"
 
 #: mu/logic.py:138
 msgid ""
-"Special cases aren't special enough to break the rules. Although practicality "
-"beats purity."
+"Special cases aren't special enough to break the rules. Although "
+"practicality beats purity."
 msgstr "尽管实用性会打败纯粹性，特例也不能凌驾于规则之上。"
 
 #: mu/logic.py:142
@@ -602,8 +623,8 @@ msgstr "要理解递归是什么，你必须先了解递归。"
 
 #: mu/logic.py:154
 msgid ""
-"Algorithm: a word used by programmers when they don't want to explain what they "
-"did."
+"Algorithm: a word used by programmers when they don't want to explain "
+"what they did."
 msgstr "算法：程序员在不想解释他们所做的事情时使用的一个词。"
 
 #: mu/logic.py:158
@@ -660,50 +681,50 @@ msgstr " 在这行之上"
 
 #: mu/logic.py:509
 msgid ""
-"Syntax error. Python cannot understand this line. Check for missing characters!"
+"Syntax error. Python cannot understand this line. Check for missing "
+"characters!"
 msgstr "语法错误。 Python 无法理解这一行。 检查缺少的字符！"
 
 #: mu/logic.py:576
-msgid " compatible"
+msgid "{} compatible"
 msgstr "兼容"
 
-#: mu/logic.py:995
+#: mu/logic.py:998
 msgid ""
 "The file contains characters Mu expects to be encoded as {0} or as the "
-"computer's default encoding {1}, but which are encoded in some other way.\n"
+"computer's default encoding {1}, but which are encoded in some other way."
 "\n"
-"If this file was saved in another application, re-save the file via the 'Save "
-"as' option and set the encoding to {0}"
+"\n"
+"If this file was saved in another application, re-save the file via the "
+"'Save as' option and set the encoding to {0}"
 msgstr ""
 "文件的编码有问题，该文件所包含字符应为 Mu 的默认编码{0}或计算机的默认编码{1}。\n"
 "\n"
-"如果此文件是通过另外一个应用程序保存，请通过“另存为”选项重新保存文件，并将编码设"
-"置为{0}"
+"如果此文件是通过另外一个应用程序保存，请通过“另存为”选项重新保存文件，并将编码设置为{0}"
 
-#: mu/logic.py:1023
+#: mu/logic.py:1026
 msgid "The file \"{}\" is already open."
 msgstr "文件“{}”已经打开。"
 
-#: mu/logic.py:1035
+#: mu/logic.py:1038
 msgid "Mu cannot read the characters in {}"
 msgstr "Mu 无法读取 {} 中的字符"
 
-#: mu/logic.py:1061
+#: mu/logic.py:1064
 msgid "Mu was not able to open this file"
 msgstr "Mu 无法打开此文件"
 
-#: mu/logic.py:1062
+#: mu/logic.py:1065
 msgid ""
-"Currently Mu only works with Python source files or hex files created with "
-"embedded MicroPython code."
-msgstr ""
-"目前，Mu 仅适用于使用嵌入式 MicroPython 代码创建的 Python 源文件或 hex 文件。"
+"Currently Mu only works with Python source files or hex files created "
+"with embedded MicroPython code."
+msgstr "目前，Mu 仅适用于使用嵌入式 MicroPython 代码创建的 Python 源文件或 hex 文件。"
 
-#: mu/logic.py:1070
+#: mu/logic.py:1073
 msgid "Could not load {}"
 msgstr "无法加载 {}"
 
-#: mu/logic.py:1072
+#: mu/logic.py:1075
 msgid ""
 "Does this file exist?\n"
 "If it does, do you have permission to read it?\n"
@@ -715,11 +736,11 @@ msgstr ""
 "\n"
 "请检查并重试。"
 
-#: mu/logic.py:1080
+#: mu/logic.py:1083
 msgid "Is this a {} file?"
 msgstr "这是一个 {} 文件吗？"
 
-#: mu/logic.py:1081
+#: mu/logic.py:1084
 msgid ""
 "It looks like this could be a {} file.\n"
 "\n"
@@ -729,219 +750,216 @@ msgstr ""
 "\n"
 "你想将 Mu 改为 {}模式吗？"
 
-#: mu/logic.py:1208
+#: mu/logic.py:1211
 msgid "Could not save file (disk problem)"
 msgstr "无法保存文件（磁盘问题）"
 
-#: mu/logic.py:1209
+#: mu/logic.py:1212
 msgid ""
-"Error saving file to disk. Ensure you have permission to write the file and "
-"sufficient disk space."
+"Error saving file to disk. Ensure you have permission to write the file "
+"and sufficient disk space."
 msgstr "将文件保存到磁盘时出错。 确保你有写入文件的权限和足够的磁盘空间。"
 
-#: mu/logic.py:1215
+#: mu/logic.py:1218
 msgid "Could not save file (encoding problem)"
 msgstr "无法保存文件（编码问题）"
 
-#: mu/logic.py:1217
+#: mu/logic.py:1220
 msgid ""
-"Unable to convert all the characters. If you have an encoding line at the top "
-"of the file, remove it and try again."
+"Unable to convert all the characters. If you have an encoding line at the"
+" top of the file, remove it and try again."
 msgstr "无法转换所有字符。 如果文件顶部有编码行，请将其删除并重试。"
 
-#: mu/logic.py:1228
+#: mu/logic.py:1231
 msgid "Saved file: {}"
 msgstr "已保存文件：{}"
 
-#: mu/logic.py:1260 mu/logic.py:1675
+#: mu/logic.py:1263 mu/logic.py:1681
 msgid "You cannot use the filename \"{}\""
 msgstr "你不能使用文件名“{}”"
 
-#: mu/logic.py:1263
+#: mu/logic.py:1266
 msgid ""
-"This name is already used by another part of Python. If you use this name, "
-"things are likely to break. Please try again with a different filename."
-msgstr ""
-"这个名字已被 Python 的另一部分使用。如果你使用这个名字，可能会出问题。请使用其他"
-"文件名重试。"
+"This name is already used by another part of Python. If you use this "
+"name, things are likely to break. Please try again with a different "
+"filename."
+msgstr "这个名字已被 Python 的另一部分使用。如果你使用这个名字，可能会出问题。请使用其他文件名重试。"
 
-#: mu/logic.py:1340
+#: mu/logic.py:1343
 msgid "Good job! No problems found."
 msgstr "干得漂亮！ 没有发现问题。"
 
-#: mu/logic.py:1341
+#: mu/logic.py:1344
 msgid "Hurrah! Checker turned up no problems."
 msgstr "诶嘿！检查结果显示，没有问题。"
 
-#: mu/logic.py:1342
+#: mu/logic.py:1345
 msgid "Nice one! Zero problems detected."
 msgstr "棒！ 检测到0个问题。"
 
-#: mu/logic.py:1343
+#: mu/logic.py:1346
 msgid "Well done! No problems here."
 msgstr "做得好！ 这里没问题。"
 
-#: mu/logic.py:1344
+#: mu/logic.py:1347
 msgid "Awesome! Zero problems found."
 msgstr "真棒！ 检测到0个问题。"
 
-#: mu/logic.py:1370
+#: mu/logic.py:1373
 msgid "There is un-saved work, exiting the application will cause you to lose it."
 msgstr "你有还没有保存的代码，如果现在退出程序的话将不会保存。"
 
-#: mu/logic.py:1442
+#: mu/logic.py:1448
 msgid "Could not find MicroPython runtime."
 msgstr "找不到 MicroPython 运行时。"
 
-#: mu/logic.py:1443
+#: mu/logic.py:1449
 msgid ""
-"The micro:bit runtime you specified ('{}') does not exist. Please try again."
+"The micro:bit runtime you specified ('{}') does not exist. Please try "
+"again."
 msgstr "您指定的 micro:bit 运行时（”{}“）不存在。请再试一次。"
 
-#: mu/logic.py:1569
+#: mu/logic.py:1575
 msgid "Changed to {} mode."
 msgstr "已更改为 {} 模式。"
 
-#: mu/logic.py:1599
+#: mu/logic.py:1605
 msgid "Would you like to change Mu to the {} mode?"
 msgstr "你想将 Mu 改为 {} 模式吗？"
 
-#: mu/logic.py:1618
+#: mu/logic.py:1624
 msgid "Device changed to {}."
 msgstr "设备更改为 {} 。"
 
-#: mu/logic.py:1654
+#: mu/logic.py:1660
 msgid "Cannot Set Breakpoint."
 msgstr "无法设置断点。"
 
-#: mu/logic.py:1655
+#: mu/logic.py:1661
 msgid ""
-"Lines that are comments or some multi-line statements cannot have breakpoints."
+"Lines that are comments or some multi-line statements cannot have "
+"breakpoints."
 msgstr "单行或多行注释语句不能设置断点。"
 
-#: mu/logic.py:1678
+#: mu/logic.py:1684
 msgid ""
-"This name is already used by another part of Python. If you use that name, "
-"things are likely to break. Please try again with a different filename."
-msgstr ""
-"这个名字已被 Python 的另一部分使用。如果你使用这个名字，可能会出问题。请使用其他"
-"文件名重试。"
+"This name is already used by another part of Python. If you use that "
+"name, things are likely to break. Please try again with a different "
+"filename."
+msgstr "这个名字已被 Python 的另一部分使用。如果你使用这个名字，可能会出问题。请使用其他文件名重试。"
 
-#: mu/logic.py:1700
+#: mu/logic.py:1706
 msgid "Could not rename file."
 msgstr "无法重命名文件。"
 
-#: mu/logic.py:1701
+#: mu/logic.py:1707
 msgid "A file of that name is already open in Mu."
 msgstr "该名称的文件已在 Mu 中打开。"
 
-#: mu/logic.py:1733
+#: mu/logic.py:1739
 msgid "Replaced \"{}\" with \"{}\"."
 msgstr "已将“{}”替换为“{}”。"
 
-#: mu/logic.py:1738
+#: mu/logic.py:1744
 msgid "Replaced {} matches of \"{}\" with \"{}\"."
 msgstr "已将{}个“{}”的匹配项替换为“{}”。"
 
-#: mu/logic.py:1743 mu/logic.py:1750 mu/logic.py:1769
+#: mu/logic.py:1749 mu/logic.py:1756 mu/logic.py:1775
 msgid "Could not find \"{}\"."
 msgstr "找不到 ”{}”。"
 
-#: mu/logic.py:1748 mu/logic.py:1767
+#: mu/logic.py:1754 mu/logic.py:1773
 msgid "Highlighting matches for \"{}\"."
 msgstr "高亮显示“{}”的匹配项。"
 
-#: mu/logic.py:1753 mu/logic.py:1772
+#: mu/logic.py:1759 mu/logic.py:1778
 msgid "You must provide something to find."
 msgstr "你需要提供需要查找的内容。"
 
-#: mu/logic.py:1754 mu/logic.py:1773
+#: mu/logic.py:1760 mu/logic.py:1779
 msgid "Please try again, this time with something in the find box."
 msgstr "请在查找框中输入内容，然后重试。"
 
-#: mu/logic.py:1817
+#: mu/logic.py:1823
 msgid "Successfully cleaned the code. Use CTRL-Z to undo."
 msgstr "成功清理代码。按 CTRL-Z 以撤销。"
 
-#: mu/logic.py:1823
+#: mu/logic.py:1829
 msgid "Your code contains problems."
 msgstr "你的代码包含错误。"
 
-#: mu/logic.py:1824
+#: mu/logic.py:1830
 msgid ""
-"These must be fixed before tidying will work. Please use the 'Check' button to "
-"highlight these problems."
+"These must be fixed before tidying will work. Please use the 'Check' "
+"button to highlight these problems."
 msgstr "这些错误必须在格式化之前修正。请使用”检查“按钮以高亮显示这些错误。"
 
-#: mu/modes/base.py:115
+#: mu/modes/base.py:85
 msgid "Cannot connect to device on port {}"
 msgstr "无法在 {} 端口上连接设备"
 
-#: mu/modes/base.py:209
+#: mu/modes/base.py:179
 msgid "# Write your code here :-)"
 msgstr "# 在这里写上你的代码 :-)"
 
-#: mu/modes/base.py:332
+#: mu/modes/base.py:324
 msgid "Data Flood Detected!"
 msgstr "检测到数据泛滥！"
 
-#: mu/modes/base.py:333
+#: mu/modes/base.py:325
 msgid ""
-"The plotter is flooded with data which will make Mu unresponsive and freeze. As "
-"a safeguard, the plotter has been stopped.\n"
+"The plotter is flooded with data which will make Mu unresponsive and "
+"freeze. As a safeguard, the plotter has been stopped.\n"
 "\n"
-"Flooding is when chunks of data of more than 1024 bytes are repeatedly sent to "
-"the plotter.\n"
+"Flooding is when chunks of data of more than 1024 bytes are repeatedly "
+"sent to the plotter.\n"
 "\n"
-"To fix this, make sure your code prints small tuples of data between calls to "
-"'sleep' for a very short period of time."
+"To fix this, make sure your code prints small tuples of data between "
+"calls to 'sleep' for a very short period of time."
 msgstr ""
 "绘图器已经数据泛滥，这将使 Mu 无响应并卡死。作为一种保护措施，绘图器已经停止。\n"
 "\n"
 "泛滥是指不停的发送超过 1024 字节的大量数据到绘图器。\n"
 "\n"
-"要解决此问题，请确保您的代码在打印小的元组(tuple)数据的间隔中，调用非常短时间"
-"的“sleep”函数。"
+"要解决此问题，请确保您的代码在打印小的元组(tuple)数据的间隔中，调用非常短时间的“sleep”函数。"
 
-#: mu/modes/base.py:508 mu/modes/base.py:558
+#: mu/modes/base.py:500 mu/modes/base.py:550 mu/modes/snek.py:521
 msgid "Click on the device's reset button, wait a few seconds and then try again."
 msgstr "按一下设备的重置(reset)按钮，等待几秒钟，然后重试。"
 
-#: mu/modes/base.py:516 mu/modes/base.py:566
+#: mu/modes/base.py:508 mu/modes/base.py:558 mu/modes/snek.py:529
 msgid "Could not find an attached device."
 msgstr "找不到已连接的设备。"
 
-#: mu/modes/base.py:517
+#: mu/modes/base.py:509
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
-"It must have a version of MicroPython (or CircuitPython) flashed onto it before "
-"the REPL will work.\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it "
+"before the REPL will work.\n"
 "\n"
-"Finally, press the device's reset button and wait a few seconds before trying "
-"again."
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
 msgstr ""
 "请确保已将设备插入这台电脑。\n"
 "\n"
-"在 REPL 工作之前，设备必须有一个 MicroPython 或 CircuitPython 版本的固件已经刷"
-"入。\n"
+"在 REPL 工作之前，设备必须有一个 MicroPython 或 CircuitPython 版本的固件已经刷入。\n"
 "\n"
 "最后，按一下设备的重置(reset)按钮并等待几秒钟后再重试。"
 
-#: mu/modes/base.py:567
+#: mu/modes/base.py:559
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
-"It must have a version of MicroPython (or CircuitPython) flashed onto it before "
-"the Plotter will work.\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it "
+"before the Plotter will work.\n"
 "\n"
-"Finally, press the device's reset button and wait a few seconds before trying "
-"again."
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
 msgstr ""
 "请确保已将设备插入这台电脑。\n"
 "\n"
-"在绘图器工作之前，设备必须有一个 MicroPython 或 CircuitPython 版本的固件已经刷"
-"入。\n"
+"在绘图器工作之前，设备必须有一个 MicroPython 或 CircuitPython 版本的固件已经刷入。\n"
 "\n"
 "最后，按一下设备的重置(reset)按钮并等待几秒钟后再重试。"
 
@@ -953,21 +971,21 @@ msgstr "CircuitPython"
 msgid "Write code for boards running CircuitPython."
 msgstr "为运行 CircuitPython 的开发板编写代码。"
 
-#: mu/modes/circuitpython.py:142 mu/modes/pyboard.py:86
+#: mu/modes/circuitpython.py:142 mu/modes/pyboard.py:86 mu/modes/snek.py:379
 msgid "Serial"
 msgstr "串口"
 
-#: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87
+#: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87 mu/modes/snek.py:380
 msgid "Open a serial connection to your device."
 msgstr "打开与设备的串口连接。"
 
 #: mu/modes/circuitpython.py:152 mu/modes/esp.py:102 mu/modes/microbit.py:164
-#: mu/modes/pyboard.py:96 mu/modes/python3.py:174
+#: mu/modes/pyboard.py:96 mu/modes/python3.py:174 mu/modes/snek.py:403
 msgid "Plotter"
 msgstr "绘图器"
 
 #: mu/modes/circuitpython.py:153 mu/modes/esp.py:103 mu/modes/microbit.py:165
-#: mu/modes/pyboard.py:97
+#: mu/modes/pyboard.py:97 mu/modes/snek.py:404
 msgid "Plot incoming REPL data."
 msgstr "绘制由 REPL 传入的数据。"
 
@@ -977,35 +995,34 @@ msgstr "运行装载命令时遇到权限错误。"
 
 #: mu/modes/circuitpython.py:190
 msgid ""
-"The mount command (\"{}\") returned an error: {}. Mu will continue as if a "
-"device isn't plugged in."
+"The mount command (\"{}\") returned an error: {}. Mu will continue as if "
+"a device isn't plugged in."
 msgstr "装载命令（“{}”）返回了一个错误：{}。Mu 将假设设备未连接。"
 
 #: mu/modes/circuitpython.py:208
 msgid ""
-"If your Circuit Python device is plugged in, you need to \"Share with Linux\" "
-"on the CIRCUITPY drive in the \"Files\" app then restart Mu."
+"If your Circuit Python device is plugged in, you need to \"Share with "
+"Linux\" on the CIRCUITPY drive in the \"Files\" app then restart Mu."
 msgstr ""
-"如果你的 CircuitPython 设备已插入，你需要在“文件（Files）”应用中把 CIRCUITPY 驱"
-"动器“与 Linux 共享（Share with Linux）”，然后重启 Mu 。"
+"如果你的 CircuitPython 设备已插入，你需要在“文件（Files）”应用中把 CIRCUITPY 驱动器“与 Linux "
+"共享（Share with Linux）”，然后重启 Mu 。"
 
 #: mu/modes/circuitpython.py:269
 msgid "Could not find an attached CircuitPython device."
 msgstr "找不到已连接的 Adafruit CircuitPython 设备。"
 
 #: mu/modes/circuitpython.py:270
-#, fuzzy
 msgid ""
-"Python files for CircuitPython devices are stored on the device. Therefore, to "
-"edit these files you need to have the device plugged in. Until you plug in a "
-"device, Mu will use the directory found here:\n"
+"Python files for CircuitPython devices are stored on the device. "
+"Therefore, to edit these files you need to have the device plugged in. "
+"Until you plug in a device, Mu will use the directory found here:\n"
 "\n"
 " {}\n"
 "\n"
 "...to store your code."
 msgstr ""
-"Adafruit CircuitPython 设备的 Python 文件存储在设备上。 因此，要编辑这些文件，需"
-"要您插入设备。在插入设备之前，Mu 将使用这个目录：\n"
+"Adafruit CircuitPython 设备的 Python 文件存储在设备上。 因此，要编辑这些文件，需要您插入设备。在插入设备之前，Mu"
+" 将使用这个目录：\n"
 "\n"
 " {}\n"
 "\n"
@@ -1123,11 +1140,9 @@ msgstr "REPL和文件系统不能同时工作。"
 
 #: mu/modes/esp.py:130 mu/modes/microbit.py:520
 msgid ""
-"The REPL and file system both use the same USB serial connection. Only one can "
-"be active at any time. Toggle the file system off and try again."
-msgstr ""
-"REPL和文件系统都使用相同的USB串口通讯。任何时候只能使用其中一个功能。请关闭文件"
-"系统，然后重试。"
+"The REPL and file system both use the same USB serial connection. Only "
+"one can be active at any time. Toggle the file system off and try again."
+msgstr "REPL和文件系统都使用相同的USB串口通讯。任何时候只能使用其中一个功能。请关闭文件系统，然后重试。"
 
 #: mu/modes/esp.py:149 mu/modes/microbit.py:539
 msgid "The plotter and file system cannot work at the same time."
@@ -1135,20 +1150,18 @@ msgstr "绘图器和文件系统无法同时工作。"
 
 #: mu/modes/esp.py:152 mu/modes/microbit.py:542
 msgid ""
-"The plotter and file system both use the same USB serial connection. Only one "
-"can be active at any time. Toggle the file system off and try again."
-msgstr ""
-"绘图器和文件系统都使用相同的USB串口通讯。任何时候只能使用其中一个功能。请关闭文"
-"件系统，然后重试。"
+"The plotter and file system both use the same USB serial connection. Only"
+" one can be active at any time. Toggle the file system off and try again."
+msgstr "绘图器和文件系统都使用相同的USB串口通讯。任何时候只能使用其中一个功能。请关闭文件系统，然后重试。"
 
-#: mu/modes/esp.py:180
+#: mu/modes/esp.py:180 mu/modes/snek.py:420
 msgid "Cannot run anything without any active editor tabs."
 msgstr "不能在没有活动编辑器标签页时运行程序。"
 
-#: mu/modes/esp.py:181
+#: mu/modes/esp.py:181 mu/modes/snek.py:421
 msgid ""
-"Running transfers the content of the current tab onto the device. It seems like "
-"you don't have  any tabs open."
+"Running transfers the content of the current tab onto the device. It "
+"seems like you don't have  any tabs open."
 msgstr "“运行”将把当前编辑器标签页的内容传输至设备。未能找到任何打开的标签页。"
 
 #: mu/modes/esp.py:200 mu/modes/microbit.py:556
@@ -1157,10 +1170,9 @@ msgstr "文件系统无法与REPL或绘图器同时工作。"
 
 #: mu/modes/esp.py:204 mu/modes/microbit.py:560
 msgid ""
-"The file system and the REPL and plotter use the same USB serial connection. "
-"Toggle the REPL and plotter off and try again."
-msgstr ""
-"文件系统、REPL、绘图器使用相同的USB串口通讯。 请关闭REPL和绘图器，然后重试。"
+"The file system and the REPL and plotter use the same USB serial "
+"connection. Toggle the REPL and plotter off and try again."
+msgstr "文件系统、REPL、绘图器使用相同的USB串口通讯。 请关闭REPL和绘图器，然后重试。"
 
 #: mu/modes/esp.py:231
 msgid "Could not find an attached {board_name}"
@@ -1170,11 +1182,11 @@ msgstr "Could not find an attached {board_name}"
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
-"The device must have MicroPython flashed onto it before the file system will "
-"work.\n"
+"The device must have MicroPython flashed onto it before the file system "
+"will work.\n"
 "\n"
-"Finally, press the device's reset button and wait a few seconds before trying "
-"again."
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
 msgstr ""
 "请确保已将设备插入此计算机。\n"
 "\n"
@@ -1244,14 +1256,13 @@ msgstr "找不到已连接的 BBC micro:bit 。"
 
 #: mu/modes/microbit.py:308
 msgid ""
-"Please ensure you leave enough time for the BBC micro:bit to be attached and "
-"configured correctly by your computer. This may take several seconds. "
-"Alternatively, try removing and re-attaching the device or saving your work and "
-"restarting Mu if the device remains unfound."
+"Please ensure you leave enough time for the BBC micro:bit to be attached "
+"and configured correctly by your computer. This may take several seconds."
+" Alternatively, try removing and re-attaching the device or saving your "
+"work and restarting Mu if the device remains unfound."
 msgstr ""
-"请确保您留出了足够的时间让您的计算机正确连接和配置 BBC micro:bit 设备。这可能需"
-"要几秒钟的时间。 或者您可以尝试保存文件并重新连接设备，如果仍未发现设备，您还可"
-"以尝试重新启动 Mu 。"
+"请确保您留出了足够的时间让您的计算机正确连接和配置 BBC micro:bit 设备。这可能需要几秒钟的时间。 "
+"或者您可以尝试保存文件并重新连接设备，如果仍未发现设备，您还可以尝试重新启动 Mu 。"
 
 #: mu/modes/microbit.py:326
 msgid "Cannot save a custom hex file to a local directory."
@@ -1259,8 +1270,8 @@ msgstr "无法将自定义 hex 文件保存至本地目录。"
 
 #: mu/modes/microbit.py:327
 msgid ""
-"When a custom hex file is configured in the settings a local directory cannot "
-"be used to saved the final hex file."
+"When a custom hex file is configured in the settings a local directory "
+"cannot be used to save the final hex file."
 msgstr ""
 
 #: mu/modes/microbit.py:336
@@ -1269,9 +1280,9 @@ msgstr ""
 
 #: mu/modes/microbit.py:337
 msgid ""
-"Mu was unable to detect the micro:bit serial port. Normally this is okay, as Mu "
-"can inject the Python code into the hex to flash. However, this cannot be done "
-"with a custom hex file."
+"Mu was unable to detect the micro:bit serial port. Normally this is okay,"
+" as Mu can inject the Python code into the hex to flash. However, this "
+"cannot be done with a custom hex file."
 msgstr ""
 
 #: mu/modes/microbit.py:390
@@ -1280,8 +1291,8 @@ msgstr "不支持的 BBC micro:bit 。"
 
 #: mu/modes/microbit.py:391
 msgid ""
-"Your device is newer than this version of Mu. Please update Mu to the latest "
-"version to support this device.\n"
+"Your device is newer than this version of Mu. Please update Mu to the "
+"latest version to support this device.\n"
 "\n"
 "https://codewith.mu/"
 msgstr ""
@@ -1311,8 +1322,8 @@ msgstr "刷入程序到 micro:bit 时出现了一个问题。"
 
 #: mu/modes/microbit.py:499
 msgid ""
-"Please do not disconnect the device until flashing has completed. Please check "
-"the logs for more information."
+"Please do not disconnect the device until flashing has completed. Please "
+"check the logs for more information."
 msgstr "在刷入完成之前，请不要断开设备。 请查看日志以获取更多信息。"
 
 #: mu/modes/microbit.py:601
@@ -1332,27 +1343,25 @@ msgid "Pyboard MicroPython"
 msgstr "Pyboard MicroPython"
 
 #: mu/modes/pyboard.py:34
-msgid "Use MicroPython on the Pyboard line of boards"
+msgid "Use MicroPython on the Pyboard line of boards."
 msgstr "在 Pyboard 系列开发板上使用 MicroPython "
 
 #: mu/modes/pyboard.py:177
-#, fuzzy
 msgid "Could not find an attached PyBoard device."
 msgstr "找不到已连接的设备。"
 
 #: mu/modes/pyboard.py:178
-#, fuzzy
 msgid ""
 "Python files for PyBoard MicroPython devices are stored on the device. "
-"Therefore, to edit these files you need to have the device plugged in. Until "
-"you plug in a device, Mu will use the directory found here:\n"
+"Therefore, to edit these files you need to have the device plugged in. "
+"Until you plug in a device, Mu will use the directory found here:\n"
 "\n"
 " {}\n"
 "\n"
 "...to store your code."
 msgstr ""
-"Adafruit CircuitPython 设备的 Python 文件存储在设备上。 因此，要编辑这些文件，需"
-"要您插入设备。在插入设备之前，Mu 将使用这个目录：\n"
+"Adafruit CircuitPython 设备的 Python 文件存储在设备上。 因此，要编辑这些文件，需要您插入设备。在插入设备之前，Mu"
+" 将使用这个目录：\n"
 "\n"
 " {}\n"
 "\n"
@@ -1458,6 +1467,50 @@ msgstr "REPL 已启动。"
 msgid "REPL stopped."
 msgstr "REPL 已停止。"
 
+#: mu/modes/snek.py:169
+msgid "Snek"
+msgstr ""
+
+#: mu/modes/snek.py:171
+msgid "Write code for boards running Snek."
+msgstr "为运行 Snek 的开发板编写代码。"
+
+#: mu/modes/snek.py:386
+msgid "Put"
+msgstr ""
+
+#: mu/modes/snek.py:387
+msgid "Put the current program to the device."
+msgstr ""
+
+#: mu/modes/snek.py:393
+msgid "Get"
+msgstr ""
+
+#: mu/modes/snek.py:394
+msgid "Get the current program from the device."
+msgstr ""
+
+#: mu/modes/snek.py:459
+msgid "There is un-saved work, 'get' will cause you to lose it."
+msgstr "你有还没有保存的代码，如果现在退出程序的话将不会保存。"
+
+#: mu/modes/snek.py:530
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of Snek flashed onto it before the REPL will work."
+"\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+"请确保已将设备插入这台电脑。\n"
+"\n"
+"在 REPL 工作之前，设备必须有一个 MicroPython 或 CircuitPython 版本的固件已经刷入。\n"
+"\n"
+"最后，按一下设备的重置(reset)按钮并等待几秒钟后再重试。"
+
 #: mu/modes/web.py:58
 msgid "Web"
 msgstr ""
@@ -1469,6 +1522,11 @@ msgstr "使用 Flask Web 框架构建简单的网页。"
 #: mu/modes/web.py:76 mu/modes/web.py:129
 msgid "Run the web server."
 msgstr "运行网页服务器。"
+
+#: mu/modes/web.py:82
+msgctxt "web|WebMode"
+msgid "Browse"
+msgstr "浏览"
 
 #: mu/modes/web.py:83
 msgid "Open your website in a browser."
@@ -1504,11 +1562,9 @@ msgstr "这不是 Python 文件！"
 
 #: mu/modes/web.py:158
 msgid ""
-"Mu is only able to serve a Python file. Please make sure the current tab in Mu "
-"is the one for your web application and then try again."
-msgstr ""
-"Mu 只能识别 Python 文件。请确认 Mu 编辑器当前标签页打开的文件属于你的网页应用，"
-"然后重试。"
+"Mu is only able to serve a Python file. Please make sure the current tab "
+"in Mu is the one for your web application and then try again."
+msgstr "Mu 只能识别 Python 文件。请确认 Mu 编辑器当前标签页打开的文件属于你的网页应用，然后重试。"
 
 #: mu/modes/web.py:175
 msgid "Cannot find template directory!"
@@ -1516,9 +1572,10 @@ msgstr "无法找到模板目录！"
 
 #: mu/modes/web.py:176
 msgid ""
-"To serve your web application, there needs to be a 'templates' directory in the "
-"same place as your web application's Python code. Please fix this and try "
-"again. (Hint: Mu was expecting the `templates` directory to be here: )"
+"To serve your web application, there needs to be a 'templates' directory "
+"in the same place as your web application's Python code. Please fix this "
+"and try again. (Hint: Mu was expecting the `templates` directory to be "
+"here: )"
 msgstr ""
 
 #: mu/modes/web.py:273
@@ -1527,11 +1584,10 @@ msgstr "无法打开网站 - 服务器未运行。"
 
 #: mu/modes/web.py:274
 msgid ""
-"You must have the local web server running in order to view your website in a "
-"browser. Click on the 'Run' button to start the server and then try again."
-msgstr ""
-"要在浏览器中访问你的网站，必须在本地运行 Web 服务器。点击“运行”按钮以启动服务"
-"器，然后重试。"
+"You must have the local web server running in order to view your website "
+"in a browser. Click on the 'Run' button to start the server and then try "
+"again."
+msgstr "要在浏览器中访问你的网站，必须在本地运行 Web 服务器。点击“运行”按钮以启动服务器，然后重试。"
 
 #~ msgid "Logging to {}"
 #~ msgstr "记录日志到 {}"
@@ -1542,11 +1598,16 @@ msgstr ""
 #~ msgid "Files on your micro:bit:"
 #~ msgstr "在 micro:bit 上的文件："
 
-#~ msgid "{} [{}:{}]"
-#~ msgstr "{} [{}:{}]"
-
 #~ msgid "Your script is too long!"
 #~ msgstr "你的脚本太长了！"
 
 #~ msgid " Runtime: {}"
 #~ msgstr " 运行时：{}"
+
+#~ msgid ""
+#~ "When a custom hex file is "
+#~ "configured in the settings a local "
+#~ "directory cannot be used to saved "
+#~ "the final hex file."
+#~ msgstr ""
+

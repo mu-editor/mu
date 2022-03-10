@@ -1,23 +1,22 @@
-# Dutch translations for PROJECT.
+# Dutch translations for Mu.
 # Copyright (C) 2022 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
+# This file is distributed under the same license as the Mu project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Mu Editor\n"
 "Report-Msgid-Bugs-To: vasco.mora@gmail.com\n"
-"POT-Creation-Date: 2022-03-03 14:23+0000\n"
+"POT-Creation-Date: 2022-03-10 10:44+0000\n"
 "PO-Revision-Date: 2022-03-04 18:24+0100\n"
 "Last-Translator: \n"
-"Language-Team: \n"
 "Language: nl\n"
+"Language-Team: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Generated-By: Babel 2.9.1\n"
-"X-Generator: Poedit 3.0.1\n"
 
 #: mu/debugger/client.py:118
 msgid ""
@@ -41,37 +40,42 @@ msgstr "Selecteer Modus"
 
 #: mu/interface/dialogs.py:78
 msgid ""
-"Please select the desired mode then click \"OK\". Otherwise, click \"Cancel\"."
+"Please select the desired mode then click \"OK\". Otherwise, click "
+"\"Cancel\"."
 msgstr ""
-"Selecteer de gewenste modus en klik dan op \"OK\". Anders, kies \"Annuleren\"."
+"Selecteer de gewenste modus en klik dan op \"OK\". Anders, kies "
+"\"Annuleren\"."
 
 #: mu/interface/dialogs.py:99
 msgid ""
-"Change mode at any time by clicking the \"Mode\" button containing Mu's logo."
+"Change mode at any time by clicking the \"Mode\" button containing Mu's "
+"logo."
 msgstr ""
-"Verander de modus op ieder moment door op de \"Modus\" knop met het Mu logo te "
-"klikken."
+"Verander de modus op ieder moment door op de \"Modus\" knop met het Mu "
+"logo te klikken."
 
 #: mu/interface/dialogs.py:138
 msgid ""
-"When reporting a bug, copy and paste the content of the following log file."
+"When reporting a bug, copy and paste the content of the following log "
+"file."
 msgstr ""
-"Wanneer je een bug wil rapporteren, kopieer en plak de inhoud van het volgende "
-"log bestand."
+"Wanneer je een bug wil rapporteren, kopieer en plak de inhoud van het "
+"volgende log bestand."
 
 #: mu/interface/dialogs.py:162
 msgid ""
-"The environment variables shown below will be set each time you run a Python 3 "
-"script.\n"
+"The environment variables shown below will be set each time you run a "
+"Python 3 script.\n"
 "\n"
-"Each separate environment variable should be on a new line and of the form:\n"
+"Each separate environment variable should be on a new line and of the "
+"form:\n"
 "NAME=VALUE"
 msgstr ""
-"De omgevingsvariabelen hieronder getoond zullen ingesteld worden iedere keer "
-"als je een Python 3 script uitvoert.\n"
+"De omgevingsvariabelen hieronder getoond zullen ingesteld worden iedere "
+"keer als je een Python 3 script uitvoert.\n"
 "\n"
-"Elke afzonderlijke omgevingsvariabele moet op een nieuwe regel komen en van het "
-"volgende formaat zijn:\n"
+"Elke afzonderlijke omgevingsvariabele moet op een nieuwe regel komen en "
+"van het volgende formaat zijn:\n"
 "NAME=VALUE"
 
 #: mu/interface/dialogs.py:188
@@ -80,129 +84,133 @@ msgstr "Python code verkleinen voor het flashen?"
 
 #: mu/interface/dialogs.py:192
 msgid ""
-"Override the built-in MicroPython runtime with the following hex file (empty "
-"means use the default):"
+"Override the built-in MicroPython runtime with the following hex file "
+"(empty means use the default):"
 msgstr ""
-"Overschrijf de ingebouwde MicroPython-runtime met het volgende hex-bestand "
-"(leeg betekent gebruik de standaard):"
+"Overschrijf de ingebouwde MicroPython-runtime met het volgende hex-"
+"bestand (leeg betekent gebruik de standaard):"
 
 #: mu/interface/dialogs.py:218
 msgid ""
-"The packages shown below will be available to import in Python 3 mode. Delete a "
-"package from the list to remove its availability.\n"
+"The packages shown below will be available to import in Python 3 mode. "
+"Delete a package from the list to remove its availability.\n"
 "\n"
-"Each separate package name should be on a new line. Packages are installed from "
-"PyPI (see: https://pypi.org/)."
+"Each separate package name should be on a new line. Packages are "
+"installed from PyPI (see: https://pypi.org/)."
 msgstr ""
-"De hieronder getoonde pakketten zijn beschikbaar om te importeren in Python 3-"
-"modus. Verwijder een pakket uit de lijst om de beschikbaarheid te verwijderen.\n"
+"De hieronder getoonde pakketten zijn beschikbaar om te importeren in "
+"Python 3-modus. Verwijder een pakket uit de lijst om de beschikbaarheid "
+"te verwijderen.\n"
 "\n"
-"Elke afzonderlijke pakketnaam moet op een nieuwe regel staan. Pakketten worden "
-"ge�nstalleerd vanuit PyPI (zie: https://pypi.org/)."
+"Elke afzonderlijke pakketnaam moet op een nieuwe regel staan. Pakketten "
+"worden ge�nstalleerd vanuit PyPI (zie: https://pypi.org/)."
 
 #: mu/interface/dialogs.py:239
 msgid "Automatically detect"
 msgstr "Automatisch detecteren"
 
-#: mu/interface/dialogs.py:265
+#: mu/interface/dialogs.py:266
 msgid ""
-"Please select the language for Mu's user interface from the choices listed "
-"below. <strong>Restart Mu for these changes to take effect.</strong>"
+"Please select the language for Mu's user interface from the choices "
+"listed below. <strong>Restart Mu for these changes to take "
+"effect.</strong>"
 msgstr ""
 "Selecteer de taal voor de gebruikersinterface van Mu uit de onderstaande "
-"keuzes. <strong>Start Mu opnieuw om deze wijzigingen door te voeren.</strong>"
+"keuzes. <strong>Start Mu opnieuw om deze wijzigingen door te "
+"voeren.</strong>"
 
-#: mu/interface/dialogs.py:296
+#: mu/interface/dialogs.py:297
 msgid "How to flash MicroPython to your device"
 msgstr "Hoe kunt u MicroPython flashen naar uw apparaat"
 
-#: mu/interface/dialogs.py:303
+#: mu/interface/dialogs.py:304
 msgid ""
-"&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. Download "
-"firmware from the <a href=\"https://micropython.org/download\" style=\"color:"
-"#039be5;\">https://micropython.org/download</a><br/>&nbsp;3. Connect your "
-"device<br/>&nbsp;4. Load the .bin file below using the 'Browse' button<br/"
-">&nbsp;5. Press 'Erase & write firmware'"
+"&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. "
+"Download firmware from the <a href=\"https://micropython.org/download\" "
+"style=\"color:#039be5;\">https://micropython.org/download</a><br/>&nbsp;3."
+" Connect your device<br/>&nbsp;4. Load the .bin file below using the "
+"'Browse' button<br/>&nbsp;5. Press 'Erase & write firmware'"
 msgstr ""
-"&nbsp;1. Bepaal het type apparaat (ESP8266 of ESP32)<br />&nbsp;2. Download "
-"firmware van de <a href=\"https://micropython.org/download\" style=\"color:"
-"#039be5;\">https://micropython.org/download</a><br/>&nbsp;3. Sluit uw apparaat "
-"aan<br/>&nbsp;4. Laad het .bin-bestand hieronder met de knop 'Bladeren'<br/"
-">&nbsp;5. Druk op 'Wis & schrijf firmware'"
+"&nbsp;1. Bepaal het type apparaat (ESP8266 of ESP32)<br />&nbsp;2. "
+"Download firmware van de <a href=\"https://micropython.org/download\" "
+"style=\"color:#039be5;\">https://micropython.org/download</a><br/>&nbsp;3."
+" Sluit uw apparaat aan<br/>&nbsp;4. Laad het .bin-bestand hieronder met "
+"de knop 'Bladeren'<br/>&nbsp;5. Druk op 'Wis & schrijf firmware'"
 
-#: mu/interface/dialogs.py:326
+#: mu/interface/dialogs.py:327
 msgid "Device:"
 msgstr "Apparaat:"
 
-#: mu/interface/dialogs.py:329
+#: mu/interface/dialogs.py:330
 msgid "Choose device type:"
 msgstr "Kies apparaattype:"
 
-#: mu/interface/dialogs.py:333
+#: mu/interface/dialogs.py:334
 msgid "Firmware (.bin):"
 msgstr "Firmware (.bin):"
 
-#: mu/interface/dialogs.py:335 mu/modes/web.py:82
+#: mu/interface/dialogs.py:336
+msgctxt "dialogs|ESPFirwareFlasherWidget"
 msgid "Browse"
 msgstr "Bladeren"
 
-#: mu/interface/dialogs.py:336
+#: mu/interface/dialogs.py:337
 msgid "Erase && write firmware"
 msgstr "Wis && schrijf firmware"
 
-#: mu/interface/dialogs.py:375
+#: mu/interface/dialogs.py:376
 msgid "Select MicroPython firmware (.bin)"
 msgstr "Selecteer MicroPython-firmware (.bin)"
 
-#: mu/interface/dialogs.py:377
+#: mu/interface/dialogs.py:378
 msgid "Firmware (*.bin)"
 msgstr "Firmware (*.bin)"
 
-#: mu/interface/dialogs.py:510 mu/interface/main.py:1387
+#: mu/interface/dialogs.py:511 mu/interface/main.py:1387
 msgid "Mu Administration"
 msgstr "Mu Administratie"
 
-#: mu/interface/dialogs.py:524
+#: mu/interface/dialogs.py:525
 msgid "Current Log"
 msgstr "Huidig logboek"
 
-#: mu/interface/dialogs.py:528
+#: mu/interface/dialogs.py:529
 msgid "Python3 Environment"
 msgstr "Python3-omgeving"
 
-#: mu/interface/dialogs.py:535
+#: mu/interface/dialogs.py:536
 msgid "BBC micro:bit Settings"
 msgstr "BBC micro:bit-instellingen"
 
-#: mu/interface/dialogs.py:539
+#: mu/interface/dialogs.py:540
 msgid "Third Party Packages"
 msgstr "Pakketten van derden"
 
-#: mu/interface/dialogs.py:543
+#: mu/interface/dialogs.py:544
 msgid "ESP Firmware flasher"
 msgstr "ESP Firmware flasher"
 
-#: mu/interface/dialogs.py:548
+#: mu/interface/dialogs.py:549
 msgid "Select Language"
 msgstr "Selecteer taal"
 
-#: mu/interface/dialogs.py:586
+#: mu/interface/dialogs.py:587
 msgid "Find / Replace"
 msgstr "Zoeken / Vervangen"
 
-#: mu/interface/dialogs.py:590
+#: mu/interface/dialogs.py:591
 msgid "Find:"
 msgstr "Zoek:"
 
-#: mu/interface/dialogs.py:597
+#: mu/interface/dialogs.py:598
 msgid "Replace (optional):"
 msgstr "Vervangen (optioneel):"
 
-#: mu/interface/dialogs.py:603
+#: mu/interface/dialogs.py:604
 msgid "Replace all?"
 msgstr "Vervang alles?"
 
-#: mu/interface/dialogs.py:652
+#: mu/interface/dialogs.py:653
 msgid "Third Party Package Status"
 msgstr "Pakketstatus van derden"
 
@@ -432,35 +440,35 @@ msgstr "Bestanden op uw computer:"
 
 #: mu/interface/panes.py:914
 msgid ""
-"There was a problem getting the list of files on the device. Please check Mu's "
-"logs for technical information. Alternatively, try unplugging/plugging-in your "
-"device and/or restarting Mu."
+"There was a problem getting the list of files on the device. Please check"
+" Mu's logs for technical information. Alternatively, try unplugging"
+"/plugging-in your device and/or restarting Mu."
 msgstr ""
-"Er is een probleem opgetreden bij het ophalen van de lijst met bestanden op het "
-"apparaat. Raadpleeg de logboeken van Mu voor technische informatie. U kunt ook "
-"proberen uw apparaat los te koppelen/aan te sluiten en/of Mu opnieuw op te "
-"starten."
+"Er is een probleem opgetreden bij het ophalen van de lijst met bestanden "
+"op het apparaat. Raadpleeg de logboeken van Mu voor technische "
+"informatie. U kunt ook proberen uw apparaat los te koppelen/aan te "
+"sluiten en/of Mu opnieuw op te starten."
 
 #: mu/interface/panes.py:929
 msgid ""
-"There was a problem copying the file '{}' onto the device. Please check Mu's "
-"logs for more information."
+"There was a problem copying the file '{}' onto the device. Please check "
+"Mu's logs for more information."
 msgstr ""
-"Er is een probleem opgetreden bij het kopi�ren van het bestand '{}' naar het "
-"apparaat. Raadpleeg de logboeken van Mu voor meer informatie."
+"Er is een probleem opgetreden bij het kopi�ren van het bestand '{}' naar "
+"het apparaat. Raadpleeg de logboeken van Mu voor meer informatie."
 
 #: mu/interface/panes.py:941
 msgid ""
-"There was a problem deleting '{}' from the device. Please check Mu's logs for "
-"more information."
+"There was a problem deleting '{}' from the device. Please check Mu's logs"
+" for more information."
 msgstr ""
-"Er is een probleem opgetreden bij het verwijderen van '{}' van het apparaat. "
-"Raadpleeg de logboeken van Mu voor meer informatie."
+"Er is een probleem opgetreden bij het verwijderen van '{}' van het "
+"apparaat. Raadpleeg de logboeken van Mu voor meer informatie."
 
 #: mu/interface/panes.py:953
 msgid ""
-"There was a problem getting '{}' from the device. Please check Mu's logs for "
-"more information."
+"There was a problem getting '{}' from the device. Please check Mu's logs "
+"for more information."
 msgstr ""
 "Er is een probleem opgetreden bij het ophalen van '{}' van het apparaat. "
 "Raadpleeg de logboeken van Mu voor meer informatie."
@@ -476,11 +484,11 @@ msgstr "Hallo, Wereld!"
 
 #: mu/logic.py:91
 msgid ""
-"This editor is free software written in Python. You can modify it, add features "
-"or fix bugs if you like."
+"This editor is free software written in Python. You can modify it, add "
+"features or fix bugs if you like."
 msgstr ""
-"Deze editor is gratis software geschreven in Python. Je kunt het aanpassen, "
-"functies toevoegen of bugs repareren als je wilt."
+"Deze editor is gratis software geschreven in Python. Je kunt het "
+"aanpassen, functies toevoegen of bugs repareren als je wilt."
 
 #: mu/logic.py:95
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
@@ -488,23 +496,25 @@ msgstr "Deze editor heet Mu (je zegt het 'mew' of 'moo')."
 
 #: mu/logic.py:96
 msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
-msgstr "Google, Facebook, NASA, Pixar, Disney en nog veel meer organisaties gebruiken Python."
+msgstr ""
+"Google, Facebook, NASA, Pixar, Disney en nog veel meer organisaties "
+"gebruiken Python."
 
 #: mu/logic.py:97
 msgid ""
-"Programming is a form of magic. Learn to cast the right spells with code and "
-"you'll be a wizard."
+"Programming is a form of magic. Learn to cast the right spells with code "
+"and you'll be a wizard."
 msgstr ""
-"Programmeren is een vorm van magie. Leer de juiste code-spreuken te gebruiken en "
-"je wordt een tovenaar."
+"Programmeren is een vorm van magie. Leer de juiste code-spreuken te "
+"gebruiken en je wordt een tovenaar."
 
 #: mu/logic.py:101
 msgid ""
-"REPL stands for read, evaluate, print, loop. It's a fun way to talk to your "
-"computer! :-)"
+"REPL stands for read, evaluate, print, loop. It's a fun way to talk to "
+"your computer! :-)"
 msgstr ""
-"REPL staat voor lezen, evalueren, afdrukken, loop. Het is een leuke manier om "
-"tegen je computer te praten! :-)"
+"REPL staat voor lezen, evalueren, afdrukken, loop. Het is een leuke "
+"manier om tegen je computer te praten! :-)"
 
 #: mu/logic.py:105
 msgid "Be brave, break things, learn and have fun!"
@@ -525,14 +535,16 @@ msgstr "Diversiteit bevordert de creativiteit."
 #: mu/logic.py:109
 msgid "An open mind, spirit of adventure and respect for diversity are key."
 msgstr ""
-"Een open en avontuurlijke geest en respect voor diversiteit zijn zeer belangrijk"
+"Een open en avontuurlijke geest en respect voor diversiteit zijn zeer "
+"belangrijk"
 
 #: mu/logic.py:110
 msgid ""
-"Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
+"Don't worry if it doesn't work. Learn the lesson, fix it and try again! "
+":-)"
 msgstr ""
-"Maak je geen zorgen als het niet werkt. Leer de les, repareer het en probeer "
-"het opnieuw! :-)"
+"Maak je geen zorgen als het niet werkt. Leer de les, repareer het en "
+"probeer het opnieuw! :-)"
 
 #: mu/logic.py:114
 msgid "Coding is collaboration."
@@ -545,8 +557,8 @@ msgstr "Complimenteer en versterk de goede dingen met code."
 #: mu/logic.py:116
 msgid "In theory, theory and practice are the same. In practice, they're not. ;-)"
 msgstr ""
-"In theorie zijn theorie en praktijk hetzelfde. In de praktijk zijn ze dat "
-"niet. ;-)"
+"In theorie zijn theorie en praktijk hetzelfde. In de praktijk zijn ze dat"
+" niet. ;-)"
 
 #: mu/logic.py:120
 msgid "Debugging is twice as hard as writing the code in the first place."
@@ -559,8 +571,8 @@ msgstr "Het is leuk om te programmeren."
 #: mu/logic.py:122
 msgid "Programming has more to do with problem solving than writing code."
 msgstr ""
-"Programmeren heeft meer te maken met het oplossen van problemen dan met het "
-"schrijven van code."
+"Programmeren heeft meer te maken met het oplossen van problemen dan met "
+"het schrijven van code."
 
 #: mu/logic.py:123
 msgid "Start with your users' needs."
@@ -576,14 +588,15 @@ msgstr "Verplaats uzelf in de schoenen van uw gebruikers."
 
 #: mu/logic.py:126
 msgid ""
-"Explaining a programming problem to a friend often reveals the solution. :-)"
+"Explaining a programming problem to a friend often reveals the solution. "
+":-)"
 msgstr ""
-"Een programmeerprobleem uitleggen aan een vriend onthult vaak de oplossing. :-)"
+"Een programmeerprobleem uitleggen aan een vriend onthult vaak de "
+"oplossing. :-)"
 
 #: mu/logic.py:130
 msgid "If you don't know, ask. Nobody to ask? Just look it up."
-msgstr ""
-"Als je het niet weet, vraag het dan. Niemand om te vragen? Zoek het op."
+msgstr "Als je het niet weet, vraag het dan. Niemand om te vragen? Zoek het op."
 
 #: mu/logic.py:131
 msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
@@ -615,16 +628,17 @@ msgstr "Leesbaarheid telt."
 
 #: mu/logic.py:138
 msgid ""
-"Special cases aren't special enough to break the rules. Although practicality "
-"beats purity."
+"Special cases aren't special enough to break the rules. Although "
+"practicality beats purity."
 msgstr ""
-"Speciale gevallen zijn niet speciaal genoeg om de regels te overtreden. Hoewel "
-"bruikbaarheid beter is dan puurheid."
+"Speciale gevallen zijn niet speciaal genoeg om de regels te overtreden. "
+"Hoewel bruikbaarheid beter is dan puurheid."
 
 #: mu/logic.py:142
 msgid "Errors should never pass silently. Unless explicitly silenced."
 msgstr ""
-"Fouten mogen nooit stil voorbijgaan. Tenzij expliciet het zwijgen opgelegd."
+"Fouten mogen nooit stil voorbijgaan. Tenzij expliciet het zwijgen "
+"opgelegd."
 
 #: mu/logic.py:143
 msgid "In the face of ambiguity, refuse the temptation to guess."
@@ -633,7 +647,8 @@ msgstr "Weiger de verleiding om te raden vanwege ambigu�teit."
 #: mu/logic.py:144
 msgid "There should be one-- and preferably only one --obvious way to do it."
 msgstr ""
-"Er zou ��n - en bij voorkeur slechts ��n - voor de hand liggende manier moeten zijn om het te doen."
+"Er zou ��n - en bij voorkeur slechts ��n - voor de hand liggende manier "
+"moeten zijn om het te doen."
 
 #: mu/logic.py:145
 msgid "Now is better than never. Although never is often better than *right* now."
@@ -646,7 +661,8 @@ msgstr "Als de implementatie moeilijk uit te leggen is, is het een slecht idee."
 #: mu/logic.py:150
 msgid "If the implementation is easy to explain, it may be a good idea."
 msgstr ""
-"Als de implementatie gemakkelijk uit te leggen is, kan het een goed idee zijn."
+"Als de implementatie gemakkelijk uit te leggen is, kan het een goed idee "
+"zijn."
 
 #: mu/logic.py:151
 msgid "Namespaces are one honking great idea -- let's do more of those!"
@@ -662,11 +678,11 @@ msgstr "Om te begrijpen wat recursie is, moet u eerst recursie begrijpen."
 
 #: mu/logic.py:154
 msgid ""
-"Algorithm: a word used by programmers when they don't want to explain what they "
-"did."
+"Algorithm: a word used by programmers when they don't want to explain "
+"what they did."
 msgstr ""
-"Algoritme: een woord dat door programmeurs wordt gebruikt als ze niet willen "
-"uitleggen wat ze hebben gedaan."
+"Algoritme: een woord dat door programmeurs wordt gebruikt als ze niet "
+"willen uitleggen wat ze hebben gedaan."
 
 #: mu/logic.py:158
 msgid "Programmers count from zero."
@@ -722,9 +738,11 @@ msgstr " boven deze lijn"
 
 #: mu/logic.py:509
 msgid ""
-"Syntax error. Python cannot understand this line. Check for missing characters!"
+"Syntax error. Python cannot understand this line. Check for missing "
+"characters!"
 msgstr ""
-"Syntax error. Python begrijpt deze regel niet. Controleer op ontbrekende tekens!"
+"Syntax error. Python begrijpt deze regel niet. Controleer op ontbrekende "
+"tekens!"
 
 #: mu/logic.py:576
 msgid "{} compatible"
@@ -733,17 +751,19 @@ msgstr "{} compatibel"
 #: mu/logic.py:998
 msgid ""
 "The file contains characters Mu expects to be encoded as {0} or as the "
-"computer's default encoding {1}, but which are encoded in some other way.\n"
+"computer's default encoding {1}, but which are encoded in some other way."
 "\n"
-"If this file was saved in another application, re-save the file via the 'Save "
-"as' option and set the encoding to {0}"
+"\n"
+"If this file was saved in another application, re-save the file via the "
+"'Save as' option and set the encoding to {0}"
 msgstr ""
-"Het bestand bevat tekens die Mu verwacht te worden gecodeerd als {0} of als de "
-"standaardcodering van de computer {1}, maar die op een andere manier zijn "
-"gecodeerd.\n"
+"Het bestand bevat tekens die Mu verwacht te worden gecodeerd als {0} of "
+"als de standaardcodering van de computer {1}, maar die op een andere "
+"manier zijn gecodeerd.\n"
 "\n"
-"Als dit bestand in een andere toepassing is opgeslagen, slaat u het bestand "
-"opnieuw op via de optie 'Opslaan als' en stelt u de codering in op {0}"
+"Als dit bestand in een andere toepassing is opgeslagen, slaat u het "
+"bestand opnieuw op via de optie 'Opslaan als' en stelt u de codering in "
+"op {0}"
 
 #: mu/logic.py:1026
 msgid "The file \"{}\" is already open."
@@ -759,11 +779,11 @@ msgstr "Mu kon dit bestand niet openen"
 
 #: mu/logic.py:1065
 msgid ""
-"Currently Mu only works with Python source files or hex files created with "
-"embedded MicroPython code."
+"Currently Mu only works with Python source files or hex files created "
+"with embedded MicroPython code."
 msgstr ""
-"Momenteel werkt Mu alleen met Python-bronbestanden of hex-bestanden die zijn "
-"gemaakt met embedded MicroPython-code."
+"Momenteel werkt Mu alleen met Python-bronbestanden of hex-bestanden die "
+"zijn gemaakt met embedded MicroPython-code."
 
 #: mu/logic.py:1073
 msgid "Could not load {}"
@@ -801,11 +821,11 @@ msgstr "Kon het bestand niet opslaan (schijfprobleem)"
 
 #: mu/logic.py:1212
 msgid ""
-"Error saving file to disk. Ensure you have permission to write the file and "
-"sufficient disk space."
+"Error saving file to disk. Ensure you have permission to write the file "
+"and sufficient disk space."
 msgstr ""
-"Fout bij opslaan van bestand op schijf. Zorg ervoor dat u toestemming hebt om "
-"het bestand te schrijven en dat u voldoende schijfruimte hebt."
+"Fout bij opslaan van bestand op schijf. Zorg ervoor dat u toestemming "
+"hebt om het bestand te schrijven en dat u voldoende schijfruimte hebt."
 
 #: mu/logic.py:1218
 msgid "Could not save file (encoding problem)"
@@ -813,11 +833,11 @@ msgstr "Kon het bestand niet opslaan (coderingsprobleem)"
 
 #: mu/logic.py:1220
 msgid ""
-"Unable to convert all the characters. If you have an encoding line at the top "
-"of the file, remove it and try again."
+"Unable to convert all the characters. If you have an encoding line at the"
+" top of the file, remove it and try again."
 msgstr ""
-"Niet in staat om alle tekens te converteren. Als er een coderingsregel bovenaan "
-"het bestand staat, verwijder deze dan en probeer het opnieuw."
+"Niet in staat om alle tekens te converteren. Als er een coderingsregel "
+"bovenaan het bestand staat, verwijder deze dan en probeer het opnieuw."
 
 #: mu/logic.py:1231
 msgid "Saved file: {}"
@@ -829,12 +849,13 @@ msgstr "U kunt de bestandsnaam \"{}\" niet gebruiken"
 
 #: mu/logic.py:1266
 msgid ""
-"This name is already used by another part of Python. If you use this name, "
-"things are likely to break. Please try again with a different filename."
+"This name is already used by another part of Python. If you use this "
+"name, things are likely to break. Please try again with a different "
+"filename."
 msgstr ""
-"Deze naam wordt al gebruikt door een ander deel van Python. Als u deze naam "
-"gebruikt, is de kans groot dat er dingen kapot gaan. Probeer het opnieuw met "
-"een andere bestandsnaam."
+"Deze naam wordt al gebruikt door een ander deel van Python. Als u deze "
+"naam gebruikt, is de kans groot dat er dingen kapot gaan. Probeer het "
+"opnieuw met een andere bestandsnaam."
 
 #: mu/logic.py:1343
 msgid "Good job! No problems found."
@@ -858,8 +879,7 @@ msgstr "Geweldig! Nul problemen gevonden."
 
 #: mu/logic.py:1373
 msgid "There is un-saved work, exiting the application will cause you to lose it."
-msgstr ""
-"Er is niet-opgeslagen werk, als u de toepassing stopt, raakt u het kwijt."
+msgstr "Er is niet-opgeslagen werk, als u de toepassing stopt, raakt u het kwijt."
 
 #: mu/logic.py:1448
 msgid "Could not find MicroPython runtime."
@@ -867,10 +887,11 @@ msgstr "Kan de MicroPython-runtime niet vinden."
 
 #: mu/logic.py:1449
 msgid ""
-"The micro:bit runtime you specified ('{}') does not exist. Please try again."
+"The micro:bit runtime you specified ('{}') does not exist. Please try "
+"again."
 msgstr ""
-"De micro:bit runtime die je hebt opgegeven ('{}') bestaat niet. Probeer het "
-"opnieuw."
+"De micro:bit runtime die je hebt opgegeven ('{}') bestaat niet. Probeer "
+"het opnieuw."
 
 #: mu/logic.py:1575
 msgid "Changed to {} mode."
@@ -890,19 +911,21 @@ msgstr "Kan onderbreekpunt niet instellen."
 
 #: mu/logic.py:1661
 msgid ""
-"Lines that are comments or some multi-line statements cannot have breakpoints."
+"Lines that are comments or some multi-line statements cannot have "
+"breakpoints."
 msgstr ""
-"Regels die opmerkingen zijn of sommige instructies met meerdere regels mogen "
-"geen onderbrekingspunten hebben."
+"Regels die opmerkingen zijn of sommige instructies met meerdere regels "
+"mogen geen onderbrekingspunten hebben."
 
 #: mu/logic.py:1684
 msgid ""
-"This name is already used by another part of Python. If you use that name, "
-"things are likely to break. Please try again with a different filename."
+"This name is already used by another part of Python. If you use that "
+"name, things are likely to break. Please try again with a different "
+"filename."
 msgstr ""
-"Deze naam wordt al gebruikt door een ander deel van Python. Als je die naam "
-"gebruikt, is de kans groot dat er dingen kapot gaan. Probeer het opnieuw met "
-"een andere bestandsnaam."
+"Deze naam wordt al gebruikt door een ander deel van Python. Als je die "
+"naam gebruikt, is de kans groot dat er dingen kapot gaan. Probeer het "
+"opnieuw met een andere bestandsnaam."
 
 #: mu/logic.py:1706
 msgid "Could not rename file."
@@ -946,11 +969,11 @@ msgstr "Uw code bevat problemen."
 
 #: mu/logic.py:1830
 msgid ""
-"These must be fixed before tidying will work. Please use the 'Check' button to "
-"highlight these problems."
+"These must be fixed before tidying will work. Please use the 'Check' "
+"button to highlight these problems."
 msgstr ""
-"Deze moeten worden gerepareerd voordat het opruimen gaat werken. Gebruik de "
-"knop 'Controleren' om deze problemen te markeren."
+"Deze moeten worden gerepareerd voordat het opruimen gaat werken. Gebruik "
+"de knop 'Controleren' om deze problemen te markeren."
 
 #: mu/modes/base.py:85
 msgid "Cannot connect to device on port {}"
@@ -966,29 +989,30 @@ msgstr "Gegevensoverstroming gedetecteerd!"
 
 #: mu/modes/base.py:325
 msgid ""
-"The plotter is flooded with data which will make Mu unresponsive and freeze. As "
-"a safeguard, the plotter has been stopped.\n"
+"The plotter is flooded with data which will make Mu unresponsive and "
+"freeze. As a safeguard, the plotter has been stopped.\n"
 "\n"
-"Flooding is when chunks of data of more than 1024 bytes are repeatedly sent to "
-"the plotter.\n"
+"Flooding is when chunks of data of more than 1024 bytes are repeatedly "
+"sent to the plotter.\n"
 "\n"
-"To fix this, make sure your code prints small tuples of data between calls to "
-"'sleep' for a very short period of time."
+"To fix this, make sure your code prints small tuples of data between "
+"calls to 'sleep' for a very short period of time."
 msgstr ""
-"De plotter wordt overspoeld met gegevens waardoor Mu niet meer reageert en "
-"vastloopt. Als beveiliging is de plotter gestopt.\n"
+"De plotter wordt overspoeld met gegevens waardoor Mu niet meer reageert "
+"en vastloopt. Als beveiliging is de plotter gestopt.\n"
 "\n"
-"Overstromingen zijn wanneer stukjes data van meer dan 1024 bytes herhaaldelijk "
-"naar de plotter worden gestuurd.\n"
+"Overstromingen zijn wanneer stukjes data van meer dan 1024 bytes "
+"herhaaldelijk naar de plotter worden gestuurd.\n"
 "\n"
 "Om dit op te lossen, moet je ervoor zorgen dat je code kleine tuples met "
-"gegevens afdrukt tussen aanroepen om te 'slapen' voor een zeer korte periode."
+"gegevens afdrukt tussen aanroepen om te 'slapen' voor een zeer korte "
+"periode."
 
 #: mu/modes/base.py:500 mu/modes/base.py:550 mu/modes/snek.py:521
 msgid "Click on the device's reset button, wait a few seconds and then try again."
 msgstr ""
-"Klik op de resetknop van het apparaat, wacht een paar seconden en probeer het "
-"opnieuw."
+"Klik op de resetknop van het apparaat, wacht een paar seconden en probeer"
+" het opnieuw."
 
 #: mu/modes/base.py:508 mu/modes/base.py:558 mu/modes/snek.py:529
 msgid "Could not find an attached device."
@@ -998,37 +1022,37 @@ msgstr "Kan een aangesloten apparaat niet vinden."
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
-"It must have a version of MicroPython (or CircuitPython) flashed onto it before "
-"the REPL will work.\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it "
+"before the REPL will work.\n"
 "\n"
-"Finally, press the device's reset button and wait a few seconds before trying "
-"again."
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
 msgstr ""
 "Zorg ervoor dat het apparaat is aangesloten op deze computer.\n"
 "\n"
-"Er moet een versie van MicroPython (of CircuitPython) op geflashed zijn voordat "
-"de REPL werkt.\n"
+"Er moet een versie van MicroPython (of CircuitPython) op geflashed zijn "
+"voordat de REPL werkt.\n"
 "\n"
-"Druk ten slotte op de resetknop van het apparaat en wacht een paar seconden "
-"voordat u het opnieuw probeert."
+"Druk ten slotte op de resetknop van het apparaat en wacht een paar "
+"seconden voordat u het opnieuw probeert."
 
 #: mu/modes/base.py:559
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
-"It must have a version of MicroPython (or CircuitPython) flashed onto it before "
-"the Plotter will work.\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it "
+"before the Plotter will work.\n"
 "\n"
-"Finally, press the device's reset button and wait a few seconds before trying "
-"again."
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
 msgstr ""
 "Zorg ervoor dat het apparaat is aangesloten op deze computer.\n"
 "\n"
-"Er moet een versie van MicroPython (of CircuitPython) op geflashed zijn voordat "
-"de plotter zal werken.\n"
+"Er moet een versie van MicroPython (of CircuitPython) op geflashed zijn "
+"voordat de plotter zal werken.\n"
 "\n"
-"Druk ten slotte op de resetknop van het apparaat en wacht een paar seconden "
-"voordat u het opnieuw probeert."
+"Druk ten slotte op de resetknop van het apparaat en wacht een paar "
+"seconden voordat u het opnieuw probeert."
 
 #: mu/modes/circuitpython.py:37
 msgid "CircuitPython"
@@ -1062,19 +1086,20 @@ msgstr "Toestemmingsfout bij het plaatsen van de opdracht"
 
 #: mu/modes/circuitpython.py:190
 msgid ""
-"The mount command (\"{}\") returned an error: {}. Mu will continue as if a "
-"device isn't plugged in."
+"The mount command (\"{}\") returned an error: {}. Mu will continue as if "
+"a device isn't plugged in."
 msgstr ""
-"Het plaatsings-commando (\"{}\") heeft een fout geretourneerd: {}. Mu gaat verder "
-"alsof een apparaat niet is aangesloten."
+"Het plaatsings-commando (\"{}\") heeft een fout geretourneerd: {}. Mu "
+"gaat verder alsof een apparaat niet is aangesloten."
 
 #: mu/modes/circuitpython.py:208
 msgid ""
-"If your Circuit Python device is plugged in, you need to \"Share with Linux\" "
-"on the CIRCUITPY drive in the \"Files\" app then restart Mu."
+"If your Circuit Python device is plugged in, you need to \"Share with "
+"Linux\" on the CIRCUITPY drive in the \"Files\" app then restart Mu."
 msgstr ""
-"Als uw Circuit Python-apparaat is aangesloten, moet u \"Delen met Linux\" op de "
-"CIRCUITPY-schijf in de app \"Bestanden\" en vervolgens Mu opnieuw opstarten."
+"Als uw Circuit Python-apparaat is aangesloten, moet u \"Delen met Linux\""
+" op de CIRCUITPY-schijf in de app \"Bestanden\" en vervolgens Mu opnieuw "
+"opstarten."
 
 #: mu/modes/circuitpython.py:269
 msgid "Could not find an attached CircuitPython device."
@@ -1082,18 +1107,18 @@ msgstr "Kan een aangesloten CircuitPython-apparaat niet vinden."
 
 #: mu/modes/circuitpython.py:270
 msgid ""
-"Python files for CircuitPython devices are stored on the device. Therefore, to "
-"edit these files you need to have the device plugged in. Until you plug in a "
-"device, Mu will use the directory found here:\n"
+"Python files for CircuitPython devices are stored on the device. "
+"Therefore, to edit these files you need to have the device plugged in. "
+"Until you plug in a device, Mu will use the directory found here:\n"
 "\n"
 " {}\n"
 "\n"
 "...to store your code."
 msgstr ""
 "Python-bestanden voor CircuitPython-apparaten worden op het apparaat "
-"opgeslagen. Om deze bestanden te kunnen bewerken, moet het apparaat daarom zijn "
-"aangesloten. Totdat u een apparaat aansluit, gebruikt Mu de map die u hier "
-"vindt:\n"
+"opgeslagen. Om deze bestanden te kunnen bewerken, moet het apparaat "
+"daarom zijn aangesloten. Totdat u een apparaat aansluit, gebruikt Mu de "
+"map die u hier vindt:\n"
 "\n"
 " {}\n"
 "\n"
@@ -1211,12 +1236,12 @@ msgstr "REPL en bestandssysteem kunnen niet tegelijkertijd werken."
 
 #: mu/modes/esp.py:130 mu/modes/microbit.py:520
 msgid ""
-"The REPL and file system both use the same USB serial connection. Only one can "
-"be active at any time. Toggle the file system off and try again."
+"The REPL and file system both use the same USB serial connection. Only "
+"one can be active at any time. Toggle the file system off and try again."
 msgstr ""
-"De REPL en het bestandssysteem gebruiken beide dezelfde seri�le USB-verbinding. "
-"Er kan er maar �en actief zijn. Schakel het bestandssysteem uit en "
-"probeer het opnieuw."
+"De REPL en het bestandssysteem gebruiken beide dezelfde seri�le USB-"
+"verbinding. Er kan er maar �en actief zijn. Schakel het bestandssysteem "
+"uit en probeer het opnieuw."
 
 #: mu/modes/esp.py:149 mu/modes/microbit.py:539
 msgid "The plotter and file system cannot work at the same time."
@@ -1224,12 +1249,12 @@ msgstr "De plotter en het bestandssysteem kunnen niet tegelijkertijd werken."
 
 #: mu/modes/esp.py:152 mu/modes/microbit.py:542
 msgid ""
-"The plotter and file system both use the same USB serial connection. Only one "
-"can be active at any time. Toggle the file system off and try again."
+"The plotter and file system both use the same USB serial connection. Only"
+" one can be active at any time. Toggle the file system off and try again."
 msgstr ""
 "De plotter en het bestandssysteem gebruiken beide dezelfde seri�le USB-"
-"aansluiting. Er kan er maar ��n actief zijn. Schakel het "
-"bestandssysteem uit en probeer het opnieuw."
+"aansluiting. Er kan er maar ��n actief zijn. Schakel het bestandssysteem "
+"uit en probeer het opnieuw."
 
 #: mu/modes/esp.py:180 mu/modes/snek.py:420
 msgid "Cannot run anything without any active editor tabs."
@@ -1237,21 +1262,20 @@ msgstr "Kan niets uitvoeren zonder actieve editortabbladen."
 
 #: mu/modes/esp.py:181 mu/modes/snek.py:421
 msgid ""
-"Running transfers the content of the current tab onto the device. It seems like "
-"you don't have  any tabs open."
+"Running transfers the content of the current tab onto the device. It "
+"seems like you don't have  any tabs open."
 msgstr ""
 "Met Running wordt de inhoud van het huidige tabblad naar het apparaat "
 "overgebracht. Het lijkt alsof je geen tabbladen open hebt staan."
 
 #: mu/modes/esp.py:200 mu/modes/microbit.py:556
 msgid "File system cannot work at the same time as the REPL or plotter."
-msgstr ""
-"Het bestandssysteem kan niet tegelijkertijd met de REPL of plotter werken."
+msgstr "Het bestandssysteem kan niet tegelijkertijd met de REPL of plotter werken."
 
 #: mu/modes/esp.py:204 mu/modes/microbit.py:560
 msgid ""
-"The file system and the REPL and plotter use the same USB serial connection. "
-"Toggle the REPL and plotter off and try again."
+"The file system and the REPL and plotter use the same USB serial "
+"connection. Toggle the REPL and plotter off and try again."
 msgstr ""
 "Het bestandssysteem en de REPL en plotter gebruiken dezelfde seri�le USB-"
 "verbinding. Schakel de REPL en plotter uit en probeer het opnieuw."
@@ -1264,19 +1288,19 @@ msgstr "Kan een aangesloten {board_name} niet vinden"
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
-"The device must have MicroPython flashed onto it before the file system will "
-"work.\n"
+"The device must have MicroPython flashed onto it before the file system "
+"will work.\n"
 "\n"
-"Finally, press the device's reset button and wait a few seconds before trying "
-"again."
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
 msgstr ""
 "Zorg ervoor dat het apparaat is aangesloten op deze computer.\n"
 "\n"
-"Op het apparaat moet MicroPython zijn geflashed voordat het bestandssysteem "
-"werkt.\n"
+"Op het apparaat moet MicroPython zijn geflashed voordat het "
+"bestandssysteem werkt.\n"
 "\n"
-"Druk ten slotte op de resetknop van het apparaat en wacht een paar seconden "
-"voordat u het opnieuw probeert."
+"Druk ten slotte op de resetknop van het apparaat en wacht een paar "
+"seconden voordat u het opnieuw probeert."
 
 #: mu/modes/esp.py:259
 msgid "{board_name} board"
@@ -1340,15 +1364,16 @@ msgstr "Kan een aangesloten BBC micro:bit niet vinden."
 
 #: mu/modes/microbit.py:308
 msgid ""
-"Please ensure you leave enough time for the BBC micro:bit to be attached and "
-"configured correctly by your computer. This may take several seconds. "
-"Alternatively, try removing and re-attaching the device or saving your work and "
-"restarting Mu if the device remains unfound."
+"Please ensure you leave enough time for the BBC micro:bit to be attached "
+"and configured correctly by your computer. This may take several seconds."
+" Alternatively, try removing and re-attaching the device or saving your "
+"work and restarting Mu if the device remains unfound."
 msgstr ""
-"Zorg ervoor dat u voldoende tijd overlaat om de BBC micro:bit te bevestigen en "
-"correct te configureren door uw computer. Dit kan enkele seconden duren. U kunt "
-"ook proberen het apparaat te verwijderen en opnieuw te bevestigen of uw werk op "
-"te slaan en Mu opnieuw te starten als het apparaat niet wordt gevonden."
+"Zorg ervoor dat u voldoende tijd overlaat om de BBC micro:bit te "
+"bevestigen en correct te configureren door uw computer. Dit kan enkele "
+"seconden duren. U kunt ook proberen het apparaat te verwijderen en "
+"opnieuw te bevestigen of uw werk op te slaan en Mu opnieuw te starten als"
+" het apparaat niet wordt gevonden."
 
 #: mu/modes/microbit.py:326
 msgid "Cannot save a custom hex file to a local directory."
@@ -1356,11 +1381,12 @@ msgstr "Kan een aangepast hex-bestand niet opslaan in een lokale map."
 
 #: mu/modes/microbit.py:327
 msgid ""
-"When a custom hex file is configured in the settings a local directory cannot "
-"be used to save the final hex file."
+"When a custom hex file is configured in the settings a local directory "
+"cannot be used to save the final hex file."
 msgstr ""
-"Wanneer een aangepast hex-bestand is geconfigureerd in de instellingen, kan een "
-"lokale map niet worden gebruikt om het uiteindelijke hex-bestand op te slaan."
+"Wanneer een aangepast hex-bestand is geconfigureerd in de instellingen, "
+"kan een lokale map niet worden gebruikt om het uiteindelijke hex-bestand "
+"op te slaan."
 
 #: mu/modes/microbit.py:336
 msgid "Cannot use a custom hex file without micro:bit port."
@@ -1368,13 +1394,13 @@ msgstr "Kan geen aangepast hex-bestand gebruiken zonder micro:bit-poort."
 
 #: mu/modes/microbit.py:337
 msgid ""
-"Mu was unable to detect the micro:bit serial port. Normally this is okay, as Mu "
-"can inject the Python code into the hex to flash. However, this cannot be done "
-"with a custom hex file."
+"Mu was unable to detect the micro:bit serial port. Normally this is okay,"
+" as Mu can inject the Python code into the hex to flash. However, this "
+"cannot be done with a custom hex file."
 msgstr ""
-"Mu kon de micro:bit seri�le poort niet detecteren. Normaal gesproken is dit in "
-"orde, omdat Mu de Python-code in de hex kan injecteren om te flashen. Dit kan "
-"echter niet worden gedaan met een aangepast hex-bestand."
+"Mu kon de micro:bit seri�le poort niet detecteren. Normaal gesproken is "
+"dit in orde, omdat Mu de Python-code in de hex kan injecteren om te "
+"flashen. Dit kan echter niet worden gedaan met een aangepast hex-bestand."
 
 #: mu/modes/microbit.py:390
 msgid "Unsupported BBC micro:bit."
@@ -1382,13 +1408,13 @@ msgstr "Niet-ondersteunde BBC micro:bit."
 
 #: mu/modes/microbit.py:391
 msgid ""
-"Your device is newer than this version of Mu. Please update Mu to the latest "
-"version to support this device.\n"
+"Your device is newer than this version of Mu. Please update Mu to the "
+"latest version to support this device.\n"
 "\n"
 "https://codewith.mu/"
 msgstr ""
-"Je apparaat is nieuwer dan deze versie van Mu. Werk Mu bij naar de nieuwste "
-"versie om dit apparaat te ondersteunen.\n"
+"Je apparaat is nieuwer dan deze versie van Mu. Werk Mu bij naar de "
+"nieuwste versie om dit apparaat te ondersteunen.\n"
 "\n"
 "https://codewith.mu/"
 
@@ -1414,11 +1440,11 @@ msgstr "Er is een probleem opgetreden bij het flashen van de micro:bit."
 
 #: mu/modes/microbit.py:499
 msgid ""
-"Please do not disconnect the device until flashing has completed. Please check "
-"the logs for more information."
+"Please do not disconnect the device until flashing has completed. Please "
+"check the logs for more information."
 msgstr ""
-"Koppel het apparaat niet los voordat het flashen is voltooid. Raadpleeg de "
-"logboeken voor meer informatie."
+"Koppel het apparaat niet los voordat het flashen is voltooid. Raadpleeg "
+"de logboeken voor meer informatie."
 
 #: mu/modes/microbit.py:601
 msgid "micro:bit"
@@ -1447,17 +1473,17 @@ msgstr "Kon geen aangesloten PyBoard-apparaat vinden."
 #: mu/modes/pyboard.py:178
 msgid ""
 "Python files for PyBoard MicroPython devices are stored on the device. "
-"Therefore, to edit these files you need to have the device plugged in. Until "
-"you plug in a device, Mu will use the directory found here:\n"
+"Therefore, to edit these files you need to have the device plugged in. "
+"Until you plug in a device, Mu will use the directory found here:\n"
 "\n"
 " {}\n"
 "\n"
 "...to store your code."
 msgstr ""
-"Python-bestanden voor PyBoard MicroPython-apparaten worden op het apparaat "
-"opgeslagen. Om deze bestanden te kunnen bewerken, moet het apparaat daarom zijn "
-"aangesloten. Totdat u een apparaat aansluit, gebruikt Mu de map die u hier "
-"vindt:\n"
+"Python-bestanden voor PyBoard MicroPython-apparaten worden op het "
+"apparaat opgeslagen. Om deze bestanden te kunnen bewerken, moet het "
+"apparaat daarom zijn aangesloten. Totdat u een apparaat aansluit, "
+"gebruikt Mu de map die u hier vindt:\n"
 "\n"
 " {}\n"
 "\n"
@@ -1595,17 +1621,18 @@ msgstr "Er is niet-opgeslagen werk, 'afhalen' zorgt ervoor dat je het kwijtraakt
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
-"It must have a version of Snek flashed onto it before the REPL will work.\n"
+"It must have a version of Snek flashed onto it before the REPL will work."
 "\n"
-"Finally, press the device's reset button and wait a few seconds before trying "
-"again."
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
 msgstr ""
 "Zorg ervoor dat het apparaat is aangesloten op deze computer.\n"
 "\n"
 "Er moet een versie van Snek op geflasht zijn voordat de REPL werkt.\n"
 "\n"
-"Druk ten slotte op de resetknop van het apparaat en wacht een paar seconden "
-"voordat u het opnieuw probeert."
+"Druk ten slotte op de resetknop van het apparaat en wacht een paar "
+"seconden voordat u het opnieuw probeert."
 
 #: mu/modes/web.py:58
 msgid "Web"
@@ -1618,6 +1645,11 @@ msgstr "Bouw eenvoudige websites met het webframework \"Flask\"."
 #: mu/modes/web.py:76 mu/modes/web.py:129
 msgid "Run the web server."
 msgstr "Start de webserver."
+
+#: mu/modes/web.py:82
+msgctxt "web|WebMode"
+msgid "Browse"
+msgstr "Bladeren"
 
 #: mu/modes/web.py:83
 msgid "Open your website in a browser."
@@ -1653,11 +1685,12 @@ msgstr "Dit is geen Python-bestand!"
 
 #: mu/modes/web.py:158
 msgid ""
-"Mu is only able to serve a Python file. Please make sure the current tab in Mu "
-"is the one for your web application and then try again."
+"Mu is only able to serve a Python file. Please make sure the current tab "
+"in Mu is the one for your web application and then try again."
 msgstr ""
-"Mu kan alleen een Python-bestand serveren. Zorg ervoor dat het huidige tabblad "
-"in Mu het tabblad is voor uw webtoepassing en probeer het opnieuw."
+"Mu kan alleen een Python-bestand serveren. Zorg ervoor dat het huidige "
+"tabblad in Mu het tabblad is voor uw webtoepassing en probeer het "
+"opnieuw."
 
 #: mu/modes/web.py:175
 msgid "Cannot find template directory!"
@@ -1665,13 +1698,15 @@ msgstr "Kan sjabloonmap niet vinden!"
 
 #: mu/modes/web.py:176
 msgid ""
-"To serve your web application, there needs to be a 'templates' directory in the "
-"same place as your web application's Python code. Please fix this and try "
-"again. (Hint: Mu was expecting the `templates` directory to be here: )"
+"To serve your web application, there needs to be a 'templates' directory "
+"in the same place as your web application's Python code. Please fix this "
+"and try again. (Hint: Mu was expecting the `templates` directory to be "
+"here: )"
 msgstr ""
-"Om uw webtoepassing te bedienen, moet er een map 'templates' aanwezig zijn op dezelfde "
-"plaats als de Python-code van uw webtoepassing. Verhelp dit en probeer het "
-"opnieuw. (Hint: Mu verwachtte dat de directory `templates` hier zou zijn: )"
+"Om uw webtoepassing te bedienen, moet er een map 'templates' aanwezig "
+"zijn op dezelfde plaats als de Python-code van uw webtoepassing. Verhelp "
+"dit en probeer het opnieuw. (Hint: Mu verwachtte dat de directory "
+"`templates` hier zou zijn: )"
 
 #: mu/modes/web.py:273
 msgid "Cannot Open Website - Server not Running."
@@ -1679,9 +1714,11 @@ msgstr "Kan website niet openen - Server draait niet."
 
 #: mu/modes/web.py:274
 msgid ""
-"You must have the local web server running in order to view your website in a "
-"browser. Click on the 'Run' button to start the server and then try again."
+"You must have the local web server running in order to view your website "
+"in a browser. Click on the 'Run' button to start the server and then try "
+"again."
 msgstr ""
-"U moet de lokale webserver hebben draaien om uw website in een browser te "
-"kunnen bekijken. Klik op de knop 'Uitvoeren' om de server te starten en probeer "
-"het opnieuw."
+"U moet de lokale webserver hebben draaien om uw website in een browser te"
+" kunnen bekijken. Klik op de knop 'Uitvoeren' om de server te starten en "
+"probeer het opnieuw."
+

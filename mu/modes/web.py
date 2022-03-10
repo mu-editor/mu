@@ -79,7 +79,7 @@ class WebMode(BaseMode):
             },
             {
                 "name": "browse",
-                "display_name": _("Browse"),
+                "display_name": pgettext("web|WebMode", "Browse"),
                 "description": _("Open your website in a browser."),
                 "handler": self.browse,
                 "shortcut": "Ctrl+Shift+B",

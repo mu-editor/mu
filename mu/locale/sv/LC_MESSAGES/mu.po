@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  \n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-01 21:43+0000\n"
+"POT-Creation-Date: 2022-03-10 10:45+0000\n"
 "PO-Revision-Date: 2018-08-21 11:07+0200\n"
 "Last-Translator: \n"
 "Language: sv\n"
@@ -97,18 +97,18 @@ msgstr ""
 msgid "Automatically detect"
 msgstr ""
 
-#: mu/interface/dialogs.py:264
+#: mu/interface/dialogs.py:266
 msgid ""
 "Please select the language for Mu's user interface from the choices "
 "listed below. <strong>Restart Mu for these changes to take "
 "effect.</strong>"
 msgstr ""
 
-#: mu/interface/dialogs.py:295
+#: mu/interface/dialogs.py:297
 msgid "How to flash MicroPython to your device"
 msgstr ""
 
-#: mu/interface/dialogs.py:302
+#: mu/interface/dialogs.py:304
 msgid ""
 "&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. "
 "Download firmware from the <a href=\"https://micropython.org/download\" "
@@ -117,296 +117,317 @@ msgid ""
 "'Browse' button<br/>&nbsp;5. Press 'Erase & write firmware'"
 msgstr ""
 
-#: mu/interface/dialogs.py:334 mu/modes/web.py:82
+#: mu/interface/dialogs.py:327
+msgid "Device:"
+msgstr ""
+
+#: mu/interface/dialogs.py:330
+msgid "Choose device type:"
+msgstr ""
+
+#: mu/interface/dialogs.py:334
+msgid "Firmware (.bin):"
+msgstr ""
+
+#: mu/interface/dialogs.py:336
+msgctxt "dialogs|ESPFirwareFlasherWidget"
 msgid "Browse"
 msgstr ""
 
-#: mu/interface/dialogs.py:335
+#: mu/interface/dialogs.py:337
 msgid "Erase && write firmware"
 msgstr ""
 
-#: mu/interface/dialogs.py:509 mu/interface/main.py:1381
+#: mu/interface/dialogs.py:376
+msgid "Select MicroPython firmware (.bin)"
+msgstr ""
+
+#: mu/interface/dialogs.py:378
+msgid "Firmware (*.bin)"
+msgstr ""
+
+#: mu/interface/dialogs.py:511 mu/interface/main.py:1387
 msgid "Mu Administration"
 msgstr "Mu-inställningar"
 
-#: mu/interface/dialogs.py:523
+#: mu/interface/dialogs.py:525
 msgid "Current Log"
 msgstr "Aktuell logg"
 
-#: mu/interface/dialogs.py:527
+#: mu/interface/dialogs.py:529
 msgid "Python3 Environment"
 msgstr "Python3 miljövariabler"
 
-#: mu/interface/dialogs.py:534
+#: mu/interface/dialogs.py:536
 msgid "BBC micro:bit Settings"
 msgstr "Inställningar för BBC micro:bit"
 
-#: mu/interface/dialogs.py:538
+#: mu/interface/dialogs.py:540
 msgid "Third Party Packages"
 msgstr ""
 
-#: mu/interface/dialogs.py:542
+#: mu/interface/dialogs.py:544
 msgid "ESP Firmware flasher"
 msgstr ""
 
-#: mu/interface/dialogs.py:547
+#: mu/interface/dialogs.py:549
 msgid "Select Language"
 msgstr ""
 
-#: mu/interface/dialogs.py:585
+#: mu/interface/dialogs.py:587
 msgid "Find / Replace"
 msgstr "Sök / ersätt"
 
-#: mu/interface/dialogs.py:589
+#: mu/interface/dialogs.py:591
 msgid "Find:"
 msgstr "Sök:"
 
-#: mu/interface/dialogs.py:596
+#: mu/interface/dialogs.py:598
 msgid "Replace (optional):"
 msgstr "Ersätt (valfritt):"
 
-#: mu/interface/dialogs.py:602
+#: mu/interface/dialogs.py:604
 msgid "Replace all?"
 msgstr "Ersätt alla?"
 
-#: mu/interface/dialogs.py:651
+#: mu/interface/dialogs.py:653
 msgid "Third Party Package Status"
 msgstr ""
 
-#: mu/interface/editor.py:319 mu/logic.py:1324
+#: mu/interface/editor.py:319 mu/logic.py:1327
 msgid "untitled"
 msgstr "namnlös"
 
-#: mu/interface/main.py:99
+#: mu/interface/main.py:100
 msgid "Mode"
 msgstr "Läge"
 
-#: mu/interface/main.py:100
+#: mu/interface/main.py:101
 msgid "Change Mu's mode of behaviour."
 msgstr "Ändra Mus utvecklingsläge."
 
-#: mu/interface/main.py:105
+#: mu/interface/main.py:106
 msgid "New"
 msgstr "Nytt"
 
-#: mu/interface/main.py:106
+#: mu/interface/main.py:107
 msgid "Create a new Python script."
 msgstr "Skapa ett nytt Python-skript."
 
-#: mu/interface/main.py:110
+#: mu/interface/main.py:111
 msgid "Load"
 msgstr "Öppna"
 
-#: mu/interface/main.py:111
+#: mu/interface/main.py:112
 msgid "Load a Python script."
 msgstr "Öppna ett Python-skript."
 
-#: mu/interface/main.py:115
+#: mu/interface/main.py:116
 msgid "Save"
 msgstr "Spara"
 
-#: mu/interface/main.py:116
+#: mu/interface/main.py:117
 msgid "Save the current Python script."
 msgstr "Spara det aktuella Python-skriptet."
 
-#: mu/interface/main.py:130
+#: mu/interface/main.py:131
 msgid "Zoom-in"
 msgstr "Zooma in"
 
-#: mu/interface/main.py:131
+#: mu/interface/main.py:132
 msgid "Zoom in (to make the text bigger)."
 msgstr "Zooma in (gör texten större)"
 
-#: mu/interface/main.py:135
+#: mu/interface/main.py:136
 msgid "Zoom-out"
 msgstr "Zooma ut"
 
-#: mu/interface/main.py:136
+#: mu/interface/main.py:137
 msgid "Zoom out (to make the text smaller)."
 msgstr "Zooma ut (gör texten mindre)"
 
-#: mu/interface/main.py:140
+#: mu/interface/main.py:141
 msgid "Theme"
 msgstr "Tema"
 
-#: mu/interface/main.py:141
+#: mu/interface/main.py:142
 msgid "Toggle theme between day, night or high contrast."
 msgstr "Växla tema mellan dag, natt eller hög kontrast."
 
-#: mu/interface/main.py:148
+#: mu/interface/main.py:149
 msgid "Check"
 msgstr "Kontrollera"
 
-#: mu/interface/main.py:149
+#: mu/interface/main.py:150
 msgid "Check your code for mistakes."
 msgstr "Kontrollera din kod efter misstag."
 
-#: mu/interface/main.py:154
+#: mu/interface/main.py:155
 msgid "Tidy"
 msgstr ""
 
-#: mu/interface/main.py:155
+#: mu/interface/main.py:156
 msgid "Tidy up the layout of your code."
 msgstr ""
 
-#: mu/interface/main.py:159
+#: mu/interface/main.py:160
 msgid "Help"
 msgstr "Hjälp"
 
-#: mu/interface/main.py:160
+#: mu/interface/main.py:161
 msgid "Show help about Mu in a browser."
 msgstr "Visa hjälp om Mu in en webbläsare."
 
-#: mu/interface/main.py:164
+#: mu/interface/main.py:165
 msgid "Quit"
 msgstr "Avsluta"
 
-#: mu/interface/main.py:164
+#: mu/interface/main.py:165
 msgid "Quit Mu."
 msgstr "Avsluta Mu."
 
-#: mu/interface/main.py:275
+#: mu/interface/main.py:271
 msgid "Close file"
 msgstr ""
 
-#: mu/interface/main.py:316
+#: mu/interface/main.py:312
 msgid "Mu {}"
 msgstr "Mu {}"
 
-#: mu/interface/main.py:554
+#: mu/interface/main.py:550
 msgid "Copy selected text to REPL"
 msgstr ""
 
-#: mu/interface/main.py:617
+#: mu/interface/main.py:613
 #, fuzzy
 msgid "Filesystem on "
 msgstr "Filsystemet på micro:bit"
 
-#: mu/interface/main.py:668
+#: mu/interface/main.py:674
 msgid "Python3 data tuple"
 msgstr "Python3 data tupel"
 
-#: mu/interface/main.py:680
+#: mu/interface/main.py:686
 msgid "Python3 (Jupyter)"
 msgstr "Python3 (Jupyter)"
 
-#: mu/interface/main.py:687
+#: mu/interface/main.py:693
 msgid "{} REPL"
 msgstr "{} REPL"
 
-#: mu/interface/main.py:706
+#: mu/interface/main.py:712
 msgid "{} Plotter"
 msgstr "{} Plotter"
 
-#: mu/interface/main.py:756
+#: mu/interface/main.py:762
 msgid "Running: {}"
 msgstr "Kör: {}"
 
-#: mu/interface/main.py:805
+#: mu/interface/main.py:811
 msgid "Debug Inspector"
 msgstr "Debut-inspektör"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:823
 msgid "Name"
 msgstr "Namn"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:823
 msgid "Value"
 msgstr "Värde"
 
-#: mu/interface/main.py:855
+#: mu/interface/main.py:861
 msgid "(A list of {} items.)"
 msgstr "(En lista av {} saker.)"
 
-#: mu/interface/main.py:874
+#: mu/interface/main.py:880
 msgid "(A dict of {} items.)"
 msgstr "(En dict av {} saker.)"
 
-#: mu/interface/main.py:1057
+#: mu/interface/main.py:1063
 msgid "Mu"
 msgstr "Mu"
 
-#: mu/interface/main.py:1368
+#: mu/interface/main.py:1374
 msgid "Mu's current mode of behaviour."
 msgstr "Mu nuvarande utvecklingsläge."
 
-#: mu/interface/main.py:1423
+#: mu/interface/main.py:1429
 #, fuzzy
 msgid "Detected new {} device: {}."
 msgstr "Upptäckt new {} enhet."
 
-#: mu/interface/main.py:1427 mu/logic.py:1616
+#: mu/interface/main.py:1433 mu/logic.py:1622
 msgid "Detected new {} device."
 msgstr "Upptäckt new {} enhet."
 
-#: mu/interface/panes.py:495
+#: mu/interface/panes.py:657
 msgid "File already exists; overwrite it?"
 msgstr "Filen finns redan; skriva över den?"
 
-#: mu/interface/panes.py:496
+#: mu/interface/panes.py:658
 msgid "File already exists"
 msgstr "Filen finns redan"
 
-#: mu/interface/panes.py:529
+#: mu/interface/panes.py:691
 #, fuzzy
 msgid "Copying '{}' to device."
 msgstr "Kopierar ‘{}’ till micro:biten."
 
-#: mu/interface/panes.py:538
+#: mu/interface/panes.py:700
 #, fuzzy
 msgid "'{}' successfully copied to device."
 msgstr "Lyckad kopiering av ‘{}’ till micro:biten."
 
-#: mu/interface/panes.py:547
+#: mu/interface/panes.py:709
 msgid "Delete (cannot be undone)"
 msgstr "Ta bort (kan inte ångras)"
 
-#: mu/interface/panes.py:553
+#: mu/interface/panes.py:715
 #, fuzzy
 msgid "Deleting '{}' from device."
 msgstr "Tar bort '{}' från micro:biten."
 
-#: mu/interface/panes.py:562
+#: mu/interface/panes.py:724
 #, fuzzy
 msgid "'{}' successfully deleted from device."
 msgstr "'{}' borttagen från micro:biten."
 
-#: mu/interface/panes.py:595
+#: mu/interface/panes.py:757
 #, fuzzy
 msgid "Getting '{}' from device. Copying to '{}'."
 msgstr "Hämtar ‘{}’ från micro:biten. Kopierar till ‘{}’."
 
-#: mu/interface/panes.py:606
+#: mu/interface/panes.py:768
 #, fuzzy
 msgid "Successfully copied '{}' from the device to your computer."
 msgstr "Kopierat ‘{}’ från micro:biten till din dator."
 
-#: mu/interface/panes.py:623
+#: mu/interface/panes.py:785
 msgid "Open in Mu"
 msgstr "Öppna i Mu"
 
-#: mu/interface/panes.py:626
+#: mu/interface/panes.py:788
 msgid "Write to main.py on device"
 msgstr ""
 
-#: mu/interface/panes.py:629
+#: mu/interface/panes.py:791
 msgid "Open"
 msgstr "Öppna"
 
-#: mu/interface/panes.py:635
+#: mu/interface/panes.py:797
 msgid "Opening '{}'"
 msgstr "Öppnar ‘{}’"
 
-#: mu/interface/panes.py:678
+#: mu/interface/panes.py:840
 #, fuzzy
 msgid "Files on your device:"
 msgstr "Filer på din dator:"
 
-#: mu/interface/panes.py:680
+#: mu/interface/panes.py:842
 msgid "Files on your computer:"
 msgstr "Filer på din dator:"
 
-#: mu/interface/panes.py:752
+#: mu/interface/panes.py:914
 #, fuzzy
 msgid ""
 "There was a problem getting the list of files on the device. Please check"
@@ -417,7 +438,7 @@ msgstr ""
 "loggar efter teknisk information. Alternativt, försök koppla loss och "
 "ansluta din micro:bit och/eller start om Mu."
 
-#: mu/interface/panes.py:767
+#: mu/interface/panes.py:929
 #, fuzzy
 msgid ""
 "There was a problem copying the file '{}' onto the device. Please check "
@@ -426,7 +447,7 @@ msgstr ""
 "Det var problem med att kopiera filen ‘{}’ till micro:biten. Titta i Mus "
 "loggar efter mer information."
 
-#: mu/interface/panes.py:779
+#: mu/interface/panes.py:941
 #, fuzzy
 msgid ""
 "There was a problem deleting '{}' from the device. Please check Mu's logs"
@@ -435,7 +456,7 @@ msgstr ""
 "Det var problem med att ta bort ‘{}’ från micro:biten. Titta i Mus loggar"
 " efter mer information."
 
-#: mu/interface/panes.py:791
+#: mu/interface/panes.py:953
 #, fuzzy
 msgid ""
 "There was a problem getting '{}' from the device. Please check Mu's logs "
@@ -702,10 +723,10 @@ msgstr ""
 "saknas tecken!"
 
 #: mu/logic.py:576
-msgid " compatible"
+msgid "{} compatible"
 msgstr ""
 
-#: mu/logic.py:995
+#: mu/logic.py:998
 msgid ""
 "The file contains characters Mu expects to be encoded as {0} or as the "
 "computer's default encoding {1}, but which are encoded in some other way."
@@ -720,19 +741,19 @@ msgstr ""
 "Om filen sparades i en annan applikation, spara om den via ‘Spara som’ "
 "och sätt teckenkodningen till {0}"
 
-#: mu/logic.py:1023
+#: mu/logic.py:1026
 msgid "The file \"{}\" is already open."
 msgstr "Filen “{}” är redan öppen."
 
-#: mu/logic.py:1035
+#: mu/logic.py:1038
 msgid "Mu cannot read the characters in {}"
 msgstr "Mu kan inte läsa tecknen i {}"
 
-#: mu/logic.py:1061
+#: mu/logic.py:1064
 msgid "Mu was not able to open this file"
 msgstr "Mu kunde inte öppna filen"
 
-#: mu/logic.py:1062
+#: mu/logic.py:1065
 msgid ""
 "Currently Mu only works with Python source files or hex files created "
 "with embedded MicroPython code."
@@ -740,11 +761,11 @@ msgstr ""
 "För nuvarande fungerar bara Mu med Python källkodsfiler eller hex-filer "
 "med MicroPython-kod."
 
-#: mu/logic.py:1070
+#: mu/logic.py:1073
 msgid "Could not load {}"
 msgstr "Kunde inte ladda {}"
 
-#: mu/logic.py:1072
+#: mu/logic.py:1075
 msgid ""
 "Does this file exist?\n"
 "If it does, do you have permission to read it?\n"
@@ -756,11 +777,11 @@ msgstr ""
 "\n"
 "Undersök och försök igen."
 
-#: mu/logic.py:1080
+#: mu/logic.py:1083
 msgid "Is this a {} file?"
 msgstr "Är det här en {} fil?"
 
-#: mu/logic.py:1081
+#: mu/logic.py:1084
 msgid ""
 "It looks like this could be a {} file.\n"
 "\n"
@@ -770,11 +791,11 @@ msgstr ""
 "\n"
 "Vill du ändra Mu till {}-läget?"
 
-#: mu/logic.py:1208
+#: mu/logic.py:1211
 msgid "Could not save file (disk problem)"
 msgstr "Kunde inte spara filen (disk-problem)"
 
-#: mu/logic.py:1209
+#: mu/logic.py:1212
 msgid ""
 "Error saving file to disk. Ensure you have permission to write the file "
 "and sufficient disk space."
@@ -782,11 +803,11 @@ msgstr ""
 "Kunde inte spara till disk. Kontrollera att du ha rättighet att skriva "
 "till filen och att det finns tillräckligt med diskutrymme."
 
-#: mu/logic.py:1215
+#: mu/logic.py:1218
 msgid "Could not save file (encoding problem)"
 msgstr "Kunde inte spara file (teckenkodningsproblem)"
 
-#: mu/logic.py:1217
+#: mu/logic.py:1220
 msgid ""
 "Unable to convert all the characters. If you have an encoding line at the"
 " top of the file, remove it and try again."
@@ -794,15 +815,15 @@ msgstr ""
 "Kunde inte konvertera alla tecken. Om du har en teckenkodningsrad i "
 "början av filen, ta bort den och försök igen."
 
-#: mu/logic.py:1228
+#: mu/logic.py:1231
 msgid "Saved file: {}"
 msgstr "Sparat filen: {}"
 
-#: mu/logic.py:1260 mu/logic.py:1675
+#: mu/logic.py:1263 mu/logic.py:1681
 msgid "You cannot use the filename \"{}\""
 msgstr "Du kan inte använda filnamnet “{}”"
 
-#: mu/logic.py:1263
+#: mu/logic.py:1266
 msgid ""
 "This name is already used by another part of Python. If you use this "
 "name, things are likely to break. Please try again with a different "
@@ -812,66 +833,66 @@ msgstr ""
 "det, så kommer saker antagligen inte att fungera. Försök med ett annat "
 "filnamn."
 
-#: mu/logic.py:1340
+#: mu/logic.py:1343
 msgid "Good job! No problems found."
 msgstr "Snyggt jobbat! Hittade inga problem."
 
-#: mu/logic.py:1341
+#: mu/logic.py:1344
 msgid "Hurrah! Checker turned up no problems."
 msgstr "Hurra! Hittade inga problem efter kontrollen."
 
-#: mu/logic.py:1342
+#: mu/logic.py:1345
 msgid "Nice one! Zero problems detected."
 msgstr "Snyggt! Noll detekterade problem."
 
-#: mu/logic.py:1343
+#: mu/logic.py:1346
 msgid "Well done! No problems here."
 msgstr "Bra gjort! Inga problem här inte."
 
-#: mu/logic.py:1344
+#: mu/logic.py:1347
 msgid "Awesome! Zero problems found."
 msgstr "Häftigt! Inga hittade problem."
 
-#: mu/logic.py:1370
+#: mu/logic.py:1373
 msgid "There is un-saved work, exiting the application will cause you to lose it."
 msgstr ""
 "Det finns arbete som inte är sparat, om avslutar du applikationen "
 "förloras det."
 
-#: mu/logic.py:1442
+#: mu/logic.py:1448
 msgid "Could not find MicroPython runtime."
 msgstr "Kunde inte hitta någon exekveringsmiljö för MicroPython."
 
-#: mu/logic.py:1443
+#: mu/logic.py:1449
 msgid ""
 "The micro:bit runtime you specified ('{}') does not exist. Please try "
 "again."
 msgstr "Exekveringsmiljön (‘{}’) du angav finns inte. Försök igen."
 
-#: mu/logic.py:1569
+#: mu/logic.py:1575
 msgid "Changed to {} mode."
 msgstr "Ändrat till {}-läget."
 
-#: mu/logic.py:1599
+#: mu/logic.py:1605
 msgid "Would you like to change Mu to the {} mode?"
 msgstr "Vill du ändra Mu till {}-läget?"
 
-#: mu/logic.py:1618
+#: mu/logic.py:1624
 #, fuzzy
 msgid "Device changed to {}."
 msgstr "Ändrat till {}-läget."
 
-#: mu/logic.py:1654
+#: mu/logic.py:1660
 msgid "Cannot Set Breakpoint."
 msgstr "Kan inte sätta brytpunkt."
 
-#: mu/logic.py:1655
+#: mu/logic.py:1661
 msgid ""
 "Lines that are comments or some multi-line statements cannot have "
 "breakpoints."
 msgstr "Kommentarsrader eller vissa flerraders statements kan inte ha brytpunkter."
 
-#: mu/logic.py:1678
+#: mu/logic.py:1684
 msgid ""
 "This name is already used by another part of Python. If you use that "
 "name, things are likely to break. Please try again with a different "
@@ -881,65 +902,65 @@ msgstr ""
 "det, så kommer saker antagligen inte att fungera. Försök med ett annat "
 "filnamn."
 
-#: mu/logic.py:1700
+#: mu/logic.py:1706
 msgid "Could not rename file."
 msgstr "Kunde inte byta namn på filen."
 
-#: mu/logic.py:1701
+#: mu/logic.py:1707
 msgid "A file of that name is already open in Mu."
 msgstr "En fil med det namnet har redan öppnats i Mu."
 
-#: mu/logic.py:1733
+#: mu/logic.py:1739
 msgid "Replaced \"{}\" with \"{}\"."
 msgstr "Ersatte “{}” med “{}”."
 
-#: mu/logic.py:1738
+#: mu/logic.py:1744
 msgid "Replaced {} matches of \"{}\" with \"{}\"."
 msgstr "Ersatte {} träffar av “{}” med “{}”."
 
-#: mu/logic.py:1743 mu/logic.py:1750 mu/logic.py:1769
+#: mu/logic.py:1749 mu/logic.py:1756 mu/logic.py:1775
 msgid "Could not find \"{}\"."
 msgstr "Kunde inte hitta “{}”."
 
-#: mu/logic.py:1748 mu/logic.py:1767
+#: mu/logic.py:1754 mu/logic.py:1773
 msgid "Highlighting matches for \"{}\"."
 msgstr "Markerar träffar för \"{}\"."
 
-#: mu/logic.py:1753 mu/logic.py:1772
+#: mu/logic.py:1759 mu/logic.py:1778
 msgid "You must provide something to find."
 msgstr "Du måste ange något att söka efter."
 
-#: mu/logic.py:1754 mu/logic.py:1773
+#: mu/logic.py:1760 mu/logic.py:1779
 msgid "Please try again, this time with something in the find box."
 msgstr "Försök igen, den här gången med något i sök-rutan."
 
-#: mu/logic.py:1817
+#: mu/logic.py:1823
 msgid "Successfully cleaned the code. Use CTRL-Z to undo."
 msgstr ""
 
-#: mu/logic.py:1823
+#: mu/logic.py:1829
 msgid "Your code contains problems."
 msgstr ""
 
-#: mu/logic.py:1824
+#: mu/logic.py:1830
 msgid ""
 "These must be fixed before tidying will work. Please use the 'Check' "
 "button to highlight these problems."
 msgstr ""
 
-#: mu/modes/base.py:115
+#: mu/modes/base.py:85
 msgid "Cannot connect to device on port {}"
 msgstr "Kan inte ansluta till enhet på port {}"
 
-#: mu/modes/base.py:209
+#: mu/modes/base.py:179
 msgid "# Write your code here :-)"
 msgstr "# Skriv din kod här :-)"
 
-#: mu/modes/base.py:332
+#: mu/modes/base.py:324
 msgid "Data Flood Detected!"
 msgstr "Dataöverflöde upptäckt!"
 
-#: mu/modes/base.py:333
+#: mu/modes/base.py:325
 msgid ""
 "The plotter is flooded with data which will make Mu unresponsive and "
 "freeze. As a safeguard, the plotter has been stopped.\n"
@@ -959,17 +980,17 @@ msgstr ""
 "För att lösa detta, kontrollera så att din kod skriver små datatupler "
 "blandat med anrop till ‘sleep’ med kort tid."
 
-#: mu/modes/base.py:508 mu/modes/base.py:558
+#: mu/modes/base.py:500 mu/modes/base.py:550 mu/modes/snek.py:521
 msgid "Click on the device's reset button, wait a few seconds and then try again."
 msgstr ""
 "Tryck på enhetens reset-knapp, vänta att par sekunder och försök sedan "
 "igen."
 
-#: mu/modes/base.py:516 mu/modes/base.py:566
+#: mu/modes/base.py:508 mu/modes/base.py:558 mu/modes/snek.py:529
 msgid "Could not find an attached device."
 msgstr "Kunde inte hitta någon ansluten enhet."
 
-#: mu/modes/base.py:517
+#: mu/modes/base.py:509
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
@@ -987,7 +1008,7 @@ msgstr ""
 "Slutligen, tryck på enhetens reset-knapp och vänta ett par sekunder innan"
 " du försöker igen."
 
-#: mu/modes/base.py:567
+#: mu/modes/base.py:559
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
@@ -1014,21 +1035,21 @@ msgstr "Adafruit CircuitPython"
 msgid "Write code for boards running CircuitPython."
 msgstr ""
 
-#: mu/modes/circuitpython.py:142 mu/modes/pyboard.py:86
+#: mu/modes/circuitpython.py:142 mu/modes/pyboard.py:86 mu/modes/snek.py:379
 msgid "Serial"
 msgstr "Seriell"
 
-#: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87
+#: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87 mu/modes/snek.py:380
 msgid "Open a serial connection to your device."
 msgstr "Öppna en seriell anslutning till din enhet."
 
 #: mu/modes/circuitpython.py:152 mu/modes/esp.py:102 mu/modes/microbit.py:164
-#: mu/modes/pyboard.py:96 mu/modes/python3.py:174
+#: mu/modes/pyboard.py:96 mu/modes/python3.py:174 mu/modes/snek.py:403
 msgid "Plotter"
 msgstr "Plotter"
 
 #: mu/modes/circuitpython.py:153 mu/modes/esp.py:103 mu/modes/microbit.py:165
-#: mu/modes/pyboard.py:97
+#: mu/modes/pyboard.py:97 mu/modes/snek.py:404
 msgid "Plot incoming REPL data."
 msgstr "Plotta inkommande REPL-data."
 
@@ -1204,11 +1225,11 @@ msgstr ""
 "Plottern och filsystemet använder båda samma seriella USB-anslutning. "
 "Bara en kan vara aktiv åt gången. Stäng av filsystemet och försök igen."
 
-#: mu/modes/esp.py:180
+#: mu/modes/esp.py:180 mu/modes/snek.py:420
 msgid "Cannot run anything without any active editor tabs."
 msgstr ""
 
-#: mu/modes/esp.py:181
+#: mu/modes/esp.py:181 mu/modes/snek.py:421
 msgid ""
 "Running transfers the content of the current tab onto the device. It "
 "seems like you don't have  any tabs open."
@@ -1330,7 +1351,7 @@ msgstr ""
 #: mu/modes/microbit.py:327
 msgid ""
 "When a custom hex file is configured in the settings a local directory "
-"cannot be used to saved the final hex file."
+"cannot be used to save the final hex file."
 msgstr ""
 
 #: mu/modes/microbit.py:336
@@ -1409,7 +1430,7 @@ msgstr ""
 
 #: mu/modes/pyboard.py:34
 #, fuzzy
-msgid "Use MicroPython on the Pyboard line of boards"
+msgid "Use MicroPython on the Pyboard line of boards."
 msgstr "Använd CircuitPython på utvecklingskort från Adafruit."
 
 #: mu/modes/pyboard.py:177
@@ -1536,6 +1557,56 @@ msgstr "REPL startad."
 msgid "REPL stopped."
 msgstr "REPL stoppad."
 
+#: mu/modes/snek.py:169
+msgid "Snek"
+msgstr ""
+
+#: mu/modes/snek.py:171
+msgid "Write code for boards running Snek."
+msgstr ""
+
+#: mu/modes/snek.py:386
+msgid "Put"
+msgstr ""
+
+#: mu/modes/snek.py:387
+msgid "Put the current program to the device."
+msgstr ""
+
+#: mu/modes/snek.py:393
+msgid "Get"
+msgstr ""
+
+#: mu/modes/snek.py:394
+msgid "Get the current program from the device."
+msgstr ""
+
+#: mu/modes/snek.py:459
+#, fuzzy
+msgid "There is un-saved work, 'get' will cause you to lose it."
+msgstr ""
+"Det finns arbete som inte är sparat, om avslutar du applikationen "
+"förloras det."
+
+#: mu/modes/snek.py:530
+#, fuzzy
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of Snek flashed onto it before the REPL will work."
+"\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+"Kontrollera att enheten är ansluten till den här datorn.\n"
+"\n"
+"Den måste ha en version av MicroPython (eller CircuitPython) flashad på "
+"sig innan REPL fungerar.\n"
+"\n"
+"Slutligen, tryck på enhetens reset-knapp och vänta ett par sekunder innan"
+" du försöker igen."
+
 #: mu/modes/web.py:58
 msgid "Web"
 msgstr ""
@@ -1546,6 +1617,11 @@ msgstr ""
 
 #: mu/modes/web.py:76 mu/modes/web.py:129
 msgid "Run the web server."
+msgstr ""
+
+#: mu/modes/web.py:82
+msgctxt "web|WebMode"
+msgid "Browse"
 msgstr ""
 
 #: mu/modes/web.py:83
@@ -1619,12 +1695,16 @@ msgstr ""
 #~ msgid "Files on your micro:bit:"
 #~ msgstr "Filer på din micro:bit:"
 
-#~ msgid "{} [{}:{}]"
-#~ msgstr "{} [{}:{}]"
-
 #~ msgid "Your script is too long!"
 #~ msgstr "Ditt skript är för långt!"
 
 #~ msgid " Runtime: {}"
 #~ msgstr " Exekveringsmiljö: {}"
+
+#~ msgid ""
+#~ "When a custom hex file is "
+#~ "configured in the settings a local "
+#~ "directory cannot be used to saved "
+#~ "the final hex file."
+#~ msgstr ""
 

@@ -333,7 +333,7 @@ class ESPFirmwareFlasherWidget(QWidget):
         self.device_type.addItem("ESP32")
         firmware_label = QLabel(_("Firmware (.bin):"))
         self.txtFolder = QLineEdit()
-        self.btnFolder = QPushButton(_("Browse"))
+        self.btnFolder = QPushButton(pgettext("dialogs|ESPFirwareFlasherWidget", "Browse"))
         self.btnExec = QPushButton(_("Erase && write firmware"))
         self.btnExec.setEnabled(False)
         form_set = QGridLayout()

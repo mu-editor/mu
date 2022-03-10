@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  \n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-12-20 15:37+0000\n"
+"POT-Creation-Date: 2022-03-10 10:44+0000\n"
 "PO-Revision-Date: 2021-12-13 21:06-0300\n"
 "Last-Translator: Rafael Fontenelle <rafaelff@gnome.org>\n"
 "Language: pt_BR\n"
@@ -104,7 +104,7 @@ msgstr ""
 msgid "Automatically detect"
 msgstr "Detectar automaticamente"
 
-#: mu/interface/dialogs.py:264
+#: mu/interface/dialogs.py:266
 msgid ""
 "Please select the language for Mu's user interface from the choices "
 "listed below. <strong>Restart Mu for these changes to take "
@@ -114,11 +114,11 @@ msgstr ""
 "listadas abaixo. <strong>Reinicie Mu para que essas alterações entrem em "
 "vigor.</strong>"
 
-#: mu/interface/dialogs.py:295
+#: mu/interface/dialogs.py:297
 msgid "How to flash MicroPython to your device"
 msgstr "Como transferir o MicroPython para o seu dispositivo"
 
-#: mu/interface/dialogs.py:302
+#: mu/interface/dialogs.py:304
 msgid ""
 "&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. "
 "Download firmware from the <a href=\"https://micropython.org/download\" "
@@ -133,59 +133,80 @@ msgstr ""
 "usando o botão \"Procurar\"<br/>&nbsp;5. Pressione \"Apagar e escrever "
 "firmware\""
 
-#: mu/interface/dialogs.py:334 mu/modes/web.py:82
+#: mu/interface/dialogs.py:327
+msgid "Device:"
+msgstr ""
+
+#: mu/interface/dialogs.py:330
+msgid "Choose device type:"
+msgstr ""
+
+#: mu/interface/dialogs.py:334
+msgid "Firmware (.bin):"
+msgstr ""
+
+#: mu/interface/dialogs.py:336
+msgctxt "dialogs|ESPFirwareFlasherWidget"
 msgid "Browse"
 msgstr "Procurar"
 
-#: mu/interface/dialogs.py:335
+#: mu/interface/dialogs.py:337
 msgid "Erase && write firmware"
 msgstr "Apagar && escrever firmware"
 
-#: mu/interface/dialogs.py:509 mu/interface/main.py:1381
+#: mu/interface/dialogs.py:376
+msgid "Select MicroPython firmware (.bin)"
+msgstr ""
+
+#: mu/interface/dialogs.py:378
+msgid "Firmware (*.bin)"
+msgstr ""
+
+#: mu/interface/dialogs.py:511 mu/interface/main.py:1387
 msgid "Mu Administration"
 msgstr "Administração do Mu"
 
-#: mu/interface/dialogs.py:523
+#: mu/interface/dialogs.py:525
 msgid "Current Log"
 msgstr "Log atual"
 
-#: mu/interface/dialogs.py:527
+#: mu/interface/dialogs.py:529
 msgid "Python3 Environment"
 msgstr "Ambiente Python3"
 
-#: mu/interface/dialogs.py:534
+#: mu/interface/dialogs.py:536
 msgid "BBC micro:bit Settings"
 msgstr "Definições do BBC micro:bit"
 
-#: mu/interface/dialogs.py:538
+#: mu/interface/dialogs.py:540
 msgid "Third Party Packages"
 msgstr "Pacotes de terceiros"
 
-#: mu/interface/dialogs.py:542
+#: mu/interface/dialogs.py:544
 msgid "ESP Firmware flasher"
 msgstr "Transferidor de Firmware ESP"
 
-#: mu/interface/dialogs.py:547
+#: mu/interface/dialogs.py:549
 msgid "Select Language"
 msgstr "Selecionar idioma"
 
-#: mu/interface/dialogs.py:585
+#: mu/interface/dialogs.py:587
 msgid "Find / Replace"
 msgstr "Localizar / Substituir"
 
-#: mu/interface/dialogs.py:589
+#: mu/interface/dialogs.py:591
 msgid "Find:"
 msgstr "Localizar:"
 
-#: mu/interface/dialogs.py:596
+#: mu/interface/dialogs.py:598
 msgid "Replace (optional):"
 msgstr "Substituir (opcional):"
 
-#: mu/interface/dialogs.py:602
+#: mu/interface/dialogs.py:604
 msgid "Replace all?"
 msgstr "Substituir todos?"
 
-#: mu/interface/dialogs.py:651
+#: mu/interface/dialogs.py:653
 msgid "Third Party Package Status"
 msgstr "Status de pacote de terceiros"
 
@@ -193,229 +214,229 @@ msgstr "Status de pacote de terceiros"
 msgid "untitled"
 msgstr "sem nome"
 
-#: mu/interface/main.py:99
+#: mu/interface/main.py:100
 msgid "Mode"
 msgstr "Modo"
 
-#: mu/interface/main.py:100
+#: mu/interface/main.py:101
 msgid "Change Mu's mode of behaviour."
 msgstr "Altera o modo de operação do Mu."
 
-#: mu/interface/main.py:105
+#: mu/interface/main.py:106
 msgid "New"
 msgstr "Novo"
 
-#: mu/interface/main.py:106
+#: mu/interface/main.py:107
 msgid "Create a new Python script."
 msgstr "Cria um script Python novo."
 
-#: mu/interface/main.py:110
+#: mu/interface/main.py:111
 msgid "Load"
 msgstr "Abrir"
 
-#: mu/interface/main.py:111
+#: mu/interface/main.py:112
 msgid "Load a Python script."
 msgstr "Abre um script Python."
 
-#: mu/interface/main.py:115
+#: mu/interface/main.py:116
 msgid "Save"
 msgstr "Salvar"
 
-#: mu/interface/main.py:116
+#: mu/interface/main.py:117
 msgid "Save the current Python script."
 msgstr "Salva o script Python atual."
 
-#: mu/interface/main.py:130
+#: mu/interface/main.py:131
 msgid "Zoom-in"
 msgstr "Aumentar"
 
-#: mu/interface/main.py:131
+#: mu/interface/main.py:132
 msgid "Zoom in (to make the text bigger)."
 msgstr "Aumenta o tamanho do texto."
 
-#: mu/interface/main.py:135
+#: mu/interface/main.py:136
 msgid "Zoom-out"
 msgstr "Diminuir"
 
-#: mu/interface/main.py:136
+#: mu/interface/main.py:137
 msgid "Zoom out (to make the text smaller)."
 msgstr "Diminui o tamanho do texto."
 
-#: mu/interface/main.py:140
+#: mu/interface/main.py:141
 msgid "Theme"
 msgstr "Tema"
 
-#: mu/interface/main.py:141
+#: mu/interface/main.py:142
 msgid "Toggle theme between day, night or high contrast."
 msgstr "Altera o tema do Mu entre dia, noite e alto contraste."
 
-#: mu/interface/main.py:148
+#: mu/interface/main.py:149
 msgid "Check"
 msgstr "Verificar"
 
-#: mu/interface/main.py:149
+#: mu/interface/main.py:150
 msgid "Check your code for mistakes."
 msgstr "Verifica seu código em busca de erros."
 
-#: mu/interface/main.py:154
+#: mu/interface/main.py:155
 msgid "Tidy"
 msgstr "Organizar"
 
-#: mu/interface/main.py:155
+#: mu/interface/main.py:156
 msgid "Tidy up the layout of your code."
 msgstr "Organiza o layout do seu código."
 
-#: mu/interface/main.py:159
+#: mu/interface/main.py:160
 msgid "Help"
 msgstr "Ajuda"
 
-#: mu/interface/main.py:160
+#: mu/interface/main.py:161
 msgid "Show help about Mu in a browser."
 msgstr "Mostra a ajuda do Mu no navegador."
 
-#: mu/interface/main.py:164
+#: mu/interface/main.py:165
 msgid "Quit"
 msgstr "Sair"
 
-#: mu/interface/main.py:164
+#: mu/interface/main.py:165
 msgid "Quit Mu."
 msgstr "Fecha o Mu."
 
-#: mu/interface/main.py:275
+#: mu/interface/main.py:271
 msgid "Close file"
 msgstr "Fecha o arquivo"
 
-#: mu/interface/main.py:316
+#: mu/interface/main.py:312
 msgid "Mu {}"
 msgstr "Mu {}"
 
-#: mu/interface/main.py:554
+#: mu/interface/main.py:550
 msgid "Copy selected text to REPL"
 msgstr "Copiar texto selecionado para REPL"
 
-#: mu/interface/main.py:617
+#: mu/interface/main.py:613
 msgid "Filesystem on "
 msgstr "Sistema de arquivos em "
 
-#: mu/interface/main.py:668
+#: mu/interface/main.py:674
 msgid "Python3 data tuple"
 msgstr "Tupla de dados do Python3"
 
-#: mu/interface/main.py:680
+#: mu/interface/main.py:686
 msgid "Python3 (Jupyter)"
 msgstr "Python3 (Jupyter)"
 
-#: mu/interface/main.py:687
+#: mu/interface/main.py:693
 msgid "{} REPL"
 msgstr "REPL {}"
 
-#: mu/interface/main.py:706
+#: mu/interface/main.py:712
 msgid "{} Plotter"
 msgstr "Gráfico {}"
 
-#: mu/interface/main.py:756
+#: mu/interface/main.py:762
 msgid "Running: {}"
 msgstr "Em execução: {}"
 
-#: mu/interface/main.py:805
+#: mu/interface/main.py:811
 msgid "Debug Inspector"
 msgstr "Inspetor de depuração"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:823
 msgid "Name"
 msgstr "Nome"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:823
 msgid "Value"
 msgstr "Valor"
 
-#: mu/interface/main.py:855
+#: mu/interface/main.py:861
 msgid "(A list of {} items.)"
 msgstr "(Uma lista de {} itens.)"
 
-#: mu/interface/main.py:874
+#: mu/interface/main.py:880
 msgid "(A dict of {} items.)"
 msgstr "(Um dicionário de {} itens.)"
 
-#: mu/interface/main.py:1057
+#: mu/interface/main.py:1063
 msgid "Mu"
 msgstr "Mu"
 
-#: mu/interface/main.py:1368
+#: mu/interface/main.py:1374
 msgid "Mu's current mode of behaviour."
 msgstr "Modo atual de operação do Mu."
 
-#: mu/interface/main.py:1423
+#: mu/interface/main.py:1429
 msgid "Detected new {} device: {}."
 msgstr "Detectado um novo dispositivo {}: {}."
 
-#: mu/interface/main.py:1427 mu/logic.py:1622
+#: mu/interface/main.py:1433 mu/logic.py:1622
 msgid "Detected new {} device."
 msgstr "Detectado um novo dispositivo {}."
 
-#: mu/interface/panes.py:495
+#: mu/interface/panes.py:657
 msgid "File already exists; overwrite it?"
 msgstr "O arquivo já existe; deseja substituí-lo?"
 
-#: mu/interface/panes.py:496
+#: mu/interface/panes.py:658
 msgid "File already exists"
 msgstr "O arquivo já existe"
 
-#: mu/interface/panes.py:529
+#: mu/interface/panes.py:691
 msgid "Copying '{}' to device."
 msgstr "Copiando '{}' para o dispositivo."
 
-#: mu/interface/panes.py:538
+#: mu/interface/panes.py:700
 msgid "'{}' successfully copied to device."
 msgstr "'{}' copiado com sucesso para o dispositivo."
 
-#: mu/interface/panes.py:547
+#: mu/interface/panes.py:709
 msgid "Delete (cannot be undone)"
 msgstr "Excluir (não pode ser desfeito)"
 
-#: mu/interface/panes.py:553
+#: mu/interface/panes.py:715
 msgid "Deleting '{}' from device."
 msgstr "Excluindo '{}' do dispositivo."
 
-#: mu/interface/panes.py:562
+#: mu/interface/panes.py:724
 msgid "'{}' successfully deleted from device."
 msgstr "'{}' excluído com sucesso do dispositivo."
 
-#: mu/interface/panes.py:595
+#: mu/interface/panes.py:757
 msgid "Getting '{}' from device. Copying to '{}'."
 msgstr "Transferindo '{}' do dispositivo. Copiando para '{}'."
 
-#: mu/interface/panes.py:606
+#: mu/interface/panes.py:768
 msgid "Successfully copied '{}' from the device to your computer."
 msgstr ""
 "A cópia de '{}' do dispositivo para o computador foi concluída com "
 "sucesso."
 
-#: mu/interface/panes.py:623
+#: mu/interface/panes.py:785
 msgid "Open in Mu"
 msgstr "Abrir no Mu"
 
-#: mu/interface/panes.py:626
+#: mu/interface/panes.py:788
 msgid "Write to main.py on device"
 msgstr "Escrever para main.py no dispositivo"
 
-#: mu/interface/panes.py:629
+#: mu/interface/panes.py:791
 msgid "Open"
 msgstr "Abrir"
 
-#: mu/interface/panes.py:635
+#: mu/interface/panes.py:797
 msgid "Opening '{}'"
 msgstr "Abrindo '{}'"
 
-#: mu/interface/panes.py:678
+#: mu/interface/panes.py:840
 msgid "Files on your device:"
 msgstr "Arquivos no dispositivo:"
 
-#: mu/interface/panes.py:680
+#: mu/interface/panes.py:842
 msgid "Files on your computer:"
 msgstr "Arquivos no computador:"
 
-#: mu/interface/panes.py:752
+#: mu/interface/panes.py:914
 msgid ""
 "There was a problem getting the list of files on the device. Please check"
 " Mu's logs for technical information. Alternatively, try unplugging"
@@ -425,7 +446,7 @@ msgstr ""
 "log do Mu para obter detalhes técnicos. Alternativamente, tente "
 "desconectar e reconectar o teu dispositivo ou tente reiniciar o Mu."
 
-#: mu/interface/panes.py:767
+#: mu/interface/panes.py:929
 msgid ""
 "There was a problem copying the file '{}' onto the device. Please check "
 "Mu's logs for more information."
@@ -433,7 +454,7 @@ msgstr ""
 "Houve uma falha ao copiar o arquivo '{}' para o dispositivo. Verifique os"
 " logs do Mu para mais informação."
 
-#: mu/interface/panes.py:779
+#: mu/interface/panes.py:941
 msgid ""
 "There was a problem deleting '{}' from the device. Please check Mu's logs"
 " for more information."
@@ -441,7 +462,7 @@ msgstr ""
 "Houve uma falha ao excluir '{}' do dispositivo. Verifique os logs do Mu "
 "para mais informação."
 
-#: mu/interface/panes.py:791
+#: mu/interface/panes.py:953
 msgid ""
 "There was a problem getting '{}' from the device. Please check Mu's logs "
 "for more information."
@@ -965,19 +986,19 @@ msgstr ""
 "Esses devem ser corrigidos antes de organizar seu trabalho. Use o botão "
 "\"Verificar\" para realçar esses problemas."
 
-#: mu/modes/base.py:115
+#: mu/modes/base.py:85
 msgid "Cannot connect to device on port {}"
 msgstr "A conexão com o dispositivo na porta {} falhou."
 
-#: mu/modes/base.py:209
+#: mu/modes/base.py:179
 msgid "# Write your code here :-)"
 msgstr "# Escreva o seu código aqui :-)"
 
-#: mu/modes/base.py:332
+#: mu/modes/base.py:324
 msgid "Data Flood Detected!"
 msgstr "Detectada informação excessiva!"
 
-#: mu/modes/base.py:333
+#: mu/modes/base.py:325
 msgid ""
 "The plotter is flooded with data which will make Mu unresponsive and "
 "freeze. As a safeguard, the plotter has been stopped.\n"
@@ -997,17 +1018,17 @@ msgstr ""
 " pequenas, intervaladas com chamadas 'sleep' por curtos períodos de "
 "tempo."
 
-#: mu/modes/base.py:508 mu/modes/base.py:558
+#: mu/modes/base.py:500 mu/modes/base.py:550 mu/modes/snek.py:521
 msgid "Click on the device's reset button, wait a few seconds and then try again."
 msgstr ""
 "Pressione o botão de RESET no dispositivo, espere uns segundos e tente "
 "novamente."
 
-#: mu/modes/base.py:516 mu/modes/base.py:566
+#: mu/modes/base.py:508 mu/modes/base.py:558 mu/modes/snek.py:529
 msgid "Could not find an attached device."
 msgstr "Não foi possível encontrar um dispositivo conectado."
 
-#: mu/modes/base.py:517
+#: mu/modes/base.py:509
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
@@ -1025,7 +1046,7 @@ msgstr ""
 "Por último, pressione o botão de RESET no dispositivo e espera alguns "
 "segundos antes de tentar novamente."
 
-#: mu/modes/base.py:567
+#: mu/modes/base.py:559
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
@@ -1051,21 +1072,21 @@ msgstr "CircuitPython"
 msgid "Write code for boards running CircuitPython."
 msgstr "Escreva código para placas que executam CircuitPython."
 
-#: mu/modes/circuitpython.py:142 mu/modes/pyboard.py:86
+#: mu/modes/circuitpython.py:142 mu/modes/pyboard.py:86 mu/modes/snek.py:379
 msgid "Serial"
 msgstr "Serial"
 
-#: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87
+#: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87 mu/modes/snek.py:380
 msgid "Open a serial connection to your device."
 msgstr "Abre uma conexão serial com o seu dispositivo."
 
 #: mu/modes/circuitpython.py:152 mu/modes/esp.py:102 mu/modes/microbit.py:164
-#: mu/modes/pyboard.py:96 mu/modes/python3.py:174
+#: mu/modes/pyboard.py:96 mu/modes/python3.py:174 mu/modes/snek.py:403
 msgid "Plotter"
 msgstr "Gráfico"
 
 #: mu/modes/circuitpython.py:153 mu/modes/esp.py:103 mu/modes/microbit.py:165
-#: mu/modes/pyboard.py:97
+#: mu/modes/pyboard.py:97 mu/modes/snek.py:404
 msgid "Plot incoming REPL data."
 msgstr "Mostra um gráfico com dados obtidos a partir do REPL."
 
@@ -1243,11 +1264,11 @@ msgstr ""
 " pode estar ativo de cada vez. Desative o sistema de arquivos e tente "
 "novamente."
 
-#: mu/modes/esp.py:180
+#: mu/modes/esp.py:180 mu/modes/snek.py:420
 msgid "Cannot run anything without any active editor tabs."
 msgstr "Não é possível executar nada sem nenhuma aba ativa do editor."
 
-#: mu/modes/esp.py:181
+#: mu/modes/esp.py:181 mu/modes/snek.py:421
 msgid ""
 "Running transfers the content of the current tab onto the device. It "
 "seems like you don't have  any tabs open."
@@ -1453,7 +1474,7 @@ msgid "Pyboard MicroPython"
 msgstr "Pyboard MicroPython"
 
 #: mu/modes/pyboard.py:34
-msgid "Use MicroPython on the Pyboard line of boards"
+msgid "Use MicroPython on the Pyboard line of boards."
 msgstr "Use MicroPython na linha de placas Pyboard"
 
 #: mu/modes/pyboard.py:177
@@ -1585,6 +1606,52 @@ msgstr "REPL iniciado."
 msgid "REPL stopped."
 msgstr "REPL terminado."
 
+#: mu/modes/snek.py:169
+msgid "Snek"
+msgstr ""
+
+#: mu/modes/snek.py:171
+msgid "Write code for boards running Snek."
+msgstr "Escreva código para placas que executam Snek."
+
+#: mu/modes/snek.py:386
+msgid "Put"
+msgstr ""
+
+#: mu/modes/snek.py:387
+msgid "Put the current program to the device."
+msgstr ""
+
+#: mu/modes/snek.py:393
+msgid "Get"
+msgstr ""
+
+#: mu/modes/snek.py:394
+msgid "Get the current program from the device."
+msgstr ""
+
+#: mu/modes/snek.py:459
+msgid "There is un-saved work, 'get' will cause you to lose it."
+msgstr "Você tem trabalho não salvo. Se sair do Mu você irá perdê-lo."
+
+#: mu/modes/snek.py:530
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of Snek flashed onto it before the REPL will work."
+"\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+"Certifique-se que o dispositivo está conectado ao computador.\n"
+"\n"
+"O dispositivo precisa ter uma versão do MicroPython (ou CircuitPython) "
+"embutida antes do REPL poder funcionar.\n"
+"\n"
+"Por último, pressione o botão de RESET no dispositivo e espera alguns "
+"segundos antes de tentar novamente."
+
 #: mu/modes/web.py:58
 msgid "Web"
 msgstr "Web"
@@ -1596,6 +1663,11 @@ msgstr "Construa sites simples com o framework web \"Flask\"."
 #: mu/modes/web.py:76 mu/modes/web.py:129
 msgid "Run the web server."
 msgstr "Executa o servidor web."
+
+#: mu/modes/web.py:82
+msgctxt "web|WebMode"
+msgid "Browse"
+msgstr "Navegar"
 
 #: mu/modes/web.py:83
 msgid "Open your website in a browser."
@@ -1675,9 +1747,6 @@ msgstr ""
 
 #~ msgid "Files on your micro:bit:"
 #~ msgstr "Arquivos no micro:bit:"
-
-#~ msgid "{} [{}:{}]"
-#~ msgstr "{} [{}:{}]"
 
 #~ msgid "Your script is too long!"
 #~ msgstr "O seu script é muito grande!"
