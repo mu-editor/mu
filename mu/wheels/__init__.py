@@ -37,6 +37,8 @@ ZIP_FILEPATH = os.path.join(WHEELS_DIRPATH, mu_version + ".zip")
 # Any additional elements are passed to `pip` for specific purposes
 #
 mode_packages = [
+    # ("numpy", "numpy", "--only-binary", ":all:", "--platform", "macosx_10_12_x86_64"),
+    ("numpy", "numpy<=1.22.1"),
     ("pgzero", "pgzero>=1.2.1"),
     # Flask v1 depends on Jinja v2, which doesn't have an upper bound limit in
     # MarkupSafe, and v2.1 is not compatible with Jinja v2
@@ -92,6 +94,10 @@ def pip_download(dirpath, logger):
                 "pip",
                 "--disable-pip-version-check",
                 "download",
+                # "--only-binary",
+                # ":all:",
+                # "--platform",
+                # "macosx_10_12_x86_64",
                 "--destination-directory",
                 dirpath,
                 "--find-links",
