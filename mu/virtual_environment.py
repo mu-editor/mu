@@ -137,14 +137,14 @@ class Process(QObject):
         partial = functools.partial(self.process.start, command, args)
         QTimer.singleShot(1, partial)
 
-    def wait(self, wait_for_s=30.0):
+    def wait(self, wait_for_s=30):
         """Wait for the process to complete, optionally timing out.
         Return any stdout/stderr.
 
         If the process fails to complete in time or returns an error, raise a
         VirtualEnvironmentError
         """
-        finished = self.process.waitForFinished(1000 * wait_for_s)
+        finished = self.process.waitForFinished(int(1000 * wait_for_s))
         exit_status = self.process.exitStatus()
         exit_code = self.process.exitCode()
         output = self.data()
@@ -739,6 +739,7 @@ class VirtualEnvironment(object):
             self.interpreter,
             "-c",
             'import sys; print("%s%s" % sys.version_info[:2])',
+            shell=True if self._is_windows else False,
         )
         if not ok:
             raise VirtualEnvironmentEnsureError(
@@ -762,7 +763,10 @@ class VirtualEnvironment(object):
         for module, *_ in wheels.mode_packages:
             logger.debug("Verifying import of: %s", module)
             ok, output = self.run_subprocess(
-                self.interpreter, "-c", "import %s" % module
+                self.interpreter,
+                "-c",
+                "import %s" % module,
+                shell=True if self._is_windows else False,
             )
             if not ok:
                 raise VirtualEnvironmentEnsureError(
@@ -804,6 +808,7 @@ class VirtualEnvironment(object):
             None,
             (
                 sys.executable,
+                "-I",
                 "-m",
                 "virtualenv",
                 "-p",

@@ -102,16 +102,20 @@ def test_ButtonBar_set_responsive_mode():
         bb = mu.interface.main.ButtonBar(None)
         bb.setStyleSheet = mock.MagicMock()
         bb.set_responsive_mode(1124, 800)
-        mock_icon_size.assert_called_with(QSize(64, 64))
-        default_font = str(mu.interface.themes.DEFAULT_FONT_SIZE)
-        style = "QWidget{font-size: " + default_font + "px;}"
+        mock_icon_size.assert_called_with(QSize(46, 46))
+        style = (
+            "QWidget{font-size: "
+            + str(mu.interface.themes.DEFAULT_FONT_SIZE)
+            + "px;}"
+        )
         bb.setStyleSheet.assert_called_with(style)
         bb.set_responsive_mode(939, 800)
-        mock_icon_size.assert_called_with(QSize(48, 48))
+        mock_icon_size.assert_called_with(QSize(39, 39))
+        style = "QWidget{font-size: " + str(11) + "px;}"
         bb.setStyleSheet.assert_called_with(style)
         bb.set_responsive_mode(939, 599)
-        mock_icon_size.assert_called_with(QSize(32, 32))
-        style = "QWidget{font-size: " + str(10) + "px;}"
+        mock_icon_size.assert_called_with(QSize(39, 39))
+        style = "QWidget{font-size: " + str(11) + "px;}"
         bb.setStyleSheet.assert_called_with(style)
 
 
@@ -624,6 +628,20 @@ def test_Window_get_save_path_missing_extension():
     assert returned_path == path + ".py"  # Note addition of ".py" extension.
 
 
+def test_Window_get_save_path_empty_path():
+    """
+    Avoid appending a ".py" extension if the path is empty. See #1880.
+    """
+    mock_fd = mock.MagicMock()
+    path = ""  # Empty, as when user cancels Save As / Rename Tab.
+    mock_fd.getSaveFileName = mock.MagicMock(return_value=(path, True))
+    w = mu.interface.main.Window()
+    w.widget = mock.MagicMock()
+    with mock.patch("mu.interface.main.QFileDialog", mock_fd):
+        returned_path = w.get_save_path("micropython")
+    assert returned_path == ""  # Note lack of addition of ".py" extension.
+
+
 def test_Window_get_save_path_for_dot_file():
     """
     Ensure that if the user enters a dot file without an extension, then
@@ -1093,6 +1111,49 @@ def test_Window_add_micropython_plotter():
         mock_data_flood_handler
     )
     w.add_plotter.assert_called_once_with(mock_plotter, "MicroPython Plotter")
+
+
+def test_Window_add_snek_repl():
+    """
+    Ensure the expected object is instantiated and add_repl is called for a
+    Snek based REPL.
+    """
+    w = mu.interface.main.Window()
+    w.add_repl = mock.MagicMock()
+    mock_connection = mock.MagicMock()
+
+    mock_repl = mock.MagicMock()
+    mock_repl_class = mock.MagicMock(return_value=mock_repl)
+    with mock.patch("mu.interface.main.SnekREPLPane", mock_repl_class):
+        w.add_snek_repl("Test REPL", mock_connection)
+    mock_repl_class.assert_called_once_with(mock_connection)
+
+    mock_connection.data_received.connect.assert_called_once_with(
+        mock_repl.process_bytes
+    )
+    w.add_repl.assert_called_once_with(mock_repl, "Test REPL")
+
+
+def test_Window_add_snek_repl_no_interrupt():
+    """
+    Ensure the expected object is instantiated and add_repl is called for a
+    Snek based REPL.
+    """
+    w = mu.interface.main.Window()
+    w.add_repl = mock.MagicMock()
+    mock_connection = mock.MagicMock()
+
+    mock_repl = mock.MagicMock()
+    mock_repl_class = mock.MagicMock(return_value=mock_repl)
+    with mock.patch("mu.interface.main.SnekREPLPane", mock_repl_class):
+        w.add_snek_repl("Test REPL", mock_connection, force_interrupt=False)
+    mock_repl_class.assert_called_once_with(mock_connection)
+
+    assert mock_connection.send_interrupt.call_count == 0
+    mock_connection.data_received.connect.assert_called_once_with(
+        mock_repl.process_bytes
+    )
+    w.add_repl.assert_called_once_with(mock_repl, "Test REPL")
 
 
 def test_Window_add_python3_plotter():

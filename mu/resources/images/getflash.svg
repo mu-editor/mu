@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="59.619438mm"
+   height="59.619438mm"
+   viewBox="0 0 59.619438 59.619438"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   sodipodi:docname="getflash.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="7.1094682"
+     inkscape:cx="77.853924"
+     inkscape:cy="54.364122"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:snap-page="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:window-width="3840"
+     inkscape:window-height="2131"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:snap-to-guides="true"
+     inkscape:snap-global="true"
+     inkscape:pagecheckerboard="0">
+    <sodipodi:guide
+       position="29.809499,69.619441"
+       orientation="-1,0"
+       id="guide24"
+       inkscape:label=""
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="-9.9999998,29.809721"
+       orientation="0,1"
+       id="guide26"
+       inkscape:label=""
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+    <sodipodi:guide
+       position="-19.894461,69.619437"
+       orientation="0,1"
+       id="guide879"
+       inkscape:label=""
+       inkscape:locked="false"
+       inkscape:color="rgb(0,0,255)" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-237.38055)">
+    <circle
+       style="fill:#ffffff;stroke:#ffcc33;stroke-width:4.3585;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path853"
+       cx="29.809719"
+       cy="267.19028"
+       r="27.630468" />
+    <g
+       id="g27">
+      <g
+         id="g842">
+        <path
+           id="rect2084"
+           style="fill:none;stroke:#336699;stroke-width:3.25001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 23.992699,267.16479 h 11.26189 c 3.4625,0 6.25,2.66827 6.25,6.02892 v 0.14886 c 0,3.36064 -2.7875,6.06614 -6.25,6.06614 h -11.26189 c -3.4625,0 -6.25,-2.7055 -6.25,-6.06614 v -0.14886 c 0,-3.36065 2.7875,-6.02892 6.25,-6.02892 z"
+           sodipodi:nodetypes="sssssssss" />
+        <circle
+           style="fill:#336699;fill-opacity:1;stroke:none;stroke-width:3.25001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="path2087"
+           cx="23.818008"
+           cy="273.21231"
+           r="1.6" />
+        <circle
+           style="fill:#336699;fill-opacity:1;stroke:none;stroke-width:3.25001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="circle2089"
+           cx="35.209641"
+           cy="273.21231"
+           r="1.6" />
+      </g>
+      <path
+         id="rect2105"
+         style="fill:#336699;fill-opacity:1;stroke:none;stroke-width:3.25001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 28.27941,264.22129 v -6.77737 l -3.7083,3.7083 v -2.82825 l 3.675227,-3.67522 1.414386,-1.41439 1.413867,1.41439 3.675226,3.67522 v 2.82825 l -3.753776,-3.75377 v 6.82284 z" />
+    </g>
+  </g>
+</svg>

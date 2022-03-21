@@ -11,7 +11,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-latest, macos-10.15, windows-2016, windows-latest]
+        os: [ubuntu-18.04, ubuntu-latest, macos-10.15, macos-latest, windows-2016, windows-latest]
         python-version: ['3.5', '3.6', '3.7', '3.8']
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        docker-tag: ['stretch-2018-03-13', 'buster-2021-03-25']
+        docker-tag: ['stretch-2018-03-13', 'buster-2021-05-28', 'buster-legacy-2021-12-02']
       fail-fast: false
     services:
       rpios:
