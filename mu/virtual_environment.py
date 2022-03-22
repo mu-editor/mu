@@ -696,6 +696,28 @@ class VirtualEnvironment(object):
         """
         if os.path.isfile(self.interpreter):
             logger.info("Interpreter found at: %s", self.interpreter)
+        elif os.environ.get("APPDIR") and os.environ.get("APPIMAGE"):
+            # When packaged as a Linux AppImage, Mu Editor is mounted
+            # on a random(ish) path each time it runs. This breaks the
+            # existing venv: its interpreter symlinks to a path that
+            # likely no longer exists. Fix that by re-symlinking to
+            # the current and now valid interpreter path.
+            # PS: This is a horrible hack and it seems to work! :)
+            logger.info("No interpreter found at: %s", self.interpreter)
+            try:
+                os.unlink(self.interpreter)
+            except OSError as exc:
+                logger.warning(
+                    "Unlinking %s failed: %s. Moving on.",
+                    self.interpreter,
+                    exc,
+                )
+            os.symlink(sys.executable, self.interpreter)
+            logger.info(
+                "Symlinked %s to AppImage's %s",
+                self.interpreter,
+                sys.executable,
+            )
         else:
             raise VirtualEnvironmentEnsureError(
                 "Interpreter not found where expected at: %s"
@@ -782,17 +804,21 @@ class VirtualEnvironment(object):
         logger.info("Virtualenv name: {}".format(self.name))
 
         env = dict(os.environ)
-        ok, output = self.run_subprocess(
-            sys.executable,
-            "-I",
-            "-m",
-            "virtualenv",
-            "-p",
-            sys.executable,
-            "-q",
-            self.path,
-            env=env,
+        args = filter(
+            None,
+            (
+                sys.executable,
+                "-I",
+                "-m",
+                "virtualenv",
+                "-p",
+                sys.executable,
+                "-q",
+                "" if self._is_windows else "--symlinks",
+                self.path,
+            ),
         )
+        ok, output = self.run_subprocess(*args, env=env)
         if ok:
             logger.info(
                 "Created virtual environment using %s at %s",
