@@ -2,7 +2,7 @@ name: Build Mu
 
 on:
   push:
-    branches: ['master', 'linux-appimage-packaging-ci']
+    branches: 'master'
   pull_request:
     branches: '*'
 
