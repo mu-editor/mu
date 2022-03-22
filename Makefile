@@ -40,6 +40,7 @@ clean:
 	find . \( -name '*.tgz' -o -name dropin.cache \) -delete
 	find . | grep -E "(__pycache__)" | xargs rm -rf
 	rm -f ./mu/locale/messages.pot
+	rm -f ./mu/wheels/*.zip
 
 run: clean
 ifeq ($(VIRTUAL_ENV),)
@@ -49,7 +50,7 @@ else
 endif
 
 flake8:
-	flake8
+	@python make.py flake8
 
 test: clean
 	export LANG=en_GB.utf8
@@ -79,8 +80,8 @@ publish-live: dist
 	@echo "\nPackaging complete... Uploading to PyPi..."
 	twine upload --sign dist/*
 
-docs: clean
-	$(MAKE) -C docs html
+docs:
+	@python make.py docs
 	@echo "\nDocumentation can be found here:"
 	@echo file://`pwd`/docs/_build/html/index.html
 	@echo "\n"

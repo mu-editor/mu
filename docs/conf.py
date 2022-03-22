@@ -58,7 +58,7 @@ author = "Nicholas H.Tollervey"
 from mu import __version__ as full_version
 
 # The short X.Y version.
-version = ".".join(full_version.split(".")[:3])
+version = ".".join(full_version.split(".")[:2])
 # The full version, including alpha/beta/rc tags.
 release = full_version
 

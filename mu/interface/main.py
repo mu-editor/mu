@@ -61,6 +61,7 @@ from mu.interface.panes import (
     MicroPythonREPLPane,
     FileSystemPane,
     PlotterPane,
+    SnekREPLPane,
 )
 from mu.interface.editor import EditorPane
 from mu.interface.widgets import DeviceSelector
@@ -168,14 +169,9 @@ class ButtonBar(QToolBar):
         """
         Compact button bar for when window is very small.
         """
-        font_size = DEFAULT_FONT_SIZE
-        if width < 1124 and height > 600:
-            self.setIconSize(QSize(48, 48))
-        elif height < 600 and width < 940:
-            font_size = 10
-            self.setIconSize(QSize(32, 32))
-        else:
-            self.setIconSize(QSize(64, 64))
+        font_size = min(DEFAULT_FONT_SIZE, width // 80)
+        icon_size = min(64, width // 24)
+        self.setIconSize(QSize(icon_size, icon_size))
         stylesheet = "QWidget{font-size: " + str(font_size) + "px;}"
         self.setStyleSheet(stylesheet)
 
@@ -435,7 +431,7 @@ class Window(QMainWindow):
         # Ensure there's a .py extension if none is provided by the user.
         # See issue #1571.
         name, ext = os.path.splitext(os.path.basename(path))
-        if (not name.startswith(".")) and (not ext):
+        if name and (not name.startswith(".")) and (not ext):
             # The file is not a . (dot) file and there's no extension, so add
             # .py as default.
             path += ".py"
@@ -644,6 +640,16 @@ class Window(QMainWindow):
         """
         repl_pane = MicroPythonREPLPane(connection)
         connection.data_received.connect(repl_pane.process_tty_data)
+        self.add_repl(repl_pane, name)
+
+    def add_snek_repl(
+        self, name, connection, force_interrupt=True, wait_input=False
+    ):
+        """
+        Adds a Snek based REPL pane to the application.
+        """
+        repl_pane = SnekREPLPane(connection)
+        connection.data_received.connect(repl_pane.process_bytes)
         self.add_repl(repl_pane, name)
 
     def add_micropython_plotter(self, name, connection, data_flood_handler):

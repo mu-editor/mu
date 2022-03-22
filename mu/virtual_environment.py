@@ -137,14 +137,14 @@ class Process(QObject):
         partial = functools.partial(self.process.start, command, args)
         QTimer.singleShot(1, partial)
 
-    def wait(self, wait_for_s=30.0):
+    def wait(self, wait_for_s=30):
         """Wait for the process to complete, optionally timing out.
         Return any stdout/stderr.
 
         If the process fails to complete in time or returns an error, raise a
         VirtualEnvironmentError
         """
-        finished = self.process.waitForFinished(1000 * wait_for_s)
+        finished = self.process.waitForFinished(int(1000 * wait_for_s))
         exit_status = self.process.exitStatus()
         exit_code = self.process.exitCode()
         output = self.data()
@@ -696,6 +696,28 @@ class VirtualEnvironment(object):
         """
         if os.path.isfile(self.interpreter):
             logger.info("Interpreter found at: %s", self.interpreter)
+        elif os.environ.get("APPDIR") and os.environ.get("APPIMAGE"):
+            # When packaged as a Linux AppImage, Mu Editor is mounted
+            # on a random(ish) path each time it runs. This breaks the
+            # existing venv: its interpreter symlinks to a path that
+            # likely no longer exists. Fix that by re-symlinking to
+            # the current and now valid interpreter path.
+            # PS: This is a horrible hack and it seems to work! :)
+            logger.info("No interpreter found at: %s", self.interpreter)
+            try:
+                os.unlink(self.interpreter)
+            except OSError as exc:
+                logger.warning(
+                    "Unlinking %s failed: %s. Moving on.",
+                    self.interpreter,
+                    exc,
+                )
+            os.symlink(sys.executable, self.interpreter)
+            logger.info(
+                "Symlinked %s to AppImage's %s",
+                self.interpreter,
+                sys.executable,
+            )
         else:
             raise VirtualEnvironmentEnsureError(
                 "Interpreter not found where expected at: %s"
@@ -717,6 +739,7 @@ class VirtualEnvironment(object):
             self.interpreter,
             "-c",
             'import sys; print("%s%s" % sys.version_info[:2])',
+            shell=True if self._is_windows else False,
         )
         if not ok:
             raise VirtualEnvironmentEnsureError(
@@ -740,7 +763,10 @@ class VirtualEnvironment(object):
         for module, *_ in wheels.mode_packages:
             logger.debug("Verifying import of: %s", module)
             ok, output = self.run_subprocess(
-                self.interpreter, "-c", "import %s" % module
+                self.interpreter,
+                "-c",
+                "import %s" % module,
+                shell=True if self._is_windows else False,
             )
             if not ok:
                 raise VirtualEnvironmentEnsureError(
@@ -778,16 +804,21 @@ class VirtualEnvironment(object):
         logger.info("Virtualenv name: {}".format(self.name))
 
         env = dict(os.environ)
-        ok, output = self.run_subprocess(
-            sys.executable,
-            "-m",
-            "virtualenv",
-            "-p",
-            sys.executable,
-            "-q",
-            self.path,
-            env=env,
+        args = filter(
+            None,
+            (
+                sys.executable,
+                "-I",
+                "-m",
+                "virtualenv",
+                "-p",
+                sys.executable,
+                "-q",
+                "" if self._is_windows else "--symlinks",
+                self.path,
+            ),
         )
+        ok, output = self.run_subprocess(*args, env=env)
         if ok:
             logger.info(
                 "Created virtual environment using %s at %s",
