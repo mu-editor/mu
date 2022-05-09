@@ -127,8 +127,9 @@ jobs:
           username: pi
           password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
-          # Purposely skip apt update, install version from image stale index
-          script: sudo apt-get install -y python3-virtualenv
+          script: |
+            sudo apt-get update
+            sudo apt-get install -y python3-virtualenv
       - name: Create venv and install Python dependencies
         uses: appleboy/ssh-action@master
         with:
