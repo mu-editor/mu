@@ -219,20 +219,20 @@ class Pip(object):
         self.process = Process()
 
     def run(
-        self, command, *args, wait_for_s=120.0, slots=Process.Slots(), **kwargs
+        self, command="", *args, wait_for_s=120.0, slots=Process.Slots(), **kwargs
     ):
         """
-        Run a command with args, treating kwargs as Posix switches.
+        Run a pip command with args, treating kwargs as Posix switches.
 
-        eg run("python", version=True)
-        run("python", "-c", "import sys; print(sys.executable)")
+        eg run("install", "mu")
         """
         #
         # Any keyword args are treated as command-line switches
         # As a special case, a boolean value indicates that the flag
         # is a yes/no switch
         #
-        params = [command, "--disable-pip-version-check"]
+        params = [command] if command else []
+        params.append("--disable-pip-version-check")
         for k, v in kwargs.items():
             switch = k.replace("_", "-")
             if v is False:

@@ -195,6 +195,20 @@ def test_create_virtual_environment_on_disk(venv_dirpath, test_wheels):
         os.rename(renamed_filepath, cfg_filepath)
 
     #
+    # If our venv name has a space in it eg "c:/users/First Last" then pip
+    # will fail if there is another file "c:/users/First". (This might, eg, be left
+    # over as a log file from a careless install). In that case we try to detect
+    # the situation and use the equivalent short (8.3) name when invoking pip
+    #
+    print("exepath", venv.pip.executable)
+    first, _, _ = venv.pip.executable.partition(" ")
+    print("first", first)
+    open(first, "w").close()
+    print("Exists?", os.path.exists(first))
+    print(venv.pip.run("install", "arrr"))
+    assert False
+
+    #
     # Check that we have an installed version of pip
     #
     expected_pip_filepath = os.path.join(venv_site_packages, "pip")
