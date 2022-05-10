@@ -56,6 +56,8 @@ install_requires = [
     # though. Regarding these packages' versions, please refer to:
     # http://flake8.pycqa.org/en/latest/faq.html#why-does-flake8-use-ranges-for-its-dependencies
     "flake8 >= 3.8.3",
+    # Clamp click max version to workaround incompatibility with black<22.1.0
+    "click<=8.0.4",
     "black>=19.10b0,<22.1.0;python_version>'3.5'",
     "appdirs>=1.4.3",
     "semver>=2.8.0",
