@@ -11,7 +11,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-latest, macos-10.15, macos-latest, windows-2016, windows-latest]
+        os: [ubuntu-18.04, ubuntu-latest, macos-10.15, macos-latest, windows-2019, windows-latest]
         python-version: ['3.5', '3.6', '3.7', '3.8']
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -127,8 +127,9 @@ jobs:
           username: pi
           password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
-          # Purposely skip apt update, install version from image stale index
-          script: sudo apt-get install -y python3-virtualenv
+          script: |
+            sudo apt-get update
+            sudo apt-get install -y python3-virtualenv
       - name: Create venv and install Python dependencies
         uses: appleboy/ssh-action@master
         with:
