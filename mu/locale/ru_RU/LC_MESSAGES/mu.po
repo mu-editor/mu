@@ -259,7 +259,7 @@ msgstr "Отформатировать код"
 
 #: mu/interface/main.py:155
 msgid "Tidy up the layout of your code."
-msgstr "Отформатировать код скрипта утилитой \"Black"\."
+msgstr "Отформатировать код скрипта утилитой \"Black\"."
 
 #: mu/interface/main.py:159
 msgid "Help"
