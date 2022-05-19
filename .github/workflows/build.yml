@@ -54,38 +54,20 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     container:
-      image: ubuntu:16.04
+      image: ghcr.io/mu-editor/mu-appimage:2022.05.01
     name: Build AppImage
     steps:
       - uses: actions/checkout@v2
-      - name: Install Python 3.8
-        run: |
-          apt-get update
-          apt-get install -y wget make
-          wget https://github.com/indygreg/python-build-standalone/releases/download/20220502/cpython-3.8.13+20220502-x86_64-unknown-linux-gnu-install_only.tar.gz
-          tar -xf cpython-3.8.13+20220502-x86_64-unknown-linux-gnu-install_only.tar.gz -C /
-          ln -s /python/bin/python3.8 /bin/python
-          ln -s /python/bin/python3.8 /bin/python3
-          ln -s /python/bin/python3.8 /bin/python3.8
-          ln -s /python/bin/pip /bin/pip
-      - name: Display Python info
+      - name: Display system info
         run: |
           uname -a
+          cat /etc/lsb-release
           python -c "import sys; print(sys.version)"
           python -c "import platform, struct; print(platform.machine(), struct.calcsize('P') * 8)"
           python -c "import sys; print(sys.executable)"
           python -m pip --version
           pip --version
-          pip config list
           pip list --verbose
-      - name: Install xvfb
-        run: apt-get install -y libxkbcommon-x11-0 xvfb
-      # Install this dependency as a workaround to PyQt5 issue
-      # qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
-      - name: Install PyQt5 issue workaround
-        run: apt install -y libqt5gui5
-      - name: Install AppImage dependencies
-        run: apt-get -y install file appstream
       - name: Install Mu test dependencies
         run: |
           pip install .[tests]
@@ -93,7 +75,7 @@ jobs:
       - run: mkdir upload
       - name: Build Linux AppImage
         run: xvfb-run make linux
-      # GitHub actions upload artifact breaks permissions, so tar workaround
+      # GitHub actions upload artifact breaks permissions, workaround using tar
       # https://github.com/actions/upload-artifact/issues/38
       - name: Tar AppImage to maintain permissions
         run: |
