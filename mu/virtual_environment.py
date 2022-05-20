@@ -841,6 +841,7 @@ class VirtualEnvironment(object):
         logger.info("Installing Jupyter Kernel: %s", kernel_name)
         ok, output = self.run_subprocess(
             sys.executable,
+            "-I",
             "-m",
             "ipykernel",
             "install",
