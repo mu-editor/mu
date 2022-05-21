@@ -125,7 +125,7 @@ def test_ButtonBar_add_action():
     addAction.
     """
     bb = mu.interface.main.ButtonBar(None)
-    with mock.patch("builtins.super") as mock_s:
+    with mock.patch("mu.interface.main.super") as mock_s:
         bb.addAction("save", "Save", "save stuff")
         mock_s.assert_called_once_with()
     assert "save" in bb.slots
