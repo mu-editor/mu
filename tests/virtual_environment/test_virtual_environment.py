@@ -276,6 +276,8 @@ def test_download_wheels_if_not_present(venv, test_wheels):
         mu.wheels, "download"
     ) as mock_download, mock.patch.object(
         venv, "install_from_zipped_wheels"
+    ), mock.patch.object(
+        venv.pip, "version"
     ):
         try:
             venv.install_baseline_packages()
@@ -301,7 +303,7 @@ def test_download_wheels_failure(venv, test_wheels):
         mu.wheels,
         "download",
         side_effect=mu.wheels.WheelsDownloadError(message),
-    ):
+    ), mock.patch.object(venv.pip, "version"):
         try:
             venv.install_baseline_packages()
         except mu.wheels.WheelsDownloadError as exc:
@@ -321,6 +323,8 @@ def test_base_packages_installed(patched, venv, test_wheels):
     with mock.patch.object(venv, "create_venv"), mock.patch.object(
         venv, "register_baseline_packages"
     ), mock.patch.object(venv, "install_jupyter_kernel"), mock.patch.object(
+        venv.pip, "version"
+    ), mock.patch.object(
         PIP, "install"
     ) as mock_pip_install:
         venv.create()
