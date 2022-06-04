@@ -90,11 +90,11 @@ jobs:
             "
 
   test-pios:
-    name: Test Raspbian ${{ matrix.docker-tag }}
+    name: Test PiOS ${{ matrix.docker-tag }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        docker-tag: ['stretch-2018-03-13', 'buster-2021-05-28', 'buster-legacy-2021-12-02']
+        docker-tag: ['stretch-2018-03-13', 'buster-2021-05-28', 'buster-legacy-2022-04-07']
       fail-fast: false
     services:
       rpios:
