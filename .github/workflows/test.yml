@@ -165,5 +165,5 @@ jobs:
           username: pi
           password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
-          command_timeout: 25m
+          command_timeout: 30m
           script: xvfb-run python make.py check
