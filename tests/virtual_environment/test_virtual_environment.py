@@ -344,7 +344,7 @@ def test_jupyter_kernel_installed(patched, venv):
             # Check that we're calling `ipykernel install`
             #
             expected_jupyter_args = (
-                sys.executable,
+                mu.virtual_environment.safe_short_path(sys.executable),
                 "-I",
                 "-m",
                 "ipykernel",

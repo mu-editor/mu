@@ -69,6 +69,10 @@ install_requires = [
     # Needed for packaging
     #
     "wheel",
+    #
+    # Needed to resolve an issue with paths in the user virtual environment
+    #
+    "pywin32; sys_platform=='win32'",
 ]
 
 
