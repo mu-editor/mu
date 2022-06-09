@@ -44,7 +44,8 @@ class VirtualEnvironmentCreateError(VirtualEnvironmentError):
 
 def compact(text):
     """Remove double line spaces and anything else which might help"""
-    return "\n".join(line for line in text.splitlines() if line.strip())
+    compacted = "\n".join(line for line in text.splitlines() if line.strip())
+    return compacted or "No output received."
 
 
 class Process(QObject):
@@ -303,6 +304,15 @@ class Pip(object):
                 yes=True,
                 **kwargs
             )
+
+    def version(self):
+        """
+        Get the pip version
+
+        NB this is fairly trivial but is pulled out principally for
+        testing purposes
+        """
+        return self.run("--version")
 
     def freeze(self):
         """
@@ -898,6 +908,7 @@ class VirtualEnvironment(object):
         usual way.
         """
         logger.info("Installing baseline packages.")
+        logger.info("pip version: %s", compact(self.pip.version()))
         #
         # TODO: Add semver check to ensure filepath is safe
         #
