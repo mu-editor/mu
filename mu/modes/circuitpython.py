@@ -173,9 +173,10 @@ class CircuitPythonMode(MicroPythonMode):
                     mounted_volumes = [x.split()[2] for x in mount_output]
                     for volume in mounted_volumes:
                         tail = os.path.split(volume)[-1]
+                        boot_out_path = "{}boot_out.txt".format(volume)
                         if tail.startswith(b"CIRCUITPY") or tail.startswith(
                             b"PYBFLASH"
-                        ):
+                        ) or os.path.exists(boot_out_path):
                             device_dir = volume.decode("utf-8")
                             break
                 except FileNotFoundError:
@@ -246,9 +247,13 @@ class CircuitPythonMode(MicroPythonMode):
             try:
                 for disk in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
                     path = "{}:\\".format(disk)
+                    boot_out_path = "{}:\\boot_out.txt".format(disk)
                     if (
                         os.path.exists(path)
-                        and get_volume_name(path) == "CIRCUITPY"
+                        and (
+                            get_volume_name(path) == "CIRCUITPY" 
+                            or os.path.exists(boot_out_path)
+                        )
                     ):
                         return path
             finally:
