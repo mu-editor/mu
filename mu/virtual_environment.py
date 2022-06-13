@@ -9,6 +9,11 @@ import tempfile
 import time
 import zipfile
 
+try:
+    import win32api
+except ImportError:
+    pass
+
 from PyQt5.QtCore import (
     QObject,
     QProcess,
@@ -29,6 +34,25 @@ logger = logging.getLogger(__name__)
 ENCODING = sys.stdout.encoding if hasattr(sys.stdout, "encoding") else "utf-8"
 
 
+def safe_short_path(path):
+    """On Windows it converts a path to a short path with 8.3 representation.
+
+    This is to avoid an issue encountered on Windows were launching a virtual
+    environment python/pip process results in a 101 error exit code.
+
+    More info:
+    - https://github.com/mu-editor/mu/issues/1926
+    - https://bugs.python.org/issue46686
+    - https://github.com/python/cpython/issues/90844
+    """
+    if sys.platform != "win32":
+        return path
+    try:
+        return win32api.GetShortPathName(path)
+    except Exception:
+        return path
+
+
 class VirtualEnvironmentError(Exception):
     def __init__(self, message):
         self.message = message
@@ -44,7 +68,8 @@ class VirtualEnvironmentCreateError(VirtualEnvironmentError):
 
 def compact(text):
     """Remove double line spaces and anything else which might help"""
-    return "\n".join(line for line in text.splitlines() if line.strip())
+    compacted = "\n".join(line for line in text.splitlines() if line.strip())
+    return compacted or "No output received."
 
 
 class Process(QObject):
@@ -303,6 +328,15 @@ class Pip(object):
                 yes=True,
                 **kwargs
             )
+
+    def version(self):
+        """
+        Get the pip version
+
+        NB this is fairly trivial but is pulled out principally for
+        testing purposes
+        """
+        return self.run("--version")
 
     def freeze(self):
         """
@@ -807,12 +841,12 @@ class VirtualEnvironment(object):
         args = filter(
             None,
             (
-                sys.executable,
+                safe_short_path(sys.executable),
                 "-I",
                 "-m",
                 "virtualenv",
                 "-p",
-                sys.executable,
+                safe_short_path(sys.executable),
                 "-q",
                 "" if self._is_windows else "--symlinks",
                 self.path,
@@ -822,13 +856,13 @@ class VirtualEnvironment(object):
         if ok:
             logger.info(
                 "Created virtual environment using %s at %s",
-                sys.executable,
+                safe_short_path(sys.executable),
                 self.path,
             )
         else:
             raise VirtualEnvironmentCreateError(
                 "Unable to create a virtual environment using %s at %s\n%s"
-                % (sys.executable, self.path, compact(output))
+                % (safe_short_path(sys.executable), self.path, compact(output))
             )
 
     def install_jupyter_kernel(self):
@@ -840,7 +874,7 @@ class VirtualEnvironment(object):
         display_name = '"Python/Mu ({})"'.format(kernel_name)
         logger.info("Installing Jupyter Kernel: %s", kernel_name)
         ok, output = self.run_subprocess(
-            sys.executable,
+            safe_short_path(sys.executable),
             "-I",
             "-m",
             "ipykernel",
@@ -898,6 +932,7 @@ class VirtualEnvironment(object):
         usual way.
         """
         logger.info("Installing baseline packages.")
+        logger.info("pip version: %s", compact(self.pip.version()))
         #
         # TODO: Add semver check to ensure filepath is safe
         #
