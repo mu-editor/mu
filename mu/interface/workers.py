@@ -65,16 +65,20 @@ class PythonAnywhereWorker(QObject):
         # PythonAnywhere instance) or "eu" (hosted in Europe). This is
         # configured in the admin widget.
         self.url = (
-            f"https://{instance}.pythonanywhere.com/api/v0/user/{username}/"
-        )
+            "https://{instance}.pythonanywhere.com/api/v0/user/{username}/"
+        ).format(instance=instance, username=username)
         # Path to where web application's files are to be uploaded.
-        self.files_path = f"files/path/home/{username}/{app_name}/"
+        self.files_path = "files/path/home/{username}/{app_name}/".format(
+            username=username, app_name=app_name
+        )
         # Path to the WSGI configuration file for the application.
         self.wsgi_path = (
-            f"/files/path/var/www/{username}_pythonanywhere_com_wsgi.py"
-        )
+            "/files/path/var/www/{username}_pythonanywhere_com_wsgi.py"
+        ).format(username=username)
         # Path to where the web application's static files will be found.
-        self.static_path = f"/home/{username}/{app_name}/static/"
+        self.static_path = "/home/{username}/{app_name}/static/".format(
+            username=username, app_name=app_name
+        )
         # The content of the WSGI file to upload.
         self.wsgi_config = WSGI.format(
             username=self.username, app_name=self.app_name
@@ -82,12 +86,16 @@ class PythonAnywhereWorker(QObject):
 
     def run(self):
         logger.info(
-            f"Deploying to PythonAnywhere {self.instance} for: {self.app_name}"
+            "Deploying to PythonAnywhere {instance} for: {app_name}".format(
+                instance=self.instance, app_name=self.app_name
+            )
         )
-        headers = {"Authorization": f"Token {self.token}"}
-        domain = f"{self.username}.pythonanywhere.com"
+        headers = {"Authorization": "Token {token}".format(token=self.token)}
+        domain = "{username}.pythonanywhere.com".format(username=self.username)
         if self.instance == "eu":
-            domain = f"{self.username}.eu.pythonanywhere.com"
+            domain = "{username}.eu.pythonanywhere.com".format(
+                username=self.username
+            )
         # Progress steps are calculated as the number of files to upload plus
         # the five-ish additional API calls needed to configure and restart
         # the web application.
@@ -119,7 +127,9 @@ class PythonAnywhereWorker(QObject):
                 )
                 response.raise_for_status()
                 # Configure serving of static files.
-                path = self.url + f"webapps/{domain}/static_files/"
+                path = self.url + "webapps/{domain}/static_files/".format(
+                    domain=domain
+                )
                 response = requests.post(
                     path,
                     data={
@@ -156,16 +166,18 @@ class PythonAnywhereWorker(QObject):
             # Force HTTPS and source directory.
             self.progress.setValue(counter)
             data = {
-                "source_directory": f"/home/{self.username}/{self.app_name}/",
+                "source_directory": "/home/{username}/{app_name}/".format(
+                    username=self.username, app_name=self.app_name
+                ),
                 "force_https": True,
             }
-            path = self.url + f"webapps/{domain}/"
+            path = self.url + "webapps/{domain}/".format(domain=domain)
             response = requests.put(path, data=data, headers=headers)
             response.raise_for_status()
             counter += 1
             # Reload the application.
             self.progress.setValue(counter)
-            path = self.url + f"webapps/{domain}/reload/"
+            path = self.url + "webapps/{domain}/reload/".format(domain=domain)
             response = requests.post(path, headers=headers)
             response.raise_for_status()
             counter += 1
