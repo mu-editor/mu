@@ -71,6 +71,10 @@ install_requires = [
     "wheel",
     # Needed to deploy from web mode
     "requests",
+    #
+    # Needed to resolve an issue with paths in the user virtual environment
+    #
+    "pywin32; sys_platform=='win32'",
 ]
 
 
