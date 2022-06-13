@@ -23,17 +23,38 @@ def test_init():
     assert wm.file_extensions == ["css", "html"]
     assert wm.code_template == CODE_TEMPLATE
     actions = wm.actions()
-    assert len(actions) == 5
+    assert len(actions) == 6
     assert actions[0]["name"] == "run"
     assert actions[0]["handler"] == wm.run_toggle
-    assert actions[1]["name"] == "browse"
-    assert actions[1]["handler"] == wm.browse
-    assert actions[2]["name"] == "templates"
-    assert actions[2]["handler"] == wm.load_templates
-    assert actions[3]["name"] == "css"
-    assert actions[3]["handler"] == wm.load_css
-    assert actions[4]["name"] == "static"
-    assert actions[4]["handler"] == wm.show_images
+    assert actions[1]["name"] == "deploy"
+    assert actions[1]["handler"] == wm.deploy
+    assert actions[2]["name"] == "browse"
+    assert actions[2]["handler"] == wm.browse
+    assert actions[3]["name"] == "templates"
+    assert actions[3]["handler"] == wm.load_templates
+    assert actions[4]["name"] == "css"
+    assert actions[4]["handler"] == wm.load_css
+    assert actions[5]["name"] == "static"
+    assert actions[5]["handler"] == wm.show_images
+
+
+def test_ensure_state():
+    """
+    Check the expected "set_buttons" call is made.
+    """
+    editor = mock.MagicMock()
+    editor.pa_instance = "www"
+    editor.pa_username = "username"
+    editor.pa_token = "token"
+    view = mock.MagicMock()
+    wm = WebMode(editor, view)
+    wm.set_buttons = mock.MagicMock()
+    wm.ensure_state()
+    wm.set_buttons.assert_called_once_with(deploy=True)
+    wm.set_buttons.reset_mock()
+    editor.pa_token = ""
+    wm.ensure_state()
+    wm.set_buttons.assert_called_once_with(deploy=False)
 
 
 def test_web_api():
@@ -93,7 +114,7 @@ def test_run_toggle_off():
 
 def test_start_server_no_tab():
     """
-    If there's no tab, the resver isn't started.
+    If there's no tab, the server isn't started.
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
@@ -347,3 +368,104 @@ def test_browse_not_serving():
         wm.browse(None)
         assert mock_browser.open.call_count == 0
         assert view.show_message.call_count == 1
+
+
+def test_deploy_no_tab():
+    """
+    If there's no tab, deployment won't start.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab = None
+    wm = WebMode(editor, view)
+    wm.deploy(None)
+    assert view.upload_to_python_anywhere.call_count == 0
+
+
+def test_deploy_unsaved_tab():
+    """
+    If there's a tab, but no associated path, then call the save method on
+    the editor to get one. If none is returned no further action is taken.
+    """
+    editor = mock.MagicMock()
+    editor.save.return_value = None
+    view = mock.MagicMock()
+    view.current_tab.path = None
+    wm = WebMode(editor, view)
+    wm.deploy(None)
+    assert editor.save.call_count == 1
+    assert view.upload_to_python_anywhere.call_count == 0
+
+
+def test_deploy_not_python_file():
+    """
+    If the user attempts to deploy from not-a-Python-file, then
+    complain and abort.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab.path = "foo.html"
+    wm = WebMode(editor, view)
+    wm.deploy(None)
+    assert view.show_message.call_count == 1
+    assert view.upload_to_python_anywhere.call_count == 0
+
+
+def test_deploy_no_templates():
+    """
+    If the user attempts to deploy from a location without a
+    templates directory, then complain and abort.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.current_tab.path = "foo.py"
+    wm = WebMode(editor, view)
+    wm.stop_server = mock.MagicMock()
+    with mock.patch("os.path.isdir", return_value=False):
+        wm.deploy(None)
+    assert view.show_message.call_count == 1
+    assert view.upload_to_python_anywhere.call_count == 0
+
+
+def test_deploy():
+    """
+    The deployment starts given expected good conditions.
+    """
+    editor = mock.MagicMock()
+    editor.pa_instance = "www"
+    editor.pa_username = "test_username"
+    editor.pa_token = "test_token"
+    view = mock.MagicMock()
+    view.current_tab.path = "foo.py"
+    view.current_tab.isModified.return_value = True
+    wm = WebMode(editor, view)
+    test_file = "test_file"
+    with mock.patch("os.path.isdir", return_value=True), mock.patch(
+        "os.listdir",
+        return_value=[
+            test_file,
+        ],
+    ):
+        wm.deploy(None)
+    root_dir = os.path.dirname(os.path.abspath(view.current_tab.path))
+    expected_files = {
+        # The Flask app.
+        "foo.py": "foo.py",
+        # A file in the templates.
+        "templates/test_file": os.path.join(root_dir, "templates", test_file),
+        # A static CSS file.
+        "static/css/test_file": os.path.join(
+            root_dir, "static", "css", test_file
+        ),
+        # A static image file.
+        "static/img/test_file": os.path.join(
+            root_dir, "static", "img", test_file
+        ),
+        # A static JavaScript file.
+        "static/js/test_file": os.path.join(
+            root_dir, "static", "js", test_file
+        ),
+    }
+    view.upload_to_python_anywhere.assert_called_once_with(
+        "www", "test_username", "test_token", "foo", expected_files
+    )

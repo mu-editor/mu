@@ -69,6 +69,8 @@ install_requires = [
     # Needed for packaging
     #
     "wheel",
+    # Needed to deploy from web mode
+    "requests",
 ]
 
 

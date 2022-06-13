@@ -64,6 +64,17 @@ class WebMode(BaseMode):
     file_extensions = ["css", "html"]
     code_template = CODE_TEMPLATE
 
+    def ensure_state(self):
+        """
+        Ensure the "deploy" button is only active if there are PythonAnywhere
+        configuration details.
+        """
+        instance = self.editor.pa_instance
+        username = self.editor.pa_username
+        token = self.editor.pa_token
+        has_config = bool(instance and username and token)
+        self.set_buttons(deploy=has_config)
+
     def actions(self):
         """
         Return an ordered list of actions provided by this module. An action
@@ -76,6 +87,13 @@ class WebMode(BaseMode):
                 "description": _("Run the web server."),
                 "handler": self.run_toggle,
                 "shortcut": "F5",
+            },
+            {
+                "name": "deploy",
+                "display_name": _("Deploy"),
+                "description": _("Deploy website to PythonAnywhere."),
+                "handler": self.deploy,
+                "shortcut": "Ctrl+Shift+D",
             },
             {
                 "name": "browse",
@@ -277,3 +295,83 @@ class WebMode(BaseMode):
                 "button to start the server and then try again."
             )
             self.view.show_message(msg, info)
+
+    def deploy(self, event):
+        """
+        Deploy the website based on the currently focussed Python file.
+        """
+        # Grab the Python file.
+        tab = self.view.current_tab
+        if tab is None:
+            logger.debug("There is no active text editor.")
+            return
+        if tab.path is None:
+            # Unsaved file.
+            self.editor.save()
+        if tab.path:
+            # Check it's a Python file.
+            if not tab.path.lower().endswith(".py"):
+                # Oops... show a helpful message and stop.
+                msg = _("This is not a Python file!")
+                info = _(
+                    "Mu is only able to deploy a Python file. Please make "
+                    "sure the current tab in Mu is the one for your web "
+                    "application and then try again."
+                )
+                self.view.show_message(msg, info)
+                return
+            # If needed, save the script.
+            if tab.isModified():
+                self.editor.save_tab_to_file(tab)
+            # Check for template files.
+            template_path = os.path.join(
+                os.path.dirname(os.path.abspath(tab.path)), "templates"
+            )
+            if not os.path.isdir(template_path):
+                # Oops... show a helpful message and stop.
+                msg = _("Cannot find template directory!")
+                info = _(
+                    "To deploy your web application, there needs to be a "
+                    "'templates' directory in the same place as your web "
+                    "application's Python code. Please fix this and try "
+                    "again. (Hint: Mu was expecting the `templates` directory "
+                    "to be here: " + template_path + ")"
+                )
+                self.view.show_message(msg, info)
+                return
+            logger.debug(tab.text())
+            # Good to go.
+            instance = self.editor.pa_instance
+            username = self.editor.pa_username
+            token = self.editor.pa_token
+            # Remove ".py" to get web application name from filename.
+            app_name = os.path.basename(tab.path)[:-3]
+            # Gather the files for the website. Assuming Mu conventions.
+            files = {}
+            files[os.path.basename(tab.path)] = tab.path
+            templates = os.listdir(template_path)
+            for template in templates:
+                files["templates/" + template] = os.path.join(
+                    template_path, template
+                )
+            css_path = os.path.join(
+                os.path.dirname(os.path.abspath(tab.path)), "static", "css"
+            )
+            img_path = os.path.join(
+                os.path.dirname(os.path.abspath(tab.path)), "static", "img"
+            )
+            js_path = os.path.join(
+                os.path.dirname(os.path.abspath(tab.path)), "static", "js"
+            )
+            if os.path.isdir(css_path):
+                for css in os.listdir(css_path):
+                    files["static/css/" + css] = os.path.join(css_path, css)
+            if os.path.isdir(img_path):
+                for img in os.listdir(img_path):
+                    files["static/img/" + img] = os.path.join(img_path, img)
+            if os.path.isdir(js_path):
+                for js in os.listdir(js_path):
+                    files["static/js/" + js] = os.path.join(js_path, js)
+            self.view.upload_to_python_anywhere(
+                instance, username, token, app_name, files
+            )

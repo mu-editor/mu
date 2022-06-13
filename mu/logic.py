@@ -774,6 +774,9 @@ class Editor(QObject):
         self.modes = {}
         self.envars = {}  # See restore session and show_admin
         self.minify = False
+        self.pa_username = ""
+        self.pa_token = ""
+        self.pa_instance = "www"
         self.microbit_runtime = ""
         self.user_locale = ""  # user defined language locale
         self.connected_devices = DeviceList(self.modes, parent=self)
@@ -932,6 +935,15 @@ class Editor(QObject):
         if "venv_path" in old_session:
             venv.relocate(old_session["venv_path"])
             venv.ensure()
+
+        if "pa_username" in old_session:
+            self.pa_username = old_session["pa_username"]
+
+        if "pa_token" in old_session:
+            self.pa_token = old_session["pa_token"]
+
+        if "pa_instance" in old_session:
+            self.pa_instance = old_session["pa_instance"]
 
         if "locale" in old_session:
             self.user_locale = old_session["locale"].strip()
@@ -1401,6 +1413,9 @@ class Editor(QObject):
                 "w": self._view.width(),
                 "h": self._view.height(),
             },
+            "pa_username": self.pa_username,
+            "pa_token": self.pa_token,
+            "pa_instance": self.pa_instance,
             "locale": self.user_locale,
         }
         save_session(session)
@@ -1425,6 +1440,9 @@ class Editor(QObject):
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
             "locale": self.user_locale,
+            "pa_username": self.pa_username,
+            "pa_token": self.pa_token,
+            "pa_instance": self.pa_instance,
         }
         baseline_packages, user_packages = venv.installed_packages()
         packages = user_packages
@@ -1462,8 +1480,16 @@ class Editor(QObject):
                 ]
                 old_packages = [p.lower() for p in user_packages]
                 self.sync_package_state(old_packages, new_packages)
+            if "pa_username" in new_settings:
+                self.pa_username = new_settings["pa_username"].strip()
+            if "pa_token" in new_settings:
+                self.pa_token = new_settings["pa_token"].strip()
+            if "pa_instance" in new_settings:
+                self.pa_instance = new_settings["pa_instance"].strip()
             if "locale" in new_settings:
                 self.user_locale = new_settings["locale"]
+            # Ensure mode UI is updated given settings.
+            self.modes[self.mode].ensure_state()
         else:
             logger.info("No admin settings changed.")
 
@@ -1571,6 +1597,7 @@ class Editor(QObject):
             for tab in self._view.widgets:
                 tab.breakpoint_handles = set()
                 tab.reset_annotations()
+        self.modes[mode].ensure_state()
         self.show_status_message(
             _("Changed to {} mode.").format(self.modes[mode].name)
         )
