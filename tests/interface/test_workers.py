@@ -31,14 +31,22 @@ def test_pythonanywhereworker_init():
     assert paw.progress == progress
     assert (
         paw.url
-        == f"https://{instance}.pythonanywhere.com/api/v0/user/{username}/"
+        == "https://{instance}.pythonanywhere.com/api/v0/user/{username}/".format(
+            instance=instance, username=username
+        )
     )
-    assert paw.files_path == f"files/path/home/{username}/{app_name}/"
+    assert paw.files_path == "files/path/home/{username}/{app_name}/".format(
+        username=username, app_name=app_name
+    )
     assert (
         paw.wsgi_path
-        == f"/files/path/var/www/{username}_pythonanywhere_com_wsgi.py"
+        == "/files/path/var/www/{username}_pythonanywhere_com_wsgi.py".format(
+            username=username
+        )
     )
-    assert paw.static_path == f"/home/{username}/{app_name}/static/"
+    assert paw.static_path == "/home/{username}/{app_name}/static/".format(
+        username=username, app_name=app_name
+    )
     assert paw.wsgi_config == workers.WSGI.format(
         username=username, app_name=app_name
     )
