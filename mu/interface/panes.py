@@ -910,6 +910,7 @@ class FileSystemPane(QFrame):
         """
         Fired when listing files fails.
         """
+        self.disable()
         self.show_warning(
             _(
                 "There was a problem getting the list of files on "
@@ -919,7 +920,6 @@ class FileSystemPane(QFrame):
                 "restarting Mu."
             )
         )
-        self.disable()
 
     def on_put_fail(self, filename):
         """
