@@ -69,6 +69,8 @@ install_requires = [
     # Needed for packaging
     #
     "wheel",
+    # Needed to deploy from web mode
+    "requests>=2.0.0",
     #
     # Needed to resolve an issue with paths in the user virtual environment
     #

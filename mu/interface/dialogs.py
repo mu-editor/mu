@@ -230,6 +230,72 @@ class PackagesWidget(QWidget):
         widget_layout.addWidget(self.text_area)
 
 
+class PythonAnywhereWidget(QWidget):
+    """
+    For configuring the user's username and API token for interacting with
+    the PythonAnywhere API to deploy a website from web mode.
+    """
+
+    #: Valid server hosting instances for PythonAnywhere.
+    valid_instances = [
+        "www",
+        "eu",
+    ]
+
+    def setup(self, username, token, instance="www"):
+        widget_layout = QVBoxLayout()
+        self.setLayout(widget_layout)
+        label = QLabel(
+            _(
+                "The folks at "
+                "<a href='https://www.pythonanywhere.com/'>PythonAnywhere</a> "
+                "make it easy for learners and educators to host simple web "
+                "projects for free. You'll need to sign up for an account and "
+                "provide the following details for Mu to deploy your web "
+                "project."
+            )
+        )
+        label.setWordWrap(True)
+        label.setOpenExternalLinks(True)
+        widget_layout.addWidget(label)
+        username_label = QLabel(
+            _("\nCopy your username on PythonAnywhere into here:")
+        )
+        widget_layout.addWidget(username_label)
+        self.username_text = QLineEdit()
+        self.username_text.setPlaceholderText(_("username"))
+        if username:
+            self.username_text.setText(username)
+        widget_layout.addWidget(self.username_text)
+        token_label = QLabel(
+            _(
+                "Copy your "
+                "<a href='https://www.pythonanywhere.com/account/#api_token'>"
+                "secret API token from PythonAnywhere</a> into here:"
+            )
+        )
+        token_label.setOpenExternalLinks(True)
+        widget_layout.addWidget(token_label)
+        self.token_text = QLineEdit()
+        self.token_text.setPlaceholderText(_("secret api token"))
+        if token:
+            self.token_text.setText(token)
+        widget_layout.addWidget(self.token_text)
+        instance_label = QLabel(
+            _("Server location ('www' is a safe default):")
+        )
+        widget_layout.addWidget(instance_label)
+        self.instance_combo = QComboBox()
+        selected = 0
+        for pos, item in enumerate(self.valid_instances):
+            self.instance_combo.addItem(item)
+            if instance == item:
+                selected = pos
+        self.instance_combo.setCurrentIndex(selected)
+        widget_layout.addWidget(self.instance_combo)
+        widget_layout.addStretch()
+
+
 class LocaleWidget(QWidget):
     """
     Used for manually setting the locale (and thus the language) used by Mu.
@@ -504,6 +570,7 @@ class AdminDialog(QDialog):
         self.microbit_widget = None
         self.package_widget = None
         self.envar_widget = None
+        self.python_anywhere_widget = None
 
     def setup(self, log, settings, packages, mode, device_list):
         self.setMinimumSize(600, 400)
@@ -541,6 +608,16 @@ class AdminDialog(QDialog):
             self.esp_widget = ESPFirmwareFlasherWidget(self)
             self.esp_widget.setup(mode, device_list)
             self.tabs.addTab(self.esp_widget, _("ESP Firmware flasher"))
+        if mode.short_name == "web":
+            self.python_anywhere_widget = PythonAnywhereWidget(self)
+            self.python_anywhere_widget.setup(
+                settings.get("pa_username", ""),
+                settings.get("pa_token", ""),
+                settings.get("pa_instance", "www"),
+            )
+            self.tabs.addTab(
+                self.python_anywhere_widget, _("PythonAnywhere API")
+            )
         # Configure local.
         self.locale_widget = LocaleWidget(self)
         self.locale_widget.setup(settings.get("locale"))
@@ -565,6 +642,18 @@ class AdminDialog(QDialog):
             ] = self.microbit_widget.runtime_path.text()
         if self.package_widget:
             settings["packages"] = self.package_widget.text_area.toPlainText()
+        if self.python_anywhere_widget:
+            settings[
+                "pa_username"
+            ] = self.python_anywhere_widget.username_text.text().strip()
+            settings[
+                "pa_token"
+            ] = self.python_anywhere_widget.token_text.text().strip()
+            settings[
+                "pa_instance"
+            ] = (
+                self.python_anywhere_widget.instance_combo.currentText().strip()
+            )
         settings["locale"] = self.locale_widget.get_locale()
         return settings
 
