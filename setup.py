@@ -61,10 +61,10 @@ install_requires = [
     "black>=19.10b0,<22.1.0;python_version>'3.5'",
     "appdirs>=1.4.3",
     "semver>=2.8.0",
-    #
-    # Needed for creating the runtime virtual environment
-    #
-    "virtualenv>=16.7.6",
+    # virtualenv vendors pip, we need at least pip v19.3 to install some
+    # rust based dependencies. virtualenv >=v20 is required for the --symlinks
+    # flag needed by AppImage, and it packs pip v20.0.2.
+    "virtualenv>=20.0.0",
     #
     # Needed for packaging
     #
