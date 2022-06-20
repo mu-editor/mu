@@ -936,14 +936,11 @@ class Editor(QObject):
             venv.relocate(old_session["venv_path"])
             venv.ensure()
 
-        if "pa_username" in old_session:
-            self.pa_username = old_session["pa_username"]
-
-        if "pa_token" in old_session:
-            self.pa_token = old_session["pa_token"]
-
-        if "pa_instance" in old_session:
-            self.pa_instance = old_session["pa_instance"]
+        python_anywhere = old_session.get("python_anywhere")
+        if python_anywhere:
+            self.pa_username = python_anywhere["username"]
+            self.pa_token = python_anywhere["token"]
+            self.pa_instance = python_anywhere["instance"]
 
         if "locale" in old_session:
             self.user_locale = old_session["locale"].strip()
@@ -1413,9 +1410,11 @@ class Editor(QObject):
                 "w": self._view.width(),
                 "h": self._view.height(),
             },
-            "pa_username": self.pa_username,
-            "pa_token": self.pa_token,
-            "pa_instance": self.pa_instance,
+            "python_anywhere": {
+                "username": self.pa_username,
+                "token": self.pa_token,
+                "instance": self.pa_instance,
+            },
             "locale": self.user_locale,
         }
         save_session(session)

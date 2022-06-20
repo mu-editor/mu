@@ -1421,7 +1421,12 @@ class Window(QMainWindow):
         )
         self.show_message(
             message,
-            _("Please check your PythonAnywhere settings or connection."),
+            _(
+                "Please check your PythonAnywhere settings or connection. "
+                "Alternatively, "
+                "<a href='https://github.com/mu-editor/mu/issues/new/choose'>"
+                "submit a bug report</a>."
+            ),
         )
 
 
