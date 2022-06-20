@@ -1416,13 +1416,16 @@ class Window(QMainWindow):
         """
         self.progress.cancel()
         message = (
-            _("There was a problem deploying to PythonAnywhere:\n\n")
+            _("There was a problem deploying to PythonAnywhere:<br/><br/>")
+            + "<strong>"
             + error_message
+            + "</strong>"
         )
         self.show_message(
             message,
             _(
-                "Please check your PythonAnywhere settings or connection. "
+                "Please check your PythonAnywhere settings or connection "
+                "and ensure you're using a recent version of Mu.<br/><br/>"
                 "Alternatively, "
                 "<a href='https://github.com/mu-editor/mu/issues/new/choose'>"
                 "submit a bug report</a>."
