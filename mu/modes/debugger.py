@@ -25,7 +25,7 @@ from ..debugger.client import Debugger
 from ..debugger.utils import is_breakpoint_line
 from ..virtual_environment import venv
 
-from PyQt5.QtCore import QTimer
+from PyQt6.QtCore import QTimer
 
 
 logger = logging.getLogger(__name__)

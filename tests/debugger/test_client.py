@@ -8,7 +8,7 @@ import json
 import os.path
 import mu.debugger.client
 from unittest import mock
-from PyQt5.QtCore import pyqtBoundSignal
+from PyQt6.QtCore import pyqtBoundSignal
 
 
 def test_Breakpoint_init():

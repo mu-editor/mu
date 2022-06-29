@@ -6,8 +6,8 @@ from unittest import mock
 import mu.interface.editor
 import keyword
 import re
-from PyQt5.QtCore import Qt, QMimeData, QUrl, QPointF
-from PyQt5.QtGui import QDropEvent
+from PyQt6.QtCore import Qt, QMimeData, QUrl, QPointF
+from PyQt6.QtGui import QDropEvent
 
 import pytest
 
@@ -177,13 +177,15 @@ def test_EditorPane_configure():
     ep.indicatorDefine.assert_has_calls(
         [
             mock.call(
-                ep.SquiggleIndicator, ep.check_indicators["error"]["id"]
+                ep.IndicatorStyle.SquiggleIndicator,
+                ep.check_indicators["error"]["id"],
             ),
             mock.call(
-                ep.SquiggleIndicator, ep.check_indicators["style"]["id"]
+                ep.IndicatorStyle.SquiggleIndicator,
+                ep.check_indicators["style"]["id"],
             ),
             mock.call(
-                ep.StraightBoxIndicator,
+                ep.IndicatorStyle.StraightBoxIndicator,
                 ep.search_indicators["selection"]["id"],
             ),
         ],

@@ -1,7 +1,7 @@
 from unittest import mock
 
 import pytest
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from mu import settings
 

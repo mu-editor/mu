@@ -30,14 +30,14 @@ import urllib
 import webbrowser
 import base64
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     Qt,
     QEventLoop,
     QThread,
     QObject,
     pyqtSignal,
 )
-from PyQt5.QtWidgets import QApplication, QSplashScreen
+from PyQt6.QtWidgets import QApplication, QSplashScreen
 
 from . import i18n
 from .virtual_environment import venv, logger as vlogger
@@ -282,16 +282,16 @@ def run():
 
     # Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
     # unless this flag is set
-    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
-    if hasattr(Qt, "AA_EnableHighDpiScaling"):
-        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+    # os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+    # if hasattr(Qt, "AA_EnableHighDpiScaling"):
+    #    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    # QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
 
-    # An issue in PyQt5 v5.13.2 to v5.15.1 makes PyQt5 application
+    # An issue in PyQt5 v5.13.2 to v5.15.1 makes PyQt6 application
     # hang on Mac OS 11 (Big Sur)
     # Setting this environment variable fixes the problem.
     # See issue #1147 for more information
-    os.environ["QT_MAC_WANTS_LAYER"] = "1"
+    # os.environ["QT_MAC_WANTS_LAYER"] = "1"
 
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
@@ -365,4 +365,4 @@ def run():
     editor.restore_session(sys.argv[1:])
 
     # Stop the program after the application finishes executing.
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

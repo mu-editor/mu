@@ -19,11 +19,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import logging
 import os.path
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QThread
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import QSize, Qt, pyqtSignal, QTimer, QThread
+from PyQt6.QtWidgets import (
     QToolBar,
-    QAction,
-    QDesktopWidget,
     QWidget,
     QVBoxLayout,
     QTabWidget,
@@ -33,14 +31,19 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QStatusBar,
     QDockWidget,
-    QShortcut,
     QApplication,
     QTabBar,
     QPushButton,
     QHBoxLayout,
     QProgressDialog,
 )
-from PyQt5.QtGui import QKeySequence, QStandardItemModel, QCursor
+from PyQt6.QtGui import (
+    QKeySequence,
+    QStandardItemModel,
+    QCursor,
+    QAction,
+    QShortcut,
+)
 from mu import __version__
 from mu.interface.dialogs import (
     ModeSelector,
@@ -83,7 +86,7 @@ class ButtonBar(QToolBar):
         super().__init__(parent)
         self.setMovable(False)
         self.setIconSize(QSize(64, 64))
-        self.setToolButtonStyle(3)
+        self.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.setContextMenuPolicy(Qt.PreventContextMenu)
         self.setObjectName("StandardToolBar")
         self.reset()
@@ -555,7 +558,7 @@ class Window(QMainWindow):
             menu.insertAction(actions[0], copy_to_repl)
             menu.insertSeparator(actions[0])
         # Display menu.
-        menu.exec_(QCursor.pos())
+        menu.exec(QCursor.pos())
 
     def copy_to_repl(self):
         """
@@ -1091,7 +1094,7 @@ class Window(QMainWindow):
         """
         Returns an (width, height) tuple with the screen geometry.
         """
-        screen = QDesktopWidget().screenGeometry()
+        screen = self.screen().availableGeometry()
         return screen.width(), screen.height()
 
     def size_window(self, x=None, y=None, w=None, h=None):
@@ -1389,9 +1392,9 @@ class Window(QMainWindow):
         self.worker.finished.connect(self.worker.deleteLater)
         self.worker.finished.connect(self.handle_python_anywhere_complete)
         self.upload_thread.finished.connect(self.upload_thread.deleteLater)
-        self.worker.error.connect(self.handle_python_anywhere_error)
-        self.worker.error.connect(self.upload_thread.quit)
-        self.worker.error.connect(self.worker.deleteLater)
+        self.worker.errorOccurred.connect(self.handle_python_anywhere_error)
+        self.worker.errorOccurred.connect(self.upload_thread.quit)
+        self.worker.errorOccurred.connect(self.worker.deleteLater)
         self.upload_thread.start()
 
     def handle_python_anywhere_complete(self, domain):

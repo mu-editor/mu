@@ -21,7 +21,7 @@ import socket
 import time
 import logging
 import os.path
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
+from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
 
 logger = logging.getLogger(__name__)
