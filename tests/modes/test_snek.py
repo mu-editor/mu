@@ -6,7 +6,7 @@ import pytest
 from mu.logic import Device
 from mu.modes.snek import SnekMode
 from mu.modes.api import SNEK_APIS
-from PyQt5.QtWidgets import QMessageBox
+from PyQt6.QtWidgets import QMessageBox
 from unittest import mock
 
 

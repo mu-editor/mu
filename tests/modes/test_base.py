@@ -14,7 +14,7 @@ from mu.modes.base import (
     REPLConnection,
 )
 import mu.settings
-from PyQt5.QtCore import QIODevice
+from PyQt6.QtCore import QIODevice
 from unittest import mock
 
 

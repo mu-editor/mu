@@ -23,8 +23,8 @@ import mu.logic
 import mu.settings
 
 from mu.virtual_environment import venv
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import pyqtSignal, QObject, Qt
+from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtCore import pyqtSignal, QObject, Qt
 
 from mu import __version__
 

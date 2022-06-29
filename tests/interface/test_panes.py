@@ -2,9 +2,9 @@
 """
 Tests for the user interface elements of Mu.
 """
-from PyQt5.QtWidgets import QMessageBox, QLabel, QMenu
-from PyQt5.QtCore import Qt, QEvent, QPointF, QUrl
-from PyQt5.QtGui import QTextCursor, QMouseEvent
+from PyQt6.QtWidgets import QMessageBox, QLabel, QMenu
+from PyQt6.QtCore import Qt, QEvent, QPointF, QUrl
+from PyQt6.QtGui import QTextCursor, QMouseEvent
 from collections import deque
 from unittest import mock
 
@@ -133,7 +133,7 @@ def test_MicroPythonREPLPane_context_menu():
     assert paste_action[0] == "Paste"
     assert paste_action[1] == rp.paste
     assert paste_action[2].toString() == "Ctrl+Shift+V"
-    assert mock_qmenu.exec_.call_count == 1
+    assert mock_qmenu.exec.call_count == 1
 
 
 def test_MicroPythonREPLPane_context_menu_darwin():
@@ -160,7 +160,7 @@ def test_MicroPythonREPLPane_context_menu_darwin():
     assert paste_action[0] == "Paste"
     assert paste_action[1] == rp.paste
     assert paste_action[2].toString() == "Ctrl+V"
-    assert mock_qmenu.exec_.call_count == 1
+    assert mock_qmenu.exec.call_count == 1
 
 
 def test_MicroPythonREPLPane_keyPressEvent():
@@ -287,7 +287,7 @@ def test_MicroPythonREPLPane_keyPressEvent_left():
     )
 
 
-@mock.patch("PyQt5.QtWidgets.QTextEdit.keyPressEvent")
+@mock.patch("PyQt6.QtWidgets.QTextEdit.keyPressEvent")
 def test_MicroPythonREPLPane_keyPressEvent_shift_right(
     mock_super_keyPressEvent,
 ):
@@ -305,7 +305,7 @@ def test_MicroPythonREPLPane_keyPressEvent_shift_right(
     mock_super_keyPressEvent.assert_called_once_with(data)
 
 
-@mock.patch("PyQt5.QtWidgets.QTextEdit.keyPressEvent")
+@mock.patch("PyQt6.QtWidgets.QTextEdit.keyPressEvent")
 def test_MicroPythonREPLPane_keyPressEvent_shift_left(
     mock_super_keyPressEvent,
 ):
@@ -323,8 +323,8 @@ def test_MicroPythonREPLPane_keyPressEvent_shift_left(
     mock_super_keyPressEvent.assert_called_once_with(data)
 
 
-@mock.patch("PyQt5.QtGui.QTextCursor.hasSelection", return_value=True)
-@mock.patch("PyQt5.QtGui.QTextCursor.selectionEnd", return_value=30)
+@mock.patch("PyQt6.QtGui.QTextCursor.hasSelection", return_value=True)
+@mock.patch("PyQt6.QtGui.QTextCursor.selectionEnd", return_value=30)
 def test_MicroPythonREPLPane_keyPressEvent_right_with_selection(a, b):
     """
     Ensure right arrows in the REPL when a selection is made, moves the cursor
@@ -341,8 +341,8 @@ def test_MicroPythonREPLPane_keyPressEvent_right_with_selection(a, b):
     rp.move_cursor_to.assert_called_once_with(30)
 
 
-@mock.patch("PyQt5.QtGui.QTextCursor.hasSelection", return_value=True)
-@mock.patch("PyQt5.QtGui.QTextCursor.selectionStart", return_value=20)
+@mock.patch("PyQt6.QtGui.QTextCursor.hasSelection", return_value=True)
+@mock.patch("PyQt6.QtGui.QTextCursor.selectionStart", return_value=20)
 def test_MicroPythonREPLPane_keyPressEvent_left_with_selection(a, b):
     """
     Ensure left arrows in the REPL when a selection is made, moves the cursor
@@ -1011,7 +1011,7 @@ def test_SnekREPLPane_context_menu():
     assert paste_action[0] == "Paste"
     assert paste_action[1] == rp.paste
     assert paste_action[2].toString() == "Ctrl+Shift+V"
-    assert mock_qmenu.exec_.call_count == 1
+    assert mock_qmenu.exec.call_count == 1
 
 
 def test_SnekREPLPane_context_menu_darwin():
@@ -1038,7 +1038,7 @@ def test_SnekREPLPane_context_menu_darwin():
     assert paste_action[0] == "Paste"
     assert paste_action[1] == rp.paste
     assert paste_action[2].toString() == "Ctrl+V"
-    assert mock_qmenu.exec_.call_count == 1
+    assert mock_qmenu.exec.call_count == 1
 
 
 def test_SnekREPLPane_keyPressEvent():
@@ -1050,7 +1050,7 @@ def test_SnekREPLPane_keyPressEvent():
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_A)
     data.text = mock.MagicMock(return_value="a")
-    data.modifiers = mock.MagicMock(return_value=None)
+    data.modifiers = mock.MagicMock(return_value=mock.MagicMock())
     rp.keyPressEvent(data)
     mock_serial.write.assert_called_once_with(bytes("a", "utf-8"))
 
@@ -1064,7 +1064,7 @@ def test_SnekREPLPane_keyPressEvent_backspace():
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_Backspace)
     data.text = mock.MagicMock(return_value="\b")
-    data.modifiers = mock.MagicMock(return_value=None)
+    data.modifiers = mock.MagicMock(return_value=mock.MagicMock())
     rp.keyPressEvent(data)
     mock_serial.write.assert_called_once_with(b"\b")
 
@@ -1092,12 +1092,12 @@ def test_SnekREPLPane_keyPressEvent_delete():
     data = mock.MagicMock
     data.key = mock.MagicMock(return_value=Qt.Key_Delete)
     data.text = mock.MagicMock(return_value="\b")
-    data.modifiers = mock.MagicMock(return_value=None)
+    data.modifiers = mock.MagicMock(return_value=mock.MagicMock())
     rp.keyPressEvent(data)
     mock_serial.write.assert_called_once_with(b"\x1B[\x33\x7E")
 
 
-@mock.patch("PyQt5.QtWidgets.QTextEdit.keyPressEvent")
+@mock.patch("PyQt6.QtWidgets.QTextEdit.keyPressEvent")
 def test_SnekREPLPane_keyPressEvent_shift_right(
     mock_super_keyPressEvent,
 ):
@@ -1115,7 +1115,7 @@ def test_SnekREPLPane_keyPressEvent_shift_right(
     mock_super_keyPressEvent.assert_called_once_with(data)
 
 
-@mock.patch("PyQt5.QtWidgets.QTextEdit.keyPressEvent")
+@mock.patch("PyQt6.QtWidgets.QTextEdit.keyPressEvent")
 def test_SnekREPLPane_keyPressEvent_shift_left(
     mock_super_keyPressEvent,
 ):
@@ -1133,8 +1133,8 @@ def test_SnekREPLPane_keyPressEvent_shift_left(
     mock_super_keyPressEvent.assert_called_once_with(data)
 
 
-@mock.patch("PyQt5.QtGui.QTextCursor.hasSelection", return_value=True)
-@mock.patch("PyQt5.QtGui.QTextCursor.selectionEnd", return_value=30)
+@mock.patch("PyQt6.QtGui.QTextCursor.hasSelection", return_value=True)
+@mock.patch("PyQt6.QtGui.QTextCursor.selectionEnd", return_value=30)
 def test_SnekREPLPane_keyPressEvent_right_with_selection(a, b):
     """
     Ensure right arrows in the REPL when a selection is made, moves the cursor
@@ -1151,8 +1151,8 @@ def test_SnekREPLPane_keyPressEvent_right_with_selection(a, b):
     rp.move_cursor_to.assert_called_once_with(30)
 
 
-@mock.patch("PyQt5.QtGui.QTextCursor.hasSelection", return_value=True)
-@mock.patch("PyQt5.QtGui.QTextCursor.selectionStart", return_value=20)
+@mock.patch("PyQt6.QtGui.QTextCursor.hasSelection", return_value=True)
+@mock.patch("PyQt6.QtGui.QTextCursor.selectionStart", return_value=20)
 def test_SnekREPLPane_keyPressEvent_left_with_selection(a, b):
     """
     Ensure left arrows in the REPL when a selection is made, moves the cursor
@@ -1393,7 +1393,7 @@ def test_MuFileList_show_confirm_overwrite_dialog():
     mock_qmb.setIcon = mock.MagicMock(return_value=None)
     mock_qmb.setText = mock.MagicMock(return_value=None)
     mock_qmb.setWindowTitle = mock.MagicMock(return_value=None)
-    mock_qmb.exec_ = mock.MagicMock(return_value=QMessageBox.Ok)
+    mock_qmb.exec = mock.MagicMock(return_value=QMessageBox.Ok)
     mock_qmb_class = mock.MagicMock(return_value=mock_qmb)
     mock_qmb_class.Ok = QMessageBox.Ok
     mock_qmb_class.Information = QMessageBox.Information
@@ -1473,7 +1473,7 @@ def test_MicroPythonDeviceFileList_contextMenuEvent():
     mock_menu = mock.MagicMock()
     mock_action = mock.MagicMock()
     mock_menu.addAction.return_value = mock_action
-    mock_menu.exec_.return_value = mock_action
+    mock_menu.exec.return_value = mock_action
     mfs = mu.interface.panes.MicroPythonDeviceFileList("homepath")
     mock_current = mock.MagicMock()
     mock_current.text.return_value = "foo.py"
@@ -1596,7 +1596,7 @@ def test_LocalFileList_contextMenuEvent():
         mock.MagicMock(),  # "Write to main.py on device"
         mock.MagicMock(),  # "Open"
     ]
-    mock_menu.exec_.return_value = mock_action_first
+    mock_menu.exec.return_value = mock_action_first
     mfs = mu.interface.panes.LocalFileList("homepath")
     mock_open = mock.MagicMock()
     mfs.open_file = mock.MagicMock()
@@ -1629,7 +1629,7 @@ def test_LocalFileList_contextMenuEvent_hex():
         mock.MagicMock(),  # "Open in Mu"
         mock_action_second,  # "Open"
     ]
-    mock_menu.exec_.return_value = mock_action_second
+    mock_menu.exec.return_value = mock_action_second
     mfs = mu.interface.panes.LocalFileList("homepath")
     mock_current = mock.MagicMock()
     mock_current.text.return_value = "foo.hex"
@@ -1662,7 +1662,7 @@ def test_LocalFileList_contextMenuEvent_external():
     mock_menu = mock.create_autospec(QMenu, instance=True)
     mock_action = mock.MagicMock()
     mock_menu.addAction.side_effect = [mock_action, mock.MagicMock()]  # "Open"
-    mock_menu.exec_.return_value = mock_action
+    mock_menu.exec.return_value = mock_action
     mfs = mu.interface.panes.LocalFileList("homepath")
     mock_open = mock.MagicMock()
     mfs.open_file = mock.MagicMock()
@@ -1706,7 +1706,7 @@ def test_LocalFileList_contextMenuEvent_write_to_mainpy():
         mock_action_second,
         mock_action_third,
     ]
-    mock_menu.exec_.return_value = mock_action_second
+    mock_menu.exec.return_value = mock_action_second
     mfs = mu.interface.panes.LocalFileList("homepath")
     mfs.put = mock.MagicMock()
     mock_current = mock.MagicMock()
@@ -1731,7 +1731,7 @@ def test_LocalFileList_contextMenuEvent_empty_list():
     file list is empty.
     """
     mock_menu = mock.MagicMock()
-    mock_menu.exec_.return_value = mock.MagicMock()
+    mock_menu.exec.return_value = mock.MagicMock()
     mfs = mu.interface.panes.LocalFileList("homepath")
     mfs.currentItem = mock.MagicMock(return_value=None)
     mock_event = mock.MagicMock()
@@ -2301,7 +2301,7 @@ def test_PythonProcessPane_context_menu():
     assert paste_action[0] == "Paste"
     assert paste_action[1] == ppp.paste
     assert paste_action[2].toString() == "Ctrl+Shift+V"
-    assert mock_qmenu.exec_.call_count == 1
+    assert mock_qmenu.exec.call_count == 1
 
 
 def test_PythonProcessPane_context_menu_darwin():
@@ -2327,7 +2327,7 @@ def test_PythonProcessPane_context_menu_darwin():
     assert paste_action[0] == "Paste"
     assert paste_action[1] == ppp.paste
     assert paste_action[2].toString() == "Ctrl+V"
-    assert mock_qmenu.exec_.call_count == 1
+    assert mock_qmenu.exec.call_count == 1
 
 
 def test_PythonProcessPane_paste():
@@ -3309,8 +3309,7 @@ def test_PlotterPane_add_data_adjust_values_up():
         pp.add_data((1, 2, 3, 4))
     assert len(pp.series) == 4
     assert pp.chart.addSeries.call_count == 3
-    assert pp.chart.setAxisX.call_count == 3
-    assert pp.chart.setAxisY.call_count == 3
+    assert pp.series[len(pp.series) - 1].attachAxis.call_count == (3 * 2)
     assert len(pp.data) == 4
 
 
@@ -3439,15 +3438,15 @@ def test_PlotterPane_set_theme():
     pp.chart = mock.MagicMock()
     pp.set_theme("day")
     pp.chart.setTheme.assert_called_once_with(
-        mu.interface.panes.QChart.ChartThemeLight
+        mu.interface.panes.QChart.ChartTheme.ChartThemeLight
     )
     pp.chart.setTheme.reset_mock()
     pp.set_theme("night")
     pp.chart.setTheme.assert_called_once_with(
-        mu.interface.panes.QChart.ChartThemeDark
+        mu.interface.panes.QChart.ChartTheme.ChartThemeDark
     )
     pp.chart.setTheme.reset_mock()
     pp.set_theme("contrast")
     pp.chart.setTheme.assert_called_once_with(
-        mu.interface.panes.QChart.ChartThemeHighContrast
+        mu.interface.panes.QChart.ChartTheme.ChartThemeHighContrast
     )

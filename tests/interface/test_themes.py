@@ -64,8 +64,7 @@ def test_Font_loading():
             mu.interface.themes.Font(bold=True, italic=True).load()
     finally:
         mu.interface.themes.Font._DATABASE = None
-    db.assert_called_once_with()
-    db().font.assert_has_calls(
+    db.font.assert_has_calls(
         [
             mock.call("Source Code Pro", "Regular", 14),
             mock.call("Source Code Pro", "Semibold", 14),

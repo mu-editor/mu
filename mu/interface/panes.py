@@ -27,7 +27,7 @@ import bisect
 import os.path
 import codecs
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     Qt,
     QProcess,
     QProcessEnvironment,
@@ -36,7 +36,7 @@ from PyQt5.QtCore import (
     QUrl,
 )
 from collections import deque
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QMessageBox,
     QTextEdit,
     QFrame,
@@ -46,7 +46,7 @@ from PyQt5.QtWidgets import (
     QMenu,
     QTreeView,
 )
-from PyQt5.QtGui import (
+from PyQt6.QtGui import (
     QKeySequence,
     QTextCursor,
     QCursor,
@@ -65,7 +65,7 @@ logger = logging.getLogger(__name__)
 
 CHARTS = True
 try:  # pragma: no cover
-    from PyQt5.QtChart import QChart, QLineSeries, QChartView, QValueAxis
+    from PyQt6.QtCharts import QChart, QLineSeries, QChartView, QValueAxis
 except ImportError:  # pragma: no cover
     logger.info("Unable to find QChart. Plotter button will not display.")
     QChartView = object
@@ -205,15 +205,15 @@ class MicroPythonREPLPane(QTextEdit):
         """
         menu = QMenu(self)
         if platform.system() == "Darwin":
-            copy_keys = QKeySequence(Qt.CTRL + Qt.Key_C)
-            paste_keys = QKeySequence(Qt.CTRL + Qt.Key_V)
+            copy_keys = QKeySequence("Ctrl+C")
+            paste_keys = QKeySequence("Ctrl+V")
         else:
-            copy_keys = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_C)
-            paste_keys = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_V)
+            copy_keys = QKeySequence("Ctrl+Shift+C")
+            paste_keys = QKeySequence("Ctrl+Shift+V")
 
         menu.addAction("Copy", self.copy, copy_keys)
         menu.addAction("Paste", self.paste, paste_keys)
-        menu.exec_(QCursor.pos())
+        menu.exec(QCursor.pos())
 
     def set_theme(self, theme):
         self.set_font_size(self.font_size)
@@ -499,13 +499,15 @@ class SnekREPLPane(MicroPythonREPLPane):
         """
         tc = self.textCursor()
         key = data.key()
-        mod = data.modifiers()
+        mod = data.modifiers().value
         if not mod:
             mod = 0
-        ctrl_only = mod == Qt.ControlModifier
-        meta_only = mod == Qt.MetaModifier
-        ctrl_shift_only = mod == Qt.ControlModifier | Qt.ShiftModifier
-        shift_down = mod & Qt.ShiftModifier
+        ctrl_only = mod == Qt.ControlModifier.value
+        meta_only = mod == Qt.MetaModifier.value
+        ctrl_shift_only = (
+            mod == Qt.ControlModifier.value | Qt.ShiftModifier.value
+        )
+        shift_down = mod & Qt.ShiftModifier.value
         on_osx = platform.system() == "Darwin"
 
         if key == Qt.Key_Return:
@@ -657,7 +659,7 @@ class MuFileList(QListWidget):
         msg.setText(_("File already exists; overwrite it?"))
         msg.setWindowTitle(_("File already exists"))
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        return msg.exec_() == QMessageBox.Ok
+        return msg.exec() == QMessageBox.Ok
 
 
 class MicroPythonDeviceFileList(MuFileList):
@@ -707,7 +709,7 @@ class MicroPythonDeviceFileList(MuFileList):
             return
         menu = QMenu(self)
         delete_action = menu.addAction(_("Delete (cannot be undone)"))
-        action = menu.exec_(self.mapToGlobal(event.pos()))
+        action = menu.exec(self.mapToGlobal(event.pos()))
         if action == delete_action:
             self.disable.emit()
             microbit_filename = menu_current_item.text()
@@ -789,7 +791,7 @@ class LocalFileList(MuFileList):
             )
         # Open outside Mu (things get meta if Mu is the default application)
         open_action = menu.addAction(_("Open"))
-        action = menu.exec_(self.mapToGlobal(event.pos()))
+        action = menu.exec(self.mapToGlobal(event.pos()))
         if action == open_action:
             # Get the file's path
             path = os.path.abspath(os.path.join(self.home, local_filename))
@@ -1145,14 +1147,15 @@ class PythonProcessPane(QTextEdit):
         """
         menu = QMenu(self)
         if platform.system() == "Darwin":
-            copy_keys = QKeySequence(Qt.CTRL + Qt.Key_C)
-            paste_keys = QKeySequence(Qt.CTRL + Qt.Key_V)
+            copy_keys = QKeySequence("Ctrl+C")
+            paste_keys = QKeySequence("Ctrl+V")
         else:
-            copy_keys = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_C)
-            paste_keys = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_V)
+            copy_keys = QKeySequence("Ctrl+Shift+C")
+            paste_keys = QKeySequence("Ctrl+Shift+V")
+
         menu.addAction("Copy", self.copy, copy_keys)
         menu.addAction("Paste", self.paste, paste_keys)
-        menu.exec_(QCursor.pos())
+        menu.exec(QCursor.pos())
 
     def insertFromMimeData(self, source):
         """
@@ -1571,8 +1574,11 @@ class PlotterPane(QChartView):
         self.axis_y.setRange(self.min_y, self.max_y)
         self.axis_x.setLabelFormat("time")
         self.axis_y.setLabelFormat("%d")
-        self.chart.setAxisX(self.axis_x, self.series[0])
-        self.chart.setAxisY(self.axis_y, self.series[0])
+        self.chart.addAxis(self.axis_x, Qt.AlignmentFlag.AlignBottom)
+        self.chart.addAxis(self.axis_y, Qt.AlignmentFlag.AlignLeft)
+        self.series[0].attachAxis(self.axis_x)
+        self.series[0].attachAxis(self.axis_y)
+
         self.setChart(self.chart)
         self.setRenderHint(QPainter.Antialiasing)
 
@@ -1643,8 +1649,10 @@ class PlotterPane(QChartView):
                 for i in range(value_len - series_len):
                     new_series = QLineSeries()
                     self.chart.addSeries(new_series)
-                    self.chart.setAxisX(self.axis_x, new_series)
-                    self.chart.setAxisY(self.axis_y, new_series)
+                    new_series.attachAxis(self.axis_x)
+                    new_series.attachAxis(self.axis_y)
+                    # self.chart.addAxis(self.axis_x, Qt.AlignmentFlag.AlignBottom)
+                    # self.chart.addAxis(self.axis_y, Qt.AlignmentFlag.AlignLeft)
                     self.series.append(new_series)
                     self.data.append(deque([0] * self.lookback))
             else:
@@ -1708,8 +1716,8 @@ class PlotterPane(QChartView):
         Sets the theme / look for the plotter pane.
         """
         if theme == "day":
-            self.chart.setTheme(QChart.ChartThemeLight)
+            self.chart.setTheme(QChart.ChartTheme.ChartThemeLight)
         elif theme == "night":
-            self.chart.setTheme(QChart.ChartThemeDark)
+            self.chart.setTheme(QChart.ChartTheme.ChartThemeDark)
         else:
-            self.chart.setTheme(QChart.ChartThemeHighContrast)
+            self.chart.setTheme(QChart.ChartTheme.ChartThemeHighContrast)

@@ -22,7 +22,7 @@ from mu.logic import LOG_FILE, LOG_DIR, ENCODING
 from mu.resources import load_movie
 from mu import mu_debug
 from mu.virtual_environment import VirtualEnvironment as VE, SplashLogHandler
-from PyQt5.QtCore import Qt
+from PyQt6.QtCore import Qt
 
 
 class DumSig:
@@ -278,10 +278,11 @@ def test_run():
         # foo.call_count is instantiating the class
         assert qa.call_count == 1
         # foo.mock_calls are method calls on the object
-        if hasattr(Qt, "AA_EnableHighDpiScaling"):
-            assert len(qa.mock_calls) == 9
-        else:
-            assert len(qa.mock_calls) == 8
+        # if hasattr(Qt, "AA_EnableHighDpiScaling"):
+        #    assert len(qa.mock_calls) == 9
+        # else:
+        #    assert len(qa.mock_calls) == 8
+        assert len(qa.mock_calls) == 7
         assert qsp.call_count == 1
         assert len(qsp.mock_calls) == 4
         assert ed.call_count == 1

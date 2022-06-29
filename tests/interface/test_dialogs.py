@@ -5,8 +5,9 @@ Tests for the user interface elements of Mu.
 import os
 
 import pytest
+import mu
 import mu.interface.dialogs
-from PyQt5.QtWidgets import QDialog, QWidget, QDialogButtonBox
+from PyQt6.QtWidgets import QDialog, QWidget, QDialogButtonBox
 from unittest import mock
 from mu import virtual_environment
 from mu.modes import (
@@ -16,7 +17,7 @@ from mu.modes import (
     DebugMode,
     ESPMode,
 )
-from PyQt5.QtCore import QProcess
+from PyQt6.QtCore import QProcess
 
 
 def test_ModeItem_init():
@@ -321,12 +322,20 @@ def test_ESPFirmwareFlasherWidget_esptool_finished(
     device_list = mu.logic.DeviceList(modes)
     device_list.add_device(microbit)
     espff = mu.interface.dialogs.ESPFirmwareFlasherWidget()
-    with mock.patch("os.path.exists", return_value=True):
-        espff.setup(mode, device_list)
+    espff.setup(mode, device_list)
     espff.esptool_finished(1, 0)
+    assert "Error on flashing. Aborting." in espff.log_text_area.toPlainText()
+
+    espff.log_text_area.clear()
 
     espff.commands = ["foo", "bar"]
-    espff.esptool_finished(0, QProcess.CrashExit + 1)
+    espff.esptool_finished(0, QProcess.NormalExit)
+    assert "foo" in espff.log_text_area.toPlainText()
+
+    espff.log_text_area.clear()
+
+    espff.esptool_finished(0, QProcess.NormalExit)
+    assert "bar" in espff.log_text_area.toPlainText()
 
 
 @mock.patch(
