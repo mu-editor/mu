@@ -202,8 +202,7 @@ def setup_logging():
     """
     Configure logging.
     """
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR)
+    os.makedirs(LOG_DIR, exist_ok=True)
 
     # set logging format
     log_fmt = (
