@@ -171,6 +171,7 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
         "Computers aren’t the thing. They’re the thing that gets us to the thing."
     ),
     _("Don't stare at a blank screen - try something out."),
+    _("It's ok to be stuck, go for a walk then reattempt again."),
 ]
 
 NEWLINE = "\n"
