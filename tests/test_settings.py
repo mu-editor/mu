@@ -478,7 +478,9 @@ def test_default_file_location_with_data_path(mocked_settings):
     path and will drop back to get_data_dir()
     """
     settings, filepath, items = mocked_settings
-    with mock.patch.object(mu.config, "get_data_dir", lambda: os.path.dirname(filepath)):
+    with mock.patch.object(
+        mu.config, "get_data_dir", lambda: os.path.dirname(filepath)
+    ):
         settings.init()
 
     assert settings.filepath == filepath
