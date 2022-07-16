@@ -10,6 +10,17 @@ from glob import glob
 from os.path import isdir, sep
 
 
+def check_function_is_magic(fn):
+    return fn.name.startswith("__") and fn.name.endswith("__")
+
+
+def format_docstring(node):
+    docstring = ast.get_docstring(node, clean=True)
+    return (
+        " ".join(doc.strip() for doc in docstring.split("\n")) if docstring else "",
+    )
+
+
 def format_signature(arguments):
     result = []
 
@@ -25,11 +36,8 @@ def format_signature(arguments):
 
 
 def format_function(node):
-    docstring = ast.get_docstring(node, clean=True)
     return "{}{} {}".format(
-        node.name,
-        format_signature(node.args),
-        " ".join(doc.strip() for doc in docstring.split("\n")) if docstring else "",
+        node.name, format_signature(node.args), format_docstring(node)
     )
 
 
@@ -37,18 +45,15 @@ def format_methods(node_class):
     result = []
 
     for node_sub in node_class.body:
-        if isinstance(node_sub, ast.FunctionDef) and (
-            not node_sub.name.startswith("__") and not node_sub.name.endswith("__")
+        if isinstance(node_sub, ast.FunctionDef) and not check_function_is_magic(
+            node_sub
         ):
-            docstring = ast.get_docstring(node_sub, clean=True)
             result.append(
                 "{}.{}{} {}".format(
                     node_class.name,
                     node_sub.name,
                     format_signature(node_sub.args),
-                    " ".join(doc.strip() for doc in docstring.split("\n"))
-                    if docstring
-                    else "",
+                    format_docstring(node_sub),
                 )
             )
 
