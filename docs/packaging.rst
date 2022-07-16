@@ -159,7 +159,7 @@ a private key and uploaded to GitHub and associated with the relevant release.
 `The instructions for cryptographically signing installers <https://pynsist.readthedocs.io/en/latest/faq.html#code-signing>`_
 explain this process more fully
 (the details of which are described
-`by Mozilla <https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Build_Instructions/Signing_an_executable_with_Authenticode>`_).
+`by Mozilla <https://developer.mozilla.org.cach3.com/en-US/docs/Mozilla/Developer_guide/Build_Instructions/Signing_an_executable_with_Authenticode>`_).
 
 Use the ``make`` command to build your own installers::
 
