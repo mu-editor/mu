@@ -214,7 +214,9 @@ class Process(QObject):
             else:
                 logger.error("Virtual environment creation timed out")
                 raise VirtualEnvironmentTimeoutError(
-                    "Virtual environment creation timed out", wait_for_s
+                    "Virtual environment creation timed out:\n"
+                    + compact(output),
+                    wait_for_s,
                 )
 
             raise VirtualEnvironmentError(
