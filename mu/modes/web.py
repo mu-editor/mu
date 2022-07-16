@@ -135,6 +135,18 @@ class WebMode(BaseMode):
         """
         return SHARED_APIS + PYTHON3_APIS + FLASK_APIS
 
+    def assets_dir(self, asset_type):
+        """
+        Determine (and create) the directory for a set of assets.
+
+        In web-mode such asset directories exist in the user's workspace
+        directory, rather than relative to the currently open Python file.
+        """
+        base_dir = self.workspace_dir()
+        assets_dir = os.path.join(base_dir, asset_type)
+        os.makedirs(assets_dir, exist_ok=True)
+        return assets_dir
+
     def run_toggle(self, event):
         """
         Handles the toggling of the run button to start/stop the server.
