@@ -64,10 +64,12 @@ Discussion in:
 ~~~~~~~~~~~~~~
 
 (Initial)
+
 * https://github.com/mu-editor/mu/issues/370
 * https://github.com/mu-editor/mu/pull/364
 * https://github.com/mu-editor/mu/pull/371
 
 (Later)
+
 * https://github.com/mu-editor/mu/issues/402
 * https://github.com/mu-editor/mu/issues/696
