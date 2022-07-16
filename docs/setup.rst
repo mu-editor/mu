@@ -61,6 +61,10 @@ into your virtualenv with::
 
         py -3 -mvenv .venv
 
+    Virtual environment setup can vary depending on your operating system.
+    To learn more about virtual environments, see this `in-depth guide from Real Python <https://realpython.com/python-virtual-environments-a-primer/>`_.
+
+
 Running Development Mu
 ++++++++++++++++++++++
 
