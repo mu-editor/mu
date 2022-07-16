@@ -58,6 +58,12 @@ class VirtualEnvironmentError(Exception):
         self.message = message
 
 
+class VirtualEnvironmentTimeoutError(VirtualEnvironmentError):
+    def __init__(self, message, timeout):
+        super().__init__(message)
+        self.timeout = timeout
+
+
 class VirtualEnvironmentEnsureError(VirtualEnvironmentError):
     pass
 
@@ -207,6 +213,9 @@ class Process(QObject):
                 )
             else:
                 logger.error("Virtual environment creation timed out")
+                raise VirtualEnvironmentTimeoutError(
+                    "Virtual environment creation timed out", wait_for_s
+                )
 
             raise VirtualEnvironmentError(
                 "Process did not terminate normally:\n" + compact(output)
@@ -251,9 +260,10 @@ class Pip(object):
     def __init__(self, pip_executable):
         self.executable = pip_executable
         self.process = Process()
+        self.timeout = 180.0
 
     def run(
-        self, command, *args, wait_for_s=120.0, slots=Process.Slots(), **kwargs
+        self, command, *args, wait_for_s=None, slots=Process.Slots(), **kwargs
     ):
         """
         Run a command with args, treating kwargs as Posix switches.
@@ -266,6 +276,8 @@ class Pip(object):
         # As a special case, a boolean value indicates that the flag
         # is a yes/no switch
         #
+        if not wait_for_s:
+            wait_for_s = self.timeout
         params = [command, "--disable-pip-version-check"]
         for k, v in kwargs.items():
             switch = k.replace("_", "-")
@@ -302,11 +314,19 @@ class Pip(object):
         """
         if isinstance(packages, str):
             return self.run(
-                "install", packages, wait_for_s=180.0, slots=slots, **kwargs
+                "install",
+                packages,
+                wait_for_s=self.timeout,
+                slots=slots,
+                **kwargs
             )
         else:
             return self.run(
-                "install", *packages, wait_for_s=180.0, slots=slots, **kwargs
+                "install",
+                *packages,
+                wait_for_s=self.timeout,
+                slots=slots,
+                **kwargs
             )
 
     def uninstall(self, packages, slots=Process.Slots(), **kwargs):
@@ -323,7 +343,7 @@ class Pip(object):
             return self.run(
                 "uninstall",
                 packages,
-                wait_for_s=180.0,
+                wait_for_s=self.timeout,
                 slots=slots,
                 yes=True,
                 **kwargs
@@ -332,7 +352,7 @@ class Pip(object):
             return self.run(
                 "uninstall",
                 *packages,
-                wait_for_s=180.0,
+                wait_for_s=self.timeout,
                 slots=slots,
                 yes=True,
                 **kwargs
@@ -688,6 +708,8 @@ class VirtualEnvironment(object):
                 if n < n_tries:
                     self.relocate(self._generate_dirpath())
                     try_to_create = True
+                    if isinstance(exc, VirtualEnvironmentTimeoutError):
+                        self.pip.timeout = exc.timeout * 2
                     n += 1
                 else:
                     raise
