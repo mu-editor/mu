@@ -16,9 +16,7 @@ def check_function_is_magic(fn):
 
 def format_docstring(node):
     docstring = ast.get_docstring(node, clean=True)
-    return (
-        " ".join(doc.strip() for doc in docstring.split("\n")) if docstring else "",
-    )
+    return " ".join(doc.strip() for doc in docstring.split("\n")) if docstring else ""
 
 
 def format_signature(arguments):
@@ -36,7 +34,7 @@ def format_signature(arguments):
 
 
 def format_function(node):
-    return "{}{} {}".format(
+    return r"{}{} \n{}".format(
         node.name, format_signature(node.args), format_docstring(node)
     )
 
@@ -49,7 +47,7 @@ def format_methods(node_class):
             node_sub
         ):
             result.append(
-                "{}.{}{} {}".format(
+                r"{}.{}{} \n{}".format(
                     node_class.name,
                     node_sub.name,
                     format_signature(node_sub.args),
