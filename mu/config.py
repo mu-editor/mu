@@ -26,6 +26,7 @@ def get_data_dir():
 # The name of the default virtual environment used by Mu.
 VENV_NAME = "mu_venv"
 
+
 # The directory containing default virtual environment.
 def get_venv_dir():
     return os.path.join(get_data_dir(), VENV_NAME)
