@@ -198,7 +198,16 @@ class Process(QObject):
         # generate a URI out of it. There's an upper limit on URI size of ~2000
         #
         if not finished:
-            logger.error(compact(output))
+            if exit_code and compact(output):
+                logger.error(compact(output))
+            elif exit_code:
+                logger.error(
+                    "Process failed with exit code %s but provided no message",
+                    exit_code,
+                )
+            else:
+                logger.error("Virtual environment creation timed out")
+
             raise VirtualEnvironmentError(
                 "Process did not terminate normally:\n" + compact(output)
             )
