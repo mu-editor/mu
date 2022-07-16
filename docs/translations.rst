@@ -26,9 +26,9 @@ translators, such as `babel <https://babel.pocoo.org/en/latest/>`_ or
     please reach out to us by
     `creating a new issue in GitHub <https://github.com/mu-editor/mu/issues/new>`_.
 
-    We will help you setup user-friendly tool that you can use to contribute
-    new or improved translations,
-    and integrate them into the next Mu release.
+    We will help you set up a user-friendly tool that you can use to
+    contribute new or improved translations, and integrate them into the next
+    Mu release.
 
     We welcome translations from all users!
 
