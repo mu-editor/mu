@@ -1,9 +1,26 @@
 import os
+import sys
+import tempfile
 
-import appdirs
+import platformdirs
+
+
+def _resolve_data_dir():
+    path = platformdirs.user_data_dir(appname="mu", appauthor="python")
+    if sys.platform == "win32":
+        # Locate the actual path for Windows by making a temporary file
+        # then resolving the real path. Solves a bug in the Windows store
+        # distribution of Python 3.8+
+        fd, tmp = tempfile.mkstemp(dir=path)
+        realpath = os.path.dirname(os.path.realpath(tmp))
+        os.close(fd)
+        os.remove(tmp)
+        return realpath
+    else:
+        return path
 
 # The default directory for application data (i.e., configuration).
-DATA_DIR = appdirs.user_data_dir(appname="mu", appauthor="python")
+DATA_DIR = _resolve_data_dir()
 
 # The name of the default virtual environment used by Mu.
 VENV_NAME = "mu_venv"
