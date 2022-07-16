@@ -19,6 +19,7 @@ def _resolve_data_dir():
     else:
         return path
 
+
 # The default directory for application data (i.e., configuration).
 DATA_DIR = _resolve_data_dir()
 
