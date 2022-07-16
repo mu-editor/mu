@@ -11,6 +11,8 @@ def _resolve_data_dir():
         # Locate the actual path for Windows by making a temporary file
         # then resolving the real path. Solves a bug in the Windows store
         # distribution of Python 3.8+
+        # See https://github.com/mu-editor/mu/issues/2293
+        os.makedirs(path, exist_ok=True)
         fd, tmp = tempfile.mkstemp(dir=path)
         realpath = os.path.dirname(os.path.realpath(tmp))
         os.close(fd)
