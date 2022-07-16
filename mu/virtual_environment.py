@@ -918,7 +918,7 @@ class VirtualEnvironment(object):
                         os.path.basename(wheel)
                     )
                 )
-                self.pip.install(wheel, deps=False, index=False)
+                self.pip.install(os.path.realpath(wheel), deps=False, index=False)
 
     def install_baseline_packages(self):
         """
