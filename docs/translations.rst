@@ -19,7 +19,7 @@ based internationalization API so we can make use of standard tools to help
 translators, such as `babel <https://babel.pocoo.org/en/latest/>`_ or
 `Poedit <https://poedit.net/>`_.
 
-.. admonition:: Non-techincal users
+.. admonition:: Non-technical users
 
     If you are not a technical user and you are not familiar with the
     tools and jargon we use in this guide,
