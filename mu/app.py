@@ -36,6 +36,8 @@ from PyQt5.QtCore import (
     QThread,
     QObject,
     pyqtSignal,
+    QSystemSemaphore,
+    QSharedMemory
 )
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
@@ -255,6 +257,25 @@ def setup_modes(editor, view):
         "pico": PicoMode(editor, view),
     }
 
+class SharedMemory(object):
+
+    NAME = "mu-memory"
+
+    def __init__(self):
+        self._shared_memory = QSharedMemory(self.NAME)
+
+    def __enter__(self):
+        self._shared_memory.lock()
+        return self._shared_memory
+
+    def __exit__(self, *args, **kwargs):
+        self._shared_memory.unlock()
+
+    def acquire(self):
+        if self._shared_memory.attach():
+            raise RuntimeError("Mu is already running")
+        else:
+            self._shared_memory.create(1)
 
 def run():
     """
@@ -268,6 +289,7 @@ def run():
     - close the splash screen after startup timer ends
     """
     setup_logging()
+    SharedMemory().acquire()
     logging.info("\n\n-----------------\n\nStarting Mu {}".format(__version__))
     logging.info(platform.uname())
     logging.info("Platform: {}".format(platform.platform()))
