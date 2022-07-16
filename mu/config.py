@@ -5,7 +5,8 @@ import tempfile
 import platformdirs
 
 
-def _resolve_data_dir():
+# The default directory for application data (i.e., configuration).
+def get_data_dir():
     path = platformdirs.user_data_dir(appname="mu", appauthor="python")
     if sys.platform == "win32":
         # Locate the actual path for Windows by making a temporary file
@@ -21,15 +22,12 @@ def _resolve_data_dir():
     else:
         return path
 
-
-# The default directory for application data (i.e., configuration).
-DATA_DIR = _resolve_data_dir()
-
 # The name of the default virtual environment used by Mu.
 VENV_NAME = "mu_venv"
 
 # The directory containing default virtual environment.
-VENV_DIR = os.path.join(DATA_DIR, VENV_NAME)
+def get_venv_dir():
+    return os.path.join(get_data_dir(), VENV_NAME)
 
 # Maximum line length for using both in Check and Tidy
 MAX_LINE_LENGTH = 88

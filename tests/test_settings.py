@@ -348,7 +348,7 @@ def test_expandvars_nonexistent_envvar():
 #
 # The next set of tests exercises the logic in default_file_location to ensure
 # that a settings file will be discovered first in the same directory as
-# the program's executable; and then in the DATA_DIR directory (typically
+# the program's executable; and then in the get_data_dir directory (typically
 # in a user-specific data area on whichever platform)
 #
 # NB the introduction of PR #1200 changed the logic so the file is not
@@ -475,10 +475,10 @@ def test_default_file_location_with_data_path(mocked_settings):
     Find an admin file in the data location.
 
     In this case the logic won't find a file in the sys.argv0/sys.executable
-    path and will drop back to DATA_DIR
+    path and will drop back to get_data_dir()
     """
     settings, filepath, items = mocked_settings
-    with mock.patch.object(mu.config, "DATA_DIR", os.path.dirname(filepath)):
+    with mock.patch.object(mu.config, "get_data_dir", lambda: os.path.dirname(filepath)):
         settings.init()
 
     assert settings.filepath == filepath
@@ -491,7 +491,7 @@ def test_default_file_location_with_data_path(mocked_settings):
     # ~ with mock.patch("os.path.exists", mock_exists), mock.patch(
     # ~ "builtins.open", mock_open
     # ~ ), mock.patch("json.dump", mock_json_dump), mock.patch(
-    # ~ "mu.logic.DATA_DIR", "fake_path"
+    # ~ "mu.logic.get_data_dir", lambda: "fake_path"
     # ~ ):
     # ~ result = mu.logic.default_file_location("settings.json")
     # ~ assert result == os.path.join("fake_path", "settings.json")
@@ -508,7 +508,7 @@ def test_default_file_location_no_files():
     with mock.patch("os.path.exists", return_value=False), mock.patch(
         "builtins.open", mock_open
     ), mock.patch("json.dump", mock_json_dump), mock.patch(
-        "mu.logic.DATA_DIR", "fake_path"
+        "mu.logic.get_data_dir", lambda: "fake_path"
     ):
         result = mu.logic.default_file_location("settings.json")
         assert result == os.path.join("fake_path", "settings.json")
@@ -528,7 +528,7 @@ def test_default_file_location_no_files_cannot_create():
     with mock.patch("os.path.exists", return_value=False), mock.patch(
         "builtins.open", mock_open
     ), mock.patch("json.dump", mock_json_dump), mock.patch(
-        "mu.logic.DATA_DIR", "fake_path"
+        "mu.logic.get_data_dir", lambda: "fake_path"
     ), mock.patch(
         "mu.logic.logger", return_value=None
     ) as logger:
