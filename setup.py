@@ -129,7 +129,7 @@ setup(
         "mu.modes.api",
         "mu.wheels",
     ],
-    python_requires=">=3.5,<3.9",
+    python_requires=">=3.7,<3.11",
     install_requires=install_requires,
     extras_require=extras_require,
     package_data={"mu.wheels": ["*.whl", "*.zip"]},
