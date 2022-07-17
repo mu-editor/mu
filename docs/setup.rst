@@ -34,7 +34,7 @@ into your virtualenv with::
     * ``[package]`` specifies the packaging dependencies needed by ``make win32``,
       ``make win64``, ``make macos``, or ``make dist``.
 
-    Addionionally, the following extras are defined:
+    Additionally, the following extras are defined:
 
     * ``[utils]`` specifies the dependencies needed to run the utilities
       under the ``utils`` directory. It has been specifically excluded from
