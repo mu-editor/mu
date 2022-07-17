@@ -28,10 +28,12 @@ install_requires = [
     # We are sticking to Qt 6.2, which is LTS
     "PyQt6==6.2.3"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+    "PyQt6-Qt6==6.2.3",
     "PyQt6-QScintilla==2.13.3"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
     "PyQt6-Charts==6.2.0"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+    "PyQt6-Charts-Qt6==6.2.4",
     # FIXME: jupyter-client added for Py3.5 compatibility, to be dropped after
     # Mu v1.1 release. So, qtconsole < 5 and jupyter-client < 6.2 (issue #1444)
     "jupyter-client>=4.1,<6.2",
