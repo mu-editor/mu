@@ -25,6 +25,7 @@ import os
 import time
 import platform
 import traceback
+import struct
 import sys
 import urllib
 import webbrowser
@@ -36,8 +37,7 @@ from PyQt5.QtCore import (
     QThread,
     QObject,
     pyqtSignal,
-    QSystemSemaphore,
-    QSharedMemory
+    QSharedMemory,
 )
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
@@ -257,7 +257,10 @@ def setup_modes(editor, view):
         "pico": PicoMode(editor, view),
     }
 
-class MutexError(BaseException): pass
+
+class MutexError(BaseException):
+    pass
+
 
 class SharedMemory(object):
 
@@ -275,11 +278,16 @@ class SharedMemory(object):
 
     def acquire(self):
         if self._shared_memory.attach():
-            raise MutexError("Mu is already running")
+            pid = struct.unpack("l", self._shared_memory.data()[:4])
+            raise MutexError("MUTEX: Mu is already running with pid %d" % pid)
         else:
-            self._shared_memory.create(1)
+            self._shared_memory.create(8)
+            self._shared_memory.data()[:4] = struct.pack("l", os.getpid())
+
 
 _shared_memory = SharedMemory()
+
+
 def run():
     """
     Creates all the top-level assets for the application, sets things up and
@@ -292,12 +300,18 @@ def run():
     - close the splash screen after startup timer ends
     """
     setup_logging()
-    _shared_memory.acquire()
     logging.info("\n\n-----------------\n\nStarting Mu {}".format(__version__))
     logging.info(platform.uname())
+    logging.info("Process id: {}".format(os.getpid()))
     logging.info("Platform: {}".format(platform.platform()))
     logging.info("Python path: {}".format(sys.path))
     logging.info("Language code: {}".format(i18n.language_code))
+    try:
+        _shared_memory.acquire()
+    except MutexError as exc:
+        [message] = exc.args
+        logging.error(message)
+        sys.exit()
 
     #
     # Load settings from known locations and register them for
