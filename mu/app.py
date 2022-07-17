@@ -257,6 +257,8 @@ def setup_modes(editor, view):
         "pico": PicoMode(editor, view),
     }
 
+class MutexError(BaseException): pass
+
 class SharedMemory(object):
 
     NAME = "mu-memory"
@@ -273,10 +275,11 @@ class SharedMemory(object):
 
     def acquire(self):
         if self._shared_memory.attach():
-            raise RuntimeError("Mu is already running")
+            raise MutexError("Mu is already running")
         else:
             self._shared_memory.create(1)
 
+_shared_memory = SharedMemory()
 def run():
     """
     Creates all the top-level assets for the application, sets things up and
@@ -289,7 +292,7 @@ def run():
     - close the splash screen after startup timer ends
     """
     setup_logging()
-    SharedMemory().acquire()
+    _shared_memory.acquire()
     logging.info("\n\n-----------------\n\nStarting Mu {}".format(__version__))
     logging.info(platform.uname())
     logging.info("Platform: {}".format(platform.platform()))
