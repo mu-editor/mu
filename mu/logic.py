@@ -29,7 +29,7 @@ import random
 import locale
 import shutil
 
-import appdirs
+import platformdirs
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5 import QtCore
@@ -45,7 +45,7 @@ from . import settings
 from .virtual_environment import venv
 
 # The default directory for application logs.
-LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
+LOG_DIR = platformdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.
 LOG_FILE = os.path.join(LOG_DIR, "mu.log")
 # Regex to match pycodestyle (PEP8) output.
