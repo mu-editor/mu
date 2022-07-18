@@ -262,9 +262,18 @@ class MutexError(BaseException):
     pass
 
 
-class SharedMemory(object):
+class SharedMemoryMutex(object):
+    """Simple wrapper around the QSharedMemory object, adding a context
+    handler which uses the built in Semaphore as a locking mechanism
+    and raises an error if the shared memory object is already in use
 
-    NAME = "mu-memory"
+    TODO: The *nix implementation doesn't release the shared memory if a
+    process attached to it crashes. There is code to attempt to detect this
+    but it doesn't seem worth implementing for the moment: we're only talking
+    about a page at most.
+    """
+
+    NAME = "mu-tex"
 
     def __init__(self):
         self._shared_memory = QSharedMemory(self.NAME)
@@ -278,14 +287,14 @@ class SharedMemory(object):
 
     def acquire(self):
         if self._shared_memory.attach():
-            pid = struct.unpack("l", self._shared_memory.data()[:4])
+            pid = struct.unpack("q", self._shared_memory.data()[:8])
             raise MutexError("MUTEX: Mu is already running with pid %d" % pid)
         else:
             self._shared_memory.create(8)
-            self._shared_memory.data()[:4] = struct.pack("l", os.getpid())
+            self._shared_memory.data()[:8] = struct.pack("q", os.getpid())
 
 
-_shared_memory = SharedMemory()
+_shared_memory = SharedMemoryMutex()
 
 
 def run():
@@ -311,7 +320,7 @@ def run():
     except MutexError as exc:
         [message] = exc.args
         logging.error(message)
-        sys.exit()
+        sys.exit(2)
 
     #
     # Load settings from known locations and register them for
