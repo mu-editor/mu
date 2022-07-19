@@ -19,16 +19,16 @@ based internationalization API so we can make use of standard tools to help
 translators, such as `babel <https://babel.pocoo.org/en/latest/>`_ or
 `Poedit <https://poedit.net/>`_.
 
-.. admonition:: Non-techincal users
+.. admonition:: Non-technical users
 
     If you are not a technical user and you are not familiar with the
     tools and jargon we use in this guide,
     please reach out to us by
     `creating a new issue in GitHub <https://github.com/mu-editor/mu/issues/new>`_.
 
-    We will help you setup user-friendly tool that you can use to contribute
-    new or improved translations,
-    and integrate them into the next Mu release.
+    We will help you set up a user-friendly tool that you can use to
+    contribute new or improved translations, and integrate them into the next
+    Mu release.
 
     We welcome translations from all users!
 
