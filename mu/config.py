@@ -1,11 +1,12 @@
 import os
 import sys
 import tempfile
-
+from functools import lru_cache
 import platformdirs
 
 
 # The default directory for application data (i.e., configuration).
+@lru_cache()
 def get_data_dir():
     path = platformdirs.user_data_dir(appname="mu", appauthor="python")
     if sys.platform == "win32":
