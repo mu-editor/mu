@@ -23,6 +23,7 @@ def get_data_dir():
     else:
         return path
 
+
 # The name of the default virtual environment used by Mu.
 VENV_NAME = "mu_venv"
 
