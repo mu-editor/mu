@@ -32,15 +32,15 @@ Clone the repository::
 
     git clone https://github.com/mu-editor/mu.git
 
-Create a virtualenv in Python 3.8:
+Create a virtualenv in Python 3.8::
 
     python3.8 -m venv .venv
     
-Activate the environment, on macOS and Linux the command is:
+Activate the environment, on macOS and Linux the command is::
 
     source .venv/bin/activate
 
-For Windows, the command is:
+For Windows, the command is::
 
     . .\.venv\Scripts\activate.ps1
 
