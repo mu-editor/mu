@@ -11,8 +11,14 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-latest, macos-10.15, macos-latest, windows-2019, windows-latest]
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-10.15, macos-12, windows-2016, windows-2022]
         python-version: ['3.5', '3.6', '3.7', '3.8']
+        # These Python versions are not available in 22.04
+        exclude:
+        - os: ubuntu-22.04
+          python-version: '3.5'
+        - os: ubuntu-22.04
+          python-version: '3.6'
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: Test Py ${{ matrix.python-version }} - ${{ matrix.os }}
@@ -25,17 +31,12 @@ jobs:
       - name: Display Python info
         run: |
           python -c "import sys; print(sys.version)"
-          python -c "import platform, struct; print(platform.machine(), struct.calcsize('P') * 8)"
+          python -c "import platform as p; print(p.machine(), p.architecture())"
           python -c "import sys; print(sys.executable)"
           python -m pip --version
           pip --version
           pip config list
           pip freeze
-      - name: Prepare Ubuntu
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libxkbcommon-x11-0 xvfb
       - name: Install Mu dependencies
         run: |
           pip install .[dev]
@@ -43,7 +44,7 @@ jobs:
         timeout-minutes: 10
       - name: Run tests
         if: runner.os == 'Linux'
-        run: xvfb-run make check
+        run: QT_QPA_PLATFORM=offscreen make check
         timeout-minutes: 5
       - name: Run tests
         if: runner.os != 'Linux'
@@ -68,16 +69,15 @@ jobs:
       - name: Install dependencies and run tests
         uses: docker://multiarch/debian-debootstrap:armhf-buster
         with:
+          command_timeout: 20m
           args: >
             bash -c "
               apt-get update &&
-              apt-get install -y python3 python3-pip python3-virtualenv &&
+              apt-get install -y xvfb python3 python3-pip python3-virtualenv &&
               apt-get install -y python3-pyqt5 python3-pyqt5.qsci python3-pyqt5.qtserialport python3-pyqt5.qtsvg python3-pyqt5.qtchart &&
-              apt-get install -y libxmlsec1-dev libxml2 libxml2-dev libxkbcommon-x11-0 libatlas-base-dev &&
-              apt-get install -y git xvfb &&
               python3 -m virtualenv venv --python=python3 --system-site-packages &&
               source venv/bin/activate &&
-              python -c \"import platform, struct, sys; print(platform.machine(), struct.calcsize('P') * 8, sys.version)\" &&
+              python -c \"import platform as p; print(p.machine(), p.architecture())\" &&
               python -m pip --version &&
               python -m pip config set global.extra-index-url https://www.piwheels.org/simple &&
               python -m pip config list &&
@@ -166,4 +166,4 @@ jobs:
           password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
           command_timeout: 30m
-          script: xvfb-run python make.py check
+          script: QT_QPA_PLATFORM="offscreen" python make.py check
