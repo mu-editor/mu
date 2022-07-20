@@ -43,7 +43,7 @@ jobs:
         timeout-minutes: 10
       - name: Run tests
         if: runner.os == 'Linux'
-        run: xvfb-run make check
+        run: QT_QPA_PLATFORM=offscreen make check
         timeout-minutes: 5
       - name: Run tests
         if: runner.os != 'Linux'
