@@ -95,7 +95,7 @@ def test(*pytest_args):
     print("\ntest")
     os.environ["LANG"] = "en_GB.utf8"
     return subprocess.run(
-        [sys.executable, "-m", PYTEST] + list(pytest_args)
+        [sys.executable, "-m", "--random-order", PYTEST] + list(pytest_args)
     ).returncode
 
 
@@ -113,6 +113,7 @@ def coverage():
             "-m",
             PYTEST,
             "-v",
+            "--random-order",
             "--cov-config",
             ".coveragerc",
             "--cov-report",
