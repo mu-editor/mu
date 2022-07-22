@@ -1152,7 +1152,10 @@ class Window(QMainWindow):
         self.update_title()
         self.read_only_tabs = False
         screen_width, screen_height = self.screen_size()
-        self.setMinimumSize(screen_width // 2, screen_height // 2)
+        self.setMinimumSize(
+        	min(screen_width // 2, MIN_WINDOW_WIDTH), 
+	        min(screen_height // 2, MIN_WINDOW_HEIGHT)
+	    )
         self.setTabPosition(Qt.AllDockWidgetAreas, QTabWidget.North)
         self.widget = QWidget()
         widget_layout = QVBoxLayout()
