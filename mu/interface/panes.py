@@ -182,6 +182,9 @@ class MicroPythonREPLPane(QTextEdit):
         self.vt100_regex = re.compile(
             r"\x1B\[(?P<count>[\d]*)(;?[\d]*)*(?P<action>[A-Za-z])"
         )
+        self.osc_regex = re.compile(
+            r"\x1B\](?P<command>[\d]*);(?P<string>[^\x1B]*)\x1B\\"
+        )
 
     def insertFromMimeData(self, source):
         """
@@ -421,6 +424,27 @@ class MicroPythonREPLPane(QTextEdit):
                                 )
                                 tc.removeSelectedText()
                                 self.device_cursor_position = tc.position()
+                        else:
+                            # Unknown action, log warning and ignore
+                            command = match.group(0).replace("\x1B", "<Esc>")
+                            msg = "Received unsupported VT100 command: {}"
+                            logger.warning(msg.format(command))
+                    else:
+                        # Cursor detected, but no match, must be
+                        # incomplete input
+                        self.unprocessed_input = data[i:]
+                        break
+                elif len(data) > i + 1 and data[i + 1] == "]":
+                    # OSC cursor detected: <Esc>]
+                    match = self.osc_regex.search(data[i:])
+                    if match:
+                        # move to (almost) after control seq
+                        # (will ++ at end of loop)
+                        i += match.end() - 1
+                        command = match.group("command")
+                        string = match.group("string")
+                        if command == "0":  # Set window title and icon name
+                            logger.warning("dropped title {}".format(string))
                         else:
                             # Unknown action, log warning and ignore
                             command = match.group(0).replace("\x1B", "<Esc>")

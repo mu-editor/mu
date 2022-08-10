@@ -898,6 +898,73 @@ def test_MicroPythonREPLPane_process_tty_data_unsupported_vt100_command():
     assert rp.device_cursor_position == 5
 
 
+def test_MicroPythonREPLPane_process_tty_data_partial_osc_reception():
+    """
+    Ensure that when partially received multibyte commands are
+    received they are handled properly
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    # Move cursor to after first 'o'
+    rp.device_cursor_position = 5
+    rp.set_qtcursor_to_devicecursor()
+    # Receive: \x1B
+    bs = b"\x1B]"
+    rp.process_tty_data(bs)
+    assert rp.unprocessed_input == "\x1B]"
+    assert rp.toPlainText() == "Hello world!"
+    assert rp.textCursor().position() == 5
+    assert rp.device_cursor_position == 5
+    # Receive the rest of the title
+    bs = b";hello\x1B\\"
+    rp.process_tty_data(bs)
+    assert rp.unprocessed_input == ""
+    assert rp.toPlainText() == "Hello world!"
+    assert rp.textCursor().position() == 5
+    assert rp.device_cursor_position == 5
+
+
+def test_MicroPythonREPLPane_process_tty_data_osc_title_command():
+    """
+    Ensure nothing is done, when receiving an unsupported OSC command
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    # Move cursor to after first 'o'
+    rp.device_cursor_position = 5
+    rp.set_qtcursor_to_devicecursor()
+    # Receive: \x1B[4X - unknown command X
+    bs = b"\x1B]0;hello\x1B\\"
+    rp.process_tty_data(bs)
+    # Do nothing
+    assert rp.unprocessed_input == b""
+    assert rp.toPlainText() == "Hello world!"
+    assert rp.textCursor().position() == 5
+    assert rp.device_cursor_position == 5
+
+
+def test_MicroPythonREPLPane_process_tty_data_unsupported_osc_command():
+    """
+    Ensure nothing is done, when receiving an unsupported OSC command
+    """
+    mock_repl_connection = mock.MagicMock()
+    rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
+    rp.setPlainText("Hello world!")
+    # Move cursor to after first 'o'
+    rp.device_cursor_position = 5
+    rp.set_qtcursor_to_devicecursor()
+    # Receive: \x1B[4X - unknown command X
+    bs = b"\x1B]100;hello\x1B\\"
+    rp.process_tty_data(bs)
+    # Do nothing
+    assert rp.unprocessed_input == b""
+    assert rp.toPlainText() == "Hello world!"
+    assert rp.textCursor().position() == 5
+    assert rp.device_cursor_position == 5
+
+
 def test_MicroPythonREPLPane_clear():
     """
     Ensure setText is called with an empty string.
