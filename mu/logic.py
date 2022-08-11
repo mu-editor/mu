@@ -51,7 +51,7 @@ LOG_FILE = os.path.join(LOG_DIR, "mu.log")
 # Regex to match pycodestyle (PEP8) output.
 STYLE_REGEX = re.compile(r".*:(\d+):(\d+):\s+(.*)")
 # Regex to match flake8 output.
-FLAKE_REGEX = re.compile(r".*:(\d+):(\d+)\s+(.*)")
+FLAKE_REGEX = re.compile(r".*:(\d+):(\d+):?\s+(.*)")
 # Regex to match undefined name errors for given builtins
 BUILTINS_REGEX = r"^undefined name '({})'"
 # Regex to match false positive flake errors if microbit.* is expanded.
