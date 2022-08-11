@@ -900,7 +900,7 @@ def test_MicroPythonREPLPane_process_tty_data_unsupported_vt100_command():
 
 def test_MicroPythonREPLPane_process_tty_data_partial_osc_reception():
     """
-    Ensure that when partially received multibyte commands are
+    Ensure that when partially received multibyte OSC commands are
     received they are handled properly
     """
     mock_repl_connection = mock.MagicMock()
@@ -927,7 +927,7 @@ def test_MicroPythonREPLPane_process_tty_data_partial_osc_reception():
 
 def test_MicroPythonREPLPane_process_tty_data_osc_title_command():
     """
-    Ensure nothing is done, when receiving an unsupported OSC command
+    Ensure nothing is done, when receiving an OSC title command
     """
     mock_repl_connection = mock.MagicMock()
     rp = mu.interface.panes.MicroPythonREPLPane(mock_repl_connection)
