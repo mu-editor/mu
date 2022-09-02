@@ -56,17 +56,25 @@ install_requires = [
     # though. Regarding these packages' versions, please refer to:
     # http://flake8.pycqa.org/en/latest/faq.html#why-does-flake8-use-ranges-for-its-dependencies
     "flake8 >= 3.8.3",
+    # Clamp click max version to workaround incompatibility with black<22.1.0
+    "click<=8.0.4",
     "black>=19.10b0,<22.1.0;python_version>'3.5'",
-    "appdirs>=1.4.3",
+    "platformdirs>=2.0.0,<3.0.0",
     "semver>=2.8.0",
-    #
-    # Needed for creating the runtime virtual environment
-    #
-    "virtualenv>=16.7.6",
+    # virtualenv vendors pip, we need at least pip v19.3 to install some
+    # rust based dependencies. virtualenv >=v20 is required for the --symlinks
+    # flag needed by AppImage, and it packs pip v20.0.2.
+    "virtualenv>=20.0.0",
     #
     # Needed for packaging
     #
     "wheel",
+    # Needed to deploy from web mode
+    "requests>=2.0.0",
+    #
+    # Needed to resolve an issue with paths in the user virtual environment
+    #
+    "pywin32; sys_platform=='win32'",
 ]
 
 

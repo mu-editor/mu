@@ -112,11 +112,21 @@ macos: check
 	# 1. Not really needed.
 	# 2. Previously active venv would be "gone" on venv-pup deactivation.
 	./venv-pup/bin/pip install pup
-	# HACK
-	# 1. Use a custom dmgbuild to address `hdiutil detach` timeouts.
-	./venv-pup/bin/pip uninstall -y dmgbuild
-	./venv-pup/bin/pip install git+https://github.com/tmontes/dmgbuild.git@mu-pup-ci-hack
 	./venv-pup/bin/pup package --launch-module=mu --nice-name="Mu Editor" --icon-path=./package/icons/mac_icon.icns --license-path=./LICENSE .
+	rm -r venv-pup
+	ls -la ./build/pup/
+	ls -la ./dist/
+
+linux: check
+	@echo "\nFetching wheels."
+	python -m mu.wheels
+	@echo "\nPackaging Mu into a Linux AppImage."
+	python -m virtualenv venv-pup
+	# Don't activate venv-pup because:
+	# 1. Not really needed.
+	# 2. Previously active venv would be "gone" on venv-pup deactivation.
+	./venv-pup/bin/pip install pup
+	./venv-pup/bin/pup package --launch-module=mu --nice-name="Mu Editor" --icon-path=./mu/resources/images/icon.png --license-path=./LICENSE .
 	rm -r venv-pup
 	ls -la ./build/pup/
 	ls -la ./dist/

@@ -2257,6 +2257,9 @@ def test_show_admin():
         "minify": True,
         "microbit_runtime": "/foo/bar",
         "locale": "",
+        "pa_instance": "www",
+        "pa_token": "",
+        "pa_username": "",
     }
     new_settings = {
         "envars": "name=value",
@@ -2264,6 +2267,9 @@ def test_show_admin():
         "microbit_runtime": "/foo/bar",
         "packages": "baz\n",
         "locale": "",
+        "pa_instance": "www",
+        "pa_token": "fake_token",
+        "pa_username": "fake_username",
     }
     view.show_admin.return_value = new_settings
     with mock.patch.object(
@@ -2282,6 +2288,9 @@ def test_show_admin():
             assert ed.envars == {"name": "value"}
             assert ed.minify is True
             assert ed.microbit_runtime == "/foo/bar"
+            assert ed.pa_instance == "www"
+            assert ed.pa_token == "fake_token"
+            assert ed.pa_username == "fake_username"
             # Expect package names to be normalised to lowercase.
             ed.sync_package_state.assert_called_once_with(
                 ["foo", "bar"], ["baz"]
@@ -2329,6 +2338,9 @@ def test_show_admin_missing_microbit_runtime():
         "minify": True,
         "microbit_runtime": "/foo/bar",
         "locale": "",
+        "pa_instance": "www",
+        "pa_token": "",
+        "pa_username": "",
     }
     new_settings = {
         "envars": "name=value",
@@ -2336,6 +2348,9 @@ def test_show_admin_missing_microbit_runtime():
         "microbit_runtime": "/foo/bar",
         "packages": "baz\n",
         "locale": "",
+        "pa_instance": "www",
+        "pa_token": "",
+        "pa_username": "",
     }
     view.show_admin.return_value = new_settings
     mock_open = mock.mock_open()

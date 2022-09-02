@@ -37,17 +37,24 @@ app.run()
 """
 
 
-CODE_TEMPLATE = """# A simple web application.
+FLASK_APP = "app = Flask(__name__)"
+
+
+CODE_TEMPLATE = """\"\"\"
+A simple web application.
+\"\"\"
+# WARNING START: do not change the following two lines of code.
 from flask import Flask, render_template
 
-
-app = Flask(__name__)
+{}
+# WARNING END: do not change the previous two lines of code.
 
 
 @app.route("/")
 def index():
-    return render_template('index.html')
-"""
+    return render_template("index.html")""".format(
+    FLASK_APP
+)
 
 
 class WebMode(BaseMode):
@@ -64,6 +71,17 @@ class WebMode(BaseMode):
     file_extensions = ["css", "html"]
     code_template = CODE_TEMPLATE
 
+    def ensure_state(self):
+        """
+        Ensure the "deploy" button is only active if there are PythonAnywhere
+        configuration details.
+        """
+        instance = self.editor.pa_instance
+        username = self.editor.pa_username
+        token = self.editor.pa_token
+        has_config = bool(instance and username and token)
+        self.set_buttons(deploy=has_config)
+
     def actions(self):
         """
         Return an ordered list of actions provided by this module. An action
@@ -76,6 +94,13 @@ class WebMode(BaseMode):
                 "description": _("Run the web server."),
                 "handler": self.run_toggle,
                 "shortcut": "F5",
+            },
+            {
+                "name": "deploy",
+                "display_name": _("Deploy"),
+                "description": _("Deploy website to PythonAnywhere."),
+                "handler": self.deploy,
+                "shortcut": "Ctrl+Shift+D",
             },
             {
                 "name": "browse",
@@ -116,6 +141,34 @@ class WebMode(BaseMode):
         tips.
         """
         return SHARED_APIS + PYTHON3_APIS + FLASK_APIS
+
+    def assets_dir(self, asset_type):
+        """
+        Determine (and create) the directory for a set of assets.
+
+        In web-mode such asset directories exist in the user's workspace
+        directory, rather than relative to the currently open Python file.
+        """
+        flask_apps = set()
+        for i in range(self.view.tabs.count()):
+            source_file = self.view.tabs.widget(i)
+            if FLASK_APP in source_file.text() and source_file.path:
+                flask_apps.add(source_file.path)
+        flask_file = None
+        if flask_apps:
+            if len(flask_apps) == 1:
+                flask_file = flask_apps.pop()
+            else:
+                raise ValueError(
+                    "Multiple Flask apps. Cannot resolve unique app location."
+                )
+        if flask_file:
+            base_dir = os.path.dirname(flask_file)
+        else:
+            base_dir = self.workspace_dir()
+        dir_name = os.path.join(base_dir, asset_type)
+        os.makedirs(dir_name, exist_ok=True)
+        return dir_name
 
     def run_toggle(self, event):
         """
@@ -224,6 +277,18 @@ class WebMode(BaseMode):
         """
         return read_and_decode(path)
 
+    def cannot_resolve_flask_app(self):
+        """
+        Display a helpful message when Mu cannot resolve which web application
+        to use as the basis for assets (templates, CSS, images etc...).
+        """
+        msg = _("Too many web apps.")
+        info = _(
+            "Please ensure you only have one open Python file for a web "
+            "application."
+        )
+        self.view.show_message(msg, info)
+
     def load_templates(self, event):
         """
         Open the directory containing the HTML template views used by Flask.
@@ -231,9 +296,12 @@ class WebMode(BaseMode):
         This should open the host OS's file system explorer so users can drag
         new files into the opened folder.
         """
-        templates_dir = self.assets_dir("templates")
-        logger.info(templates_dir)
-        self.editor.load(default_path=templates_dir)
+        try:
+            templates_dir = self.assets_dir("templates")
+            logger.info(templates_dir)
+            self.editor.load(default_path=templates_dir)
+        except ValueError:
+            self.cannot_resolve_flask_app()
 
     def load_css(self, event):
         """
@@ -243,9 +311,12 @@ class WebMode(BaseMode):
         new files into the opened folder.
         """
         css_path = os.path.join("static", "css")
-        css_dir = self.assets_dir(css_path)
-        logger.info(css_dir)
-        self.editor.load(default_path=css_dir)
+        try:
+            css_dir = self.assets_dir(css_path)
+            logger.info(css_dir)
+            self.editor.load(default_path=css_dir)
+        except ValueError:
+            self.cannot_resolve_flask_app()
 
     def show_images(self, event):
         """
@@ -255,9 +326,12 @@ class WebMode(BaseMode):
         new files into the opened folder.
         """
         img_path = os.path.join("static", "img")
-        img_dir = self.assets_dir(img_path)
-        logger.info(img_dir)
-        self.view.open_directory_from_os(img_dir)
+        try:
+            img_dir = self.assets_dir(img_path)
+            logger.info(img_dir)
+            self.view.open_directory_from_os(img_dir)
+        except ValueError:
+            self.cannot_resolve_flask_app()
 
     def browse(self, event):
         """
@@ -277,3 +351,83 @@ class WebMode(BaseMode):
                 "button to start the server and then try again."
             )
             self.view.show_message(msg, info)
+
+    def deploy(self, event):
+        """
+        Deploy the website based on the currently focussed Python file.
+        """
+        # Grab the Python file.
+        tab = self.view.current_tab
+        if tab is None:
+            logger.debug("There is no active text editor.")
+            return
+        if tab.path is None:
+            # Unsaved file.
+            self.editor.save()
+        if tab.path:
+            # Check it's a Python file.
+            if not tab.path.lower().endswith(".py"):
+                # Oops... show a helpful message and stop.
+                msg = _("This is not a Python file!")
+                info = _(
+                    "Mu is only able to deploy a Python file. Please make "
+                    "sure the current tab in Mu is the one for your web "
+                    "application and then try again."
+                )
+                self.view.show_message(msg, info)
+                return
+            # If needed, save the script.
+            if tab.isModified():
+                self.editor.save_tab_to_file(tab)
+            # Check for template files.
+            template_path = os.path.join(
+                os.path.dirname(os.path.abspath(tab.path)), "templates"
+            )
+            if not os.path.isdir(template_path):
+                # Oops... show a helpful message and stop.
+                msg = _("Cannot find template directory!")
+                info = _(
+                    "To deploy your web application, there needs to be a "
+                    "'templates' directory in the same place as your web "
+                    "application's Python code. Please fix this and try "
+                    "again. (Hint: Mu was expecting the `templates` directory "
+                    "to be here: " + template_path + ")"
+                )
+                self.view.show_message(msg, info)
+                return
+            logger.debug(tab.text())
+            # Good to go.
+            instance = self.editor.pa_instance
+            username = self.editor.pa_username
+            token = self.editor.pa_token
+            # Remove ".py" to get web application name from filename.
+            app_name = os.path.basename(tab.path)[:-3]
+            # Gather the files for the website. Assuming Mu conventions.
+            files = {}
+            files[os.path.basename(tab.path)] = tab.path
+            templates = os.listdir(template_path)
+            for template in templates:
+                files["templates/" + template] = os.path.join(
+                    template_path, template
+                )
+            css_path = os.path.join(
+                os.path.dirname(os.path.abspath(tab.path)), "static", "css"
+            )
+            img_path = os.path.join(
+                os.path.dirname(os.path.abspath(tab.path)), "static", "img"
+            )
+            js_path = os.path.join(
+                os.path.dirname(os.path.abspath(tab.path)), "static", "js"
+            )
+            if os.path.isdir(css_path):
+                for css in os.listdir(css_path):
+                    files["static/css/" + css] = os.path.join(css_path, css)
+            if os.path.isdir(img_path):
+                for img in os.listdir(img_path):
+                    files["static/img/" + img] = os.path.join(img_path, img)
+            if os.path.isdir(js_path):
+                for js in os.listdir(js_path):
+                    files["static/js/" + js] = os.path.join(js_path, js)
+            self.view.upload_to_python_anywhere(
+                instance, username, token, app_name, files
+            )
