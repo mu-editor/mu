@@ -58,6 +58,7 @@ class ESPMode(MicroPythonMode):
         (0x0403, 0x6014, None, None),  # FT232H
         (0x0403, 0x6015, None, None),  # FT X-Series (Sparkfun ESP32)
         (0x0403, 0x601C, None, None),  # FT4222H
+        (0x303a, 0x80d1, "Unexpected Maker", "TinyS3"),  # Unexpected Maker tinys3
     ]
 
     def actions(self):
