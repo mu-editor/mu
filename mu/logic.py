@@ -470,7 +470,7 @@ def check_pycodestyle(code, config_file=False):
                 description += _(" above this line")
             if line_no not in style_feedback:
                 style_feedback[line_no] = []
-            # Make sure that description starts with a capital letter.
+            # Capitalise the 1st letter keeping the rest of the str unmodified
             if description:
                 description = description[0].upper() + description[1:]
             style_feedback[line_no].append(
