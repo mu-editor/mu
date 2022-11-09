@@ -18,8 +18,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
 import logging
-from PyQt5.QtCore import QSize, QProcess, QTimer, Qt
+import sys
 
+from PyQt5.QtCore import QSize, QProcess, QTimer, Qt
 from PyQt5.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
@@ -427,13 +428,6 @@ class ESPFirmwareFlasherWidget(QWidget):
 
         self.mode = mode
 
-    def esptool_is_installed(self):
-        """
-        Is the 'esptool' package installed?
-        """
-        baseline, user_packages = venv.installed_packages()
-        return "esptool" in user_packages
-
     def show_folder_dialog(self):
         # open dialog and set to foldername
         filename = QFileDialog.getOpenFileName(
@@ -460,9 +454,9 @@ class ESPFirmwareFlasherWidget(QWidget):
         if device is None:
             return
 
-        esptool = "-mesptool"
+        esptool = "-mmu.contrib.esptool"
         erase_command = '"{}" "{}" --port {} erase_flash'.format(
-            venv.interpreter, esptool, device.port
+            sys.executable, esptool, device.port
         )
 
         if self.device_type.currentText() == "ESP32":
@@ -470,7 +464,7 @@ class ESPFirmwareFlasherWidget(QWidget):
                 '"{}" "{}" --chip esp32 --port {} --baud {} '
                 'write_flash -z 0x1000 "{}"'
             ).format(
-                venv.interpreter,
+                sys.executable,
                 esptool,
                 device.port,
                 baudrate,
@@ -481,7 +475,7 @@ class ESPFirmwareFlasherWidget(QWidget):
                 '"{}" "{}" --chip esp8266 --port {} --baud {} '
                 'write_flash --flash_size=detect 0 "{}"'
             ).format(
-                venv.interpreter,
+                sys.executable,
                 esptool,
                 device.port,
                 baudrate,
