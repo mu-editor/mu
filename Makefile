@@ -105,7 +105,7 @@ win64: check
 
 macos: check
 	@echo "\nFetching wheels."
-	python -m mu.wheels
+	python -m mu.wheels --package
 	@echo "\nPackaging Mu into a macOS native application."
 	python -m virtualenv venv-pup
 	# Don't activate venv-pup because:
@@ -119,7 +119,7 @@ macos: check
 
 linux: check
 	@echo "\nFetching wheels."
-	python -m mu.wheels
+	python -m mu.wheels --package
 	@echo "\nPackaging Mu into a Linux AppImage."
 	python -m virtualenv venv-pup
 	# Don't activate venv-pup because:
