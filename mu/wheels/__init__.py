@@ -51,7 +51,6 @@ mode_packages = [
     # incidentally brought ipython_genutils, but in v5.1 it was dropped, so as
     # a workaround we need to manually specify it here
     ("ipython_genutils", "ipython_genutils>=0.2.0"),
-    ("esptool", "esptool==3.*"),
 ]
 
 

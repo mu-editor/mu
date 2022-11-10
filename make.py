@@ -9,7 +9,7 @@ import subprocess
 PYTEST = "pytest"
 FLAKE8 = "flake8"
 BLACK = "black"
-BLACK_FLAGS = ["-l", "79"]
+BLACK_FLAGS = ["-l", "79", "--exclude=mu/contrib/"]
 PYGETTEXT = os.path.join(sys.base_prefix, "tools", "i18n", "pygettext.py")
 
 INCLUDE_PATTERNS = {"*.py"}
