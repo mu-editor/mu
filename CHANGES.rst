@@ -1,7 +1,7 @@
 Release History
 ---------------
 
-1.1.2
+1.2.0
 =====
 
 This release fixes some minor bugs, addresses some usability gremlins and
@@ -19,6 +19,10 @@ https://github.com/mu-editor/mu/issues/new
   package application for Linux).
 * Minor fixes by @stratakis in the Russian translation.
 * @carlosperate fixed many minor glitches and gremlins.
+* @carlosperate was on fire with fixes needed to ensure Mu continues to work
+  with very old versions of OSX (as used in many educational institutions).
+* Again, thanks to @carlosperate, AppImage with Wayland no longer the setting
+  of an environment variable to make it work properly.
 * The web mode includes simple and easy to use integration with
   beginner and education friendly web hosts, PythonAnywhere.
 * @agdales, @Jeffrey04, @johannaengland and @AnjaVerboven contributed new
