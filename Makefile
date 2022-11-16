@@ -125,7 +125,9 @@ linux: check
 	# Don't activate venv-pup because:
 	# 1. Not really needed.
 	# 2. Previously active venv would be "gone" on venv-pup deactivation.
-	./venv-pup/bin/pip install pup
+	# ./venv-pup/bin/pip install pup
+	# Installing from the GitHub repo directly to test if it works with Ubuntu 22.04 X11
+	./venv-pup/bin/pip install git+https://github.com/mu-editor/pup.git@55bf81d7f5395910639ad384dd0db8665bc2ea2b
 	./venv-pup/bin/pup package --launch-module=mu --nice-name="Mu Editor" --icon-path=./mu/resources/images/icon.png --license-path=./LICENSE .
 	rm -r venv-pup
 	ls -la ./build/pup/
