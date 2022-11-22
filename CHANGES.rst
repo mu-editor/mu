@@ -1,6 +1,46 @@
 Release History
 ---------------
 
+1.2.0
+=====
+
+This release fixes some minor bugs, addresses some usability gremlins and
+adjusts some capabilities to make things tidier. Much of this work was done
+over the summer at the code-sprints at EuroPython 2022 in Dublin. Kudos and
+thanks to all the new contributors to Mu.
+
+Please provide bug reports or feedback via:
+
+https://github.com/mu-editor/mu/issues/new
+
+* Thanks to @keith-packard for Snek mode. [Snek](https://sneklang.org/) is a
+  Python inspired language for processors too small even to run MicroPython.
+* @tmontes contributed changes so Mu builds to Linux AppImages (an easy way to
+  package application for Linux).
+* Minor fixes by @stratakis in the Russian translation.
+* @carlosperate fixed many minor glitches and gremlins.
+* @carlosperate was on fire with fixes needed to ensure Mu continues to work
+  with very old versions of OSX (as used in many educational institutions).
+* Again, thanks to @carlosperate, AppImage with Wayland no longer the setting
+  of an environment variable to make it work properly.
+* The web mode includes simple and easy to use integration with
+  beginner and education friendly web hosts, PythonAnywhere.
+* @agdales, @Jeffrey04, @johannaengland and @AnjaVerboven contributed new
+  messages of the day as part of their onboarding at EuroPython.
+* @tonybaloney contributed several Windows based fixes and clean-ups.
+* @johannaengland and @prcutler were on fire tidying up and fixing docs at
+  EuroPython.
+* A bug was fixed in the web mode relating to the resolution and/or recreation
+  of the assets directory (in which images, css and templates were to be
+  found).
+* Or friend at Adafruit, @tennewt made the necessary changes so Mu handles OSC
+  commands gracefully (see the [PR](https://github.com/mu-editor/mu/pull/2326)
+  for more details).
+* New contributor, @zigit ensured "Unexpected Maker" based ESP boards are
+  correctly detected.
+* Thanks to @Jayman2000, error messages are correctly capitalized (or not) to
+  avoid potential confusion.
+
 1.1.1
 =====
 

@@ -9,7 +9,7 @@ import subprocess
 PYTEST = "pytest"
 FLAKE8 = "flake8"
 BLACK = "black"
-BLACK_FLAGS = ["-l", "79"]
+BLACK_FLAGS = ["-l", "79", "--exclude=mu/contrib/"]
 PYGETTEXT = os.path.join(sys.base_prefix, "tools", "i18n", "pygettext.py")
 
 INCLUDE_PATTERNS = {"*.py"}
@@ -415,7 +415,7 @@ def _build_windows_msi(bitness=64):
     if check() != 0:
         raise RuntimeError("Check failed")
     print("Fetching wheels")
-    subprocess.check_call([sys.executable, "-m", "mu.wheels"])
+    subprocess.check_call([sys.executable, "-m", "mu.wheels", "--package"])
     print("Building {}-bit Windows installer".format(bitness))
     if pup_pbs_url:
         os.environ["PUP_PBS_URL"] = pup_pbs_url
