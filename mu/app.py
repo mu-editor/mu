@@ -280,7 +280,7 @@ class SharedMemoryMutex(object):
 
     def __enter__(self):
         self._shared_memory.lock()
-        return self._shared_memory
+        return self
 
     def __exit__(self, *args, **kwargs):
         self._shared_memory.unlock()
@@ -316,7 +316,8 @@ def run():
     logging.info("Python path: {}".format(sys.path))
     logging.info("Language code: {}".format(i18n.language_code))
     try:
-        _shared_memory.acquire()
+        with _shared_memory:
+            _shared_memory.acquire()
     except MutexError as exc:
         [message] = exc.args
         logging.error(message)
