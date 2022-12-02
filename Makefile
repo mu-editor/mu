@@ -131,6 +131,24 @@ linux: check
 	ls -la ./build/pup/
 	ls -la ./dist/
 
+linux-docker: clean
+	@echo "\nFetching wheels."
+	docker run -v $(CURDIR):/home --rm ghcr.io/mu-editor/mu-appimage:2022.05.01 bash -c "\
+		pip install . && \
+		python -m mu.wheels --package"
+	@echo "\nInstall pup inside the container and build the Linux AppImage."
+	# pup build directory is hardcoded to ./build, but the build fails if the build folder is inside the docker mounted volume
+	# So let's mount the Mu repo into a subdirectory and then invoke pup from the parent folder
+	# https://github.com/mu-editor/pup/issues/242
+	docker run -v $(CURDIR):/home/mu --rm ghcr.io/mu-editor/mu-appimage:2022.05.01 bash -c "\
+		pip install virtualenv && \
+		python -m virtualenv venv-pup && \
+		./venv-pup/bin/pip install pup && \
+		./venv-pup/bin/pup package --launch-module=mu --nice-name='Mu Editor' --icon-path=mu/mu/resources/images/icon.png --license-path=mu/LICENSE mu/ && \
+		ls -la ./build/pup/ && \
+		mv dist/ mu/dist"
+	ls -la ./dist/
+
 video: clean
 	@echo "\nFetching contributor avatars."
 	python utils/avatar.py
