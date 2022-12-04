@@ -53,6 +53,8 @@ from mu.interface.themes import (
     NightTheme,
     ContrastTheme,
     DEFAULT_FONT_SIZE,
+    MIN_WINDOW_WIDTH,
+    MIN_WINDOW_HEIGHT,
 )
 from mu.interface.panes import (
     DebugInspector,
