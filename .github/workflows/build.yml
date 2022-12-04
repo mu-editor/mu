@@ -15,9 +15,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: Build ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
       - name: Display Python info
@@ -46,7 +46,7 @@ jobs:
           make macos
           mv dist/*.dmg upload/
       - name: Upload Mu installer
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: mu-editor-${{ runner.os }}-${{ github.sha }}
           path: upload
@@ -57,7 +57,7 @@ jobs:
       image: ghcr.io/mu-editor/mu-appimage:2022.05.01
     name: Build AppImage
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Display system info
         run: |
           uname -a
@@ -83,7 +83,7 @@ jobs:
           tar -cvf Mu_Editor-AppImage-x86_64-${{ github.sha }}.tar *.AppImage
           ls -la .
       - name: Upload Mu AppImage
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: mu-editor-${{ runner.os }}-${{ github.sha }}
           path: dist/Mu_Editor-AppImage-x86_64-${{ github.sha }}.tar

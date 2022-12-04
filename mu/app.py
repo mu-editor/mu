@@ -256,6 +256,18 @@ def setup_modes(editor, view):
     }
 
 
+def is_linux_wayland():
+    """
+    Checks environmental variables to try to determine if Mu is running on
+    wayland.
+    """
+    if platform.system() == "Linux":
+        for env_var in ("XDG_SESSION_TYPE", "WAYLAND_DISPLAY"):
+            if "wayland" in os.environ.get(env_var, "").lower():
+                return True
+    return False
+
+
 def run():
     """
     Creates all the top-level assets for the application, sets things up and
@@ -292,6 +304,19 @@ def run():
     # Setting this environment variable fixes the problem.
     # See issue #1147 for more information
     os.environ["QT_MAC_WANTS_LAYER"] = "1"
+
+    # In Wayland for AppImage to launch it needs QT_QPA_PLATFORM set
+    # But only touch it if unset, useful for CI to configure it to "offscreen"
+    if is_linux_wayland():
+        if "QT_QPA_PLATFORM" not in os.environ:
+            logging.info("Wayland detected, setting QT_QPA_PLATFORM=wayland")
+            os.environ["QT_QPA_PLATFORM"] = "wayland"
+        else:
+            logging.info(
+                "Wayland detected, QT_QPA_PLATFORM already set to: {}".format(
+                    os.environ["QT_QPA_PLATFORM"]
+                )
+            )
 
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
