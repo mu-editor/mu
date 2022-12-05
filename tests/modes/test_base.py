@@ -238,16 +238,17 @@ def test_base_mode_open_file():
     assert newline is None
 
 
-def test_base_mode_activate_deactivate_change(microbit):
+def test_base_mode_no_op_change(microbit):
     """
     Dummy test of no-operation base methods only meant for overriding.
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
     bm = BaseMode(editor, view)
-    bm.activate()
-    bm.deactivate()
-    bm.device_changed(microbit)
+    assert bm.activate() is None
+    assert bm.ensure_state() is None
+    assert bm.deactivate() is None
+    assert bm.device_changed(microbit) is None
 
 
 # TODO Avoid using BOARD_IDS from base.py (which is only ever used in

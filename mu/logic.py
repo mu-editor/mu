@@ -29,7 +29,7 @@ import random
 import locale
 import shutil
 
-import appdirs
+import platformdirs
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5 import QtCore
@@ -45,13 +45,13 @@ from . import settings
 from .virtual_environment import venv
 
 # The default directory for application logs.
-LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
+LOG_DIR = platformdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.
 LOG_FILE = os.path.join(LOG_DIR, "mu.log")
 # Regex to match pycodestyle (PEP8) output.
 STYLE_REGEX = re.compile(r".*:(\d+):(\d+):\s+(.*)")
 # Regex to match flake8 output.
-FLAKE_REGEX = re.compile(r".*:(\d+):(\d+)\s+(.*)")
+FLAKE_REGEX = re.compile(r".*:(\d+):(\d+):?\s+(.*)")
 # Regex to match undefined name errors for given builtins
 BUILTINS_REGEX = r"^undefined name '({})'"
 # Regex to match false positive flake errors if microbit.* is expanded.
@@ -167,6 +167,12 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("A good programmer asks questions."),
     _("A good programmer is willing to say, 'I don't know'."),
     _("Wisest are they that know they know nothing."),
+    _(
+        "Computers aren’t the thing. They’re the thing that gets us to the thing."
+    ),
+    _("Don't stare at a blank screen - try something out."),
+    _("If you're stuck - try explaining it to a rubber duck."),
+    _("It's ok to be stuck, go for a walk and then try again (:"),
 ]
 
 NEWLINE = "\n"
@@ -464,11 +470,14 @@ def check_pycodestyle(code, config_file=False):
                 description += _(" above this line")
             if line_no not in style_feedback:
                 style_feedback[line_no] = []
+            # Capitalise the 1st letter keeping the rest of the str unmodified
+            if description:
+                description = description[0].upper() + description[1:]
             style_feedback[line_no].append(
                 {
                     "line_no": line_no,
                     "column": int(col) - 1,
-                    "message": description.capitalize(),
+                    "message": description,
                     "code": code,
                 }
             )
@@ -774,6 +783,9 @@ class Editor(QObject):
         self.modes = {}
         self.envars = {}  # See restore session and show_admin
         self.minify = False
+        self.pa_username = ""
+        self.pa_token = ""
+        self.pa_instance = "www"
         self.microbit_runtime = ""
         self.user_locale = ""  # user defined language locale
         self.connected_devices = DeviceList(self.modes, parent=self)
@@ -932,6 +944,12 @@ class Editor(QObject):
         if "venv_path" in old_session:
             venv.relocate(old_session["venv_path"])
             venv.ensure()
+
+        python_anywhere = old_session.get("python_anywhere")
+        if python_anywhere:
+            self.pa_username = python_anywhere["username"]
+            self.pa_token = python_anywhere["token"]
+            self.pa_instance = python_anywhere["instance"]
 
         if "locale" in old_session:
             self.user_locale = old_session["locale"].strip()
@@ -1401,6 +1419,11 @@ class Editor(QObject):
                 "w": self._view.width(),
                 "h": self._view.height(),
             },
+            "python_anywhere": {
+                "username": self.pa_username,
+                "token": self.pa_token,
+                "instance": self.pa_instance,
+            },
             "locale": self.user_locale,
         }
         save_session(session)
@@ -1425,6 +1448,9 @@ class Editor(QObject):
             "minify": self.minify,
             "microbit_runtime": self.microbit_runtime,
             "locale": self.user_locale,
+            "pa_username": self.pa_username,
+            "pa_token": self.pa_token,
+            "pa_instance": self.pa_instance,
         }
         baseline_packages, user_packages = venv.installed_packages()
         packages = user_packages
@@ -1462,8 +1488,16 @@ class Editor(QObject):
                 ]
                 old_packages = [p.lower() for p in user_packages]
                 self.sync_package_state(old_packages, new_packages)
+            if "pa_username" in new_settings:
+                self.pa_username = new_settings["pa_username"].strip()
+            if "pa_token" in new_settings:
+                self.pa_token = new_settings["pa_token"].strip()
+            if "pa_instance" in new_settings:
+                self.pa_instance = new_settings["pa_instance"].strip()
             if "locale" in new_settings:
                 self.user_locale = new_settings["locale"]
+            # Ensure mode UI is updated given settings.
+            self.modes[self.mode].ensure_state()
         else:
             logger.info("No admin settings changed.")
 
@@ -1571,6 +1605,7 @@ class Editor(QObject):
             for tab in self._view.widgets:
                 tab.breakpoint_handles = set()
                 tab.reset_annotations()
+        self.modes[mode].ensure_state()
         self.show_status_message(
             _("Changed to {} mode.").format(self.modes[mode].name)
         )

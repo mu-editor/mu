@@ -258,8 +258,9 @@ In addition to providing answers about UX, Ann very kindly pointed me to
 various resources on the web that helped me to understand the challenges and
 work needed to do actionable UX research.
 
-Andrew Travers has `blogged about <https://trvrs.co/book>`_ a free pocket guide
-he has written on
+Andrew Travers has 
+`blogged about <https://web.archive.org/web/20210516205833/https://trvrs.co/book/>`_
+a free pocket guide he has written on
 `interviewing for research <https://s3-eu-west-1.amazonaws.com/interviewing-for-research/InterviewingForResearch.pdf>`_.
 I found this invaluable reading and helped me to prepare for the observations
 and interviews I conducted as part of the process of developing Mu. This is

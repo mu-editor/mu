@@ -342,6 +342,19 @@ def run():
     # See issue #1147 for more information
     os.environ["QT_MAC_WANTS_LAYER"] = "1"
 
+    # In Wayland for AppImage to launch it needs QT_QPA_PLATFORM set
+    # But only touch it if unset, useful for CI to configure it to "offscreen"
+    if is_linux_wayland():
+        if "QT_QPA_PLATFORM" not in os.environ:
+            logging.info("Wayland detected, setting QT_QPA_PLATFORM=wayland")
+            os.environ["QT_QPA_PLATFORM"] = "wayland"
+        else:
+            logging.info(
+                "Wayland detected, QT_QPA_PLATFORM already set to: {}".format(
+                    os.environ["QT_QPA_PLATFORM"]
+                )
+            )
+
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
     # By default PyQt uses the script name (run.py)
