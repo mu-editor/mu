@@ -58,7 +58,7 @@ test: clean
 
 coverage: clean
 	export LANG=en_GB.utf8
-	pytest -v --random-order --cov-config .coveragerc --cov-report term-missing --cov=mu tests/
+	pytest -v --random-order --cov-config setup.cfg --cov-report term-missing --cov=mu tests/
 
 tidy: 
 	python make.py tidy

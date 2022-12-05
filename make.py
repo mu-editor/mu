@@ -114,7 +114,7 @@ def coverage():
             PYTEST,
             "-v",
             "--cov-config",
-            ".coveragerc",
+            "setup.cfg",
             "--cov-report",
             "term-missing",
             "--cov=mu",
