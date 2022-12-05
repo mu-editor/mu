@@ -297,6 +297,18 @@ class SharedMemoryMutex(object):
 _shared_memory = SharedMemoryMutex()
 
 
+def is_linux_wayland():
+    """
+    Checks environmental variables to try to determine if Mu is running on
+    wayland.
+    """
+    if platform.system() == "Linux":
+        for env_var in ("XDG_SESSION_TYPE", "WAYLAND_DISPLAY"):
+            if "wayland" in os.environ.get(env_var, "").lower():
+                return True
+    return False
+
+
 def run():
     """
     Creates all the top-level assets for the application, sets things up and
