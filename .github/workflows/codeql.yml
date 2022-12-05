@@ -12,8 +12,8 @@ on:
     - cron: "3 2 * * 2"
 
 jobs:
-  timeout-minutes: 20
   analyze:
+    timeout-minutes: 20
     name: Analyze
     runs-on: ubuntu-latest
     permissions:
