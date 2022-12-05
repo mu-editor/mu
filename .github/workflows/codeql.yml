@@ -12,6 +12,7 @@ on:
     - cron: "3 2 * * 2"
 
 jobs:
+  timeout-minutes: 20
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
