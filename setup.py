@@ -83,7 +83,6 @@ extras_require = {
         "pytest>=4.6",
         "pytest-cov",
         "pytest-random-order>=1.0.0",
-        "pytest-xdist",
         "pytest-faulthandler",
         "pytest-timeout",
         "coverage",
