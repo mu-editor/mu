@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import logging
 import os.path
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QTimer, QThread
 from PyQt5.QtWidgets import (
     QToolBar,
     QAction,
@@ -38,6 +38,7 @@ from PyQt5.QtWidgets import (
     QTabBar,
     QPushButton,
     QHBoxLayout,
+    QProgressDialog,
 )
 from PyQt5.QtGui import QKeySequence, QStandardItemModel, QCursor
 from mu import __version__
@@ -65,6 +66,7 @@ from mu.interface.panes import (
 )
 from mu.interface.editor import EditorPane
 from mu.interface.widgets import DeviceSelector
+from mu.interface.workers import PythonAnywhereWorker
 from mu.resources import load_icon, load_pixmap
 
 
@@ -334,6 +336,7 @@ class Window(QMainWindow):
         self._plotter_area = 0
         self._repl_area = 0
         self._runner_area = 0
+        self.progress = None
 
     def wheelEvent(self, event):
         """
@@ -1356,6 +1359,78 @@ class Window(QMainWindow):
         Hides the device selector in the status bar
         """
         self.status_bar.device_selector.setHidden(True)
+
+    def upload_to_python_anywhere(
+        self, instance, username, token, app_name, files
+    ):
+        """
+        Show a progress dialog as the files are uploaded to PythonAnywhere.
+        """
+        self.progress = QProgressDialog(
+            _(
+                "Uploading to PythonAnywhere.\n\nThis may take some time "
+                "and pause at the end (as the website is started)."
+            ),
+            None,
+            0,
+            len(files),
+            self,
+        )
+        self.progress.setModal(True)
+        self.progress.setAutoClose(True)
+        self.progress.show()
+        self.upload_thread = QThread()
+        self.worker = PythonAnywhereWorker(
+            instance, username, token, files, app_name, self.progress
+        )
+        self.worker.moveToThread(self.upload_thread)
+        self.upload_thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.upload_thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.worker.finished.connect(self.handle_python_anywhere_complete)
+        self.upload_thread.finished.connect(self.upload_thread.deleteLater)
+        self.worker.error.connect(self.handle_python_anywhere_error)
+        self.worker.error.connect(self.upload_thread.quit)
+        self.worker.error.connect(self.worker.deleteLater)
+        self.upload_thread.start()
+
+    def handle_python_anywhere_complete(self, domain):
+        """
+        Displays a confirmation that all the API calls completed OK and
+        provides a link to the user's website.
+        """
+        message = _(
+            "<p>Your website was successfully deployed.</p>"
+            "<p>You can see it here:</p>"
+            "<a href='https://{domain}'>https://{domain}</a>"
+        ).format(domain=domain)
+        self.show_message(
+            message,
+            icon="Information",
+        )
+
+    def handle_python_anywhere_error(self, error_message):
+        """
+        Display a friendly message to indicate a problem was encountered when
+        uploading to PythonAnywhere.
+        """
+        self.progress.cancel()
+        message = (
+            _("There was a problem deploying to PythonAnywhere:<br/><br/>")
+            + "<strong>"
+            + error_message
+            + "</strong>"
+        )
+        self.show_message(
+            message,
+            _(
+                "Please check your PythonAnywhere settings or connection "
+                "and ensure you're using a recent version of Mu.<br/><br/>"
+                "Alternatively, "
+                "<a href='https://github.com/mu-editor/mu/issues/new/choose'>"
+                "submit a bug report</a>."
+            ),
+        )
 
 
 class StatusBar(QStatusBar):
