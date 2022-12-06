@@ -111,6 +111,10 @@ macos: check
 	# Don't activate venv-pup because:
 	# 1. Not really needed.
 	# 2. Previously active venv would be "gone" on venv-pup deactivation.
+	#
+	# There is an issue in a pup subdependency, so installing an older version as a workaround
+	# https://github.com/mu-editor/mu/issues/2365
+	./venv-pup/bin/pip install mac_alias==2.2.0
 	./venv-pup/bin/pip install pup
 	./venv-pup/bin/pup package --launch-module=mu --nice-name="Mu Editor" --icon-path=./package/icons/mac_icon.icns --license-path=./LICENSE .
 	rm -r venv-pup
