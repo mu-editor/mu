@@ -309,6 +309,17 @@ def is_linux_wayland():
     return False
 
 
+def check_only_running_once():
+    """If the application is already running log the error and exit
+    """
+    try:
+        with _shared_memory:
+            _shared_memory.acquire()
+    except MutexError as exc:
+        [message] = exc.args
+        logging.error(message)
+        sys.exit(2)
+
 def run():
     """
     Creates all the top-level assets for the application, sets things up and
@@ -327,13 +338,7 @@ def run():
     logging.info("Platform: {}".format(platform.platform()))
     logging.info("Python path: {}".format(sys.path))
     logging.info("Language code: {}".format(i18n.language_code))
-    try:
-        with _shared_memory:
-            _shared_memory.acquire()
-    except MutexError as exc:
-        [message] = exc.args
-        logging.error(message)
-        sys.exit(2)
+    check_only_running_once()
 
     #
     # Load settings from known locations and register them for
