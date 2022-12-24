@@ -437,6 +437,6 @@ def test_running_twice():
     cmd2 = "import time;"
     "from mu import app;"
     "app.check_only_running_once()"
-    result = subprocess.run(["cmd", "/c", "start", sys.executable, cmd1])
+    subprocess.Popen([sys.executable, cmd1])
     result = subprocess.run([sys.executable, cmd2])
     assert result.returncode == 2
