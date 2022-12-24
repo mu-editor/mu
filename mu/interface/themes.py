@@ -37,8 +37,8 @@ DAY_STYLE = load_stylesheet("day.css")
 # CONTRAST_STYLE is a high contrast theme.
 CONTRAST_STYLE = load_stylesheet("contrast.css")
 
-MIN_WINDOW_WIDTH = 200
-MIN_WINDOW_HEIGHT = 200
+MIN_WINDOW_WIDTH = 500
+MIN_WINDOW_HEIGHT = 300
 
 logger = logging.getLogger(__name__)
 
