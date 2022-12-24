@@ -430,19 +430,13 @@ def test_running_twice():
     # process tree; otherwise the second attempt to acquire the mutex will
     # succeed (which we don't want to happen for our purposes)
     #
-    subprocess.run(
-        [
-            "cmd",
-            "/c",
-            "start",
-            sys.executable,
-            "import time; from mu import app; app.check_only_running_once(); time.sleep(2)",
-        ]
-    )
-    result = subprocess.run(
-        [
-            sys.executable,
-            "import time; from mu import app; app.check_only_running_once()",
-        ]
-    )
+    cmd1 = "import time;"
+    "from mu import app;"
+    "app.check_only_running_once();"
+    "time.sleep(2)"
+    cmd2 = "import time;"
+    "from mu import app;"
+    "app.check_only_running_once()"
+    result = subprocess.run(["cmd", "/c", "start", sys.executable, cmd1])
+    result = subprocess.run([sys.executable, cmd2])
     assert result.returncode == 2
