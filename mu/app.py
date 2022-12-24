@@ -310,8 +310,7 @@ def is_linux_wayland():
 
 
 def check_only_running_once():
-    """If the application is already running log the error and exit
-    """
+    """If the application is already running log the error and exit"""
     try:
         with _shared_memory:
             _shared_memory.acquire()
@@ -319,6 +318,7 @@ def check_only_running_once():
         [message] = exc.args
         logging.error(message)
         sys.exit(2)
+
 
 def run():
     """
