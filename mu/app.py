@@ -204,8 +204,7 @@ def setup_logging():
     """
     Configure logging.
     """
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR)
+    os.makedirs(LOG_DIR, exist_ok=True)
 
     # set logging format
     log_fmt = (
@@ -284,6 +283,7 @@ class SharedMemoryMutex(object):
 
     def __exit__(self, *args, **kwargs):
         self._shared_memory.unlock()
+        self._shared_memory.detach()
 
     def acquire(self):
         if self._shared_memory.attach():
