@@ -199,7 +199,7 @@ def test_setup_logging_without_envvar():
         "mu.app.os.makedirs", return_value=None
     ) as mkdir:
         setup_logging()
-        mkdir.assert_called_once_with(LOG_DIR)
+        mkdir.assert_called_once_with(LOG_DIR, exist_ok=True)
         log_conf.assert_called_once_with(
             LOG_FILE,
             when="midnight",
@@ -225,7 +225,7 @@ def test_setup_logging_with_envvar():
         "mu.app.os.makedirs", return_value=None
     ) as mkdir:
         setup_logging()
-        mkdir.assert_called_once_with(LOG_DIR)
+        mkdir.assert_called_once_with(LOG_DIR, exist_ok=True)
         log_conf.assert_called_once_with(
             LOG_FILE,
             when="midnight",
