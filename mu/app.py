@@ -284,6 +284,7 @@ class SharedMemoryMutex(object):
 
     def __exit__(self, *args, **kwargs):
         self._shared_memory.unlock()
+        self._shared_memory.detach()
 
     def acquire(self):
         if self._shared_memory.attach():
