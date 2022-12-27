@@ -85,10 +85,15 @@ def raw_on(serial):
     for i in range(3):
         serial.write(b"\r\x03")
         time.sleep(0.01)
-    flush(serial)
-    # Go into raw mode with CTRL-A.
-    serial.write(b"\r\x01")
-    flush_to_msg(serial, raw_repl_msg)
+    flush(serial)    
+    # Go into raw mode with CTRL-A. (retry 3 times)
+    for i in range(3):
+        try:
+            serial.write(b"\r\x01")
+            flush_to_msg(serial, raw_repl_msg)
+            break
+        except:
+            pass
     # Soft Reset with CTRL-D
     serial.write(b"\x04")
     flush_to_msg(serial, b"soft reboot\r\n")
