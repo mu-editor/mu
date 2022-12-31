@@ -1428,7 +1428,7 @@ class Editor(QObject):
         }
         save_session(session)
         logger.info("Quitting.\n\n")
-        sys.exit(0)
+        QtCore.QCoreApplication.exit(0)
 
     def show_admin(self, event=None):
         """

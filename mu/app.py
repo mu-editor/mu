@@ -172,6 +172,7 @@ def excepthook(*exc_args):
     Log exception and exit cleanly.
     """
     logging.error("Unrecoverable error", exc_info=(exc_args))
+    _shared_memory.release()
     if exc_args[0] != KeyboardInterrupt:
         try:
             log_file = base64.standard_b64encode(LOG_FILE.encode("utf-8"))
@@ -195,8 +196,10 @@ def excepthook(*exc_args):
         except Exception as e:  # The Alamo of crash handling.
             logging.error("Failed to report crash", exc_info=e)
         sys.__excepthook__(*exc_args)
+        _shared_memory.release()
         sys.exit(1)
     else:  # It's harmless, don't sound the alarm.
+        _shared_memory.release()
         sys.exit(0)
 
 
@@ -283,7 +286,6 @@ class SharedMemoryMutex(object):
 
     def __exit__(self, *args, **kwargs):
         self._shared_memory.unlock()
-        self._shared_memory.detach()
 
     def acquire(self):
         if self._shared_memory.attach():
@@ -292,6 +294,11 @@ class SharedMemoryMutex(object):
         else:
             self._shared_memory.create(8)
             self._shared_memory.data()[:8] = struct.pack("q", os.getpid())
+
+    def release(self):
+        logging.debug("release called")
+        if not self._shared_memory.detach():
+            logging.debug("detach returned false")
 
 
 _shared_memory = SharedMemoryMutex()
@@ -443,5 +450,12 @@ def run():
     # Restore the previous session along with files passed by the os
     editor.restore_session(sys.argv[1:])
 
+    # Save the exit code for sys.exit call below.
+    logging.debug("calling app.exec_()")
+    exit_status = app.exec_()
+    # Clean up the shared memory
+    logging.debug("cleaning up shared memory on exit. code: {exit_status}")
+    _shared_memory.release()
+
     # Stop the program after the application finishes executing.
-    sys.exit(app.exec_())
+    sys.exit(exit_status)

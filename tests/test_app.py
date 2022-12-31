@@ -16,6 +16,8 @@ from mu.app import (
     StartupWorker,
     vlogger,
     check_only_running_once,
+    _shared_memory,
+    MutexError,
 )
 from mu.debugger.config import DEBUGGER_PORT
 
@@ -417,6 +419,7 @@ def test_only_running_once():
     If we are the first to acquire the application lock we should succeed
     """
     check_only_running_once()
+    _shared_memory.release()
     assert True
 
 
@@ -431,12 +434,28 @@ def test_running_twice():
     # succeed (which we don't want to happen for our purposes)
     #
     cmd1 = "import time;"
-    "from mu import app;"
+    "from mu import { app, _shared_memory };"
     "app.check_only_running_once();"
-    "time.sleep(2)"
+    "time.sleep(2);"
+    "_shared_memory.release()"
     cmd2 = "import time;"
     "from mu import app;"
     "app.check_only_running_once()"
     subprocess.Popen([sys.executable, cmd1])
     result = subprocess.run([sys.executable, cmd2])
     assert result.returncode == 2
+
+
+def test_running_twice_after_exception():
+    """
+    If we run, throw an exception and then run again we should succeed.
+    """
+    setup_logging()  # installs excepthook
+    assert sys.excepthook == excepthook
+    check_only_running_once()  # leaves shared memory attached
+    ex = MutexError("BOOM")
+    with pytest.raises(MutexError):
+        raise ex
+    # shared memory should be cleaned up, so check running once again
+    check_only_running_once()
+    assert True
