@@ -454,12 +454,13 @@ def test_running_twice_after_exception():
     If we run, throw an exception and then run again we should succeed.
     """
     setup_logging()  # installs excepthook
-    print(sys.excepthook, excepthook)
     assert sys.excepthook == excepthook
     check_only_running_once()  # leaves shared memory attached
     ex = MutexError("BOOM")
-    with pytest.raises(MutexError, match="BOOM"):
+    try:
         raise ex
+    except MutexError:
+        pass
     # shared memory should be cleaned up, so check running once again
     check_only_running_once()
     assert True
