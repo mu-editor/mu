@@ -237,6 +237,8 @@ def test_setup_logging_with_envvar():
         )
         logging.getLogger.assert_called_once_with()
         # ~ assert sys.excepthook == excepthook
+        # make sure not to interfere with other tests by clearing this
+        os.environ.pop("MU_LOG_TO_STDOUT", "")
 
 
 def test_run():
@@ -440,7 +442,8 @@ def test_running_twice():
     "_shared_memory.release()"
     cmd2 = "import time;"
     "from mu import app;"
-    "app.check_only_running_once()"
+    "app.check_only_running_once();"
+    "_shared_memory.release()"
     subprocess.Popen([sys.executable, cmd1])
     result = subprocess.run([sys.executable, cmd2])
     assert result.returncode == 2
@@ -451,10 +454,11 @@ def test_running_twice_after_exception():
     If we run, throw an exception and then run again we should succeed.
     """
     setup_logging()  # installs excepthook
+    print(sys.excepthook, excepthook)
     assert sys.excepthook == excepthook
     check_only_running_once()  # leaves shared memory attached
     ex = MutexError("BOOM")
-    with pytest.raises(MutexError):
+    with pytest.raises(MutexError, match="BOOM"):
         raise ex
     # shared memory should be cleaned up, so check running once again
     check_only_running_once()

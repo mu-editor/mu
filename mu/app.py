@@ -235,6 +235,7 @@ def setup_logging():
         stdout_handler.setLevel(logging.DEBUG)
         log.addHandler(stdout_handler)
     else:
+        log.debug("setting except hook")
         sys.excepthook = excepthook
 
 
@@ -454,7 +455,6 @@ def run():
     logging.debug("calling app.exec_()")
     exit_status = app.exec_()
     # Clean up the shared memory
-    logging.debug("cleaning up shared memory on exit. code: {exit_status}")
     _shared_memory.release()
 
     # Stop the program after the application finishes executing.
