@@ -197,10 +197,8 @@ def excepthook(*exc_args):
         except Exception as e:  # The Alamo of crash handling.
             logging.error("Failed to report crash", exc_info=e)
         sys.__excepthook__(*exc_args)
-        _shared_memory.release()
         sys.exit(1)
     else:  # It's harmless, don't sound the alarm.
-        _shared_memory.release()
         sys.exit(0)
 
 
