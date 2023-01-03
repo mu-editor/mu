@@ -503,6 +503,7 @@ def test_running_twice_after_generic_exception():
     cmd1 = "".join(
         (
             "-c",
+            "import os;",
             "from mu import app;",
             "print('process 1 id: {}'.format(os.getpid()));",
             "app.setup_logging();",
