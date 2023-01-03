@@ -235,7 +235,6 @@ def setup_logging():
         stdout_handler.setLevel(logging.DEBUG)
         log.addHandler(stdout_handler)
     else:
-        log.debug("setting except hook")
         sys.excepthook = excepthook
 
 
@@ -297,9 +296,7 @@ class SharedMemoryMutex(object):
             self._shared_memory.data()[:8] = struct.pack("q", os.getpid())
 
     def release(self):
-        logging.debug("release called")
-        if not self._shared_memory.detach():
-            logging.debug("detach returned false")
+        self._shared_memory.detach()
 
 
 _shared_memory = SharedMemoryMutex()
@@ -452,7 +449,6 @@ def run():
     editor.restore_session(sys.argv[1:])
 
     # Save the exit code for sys.exit call below.
-    logging.debug("calling app.exec_()")
     exit_status = app.exec_()
     # Clean up the shared memory
     _shared_memory.release()
