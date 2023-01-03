@@ -6,6 +6,7 @@ import sys
 import os.path
 import pytest
 import subprocess
+import time
 
 from unittest import mock
 from mu.app import (
@@ -17,7 +18,6 @@ from mu.app import (
     vlogger,
     check_only_running_once,
     _shared_memory,
-    MutexError,
 )
 from mu.debugger.config import DEBUGGER_PORT
 
@@ -435,32 +435,48 @@ def test_running_twice():
     # process tree; otherwise the second attempt to acquire the mutex will
     # succeed (which we don't want to happen for our purposes)
     #
-    cmd1 = "import time;"
-    "from mu import { app, _shared_memory };"
-    "app.check_only_running_once();"
-    "time.sleep(2);"
-    "_shared_memory.release()"
-    cmd2 = "import time;"
-    "from mu import app;"
-    "app.check_only_running_once();"
-    "_shared_memory.release()"
-    subprocess.Popen([sys.executable, cmd1])
-    result = subprocess.run([sys.executable, cmd2])
-    assert result.returncode == 2
+    # This test involves too much timing contingent execution.
+    cmd1 = "".join(
+        (
+            "-c",
+            "import time;",
+            "import os;",
+            "from mu import app;",
+            "print('process 1 id: {}'.format(os.getpid()));",
+            "app.check_only_running_once();",
+            "time.sleep(3);",
+            "app._shared_memory.release()",
+        )
+    )
+    cmd2 = "".join(
+        (
+            "-c",
+            "import os;",
+            "from mu import app;",
+            "print('process 2 id: {}'.format(os.getpid()));",
+            "app.check_only_running_once()",
+        )
+    )
+
+    child1 = subprocess.Popen([sys.executable, cmd1])
+    # let child 1 fully launch first (required)
+    time.sleep(1)
+    child2 = subprocess.run([sys.executable, cmd2])
+
+    # wait for process 1 to exit _after_ launching process 2
+    # and wait until it's done to access return code
+    result1 = child1.wait()
+    result2 = child2.returncode
+
+    assert result1 == 0
+    assert result2 == 2
 
 
 def test_running_twice_after_exception():
     """
     If we run, throw an exception and then run again we should succeed.
     """
-    setup_logging()  # installs excepthook
-    assert sys.excepthook == excepthook
-    check_only_running_once()  # leaves shared memory attached
-    ex = MutexError("BOOM")
-    try:
-        raise ex
-    except MutexError:
-        pass
-    # shared memory should be cleaned up, so check running once again
-    check_only_running_once()
-    assert True
+    # call test that causes app to throw an exception because runs it twice
+    test_running_twice()
+    # test that we can still run after exception thrown
+    test_only_running_once()
