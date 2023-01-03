@@ -237,7 +237,7 @@ def test_setup_logging_with_envvar():
         )
         logging.getLogger.assert_called_once_with()
         # ~ assert sys.excepthook == excepthook
-        # make sure not to interfere with other tests by clearing this
+        # clear this to avoid interfering with other tests
         os.environ.pop("MU_LOG_TO_STDOUT", "")
 
 
