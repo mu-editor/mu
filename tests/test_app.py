@@ -444,7 +444,7 @@ def test_running_twice():
             "from mu import app;",
             "print('process 1 id: {}'.format(os.getpid()));",
             "app.check_only_running_once();",
-            "time.sleep(2);",
+            "time.sleep(2.5);",
             "app._shared_memory.release()",
         )
     )
@@ -460,7 +460,7 @@ def test_running_twice():
 
     child1 = subprocess.Popen([sys.executable, cmd1])
     # let child 1 fully launch first (required)
-    time.sleep(0.5)
+    time.sleep(1)
     child2 = subprocess.run([sys.executable, cmd2])
 
     # wait for process 1 to exit _after_ launching process 2
