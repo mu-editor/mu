@@ -444,7 +444,7 @@ def test_running_twice():
             "from mu import app;",
             "print('process 1 id: {}'.format(os.getpid()));",
             "app.check_only_running_once();",
-            "time.sleep(3);",
+            "time.sleep(2);",
             "app._shared_memory.release()",
         )
     )
@@ -460,7 +460,7 @@ def test_running_twice():
 
     child1 = subprocess.Popen([sys.executable, cmd1])
     # let child 1 fully launch first (required)
-    time.sleep(1)
+    time.sleep(0.5)
     child2 = subprocess.run([sys.executable, cmd2])
 
     # wait for process 1 to exit _after_ launching process 2
@@ -472,6 +472,9 @@ def test_running_twice():
     assert result2 == 2
 
 
+# The test_running_twice_after_generic_exception() test is
+# similar enough to this that we can probably skip this one
+@pytest.mark.skip("Good test but slow")
 def test_running_twice_after_exception():
     """
     If we run, throw an exception and then run again we should succeed.
@@ -480,3 +483,39 @@ def test_running_twice_after_exception():
     test_running_twice()
     # test that we can still run after exception thrown
     test_only_running_once()
+
+
+def test_running_twice_after_generic_exception():
+    """
+    If we run and the app throws an exception, the exception handler
+    should clean up shared memory sentinel and running again should succeed.
+    """
+    #
+    # setup_logging() sets up our exception handler
+    # check_only_running_once() acquires shared memory block
+    # raise uncaught exception to trigger exception handler
+    # (subprocess should exit with exit code)
+    # check to see if can run app again
+    #
+
+    # set show browser on crash suppression env for test
+    os.environ["MU_SUPPRESS_CRASH_REPORT_FORM"] = "1"
+    cmd1 = "".join(
+        (
+            "-c",
+            "from mu import app;",
+            "print('process 1 id: {}'.format(os.getpid()));",
+            "app.setup_logging();",
+            "app.check_only_running_once();"
+            "raise RuntimeError('intentional test exception')",
+            # Intentionally do not manually release shared memory here.
+            # Test is testing that exception handler does this.
+        )
+    )
+
+    child1 = subprocess.run([sys.executable, cmd1])
+    assert child1.returncode == 1
+    # confirm exception handler cleared shared memory and we can still run
+    test_only_running_once()
+    # clear browser launch suppression env flag
+    os.environ.pop("MU_SUPPRESS_CRASH_REPORT_FORM", "")

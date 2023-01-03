@@ -192,7 +192,8 @@ def excepthook(*exc_args):
                 "e": error,  # error message
             }
             args = urllib.parse.urlencode(params)
-            webbrowser.open("https://codewith.mu/crash/?" + args)
+            if "MU_SUPPRESS_CRASH_REPORT_FORM" not in os.environ:
+                webbrowser.open("https://codewith.mu/crash/?" + args)
         except Exception as e:  # The Alamo of crash handling.
             logging.error("Failed to report crash", exc_info=e)
         sys.__excepthook__(*exc_args)
