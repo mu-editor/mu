@@ -1,6 +1,41 @@
 Release History
 ---------------
 
+1.2.1
+=====
+
+This release fixes some minor bugs, contains some (code) tidy ups and two new
+translations.
+
+Please provide bug reports or feedback via:
+
+https://github.com/mu-editor/mu/issues/new
+
+* Thanks to @carlosperate for many infrastructure and build related fixes and
+  improvements.
+* The amazing @tjguk has added a cross-platform way for only one instance of
+  Mu to be running at once. This fixes various race conditions and mix-ups
+  caused by multiple versions interfering with each other.
+* In related work @hroncok fixed a race condition when creating the LOG_DIR on
+  first start. Great work!
+* Thanks also to @haikusw for allowing Mu's window size to reduce to the
+  allowed minimum for the user's operating system.
+* A bug that resulted in bucket-loads of characters being sent over USB-serial
+  as the user clicked around the serial panel was fixed by @Neradoc. Thanks!
+* A minor but very important translation change (Polish - Dziękuję Ci) was made
+  by @Gregor14.
+* A big дуже тобі дякую to @gromko for the initial translation into Ukrainian.
+  Kudos to Viktoriya (Mrs. @dpgeorge) for checking the translation and
+  suggesting improvements.
+* Finally, @xbecas assisted in bringing a Dutch translation to Mu. Dank je
+  to @pygamegirl for checking the translation.
+
+This will be the final version of Mu to support the old versions of PyQT we
+have been using (to allow users of legacy systems to continue to get updated
+versions of Mu). **The next release will use updated versions of all our
+dependencies and may not work on old or out-of-date operating systems**.
+Please remember to keep your systems up-to-date if possible!
+
 1.2.0
 =====
 
