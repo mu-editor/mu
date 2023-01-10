@@ -111,8 +111,10 @@ macos: check
 	# Don't activate venv-pup because:
 	# 1. Not really needed.
 	# 2. Previously active venv would be "gone" on venv-pup deactivation.
-	./venv-pup/bin/pip install pup
-	./venv-pup/bin/pup package --launch-module=mu --nice-name="Mu Editor" --icon-path=./package/icons/mac_icon.icns --license-path=./LICENSE .
+	# Installing pup from a fork with the --pip-platform flag proof of concept
+	# and using it to install wheels for the `macosx_10_12_x86_64` platform
+	./venv-pup/bin/pip install git+https://github.com/carlosperate/pup.git@pip-platform
+	./venv-pup/bin/pup package --launch-module=mu --nice-name="Mu Editor" --icon-path=./package/icons/mac_icon.icns --license-path=./LICENSE --pip-platform=macosx_10_12_x86_64 .
 	rm -r venv-pup
 	ls -la ./build/pup/
 	ls -la ./dist/
