@@ -172,6 +172,8 @@ def excepthook(*exc_args):
     Log exception and exit cleanly.
     """
     logging.error("Unrecoverable error", exc_info=(exc_args))
+    # Very important to release shared memory used to signal an app instance is running
+    # as we are going to exit below
     _shared_memory.release()
     if exc_args[0] != KeyboardInterrupt:
         try:
@@ -200,6 +202,13 @@ def excepthook(*exc_args):
         sys.exit(1)
     else:  # It's harmless, don't sound the alarm.
         sys.exit(0)
+
+
+def setup_exception_handler():
+    """
+    Install global exception handler
+    """
+    sys.excepthook = excepthook
 
 
 def setup_logging():
@@ -233,8 +242,6 @@ def setup_logging():
         stdout_handler.setFormatter(formatter)
         stdout_handler.setLevel(logging.DEBUG)
         log.addHandler(stdout_handler)
-    else:
-        sys.excepthook = excepthook
 
 
 def setup_modes(editor, view):
@@ -330,6 +337,8 @@ def run():
     then runs the application. Specific tasks include:
 
     - set up logging
+    - set up global exception handler
+    - check that another instance of the app isn't already running (exit if so)
     - create an application object
     - create an editor window and status bar
     - display a splash screen while starting
@@ -342,6 +351,8 @@ def run():
     logging.info("Platform: {}".format(platform.platform()))
     logging.info("Python path: {}".format(sys.path))
     logging.info("Language code: {}".format(i18n.language_code))
+
+    setup_exception_handler()
     check_only_running_once()
 
     #
@@ -449,7 +460,7 @@ def run():
 
     # Save the exit code for sys.exit call below.
     exit_status = app.exec_()
-    # Clean up the shared memory
+    # Clean up the shared memory used to signal an app instance is running
     _shared_memory.release()
 
     # Stop the program after the application finishes executing.

@@ -13,6 +13,7 @@ from mu.app import (
     excepthook,
     run,
     setup_logging,
+    setup_exception_handler,
     AnimatedSplash,
     StartupWorker,
     vlogger,
@@ -191,8 +192,7 @@ def test_setup_logging_without_envvar():
     """
     Ensure that logging is set up in some way.
 
-    Resetting the MU_LOG_TO_STDOUT env var ensures that the crash handler
-    will be enabled and stdout logging not
+    Resetting the MU_LOG_TO_STDOUT env var should mean stdout logging is disabled
     """
     os.environ.pop("MU_LOG_TO_STDOUT", "")
     with mock.patch("mu.app.TimedRotatingFileHandler") as log_conf, mock.patch(
@@ -210,15 +210,14 @@ def test_setup_logging_without_envvar():
             encoding=ENCODING,
         )
         logging.getLogger.assert_called_once_with()
-        assert sys.excepthook == excepthook
 
 
 def test_setup_logging_with_envvar():
     """
     Ensure that logging is set up in some way.
 
-    Setting the MU_LOG_TO_STDOUT env var ensures that the crash handler
-    will not be enabled and stdout logging will
+    Setting the MU_LOG_TO_STDOUT env var ensures that stdout logging
+    will be enabled
     """
     os.environ["MU_LOG_TO_STDOUT"] = "1"
     with mock.patch("mu.app.TimedRotatingFileHandler") as log_conf, mock.patch(
@@ -236,9 +235,18 @@ def test_setup_logging_with_envvar():
             encoding=ENCODING,
         )
         logging.getLogger.assert_called_once_with()
-        # ~ assert sys.excepthook == excepthook
         # clear this to avoid interfering with other tests
         os.environ.pop("MU_LOG_TO_STDOUT", "")
+
+
+def test_setup_except_hook():
+    """
+    confirm that setup_exception_handler() is setting up the global exception hook
+    """
+    saved = sys.excepthook
+    setup_exception_handler()
+    assert sys.excepthook == excepthook
+    sys.excepthook = saved
 
 
 def test_run():
@@ -278,7 +286,9 @@ def test_run():
         "mu.app.QThread"
     ), mock.patch(
         "mu.app.StartupWorker"
-    ) as mock_worker:
+    ) as mock_worker, mock.patch(
+        "mu.app.setup_exception_handler"
+    ) as mock_set_except:
         run()
         assert set_log.call_count == 1
         # foo.call_count is instantiating the class
@@ -297,6 +307,7 @@ def test_run():
         assert ex.call_count == 1
         assert mock_event_loop.call_count == 1
         assert mock_worker.call_count == 1
+        assert mock_set_except.call_count == 1
         window.load_theme.emit("day")
         qa.assert_has_calls([mock.call().setStyleSheet(DAY_STYLE)])
         window.load_theme.emit("night")
@@ -420,6 +431,7 @@ def test_only_running_once():
     """
     If we are the first to acquire the application lock we should succeed
     """
+    setup_exception_handler()
     check_only_running_once()
     _shared_memory.release()
     assert True
@@ -443,6 +455,7 @@ def test_running_twice():
             "import os;",
             "from mu import app;",
             "print('process 1 id: {}'.format(os.getpid()));",
+            "app.setup_exception_handler();",
             "app.check_only_running_once();",
             "time.sleep(2.5);",
             "app._shared_memory.release()",
@@ -454,6 +467,7 @@ def test_running_twice():
             "import os;",
             "from mu import app;",
             "print('process 2 id: {}'.format(os.getpid()));",
+            "app.setup_exception_handler();",
             "app.check_only_running_once()",
         )
     )
@@ -491,7 +505,6 @@ def test_running_twice_after_generic_exception():
     should clean up shared memory sentinel and running again should succeed.
     """
     #
-    # setup_logging() sets up our exception handler
     # check_only_running_once() acquires shared memory block
     # raise uncaught exception to trigger exception handler
     # (subprocess should exit with exit code)
@@ -506,7 +519,7 @@ def test_running_twice_after_generic_exception():
             "import os;",
             "from mu import app;",
             "print('process 1 id: {}'.format(os.getpid()));",
-            "app.setup_logging();",
+            "app.setup_exception_handler();",
             "app.check_only_running_once();"
             "raise RuntimeError('intentional test exception')",
             # Intentionally do not manually release shared memory here.
