@@ -284,7 +284,10 @@ class SharedMemoryMutex(object):
     NAME = "mu-tex"
 
     def __init__(self):
-        self._shared_memory = QSharedMemory(self.NAME)
+        sharedAppName = self.NAME
+        if "MU_TEST_SUPPORT_RANDOM_APP_NAME_EXT" in os.environ:
+            sharedAppName += os.environ["MU_TEST_SUPPORT_RANDOM_APP_NAME_EXT"]
+        self._shared_memory = QSharedMemory(sharedAppName)
 
     def __enter__(self):
         self._shared_memory.lock()
