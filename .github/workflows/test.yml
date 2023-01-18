@@ -172,4 +172,6 @@ jobs:
           password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
           command_timeout: 30m
-          script: xvfb-run python make.py check
+          script: |
+            export MU_TEST_SUPPORT_SLOW_RUNNER_FLAG=1
+            xvfb-run python make.py check

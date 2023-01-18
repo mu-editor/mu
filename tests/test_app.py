@@ -447,7 +447,26 @@ def test_running_twice():
     # process tree; otherwise the second attempt to acquire the mutex will
     # succeed (which we don't want to happen for our purposes)
     #
-    # This test involves too much timing contingent execution.
+    # Note:  This test involves too much timing contingent execution.
+    #
+    # IF THIS TEST FAILS:
+    #  Try increasing times (in the else clause if not on PiOS)
+    #
+    # processOneLaunchTime - time to wait before launching process two so that process
+    #                       can finish launching and create shared memory mutex buffer.
+    # processTwoLaunchAndExitTime - time for process two to launch, test, and exit.
+    #                           Process one must run at least this long before quitting.
+    #
+    # processTwoLaunchAndExitTime should always be longer than processOneLaunchTime.
+    #
+    # Set time to wait for process two to launch, extending it if
+    # env var is set (used for PiOS on CI currently - very slow)
+    if "MU_TEST_SUPPORT_SLOW_RUNNER_FLAG" in os.environ:
+        processOneLaunchTime = 1.5
+        processTwoLaunchAndExitTime = 3
+    else:
+        processOneLaunchTime = 0.5
+        processTwoLaunchAndExitTime = 1
     cmd1 = "".join(
         (
             "-c",
@@ -457,7 +476,7 @@ def test_running_twice():
             "print('process 1 id: {}'.format(os.getpid()));",
             "app.setup_exception_handler();",
             "app.check_only_running_once();",
-            "time.sleep(2.5);",
+            "time.sleep({0});".format(processTwoLaunchAndExitTime),
             "app._shared_memory.release()",
         )
     )
@@ -474,7 +493,7 @@ def test_running_twice():
 
     child1 = subprocess.Popen([sys.executable, cmd1])
     # let child 1 fully launch first (required)
-    time.sleep(1)
+    time.sleep(processOneLaunchTime)
     child2 = subprocess.run([sys.executable, cmd2])
 
     # wait for process 1 to exit _after_ launching process 2
