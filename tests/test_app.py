@@ -462,11 +462,15 @@ def test_running_twice():
     # Set time to wait for process two to launch, extending it if
     # env var is set (used for PiOS on CI currently - very slow)
     if "MU_TEST_SUPPORT_SLOW_RUNNER_FLAG" in os.environ:
-        processOneLaunchTime = 1.5
-        processTwoLaunchAndExitTime = 3
+        processOneLaunchTime = 2
+        processTwoLaunchAndExitTime = 4
     else:
         processOneLaunchTime = 0.5
         processTwoLaunchAndExitTime = 1
+    print("processOneLaunchTime: {}".format(processOneLaunchTime))
+    print(
+        "processTwoLaunchAndExitTime: {}".format(processTwoLaunchAndExitTime)
+    )
     cmd1 = "".join(
         (
             "-c",
