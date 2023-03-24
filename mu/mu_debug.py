@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import os
 import sys
 from mu.debugger.config import DEBUGGER_PORT
