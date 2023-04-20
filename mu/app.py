@@ -59,6 +59,7 @@ from .modes import (
     LegoMode,
     PicoMode,
     SnekMode,
+    VkMode,
 )
 from .interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
 from . import settings
@@ -254,6 +255,7 @@ def setup_modes(editor, view):
         "pygamezero": PyGameZeroMode(editor, view),
         "lego": LegoMode(editor, view),
         "pico": PicoMode(editor, view),
+        "vk": VkMode(editor, view),
     }
 
 
