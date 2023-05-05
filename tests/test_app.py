@@ -436,7 +436,7 @@ def test_only_running_once():
     assert True
 
 
-def test_running_twice_using_subprocess_chaining():
+def test_running_twice():
     # try chaining instead of timing based stuff
 
     # Comment on the original test says:
@@ -446,22 +446,12 @@ def test_running_twice_using_subprocess_chaining():
     #   succeed (which we don't want to happen for our purposes)
     #
     # However, on macOS it always seems to have the same parent process id and group
-    # process id; so I'm wondering if the requirement above is accurate so try this
-    # in CI on Windows runners and find out.
+    # process id and this test seems to work on all platforms on CI.
     #
-
     cmd2 = "".join(
         (
             "-c",
-            "import os;",
             "from mu import app;",
-            "pid = os.getpid();",
-            "print();",
-            "print('proc2: id: {}'.format(pid));",
-            "print('proc2: ppid: {}'.format(os.getppid())) \
-                if hasattr(os, 'getppid') else '';",
-            "print('proc2: pgid: {}'.format(os.getpgid(pid))) \
-                if hasattr(os, 'getpgid') else '';"
             "app.setup_exception_handler();",
             "app.check_only_running_once()"
             # should throw an exception and exit with code 2 if it's already running
@@ -471,25 +461,13 @@ def test_running_twice_using_subprocess_chaining():
     cmd1 = "".join(
         (
             "-c",
-            "import time;",
-            "import os;",
             "import subprocess;",
             "import sys;",
             "from mu import app;",
-            "pid = os.getpid();",
-            "print();",
-            "print('proc1: id: {}'.format(pid));",
-            "print('proc1: ppid: {}'.format(os.getppid())) \
-                if hasattr(os, 'getppid') else '';",
-            "print('proc1: pgid: {}'.format(os.getpgid(pid))) \
-                if hasattr(os, 'getpgid') else '';",
             "app.setup_exception_handler();",
             "app.check_only_running_once();",
             # launch child process that will try to 'launch' the app again:
             'child2 = subprocess.run([sys.executable, "{0}"]);'.format(cmd2),
-            "print();",
-            "print('proc1: proc2 returned code {}'.format(child2.returncode));",
-            "print('proc1: returning {}'.format(child2.returncode));",
             # clean up and exit returning child process result code (which should be 2
             # if this 'already running' code is working)
             "app._shared_memory.release();",
@@ -502,14 +480,12 @@ def test_running_twice_using_subprocess_chaining():
     assert child1.returncode == 2
 
 
-# The test_running_twice_after_generic_exception() test is
-# similar enough to this that we could probably skip this one
 def test_running_twice_after_exception():
     """
     If we run, throw an exception and then run again we should succeed.
     """
-    # call test that causes app to throw an exception because runs it twice
-    test_running_twice_using_subprocess_chaining()
+    # call test that causes app to throw an exception by running it twice
+    test_running_twice()
     # test that we can still run after exception thrown
     test_only_running_once()
 
