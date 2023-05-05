@@ -437,6 +437,9 @@ def test_only_running_once():
     assert True
 
 
+@pytest.mark.skip(
+    "Old form of testing for process runninig twice using timing; fragile"
+)
 def test_running_twice():
     """
     If we attempt to acquire the application lock when it's already held
@@ -447,7 +450,10 @@ def test_running_twice():
     # process tree; otherwise the second attempt to acquire the mutex will
     # succeed (which we don't want to happen for our purposes)
     #
-    # This test involves too much timing contingent execution.
+    # On macOS it always seems to have the same parent process id and group
+    # process id; so I'm wondering if the requirement above is accurate.
+    #
+    #
     cmd1 = "".join(
         (
             "-c",
@@ -484,6 +490,72 @@ def test_running_twice():
 
     assert result1 == 0
     assert result2 == 2
+
+
+def test_running_twice_using_subprocess_chaining():
+    # try chaining instead of timing based stuff
+
+    # Comment on the original test says:
+    #
+    #   It's important that the two competing processes are not part of the same
+    #   process tree; otherwise the second attempt to acquire the mutex will
+    #   succeed (which we don't want to happen for our purposes)
+    #
+    # However, on macOS it always seems to have the same parent process id and group
+    # process id; so I'm wondering if the requirement above is accurate so try this
+    # in CI on Windows runners and find out.
+    #
+
+    cmd2 = "".join(
+        (
+            "-c",
+            "import os;",
+            "from mu import app;",
+            "pid = os.getpid();",
+            "print();",
+            "print('proc2: id: {}'.format(pid));",
+            "print('proc2: ppid: {}'.format(os.getppid())) \
+                if hasattr(os, 'getppid') else '';",
+            "print('proc2: pgid: {}'.format(os.getpgid(pid))) \
+                if hasattr(os, 'getpgid') else '';"
+            "app.setup_exception_handler();",
+            "app.check_only_running_once()"
+            # should throw an exception and exit with code 2 if it's already running
+        )
+    )
+
+    cmd1 = "".join(
+        (
+            "-c",
+            "import time;",
+            "import os;",
+            "import subprocess;",
+            "import sys;",
+            "from mu import app;",
+            "pid = os.getpid();",
+            "print();",
+            "print('proc1: id: {}'.format(pid));",
+            "print('proc1: ppid: {}'.format(os.getppid())) \
+                if hasattr(os, 'getppid') else '';",
+            "print('proc1: pgid: {}'.format(os.getpgid(pid))) \
+                if hasattr(os, 'getpgid') else '';",
+            "app.setup_exception_handler();",
+            "app.check_only_running_once();",
+            # launch child process that will try to 'launch' the app again:
+            'child2 = subprocess.run([sys.executable, "{0}"]);'.format(cmd2),
+            "print();",
+            "print('proc1: proc2 returned code {}'.format(child2.returncode));",
+            "print('proc1: returning {}'.format(child2.returncode));",
+            # clean up and exit returning child process result code (which should be 2
+            # if this 'already running' code is working)
+            "app._shared_memory.release();",
+            "exit(child2.returncode)",
+        )
+    )
+
+    child1 = subprocess.run([sys.executable, cmd1])
+    print("child 1 return code: {}".format(child1.returncode))
+    assert child1.returncode == 2
 
 
 # The test_running_twice_after_generic_exception() test is
