@@ -6,7 +6,6 @@ import sys
 import os.path
 import pytest
 import subprocess
-import time
 
 from unittest import mock
 from mu.app import (
@@ -437,61 +436,6 @@ def test_only_running_once():
     assert True
 
 
-@pytest.mark.skip(
-    "Old form of testing for process runninig twice using timing; fragile"
-)
-def test_running_twice():
-    """
-    If we attempt to acquire the application lock when it's already held
-    we should fail
-    """
-    #
-    # It's important that the two competing processes are not part of the same
-    # process tree; otherwise the second attempt to acquire the mutex will
-    # succeed (which we don't want to happen for our purposes)
-    #
-    # On macOS it always seems to have the same parent process id and group
-    # process id; so I'm wondering if the requirement above is accurate.
-    #
-    #
-    cmd1 = "".join(
-        (
-            "-c",
-            "import time;",
-            "import os;",
-            "from mu import app;",
-            "print('process 1 id: {}'.format(os.getpid()));",
-            "app.setup_exception_handler();",
-            "app.check_only_running_once();",
-            "time.sleep(2.5);",
-            "app._shared_memory.release()",
-        )
-    )
-    cmd2 = "".join(
-        (
-            "-c",
-            "import os;",
-            "from mu import app;",
-            "print('process 2 id: {}'.format(os.getpid()));",
-            "app.setup_exception_handler();",
-            "app.check_only_running_once()",
-        )
-    )
-
-    child1 = subprocess.Popen([sys.executable, cmd1])
-    # let child 1 fully launch first (required)
-    time.sleep(1)
-    child2 = subprocess.run([sys.executable, cmd2])
-
-    # wait for process 1 to exit _after_ launching process 2
-    # and wait until it's done to access return code
-    result1 = child1.wait()
-    result2 = child2.returncode
-
-    assert result1 == 0
-    assert result2 == 2
-
-
 def test_running_twice_using_subprocess_chaining():
     # try chaining instead of timing based stuff
 
@@ -559,14 +503,13 @@ def test_running_twice_using_subprocess_chaining():
 
 
 # The test_running_twice_after_generic_exception() test is
-# similar enough to this that we can probably skip this one
-@pytest.mark.skip("Good test but slow")
+# similar enough to this that we could probably skip this one
 def test_running_twice_after_exception():
     """
     If we run, throw an exception and then run again we should succeed.
     """
     # call test that causes app to throw an exception because runs it twice
-    test_running_twice()
+    test_running_twice_using_subprocess_chaining()
     # test that we can still run after exception thrown
     test_only_running_once()
 
