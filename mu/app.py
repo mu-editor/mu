@@ -25,6 +25,7 @@ import os
 import time
 import platform
 import traceback
+import struct
 import sys
 import urllib
 import webbrowser
@@ -36,6 +37,7 @@ from PyQt5.QtCore import (
     QThread,
     QObject,
     pyqtSignal,
+    QSharedMemory,
 )
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
@@ -202,8 +204,7 @@ def setup_logging():
     """
     Configure logging.
     """
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR)
+    os.makedirs(LOG_DIR, exist_ok=True)
 
     # set logging format
     log_fmt = (
@@ -256,6 +257,46 @@ def setup_modes(editor, view):
     }
 
 
+class MutexError(BaseException):
+    pass
+
+
+class SharedMemoryMutex(object):
+    """Simple wrapper around the QSharedMemory object, adding a context
+    handler which uses the built in Semaphore as a locking mechanism
+    and raises an error if the shared memory object is already in use
+
+    TODO: The *nix implementation doesn't release the shared memory if a
+    process attached to it crashes. There is code to attempt to detect this
+    but it doesn't seem worth implementing for the moment: we're only talking
+    about a page at most.
+    """
+
+    NAME = "mu-tex"
+
+    def __init__(self):
+        self._shared_memory = QSharedMemory(self.NAME)
+
+    def __enter__(self):
+        self._shared_memory.lock()
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self._shared_memory.unlock()
+        self._shared_memory.detach()
+
+    def acquire(self):
+        if self._shared_memory.attach():
+            pid = struct.unpack("q", self._shared_memory.data()[:8])
+            raise MutexError("MUTEX: Mu is already running with pid %d" % pid)
+        else:
+            self._shared_memory.create(8)
+            self._shared_memory.data()[:8] = struct.pack("q", os.getpid())
+
+
+_shared_memory = SharedMemoryMutex()
+
+
 def is_linux_wayland():
     """
     Checks environmental variables to try to determine if Mu is running on
@@ -266,6 +307,17 @@ def is_linux_wayland():
             if "wayland" in os.environ.get(env_var, "").lower():
                 return True
     return False
+
+
+def check_only_running_once():
+    """If the application is already running log the error and exit"""
+    try:
+        with _shared_memory:
+            _shared_memory.acquire()
+    except MutexError as exc:
+        [message] = exc.args
+        logging.error(message)
+        sys.exit(2)
 
 
 def run():
@@ -282,9 +334,11 @@ def run():
     setup_logging()
     logging.info("\n\n-----------------\n\nStarting Mu {}".format(__version__))
     logging.info(platform.uname())
+    logging.info("Process id: {}".format(os.getpid()))
     logging.info("Platform: {}".format(platform.platform()))
     logging.info("Python path: {}".format(sys.path))
     logging.info("Language code: {}".format(i18n.language_code))
+    check_only_running_once()
 
     #
     # Load settings from known locations and register them for

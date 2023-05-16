@@ -5,6 +5,7 @@ Tests for the app script.
 import sys
 import os.path
 import pytest
+import subprocess
 
 from unittest import mock
 from mu.app import (
@@ -14,6 +15,7 @@ from mu.app import (
     AnimatedSplash,
     StartupWorker,
     vlogger,
+    check_only_running_once,
 )
 from mu.debugger.config import DEBUGGER_PORT
 
@@ -197,7 +199,7 @@ def test_setup_logging_without_envvar():
         "mu.app.os.makedirs", return_value=None
     ) as mkdir:
         setup_logging()
-        mkdir.assert_called_once_with(LOG_DIR)
+        mkdir.assert_called_once_with(LOG_DIR, exist_ok=True)
         log_conf.assert_called_once_with(
             LOG_FILE,
             when="midnight",
@@ -223,7 +225,7 @@ def test_setup_logging_with_envvar():
         "mu.app.os.makedirs", return_value=None
     ) as mkdir:
         setup_logging()
-        mkdir.assert_called_once_with(LOG_DIR)
+        mkdir.assert_called_once_with(LOG_DIR, exist_ok=True)
         log_conf.assert_called_once_with(
             LOG_FILE,
             when="midnight",
@@ -408,3 +410,33 @@ def test_debug_no_args():
     with mock.patch("builtins.print", mock_print):
         mu_debug.debug()
         mock_print.assert_called_once_with(expected_msg)
+
+
+def test_only_running_once():
+    """
+    If we are the first to acquire the application lock we should succeed
+    """
+    check_only_running_once()
+    assert True
+
+
+def test_running_twice():
+    """
+    If we attempt to acquire the application lock when it's already held
+    we should fail
+    """
+    #
+    # It's important that the two competing processes are not part of the same
+    # process tree; otherwise the second attempt to acquire the mutex will
+    # succeed (which we don't want to happen for our purposes)
+    #
+    cmd1 = "import time;"
+    "from mu import app;"
+    "app.check_only_running_once();"
+    "time.sleep(2)"
+    cmd2 = "import time;"
+    "from mu import app;"
+    "app.check_only_running_once()"
+    subprocess.Popen([sys.executable, cmd1])
+    result = subprocess.run([sys.executable, cmd2])
+    assert result.returncode == 2

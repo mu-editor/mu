@@ -1,9 +1,0 @@
-* Minification
-* Add files to hex
-* Bug fixes to the debugger
-* Installer for OSX
-
-* Tutorials
-* Documentation
-* Website
-* Add "127.0.0.1 localhost" to /etc/hosts on OSX
