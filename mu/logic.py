@@ -51,7 +51,7 @@ LOG_FILE = os.path.join(LOG_DIR, "mu.log")
 # Regex to match pycodestyle (PEP8) output.
 STYLE_REGEX = re.compile(r".*:(\d+):(\d+):\s+(.*)")
 # Regex to match flake8 output.
-FLAKE_REGEX = re.compile(r".*:(\d+):(\d+)\s+(.*)")
+FLAKE_REGEX = re.compile(r".*:(\d+):(\d+):?\s+(.*)")
 # Regex to match undefined name errors for given builtins
 BUILTINS_REGEX = r"^undefined name '({})'"
 # Regex to match false positive flake errors if microbit.* is expanded.
@@ -470,11 +470,14 @@ def check_pycodestyle(code, config_file=False):
                 description += _(" above this line")
             if line_no not in style_feedback:
                 style_feedback[line_no] = []
+            # Capitalise the 1st letter keeping the rest of the str unmodified
+            if description:
+                description = description[0].upper() + description[1:]
             style_feedback[line_no].append(
                 {
                     "line_no": line_no,
                     "column": int(col) - 1,
-                    "message": description.capitalize(),
+                    "message": description,
                     "code": code,
                 }
             )
@@ -1426,7 +1429,7 @@ class Editor(QObject):
         }
         save_session(session)
         logger.info("Quitting.\n\n")
-        sys.exit(0)
+        QtCore.QCoreApplication.exit(0)
 
     def show_admin(self, event=None):
         """

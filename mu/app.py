@@ -25,6 +25,7 @@ import os
 import time
 import platform
 import traceback
+import struct
 import sys
 import urllib
 import webbrowser
@@ -36,6 +37,7 @@ from PyQt5.QtCore import (
     QThread,
     QObject,
     pyqtSignal,
+    QSharedMemory,
 )
 from PyQt5.QtWidgets import QApplication, QSplashScreen
 
@@ -170,6 +172,9 @@ def excepthook(*exc_args):
     Log exception and exit cleanly.
     """
     logging.error("Unrecoverable error", exc_info=(exc_args))
+    # Very important to release shared memory used to signal an app instance is running
+    # as we are going to exit below
+    _shared_memory.release()
     if exc_args[0] != KeyboardInterrupt:
         try:
             log_file = base64.standard_b64encode(LOG_FILE.encode("utf-8"))
@@ -189,7 +194,8 @@ def excepthook(*exc_args):
                 "e": error,  # error message
             }
             args = urllib.parse.urlencode(params)
-            webbrowser.open("https://codewith.mu/crash/?" + args)
+            if "MU_SUPPRESS_CRASH_REPORT_FORM" not in os.environ:
+                webbrowser.open("https://codewith.mu/crash/?" + args)
         except Exception as e:  # The Alamo of crash handling.
             logging.error("Failed to report crash", exc_info=e)
         sys.__excepthook__(*exc_args)
@@ -198,12 +204,18 @@ def excepthook(*exc_args):
         sys.exit(0)
 
 
+def setup_exception_handler():
+    """
+    Install global exception handler
+    """
+    sys.excepthook = excepthook
+
+
 def setup_logging():
     """
     Configure logging.
     """
-    if not os.path.exists(LOG_DIR):
-        os.makedirs(LOG_DIR)
+    os.makedirs(LOG_DIR, exist_ok=True)
 
     # set logging format
     log_fmt = (
@@ -230,8 +242,6 @@ def setup_logging():
         stdout_handler.setFormatter(formatter)
         stdout_handler.setLevel(logging.DEBUG)
         log.addHandler(stdout_handler)
-    else:
-        sys.excepthook = excepthook
 
 
 def setup_modes(editor, view):
@@ -256,12 +266,82 @@ def setup_modes(editor, view):
     }
 
 
+class MutexError(BaseException):
+    pass
+
+
+class SharedMemoryMutex(object):
+    """Simple wrapper around the QSharedMemory object, adding a context
+    handler which uses the built in Semaphore as a locking mechanism
+    and raises an error if the shared memory object is already in use
+
+    TODO: The *nix implementation doesn't release the shared memory if a
+    process attached to it crashes. There is code to attempt to detect this
+    but it doesn't seem worth implementing for the moment: we're only talking
+    about a page at most.
+    """
+
+    NAME = "mu-tex"
+
+    def __init__(self):
+        sharedAppName = self.NAME
+        if "MU_TEST_SUPPORT_RANDOM_APP_NAME_EXT" in os.environ:
+            sharedAppName += os.environ["MU_TEST_SUPPORT_RANDOM_APP_NAME_EXT"]
+        self._shared_memory = QSharedMemory(sharedAppName)
+
+    def __enter__(self):
+        self._shared_memory.lock()
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self._shared_memory.unlock()
+
+    def acquire(self):
+        if self._shared_memory.attach():
+            pid = struct.unpack("q", self._shared_memory.data()[:8])
+            raise MutexError("MUTEX: Mu is already running with pid %d" % pid)
+        else:
+            self._shared_memory.create(8)
+            self._shared_memory.data()[:8] = struct.pack("q", os.getpid())
+
+    def release(self):
+        self._shared_memory.detach()
+
+
+_shared_memory = SharedMemoryMutex()
+
+
+def is_linux_wayland():
+    """
+    Checks environmental variables to try to determine if Mu is running on
+    wayland.
+    """
+    if platform.system() == "Linux":
+        for env_var in ("XDG_SESSION_TYPE", "WAYLAND_DISPLAY"):
+            if "wayland" in os.environ.get(env_var, "").lower():
+                return True
+    return False
+
+
+def check_only_running_once():
+    """If the application is already running log the error and exit"""
+    try:
+        with _shared_memory:
+            _shared_memory.acquire()
+    except MutexError as exc:
+        [message] = exc.args
+        logging.error(message)
+        sys.exit(2)
+
+
 def run():
     """
     Creates all the top-level assets for the application, sets things up and
     then runs the application. Specific tasks include:
 
     - set up logging
+    - set up global exception handler
+    - check that another instance of the app isn't already running (exit if so)
     - create an application object
     - create an editor window and status bar
     - display a splash screen while starting
@@ -270,9 +350,13 @@ def run():
     setup_logging()
     logging.info("\n\n-----------------\n\nStarting Mu {}".format(__version__))
     logging.info(platform.uname())
+    logging.info("Process id: {}".format(os.getpid()))
     logging.info("Platform: {}".format(platform.platform()))
     logging.info("Python path: {}".format(sys.path))
     logging.info("Language code: {}".format(i18n.language_code))
+
+    setup_exception_handler()
+    check_only_running_once()
 
     #
     # Load settings from known locations and register them for
@@ -292,6 +376,19 @@ def run():
     # Setting this environment variable fixes the problem.
     # See issue #1147 for more information
     os.environ["QT_MAC_WANTS_LAYER"] = "1"
+
+    # In Wayland for AppImage to launch it needs QT_QPA_PLATFORM set
+    # But only touch it if unset, useful for CI to configure it to "offscreen"
+    if is_linux_wayland():
+        if "QT_QPA_PLATFORM" not in os.environ:
+            logging.info("Wayland detected, setting QT_QPA_PLATFORM=wayland")
+            os.environ["QT_QPA_PLATFORM"] = "wayland"
+        else:
+            logging.info(
+                "Wayland detected, QT_QPA_PLATFORM already set to: {}".format(
+                    os.environ["QT_QPA_PLATFORM"]
+                )
+            )
 
     # The app object is the application running on your computer.
     app = QApplication(sys.argv)
@@ -364,5 +461,10 @@ def run():
     # Restore the previous session along with files passed by the os
     editor.restore_session(sys.argv[1:])
 
+    # Save the exit code for sys.exit call below.
+    exit_status = app.exec_()
+    # Clean up the shared memory used to signal an app instance is running
+    _shared_memory.release()
+
     # Stop the program after the application finishes executing.
-    sys.exit(app.exec_())
+    sys.exit(exit_status)

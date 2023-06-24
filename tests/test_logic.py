@@ -2226,9 +2226,9 @@ def test_quit_calls_sys_exit(mocked_session):
     mock_open.return_value.write = mock.MagicMock()
     mock_event = mock.MagicMock()
     mock_event.ignore = mock.MagicMock(return_value=None)
-    with mock.patch("sys.exit", return_value=None) as ex, mock.patch(
-        "builtins.open", mock_open
-    ):
+    with mock.patch(
+        "PyQt5.QtCore.QCoreApplication.exit", return_value=0
+    ) as ex, mock.patch("builtins.open", mock_open):
         ed.quit(mock_event)
     ex.assert_called_once_with(0)
 
