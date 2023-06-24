@@ -322,6 +322,19 @@ class MicroPythonREPLPane(QTextEdit):
         self.set_qtcursor_to_devicecursor()
         # Calculate number of steps
         steps = new_position - self.device_cursor_position
+
+        # Limit cursor movement to the last line
+        if steps < 0:
+            cursor = self.textCursor()
+            cursor.setPosition(self.device_cursor_position)
+            cursor.movePosition(
+                QTextCursor.StartOfLine,
+                mode=QTextCursor.KeepAnchor,
+            )
+            line_start = cursor.selectionStart()
+            if line_start > new_position:
+                return
+
         # Send the appropriate right/left moves
         if steps > 0:
             # Move cursor right if positive

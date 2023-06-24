@@ -172,6 +172,9 @@ def excepthook(*exc_args):
     Log exception and exit cleanly.
     """
     logging.error("Unrecoverable error", exc_info=(exc_args))
+    # Very important to release shared memory used to signal an app instance is running
+    # as we are going to exit below
+    _shared_memory.release()
     if exc_args[0] != KeyboardInterrupt:
         try:
             log_file = base64.standard_b64encode(LOG_FILE.encode("utf-8"))
@@ -191,13 +194,21 @@ def excepthook(*exc_args):
                 "e": error,  # error message
             }
             args = urllib.parse.urlencode(params)
-            webbrowser.open("https://codewith.mu/crash/?" + args)
+            if "MU_SUPPRESS_CRASH_REPORT_FORM" not in os.environ:
+                webbrowser.open("https://codewith.mu/crash/?" + args)
         except Exception as e:  # The Alamo of crash handling.
             logging.error("Failed to report crash", exc_info=e)
         sys.__excepthook__(*exc_args)
         sys.exit(1)
     else:  # It's harmless, don't sound the alarm.
         sys.exit(0)
+
+
+def setup_exception_handler():
+    """
+    Install global exception handler
+    """
+    sys.excepthook = excepthook
 
 
 def setup_logging():
@@ -231,8 +242,6 @@ def setup_logging():
         stdout_handler.setFormatter(formatter)
         stdout_handler.setLevel(logging.DEBUG)
         log.addHandler(stdout_handler)
-    else:
-        sys.excepthook = excepthook
 
 
 def setup_modes(editor, view):
@@ -275,7 +284,10 @@ class SharedMemoryMutex(object):
     NAME = "mu-tex"
 
     def __init__(self):
-        self._shared_memory = QSharedMemory(self.NAME)
+        sharedAppName = self.NAME
+        if "MU_TEST_SUPPORT_RANDOM_APP_NAME_EXT" in os.environ:
+            sharedAppName += os.environ["MU_TEST_SUPPORT_RANDOM_APP_NAME_EXT"]
+        self._shared_memory = QSharedMemory(sharedAppName)
 
     def __enter__(self):
         self._shared_memory.lock()
@@ -283,7 +295,6 @@ class SharedMemoryMutex(object):
 
     def __exit__(self, *args, **kwargs):
         self._shared_memory.unlock()
-        self._shared_memory.detach()
 
     def acquire(self):
         if self._shared_memory.attach():
@@ -292,6 +303,9 @@ class SharedMemoryMutex(object):
         else:
             self._shared_memory.create(8)
             self._shared_memory.data()[:8] = struct.pack("q", os.getpid())
+
+    def release(self):
+        self._shared_memory.detach()
 
 
 _shared_memory = SharedMemoryMutex()
@@ -326,6 +340,8 @@ def run():
     then runs the application. Specific tasks include:
 
     - set up logging
+    - set up global exception handler
+    - check that another instance of the app isn't already running (exit if so)
     - create an application object
     - create an editor window and status bar
     - display a splash screen while starting
@@ -338,6 +354,8 @@ def run():
     logging.info("Platform: {}".format(platform.platform()))
     logging.info("Python path: {}".format(sys.path))
     logging.info("Language code: {}".format(i18n.language_code))
+
+    setup_exception_handler()
     check_only_running_once()
 
     #
@@ -443,5 +461,10 @@ def run():
     # Restore the previous session along with files passed by the os
     editor.restore_session(sys.argv[1:])
 
+    # Save the exit code for sys.exit call below.
+    exit_status = app.exec_()
+    # Clean up the shared memory used to signal an app instance is running
+    _shared_memory.release()
+
     # Stop the program after the application finishes executing.
-    sys.exit(app.exec_())
+    sys.exit(exit_status)
