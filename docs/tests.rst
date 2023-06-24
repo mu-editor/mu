@@ -12,7 +12,7 @@ We use several different sorts of test:
   `PEP8 <https://www.python.org/dev/peps/pep-0008/>`_.
 * `PyTest <https://pytest.readthedocs.io/en/latest/>`_ as a framework for
   writing our unit tests.
-* `Coverage <https://coverage.readthedocs.io/en/coverage-4.5/>`_ for checking
+* `Coverage <https://coverage.readthedocs.io/>`_ for checking
   the coverage of our unit tests.
 
 .. warning::

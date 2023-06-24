@@ -504,9 +504,9 @@ class VirtualEnvironment(object):
         if stderr_output:
             output += "\n\nSTDERR: " + stderr_output
         logger.debug(
-            "Process returned %d; output: %s",
-            process.returncode,
-            compact(output),
+            "Process returned {}; output: {}".format(
+                process.returncode, compact(output)
+            ),
         )
         return process.returncode == 0, output
 
