@@ -325,6 +325,7 @@ def is_linux_wayland():
 
 def check_only_running_once():
     """If the application is already running log the error and exit"""
+    return
     try:
         with _shared_memory:
             _shared_memory.acquire()
@@ -354,6 +355,9 @@ def run():
     logging.info("Platform: {}".format(platform.platform()))
     logging.info("Python path: {}".format(sys.path))
     logging.info("Language code: {}".format(i18n.language_code))
+    for k, v in os.environ.items():
+        if k.startswith(("XDG", "WAYLAND", "WESTON", "XCURSOR", "DISPLAY")):
+            logging.info("Env: %s => %s", k, v)
 
     setup_exception_handler()
     check_only_running_once()

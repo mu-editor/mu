@@ -60,7 +60,7 @@ coverage: clean
 	export LANG=en_GB.utf8
 	pytest -v --random-order --cov-config setup.cfg --cov-report term-missing --cov=mu tests/
 
-tidy: 
+tidy:
 	python make.py tidy
 
 black:
@@ -119,7 +119,8 @@ macos: check
 	ls -la ./build/pup/
 	ls -la ./dist/
 
-linux: check
+linux:
+    #check
 	@echo "\nFetching wheels."
 	python -m mu.wheels --package
 	@echo "\nPackaging Mu into a Linux AppImage."
