@@ -81,27 +81,26 @@ class REPLConnection(QObject):
     serial = None
     data_received = pyqtSignal(bytes)
     connection_error = pyqtSignal(str)
-    
-    class SerialPortBuffer():
+
+    class SerialPortBuffer:
         def __init__(self):
             pass
-        
+
         def clear(self):
-            if hasattr(self, '_buffer'):
-                delattr(self, '_buffer')
-                
+            if hasattr(self, "_buffer"):
+                delattr(self, "_buffer")
+
         @property
         def buffer(self):
-            if hasattr(self, '_buffer'):
+            if hasattr(self, "_buffer"):
                 return self._buffer
             else:
-                return b''
-            
+                return b""
+
         @buffer.setter
         def buffer(self, x):
             self._buffer = x
 
-        
     def __init__(self, port, baudrate=115200):
         super().__init__()
         self.serial = QSerialPort()
@@ -170,7 +169,7 @@ class REPLConnection(QObject):
         self.data_received.emit(data)
         if self._serialmode == BUFFER:
             self._buffer.buffer += data
-    
+
     def write(self, data):
         self.serial.write(data)
 
@@ -214,23 +213,23 @@ class REPLConnection(QObject):
 
         raw_off = [
             SOFT_REBOOT,
-         ]
-               
-        logger.info('\n'.join(['Executing:'] + commands))
+        ]
+
+        logger.info("\n".join(["Executing:"] + commands))
         newline = [b'print("\\n");']
         commands = [c.encode("utf-8") + b"\r" for c in commands]
         commands.append(b"\r")
-        
+
         self._serialmode = BUFFER
         self.execute(raw_on)
-        self.wait_for_prompt(b'MPY sofraw REPL; CTRL-B to exit\r')             
-        logger.info('Data from serial:' + self._buffer.buffer.decode('UTF-8'))
-        self._buffer.clear()       
+        self.wait_for_prompt(b"MPY sofraw REPL; CTRL-B to exit\r")
+        logger.info("Data from serial:" + self._buffer.buffer.decode("UTF-8"))
+        self._buffer.clear()
         command_sequence = newline + commands + raw_off
         self.execute(command_sequence)
         self._serialmode = PASSTHRU
         self._buffer.clear()
-        
+
 
 class BaseMode(QObject):
     """
