@@ -25,7 +25,7 @@ import logging
 import pkgutil
 from serial import Serial
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
-from PyQt5.QtCore import QObject, pyqtSignal, QIODevice, QTimer
+from PyQt5.QtCore import QObject, pyqtSignal, QIODevice
 from mu.logic import Device
 from mu.contrib import microfs
 from .. import config, settings
@@ -35,6 +35,8 @@ EXIT_RAW_MODE = b"\x02"  # CTRL-B
 KEYBOARD_INTERRUPT = b"\x03"  # CTRL-C
 SOFT_REBOOT = b"\x04"  # CTRL-C
 
+PASSTHRU = 1
+BUFFER = 2
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +81,27 @@ class REPLConnection(QObject):
     serial = None
     data_received = pyqtSignal(bytes)
     connection_error = pyqtSignal(str)
+    
+    class SerialPortBuffer():
+        def __init__(self):
+            pass
+        
+        def clear(self):
+            if hasattr(self, '_buffer'):
+                delattr(self, '_buffer')
+                
+        @property
+        def buffer(self):
+            if hasattr(self, '_buffer'):
+                return self._buffer
+            else:
+                return b''
+            
+        @buffer.setter
+        def buffer(self, x):
+            self._buffer = x
 
+        
     def __init__(self, port, baudrate=115200):
         super().__init__()
         self.serial = QSerialPort()
@@ -87,6 +109,8 @@ class REPLConnection(QObject):
         self._baudrate = baudrate
         self.serial.setPortName(port)
         self.serial.setBaudRate(baudrate)
+        self._serialmode = PASSTHRU
+        self._buffer = self.SerialPortBuffer()
 
     @property
     def port(self):
@@ -144,7 +168,9 @@ class REPLConnection(QObject):
         """
         data = bytes(self.serial.readAll())
         self.data_received.emit(data)
-
+        if self._serialmode == BUFFER:
+            self._buffer.buffer += data
+    
     def write(self, data):
         self.serial.write(data)
 
@@ -154,16 +180,23 @@ class REPLConnection(QObject):
 
     def execute(self, commands):
         """
-        Execute a series of commands over a period of time (scheduling
-        remaining commands to be run in the next iteration of the event loop).
+        Execute a series of commands. Wait between the fragments
+        until the serial port has written these bytes.
         """
-        if commands:
-            command = commands[0]
-            logger.info("Sending command {}".format(command))
+        for command in commands:
             self.write(command)
-            remainder = commands[1:]
-            remaining_task = lambda commands=remainder: self.execute(commands)
-            QTimer.singleShot(2, remaining_task)
+            self.serial.waitForBytesWritten(1000)
+
+    def wait_for_prompt(self, prompt, timeout: int = 100):
+        """
+        Wait for prompt to appear in the REPL.
+        Waits in increments of 100 msec. Default is waiting for up to 10 seconds.
+        """
+        i = 0
+        while self.serial.waitForReadyRead(100) and i < timeout:
+            i += 1
+            if prompt in self._buffer.buffer:
+                break
 
     def send_commands(self, commands):
         """
@@ -179,15 +212,25 @@ class REPLConnection(QObject):
             KEYBOARD_INTERRUPT,
         ]
 
+        raw_off = [
+            SOFT_REBOOT,
+         ]
+               
+        logger.info('\n'.join(['Executing:'] + commands))
         newline = [b'print("\\n");']
         commands = [c.encode("utf-8") + b"\r" for c in commands]
         commands.append(b"\r")
-        commands.append(SOFT_REBOOT)
-        raw_off = [EXIT_RAW_MODE]
-        command_sequence = raw_on + newline + commands + raw_off
-        logger.info(command_sequence)
+        
+        self._serialmode = BUFFER
+        self.execute(raw_on)
+        self.wait_for_prompt(b'MPY sofraw REPL; CTRL-B to exit\r')             
+        logger.info('Data from serial:' + self._buffer.buffer.decode('UTF-8'))
+        self._buffer.clear()       
+        command_sequence = newline + commands + raw_off
         self.execute(command_sequence)
-
+        self._serialmode = PASSTHRU
+        self._buffer.clear()
+        
 
 class BaseMode(QObject):
     """
