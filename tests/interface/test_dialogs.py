@@ -179,11 +179,7 @@ def microbit():
     return device
 
 
-@mock.patch(
-    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
-    return_value=True,
-)
-def test_ESPFirmwareFlasherWidget_setup(esptool_is_installed, microbit):
+def test_ESPFirmwareFlasherWidget_setup(microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -201,13 +197,7 @@ def test_ESPFirmwareFlasherWidget_setup(esptool_is_installed, microbit):
         espff.setup(mode, device_list)
 
 
-@mock.patch(
-    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
-    return_value=True,
-)
-def test_ESPFirmwareFlasherWidget_show_folder_dialog(
-    esptool_is_installed, microbit
-):
+def test_ESPFirmwareFlasherWidget_show_folder_dialog(microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -227,13 +217,7 @@ def test_ESPFirmwareFlasherWidget_show_folder_dialog(
     assert espff.txtFolder.text() == path.replace("/", os.sep)
 
 
-@mock.patch(
-    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
-    return_value=True,
-)
-def test_ESPFirmwareFlasherWidget_update_firmware(
-    esptool_is_installed, microbit
-):
+def test_ESPFirmwareFlasherWidget_update_firmware(microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -259,13 +243,7 @@ def test_ESPFirmwareFlasherWidget_update_firmware(
     espff.update_firmware()
 
 
-@mock.patch(
-    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
-    return_value=True,
-)
-def test_ESPFirmwareFlasherWidget_update_firmware_no_device(
-    esptool_is_installed,
-):
+def test_ESPFirmwareFlasherWidget_update_firmware_no_device():
     """
     Ensure that we don't try to flash, when no device is connected.
     """
@@ -285,13 +263,7 @@ def test_ESPFirmwareFlasherWidget_update_firmware_no_device(
     espff.run_esptool.assert_not_called()
 
 
-@mock.patch(
-    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
-    return_value=True,
-)
-def test_ESPFirmwareFlasherWidget_esptool_error(
-    esptool_is_installed, microbit
-):
+def test_ESPFirmwareFlasherWidget_esptool_error(microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -306,13 +278,7 @@ def test_ESPFirmwareFlasherWidget_esptool_error(
     espff.esptool_error(0)
 
 
-@mock.patch(
-    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
-    return_value=True,
-)
-def test_ESPFirmwareFlasherWidget_esptool_finished(
-    esptool_is_installed, microbit
-):
+def test_ESPFirmwareFlasherWidget_esptool_finished(microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -338,11 +304,7 @@ def test_ESPFirmwareFlasherWidget_esptool_finished(
     assert "bar" in espff.log_text_area.toPlainText()
 
 
-@mock.patch(
-    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
-    return_value=True,
-)
-def test_ESPFirmwareFlasherWidget_read_process(esptool_is_installed, microbit):
+def test_ESPFirmwareFlasherWidget_read_process(microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware Flasher
     displays the referenced settings data in the expected way.
@@ -365,13 +327,7 @@ def test_ESPFirmwareFlasherWidget_read_process(esptool_is_installed, microbit):
     espff.read_process()
 
 
-@mock.patch(
-    "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
-    return_value=True,
-)
-def test_ESPFirmwareFlasherWidget_firmware_path_changed(
-    esptool_is_installed, microbit
-):
+def test_ESPFirmwareFlasherWidget_firmware_path_changed(microbit):
     """
     Ensure the widget for editing settings related to the ESP Firmware
     Flasher displays the referenced settings data in the expected way.
@@ -486,14 +442,10 @@ def test_AdminDialog_setup():
     modes = mock.MagicMock()
     device_list = mu.logic.DeviceList(modes)
     ad = mu.interface.dialogs.AdminDialog(mock_window)
-    with mock.patch(
-        "mu.interface.dialogs.ESPFirmwareFlasherWidget.esptool_is_installed",
-        return_value=True,
-    ):
-        ad.setup(log, settings, packages, mode, device_list)
-        assert ad.log_widget.log_text_area.toPlainText() == log
-        s = ad.settings()
-        assert s == settings
+    ad.setup(log, settings, packages, mode, device_list)
+    assert ad.log_widget.log_text_area.toPlainText() == log
+    s = ad.settings()
+    assert s == settings
 
 
 def test_FindReplaceDialog_setup():

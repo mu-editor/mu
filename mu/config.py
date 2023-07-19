@@ -1,9 +1,9 @@
 import os
 
-import appdirs
+import platformdirs
 
 # The default directory for application data (i.e., configuration).
-DATA_DIR = appdirs.user_data_dir(appname="mu", appauthor="python")
+DATA_DIR = platformdirs.user_data_dir(appname="mu", appauthor="python")
 
 # The name of the default virtual environment used by Mu.
 VENV_NAME = "mu_venv"

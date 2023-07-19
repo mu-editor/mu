@@ -29,7 +29,7 @@ import random
 import locale
 import shutil
 
-import appdirs
+import platformdirs
 from PyQt6.QtWidgets import QMessageBox
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6 import QtCore
@@ -45,13 +45,13 @@ from . import settings
 from .virtual_environment import venv
 
 # The default directory for application logs.
-LOG_DIR = appdirs.user_log_dir(appname="mu", appauthor="python")
+LOG_DIR = platformdirs.user_log_dir(appname="mu", appauthor="python")
 # The path to the log file for the application.
 LOG_FILE = os.path.join(LOG_DIR, "mu.log")
 # Regex to match pycodestyle (PEP8) output.
 STYLE_REGEX = re.compile(r".*:(\d+):(\d+):\s+(.*)")
 # Regex to match flake8 output.
-FLAKE_REGEX = re.compile(r".*:(\d+):(\d+)\s+(.*)")
+FLAKE_REGEX = re.compile(r".*:(\d+):(\d+):?\s+(.*)")
 # Regex to match undefined name errors for given builtins
 BUILTINS_REGEX = r"^undefined name '({})'"
 # Regex to match false positive flake errors if microbit.* is expanded.
@@ -470,11 +470,14 @@ def check_pycodestyle(code, config_file=False):
                 description += _(" above this line")
             if line_no not in style_feedback:
                 style_feedback[line_no] = []
+            # Capitalise the 1st letter keeping the rest of the str unmodified
+            if description:
+                description = description[0].upper() + description[1:]
             style_feedback[line_no].append(
                 {
                     "line_no": line_no,
                     "column": int(col) - 1,
-                    "message": description.capitalize(),
+                    "message": description,
                     "code": code,
                 }
             )

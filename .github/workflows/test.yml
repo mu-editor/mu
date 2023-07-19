@@ -17,9 +17,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: Test Py ${{ matrix.python-version }} - ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python info
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Test Py 3.10 - arm-debian-bookworm
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up QEMU
         id: qemu
         uses: docker/setup-qemu-action@v2

@@ -3,7 +3,8 @@
 Tests for the flask based web mode.
 """
 import os
-from mu.modes.web import WebMode, CODE_TEMPLATE
+import pytest
+from mu.modes.web import WebMode, CODE_TEMPLATE, FLASK_APP
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, FLASK_APIS
 from unittest import mock
 
@@ -66,6 +67,73 @@ def test_web_api():
     wm = WebMode(editor, view)
     result = wm.api()
     assert result == SHARED_APIS + PYTHON3_APIS + FLASK_APIS
+
+
+def test_assets_dir_no_flask_app():
+    """
+    If there's no Python source file with an instantiated Flask app, then
+    just return the workspace_dir() value.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.tabs.count.return_value = 0
+    wm = WebMode(editor, view)
+    with mock.patch("os.makedirs"):
+        result = wm.assets_dir("foo")
+    assert result == os.path.join(wm.workspace_dir(), "foo")
+
+
+def test_assets_dir_too_many_flask_apps():
+    """
+    If more than one Python source file is open and contains an instantiated
+    Flask app, then raise a ValueError.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.tabs.count.return_value = 2
+    tab1 = mock.MagicMock()
+    tab1.text.return_value = FLASK_APP
+    tab1.path = os.path.join("foo", "file.py")
+    tab2 = mock.MagicMock()
+    tab2.text.return_value = FLASK_APP
+    tab2.path = os.path.join("bar", "file.py")
+    view.tabs.widget.side_effect = [
+        tab1,
+        tab2,
+    ]
+    wm = WebMode(editor, view)
+    with pytest.raises(ValueError):
+        wm.assets_dir("foo")
+
+
+def test_assets_dir_exactly_one_flask_app():
+    """
+    The asset location is derived from its path relative to the single Python
+    source file that contains an instantiated Flask application.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.tabs.count.return_value = 1
+    tab1 = mock.MagicMock()
+    tab1.text.return_value = FLASK_APP
+    tab1.path = os.path.join("foo", "file.py")
+    view.tabs.widget.return_value = tab1
+    wm = WebMode(editor, view)
+    with mock.patch("os.makedirs"):
+        result = wm.assets_dir("baz")
+    assert result == os.path.join("foo", "baz")
+
+
+def test_cannot_resolve_flask_app():
+    """
+    Ensure a helpful message is displayed by Mu.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    view.show_message = mock.MagicMock()
+    wm = WebMode(editor, view)
+    wm.cannot_resolve_flask_app()
+    assert view.show_message.call_count == 1
 
 
 def test_run_toggle_on():
@@ -264,9 +332,10 @@ def test_load_templates():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     wm = WebMode(editor, view)
+    expected_path = os.path.join(wm.workspace_dir(), "templates")
+    wm.assets_dir = mock.MagicMock(return_value=expected_path)
     view.current_tab.path = os.path.join(wm.workspace_dir(), "foo.py")
     wm.load_templates(None)
-    expected_path = os.path.join(wm.workspace_dir(), "templates")
     editor.load.assert_called_once_with(default_path=expected_path)
 
 
@@ -279,9 +348,24 @@ def test_load_templates_no_file():
     view = mock.MagicMock()
     view.current_tab = None
     wm = WebMode(editor, view)
-    wm.load_templates(None)
     expected_path = os.path.join(wm.workspace_dir(), "templates")
+    wm.assets_dir = mock.MagicMock(return_value=expected_path)
+    wm.load_templates(None)
     editor.load.assert_called_once_with(default_path=expected_path)
+
+
+def test_load_templates_cannot_resolve():
+    """
+    Mu can't tell the location to open, so displays the expected helpful
+    message to the user.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    wm = WebMode(editor, view)
+    wm.assets_dir = mock.MagicMock(side_effect=ValueError("Boom"))
+    wm.cannot_resolve_flask_app = mock.MagicMock()
+    wm.load_templates(None)
+    wm.cannot_resolve_flask_app.assert_called_once_with()
 
 
 def test_load_css():
@@ -292,9 +376,10 @@ def test_load_css():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     wm = WebMode(editor, view)
+    expected_path = os.path.join(wm.workspace_dir(), "static", "css")
+    wm.assets_dir = mock.MagicMock(return_value=expected_path)
     view.current_tab.path = os.path.join(wm.workspace_dir(), "foo.py")
     wm.load_css(None)
-    expected_path = os.path.join(wm.workspace_dir(), "static", "css")
     editor.load.assert_called_once_with(default_path=expected_path)
 
 
@@ -307,9 +392,24 @@ def test_load_css_no_file():
     view = mock.MagicMock()
     view.current_tab = None
     wm = WebMode(editor, view)
-    wm.load_css(None)
     expected_path = os.path.join(wm.workspace_dir(), "static", "css")
+    wm.assets_dir = mock.MagicMock(return_value=expected_path)
+    wm.load_css(None)
     editor.load.assert_called_once_with(default_path=expected_path)
+
+
+def test_load_css_cannot_resolve():
+    """
+    Mu can't tell the location to open, so displays the expected helpful
+    message to the user.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    wm = WebMode(editor, view)
+    wm.assets_dir = mock.MagicMock(side_effect=ValueError("Boom"))
+    wm.cannot_resolve_flask_app = mock.MagicMock()
+    wm.load_css(None)
+    wm.cannot_resolve_flask_app.assert_called_once_with()
 
 
 def test_show_images():
@@ -320,9 +420,10 @@ def test_show_images():
     editor = mock.MagicMock()
     view = mock.MagicMock()
     wm = WebMode(editor, view)
+    expected_path = os.path.join(wm.workspace_dir(), "static", "img")
+    wm.assets_dir = mock.MagicMock(return_value=expected_path)
     view.current_tab.path = os.path.join(wm.workspace_dir(), "foo.py")
     wm.show_images(None)
-    expected_path = os.path.join(wm.workspace_dir(), "static", "img")
     view.open_directory_from_os.assert_called_once_with(expected_path)
 
 
@@ -335,9 +436,24 @@ def test_show_images_no_file():
     view = mock.MagicMock()
     view.current_tab = None
     wm = WebMode(editor, view)
-    wm.show_images(None)
     expected_path = os.path.join(wm.workspace_dir(), "static", "img")
+    wm.assets_dir = mock.MagicMock(return_value=expected_path)
+    wm.show_images(None)
     view.open_directory_from_os.assert_called_once_with(expected_path)
+
+
+def test_show_images_cannot_resolve():
+    """
+    Mu can't tell the location to open, so displays the expected helpful
+    message to the user.
+    """
+    editor = mock.MagicMock()
+    view = mock.MagicMock()
+    wm = WebMode(editor, view)
+    wm.assets_dir = mock.MagicMock(side_effect=ValueError("Boom"))
+    wm.cannot_resolve_flask_app = mock.MagicMock()
+    wm.show_images(None)
+    wm.cannot_resolve_flask_app.assert_called_once_with()
 
 
 def test_browse():
