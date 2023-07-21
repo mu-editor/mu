@@ -173,6 +173,7 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Don't stare at a blank screen - try something out."),
     _("If you're stuck - try explaining it to a rubber duck."),
     _("It's ok to be stuck, go for a walk and then try again (:"),
+    _("It's not a mistake to make an error.")
 ]
 
 NEWLINE = "\n"
