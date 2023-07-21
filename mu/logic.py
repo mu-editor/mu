@@ -174,6 +174,11 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("If you're stuck - try explaining it to a rubber duck."),
     _("It's ok to be stuck, go for a walk and then try again (:"),
     _("Don't look backwards for very long. We keep moving forward."),
+    _("Keep moving forward."),
+    _("It's not a mistake to make an error."),
+    _("Do not pass silently."),
+    _("Computers are not humans. There is no need arguing with them."),
+    _("Embrace change and seek growth."),
 ]
 
 NEWLINE = "\n"
