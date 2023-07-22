@@ -27,3 +27,13 @@ def disable_autosave():
         settings.SettingsBase, "register_for_autosave"
     ) as register:
         yield register
+
+
+@pytest.fixture(autouse=True)
+def temp_shared_mem_app_name():
+    """Make multi-instance execution blocking shared memory app name unique for tests"""
+    os.environ["MU_TEST_SUPPORT_RANDOM_APP_NAME_EXT"] = "_" + str(
+        random.randint(0, 100000000)
+    )
+    yield
+    os.environ.pop("MU_TEST_SUPPORT_RANDOM_APP_NAME_EXT", "")

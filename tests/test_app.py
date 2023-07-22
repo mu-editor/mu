@@ -12,10 +12,12 @@ from mu.app import (
     excepthook,
     run,
     setup_logging,
+    setup_exception_handler,
     AnimatedSplash,
     StartupWorker,
     vlogger,
     check_only_running_once,
+    _shared_memory,
 )
 from mu.debugger.config import DEBUGGER_PORT
 
@@ -189,8 +191,7 @@ def test_setup_logging_without_envvar():
     """
     Ensure that logging is set up in some way.
 
-    Resetting the MU_LOG_TO_STDOUT env var ensures that the crash handler
-    will be enabled and stdout logging not
+    Resetting the MU_LOG_TO_STDOUT env var should mean stdout logging is disabled
     """
     os.environ.pop("MU_LOG_TO_STDOUT", "")
     with mock.patch("mu.app.TimedRotatingFileHandler") as log_conf, mock.patch(
@@ -208,15 +209,14 @@ def test_setup_logging_without_envvar():
             encoding=ENCODING,
         )
         logging.getLogger.assert_called_once_with()
-        assert sys.excepthook == excepthook
 
 
 def test_setup_logging_with_envvar():
     """
     Ensure that logging is set up in some way.
 
-    Setting the MU_LOG_TO_STDOUT env var ensures that the crash handler
-    will not be enabled and stdout logging will
+    Setting the MU_LOG_TO_STDOUT env var ensures that stdout logging
+    will be enabled
     """
     os.environ["MU_LOG_TO_STDOUT"] = "1"
     with mock.patch("mu.app.TimedRotatingFileHandler") as log_conf, mock.patch(
@@ -234,7 +234,18 @@ def test_setup_logging_with_envvar():
             encoding=ENCODING,
         )
         logging.getLogger.assert_called_once_with()
-        # ~ assert sys.excepthook == excepthook
+        # clear this to avoid interfering with other tests
+        os.environ.pop("MU_LOG_TO_STDOUT", "")
+
+
+def test_setup_except_hook():
+    """
+    confirm that setup_exception_handler() is setting up the global exception hook
+    """
+    saved = sys.excepthook
+    setup_exception_handler()
+    assert sys.excepthook == excepthook
+    sys.excepthook = saved
 
 
 def test_run():
@@ -274,7 +285,9 @@ def test_run():
         "mu.app.QThread"
     ), mock.patch(
         "mu.app.StartupWorker"
-    ) as mock_worker:
+    ) as mock_worker, mock.patch(
+        "mu.app.setup_exception_handler"
+    ) as mock_set_except:
         run()
         assert set_log.call_count == 1
         # foo.call_count is instantiating the class
@@ -294,6 +307,7 @@ def test_run():
         assert ex.call_count == 1
         assert mock_event_loop.call_count == 1
         assert mock_worker.call_count == 1
+        assert mock_set_except.call_count == 1
         window.load_theme.emit("day")
         qa.assert_has_calls([mock.call().setStyleSheet(DAY_STYLE)])
         window.load_theme.emit("night")
@@ -417,27 +431,97 @@ def test_only_running_once():
     """
     If we are the first to acquire the application lock we should succeed
     """
+    setup_exception_handler()
     check_only_running_once()
+    _shared_memory.release()
     assert True
 
 
 def test_running_twice():
+    # try chaining instead of timing based stuff
+
+    # Comment on the original test says:
+    #
+    #   It's important that the two competing processes are not part of the same
+    #   process tree; otherwise the second attempt to acquire the mutex will
+    #   succeed (which we don't want to happen for our purposes)
+    #
+    # However, on macOS it always seems to have the same parent process id and group
+    # process id and this test seems to work on all platforms on CI.
+    #
+    cmd2 = "".join(
+        (
+            "-c",
+            "from mu import app;",
+            "app.setup_exception_handler();",
+            "app.check_only_running_once()"
+            # should throw an exception and exit with code 2 if it's already running
+        )
+    )
+
+    cmd1 = "".join(
+        (
+            "-c",
+            "import subprocess;",
+            "import sys;",
+            "from mu import app;",
+            "app.setup_exception_handler();",
+            "app.check_only_running_once();",
+            # launch child process that will try to 'launch' the app again:
+            'child2 = subprocess.run([sys.executable, "{0}"]);'.format(cmd2),
+            # clean up and exit returning child process result code (which should be 2
+            # if this 'already running' code is working)
+            "app._shared_memory.release();",
+            "exit(child2.returncode)",
+        )
+    )
+
+    child1 = subprocess.run([sys.executable, cmd1])
+    print("child 1 return code: {}".format(child1.returncode))
+    assert child1.returncode == 2
+
+
+def test_running_twice_after_exception():
     """
-    If we attempt to acquire the application lock when it's already held
-    we should fail
+    If we run, throw an exception and then run again we should succeed.
+    """
+    # call test that causes app to throw an exception by running it twice
+    test_running_twice()
+    # test that we can still run after exception thrown
+    test_only_running_once()
+
+
+def test_running_twice_after_generic_exception():
+    """
+    If we run and the app throws an exception, the exception handler
+    should clean up shared memory sentinel and running again should succeed.
     """
     #
-    # It's important that the two competing processes are not part of the same
-    # process tree; otherwise the second attempt to acquire the mutex will
-    # succeed (which we don't want to happen for our purposes)
+    # check_only_running_once() acquires shared memory block
+    # raise uncaught exception to trigger exception handler
+    # (subprocess should exit with exit code)
+    # check to see if can run app again
     #
-    cmd1 = "import time;"
-    "from mu import app;"
-    "app.check_only_running_once();"
-    "time.sleep(2)"
-    cmd2 = "import time;"
-    "from mu import app;"
-    "app.check_only_running_once()"
-    subprocess.Popen([sys.executable, cmd1])
-    result = subprocess.run([sys.executable, cmd2])
-    assert result.returncode == 2
+
+    # set show browser on crash suppression env for test
+    os.environ["MU_SUPPRESS_CRASH_REPORT_FORM"] = "1"
+    cmd1 = "".join(
+        (
+            "-c",
+            "import os;",
+            "from mu import app;",
+            "print('process 1 id: {}'.format(os.getpid()));",
+            "app.setup_exception_handler();",
+            "app.check_only_running_once();"
+            "raise RuntimeError('intentional test exception')",
+            # Intentionally do not manually release shared memory here.
+            # Test is testing that exception handler does this.
+        )
+    )
+
+    child1 = subprocess.run([sys.executable, cmd1])
+    assert child1.returncode == 1
+    # confirm exception handler cleared shared memory and we can still run
+    test_only_running_once()
+    # clear browser launch suppression env flag
+    os.environ.pop("MU_SUPPRESS_CRASH_REPORT_FORM", "")
