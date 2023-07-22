@@ -181,6 +181,9 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Do not pass silently."),
     _("Computers are not humans. There is no need arguing with them."),
     _("Embrace change and seek growth."),
+    _("Live, laugh, learn!"),
+    _("Let's get coding!"),
+    _("Don't be afraid of coding, we all learn by making mistakes!"),
 ]
 
 NEWLINE = "\n"
