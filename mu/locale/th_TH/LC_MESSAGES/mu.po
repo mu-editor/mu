@@ -1,0 +1,1664 @@
+# Thai (Thailand) translations for PROJECT.
+# Copyright (C) 2023 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2023-07-22 14:58+0100\n"
+"PO-Revision-Date: 2023-07-22 14:58+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: th_TH\n"
+"Language-Team: th_TH <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: mu/debugger/client.py:118
+msgid ""
+"Connection timed out. Is your machine slow or busy? Free up some of the "
+"machine's resources and try again."
+msgstr ""
+
+#: mu/debugger/client.py:132
+msgid ""
+"Could not find localhost.\n"
+"Ensure you have '127.0.0.1 localhost' in your /etc/hosts file."
+msgstr ""
+
+#: mu/interface/dialogs.py:76
+msgid "Select Mode"
+msgstr ""
+
+#: mu/interface/dialogs.py:79
+msgid ""
+"Please select the desired mode then click \"OK\". Otherwise, click "
+"\"Cancel\"."
+msgstr ""
+
+#: mu/interface/dialogs.py:100
+msgid ""
+"Change mode at any time by clicking the \"Mode\" button containing Mu's "
+"logo."
+msgstr ""
+
+#: mu/interface/dialogs.py:139
+msgid ""
+"When reporting a bug, copy and paste the content of the following log "
+"file."
+msgstr ""
+
+#: mu/interface/dialogs.py:163
+msgid ""
+"The environment variables shown below will be set each time you run a "
+"Python 3 script.\n"
+"\n"
+"Each separate enviroment variable should be on a new line and of the "
+"form:\n"
+"NAME=VALUE"
+msgstr ""
+
+#: mu/interface/dialogs.py:189
+msgid "Minify Python code before flashing?"
+msgstr ""
+
+#: mu/interface/dialogs.py:193
+msgid ""
+"Override the built-in MicroPython runtime with the following hex file "
+"(empty means use the default):"
+msgstr ""
+
+#: mu/interface/dialogs.py:219
+msgid ""
+"The packages shown below will be available to import in Python 3 mode. "
+"Delete a package from the list to remove its availability.\n"
+"\n"
+"Each separate package name should be on a new line. Packages are "
+"installed from PyPI (see: https://pypi.org/)."
+msgstr ""
+
+#: mu/interface/dialogs.py:250
+msgid ""
+"The folks at <a href='https://www.pythonanywhere.com/'>PythonAnywhere</a>"
+" make it easy for learners and educators to host simple web projects for "
+"free. You'll need to sign up for an account and provide the following "
+"details for Mu to deploy your web project."
+msgstr ""
+
+#: mu/interface/dialogs.py:263
+msgid ""
+"\n"
+"Copy your username on PythonAnywhere into here:"
+msgstr ""
+
+#: mu/interface/dialogs.py:267
+msgid "username"
+msgstr ""
+
+#: mu/interface/dialogs.py:272
+msgid ""
+"Copy your <a "
+"href='https://www.pythonanywhere.com/account/#api_token'>secret API token"
+" from PythonAnywhere</a> into here:"
+msgstr ""
+
+#: mu/interface/dialogs.py:281
+msgid "secret api token"
+msgstr ""
+
+#: mu/interface/dialogs.py:286
+msgid "Server location ('www' is a safe default):"
+msgstr ""
+
+#: mu/interface/dialogs.py:306
+msgid "Automatically detect"
+msgstr ""
+
+#: mu/interface/dialogs.py:333
+msgid ""
+"Please select the language for Mu's user interface from the choices "
+"listed below. <strong>Restart Mu for these changes to take "
+"effect.</strong>"
+msgstr ""
+
+#: mu/interface/dialogs.py:364
+msgid "How to flash MicroPython to your device"
+msgstr ""
+
+#: mu/interface/dialogs.py:371
+msgid ""
+"&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. "
+"Download firmware from the <a href=\"https://micropython.org/download\" "
+"style=\"color:#039be5;\">https://micropython.org/download</a><br/>&nbsp;3."
+" Connect your device<br/>&nbsp;4. Load the .bin file below using the "
+"'Browse' button<br/>&nbsp;5. Press 'Erase & write firmware'"
+msgstr ""
+
+#: mu/interface/dialogs.py:394
+msgid "Device:"
+msgstr ""
+
+#: mu/interface/dialogs.py:397
+msgid "Choose device type:"
+msgstr ""
+
+#: mu/interface/dialogs.py:401
+msgid "Firmware (.bin):"
+msgstr ""
+
+#: mu/interface/dialogs.py:403 mu/modes/web.py:107
+msgid "Browse"
+msgstr ""
+
+#: mu/interface/dialogs.py:404
+msgid "Erase && write firmware"
+msgstr ""
+
+#: mu/interface/dialogs.py:436
+msgid "Select MicroPython firmware (.bin)"
+msgstr ""
+
+#: mu/interface/dialogs.py:438
+msgid "Firmware (*.bin)"
+msgstr ""
+
+#: mu/interface/dialogs.py:572 mu/interface/main.py:1467
+msgid "Mu Administration"
+msgstr ""
+
+#: mu/interface/dialogs.py:586
+msgid "Current Log"
+msgstr ""
+
+#: mu/interface/dialogs.py:590
+msgid "Python3 Environment"
+msgstr ""
+
+#: mu/interface/dialogs.py:597
+msgid "BBC micro:bit Settings"
+msgstr ""
+
+#: mu/interface/dialogs.py:601
+msgid "Third Party Packages"
+msgstr ""
+
+#: mu/interface/dialogs.py:605
+msgid "ESP Firmware flasher"
+msgstr ""
+
+#: mu/interface/dialogs.py:614
+msgid "PythonAnywhere API"
+msgstr ""
+
+#: mu/interface/dialogs.py:620
+msgid "Select Language"
+msgstr ""
+
+#: mu/interface/dialogs.py:670
+msgid "Find / Replace"
+msgstr ""
+
+#: mu/interface/dialogs.py:674
+msgid "Find:"
+msgstr ""
+
+#: mu/interface/dialogs.py:681
+msgid "Replace (optional):"
+msgstr ""
+
+#: mu/interface/dialogs.py:687
+msgid "Replace all?"
+msgstr ""
+
+#: mu/interface/dialogs.py:736
+msgid "Third Party Package Status"
+msgstr ""
+
+#: mu/interface/editor.py:319 mu/logic.py:1356
+msgid "untitled"
+msgstr ""
+
+#: mu/interface/main.py:104
+msgid "Mode"
+msgstr "โหมด"
+
+#: mu/interface/main.py:105
+msgid "Change Mu's mode of behaviour."
+msgstr ""
+
+#: mu/interface/main.py:110
+msgid "New"
+msgstr "สร้างสคริปต์ใหม่"
+
+#: mu/interface/main.py:111
+msgid "Create a new Python script."
+msgstr ""
+
+#: mu/interface/main.py:115
+msgid "Load"
+msgstr "โหลดข้อมูล"
+
+#: mu/interface/main.py:116
+msgid "Load a Python script."
+msgstr ""
+
+#: mu/interface/main.py:120
+msgid "Save"
+msgstr "เก็บข้อมูล"
+
+#: mu/interface/main.py:121
+msgid "Save the current Python script."
+msgstr ""
+
+#: mu/interface/main.py:135
+msgid "Zoom-in"
+msgstr "ซูมเข้า"
+
+#: mu/interface/main.py:136
+msgid "Zoom in (to make the text bigger)."
+msgstr ""
+
+#: mu/interface/main.py:140
+msgid "Zoom-out"
+msgstr "ซูมออก"
+
+#: mu/interface/main.py:141
+msgid "Zoom out (to make the text smaller)."
+msgstr ""
+
+#: mu/interface/main.py:145
+msgid "Theme"
+msgstr "ธีม"
+
+#: mu/interface/main.py:146
+msgid "Toggle theme between day, night or high contrast."
+msgstr ""
+
+#: mu/interface/main.py:153
+msgid "Check"
+msgstr "ตรวจสอบ"
+
+#: mu/interface/main.py:154
+msgid "Check your code for mistakes."
+msgstr ""
+
+#: mu/interface/main.py:159
+msgid "Tidy"
+msgstr "จัดเรียง"
+
+#: mu/interface/main.py:160
+msgid "Tidy up the layout of your code."
+msgstr ""
+
+#: mu/interface/main.py:164
+msgid "Help"
+msgstr "คู่มือการใช้"
+
+#: mu/interface/main.py:165
+msgid "Show help about Mu in a browser."
+msgstr ""
+
+#: mu/interface/main.py:169
+msgid "Quit"
+msgstr "ปิด"
+
+#: mu/interface/main.py:169
+msgid "Quit Mu."
+msgstr ""
+
+#: mu/interface/main.py:275
+msgid "Close file"
+msgstr ""
+
+#: mu/interface/main.py:316
+msgid "Mu {}"
+msgstr ""
+
+#: mu/interface/main.py:555
+msgid "Copy selected text to REPL"
+msgstr ""
+
+#: mu/interface/main.py:618
+msgid "Filesystem on "
+msgstr ""
+
+#: mu/interface/main.py:679
+msgid "Python3 data tuple"
+msgstr ""
+
+#: mu/interface/main.py:691
+msgid "Python3 (Jupyter)"
+msgstr ""
+
+#: mu/interface/main.py:698
+msgid "{} REPL"
+msgstr "REPL"
+
+#: mu/interface/main.py:717
+msgid "{} Plotter"
+msgstr "สร้างกราฟ"
+
+#: mu/interface/main.py:767
+msgid "Running: {}"
+msgstr "ดำเนินงาน"
+
+#: mu/interface/main.py:816
+msgid "Debug Inspector"
+msgstr "ตรวจสอบจุดบกพร่อง"
+
+#: mu/interface/main.py:828
+msgid "Name"
+msgstr ""
+
+#: mu/interface/main.py:828
+msgid "Value"
+msgstr ""
+
+#: mu/interface/main.py:866
+msgid "(A list of {} items.)"
+msgstr ""
+
+#: mu/interface/main.py:885
+msgid "(A dict of {} items.)"
+msgstr ""
+
+#: mu/interface/main.py:1068
+msgid "Mu"
+msgstr ""
+
+#: mu/interface/main.py:1375
+msgid ""
+"Uploading to PythonAnywhere.\n"
+"\n"
+"This may take some time and pause at the end (as the website is started)."
+msgstr ""
+
+#: mu/interface/main.py:1407
+msgid ""
+"<p>Your website was successfully deployed.</p><p>You can see it "
+"here:</p><a href='https://{domain}'>https://{domain}</a>"
+msgstr ""
+
+#: mu/interface/main.py:1424
+msgid "There was a problem deploying to PythonAnywhere:<br/><br/>"
+msgstr ""
+
+#: mu/interface/main.py:1431
+msgid ""
+"Please check your PythonAnywhere settings or connection and ensure you're"
+" using a recent version of Mu.<br/><br/>Alternatively, <a "
+"href='https://github.com/mu-editor/mu/issues/new/choose'>submit a bug "
+"report</a>."
+msgstr ""
+
+#: mu/interface/main.py:1454
+msgid "Mu's current mode of behaviour."
+msgstr ""
+
+#: mu/interface/main.py:1509
+msgid "Detected new {} device: {}."
+msgstr ""
+
+#: mu/interface/main.py:1513 mu/logic.py:1668
+msgid "Detected new {} device."
+msgstr ""
+
+#: mu/interface/panes.py:694
+msgid "File already exists; overwrite it?"
+msgstr ""
+
+#: mu/interface/panes.py:695
+msgid "File already exists"
+msgstr ""
+
+#: mu/interface/panes.py:728
+msgid "Copying '{}' to device."
+msgstr ""
+
+#: mu/interface/panes.py:737
+msgid "'{}' successfully copied to device."
+msgstr ""
+
+#: mu/interface/panes.py:746
+msgid "Delete (cannot be undone)"
+msgstr ""
+
+#: mu/interface/panes.py:752
+msgid "Deleting '{}' from device."
+msgstr ""
+
+#: mu/interface/panes.py:761
+msgid "'{}' successfully deleted from device."
+msgstr ""
+
+#: mu/interface/panes.py:794
+msgid "Getting '{}' from device. Copying to '{}'."
+msgstr ""
+
+#: mu/interface/panes.py:805
+msgid "Successfully copied '{}' from the device to your computer."
+msgstr ""
+
+#: mu/interface/panes.py:822
+msgid "Open in Mu"
+msgstr ""
+
+#: mu/interface/panes.py:825
+msgid "Write to main.py on device"
+msgstr ""
+
+#: mu/interface/panes.py:828
+msgid "Open"
+msgstr ""
+
+#: mu/interface/panes.py:834
+msgid "Opening '{}'"
+msgstr ""
+
+#: mu/interface/panes.py:877
+msgid "Files on your device:"
+msgstr ""
+
+#: mu/interface/panes.py:879
+msgid "Files on your computer:"
+msgstr ""
+
+#: mu/interface/panes.py:952
+msgid ""
+"There was a problem getting the list of files on the device. Please check"
+" Mu's logs for technical information. Alternatively, try unplugging"
+"/plugging-in your device and/or restarting Mu."
+msgstr ""
+
+#: mu/interface/panes.py:966
+msgid ""
+"There was a problem copying the file '{}' onto the device. Please check "
+"Mu's logs for more information."
+msgstr ""
+
+#: mu/interface/panes.py:978
+msgid ""
+"There was a problem deleting '{}' from the device. Please check Mu's logs"
+" for more information."
+msgstr ""
+
+#: mu/interface/panes.py:990
+msgid ""
+"There was a problem getting '{}' from the device. Please check Mu's logs "
+"for more information."
+msgstr ""
+
+#: mu/interface/widgets.py:70 mu/interface/widgets.py:141
+#: mu/interface/widgets.py:154
+msgid "No device connected."
+msgstr ""
+
+#: mu/logic.py:90
+msgid "Hello, World!"
+msgstr ""
+
+#: mu/logic.py:91
+msgid ""
+"This editor is free software written in Python. You can modify it, add "
+"features or fix bugs if you like."
+msgstr ""
+
+#: mu/logic.py:95
+msgid "This editor is called Mu (you say it 'mew' or 'moo')."
+msgstr ""
+
+#: mu/logic.py:96
+msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
+msgstr ""
+
+#: mu/logic.py:97
+msgid ""
+"Programming is a form of magic. Learn to cast the right spells with code "
+"and you'll be a wizard."
+msgstr ""
+
+#: mu/logic.py:101
+msgid ""
+"REPL stands for read, evaluate, print, loop. It's a fun way to talk to "
+"your computer! :-)"
+msgstr ""
+
+#: mu/logic.py:105
+msgid "Be brave, break things, learn and have fun!"
+msgstr ""
+
+#: mu/logic.py:106
+msgid "Make your software both useful AND fun. Empower your users."
+msgstr ""
+
+#: mu/logic.py:107
+msgid "For the Zen of Python: import this"
+msgstr ""
+
+#: mu/logic.py:108
+msgid "Diversity promotes creativity."
+msgstr ""
+
+#: mu/logic.py:109
+msgid "An open mind, spirit of adventure and respect for diversity are key."
+msgstr ""
+
+#: mu/logic.py:110
+msgid ""
+"Don't worry if it doesn't work. Learn the lesson, fix it and try again! "
+":-)"
+msgstr ""
+
+#: mu/logic.py:114
+msgid "Coding is collaboration."
+msgstr ""
+
+#: mu/logic.py:115
+msgid "Compliment and amplify the good things with code."
+msgstr ""
+
+#: mu/logic.py:116
+msgid "In theory, theory and practice are the same. In practice, they're not. ;-)"
+msgstr ""
+
+#: mu/logic.py:120
+msgid "Debugging is twice as hard as writing the code in the first place."
+msgstr ""
+
+#: mu/logic.py:121
+msgid "It's fun to program."
+msgstr ""
+
+#: mu/logic.py:122
+msgid "Programming has more to do with problem solving than writing code."
+msgstr ""
+
+#: mu/logic.py:123
+msgid "Start with your users' needs."
+msgstr ""
+
+#: mu/logic.py:124
+msgid "Try to see things from your users' point of view."
+msgstr ""
+
+#: mu/logic.py:125
+msgid "Put yourself in your users' shoes."
+msgstr ""
+
+#: mu/logic.py:126
+msgid ""
+"Explaining a programming problem to a friend often reveals the solution. "
+":-)"
+msgstr ""
+
+#: mu/logic.py:130
+msgid "If you don't know, ask. Nobody to ask? Just look it up."
+msgstr ""
+
+#: mu/logic.py:131
+msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
+msgstr ""
+
+#: mu/logic.py:132
+msgid "Beautiful is better than ugly."
+msgstr ""
+
+#: mu/logic.py:133
+msgid "Explicit is better than implicit."
+msgstr ""
+
+#: mu/logic.py:134
+msgid "Simple is better than complex. Complex is better than complicated."
+msgstr ""
+
+#: mu/logic.py:135
+msgid "Flat is better than nested."
+msgstr ""
+
+#: mu/logic.py:136
+msgid "Sparse is better than dense."
+msgstr ""
+
+#: mu/logic.py:137
+msgid "Readability counts."
+msgstr ""
+
+#: mu/logic.py:138
+msgid ""
+"Special cases aren't special enough to break the rules. Although "
+"practicality beats purity."
+msgstr ""
+
+#: mu/logic.py:142
+msgid "Errors should never pass silently. Unless explicitly silenced."
+msgstr ""
+
+#: mu/logic.py:143
+msgid "In the face of ambiguity, refuse the temptation to guess."
+msgstr ""
+
+#: mu/logic.py:144
+msgid "There should be one-- and preferably only one --obvious way to do it."
+msgstr ""
+
+#: mu/logic.py:145
+msgid "Now is better than never. Although never is often better than *right* now."
+msgstr ""
+
+#: mu/logic.py:149
+msgid "If the implementation is hard to explain, it's a bad idea."
+msgstr ""
+
+#: mu/logic.py:150
+msgid "If the implementation is easy to explain, it may be a good idea."
+msgstr ""
+
+#: mu/logic.py:151
+msgid "Namespaces are one honking great idea -- let's do more of those!"
+msgstr ""
+
+#: mu/logic.py:152
+msgid "Mu was created by Nicholas H.Tollervey."
+msgstr ""
+
+#: mu/logic.py:153
+msgid "To understand what recursion is, you must first understand recursion."
+msgstr ""
+
+#: mu/logic.py:154
+msgid ""
+"Algorithm: a word used by programmers when they don't want to explain "
+"what they did."
+msgstr ""
+
+#: mu/logic.py:158
+msgid "Programmers count from zero."
+msgstr ""
+
+#: mu/logic.py:159
+msgid "Simplicity is the ultimate sophistication."
+msgstr ""
+
+#: mu/logic.py:160
+msgid "A good programmer is humble."
+msgstr ""
+
+#: mu/logic.py:161
+msgid "A good programmer is playful."
+msgstr ""
+
+#: mu/logic.py:162
+msgid "A good programmer learns to learn."
+msgstr ""
+
+#: mu/logic.py:163
+msgid "A good programmer thinks beyond the obvious."
+msgstr ""
+
+#: mu/logic.py:164
+msgid "A good programmer promotes simplicity."
+msgstr ""
+
+#: mu/logic.py:165
+msgid "A good programmer avoids complexity."
+msgstr ""
+
+#: mu/logic.py:166
+msgid "A good programmer is patient."
+msgstr ""
+
+#: mu/logic.py:167
+msgid "A good programmer asks questions."
+msgstr ""
+
+#: mu/logic.py:168
+msgid "A good programmer is willing to say, 'I don't know'."
+msgstr ""
+
+#: mu/logic.py:169
+msgid "Wisest are they that know they know nothing."
+msgstr ""
+
+#: mu/logic.py:170
+msgid "Computers aren’t the thing. They’re the thing that gets us to the thing."
+msgstr ""
+
+#: mu/logic.py:173
+msgid "Don't stare at a blank screen - try something out."
+msgstr ""
+
+#: mu/logic.py:174
+msgid "If you're stuck - try explaining it to a rubber duck."
+msgstr ""
+
+#: mu/logic.py:175
+msgid "It's ok to be stuck, go for a walk and then try again (:"
+msgstr ""
+
+#: mu/logic.py:176 mu/logic.py:180
+msgid "It's not a mistake to make an error."
+msgstr ""
+
+#: mu/logic.py:177
+msgid "Errors are there to learn from them. Then avoid them."
+msgstr ""
+
+#: mu/logic.py:178
+msgid "Don't look backwards for very long. We keep moving forward."
+msgstr ""
+
+#: mu/logic.py:179
+msgid "Keep moving forward."
+msgstr ""
+
+#: mu/logic.py:181
+msgid "Do not pass silently."
+msgstr ""
+
+#: mu/logic.py:182
+msgid "Computers are not humans. There is no need arguing with them."
+msgstr ""
+
+#: mu/logic.py:183
+msgid "Embrace change and seek growth."
+msgstr ""
+
+#: mu/logic.py:184
+msgid "Live, laugh, learn!"
+msgstr ""
+
+#: mu/logic.py:185
+msgid "Let's get coding!"
+msgstr ""
+
+#: mu/logic.py:186
+msgid "Don't be afraid of coding, we all learn by making mistakes!"
+msgstr ""
+
+#: mu/logic.py:481
+msgid " above this line"
+msgstr ""
+
+#: mu/logic.py:529
+msgid ""
+"Syntax error. Python cannot understand this line. Check for missing "
+"characters!"
+msgstr ""
+
+#: mu/logic.py:596
+msgid "{} compatible"
+msgstr ""
+
+#: mu/logic.py:1027
+msgid ""
+"The file contains characters Mu expects to be encoded as {0} or as the "
+"computer's default encoding {1}, but which are encoded in some other way."
+"\n"
+"\n"
+"If this file was saved in another application, re-save the file via the "
+"'Save as' option and set the encoding to {0}"
+msgstr ""
+
+#: mu/logic.py:1055
+msgid "The file \"{}\" is already open."
+msgstr ""
+
+#: mu/logic.py:1067
+msgid "Mu cannot read the characters in {}"
+msgstr ""
+
+#: mu/logic.py:1093
+msgid "Mu was not able to open this file"
+msgstr ""
+
+#: mu/logic.py:1094
+msgid ""
+"Currently Mu only works with Python source files or hex files created "
+"with embedded MicroPython code."
+msgstr ""
+
+#: mu/logic.py:1102
+msgid "Could not load {}"
+msgstr ""
+
+#: mu/logic.py:1104
+msgid ""
+"Does this file exist?\n"
+"If it does, do you have permission to read it?\n"
+"\n"
+"Please check and try again."
+msgstr ""
+
+#: mu/logic.py:1112
+msgid "Is this a {} file?"
+msgstr ""
+
+#: mu/logic.py:1113
+msgid ""
+"It looks like this could be a {} file.\n"
+"\n"
+"Would you like to change Mu to the {}mode?"
+msgstr ""
+
+#: mu/logic.py:1240
+msgid "Could not save file (disk problem)"
+msgstr ""
+
+#: mu/logic.py:1241
+msgid ""
+"Error saving file to disk. Ensure you have permission to write the file "
+"and sufficient disk space."
+msgstr ""
+
+#: mu/logic.py:1247
+msgid "Could not save file (encoding problem)"
+msgstr ""
+
+#: mu/logic.py:1249
+msgid ""
+"Unable to convert all the characters. If you have an encoding line at the"
+" top of the file, remove it and try again."
+msgstr ""
+
+#: mu/logic.py:1260
+msgid "Saved file: {}"
+msgstr ""
+
+#: mu/logic.py:1292 mu/logic.py:1727
+msgid "You cannot use the filename \"{}\""
+msgstr ""
+
+#: mu/logic.py:1295
+msgid ""
+"This name is already used by another part of Python. If you use this "
+"name, things are likely to break. Please try again with a different "
+"filename."
+msgstr ""
+
+#: mu/logic.py:1372
+msgid "Good job! No problems found."
+msgstr ""
+
+#: mu/logic.py:1373
+msgid "Hurrah! Checker turned up no problems."
+msgstr ""
+
+#: mu/logic.py:1374
+msgid "Nice one! Zero problems detected."
+msgstr ""
+
+#: mu/logic.py:1375
+msgid "Well done! No problems here."
+msgstr ""
+
+#: mu/logic.py:1376
+msgid "Awesome! Zero problems found."
+msgstr ""
+
+#: mu/logic.py:1402
+msgid "There is un-saved work, exiting the application will cause you to lose it."
+msgstr ""
+
+#: mu/logic.py:1485
+msgid "Could not find MicroPython runtime."
+msgstr ""
+
+#: mu/logic.py:1486
+msgid ""
+"The micro:bit runtime you specified ('{}') does not exist. Please try "
+"again."
+msgstr ""
+
+#: mu/logic.py:1621
+msgid "Changed to {} mode."
+msgstr ""
+
+#: mu/logic.py:1651
+msgid "Would you like to change Mu to the {} mode?"
+msgstr ""
+
+#: mu/logic.py:1670
+msgid "Device changed to {}."
+msgstr ""
+
+#: mu/logic.py:1706
+msgid "Cannot Set Breakpoint."
+msgstr ""
+
+#: mu/logic.py:1707
+msgid ""
+"Lines that are comments or some multi-line statements cannot have "
+"breakpoints."
+msgstr ""
+
+#: mu/logic.py:1730
+msgid ""
+"This name is already used by another part of Python. If you use that "
+"name, things are likely to break. Please try again with a different "
+"filename."
+msgstr ""
+
+#: mu/logic.py:1752
+msgid "Could not rename file."
+msgstr ""
+
+#: mu/logic.py:1753
+msgid "A file of that name is already open in Mu."
+msgstr ""
+
+#: mu/logic.py:1785
+msgid "Replaced \"{}\" with \"{}\"."
+msgstr ""
+
+#: mu/logic.py:1790
+msgid "Replaced {} matches of \"{}\" with \"{}\"."
+msgstr ""
+
+#: mu/logic.py:1795 mu/logic.py:1802 mu/logic.py:1821
+msgid "Could not find \"{}\"."
+msgstr ""
+
+#: mu/logic.py:1800 mu/logic.py:1819
+msgid "Highlighting matches for \"{}\"."
+msgstr ""
+
+#: mu/logic.py:1805 mu/logic.py:1824
+msgid "You must provide something to find."
+msgstr ""
+
+#: mu/logic.py:1806 mu/logic.py:1825
+msgid "Please try again, this time with something in the find box."
+msgstr ""
+
+#: mu/logic.py:1869
+msgid "Successfully cleaned the code. Use CTRL-Z to undo."
+msgstr ""
+
+#: mu/logic.py:1875
+msgid "Your code contains problems."
+msgstr ""
+
+#: mu/logic.py:1876
+msgid ""
+"These must be fixed before tidying will work. Please use the 'Check' "
+"button to highlight these problems."
+msgstr ""
+
+#: mu/modes/base.py:115
+msgid "Cannot connect to device on port {}"
+msgstr ""
+
+#: mu/modes/base.py:209
+msgid "# Write your code here :-)"
+msgstr ""
+
+#: mu/modes/base.py:332
+msgid "Data Flood Detected!"
+msgstr ""
+
+#: mu/modes/base.py:333
+msgid ""
+"The plotter is flooded with data which will make Mu unresponsive and "
+"freeze. As a safeguard, the plotter has been stopped.\n"
+"\n"
+"Flooding is when chunks of data of more than 1024 bytes are repeatedly "
+"sent to the plotter.\n"
+"\n"
+"To fix this, make sure your code prints small tuples of data between "
+"calls to 'sleep' for a very short period of time."
+msgstr ""
+
+#: mu/modes/base.py:515 mu/modes/base.py:565 mu/modes/snek.py:518
+msgid "Click on the device's reset button, wait a few seconds and then try again."
+msgstr ""
+
+#: mu/modes/base.py:523 mu/modes/base.py:573 mu/modes/snek.py:526
+msgid "Could not find an attached device."
+msgstr ""
+
+#: mu/modes/base.py:524
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it "
+"before the REPL will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+
+#: mu/modes/base.py:574
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it "
+"before the Plotter will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+
+#: mu/modes/circuitpython.py:37
+msgid "CircuitPython"
+msgstr ""
+
+#: mu/modes/circuitpython.py:39
+msgid "Write code for boards running CircuitPython."
+msgstr ""
+
+#: mu/modes/circuitpython.py:142 mu/modes/pyboard.py:86 mu/modes/snek.py:376
+msgid "Serial"
+msgstr ""
+
+#: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87 mu/modes/snek.py:377
+msgid "Open a serial connection to your device."
+msgstr ""
+
+#: mu/modes/circuitpython.py:152 mu/modes/esp.py:108 mu/modes/microbit.py:164
+#: mu/modes/pyboard.py:96 mu/modes/python3.py:174 mu/modes/snek.py:400
+msgid "Plotter"
+msgstr ""
+
+#: mu/modes/circuitpython.py:153 mu/modes/esp.py:109 mu/modes/microbit.py:165
+#: mu/modes/pyboard.py:97 mu/modes/snek.py:401
+msgid "Plot incoming REPL data."
+msgstr ""
+
+#: mu/modes/circuitpython.py:189
+msgid "Permission error running mount command"
+msgstr ""
+
+#: mu/modes/circuitpython.py:190
+msgid ""
+"The mount command (\"{}\") returned an error: {}. Mu will continue as if "
+"a device isn't plugged in."
+msgstr ""
+
+#: mu/modes/circuitpython.py:208
+msgid ""
+"If your Circuit Python device is plugged in, you need to \"Share with "
+"Linux\" on the CIRCUITPY drive in the \"Files\" app then restart Mu."
+msgstr ""
+
+#: mu/modes/circuitpython.py:269
+msgid "Could not find an attached CircuitPython device."
+msgstr ""
+
+#: mu/modes/circuitpython.py:270
+msgid ""
+"Python files for CircuitPython devices are stored on the device. "
+"Therefore, to edit these files you need to have the device plugged in. "
+"Until you plug in a device, Mu will use the directory found here:\n"
+"\n"
+" {}\n"
+"\n"
+"...to store your code."
+msgstr ""
+
+#: mu/modes/debugger.py:39
+msgid "Graphical Debugger"
+msgstr ""
+
+#: mu/modes/debugger.py:41
+msgid "Debug your Python 3 code."
+msgstr ""
+
+#: mu/modes/debugger.py:61 mu/modes/pygamezero.py:123 mu/modes/python3.py:207
+#: mu/modes/web.py:189
+msgid "Stop"
+msgstr ""
+
+#: mu/modes/debugger.py:62
+msgid "Stop the running code."
+msgstr ""
+
+#: mu/modes/debugger.py:68
+msgid "Continue"
+msgstr ""
+
+#: mu/modes/debugger.py:69
+msgid "Continue to run your Python script."
+msgstr ""
+
+#: mu/modes/debugger.py:75
+msgid "Step Over"
+msgstr ""
+
+#: mu/modes/debugger.py:76
+msgid "Step over a line of code."
+msgstr ""
+
+#: mu/modes/debugger.py:82
+msgid "Step In"
+msgstr ""
+
+#: mu/modes/debugger.py:83
+msgid "Step into a function."
+msgstr ""
+
+#: mu/modes/debugger.py:89
+msgid "Step Out"
+msgstr ""
+
+#: mu/modes/debugger.py:90
+msgid "Step out of a function."
+msgstr ""
+
+#: mu/modes/debugger.py:161
+msgid "Your script has finished running."
+msgstr ""
+
+#: mu/modes/debugger.py:266
+msgid ""
+"Unable to connect to the Python debugger.\n"
+"\n"
+msgstr ""
+
+#: mu/modes/debugger.py:355
+msgid "Debugger info: {}"
+msgstr ""
+
+#: mu/modes/debugger.py:362
+msgid "Debugger warning: {}"
+msgstr ""
+
+#: mu/modes/debugger.py:370
+msgid "Debugger error: {}"
+msgstr ""
+
+#: mu/modes/esp.py:35
+msgid "ESP MicroPython"
+msgstr ""
+
+#: mu/modes/esp.py:38
+msgid "Write MicroPython on ESP8266/ESP32 boards."
+msgstr ""
+
+#: mu/modes/esp.py:77 mu/modes/python3.py:150 mu/modes/python3.py:199
+#: mu/modes/web.py:93 mu/modes/web.py:181
+msgid "Run"
+msgstr ""
+
+#: mu/modes/esp.py:78
+msgid "Run your code directly on the {board_name} via the REPL."
+msgstr ""
+
+#: mu/modes/esp.py:87 mu/modes/microbit.py:145
+msgid "Files"
+msgstr ""
+
+#: mu/modes/esp.py:88
+msgid "Access the file system on {board_name}."
+msgstr ""
+
+#: mu/modes/esp.py:96 mu/modes/microbit.py:152 mu/modes/python3.py:164
+msgid "REPL"
+msgstr ""
+
+#: mu/modes/esp.py:97
+msgid "Use the REPL to live-code on the {board_name}."
+msgstr ""
+
+#: mu/modes/esp.py:135 mu/modes/microbit.py:519
+msgid "REPL and file system cannot work at the same time."
+msgstr ""
+
+#: mu/modes/esp.py:136 mu/modes/microbit.py:520
+msgid ""
+"The REPL and file system both use the same USB serial connection. Only "
+"one can be active at any time. Toggle the file system off and try again."
+msgstr ""
+
+#: mu/modes/esp.py:155 mu/modes/microbit.py:539
+msgid "The plotter and file system cannot work at the same time."
+msgstr ""
+
+#: mu/modes/esp.py:158 mu/modes/microbit.py:542
+msgid ""
+"The plotter and file system both use the same USB serial connection. Only"
+" one can be active at any time. Toggle the file system off and try again."
+msgstr ""
+
+#: mu/modes/esp.py:186 mu/modes/snek.py:417
+msgid "Cannot run anything without any active editor tabs."
+msgstr ""
+
+#: mu/modes/esp.py:187 mu/modes/snek.py:418
+msgid ""
+"Running transfers the content of the current tab onto the device. It "
+"seems like you don't have  any tabs open."
+msgstr ""
+
+#: mu/modes/esp.py:206 mu/modes/microbit.py:556
+msgid "File system cannot work at the same time as the REPL or plotter."
+msgstr ""
+
+#: mu/modes/esp.py:210 mu/modes/microbit.py:560
+msgid ""
+"The file system and the REPL and plotter use the same USB serial "
+"connection. Toggle the REPL and plotter off and try again."
+msgstr ""
+
+#: mu/modes/esp.py:237
+msgid "Could not find an attached {board_name}"
+msgstr ""
+
+#: mu/modes/esp.py:240 mu/modes/microbit.py:585
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"The device must have MicroPython flashed onto it before the file system "
+"will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+
+#: mu/modes/esp.py:265
+msgid "{board_name} board"
+msgstr ""
+
+#: mu/modes/lego.py:33
+msgid "Lego MicroPython"
+msgstr ""
+
+#: mu/modes/lego.py:36
+msgid "Write MicroPython directly on Lego Spike devices."
+msgstr ""
+
+#: mu/modes/microbit.py:111
+msgid "BBC micro:bit"
+msgstr ""
+
+#: mu/modes/microbit.py:113
+msgid "Write MicroPython for the BBC micro:bit."
+msgstr ""
+
+#: mu/modes/microbit.py:138
+msgid "Flash"
+msgstr ""
+
+#: mu/modes/microbit.py:139
+msgid "Flash your code onto the micro:bit."
+msgstr ""
+
+#: mu/modes/microbit.py:146
+msgid "Access the file system on the micro:bit."
+msgstr ""
+
+#: mu/modes/microbit.py:153
+msgid "Use the REPL to live-code on the micro:bit."
+msgstr ""
+
+#: mu/modes/microbit.py:190
+msgid "Your script is too long and code minification is disabled"
+msgstr ""
+
+#: mu/modes/microbit.py:194
+msgid "Your script is too long and the minifier isn't available"
+msgstr ""
+
+#: mu/modes/microbit.py:206
+msgid "Problem minifying script"
+msgstr ""
+
+#: mu/modes/microbit.py:218
+msgid "Our minifier tried but your script is too long!"
+msgstr ""
+
+#: mu/modes/microbit.py:286
+msgid "Unable to flash \"{}\""
+msgstr ""
+
+#: mu/modes/microbit.py:307 mu/modes/microbit.py:584
+msgid "Could not find an attached BBC micro:bit."
+msgstr ""
+
+#: mu/modes/microbit.py:308
+msgid ""
+"Please ensure you leave enough time for the BBC micro:bit to be attached "
+"and configured correctly by your computer. This may take several seconds."
+" Alternatively, try removing and re-attaching the device or saving your "
+"work and restarting Mu if the device remains unfound."
+msgstr ""
+
+#: mu/modes/microbit.py:326
+msgid "Cannot save a custom hex file to a local directory."
+msgstr ""
+
+#: mu/modes/microbit.py:327
+msgid ""
+"When a custom hex file is configured in the settings a local directory "
+"cannot be used to save the final hex file."
+msgstr ""
+
+#: mu/modes/microbit.py:336
+msgid "Cannot use a custom hex file without micro:bit port."
+msgstr ""
+
+#: mu/modes/microbit.py:337
+msgid ""
+"Mu was unable to detect the micro:bit serial port. Normally this is okay,"
+" as Mu can inject the Python code into the hex to flash. However, this "
+"cannot be done with a custom hex file."
+msgstr ""
+
+#: mu/modes/microbit.py:390
+msgid "Unsupported BBC micro:bit."
+msgstr ""
+
+#: mu/modes/microbit.py:391
+msgid ""
+"Your device is newer than this version of Mu. Please update Mu to the "
+"latest version to support this device.\n"
+"\n"
+"https://codewith.mu/"
+msgstr ""
+
+#: mu/modes/microbit.py:425 mu/modes/microbit.py:446
+msgid "Flashing the micro:bit"
+msgstr ""
+
+#: mu/modes/microbit.py:427
+msgid "Runtime"
+msgstr ""
+
+#: mu/modes/microbit.py:458
+msgid "Finished flashing."
+msgstr ""
+
+#: mu/modes/microbit.py:490
+msgid "Copied code onto micro:bit."
+msgstr ""
+
+#: mu/modes/microbit.py:498
+msgid "There was a problem flashing the micro:bit."
+msgstr ""
+
+#: mu/modes/microbit.py:499
+msgid ""
+"Please do not disconnect the device until flashing has completed. Please "
+"check the logs for more information."
+msgstr ""
+
+#: mu/modes/microbit.py:601
+msgid "micro:bit"
+msgstr ""
+
+#: mu/modes/pico.py:33
+msgid "RP2040"
+msgstr ""
+
+#: mu/modes/pico.py:36
+msgid "Write MicroPython directly on a Raspberry Pi Pico."
+msgstr ""
+
+#: mu/modes/pyboard.py:32
+msgid "Pyboard MicroPython"
+msgstr ""
+
+#: mu/modes/pyboard.py:34
+msgid "Use MicroPython on the Pyboard line of boards."
+msgstr ""
+
+#: mu/modes/pyboard.py:177
+msgid "Could not find an attached PyBoard device."
+msgstr ""
+
+#: mu/modes/pyboard.py:178
+msgid ""
+"Python files for PyBoard MicroPython devices are stored on the device. "
+"Therefore, to edit these files you need to have the device plugged in. "
+"Until you plug in a device, Mu will use the directory found here:\n"
+"\n"
+" {}\n"
+"\n"
+"...to store your code."
+msgstr ""
+
+#: mu/modes/pygamezero.py:35
+msgid "Pygame Zero"
+msgstr ""
+
+#: mu/modes/pygamezero.py:37
+msgid "Make games with Pygame Zero."
+msgstr ""
+
+#: mu/modes/pygamezero.py:65 mu/modes/pygamezero.py:115
+msgid "Play"
+msgstr ""
+
+#: mu/modes/pygamezero.py:66 mu/modes/pygamezero.py:116
+msgid "Play your Pygame Zero game."
+msgstr ""
+
+#: mu/modes/pygamezero.py:72 mu/modes/web.py:128
+msgid "Images"
+msgstr ""
+
+#: mu/modes/pygamezero.py:73
+msgid "Show the images used by Pygame Zero."
+msgstr ""
+
+#: mu/modes/pygamezero.py:79
+msgid "Fonts"
+msgstr ""
+
+#: mu/modes/pygamezero.py:80
+msgid "Show the fonts used by Pygame Zero."
+msgstr ""
+
+#: mu/modes/pygamezero.py:86
+msgid "Sounds"
+msgstr ""
+
+#: mu/modes/pygamezero.py:87
+msgid "Show the sounds used by Pygame Zero."
+msgstr ""
+
+#: mu/modes/pygamezero.py:93
+msgid "Music"
+msgstr ""
+
+#: mu/modes/pygamezero.py:94
+msgid "Show the music used by Pygame Zero."
+msgstr ""
+
+#: mu/modes/pygamezero.py:124
+msgid "Stop your Pygame Zero game."
+msgstr ""
+
+#: mu/modes/python3.py:133
+msgid "Python 3"
+msgstr ""
+
+#: mu/modes/python3.py:135
+msgid "Create code using standard Python 3."
+msgstr ""
+
+#: mu/modes/python3.py:151 mu/modes/python3.py:200
+msgid "Run your Python script."
+msgstr ""
+
+#: mu/modes/python3.py:157
+msgid "Debug"
+msgstr ""
+
+#: mu/modes/python3.py:158
+msgid "Debug your Python script."
+msgstr ""
+
+#: mu/modes/python3.py:165
+msgid "Use the REPL for live coding."
+msgstr ""
+
+#: mu/modes/python3.py:175
+msgid "Plot data from your script or the REPL."
+msgstr ""
+
+#: mu/modes/python3.py:208
+msgid "Stop your Python script."
+msgstr ""
+
+#: mu/modes/python3.py:280
+msgid "Starting iPython REPL."
+msgstr ""
+
+#: mu/modes/python3.py:285
+msgid "Stopping iPython REPL (this may take a short amount of time)."
+msgstr ""
+
+#: mu/modes/python3.py:377
+msgid "REPL started."
+msgstr ""
+
+#: mu/modes/python3.py:386
+msgid "REPL stopped."
+msgstr ""
+
+#: mu/modes/snek.py:169
+msgid "Snek"
+msgstr ""
+
+#: mu/modes/snek.py:171
+msgid "Write code for boards running Snek."
+msgstr ""
+
+#: mu/modes/snek.py:383
+msgid "Put"
+msgstr ""
+
+#: mu/modes/snek.py:384
+msgid "Put the current program to the device."
+msgstr ""
+
+#: mu/modes/snek.py:390
+msgid "Get"
+msgstr ""
+
+#: mu/modes/snek.py:391
+msgid "Get the current program from the device."
+msgstr ""
+
+#: mu/modes/snek.py:456
+msgid "There is un-saved work, 'get' will cause you to lose it."
+msgstr ""
+
+#: mu/modes/snek.py:527
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of Snek flashed onto it before the REPL will work."
+"\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+
+#: mu/modes/web.py:65
+msgid "Web"
+msgstr ""
+
+#: mu/modes/web.py:67
+msgid "Build simple websites with the \"Flask\" web framework."
+msgstr ""
+
+#: mu/modes/web.py:94 mu/modes/web.py:182
+msgid "Run the web server."
+msgstr ""
+
+#: mu/modes/web.py:100
+msgid "Deploy"
+msgstr ""
+
+#: mu/modes/web.py:101
+msgid "Deploy website to PythonAnywhere."
+msgstr ""
+
+#: mu/modes/web.py:108
+msgid "Open your website in a browser."
+msgstr ""
+
+#: mu/modes/web.py:114
+msgid "Templates"
+msgstr ""
+
+#: mu/modes/web.py:115
+msgid "Load HTML templates used by your website."
+msgstr ""
+
+#: mu/modes/web.py:121
+msgid "CSS"
+msgstr ""
+
+#: mu/modes/web.py:122
+msgid "Load CSS files used by your website."
+msgstr ""
+
+#: mu/modes/web.py:129
+msgid "Open the directory containing images used by your website."
+msgstr ""
+
+#: mu/modes/web.py:190
+msgid "Stop the web server."
+msgstr ""
+
+#: mu/modes/web.py:210 mu/modes/web.py:371
+msgid "This is not a Python file!"
+msgstr ""
+
+#: mu/modes/web.py:211
+msgid ""
+"Mu is only able to serve a Python file. Please make sure the current tab "
+"in Mu is the one for your web application and then try again."
+msgstr ""
+
+#: mu/modes/web.py:228 mu/modes/web.py:388
+msgid "Cannot find template directory!"
+msgstr ""
+
+#: mu/modes/web.py:229
+msgid ""
+"To serve your web application, there needs to be a 'templates' directory "
+"in the same place as your web application's Python code. Please fix this "
+"and try again. (Hint: Mu was expecting the `templates` directory to be "
+"here: )"
+msgstr ""
+
+#: mu/modes/web.py:285
+msgid "Too many web apps."
+msgstr ""
+
+#: mu/modes/web.py:286
+msgid "Please ensure you only have one open Python file for a web application."
+msgstr ""
+
+#: mu/modes/web.py:347
+msgid "Cannot Open Website - Server not Running."
+msgstr ""
+
+#: mu/modes/web.py:348
+msgid ""
+"You must have the local web server running in order to view your website "
+"in a browser. Click on the 'Run' button to start the server and then try "
+"again."
+msgstr ""
+
+#: mu/modes/web.py:372
+msgid ""
+"Mu is only able to deploy a Python file. Please make sure the current tab"
+" in Mu is the one for your web application and then try again."
+msgstr ""
+
+#: mu/modes/web.py:389
+msgid ""
+"To deploy your web application, there needs to be a 'templates' directory"
+" in the same place as your web application's Python code. Please fix this"
+" and try again. (Hint: Mu was expecting the `templates` directory to be "
+"here: )"
+msgstr ""
+
