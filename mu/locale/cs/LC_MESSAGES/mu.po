@@ -1,6 +1,7 @@
 # Czech translations for Mu.
 # Copyright (C) 2023 ORGANIZATION
-# This file is distributed under the same license as the Code with Mu project.
+# This file is distributed under the same license as the Code with Mu
+# project.
 # Jan Procházka <a.j.crowley1@gmail.com>, 2023.
 # Base on Slovak translation of mu by Miroslav Biňas, <mirek@cnl.sk>, 2019.
 #
@@ -8,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-07-22 15:03+0200\n"
+"POT-Creation-Date: 2023-07-22 15:55+0200\n"
 "PO-Revision-Date: 2023-07-22 14:54+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: cs\n"
@@ -45,8 +46,8 @@ msgid ""
 "Please select the desired mode then click \"OK\". Otherwise, click "
 "\"Cancel\"."
 msgstr ""
-"Zvolte, prosím, požadovaný režim a potom klikněte na tlačítko \"OK\"."
-" V opačném případě klikněte na tlačítko \"Zrušit\"."
+"Zvolte, prosím, požadovaný režim a potom klikněte na tlačítko \"OK\". V "
+"opačném případě klikněte na tlačítko \"Zrušit\"."
 
 #: mu/interface/dialogs.py:100
 msgid ""
@@ -71,24 +72,23 @@ msgid ""
 "form:\n"
 "NAME=VALUE"
 msgstr ""
-"Preměnné prostředí, které se nachází níže, budou nastavené vždy, když"
-" spustíte Python 3 skript.\n"
+"Proměnné prostředí, které se nachází níže, budou nastavené vždy, když "
+"spustíte Python 3 skript.\n"
 "\n"
-"Každá proměnná prostředí by se měla nacházet na novém řádku ve "
-"formátu:\n"
+"Každá proměnná prostředí by se měla nacházet na novém řádku ve formátu:\n"
 "NÁZEV = HODNOTA"
 
 #: mu/interface/dialogs.py:189
 msgid "Minify Python code before flashing?"
-msgstr "Minifikovať Python kód pred jeho zapísaním?"
+msgstr "Minifikovat Python kód před jeho zapsáním do paměti?"
 
 #: mu/interface/dialogs.py:193
 msgid ""
 "Override the built-in MicroPython runtime with the following hex file "
 "(empty means use the default):"
 msgstr ""
-"Prepísať vstavaný MicroPython s nasledujúcim hex súborom (ak nič "
-"neuvediete, použije sa predvolené nastavenie):"
+"Přepsat vestavěný MicroPython následujícim binárním soborem (prázdné pole "
+"znamená, že se použije výchozí nastavení):"
 
 #: mu/interface/dialogs.py:219
 msgid ""
@@ -98,11 +98,11 @@ msgid ""
 "Each separate package name should be on a new line. Packages are "
 "installed from PyPI (see: https://pypi.org/)."
 msgstr ""
-"Balíky zobrazené nižšie bude možné importovať v režime Python 3. "
-"Odstránením balíka zo zoznamu odstránite jeho dostupnosť.\n"
+"Níže zobrazené balíčky bude možné importovať v režimu Python 3. "
+"Odstraněním balíčku ze seznamu zamezíte jeho dostupnosti.\n"
 "\n"
-"Názov každého samostatného balíka by sa mal nachádzať na novom riadku. "
-"Balíky sú nainštalované z PyPI (pozri: https://pypi.org/)."
+"Název každého samostatného balíčku by se měl nacházet na novém řádku. "
+"Balíčky jsou instalované z PyPI (viz: https://pypi.org/)."
 
 #: mu/interface/dialogs.py:250
 msgid ""
@@ -110,13 +110,13 @@ msgid ""
 " make it easy for learners and educators to host simple web projects for "
 "free. You'll need to sign up for an account and provide the following "
 "details for Mu to deploy your web project."
-msgstr ""
+msgstr "Parta na <a href='https://www.pythonanywhere.com/'>PythonAnywhere</a> pracuje na tom, aby začátečníci a učitelé mohli zdarma provozovat jednoduché projekty na internetu. Budete si tam muset vytvořit účet a zadat následující údaje, aby Mu mohlo váš projekt zprovoznit."
 
 #: mu/interface/dialogs.py:263
 msgid ""
 "\n"
 "Copy your username on PythonAnywhere into here:"
-msgstr ""
+msgstr "Sem zkopírujte své uživatelské jméno (username), které máte u PythonAnywhere."
 
 #: mu/interface/dialogs.py:267
 #, fuzzy
@@ -250,7 +250,7 @@ msgstr "Nahradiť všetky?"
 msgid "Third Party Package Status"
 msgstr "Stav balíku tretích strán"
 
-#: mu/interface/editor.py:319 mu/logic.py:1353
+#: mu/interface/editor.py:319 mu/logic.py:1356
 msgid "untitled"
 msgstr "bez názvu"
 
@@ -337,7 +337,7 @@ msgstr "Zobrazí pomocníka o Mu v prehliadači."
 
 #: mu/interface/main.py:169
 msgid "Quit"
-msgstr "Ukončiť"
+msgstr "Přes palubu!"
 
 #: mu/interface/main.py:169
 msgid "Quit Mu."
@@ -437,7 +437,7 @@ msgstr "Aktuálny režim správania sa editora Mu."
 msgid "Detected new {} device: {}."
 msgstr "Bolo rozpoznané nové zariadenie {}: {}."
 
-#: mu/interface/main.py:1513 mu/logic.py:1665
+#: mu/interface/main.py:1513 mu/logic.py:1668
 msgid "Detected new {} device."
 msgstr "Bolo rozpoznané nové zariadenie {}."
 
@@ -831,11 +831,23 @@ msgstr ""
 msgid "Embrace change and seek growth."
 msgstr ""
 
-#: mu/logic.py:478
+#: mu/logic.py:184
+msgid "Live, laugh, learn!"
+msgstr ""
+
+#: mu/logic.py:185
+msgid "Let's get coding!"
+msgstr ""
+
+#: mu/logic.py:186
+msgid "Don't be afraid of coding, we all learn by making mistakes!"
+msgstr ""
+
+#: mu/logic.py:481
 msgid " above this line"
 msgstr " nad týmto riadkom"
 
-#: mu/logic.py:526
+#: mu/logic.py:529
 msgid ""
 "Syntax error. Python cannot understand this line. Check for missing "
 "characters!"
@@ -843,11 +855,11 @@ msgstr ""
 "Syntaktická chyba. Python nemôže pochopiť tento riadok. Skontrolujte "
 "chýbajúce znaky!"
 
-#: mu/logic.py:593
+#: mu/logic.py:596
 msgid "{} compatible"
 msgstr "{} kompatibilné"
 
-#: mu/logic.py:1024
+#: mu/logic.py:1027
 msgid ""
 "The file contains characters Mu expects to be encoded as {0} or as the "
 "computer's default encoding {1}, but which are encoded in some other way."
@@ -863,19 +875,19 @@ msgstr ""
 "Ak bol tento súbor uložený v inej aplikácii, uložte ho znova pomocou "
 "možnosti 'Uložiť ako' a nastavte kódovanie na {0}"
 
-#: mu/logic.py:1052
+#: mu/logic.py:1055
 msgid "The file \"{}\" is already open."
 msgstr "Súbor \"{}\" je už otvorený."
 
-#: mu/logic.py:1064
+#: mu/logic.py:1067
 msgid "Mu cannot read the characters in {}"
 msgstr "Mu nemôže čítať znaky v {}"
 
-#: mu/logic.py:1090
+#: mu/logic.py:1093
 msgid "Mu was not able to open this file"
 msgstr "Mu sa nepodarilo otvoriť tento súbor"
 
-#: mu/logic.py:1091
+#: mu/logic.py:1094
 msgid ""
 "Currently Mu only works with Python source files or hex files created "
 "with embedded MicroPython code."
@@ -883,11 +895,11 @@ msgstr ""
 "Aktuálne dokáže Mu pracovať so zdrojovými súbormi jazyka Python alebo s "
 "hex súbormi vytvorenými pomocou kódu v jazyku MicroPython."
 
-#: mu/logic.py:1099
+#: mu/logic.py:1102
 msgid "Could not load {}"
 msgstr "Nepodarilo sa načítať {}"
 
-#: mu/logic.py:1101
+#: mu/logic.py:1104
 msgid ""
 "Does this file exist?\n"
 "If it does, do you have permission to read it?\n"
@@ -899,11 +911,11 @@ msgstr ""
 "\n"
 "Skontrolujte ho prosím a skúste to znova."
 
-#: mu/logic.py:1109
+#: mu/logic.py:1112
 msgid "Is this a {} file?"
 msgstr "Je {} súbor?"
 
-#: mu/logic.py:1110
+#: mu/logic.py:1113
 msgid ""
 "It looks like this could be a {} file.\n"
 "\n"
@@ -912,11 +924,11 @@ msgstr ""
 "Zdá sa, že sa jedná o súbor typu {}.\n"
 "Chcete prepnúť Mu do režimu {}?"
 
-#: mu/logic.py:1237
+#: mu/logic.py:1240
 msgid "Could not save file (disk problem)"
 msgstr "Nepodarilo sa uložiť súbor (problém s diskom)"
 
-#: mu/logic.py:1238
+#: mu/logic.py:1241
 msgid ""
 "Error saving file to disk. Ensure you have permission to write the file "
 "and sufficient disk space."
@@ -924,11 +936,11 @@ msgstr ""
 "Pri ukladaní súboru na disk došlo ku chybe. Uistite sa, že máte právo na "
 "zápis súboru a dostatok miesta na disku."
 
-#: mu/logic.py:1244
+#: mu/logic.py:1247
 msgid "Could not save file (encoding problem)"
 msgstr "Nepodarilo sa uložiť súbor (problém s kódovaním)"
 
-#: mu/logic.py:1246
+#: mu/logic.py:1249
 msgid ""
 "Unable to convert all the characters. If you have an encoding line at the"
 " top of the file, remove it and try again."
@@ -936,15 +948,15 @@ msgstr ""
 "Nie je možné konvertovať všetky znaky. Ak máte v prvom riadku súboru "
 "uvedené kódovania, odstráňte ho a skúste to znova."
 
-#: mu/logic.py:1257
+#: mu/logic.py:1260
 msgid "Saved file: {}"
 msgstr "Uložený súbor: {}"
 
-#: mu/logic.py:1289 mu/logic.py:1724
+#: mu/logic.py:1292 mu/logic.py:1727
 msgid "You cannot use the filename \"{}\""
 msgstr "Nemôžete použiť \"{}\" ako názov súboru"
 
-#: mu/logic.py:1292
+#: mu/logic.py:1295
 msgid ""
 "This name is already used by another part of Python. If you use this "
 "name, things are likely to break. Please try again with a different "
@@ -954,35 +966,35 @@ msgstr ""
 "pravdepodobné, že sa niektoré veci pokazia. Skúste to prosím znova s iným"
 " názvom súboru."
 
-#: mu/logic.py:1369
+#: mu/logic.py:1372
 msgid "Good job! No problems found."
 msgstr "Dobrá práca! Neboli nájdené žiadne problémy."
 
-#: mu/logic.py:1370
+#: mu/logic.py:1373
 msgid "Hurrah! Checker turned up no problems."
 msgstr "Hurá! Kontrola nehlási žiadne problémy."
 
-#: mu/logic.py:1371
+#: mu/logic.py:1374
 msgid "Nice one! Zero problems detected."
 msgstr "Pekne! Nebol zistený žiadny problém."
 
-#: mu/logic.py:1372
+#: mu/logic.py:1375
 msgid "Well done! No problems here."
 msgstr "Výborne! Bez problémov."
 
-#: mu/logic.py:1373
+#: mu/logic.py:1376
 msgid "Awesome! Zero problems found."
 msgstr "Úžasné! Nula nájdených problémov."
 
-#: mu/logic.py:1399
+#: mu/logic.py:1402
 msgid "There is un-saved work, exiting the application will cause you to lose it."
 msgstr "Vaša práca nie je uložená. Ukončením aplikácie ju stratíte."
 
-#: mu/logic.py:1482
+#: mu/logic.py:1485
 msgid "Could not find MicroPython runtime."
 msgstr "Nepodarilo sa nájsť runtime pre MicroPython."
 
-#: mu/logic.py:1483
+#: mu/logic.py:1486
 msgid ""
 "The micro:bit runtime you specified ('{}') does not exist. Please try "
 "again."
@@ -990,23 +1002,23 @@ msgstr ""
 "Runtime pre micro:bit, ktorý ste špecifikovali ('{}'), neexistuje. Skúste"
 " to prosím znova."
 
-#: mu/logic.py:1618
+#: mu/logic.py:1621
 msgid "Changed to {} mode."
 msgstr "Režim bol zmenený na {}."
 
-#: mu/logic.py:1648
+#: mu/logic.py:1651
 msgid "Would you like to change Mu to the {} mode?"
 msgstr "Chcete zmeniť režim Mu na {}?"
 
-#: mu/logic.py:1667
+#: mu/logic.py:1670
 msgid "Device changed to {}."
 msgstr "Zariadenie bolo zmenené na {}."
 
-#: mu/logic.py:1703
+#: mu/logic.py:1706
 msgid "Cannot Set Breakpoint."
 msgstr "Nie je možné nastaviť bod prerušenia."
 
-#: mu/logic.py:1704
+#: mu/logic.py:1707
 msgid ""
 "Lines that are comments or some multi-line statements cannot have "
 "breakpoints."
@@ -1014,7 +1026,7 @@ msgstr ""
 "Riadky, ktoré sú komentármi alebo niektoré viacriadkové príkazy, nemôžu "
 "mať bod prerušenia."
 
-#: mu/logic.py:1727
+#: mu/logic.py:1730
 msgid ""
 "This name is already used by another part of Python. If you use that "
 "name, things are likely to break. Please try again with a different "
@@ -1024,47 +1036,47 @@ msgstr ""
 "pravdepodobné, že sa niektoré veci pokazia. Skúste to prosím znova s iným"
 " názvom súboru."
 
-#: mu/logic.py:1749
+#: mu/logic.py:1752
 msgid "Could not rename file."
 msgstr "Súbor sa nepodarilo premenovať."
 
-#: mu/logic.py:1750
+#: mu/logic.py:1753
 msgid "A file of that name is already open in Mu."
 msgstr "Súbor s týmto názvom je už v Mu otvorený."
 
-#: mu/logic.py:1782
+#: mu/logic.py:1785
 msgid "Replaced \"{}\" with \"{}\"."
 msgstr "\"{}\" bolo nahradené s \"{}\"."
 
-#: mu/logic.py:1787
+#: mu/logic.py:1790
 msgid "Replaced {} matches of \"{}\" with \"{}\"."
 msgstr "Nahradených {} zhôd výrazu \"{}\" výrazom \"{}\"."
 
-#: mu/logic.py:1792 mu/logic.py:1799 mu/logic.py:1818
+#: mu/logic.py:1795 mu/logic.py:1802 mu/logic.py:1821
 msgid "Could not find \"{}\"."
 msgstr "Nepodarilo sa nájsť \"{}\"."
 
-#: mu/logic.py:1797 mu/logic.py:1816
+#: mu/logic.py:1800 mu/logic.py:1819
 msgid "Highlighting matches for \"{}\"."
 msgstr "Zvýrazňujú sa zhody pre \"{}\"."
 
-#: mu/logic.py:1802 mu/logic.py:1821
+#: mu/logic.py:1805 mu/logic.py:1824
 msgid "You must provide something to find."
 msgstr "Pre vyhľadávanie musíte niečo zadať."
 
-#: mu/logic.py:1803 mu/logic.py:1822
+#: mu/logic.py:1806 mu/logic.py:1825
 msgid "Please try again, this time with something in the find box."
 msgstr "Skúste to prosím znova, ale tentoraz s niečím v poli pre vyhľadávanie."
 
-#: mu/logic.py:1866
+#: mu/logic.py:1869
 msgid "Successfully cleaned the code. Use CTRL-Z to undo."
 msgstr "Kód bol úspešne uprataný. Stlačte CTRL-Z pre vrátenie zmien."
 
-#: mu/logic.py:1872
+#: mu/logic.py:1875
 msgid "Your code contains problems."
 msgstr "Váš kód obsahuje chyby."
 
-#: mu/logic.py:1873
+#: mu/logic.py:1876
 msgid ""
 "These must be fixed before tidying will work. Please use the 'Check' "
 "button to highlight these problems."
