@@ -251,11 +251,11 @@ msgstr "โหลดสคริปต์"
 
 #: mu/interface/main.py:120
 msgid "Save"
-msgstr "เก็บข้อมูล"
+msgstr "บันทึกข้อมูล"
 
 #: mu/interface/main.py:121
 msgid "Save the current Python script."
-msgstr ""
+msgstr "บันทึกสคริปต์"
 
 #: mu/interface/main.py:135
 msgid "Zoom-in"
@@ -263,7 +263,7 @@ msgstr "ซูมเข้า"
 
 #: mu/interface/main.py:136
 msgid "Zoom in (to make the text bigger)."
-msgstr ""
+msgstr "ซูมเข้า (ขยายตัวอักษร)"
 
 #: mu/interface/main.py:140
 msgid "Zoom-out"
@@ -271,7 +271,7 @@ msgstr "ซูมออก"
 
 #: mu/interface/main.py:141
 msgid "Zoom out (to make the text smaller)."
-msgstr ""
+msgstr "ซูมออก (ย่อตัวอักษร)"
 
 #: mu/interface/main.py:145
 msgid "Theme"
@@ -279,7 +279,7 @@ msgstr "ธีม"
 
 #: mu/interface/main.py:146
 msgid "Toggle theme between day, night or high contrast."
-msgstr ""
+msgstr "เปลี่ยนธีมระหว่างกลางวัน, กลางคืน หรือ มืด-สว่าง"
 
 #: mu/interface/main.py:153
 msgid "Check"
@@ -287,7 +287,7 @@ msgstr "ตรวจสอบ"
 
 #: mu/interface/main.py:154
 msgid "Check your code for mistakes."
-msgstr ""
+msgstr "ตรวจสอบโค้ดกรณีมีข้อผิดพลาด"
 
 #: mu/interface/main.py:159
 msgid "Tidy"
@@ -295,7 +295,7 @@ msgstr "จัดเรียง"
 
 #: mu/interface/main.py:160
 msgid "Tidy up the layout of your code."
-msgstr ""
+msgstr "จัดเรียงโครงสร้างของโค้ด"
 
 #: mu/interface/main.py:164
 msgid "Help"
@@ -1433,7 +1433,7 @@ msgstr ""
 
 #: mu/modes/pygamezero.py:65 mu/modes/pygamezero.py:115
 msgid "Play"
-msgstr ""
+msgstr "เล่นเกม"
 
 #: mu/modes/pygamezero.py:66 mu/modes/pygamezero.py:116
 msgid "Play your Pygame Zero game."
@@ -1441,7 +1441,7 @@ msgstr ""
 
 #: mu/modes/pygamezero.py:72 mu/modes/web.py:128
 msgid "Images"
-msgstr ""
+msgstr "รูปภาพ"
 
 #: mu/modes/pygamezero.py:73
 msgid "Show the images used by Pygame Zero."
@@ -1449,7 +1449,7 @@ msgstr ""
 
 #: mu/modes/pygamezero.py:79
 msgid "Fonts"
-msgstr ""
+msgstr "อักษร"
 
 #: mu/modes/pygamezero.py:80
 msgid "Show the fonts used by Pygame Zero."
@@ -1457,7 +1457,7 @@ msgstr ""
 
 #: mu/modes/pygamezero.py:86
 msgid "Sounds"
-msgstr ""
+msgstr "เสียง"
 
 #: mu/modes/pygamezero.py:87
 msgid "Show the sounds used by Pygame Zero."
@@ -1465,7 +1465,7 @@ msgstr ""
 
 #: mu/modes/pygamezero.py:93
 msgid "Music"
-msgstr ""
+msgstr "ดนตรี"
 
 #: mu/modes/pygamezero.py:94
 msgid "Show the music used by Pygame Zero."
