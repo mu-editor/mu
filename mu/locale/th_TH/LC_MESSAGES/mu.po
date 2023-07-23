@@ -32,25 +32,26 @@ msgstr ""
 
 #: mu/interface/dialogs.py:76
 msgid "Select Mode"
-msgstr ""
+msgstr "เลือกโหมด"
 
 #: mu/interface/dialogs.py:79
 msgid ""
 "Please select the desired mode then click \"OK\". Otherwise, click "
 "\"Cancel\"."
-msgstr ""
+msgstr "โปรดเลือกโหมดและกด \"OK\" หรือ กด" "
+"\"Cancel\"."
 
 #: mu/interface/dialogs.py:100
 msgid ""
 "Change mode at any time by clicking the \"Mode\" button containing Mu's "
 "logo."
-msgstr ""
+msgstr "เปลี่ยนโหมดกดปุ่ม \"Mode\" มิว"
 
 #: mu/interface/dialogs.py:139
 msgid ""
 "When reporting a bug, copy and paste the content of the following log "
 "file."
-msgstr ""
+msgstr "ต้องการร้องเรียนจุดบกพร่อง โปรดคัดลอกและวางข้อมูล"
 
 #: mu/interface/dialogs.py:163
 msgid ""
@@ -64,7 +65,7 @@ msgstr ""
 
 #: mu/interface/dialogs.py:189
 msgid "Minify Python code before flashing?"
-msgstr ""
+msgstr "ลดขนาดโค้ดก่อนอัพเดท"
 
 #: mu/interface/dialogs.py:193
 msgid ""
@@ -93,11 +94,11 @@ msgstr ""
 msgid ""
 "\n"
 "Copy your username on PythonAnywhere into here:"
-msgstr ""
+msgstr "คัดลอกชื่อผู้ใช้งานใน PythonAnywhere ตรงนี้"
 
 #: mu/interface/dialogs.py:267
 msgid "username"
-msgstr ""
+msgstr "ผู้ใช้งาน"
 
 #: mu/interface/dialogs.py:272
 msgid ""
@@ -123,7 +124,9 @@ msgid ""
 "Please select the language for Mu's user interface from the choices "
 "listed below. <strong>Restart Mu for these changes to take "
 "effect.</strong>"
-msgstr ""
+msgstr "โปรดเลือกภาษา จากตัวเลือกดังนี้"
+"listed below. <strong> เริ่มดำเนินการใหม่เพื่อเปลี่ยนภาษา"
+"effect.</strong>"
 
 #: mu/interface/dialogs.py:364
 msgid "How to flash MicroPython to your device"
@@ -140,11 +143,11 @@ msgstr ""
 
 #: mu/interface/dialogs.py:394
 msgid "Device:"
-msgstr ""
+msgstr "อุปกรณ์"
 
 #: mu/interface/dialogs.py:397
 msgid "Choose device type:"
-msgstr ""
+msgstr "เลือกประเภทอุปกรณ์"
 
 #: mu/interface/dialogs.py:401
 msgid "Firmware (.bin):"
@@ -168,7 +171,7 @@ msgstr ""
 
 #: mu/interface/dialogs.py:572 mu/interface/main.py:1467
 msgid "Mu Administration"
-msgstr ""
+msgstr "บริหารจัดการมิว"
 
 #: mu/interface/dialogs.py:586
 msgid "Current Log"
@@ -196,23 +199,23 @@ msgstr ""
 
 #: mu/interface/dialogs.py:620
 msgid "Select Language"
-msgstr ""
+msgstr "เลือกภาษา"
 
 #: mu/interface/dialogs.py:670
 msgid "Find / Replace"
-msgstr ""
+msgstr "หา / แทนที่"
 
 #: mu/interface/dialogs.py:674
 msgid "Find:"
-msgstr ""
+msgstr "หา:"
 
 #: mu/interface/dialogs.py:681
 msgid "Replace (optional):"
-msgstr ""
+msgstr "แทนที่ (ไม่จำเป็น):"
 
 #: mu/interface/dialogs.py:687
 msgid "Replace all?"
-msgstr ""
+msgstr "แทนที่ทั้งหมด"
 
 #: mu/interface/dialogs.py:736
 msgid "Third Party Package Status"
@@ -220,7 +223,7 @@ msgstr ""
 
 #: mu/interface/editor.py:319 mu/logic.py:1356
 msgid "untitled"
-msgstr ""
+msgstr "ไร้ชื่อ"
 
 #: mu/interface/main.py:104
 msgid "Mode"
@@ -228,15 +231,15 @@ msgstr "โหมด"
 
 #: mu/interface/main.py:105
 msgid "Change Mu's mode of behaviour."
-msgstr ""
+msgstr "เปลี่ยนมิวโหมด"
 
 #: mu/interface/main.py:110
 msgid "New"
-msgstr "สร้างสคริปต์ใหม่"
+msgstr "สคริปต์ใหม่"
 
 #: mu/interface/main.py:111
 msgid "Create a new Python script."
-msgstr ""
+msgstr "สร้างสคริปต์ใหม่"
 
 #: mu/interface/main.py:115
 msgid "Load"
@@ -244,7 +247,7 @@ msgstr "โหลดข้อมูล"
 
 #: mu/interface/main.py:116
 msgid "Load a Python script."
-msgstr ""
+msgstr "โหลดสคริปต์"
 
 #: mu/interface/main.py:120
 msgid "Save"
@@ -1061,7 +1064,7 @@ msgstr ""
 #: mu/modes/circuitpython.py:152 mu/modes/esp.py:108 mu/modes/microbit.py:164
 #: mu/modes/pyboard.py:96 mu/modes/python3.py:174 mu/modes/snek.py:400
 msgid "Plotter"
-msgstr ""
+msgstr "สร้างกราฟ"
 
 #: mu/modes/circuitpython.py:153 mu/modes/esp.py:109 mu/modes/microbit.py:165
 #: mu/modes/pyboard.py:97 mu/modes/snek.py:401
@@ -1181,7 +1184,7 @@ msgstr ""
 #: mu/modes/esp.py:77 mu/modes/python3.py:150 mu/modes/python3.py:199
 #: mu/modes/web.py:93 mu/modes/web.py:181
 msgid "Run"
-msgstr ""
+msgstr "ดำเนินงาน"
 
 #: mu/modes/esp.py:78
 msgid "Run your code directly on the {board_name} via the REPL."
@@ -1486,7 +1489,7 @@ msgstr ""
 
 #: mu/modes/python3.py:157
 msgid "Debug"
-msgstr ""
+msgstr "ตรวจสอบจุดบกพร่อง"
 
 #: mu/modes/python3.py:158
 msgid "Debug your Python script."
