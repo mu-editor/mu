@@ -461,8 +461,11 @@ def run():
     # Restore the previous session along with files passed by the os
     editor.restore_session(sys.argv[1:])
 
+    # Save the exit code for sys.exit call below.
+    exit_status = app.exec()
+
     # Clean up the shared memory used to signal an app instance is running
     _shared_memory.release()
 
     # Stop the program after the application finishes executing.
-    sys.exit(app.exec())
+    sys.exit(exit_status)
