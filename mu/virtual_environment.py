@@ -531,11 +531,11 @@ class VirtualEnvironment(object):
         #
         # Pip and the interpreter will be set up when the virtualenv is created
         #
-        self.interpreter = os.path.join(
-            self._bin_directory, "python" + self._bin_extension
+        self.interpreter = safe_short_path(
+            os.path.join(self._bin_directory, "python" + self._bin_extension)
         )
-        self.pip_executable = os.path.join(
-            self._bin_directory, "pip" + self._bin_extension
+        self.pip_executable = safe_short_path(
+            os.path.join(self._bin_directory, "pip" + self._bin_extension)
         )
         self.reset_pip()
         logger.debug(
