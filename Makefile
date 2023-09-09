@@ -120,7 +120,7 @@ macos: check
 	ls -la ./dist/
 
 linux:
-    #check
+    check
 	@echo "\nFetching wheels."
 	python -m mu.wheels --package
 	@echo "\nPackaging Mu into a Linux AppImage."
