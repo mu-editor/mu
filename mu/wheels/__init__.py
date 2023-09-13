@@ -37,7 +37,13 @@ ZIP_FILEPATH = os.path.join(WHEELS_DIRPATH, mu_version + ".zip")
 # Any additional elements are passed to `pip` for specific purposes
 #
 mode_packages = [
-    ("pgzero", "pgzero>=1.2.1"),
+    # pygame is a pgzero dependency, but there is currently an issue where
+    # pygame versions >=2.1.3 have issues in macOS 10.x, so temporarily for
+    # Mu release 1.2.1 pin the max version here
+    # https://github.com/mu-editor/mu/issues/2423
+    ("pygame", "pygame<2.1.3"),
+    ("numpy", "numpy"),
+    ("pgzero", "pgzero>=1.2.1", "--no-dependencies"),
     # Flask v1 depends on Jinja v2, which doesn't have an upper bound limit in
     # MarkupSafe, and v2.1 is not compatible with Jinja v2
     ("flask", "flask==2.0.3"),
