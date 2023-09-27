@@ -662,6 +662,7 @@ class DeviceList(QtCore.QAbstractListModel):
     def __init__(self, modes, parent=None):
         super().__init__(parent)
         self.modes = modes
+        self.force_check = False
         self._devices = list()
 
     def __iter__(self):
@@ -713,6 +714,7 @@ class DeviceList(QtCore.QAbstractListModel):
         # Insert
         self.beginInsertRows(parent, position, position)
         self._devices.insert(position, new_device)
+        self.force_check = True
         self.endInsertRows()
 
     def remove_device(self, device):
@@ -723,6 +725,7 @@ class DeviceList(QtCore.QAbstractListModel):
         position = self._devices.index(device)
         self.beginRemoveRows(parent, position, position)
         self._devices.remove(device)
+        self.force_check = True
         self.endRemoveRows()
 
     def check_usb(self):
@@ -735,13 +738,21 @@ class DeviceList(QtCore.QAbstractListModel):
         devices = []
         device_types = set()
         # Detect connected devices.
+        changed = False
         for mode_name, mode in self.modes.items():
+            if hasattr(mode, "check_devices"):
+                if not mode.check_devices():
+                    continue
             if hasattr(mode, "find_devices"):
                 # The mode can detect attached devices.
                 detected = mode.find_devices(with_logging=False)
+                changed = True
                 if detected:
                     device_types.add(mode_name)
                     devices.extend(detected)
+        if not changed and not self.force_check:
+            return
+
         # Remove no-longer connected devices.
         for device in self:
             if device not in devices:
@@ -776,6 +787,7 @@ class DeviceList(QtCore.QAbstractListModel):
                         device.manufacturer,
                     )
                 )
+        self.force_check = False
 
 
 class Editor(QObject):
