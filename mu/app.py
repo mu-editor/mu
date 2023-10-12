@@ -367,6 +367,10 @@ def run():
     setup_exception_handler()
     check_only_running_once()
 
+    # Remove the VIRTUAL_ENV env var: when set, prevents pgzero mode from working
+    # if Mu is installed from source/PyPI into a virtual environment.
+    os.environ.pop("VIRTUAL_ENV", None)
+
     #
     # Load settings from known locations and register them for
     # autosave
