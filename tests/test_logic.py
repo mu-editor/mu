@@ -2524,7 +2524,7 @@ def test_change_mode_workspace_dir_exception():
         ed.change_mode("circuitpython")
         assert mock_error.call_count == 1
     assert ed.mode == "circuitpython"
-    python_mode.workspace_dir.assert_called_once()
+    python_mode.workspace_dir.assert_called_once_with()
 
 
 def test_autosave():
