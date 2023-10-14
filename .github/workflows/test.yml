@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: '*'
 
+env:
+  PY_COLORS: 1
+  #MU_LOG_TO_STDOUT: 1
+
 jobs:
   test:
     timeout-minutes: 30
@@ -96,11 +100,12 @@ jobs:
             "
 
   test-pios:
-    name: Test PiOS ${{ matrix.docker-tag }}
+    name: Test PiOS ${{ matrix.docker-tag }} - ${{ matrix.pyenv }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         docker-tag: ['stretch-2018-03-13', 'buster-2021-05-28', 'buster-legacy-2022-04-07']
+        pyenv: ['virtualenv', 'system']
       fail-fast: false
     services:
       rpios:
@@ -136,7 +141,28 @@ jobs:
           script: |
             sudo apt-get update
             sudo apt-get install -y python3-virtualenv
-      - name: Create venv and install Python dependencies
+      - name: Create virtual environment and always activate it
+        if: matrix.pyenv == 'virtualenv'
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          script: |
+            python3 -m virtualenv ~/mu/.venv -v --python=python3 --system-site-packages
+            echo "source ~/mu/.venv/bin/activate" > ~/.bashrc_new && cat ~/.bashrc >> ~/.bashrc_new
+            rm ~/.bashrc && mv ~/.bashrc_new ~/.bashrc
+      - name: Upgrade pip in Stretch system test
+        if: matrix.pyenv == 'system' && matrix.docker-tag == 'stretch-2018-03-13'
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          script: python3 -m pip install pip==20.3.4
+      - name: Install Python dependencies
         uses: appleboy/ssh-action@master
         with:
           host: rpios
@@ -145,12 +171,8 @@ jobs:
           port:  ${{ job.services.rpios.ports[5022] }}
           command_timeout: 20m
           script: |
-            python3 -m virtualenv ~/mu/.venv -v --python=python3 --system-site-packages
-            echo "source ~/mu/.venv/bin/activate" > ~/.bashrc_new && cat ~/.bashrc >> ~/.bashrc_new
-            rm ~/.bashrc && mv ~/.bashrc_new ~/.bashrc
-            source .venv/bin/activate
-            python -m pip list
-            python -m pip install ."[dev]"
+            python3 -m pip list
+            python3 -m pip install ."[dev]"
       - name: Environment info
         uses: appleboy/ssh-action@master
         with:
@@ -164,6 +186,7 @@ jobs:
             python3 -c "import platform as p, sys; print(sys.executable, p.architecture(), p.machine(), sys.version, sep='\n')"
             python3 -m pip --version
             python3 -m pip list
+            python3 -I -m pip list
       - name: Run tests
         uses: appleboy/ssh-action@master
         with:
@@ -172,4 +195,4 @@ jobs:
           password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
           command_timeout: 30m
-          script: xvfb-run python make.py check
+          script: xvfb-run python3 make.py check
