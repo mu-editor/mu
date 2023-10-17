@@ -204,6 +204,7 @@ class MicrobitMode(MicroPythonMode):
             logger.exception(e)
             raise Exception(
                 "{}\n".format(_("Problem minifying script"))
+                # XXX hard to translate, use {named} placeholders
                 + "{} [{}:{}]".format(msg, line, col)
             )
         saved = original_length - len(mangled)
@@ -279,6 +280,62 @@ class MicrobitMode(MicroPythonMode):
         python_script = tab.text().encode("utf-8")
         logger.debug("Python script from '{}' tab:".format(tab.label))
         logger.debug(python_script)
+        # Check minification status.
+        minify = False
+        if uflash.get_minifier():
+            minify = self.editor.minify
+        # Attempt and handle minification.
+        if len(python_script) >= uflash._MAX_SIZE:
+            message = _('Unable to flash "{}"').format(tab.label)
+            if minify and can_minify:
+                orginal = len(python_script)
+                script = python_script.decode("utf-8")
+                try:
+                    mangled = nudatus.mangle(script).encode("utf-8")
+                except TokenError as e:
+                    msg, (line, col) = e.args
+                    logger.debug("Minify failed")
+                    logger.exception(e)
+                    message = _("Problem with script")
+                    # XXX hard to translate, use {named} placeholders
+                    information = _("{} [{}:{}]").format(msg, line, col)
+                    self.view.show_message(message, information, "Warning")
+                    return
+                saved = orginal - len(mangled)
+                percent = saved / orginal * 100
+                logger.debug(
+                    "Script minified, {} bytes ({:.2f}%) saved:".format(
+                        saved, percent
+                    )
+                )
+                logger.debug(mangled)
+                python_script = mangled
+                if len(python_script) >= 8192:
+                    information = _(
+                        "Our minifier tried but your " "script is too long!"
+                    )
+                    self.view.show_message(message, information, "Warning")
+                    return
+            elif minify and not can_minify:
+                information = _(
+                    "Your script is too long and the minifier"
+                    " isn't available"
+                )
+                self.view.show_message(message, information, "Warning")
+                return
+            else:
+                information = _("Your script is too long!")
+                self.view.show_message(message, information, "Warning")
+                return
+        # By this point, there's a valid Python script in "python_script".
+        # Assign this to an attribute for later processing in a different
+        # method.
+        self.python_script = python_script
+        # Next step: find the microbit port and serial number.
+        path_to_microbit = uflash.find_microbit()
+        logger.info("Path to micro:bit: {}".format(path_to_microbit))
+        port = None
+        serial_number = None
         try:
             python_script = self.minify_if_needed(python_script)
         except Exception as e:
@@ -424,6 +481,7 @@ class MicrobitMode(MicroPythonMode):
         self.set_buttons(flash=False, repl=False, files=False, plotter=False)
         status_message = _("Flashing the micro:bit")
         if rt_path:
+            # XXX add gettext call (and avoid building strings)
             status_message += ". {}: {}".format(_("Runtime"), rt_path)
         self.editor.show_status_message(status_message, 10)
         # Store the script to be sent via serial after flashing the runtime
