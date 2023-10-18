@@ -60,7 +60,7 @@ coverage: clean
 	export LANG=en_GB.utf8
 	pytest -v --random-order --cov-config setup.cfg --cov-report term-missing --cov=mu tests/
 
-tidy: 
+tidy:
 	python make.py tidy
 
 black:

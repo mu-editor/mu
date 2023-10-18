@@ -126,7 +126,7 @@ def test_pgzero_run_game():
     with mock.patch.object(venv, "interpreter", "interpreter"):
         pm.run_game()
 
-    editor.save_tab_to_file.called_once_with(view.current_tab)
+    editor.save_tab_to_file.assert_called_once_with(view.current_tab)
     view.add_python3_runner.assert_called_once_with(
         interpreter="interpreter",
         script_name="/foo/bar",

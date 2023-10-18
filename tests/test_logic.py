@@ -893,7 +893,7 @@ def test_editor_restore_session_existing_runtime():
     assert ed.minify is False
     assert ed.microbit_runtime == "/foo"
     assert ed._view.zoom_position == 5
-    assert venv_relocate.called_with("foo")
+    venv_relocate.assert_called_with("foo")
 
 
 def test_editor_restore_session_missing_runtime():
@@ -1069,7 +1069,7 @@ def test_editor_open_focus_passed_file():
     with generate_session():
         ed.restore_session(paths=[filepath])
 
-    assert ed.direct_load.called_with(filepath)
+    ed.direct_load.assert_called_with(os.path.abspath(filepath))
 
 
 def test_editor_session_and_open_focus_passed_file():
@@ -1439,12 +1439,12 @@ def test_load_stores_newline():
     newline = "r\n"
     text = newline.join("the cat sat on the mat".split())
     editor = mocked_editor()
-    with generate_python_file("abc\r\ndef") as filepath:
+    with generate_python_file(text) as filepath:
         editor._view.get_load_path.return_value = filepath
         editor.load()
 
-    assert editor._view.add_tab.called_with(
-        filepath, text, editor.modes[editor.mode].api(), "\r\n"
+    editor._view.add_tab.assert_called_with(
+        filepath, text, editor.modes[editor.mode].api(), "\n"
     )
 
 
@@ -1459,7 +1459,7 @@ def test_save_restores_newline():
         with mock.patch("mu.logic.save_and_encode") as mock_save:
             ed = mocked_editor(text=test_text, newline=newline, path=filepath)
             ed.save()
-            assert mock_save.called_with(test_text, filepath, newline)
+            mock_save.assert_called_with(test_text, filepath, newline)
 
 
 def test_save_strips_trailing_spaces():
@@ -2524,7 +2524,7 @@ def test_change_mode_workspace_dir_exception():
         ed.change_mode("circuitpython")
         assert mock_error.call_count == 1
     assert ed.mode == "circuitpython"
-    assert python_mode.workspace_dir.called_once()
+    python_mode.workspace_dir.assert_called_once_with()
 
 
 def test_autosave():
