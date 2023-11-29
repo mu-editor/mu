@@ -99,8 +99,8 @@ jobs:
     name: Test PiOS ${{ matrix.docker-tag }}
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        docker-tag: ['buster-2021-05-28', 'buster-legacy-2022-04-07', 'bullseye-2022-01-28']
+      matrix:  # bullseye uses Python 3.9 which is not yet supported.
+        docker-tag: ['buster-2021-05-28', 'buster-legacy-2022-04-07']  # , 'bullseye-2022-01-28']
       fail-fast: false
     services:
       rpios:
