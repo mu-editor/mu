@@ -32,7 +32,19 @@ Clone the repository::
 
     git clone https://github.com/mu-editor/mu.git
 
-Create a virtualenv and activate it. Then, upgrade ``pip``::
+Create a virtualenv in Python 3.8::
+
+    python3.8 -m venv .venv
+    
+Activate the environment, on macOS and Linux the command is::
+
+    source .venv/bin/activate
+
+For Windows, the command is::
+
+    . .\.venv\Scripts\activate.ps1
+
+Once your virtual environment is activated, upgrade ``pip``::
 
     python -m pip install --upgrade pip
 

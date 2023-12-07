@@ -274,8 +274,22 @@ def test_pip_uninstall_single_package_with_flag_value():
 
 
 #
-# freeze & list
+# version, freeze & list
 #
+def test_pip_version():
+    """Ensure that pip.version calls pip --version"""
+    pip_executable = "pip-" + rstring() + ".exe"
+    pip = mu.virtual_environment.Pip(pip_executable)
+    with patch.object(pip.process, "run_blocking") as mock_run:
+        pip.version()
+        expected_args = (
+            pip_executable,
+            ["--version", "--disable-pip-version-check"],
+        )
+        args, _ = mock_run.call_args
+        assert args == expected_args
+
+
 def test_pip_freeze():
     """Ensure that pip.freeze calls pip freeze"""
     pip_executable = "pip-" + rstring() + ".exe"

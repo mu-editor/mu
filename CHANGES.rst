@@ -1,6 +1,103 @@
 Release History
 ---------------
 
+1.2.2
+=====
+
+This release fixes some minor bugs, contains some (code) tidy ups, two new
+translations, a mutex to ensure there is only ever one running Mu, and lots of
+new welcome messages from new Pythonistas learning to code at EuroPython 2023.
+
+Please provide bug reports or feedback via:
+
+https://github.com/mu-editor/mu/issues/new
+
+**For complicated hardware related reasons, the MacOS version of this release
+of Mu will be signed by Mu core maintainer @tmontes. The windows version will
+remain signed by @ntoll.**
+
+* Thank you @tmontes for fixing packaging issues relating to PyGame and other
+  third party packages.
+* Thanks to @carlosperate for many infrastructure and build related fixes and
+  improvements.
+* The amazing @tjguk has added a cross-platform way for only one instance of
+  Mu to be running at once. This fixes various race conditions and mix-ups
+  caused by multiple versions interfering with each other.
+* In related work @hroncok fixed a race condition when creating the LOG_DIR on
+  first start. Great work!
+* Thanks also to @haikusw for allowing Mu's window size to reduce to the
+  allowed minimum for the user's operating system.
+* A bug that resulted in bucket-loads of characters being sent over USB-serial
+  as the user clicked around the serial panel was fixed by @Neradoc. Thanks!
+* Thank you @hrnciar for fixing aspects of the test suite.
+* What a relief from @prcutler for tidying up parts of the AUTHORS.rst.
+* Bravo @Gigi1111 for documenting the PyQT6 Mac work around. Hopefully this
+  won't be needed in future releases.
+* Huge thanks to @patchanont, @prochazka-jan, @Gigi111, @Rharsia, @rahulab29,
+  @JinnaKvG, and @j2bryson for their new welcome messages from EuroPython 2023.
+* Toodle pip to @tonybaloney for addressing `pip` related timeout issues.
+* Explosive thanks to @hroncok for sheBANG shenanigans.
+* Timely thanks to @haikusw for fixing timing issues in the test suite.
+* A minor but very important translation change (Polish - Dziękuję Ci) was made
+  by @Gregor14.
+* A big дуже тобі дякую to @gromko for the initial translation into Ukrainian.
+  Kudos to Viktoriya (Mrs. @dpgeorge) for checking the translation and
+  suggesting improvements.
+* Finally, @xbecas assisted in bringing a Dutch translation to Mu. Dank je
+  to @pygamegirl for checking the translation.
+
+This will be the final version of Mu to support the old versions of PyQT we
+have been using (to allow users of legacy systems to continue to get updated
+versions of Mu). **The next release will use updated versions of all our
+dependencies and may not work on old or out-of-date operating systems**.
+Please remember to keep your systems up-to-date if possible!
+
+1.2.1
+=====
+
+This release was prepared, but due to a late breaking mishap, never released.
+All changes and updates have been folded into and documented in 1.2.2.
+
+1.2.0
+=====
+
+This release fixes some minor bugs, addresses some usability gremlins and
+adjusts some capabilities to make things tidier. Much of this work was done
+over the summer at the code-sprints at EuroPython 2022 in Dublin. Kudos and
+thanks to all the new contributors to Mu.
+
+Please provide bug reports or feedback via:
+
+https://github.com/mu-editor/mu/issues/new
+
+* Thanks to @keith-packard for Snek mode. [Snek](https://sneklang.org/) is a
+  Python inspired language for processors too small even to run MicroPython.
+* @tmontes contributed changes so Mu builds to Linux AppImages (an easy way to
+  package application for Linux).
+* Minor fixes by @stratakis in the Russian translation.
+* @carlosperate fixed many minor glitches and gremlins.
+* @carlosperate was on fire with fixes needed to ensure Mu continues to work
+  with very old versions of OSX (as used in many educational institutions).
+* Again, thanks to @carlosperate, AppImage with Wayland no longer the setting
+  of an environment variable to make it work properly.
+* The web mode includes simple and easy to use integration with
+  beginner and education friendly web hosts, PythonAnywhere.
+* @agdales, @Jeffrey04, @johannaengland and @AnjaVerboven contributed new
+  messages of the day as part of their onboarding at EuroPython.
+* @tonybaloney contributed several Windows based fixes and clean-ups.
+* @johannaengland and @prcutler were on fire tidying up and fixing docs at
+  EuroPython.
+* A bug was fixed in the web mode relating to the resolution and/or recreation
+  of the assets directory (in which images, css and templates were to be
+  found).
+* Or friend at Adafruit, @tennewt made the necessary changes so Mu handles OSC
+  commands gracefully (see the [PR](https://github.com/mu-editor/mu/pull/2326)
+  for more details).
+* New contributor, @zigit ensured "Unexpected Maker" based ESP boards are
+  correctly detected.
+* Thanks to @Jayman2000, error messages are correctly capitalized (or not) to
+  avoid potential confusion.
+
 1.1.1
 =====
 

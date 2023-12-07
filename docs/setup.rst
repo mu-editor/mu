@@ -34,7 +34,7 @@ into your virtualenv with::
     * ``[package]`` specifies the packaging dependencies needed by ``make win32``,
       ``make win64``, ``make macos``, or ``make dist``.
 
-    Addionionally, the following extras are defined:
+    Additionally, the following extras are defined:
 
     * ``[utils]`` specifies the dependencies needed to run the utilities
       under the ``utils`` directory. It has been specifically excluded from
@@ -61,6 +61,10 @@ into your virtualenv with::
 
         py -3 -mvenv .venv
 
+    Virtual environment setup can vary depending on your operating system.
+    To learn more about virtual environments, see this `in-depth guide from Real Python <https://realpython.com/python-virtual-environments-a-primer/>`_.
+
+
 Running Development Mu
 ++++++++++++++++++++++
 
@@ -78,6 +82,36 @@ An alternative form is to type::
 Yet another one is typing::
 
   mu-editor
+
+
+Running Development Mu on Newer MacBook Machines
+++++++++++++
+
+If you are working on a newer Apple computers using ARM architecture, an error regarding PyQt may occur due to system incompatibility.
+
+In this case, switch to the pyqt6 branch and make a few changes to the setup.py file before installing the dependencies and run Mu again locally.
+
+In the setup.py file on the pyqt6 branch, you'll find the following lines::
+  
+  "PyQt6==6.3.1"
+  + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+  "PyQt6-QScintilla==2.13.3"
+  + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+  "PyQt6-Charts==6.3.1"
+  + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+
+Remove the lines for Rasberry Pi and leave only the following lines:
+
+  "PyQt6==6.3.1",
+  "PyQt6-QScintilla==2.13.3",
+  "PyQt6-Charts==6.3.1",
+
+Once the changes are saved, install the dependencies and Mu should be up and running.
+
+Since this workaround is only for newer Mac users, when you are committing your changes, be careful to not commit it. 
+
+And when you are making pull request, merge it to main or master instead of pyqt6. 
+
 
 Raspberry Pi
 ++++++++++++

@@ -10,14 +10,14 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-10.15, windows-2016]
+        os: [macos-11, windows-2019]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: Build ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
       - name: Display Python info
@@ -46,7 +46,44 @@ jobs:
           make macos
           mv dist/*.dmg upload/
       - name: Upload Mu installer
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: mu-editor-${{ runner.os }}-${{ github.sha }}
           path: upload
+
+  build-linux:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mu-editor/mu-appimage:2022.05.01
+    name: Build AppImage
+    steps:
+      - uses: actions/checkout@v3
+      - name: Display system info
+        run: |
+          uname -a
+          cat /etc/lsb-release
+          python -c "import sys; print(sys.version)"
+          python -c "import platform, struct; print(platform.machine(), struct.calcsize('P') * 8)"
+          python -c "import sys; print(sys.executable)"
+          python -m pip --version
+          pip --version
+          pip list --verbose
+      - name: Install Mu test dependencies
+        run: |
+          pip install .[tests]
+          pip list
+      - run: mkdir upload
+      - name: Build Linux AppImage
+        run: xvfb-run make linux
+      # GitHub actions upload artifact breaks permissions, workaround using tar
+      # https://github.com/actions/upload-artifact/issues/38
+      - name: Tar AppImage to maintain permissions
+        run: |
+          cd dist/
+          tar -cvf Mu_Editor-AppImage-x86_64-${{ github.sha }}.tar *.AppImage
+          ls -la .
+      - name: Upload Mu AppImage
+        uses: actions/upload-artifact@v3
+        with:
+          name: mu-editor-${{ runner.os }}-${{ github.sha }}
+          path: dist/Mu_Editor-AppImage-x86_64-${{ github.sha }}.tar

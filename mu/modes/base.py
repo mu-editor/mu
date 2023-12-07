@@ -349,6 +349,13 @@ class BaseMode(QObject):
         """
         pass  # Default is to do nothing
 
+    def ensure_state(self):
+        """
+        Executed when the mode is finished setting up. Used to ensure button /
+        UI state according to current state of settings.
+        """
+        pass  # Default is to do nothing
+
     def deactivate(self):
         """
         Executed when the mode is activated

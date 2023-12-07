@@ -156,10 +156,10 @@ The automated builds are unsigned, so Windows will complain about the software
 coming from an untrusted source. The official releases will be signed by
 me (Nicholas Tollervey - the current maintainer) on my local machine using
 a private key and uploaded to GitHub and associated with the relevant release.
-`The instructions for cyrptographically signing installers <https://pynsist.readthedocs.io/en/latest/faq.html#code-signing>`_
+`The instructions for cryptographically signing installers <https://pynsist.readthedocs.io/en/latest/faq.html#code-signing>`_
 explain this process more fully
 (the details of which are described
-`by Mozilla <https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Build_Instructions/Signing_an_executable_with_Authenticode>`_).
+`by Mozilla <https://developer.mozilla.org.cach3.com/en-US/docs/Mozilla/Developer_guide/Build_Instructions/Signing_an_executable_with_Authenticode>`_).
 
 Use the ``make`` command to build your own installers::
 

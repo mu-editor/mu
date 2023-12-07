@@ -9,6 +9,11 @@ import tempfile
 import time
 import zipfile
 
+try:
+    import win32api
+except ImportError:
+    pass
+
 from PyQt5.QtCore import (
     QObject,
     QProcess,
@@ -29,9 +34,34 @@ logger = logging.getLogger(__name__)
 ENCODING = sys.stdout.encoding if hasattr(sys.stdout, "encoding") else "utf-8"
 
 
+def safe_short_path(path):
+    """On Windows it converts a path to a short path with 8.3 representation.
+
+    This is to avoid an issue encountered on Windows were launching a virtual
+    environment python/pip process results in a 101 error exit code.
+
+    More info:
+    - https://github.com/mu-editor/mu/issues/1926
+    - https://bugs.python.org/issue46686
+    - https://github.com/python/cpython/issues/90844
+    """
+    if sys.platform != "win32":
+        return path
+    try:
+        return win32api.GetShortPathName(path)
+    except Exception:
+        return path
+
+
 class VirtualEnvironmentError(Exception):
     def __init__(self, message):
         self.message = message
+
+
+class VirtualEnvironmentTimeoutError(VirtualEnvironmentError):
+    def __init__(self, message, timeout):
+        super().__init__(message)
+        self.timeout = timeout
 
 
 class VirtualEnvironmentEnsureError(VirtualEnvironmentError):
@@ -44,7 +74,8 @@ class VirtualEnvironmentCreateError(VirtualEnvironmentError):
 
 def compact(text):
     """Remove double line spaces and anything else which might help"""
-    return "\n".join(line for line in text.splitlines() if line.strip())
+    compacted = "\n".join(line for line in text.splitlines() if line.strip())
+    return compacted or "No output received."
 
 
 class Process(QObject):
@@ -173,7 +204,21 @@ class Process(QObject):
         # generate a URI out of it. There's an upper limit on URI size of ~2000
         #
         if not finished:
-            logger.error(compact(output))
+            if exit_code and compact(output):
+                logger.error(compact(output))
+            elif exit_code:
+                logger.error(
+                    "Process failed with exit code %s but provided no message",
+                    exit_code,
+                )
+            else:
+                logger.error("Virtual environment creation timed out")
+                raise VirtualEnvironmentTimeoutError(
+                    "Virtual environment creation timed out:\n"
+                    + compact(output),
+                    wait_for_s,
+                )
+
             raise VirtualEnvironmentError(
                 "Process did not terminate normally:\n" + compact(output)
             )
@@ -217,9 +262,10 @@ class Pip(object):
     def __init__(self, pip_executable):
         self.executable = pip_executable
         self.process = Process()
+        self.timeout = 180.0
 
     def run(
-        self, command, *args, wait_for_s=120.0, slots=Process.Slots(), **kwargs
+        self, command, *args, wait_for_s=None, slots=Process.Slots(), **kwargs
     ):
         """
         Run a command with args, treating kwargs as Posix switches.
@@ -232,6 +278,8 @@ class Pip(object):
         # As a special case, a boolean value indicates that the flag
         # is a yes/no switch
         #
+        if not wait_for_s:
+            wait_for_s = self.timeout
         params = [command, "--disable-pip-version-check"]
         for k, v in kwargs.items():
             switch = k.replace("_", "-")
@@ -268,11 +316,19 @@ class Pip(object):
         """
         if isinstance(packages, str):
             return self.run(
-                "install", packages, wait_for_s=180.0, slots=slots, **kwargs
+                "install",
+                packages,
+                wait_for_s=self.timeout,
+                slots=slots,
+                **kwargs
             )
         else:
             return self.run(
-                "install", *packages, wait_for_s=180.0, slots=slots, **kwargs
+                "install",
+                *packages,
+                wait_for_s=self.timeout,
+                slots=slots,
+                **kwargs
             )
 
     def uninstall(self, packages, slots=Process.Slots(), **kwargs):
@@ -289,7 +345,7 @@ class Pip(object):
             return self.run(
                 "uninstall",
                 packages,
-                wait_for_s=180.0,
+                wait_for_s=self.timeout,
                 slots=slots,
                 yes=True,
                 **kwargs
@@ -298,11 +354,20 @@ class Pip(object):
             return self.run(
                 "uninstall",
                 *packages,
-                wait_for_s=180.0,
+                wait_for_s=self.timeout,
                 slots=slots,
                 yes=True,
                 **kwargs
             )
+
+    def version(self):
+        """
+        Get the pip version
+
+        NB this is fairly trivial but is pulled out principally for
+        testing purposes
+        """
+        return self.run("--version")
 
     def freeze(self):
         """
@@ -439,9 +504,9 @@ class VirtualEnvironment(object):
         if stderr_output:
             output += "\n\nSTDERR: " + stderr_output
         logger.debug(
-            "Process returned %d; output: %s",
-            process.returncode,
-            compact(output),
+            "Process returned {}; output: {}".format(
+                process.returncode, compact(output)
+            ),
         )
         return process.returncode == 0, output
 
@@ -466,11 +531,11 @@ class VirtualEnvironment(object):
         #
         # Pip and the interpreter will be set up when the virtualenv is created
         #
-        self.interpreter = os.path.join(
-            self._bin_directory, "python" + self._bin_extension
+        self.interpreter = safe_short_path(
+            os.path.join(self._bin_directory, "python" + self._bin_extension)
         )
-        self.pip_executable = os.path.join(
-            self._bin_directory, "pip" + self._bin_extension
+        self.pip_executable = safe_short_path(
+            os.path.join(self._bin_directory, "pip" + self._bin_extension)
         )
         self.reset_pip()
         logger.debug(
@@ -645,6 +710,8 @@ class VirtualEnvironment(object):
                 if n < n_tries:
                     self.relocate(self._generate_dirpath())
                     try_to_create = True
+                    if isinstance(exc, VirtualEnvironmentTimeoutError):
+                        self.pip.timeout = exc.timeout * 2
                     n += 1
                 else:
                     raise
@@ -696,6 +763,28 @@ class VirtualEnvironment(object):
         """
         if os.path.isfile(self.interpreter):
             logger.info("Interpreter found at: %s", self.interpreter)
+        elif os.environ.get("APPDIR") and os.environ.get("APPIMAGE"):
+            # When packaged as a Linux AppImage, Mu Editor is mounted
+            # on a random(ish) path each time it runs. This breaks the
+            # existing venv: its interpreter symlinks to a path that
+            # likely no longer exists. Fix that by re-symlinking to
+            # the current and now valid interpreter path.
+            # PS: This is a horrible hack and it seems to work! :)
+            logger.info("No interpreter found at: %s", self.interpreter)
+            try:
+                os.unlink(self.interpreter)
+            except OSError as exc:
+                logger.warning(
+                    "Unlinking %s failed: %s. Moving on.",
+                    self.interpreter,
+                    exc,
+                )
+            os.symlink(sys.executable, self.interpreter)
+            logger.info(
+                "Symlinked %s to AppImage's %s",
+                self.interpreter,
+                sys.executable,
+            )
         else:
             raise VirtualEnvironmentEnsureError(
                 "Interpreter not found where expected at: %s"
@@ -782,27 +871,31 @@ class VirtualEnvironment(object):
         logger.info("Virtualenv name: {}".format(self.name))
 
         env = dict(os.environ)
-        ok, output = self.run_subprocess(
-            sys.executable,
-            "-I",
-            "-m",
-            "virtualenv",
-            "-p",
-            sys.executable,
-            "-q",
-            self.path,
-            env=env,
+        args = filter(
+            None,
+            (
+                safe_short_path(sys.executable),
+                "-I",
+                "-m",
+                "virtualenv",
+                "-p",
+                safe_short_path(sys.executable),
+                "-q",
+                "" if self._is_windows else "--symlinks",
+                self.path,
+            ),
         )
+        ok, output = self.run_subprocess(*args, env=env)
         if ok:
             logger.info(
                 "Created virtual environment using %s at %s",
-                sys.executable,
+                safe_short_path(sys.executable),
                 self.path,
             )
         else:
             raise VirtualEnvironmentCreateError(
                 "Unable to create a virtual environment using %s at %s\n%s"
-                % (sys.executable, self.path, compact(output))
+                % (safe_short_path(sys.executable), self.path, compact(output))
             )
 
     def install_jupyter_kernel(self):
@@ -814,7 +907,8 @@ class VirtualEnvironment(object):
         display_name = '"Python/Mu ({})"'.format(kernel_name)
         logger.info("Installing Jupyter Kernel: %s", kernel_name)
         ok, output = self.run_subprocess(
-            sys.executable,
+            safe_short_path(sys.executable),
+            "-I",
             "-m",
             "ipykernel",
             "install",
@@ -871,6 +965,7 @@ class VirtualEnvironment(object):
         usual way.
         """
         logger.info("Installing baseline packages.")
+        logger.info("pip version: %s", compact(self.pip.version()))
         #
         # TODO: Add semver check to ensure filepath is safe
         #

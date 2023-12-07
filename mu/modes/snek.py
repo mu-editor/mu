@@ -186,10 +186,7 @@ class SnekMode(MicroPythonMode):
         (0x2341, 0x0010, None, "Arduino Mega 2560"),
         (0x2341, 0x0058, None, "Arduino Nano Every"),
         (0x2341, 0x0043, None, "Arduino Uno"),
-        (0x0403, 0x6001, None, "Arduino Duemilanove/LilyPad"),
         (0x03EB, 0x204B, None, "Arduino Mega with LUFA"),
-        (0x10C4, 0xEA60, None, "Arduino clone with CP210x"),
-        (0x1A86, 0x7523, None, "Pandauino Narrow 1284"),
         (0x2886, 0x002E, None, "Seeed Xiao"),
     ]
     # These boards don't need flow control

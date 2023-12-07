@@ -246,8 +246,8 @@ def test_save_only_changed(mocked_open):
     settings.as_string = mock.Mock(return_value=rstring())
     settings.save()
 
-    assert settings.as_string.called_with(changed_only=True)
-    assert mocked_open.called_with(settings.filepath, "w")
+    settings.as_string.assert_called_with(changed_only=True)
+    mocked_open.assert_called_with(settings.filepath, "w", encoding="utf-8")
 
 
 @patch.object(mu.settings, "logger")

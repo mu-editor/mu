@@ -37,22 +37,46 @@ ZIP_FILEPATH = os.path.join(WHEELS_DIRPATH, mu_version + ".zip")
 # Any additional elements are passed to `pip` for specific purposes
 #
 mode_packages = [
-    ("pgzero", "pgzero>=1.2.1"),
-    # Flask v1 depends on Jinja v2, which doesn't have an upper bound limit in
-    # MarkupSafe, and v2.1 is not compatible with Jinja v2
-    ("flask", "flask==2.0.3"),
+    # pygame is a pgzero dependency, but there is currently an issue where
+    # pygame versions >=2.1.3 have issues in macOS 10.x, so temporarily for
+    # Mu release 1.2.1 pin the max version here
+    # https://github.com/mu-editor/mu/issues/2423
+    ("pgzero", ("pgzero>=1.2.1", "pygame<2.1.3")),
+    # Lock Werkzeug to < 3.0.0: import flask fails, otherwise.
+    ("flask", ("flask==2.0.3", "Werkzeug<3.0.0")),
     # The version of ipykernel here should match to the version used by
     # qtconsole at the version specified in setup.py
     # FIXME: ipykernel max ver added for macOS 10.13 compatibility, min taken
     # from qtconsole 4.7.7. This is mirrored in setup.py
-    ("ipykernel", "ipykernel>=4.1,<6"),
+    ("ipykernel", ("ipykernel>=4.1,<6",)),
     # FIXME: ipykernel<6 depends on ipython_genutils, but it isn't explicitly
     # declared as a dependency. It also depends on traitlets, which
     # incidentally brought ipython_genutils, but in v5.1 it was dropped, so as
     # a workaround we need to manually specify it here
-    ("ipython_genutils", "ipython_genutils>=0.2.0"),
-    ("esptool", "esptool==3.*"),
+    ("ipython_genutils", ("ipython_genutils>=0.2.0",)),
 ]
+
+
+def os_compatibility_flags():
+    """
+    Determine additional `pip download` flags required to maximise
+    compatibility with older versions of the current operating system.
+
+    If downloading wheels with these flags fails, then we should consider it
+    an issue to be resolved before doing a Mu release.
+    """
+    extra_flags = []
+    # For macOS the oldest supported version is 10.12 Sierra, as that's the
+    # oldest version supported by PyQt5 v5.13
+    if sys.platform == "darwin":
+        extra_flags.extend(
+            [
+                "--platform=macosx_10_12_x86_64",
+                "--only-binary=:all:",
+            ]
+        )
+    # At the moment there aren't any additional flags for Windows or Linux
+    return extra_flags
 
 
 def compact(text):
@@ -77,13 +101,14 @@ def remove_dist_files(dirpath, logger):
         os.remove(rm_filepath)
 
 
-def pip_download(dirpath, logger):
-    for name, pip_identifier, *extra_flags in mode_packages:
+def pip_download(dirpath, logger, additional_flags=[]):
+    for name, pip_identifiers, *extra_flags in mode_packages:
         logger.info(
-            "Running pip download for %s / %s / %s",
+            "Running pip download for %s / %s / %s / %s",
             name,
-            pip_identifier,
+            pip_identifiers,
             extra_flags,
+            additional_flags,
         )
         process = subprocess.run(
             [
@@ -96,9 +121,10 @@ def pip_download(dirpath, logger):
                 dirpath,
                 "--find-links",
                 dirpath,
-                pip_identifier,
+                *pip_identifiers,
             ]
-            + extra_flags,
+            + extra_flags
+            + additional_flags,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
@@ -111,7 +137,7 @@ def pip_download(dirpath, logger):
         #
         if process.returncode != 0:
             raise WheelsDownloadError(
-                "Pip was unable to download %s" % pip_identifier
+                "Pip was unable to download %s" % pip_identifiers
             )
 
 
@@ -153,7 +179,7 @@ def zip_wheels(zip_filepath, dirpath, logger=logger):
             z.write(filepath, filename)
 
 
-def download(zip_filepath=ZIP_FILEPATH, logger=logger):
+def download(zip_filepath=ZIP_FILEPATH, logger=logger, os_old_compat=False):
     """Download from PyPI, convert to wheels, and zip up
 
     To make all the libraries available for Mu modes (eg pygame zero, Flask etc.)
@@ -163,8 +189,12 @@ def download(zip_filepath=ZIP_FILEPATH, logger=logger):
     We allow `logger` to be overridden because output from the
     virtual_environment module logger goes to the splash screen, while
     output from this module's logger doesn't
+
+    Additional pip download flags to maximise wheel compatibility with old
+    operating systems can be included using the `os_old_compat` parameter.
     """
     logger.info("Downloading wheels to %s", zip_filepath)
+    extra_pip_flags = os_compatibility_flags() if os_old_compat else []
 
     #
     # Remove any leftover files from the place where the zip file
@@ -173,6 +203,6 @@ def download(zip_filepath=ZIP_FILEPATH, logger=logger):
     remove_dist_files(os.path.dirname(zip_filepath), logger)
 
     with tempfile.TemporaryDirectory() as temp_dirpath:
-        pip_download(temp_dirpath, logger)
+        pip_download(temp_dirpath, logger, extra_pip_flags)
         convert_sdists_to_wheels(temp_dirpath, logger)
         zip_wheels(zip_filepath, temp_dirpath, logger)
