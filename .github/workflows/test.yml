@@ -100,7 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        docker-tag: ['buster-2021-05-28', 'buster-legacy-2022-04-07']
+        docker-tag: ['stretch-2018-03-13', 'buster-2021-05-28', 'buster-legacy-2022-04-07']
       fail-fast: false
     services:
       rpios:
@@ -126,6 +126,16 @@ jobs:
             git checkout --progress FETCH_HEAD
             echo "cd ~/mu" > ~/.bashrc_new && cat ~/.bashrc >> ~/.bashrc_new
             rm ~/.bashrc && mv ~/.bashrc_new ~/.bashrc
+      # As Pi OS stretch is no longer supported the repository URL was moved and is no longer updated
+      - name: Update Stretch sources.list
+        if: ${{ matrix.docker-tag == 'stretch-2018-03-13' }}
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          script: echo "deb http://legacy.raspbian.org/raspbian/ stretch main contrib non-free rpi" | sudo tee /etc/apt/sources.list
       - name: Install Mu extra apt dependencies
         uses: appleboy/ssh-action@master
         with:
@@ -171,5 +181,6 @@ jobs:
           username: pi
           password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
-          command_timeout: 30m
+          # The time out can be decreased to 30 min when Stretch is dropped
+          command_timeout: 45m
           script: xvfb-run python make.py check
