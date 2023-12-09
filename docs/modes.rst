@@ -100,7 +100,7 @@ There are two ways to run your script in this mode:
    graphical way to inspect and watch your code execute.
    
 Because of the overhead needed to start the graphical debugger it takes longer
-to start running your script. This is especially noticable on the Raspberry Pi.
+to start running your script. This is especially noticeable on the Raspberry Pi.
 
 Python 2 isn't supported by Mu and never will be.
 
@@ -152,7 +152,7 @@ a couple of relatively simple steps:
 * In ``mu.app.py`` import the new mode from ``mu.modes`` and add an instance of
   the mode's class to the dictionary returned by the ``setup_modes`` function.
   (All modes are instantiated with the available ``editor`` and ``view``
-  objects that represnt the editor's logic and UI layer respectively.)
+  objects that represent the editor's logic and UI layer respectively.)
 
 Update the Class's Behaviour
 ++++++++++++++++++++++++++++

@@ -1500,7 +1500,7 @@ def test_load_sets_current_path():
     """
     When a path has been selected for loading by the OS's file selector,
     ensure that the directory containing the selected file is set as the
-    self.current_path for re-use later on.
+    self.current_path for reuse later on.
     """
     view = mock.MagicMock()
     view.get_load_path = mock.MagicMock(

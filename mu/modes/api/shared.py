@@ -57,7 +57,7 @@ SHARED_APIS = [
         "format(*args, **kwargs) \nPerform a string formatting operation. The string on which this method is called\ncan contain literal text or replacement fields delimited by braces {}. Each\nreplacement field contains either the numeric index of a positional argument,\nor the name of a keyword argument.\nReturns a copy of the string where each replacement field is replaced with the\nstring value of the corresponding argument."
     ),
     _(
-        "replace(old, new) \nReturn a copy of the string with all othe occurrences of 'old' replaced with 'new'."
+        "replace(old, new) \nReturn a copy of the string with all other occurrences of 'old' replaced with 'new'."
     ),
     _(
         "count(sub, start, end) \nReturn the number of non-overlapping occurrences of substring 'sub'.\nOptional arguments 'start' and 'end' specify the slice of the string to use. "
@@ -118,7 +118,7 @@ SHARED_APIS = [
     ),
     _("dict(): \nCreate a new dictionary object."),
     _(
-        "dir(object) \nReturn a list of names in the scope of 'object'. If no object is supplied,\nreturns a ist of names in the current local scope."
+        "dir(object) \nReturn a list of names in the scope of 'object'. If no object is supplied,\nreturns a list of names in the current local scope."
     ),
     _(
         "divmod(a, b) \nTake two (non complex) numbers and return a pair of numbers consisting of the quotient and remainder. For example, divmod(5, 4) results in (1, 1). That is, what's is 5 divided by 4? It's 1 remainder 1."

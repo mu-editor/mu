@@ -15,7 +15,7 @@ mu (0.9.12-1) unstable; urgency=low
   * Change the default Python directory from ``~/python`` to ``~/mu_code``. This fixes issue #126.
   * Add instructions for installing PyQt5 and QScintilla on Mac OS.
   * Update to latest version of uFlash.
-  * Add highlighting of search mathes.
+  * Add highlighting of search matches.
   * Check if the script produced is > 8k.
   * Use a settings file local to the Mu executable if available.
   * Fix bug with highlighting code errors in Windows.

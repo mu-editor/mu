@@ -64,7 +64,7 @@ class Font:
         """
         Create a font database and load the MU builtin fonts into it.
         This is a cached classmethod so the font files aren't re-loaded
-        every time a font is refereced
+        every time a font is referenced
         """
         if cls._DATABASE is None:
             cls._DATABASE = QFontDatabase()
