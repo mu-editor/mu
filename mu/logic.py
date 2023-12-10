@@ -509,7 +509,7 @@ class MuFlakeCodeReporter:
 
     def unexpectedError(self, filename, message):
         """
-        Called if an unexpected error occured while trying to process the file
+        Called if an unexpected error occurred while trying to process the file
         called filename. The message parameter contains a description of the
         problem.
         """
@@ -691,7 +691,7 @@ class DeviceList(QtCore.QAbstractListModel):
     def data(self, index, role):
         """
         Reimplements QAbstractListModel.data(): returns data for the
-        specified index and role. In this case only implmented for
+        specified index and role. In this case only implemented for
         ToolTipRole and DisplayRole
         """
         device = self._devices[index.row()]
@@ -1211,7 +1211,7 @@ class Editor(QObject):
 
     def _abspath(self, paths):
         """
-        Safely convert an arrary of paths to their absolute forms and remove
+        Safely convert an array of paths to their absolute forms and remove
         duplicate items.
         """
         result = []

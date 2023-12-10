@@ -163,7 +163,7 @@ class EnvironmentVariablesWidget(QWidget):
             _(
                 "The environment variables shown below will be "
                 "set each time you run a Python 3 script.\n\n"
-                "Each separate enviroment variable should be on a "
+                "Each separate environment variable should be on a "
                 "new line and of the form:\nNAME=VALUE"
             )
         )

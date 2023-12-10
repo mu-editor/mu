@@ -204,7 +204,7 @@ provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
   Mu. Thank you for your patience, bug reports and code patches.
 * There have been the usual minor bug fixes and clean ups from various regular
   contributors and some new ones too. Thank you for your careful and well
-  targetted changes.
+  targeted changes.
 * Carlos (@carlosperate) fixed some packaging problems relating to the iPython
   kernel bundled with Mu.
 * Martin (@dybber) fixed a couple of problems relating to the stopping of
@@ -358,7 +358,7 @@ provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
   this is ongoing so expect further improvements in upcoming releases. As
   always, many thanks for these efforts.
 * Tim addressed a `wheel`/`sdist` related problem that was causing odd side
-  effects with regard to dependancies.
+  effects with regard to dependencies.
 * A strange bug, where it was not possible to install third-party packages on
   first run of Mu, opened up a deep rabbit hole of investigation. In the end
   Tim was able to fix this AND address the source of a warning message from Qt
@@ -469,7 +469,7 @@ reports or feedback via: https://github.com/mu-editor/mu/issues/new
 * **NEW FEATURE** A brand new web mode for creating simple dynamic web
   applications with the Flask web framework. Currently users are able to edit
   Python, HTML and CSS files, run a local server and view their website in
-  thier browser. We expect to add a deployment option thanks to PythonAnywhere
+  their browser. We expect to add a deployment option thanks to PythonAnywhere
   by the time alpha 3 is released.
 * **NEW FEATURE** A new Slovak translation of Mu thanks to Miroslav Biňas
   (GitHub user `bletvaska <https://github.com/bletvaska>`_).
@@ -532,7 +532,7 @@ reports or feedback via: https://github.com/mu-editor/mu/issues/new
   `Leroy Levin <https://github.com/leroyle>`_ for making this happen..!
 * Ensure that ``pip`` is updated while creating the Windows installers. Thanks
   to `Yu Wang <https://github.com/bigeyex>`_ for making this change.
-* Various minor updates and fixes to aid code readibility.
+* Various minor updates and fixes to aid code readability.
 
 1.1.0-alpha.1
 =============
@@ -804,7 +804,7 @@ next release will be 1.1.0 with some new features.
 * Update the debugger so the process stops at the end of the run.
 * Ensure the current working directory for the REPL is set to mu_mode.
 * Add additional documentation about Raspberry Pi related API.
-* Update micro:bit runtime to lates MicroPython beta.
+* Update micro:bit runtime to latest MicroPython beta.
 * Make a start on developer documentation.
 
 1.0.0.beta.11
@@ -822,7 +822,7 @@ next release will be 1.1.0 with some new features.
 * Fixed three code quality warnings found by https://lgtm.com/projects/g/mu-editor/mu/alerts/?mode=list
 * Updated API generation so the output is ordered (helps when diffing the generated files).
 * Updated Makefile to create Python packages/wheels and deploy to PyPI.
-* Explicit versions for packages found within install_requires in setup.py. 
+* Explicit versions for packages found within install_requires in setup.py.
 * Minor documentation changes.
 
 1.0.0.beta.9
@@ -875,7 +875,7 @@ next release will be 1.1.0 with some new features.
 * Change the default Python directory from ``~/python`` to ``~/mu_code``. This fixes issue #126.
 * Add instructions for installing PyQt5 and QScintilla on Mac OS.
 * Update to latest version of uFlash.
-* Add highlighting of search mathes.
+* Add highlighting of search matches.
 * Check if the script produced is > 8k.
 * Use a settings file local to the Mu executable if available.
 * Fix bug with highlighting code errors in Windows.

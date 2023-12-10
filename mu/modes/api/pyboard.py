@@ -46,7 +46,7 @@ PYBOARD_APIS = [
     ),
     _("pyb.bootloader() \nActivate the bootloader without BOOT* pins.\n"),
     _(
-        "pyb.fault_debug(valus) \nEnable or disable hard-fault debugging.\nA hard-fault is when there is a fatal error in the underlying system, like an\ninvalid memory access.\n\nParameters:\nvalue (bool) -- \n\nFalse: board will automatically reset if there is a hard fault\nTrue: when the board has a hard fault, it will print the registers and the stack\n\ttrace, and then cycle the LEDs indefinitely\n"
+        "pyb.fault_debug(value) \nEnable or disable hard-fault debugging.\nA hard-fault is when there is a fatal error in the underlying system, like an\ninvalid memory access.\n\nParameters:\nvalue (bool) -- \n\nFalse: board will automatically reset if there is a hard fault\nTrue: when the board has a hard fault, it will print the registers and the stack\n\ttrace, and then cycle the LEDs indefinitely\n"
     ),
     _(
         "pyb.disable_irq() \nDisable interrupt requests.\n\nReturns: Previous IRQ state.\n\nReturn type: bool\n"
@@ -157,7 +157,7 @@ PYBOARD_APIS = [
         "pyb.DAC.write(value) \nDirect access to the DAC output. The minimum value is 0. The maximum value is 2**bits-1.\n\nParameters: value (int) -- the value to write to the DAC\n"
     ),
     _(
-        "pyb.DAC.write_timed(data, freq, *, mode=DAC.NORMAL) \nInitiates a burst of RAM to DAC using a DMA transfer. The input data is treated\nas an array of bytes in 8-bit mode, and an array of unsigned half-words\n(array typecode ‘H’) in 12-bit mode.\n\nParameters:\ndata (array) -- data to be written to the DAC.\nfreq (int or Timer) -- frequency or Timer to determin how often to trigger DAC sample\nmode (constant) -- can be DAC.NORMAL or DAC.CIRCULAR."
+        "pyb.DAC.write_timed(data, freq, *, mode=DAC.NORMAL) \nInitiates a burst of RAM to DAC using a DMA transfer. The input data is treated\nas an array of bytes in 8-bit mode, and an array of unsigned half-words\n(array typecode ‘H’) in 12-bit mode.\n\nParameters:\ndata (array) -- data to be written to the DAC.\nfreq (int or Timer) -- frequency or Timer to determine how often to trigger DAC sample\nmode (constant) -- can be DAC.NORMAL or DAC.CIRCULAR."
     ),
     _(
         "pyb.ExtInt(pin, mode, pull, callback) \nCreate an ExtInt object.\n\nParameters:\npin (pyb.Pin) -- the pin on which to enable the interrupt.\nmode (constant) can be one of: ExtInt.IRQ_RISING - trigger on a rising edge;\nExtInt.IRQ_FALLING - trigger on a falling edge; ExtInt.IRQ_RISING_FALLING - trigger\non a rising or falling edge.\npull (constant) -- can be one of: - pyb.Pin.PULL_NONE - no pull up or down\nresistors; pyb.Pin.PULL_UP - enable the pull-up resistor;\npyb.Pin.PULL_DOWN - enable the pull-down resistor.\ncallback (function) -- the function to call when the interrupt triggers. The\ncallback function must accept exactly 1 argument, which is the line that triggered the interrupt.\n"

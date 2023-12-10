@@ -2031,7 +2031,7 @@ def test_Window_open_file_event():
 
 def test_Window_connect_find_replace():
     """
-    Ensure a shortcut is created with teh expected shortcut and handler
+    Ensure a shortcut is created with the expected shortcut and handler
     function.
     """
     window = mu.interface.main.Window()

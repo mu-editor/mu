@@ -31,7 +31,7 @@ newline manipulation to present to the editor control the characters originally
 present in the file. When the file is saved, the same characters are written
 out.
 
-However this creates a quandary when programatically manipulating the editor
+However this creates a quandary when programmatically manipulating the editor
 text: do we use the most widespread \n as a line-ending; or do we use the
 platform convention `os.linesep`; or do we use the convention used in the
 file itself, which may or may not follow the platform convention?

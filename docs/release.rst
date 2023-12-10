@@ -87,7 +87,7 @@ cross platform nature of Mu is consistent):
   In", "Step Out" buttons. *Outcome: the conventional behaviour for each button
   should happen. "Stop" will stop the script. "Continue" will run to the next
   break or end of script. "Step Over" will move to the next valid line of
-  code. "Step In" will move into the called funtion. "Step Out" will move out
+  code. "Step In" will move into the called function. "Step Out" will move out
   of the current function. As all this happens, the input/output pane and
   object inspector should update as the code progresses.*
 * In Python mode, click on the "REPL" button. *Outcome: an iPython based REPL

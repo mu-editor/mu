@@ -69,7 +69,7 @@ MICROBIT_APIS = [
         "microbit.running_time() \nReturn running_time() in milliseconds since micro:bit's last reset."
     ),
     _(
-        "microbit.temperature() \nReturn micro:bit's temperature in degrees Celcius."
+        "microbit.temperature() \nReturn micro:bit's temperature in degrees Celsius."
     ),
     # Accelerometer 3D orientation
     _(
@@ -357,7 +357,7 @@ MICROBIT_APIS = [
         "microbit.i2c.read(address, n, repeat=False) \nUse read(address, n) to read 'n' bytes from the device with the 7-bit address.\nIf repeat is True, no stop bit will be sent."
     ),
     _(
-        "microbit.i2c.write(adress, buffer, repeat=False) \nUse write(address, buffer) to write to the 'buffer' of the device at the 7-bit 'address'.\nIf repeat is True, no stop bit will be sent."
+        "microbit.i2c.write(address, buffer, repeat=False) \nUse write(address, buffer) to write to the 'buffer' of the device at the 7-bit 'address'.\nIf repeat is True, no stop bit will be sent."
     ),
     _(
         "microbit.i2c.init(frequency, scl, sda) \nUse init(frequency, scl, sda) to set the bus frequency and pins."

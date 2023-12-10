@@ -1359,7 +1359,7 @@ class PythonProcessPane(QTextEdit):
         Set the flag to indicate the start of the current line (used before
         waiting for input).
 
-        This flag is used to discard the preceeding text in the text entry
+        This flag is used to discard the preceding text in the text entry
         field when Mu parses new input from the user (i.e. any text beyond the
         self.start_of_current_line).
         """
@@ -1588,7 +1588,7 @@ class PlotterPane(QChartView):
         self.min_y = -1000
         self.flooded = False  # Flag to indicate if data flooding is happening.
 
-        # Holds deques for each slot of incoming data (assumes 1 to start with)
+        # Holds dequeues for each slot of incoming data (assumes 1 to start with)
         self.data = [deque([0] * self.lookback)]
         # Holds line series for each slot of incoming data (assumes 1 to start
         # with).

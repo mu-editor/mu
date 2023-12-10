@@ -100,7 +100,7 @@ In the setup.py file on the pyqt6 branch, you'll find the following lines::
   "PyQt6-Charts==6.3.1"
   + ';"arm" not in platform_machine and "aarch" not in platform_machine',
 
-Remove the lines for Rasberry Pi and leave only the following lines:
+Remove the lines for Raspberry Pi and leave only the following lines:
 
   "PyQt6==6.3.1",
   "PyQt6-QScintilla==2.13.3",

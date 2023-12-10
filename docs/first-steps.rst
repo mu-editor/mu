@@ -34,7 +34,7 @@ expect certain pieces of information from you:
 
 Please try to be precise and provide as much information as possible.
 
-For what are obvious reaons, I hope you can see why we're unable to respond to
+For what are obvious reasons, I hope you can see why we're unable to respond to
 issues that say some variation of, "when I click this button, it breaks". ;-)
 
 Coding

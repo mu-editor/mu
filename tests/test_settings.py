@@ -88,7 +88,7 @@ def test_delitem_is_not_changed():
 
 
 def test_update():
-    """Items can by added en bloc by update"""
+    """Items can by added en block by update"""
     k1, v1 = rstring(), rstring()
     s = mu.settings.SettingsBase(**{k1: v1})
     k2, v2 = rstring(), rstring()

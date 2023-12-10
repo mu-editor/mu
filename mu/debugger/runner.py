@@ -453,7 +453,7 @@ class Debugger(bdb.Bdb):
 
     def do_close(self):
         """
-        Respond to a closed socket (not a user commend, but needs handling).
+        Respond to a closed socket (not a user command, but needs handling).
         """
         self.client = None
         self.command_thread.join()

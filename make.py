@@ -210,7 +210,7 @@ def clean():
     _rmtree(".pytest_cache")
     _rmtree("lib")
     _rmtree(".git/avatar/")  # Created with `make video`
-    _rmtree("venv-pup")  # Created wth `make macos/win64`
+    _rmtree("venv-pup")  # Created with `make macos/win64`
     # TODO: recursive __pycache__ directories
     _rmfiles(".", ".coverage")
     _rmfiles(".", "*.egg-info")
@@ -337,7 +337,7 @@ def translate_done(lang=""):
 
 @export
 def translate_test(lang=""):
-    """Run translate_done and lauch Mu in the given LANG."""
+    """Run translate_done and launch Mu in the given LANG."""
     result = translate_done(lang)
     if result != 0:
         raise RuntimeError("Failed compiling the mu.po file.")

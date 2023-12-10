@@ -437,10 +437,10 @@ ADAFRUIT_APIS = [
     _("os.stat(path) \nGet the status of a file or directory.\n"),
     _("os.stat(path) \nGet the status of a file or directory.\n"),
     _(
-        "os.statvfs(path) \nGet the status of a fileystem.\nReturns a tuple with the filesystem information in the following order:\n\n\nf_bsize -- file system block size\nf_frsize -- fragment size\nf_blocks -- size of fs in f_frsize units\nf_bfree -- number of free blocks\nf_bavail -- number of free blocks for unpriviliged users\nf_files -- number of inodes\nf_ffree -- number of free inodes\nf_favail -- number of free inodes for unpriviliged users\nf_flag -- mount flags\nf_namemax -- maximum filename length\n\n\nParameters related to inodes: f_files, f_ffree, f_avail\nand the f_flags parameter may return 0 as they can be unavailable\nin a port-specific implementation.\n"
+        "os.statvfs(path) \nGet the status of a filesystem.\nReturns a tuple with the filesystem information in the following order:\n\n\nf_bsize -- file system block size\nf_frsize -- fragment size\nf_blocks -- size of fs in f_frsize units\nf_bfree -- number of free blocks\nf_bavail -- number of free blocks for unprivileged users\nf_files -- number of inodes\nf_ffree -- number of free inodes\nf_favail -- number of free inodes for unprivileged users\nf_flag -- mount flags\nf_namemax -- maximum filename length\n\n\nParameters related to inodes: f_files, f_ffree, f_avail\nand the f_flags parameter may return 0 as they can be unavailable\nin a port-specific implementation.\n"
     ),
     _(
-        "os.statvfs(path) \nGet the status of a fileystem.\nReturns a tuple with the filesystem information in the following order:\n\n\nf_bsize -- file system block size\nf_frsize -- fragment size\nf_blocks -- size of fs in f_frsize units\nf_bfree -- number of free blocks\nf_bavail -- number of free blocks for unpriviliged users\nf_files -- number of inodes\nf_ffree -- number of free inodes\nf_favail -- number of free inodes for unpriviliged users\nf_flag -- mount flags\nf_namemax -- maximum filename length\n\n\nParameters related to inodes: f_files, f_ffree, f_avail\nand the f_flags parameter may return 0 as they can be unavailable\nin a port-specific implementation.\n"
+        "os.statvfs(path) \nGet the status of a filesystem.\nReturns a tuple with the filesystem information in the following order:\n\n\nf_bsize -- file system block size\nf_frsize -- fragment size\nf_blocks -- size of fs in f_frsize units\nf_bfree -- number of free blocks\nf_bavail -- number of free blocks for unprivileged users\nf_files -- number of inodes\nf_ffree -- number of free inodes\nf_favail -- number of free inodes for unprivileged users\nf_flag -- mount flags\nf_namemax -- maximum filename length\n\n\nParameters related to inodes: f_files, f_ffree, f_avail\nand the f_flags parameter may return 0 as they can be unavailable\nin a port-specific implementation.\n"
     ),
     _("os.sync() \nSync all filesystems.\n"),
     _("os.sync() \nSync all filesystems.\n"),
@@ -548,7 +548,7 @@ ADAFRUIT_APIS = [
         "random.uniform(a, b) \nReturns a random float between a and b. It may or may not be inclusive\ndepending on float rounding.\n"
     ),
     _(
-        "rotaryio.IncrementalEncoder(pin_a, pin_b) \nCreate an IncrementalEncoder object associated with the given pins. It tracks the positional\nstate of an incremental rotary encoder (also known as a quadrature encoder.) Position is\nrelative to the position when the object is contructed.\n\n\nParameters:\npin_a (Pin) -- First pin to read pulses from.\npin_b (Pin) -- Second pin to read pulses from."
+        "rotaryio.IncrementalEncoder(pin_a, pin_b) \nCreate an IncrementalEncoder object associated with the given pins. It tracks the positional\nstate of an incremental rotary encoder (also known as a quadrature encoder.) Position is\nrelative to the position when the object is constructed.\n\n\nParameters:\npin_a (Pin) -- First pin to read pulses from.\npin_b (Pin) -- Second pin to read pulses from."
     ),
     _(
         "rotaryio.IncrementalEncoder.deinit() \nDeinitializes the IncrementalEncoder and releases any hardware resources for reuse.\n"
