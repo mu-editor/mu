@@ -1284,8 +1284,8 @@ class Editor(QObject):
         if tab is None:
             # There is no active text editor so abort.
             return
-        if not tab.path:
-            # Unsaved file.
+
+        def handle_unsaved_file():
             folder = self.get_dialog_directory(default)
             path = self._view.get_save_path(folder)
             if path and self.check_for_shadow_module(path):
@@ -1299,6 +1299,12 @@ class Editor(QObject):
                     "different filename."
                 )
                 self._view.show_message(message, info)
+                return None
+            return path
+        if not tab.path:
+            # Unsaved file.
+            path = handle_unsaved_file()
+            if path is None:
                 return
             tab.path = path
         if tab.path:
