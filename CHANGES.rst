@@ -1,16 +1,23 @@
 Release History
 ---------------
 
-1.2.1
+1.2.2
 =====
 
-This release fixes some minor bugs, contains some (code) tidy ups and two new
-translations.
+This release fixes some minor bugs, contains some (code) tidy ups, two new
+translations, a mutex to ensure there is only ever one running Mu, and lots of
+new welcome messages from new Pythonistas learning to code at EuroPython 2023.
 
 Please provide bug reports or feedback via:
 
 https://github.com/mu-editor/mu/issues/new
 
+**For complicated hardware related reasons, the MacOS version of this release
+of Mu will be signed by Mu core maintainer @tmontes. The windows version will
+remain signed by @ntoll.**
+
+* Thank you @tmontes for fixing packaging issues relating to PyGame and other
+  third party packages.
 * Thanks to @carlosperate for many infrastructure and build related fixes and
   improvements.
 * The amazing @tjguk has added a cross-platform way for only one instance of
@@ -22,6 +29,15 @@ https://github.com/mu-editor/mu/issues/new
   allowed minimum for the user's operating system.
 * A bug that resulted in bucket-loads of characters being sent over USB-serial
   as the user clicked around the serial panel was fixed by @Neradoc. Thanks!
+* Thank you @hrnciar for fixing aspects of the test suite.
+* What a relief from @prcutler for tidying up parts of the AUTHORS.rst.
+* Bravo @Gigi1111 for documenting the PyQT6 Mac work around. Hopefully this
+  won't be needed in future releases.
+* Huge thanks to @patchanont, @prochazka-jan, @Gigi111, @Rharsia, @rahulab29,
+  @JinnaKvG, and @j2bryson for their new welcome messages from EuroPython 2023.
+* Toodle pip to @tonybaloney for addressing `pip` related timeout issues.
+* Explosive thanks to @hroncok for sheBANG shenanigans.
+* Timely thanks to @haikusw for fixing timing issues in the test suite.
 * A minor but very important translation change (Polish - Dziękuję Ci) was made
   by @Gregor14.
 * A big дуже тобі дякую to @gromko for the initial translation into Ukrainian.
@@ -35,6 +51,12 @@ have been using (to allow users of legacy systems to continue to get updated
 versions of Mu). **The next release will use updated versions of all our
 dependencies and may not work on old or out-of-date operating systems**.
 Please remember to keep your systems up-to-date if possible!
+
+1.2.1
+=====
+
+This release was prepared, but due to a late breaking mishap, never released.
+All changes and updates have been folded into and documented in 1.2.2.
 
 1.2.0
 =====
@@ -182,7 +204,7 @@ provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
   Mu. Thank you for your patience, bug reports and code patches.
 * There have been the usual minor bug fixes and clean ups from various regular
   contributors and some new ones too. Thank you for your careful and well
-  targetted changes.
+  targeted changes.
 * Carlos (@carlosperate) fixed some packaging problems relating to the iPython
   kernel bundled with Mu.
 * Martin (@dybber) fixed a couple of problems relating to the stopping of
@@ -336,7 +358,7 @@ provide bug reports or feedback via: https://github.com/mu-editor/mu/issues/new
   this is ongoing so expect further improvements in upcoming releases. As
   always, many thanks for these efforts.
 * Tim addressed a `wheel`/`sdist` related problem that was causing odd side
-  effects with regard to dependancies.
+  effects with regard to dependencies.
 * A strange bug, where it was not possible to install third-party packages on
   first run of Mu, opened up a deep rabbit hole of investigation. In the end
   Tim was able to fix this AND address the source of a warning message from Qt
@@ -447,7 +469,7 @@ reports or feedback via: https://github.com/mu-editor/mu/issues/new
 * **NEW FEATURE** A brand new web mode for creating simple dynamic web
   applications with the Flask web framework. Currently users are able to edit
   Python, HTML and CSS files, run a local server and view their website in
-  thier browser. We expect to add a deployment option thanks to PythonAnywhere
+  their browser. We expect to add a deployment option thanks to PythonAnywhere
   by the time alpha 3 is released.
 * **NEW FEATURE** A new Slovak translation of Mu thanks to Miroslav Biňas
   (GitHub user `bletvaska <https://github.com/bletvaska>`_).
@@ -510,7 +532,7 @@ reports or feedback via: https://github.com/mu-editor/mu/issues/new
   `Leroy Levin <https://github.com/leroyle>`_ for making this happen..!
 * Ensure that ``pip`` is updated while creating the Windows installers. Thanks
   to `Yu Wang <https://github.com/bigeyex>`_ for making this change.
-* Various minor updates and fixes to aid code readibility.
+* Various minor updates and fixes to aid code readability.
 
 1.1.0-alpha.1
 =============
@@ -782,7 +804,7 @@ next release will be 1.1.0 with some new features.
 * Update the debugger so the process stops at the end of the run.
 * Ensure the current working directory for the REPL is set to mu_mode.
 * Add additional documentation about Raspberry Pi related API.
-* Update micro:bit runtime to lates MicroPython beta.
+* Update micro:bit runtime to latest MicroPython beta.
 * Make a start on developer documentation.
 
 1.0.0.beta.11
@@ -800,7 +822,7 @@ next release will be 1.1.0 with some new features.
 * Fixed three code quality warnings found by https://lgtm.com/projects/g/mu-editor/mu/alerts/?mode=list
 * Updated API generation so the output is ordered (helps when diffing the generated files).
 * Updated Makefile to create Python packages/wheels and deploy to PyPI.
-* Explicit versions for packages found within install_requires in setup.py. 
+* Explicit versions for packages found within install_requires in setup.py.
 * Minor documentation changes.
 
 1.0.0.beta.9
@@ -853,7 +875,7 @@ next release will be 1.1.0 with some new features.
 * Change the default Python directory from ``~/python`` to ``~/mu_code``. This fixes issue #126.
 * Add instructions for installing PyQt5 and QScintilla on Mac OS.
 * Update to latest version of uFlash.
-* Add highlighting of search mathes.
+* Add highlighting of search matches.
 * Check if the script produced is > 8k.
 * Use a settings file local to the Mu executable if available.
 * Fix bug with highlighting code errors in Windows.

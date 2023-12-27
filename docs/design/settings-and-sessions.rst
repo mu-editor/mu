@@ -10,7 +10,7 @@ This currently uses JSON (as we have historically) but https://github.com/mu-edi
 is tracking the possibility of using TOML or some other format.
 
 Settings objects have defaults which are overridden by values loaded from file
-or set programatically. When the settings are saved, only values overriding
+or set programmatically. When the settings are saved, only values overriding
 the defaults are saved.
 
 The ``load`` method can be called several times for the same settings; values in

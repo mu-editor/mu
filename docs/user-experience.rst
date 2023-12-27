@@ -207,7 +207,7 @@ she wants something simple and obvious.
 
 Next, she turns her attention to Idle - the editor that comes bundled with
 Python. It's good that Idle is free, has some syntax highlighting, auto-indents
-Python code, is cross platform, leightweight and simple. However, there are no
+Python code, is cross platform, lightweight and simple. However, there are no
 line numbers, error reporting is incomrehensible to beginners and, most
 importantly, there are two separate windows that often get lost or confused
 with each other (one for code, the other for a sort of REPL).

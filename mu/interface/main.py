@@ -292,7 +292,7 @@ class FileTabs(QTabWidget):
         # any QWidget not just buttons
         self.tabBar().setTabButton(tab_id, QTabBar.RightSide, container)
 
-        # Return the index of the new page just like the reall addTab
+        # Return the index of the new page just like the real addTab
         return tab_id
 
     def change_tab(self, tab_id):
@@ -757,7 +757,7 @@ class Window(QMainWindow):
         new process.
 
         If envars is given, these will become part of the environment context
-        of the new chlid process.
+        of the new child process.
 
         If python_args is given, these will be passed as arguments to the
         Python runtime used to launch the child process.

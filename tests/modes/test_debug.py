@@ -57,7 +57,7 @@ def test_debug_start():
         "mu.modes.debugger.Debugger", mock_debugger_class
     ), mock.patch.object(venv, "interpreter", "interpreter"):
         dm.start()
-    editor.save_tab_to_file.called_once_with(view.current_tab)
+    editor.save_tab_to_file.assert_called_once_with(view.current_tab)
     view.add_python3_runner.assert_called_once_with(
         "interpreter",
         "/foo/bar",

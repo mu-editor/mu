@@ -173,6 +173,17 @@ MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Don't stare at a blank screen - try something out."),
     _("If you're stuck - try explaining it to a rubber duck."),
     _("It's ok to be stuck, go for a walk and then try again (:"),
+    _("It's not a mistake to make an error."),
+    _("Errors are there to learn from them. Then avoid them."),
+    _("Don't look backwards for very long. We keep moving forward."),
+    _("Keep moving forward."),
+    _("It's not a mistake to make an error."),
+    _("Do not pass silently."),
+    _("Computers are not humans. There is no need arguing with them."),
+    _("Embrace change and seek growth."),
+    _("Live, laugh, learn!"),
+    _("Let's get coding!"),
+    _("Don't be afraid of coding, we all learn by making mistakes!"),
 ]
 
 NEWLINE = "\n"
@@ -505,7 +516,7 @@ class MuFlakeCodeReporter:
 
     def unexpectedError(self, filename, message):
         """
-        Called if an unexpected error occured while trying to process the file
+        Called if an unexpected error occurred while trying to process the file
         called filename. The message parameter contains a description of the
         problem.
         """
@@ -687,7 +698,7 @@ class DeviceList(QtCore.QAbstractListModel):
     def data(self, index, role):
         """
         Reimplements QAbstractListModel.data(): returns data for the
-        specified index and role. In this case only implmented for
+        specified index and role. In this case only implemented for
         ToolTipRole and DisplayRole
         """
         device = self._devices[index.row()]
@@ -1207,7 +1218,7 @@ class Editor(QObject):
 
     def _abspath(self, paths):
         """
-        Safely convert an arrary of paths to their absolute forms and remove
+        Safely convert an array of paths to their absolute forms and remove
         duplicate items.
         """
         result = []
@@ -1435,7 +1446,7 @@ class Editor(QObject):
         }
         save_session(session)
         logger.info("Quitting.\n\n")
-        sys.exit(0)
+        QtCore.QCoreApplication.exit(0)
 
     def show_admin(self, event=None):
         """

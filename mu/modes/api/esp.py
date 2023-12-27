@@ -200,7 +200,7 @@ urequests.Response-object.
 Create a list representing a strip of 'n' neopixels controlled from
 the specified pin (e.g. machine.Pin(0)). Use the resulting object to
 change each pixel by position (starting from 0). Individual pixels
-are given RGB (red, green, blue) values between 0-255 as a tupel. For
+are given RGB (red, green, blue) values between 0-255 as a tuple. For
 example, (255, 255, 255) is white:
 
 np = neopixel.NeoPixel(machine.Pin(0), 8)\nnp[0] = (255, 0, 128)

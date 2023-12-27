@@ -9,16 +9,21 @@ Nicholas H.Tollervey (ntoll@ntoll.org). Some of Nicholas's work has been
 Happily, many people have volunteered wonderful and varied contributions to Mu.
 These include (but are not limited to):
 
-* Tim Golden (mail@timgolden.me.uk)
+* Tim Golden
 * Peter Inglesby
-* Carlos Pereira Atencio (carlosperate@embeddedlog.com)
-* Nick Sarbicki (nick.a.sarbicki@gmail.com)
-* Kushal Das (mail@kushaldas.in)
-* Tibs / Tony Ibbs (tibs@tonyibbs.co.uk)
+* Carlos Pereira Atencio
+* Nick Sarbicki
+* Kushal Das
+* Tibs / Tony Ibbs
 * Zander Brown
-* Alistair Broomhead (alistair.broomhead@gmail.com)
-* Frank Morton (fmorton@mac.com)
-* Keith Packard (keithp@keithp.com)
+* Alistair Broomhead
+* Frank Morton
+* Keith Packard
+
+If you have discovered a bug, please see the
+`tutorial on how to report a bug <https://codewith.mu/en/howto/1.1/bugs>`_
+in Mu. For other topics or help, please visit
+`GitHub Discussions <https://github.com/mu-editor/mu/discussions>`_.
 
 We welcome contributions from anyone! Please see :doc:`contributing` for more
 information.

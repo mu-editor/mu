@@ -1986,7 +1986,7 @@ def test_FileSystemPane_set_font_size():
 
 def test_FileSystemPane_open_file():
     """
-    FileSystemPane should propogate the open_file signal
+    FileSystemPane should propagate the open_file signal
     """
     fsp = mu.interface.panes.FileSystemPane("homepath")
     fsp.open_file = mock.MagicMock()
@@ -2017,7 +2017,7 @@ def test_JupyterREPLPane_append_plain_text():
 
 def test_JupyterREPLPane_set_font_size():
     """
-    Check the new point size is succesfully applied.
+    Check the new point size is successfully applied.
     """
     jw = mu.interface.panes.JupyterREPLPane()
     jw.set_font_size(16)
@@ -2123,7 +2123,7 @@ def test_PythonProcessPane_start_process():
 
 def test_PythonProcessPane_start_process_command_args():
     """
-    Ensure that the new process is passed the expected comand line args.
+    Ensure that the new process is passed the expected command line args.
     """
     mock_process = mock.MagicMock()
     mock_process_class = mock.MagicMock(return_value=mock_process)
@@ -2986,7 +2986,7 @@ def test_PythonProcessPane_read_from_stdout_with_stdout_buffer():
     Ensure incoming bytes from sub-process's stdout are processed correctly if
     there was a split between reads in a multi-byte character (such as "𠜎").
 
-    The buffer is pre-pended to the current read, thus resulting in bytes that
+    The buffer is prepended to the current read, thus resulting in bytes that
     can be successfully represented in a UTF based string.
     """
     msg = "Hello 𠜎 world".encode("utf-8")
@@ -3012,7 +3012,7 @@ def test_PythonProcessPane_read_from_stdout_with_unicode_error():
     there was a split between reads in a multi-byte character (such as "𠜎").
 
     If the read bytes end with a split of a multi-byte character, ensure they
-    are put into the self.stdout_buffer so they can be pre-pended to the next
+    are put into the self.stdout_buffer so they can be prepended to the next
     bytes read from the child process.
     """
     msg = "Hello 𠜎 world".encode("utf-8")

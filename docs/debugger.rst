@@ -14,7 +14,7 @@ standard Python, Mu does this in two ways:
     Adafruit board restarts the device and Circuit Python evaluates your
     code.
 
-Both the Python runner and grapical debugger were created with the financial
+Both the Python runner and graphical debugger were created with the financial
 support of the Raspberry Pi Foundation.
 
 If you are creating a new standard Python mode for Mu, you should *at least*
@@ -98,7 +98,7 @@ is never blocked.
 
 The ``mu.debugger.client.Debugger`` class is used to react to incoming events
 from, and as an API for Mu to issue commands to the debug runner. It uses a
-reference to a ``view`` object to update the user inteface as events are
+reference to a ``view`` object to update the user interface as events are
 detected.
 
 Debug Runner

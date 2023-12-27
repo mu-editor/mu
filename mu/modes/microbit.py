@@ -1,5 +1,5 @@
 """
-The mode for working with the BBC micro:bit. Contains most of the origial
+The mode for working with the BBC micro:bit. Contains most of the original
 functionality from Mu when it was only a micro:bit related editor.
 
 Copyright (c) 2015-2021 Nicholas H.Tollervey and others (see the AUTHORS file).

@@ -154,7 +154,7 @@ def test_Debugger_output_stack_normal():
 
 def test_Debugger_output_stack_exception():
     """
-    Ensure that outputting the stack uses the currect frame in an exception
+    Ensure that outputting the stack uses the current frame in an exception
     condition (in addition to BDB and the runner, there are two further frames
     that should be ignored).
     """
@@ -807,7 +807,7 @@ def test_Debugger_do_continue_no_breakpoints_continue_flag_set():
 
 def test_Debugger_do_quit():
     """
-    Sets _user_requested_quit to True, calles set_quit and returns True.
+    Sets _user_requested_quit to True, calls set_quit and returns True.
     """
     mock_socket = mock.MagicMock()
     db = mu.debugger.runner.Debugger(mock_socket, "localhost", 9999)

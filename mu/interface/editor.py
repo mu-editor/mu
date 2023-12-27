@@ -85,7 +85,7 @@ class EditorPane(QsciScintilla):
     Represents the text editor.
     """
 
-    # Signal fired when a script or hex is droped on this editor.
+    # Signal fired when a script or hex is dropped on this editor.
     open_file = pyqtSignal(str)
     # Signal fired when a context menu is requested.
     context_menu = pyqtSignal()
@@ -144,7 +144,7 @@ class EditorPane(QsciScintilla):
         """
 
         # Does the drag event have any urls?
-        # Files are transfered as a url (by path not value)
+        # Files are transferred as a url (by path not value)
         if event.mimeData().hasUrls():
             # Qt doesn't seem to have an 'open' action,
             # this seems the most appropriate

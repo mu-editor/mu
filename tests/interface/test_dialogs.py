@@ -717,7 +717,7 @@ def test_PackageDialog_remove_package_end_state():
 )
 def test_PackageDialog_end_state():
     """
-    Ensure the expected end-state is correctly cofigured (for when all tasks
+    Ensure the expected end-state is correctly configured (for when all tasks
     relating to third party packages have finished).
     """
     pd = mu.interface.dialogs.PackageDialog()

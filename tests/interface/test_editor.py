@@ -680,7 +680,7 @@ def test_EditorPane_highlight_selected_matches_cursor_remains():
 
 def test_EditorPane_selection_change_listener():
     """
-    Enusure that is there is a change to the selected text then controll is
+    Enusure that is there is a change to the selected text then control is
     passed to highlight_selected_matches.
     """
     ep = mu.interface.editor.EditorPane(None, "baz")

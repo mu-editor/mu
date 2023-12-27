@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: Test Py ${{ matrix.python-version }} - ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -60,10 +60,10 @@ jobs:
     runs-on: ubuntu-latest
     name: Test Py 3.7 - arm-debian-buster
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up QEMU
         id: qemu
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           image: tonistiigi/binfmt:latest
           platforms: 'linux/arm64,linux/arm/v7,linux/arm/v6'
@@ -126,6 +126,16 @@ jobs:
             git checkout --progress FETCH_HEAD
             echo "cd ~/mu" > ~/.bashrc_new && cat ~/.bashrc >> ~/.bashrc_new
             rm ~/.bashrc && mv ~/.bashrc_new ~/.bashrc
+      # As Pi OS stretch is no longer supported the repository URL was moved and is no longer updated
+      - name: Update Stretch sources.list
+        if: ${{ matrix.docker-tag == 'stretch-2018-03-13' }}
+        uses: appleboy/ssh-action@master
+        with:
+          host: rpios
+          username: pi
+          password: raspberry
+          port:  ${{ job.services.rpios.ports[5022] }}
+          script: echo "deb http://legacy.raspbian.org/raspbian/ stretch main contrib non-free rpi" | sudo tee /etc/apt/sources.list
       - name: Install Mu extra apt dependencies
         uses: appleboy/ssh-action@master
         with:
@@ -171,5 +181,6 @@ jobs:
           username: pi
           password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
-          command_timeout: 30m
+          # The time out can be decreased to 30 min when Stretch is dropped
+          command_timeout: 45m
           script: xvfb-run python make.py check

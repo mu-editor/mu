@@ -37,20 +37,23 @@ ZIP_FILEPATH = os.path.join(WHEELS_DIRPATH, mu_version + ".zip")
 # Any additional elements are passed to `pip` for specific purposes
 #
 mode_packages = [
-    ("pgzero", "pgzero>=1.2.1"),
-    # Flask v1 depends on Jinja v2, which doesn't have an upper bound limit in
-    # MarkupSafe, and v2.1 is not compatible with Jinja v2
-    ("flask", "flask==2.0.3"),
+    # pygame is a pgzero dependency, but there is currently an issue where
+    # pygame versions >=2.1.3 have issues in macOS 10.x, so temporarily for
+    # Mu release 1.2.1 pin the max version here
+    # https://github.com/mu-editor/mu/issues/2423
+    ("pgzero", ("pgzero>=1.2.1", "pygame<2.1.3")),
+    # Lock Werkzeug to < 3.0.0: import flask fails, otherwise.
+    ("flask", ("flask==2.0.3", "Werkzeug<3.0.0")),
     # The version of ipykernel here should match to the version used by
     # qtconsole at the version specified in setup.py
     # FIXME: ipykernel max ver added for macOS 10.13 compatibility, min taken
     # from qtconsole 4.7.7. This is mirrored in setup.py
-    ("ipykernel", "ipykernel>=4.1,<6"),
+    ("ipykernel", ("ipykernel>=4.1,<6",)),
     # FIXME: ipykernel<6 depends on ipython_genutils, but it isn't explicitly
     # declared as a dependency. It also depends on traitlets, which
     # incidentally brought ipython_genutils, but in v5.1 it was dropped, so as
     # a workaround we need to manually specify it here
-    ("ipython_genutils", "ipython_genutils>=0.2.0"),
+    ("ipython_genutils", ("ipython_genutils>=0.2.0",)),
 ]
 
 
@@ -99,11 +102,11 @@ def remove_dist_files(dirpath, logger):
 
 
 def pip_download(dirpath, logger, additional_flags=[]):
-    for name, pip_identifier, *extra_flags in mode_packages:
+    for name, pip_identifiers, *extra_flags in mode_packages:
         logger.info(
             "Running pip download for %s / %s / %s / %s",
             name,
-            pip_identifier,
+            pip_identifiers,
             extra_flags,
             additional_flags,
         )
@@ -118,7 +121,7 @@ def pip_download(dirpath, logger, additional_flags=[]):
                 dirpath,
                 "--find-links",
                 dirpath,
-                pip_identifier,
+                *pip_identifiers,
             ]
             + extra_flags
             + additional_flags,
@@ -134,7 +137,7 @@ def pip_download(dirpath, logger, additional_flags=[]):
         #
         if process.returncode != 0:
             raise WheelsDownloadError(
-                "Pip was unable to download %s" % pip_identifier
+                "Pip was unable to download %s" % pip_identifiers
             )
 
 

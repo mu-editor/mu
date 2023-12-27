@@ -58,6 +58,12 @@ class VirtualEnvironmentError(Exception):
         self.message = message
 
 
+class VirtualEnvironmentTimeoutError(VirtualEnvironmentError):
+    def __init__(self, message, timeout):
+        super().__init__(message)
+        self.timeout = timeout
+
+
 class VirtualEnvironmentEnsureError(VirtualEnvironmentError):
     pass
 
@@ -198,7 +204,21 @@ class Process(QObject):
         # generate a URI out of it. There's an upper limit on URI size of ~2000
         #
         if not finished:
-            logger.error(compact(output))
+            if exit_code and compact(output):
+                logger.error(compact(output))
+            elif exit_code:
+                logger.error(
+                    "Process failed with exit code %s but provided no message",
+                    exit_code,
+                )
+            else:
+                logger.error("Virtual environment creation timed out")
+                raise VirtualEnvironmentTimeoutError(
+                    "Virtual environment creation timed out:\n"
+                    + compact(output),
+                    wait_for_s,
+                )
+
             raise VirtualEnvironmentError(
                 "Process did not terminate normally:\n" + compact(output)
             )
@@ -242,9 +262,10 @@ class Pip(object):
     def __init__(self, pip_executable):
         self.executable = pip_executable
         self.process = Process()
+        self.timeout = 180.0
 
     def run(
-        self, command, *args, wait_for_s=120.0, slots=Process.Slots(), **kwargs
+        self, command, *args, wait_for_s=None, slots=Process.Slots(), **kwargs
     ):
         """
         Run a command with args, treating kwargs as Posix switches.
@@ -257,6 +278,8 @@ class Pip(object):
         # As a special case, a boolean value indicates that the flag
         # is a yes/no switch
         #
+        if not wait_for_s:
+            wait_for_s = self.timeout
         params = [command, "--disable-pip-version-check"]
         for k, v in kwargs.items():
             switch = k.replace("_", "-")
@@ -293,11 +316,19 @@ class Pip(object):
         """
         if isinstance(packages, str):
             return self.run(
-                "install", packages, wait_for_s=180.0, slots=slots, **kwargs
+                "install",
+                packages,
+                wait_for_s=self.timeout,
+                slots=slots,
+                **kwargs
             )
         else:
             return self.run(
-                "install", *packages, wait_for_s=180.0, slots=slots, **kwargs
+                "install",
+                *packages,
+                wait_for_s=self.timeout,
+                slots=slots,
+                **kwargs
             )
 
     def uninstall(self, packages, slots=Process.Slots(), **kwargs):
@@ -314,7 +345,7 @@ class Pip(object):
             return self.run(
                 "uninstall",
                 packages,
-                wait_for_s=180.0,
+                wait_for_s=self.timeout,
                 slots=slots,
                 yes=True,
                 **kwargs
@@ -323,7 +354,7 @@ class Pip(object):
             return self.run(
                 "uninstall",
                 *packages,
-                wait_for_s=180.0,
+                wait_for_s=self.timeout,
                 slots=slots,
                 yes=True,
                 **kwargs
@@ -473,9 +504,9 @@ class VirtualEnvironment(object):
         if stderr_output:
             output += "\n\nSTDERR: " + stderr_output
         logger.debug(
-            "Process returned %d; output: %s",
-            process.returncode,
-            compact(output),
+            "Process returned {}; output: {}".format(
+                process.returncode, compact(output)
+            ),
         )
         return process.returncode == 0, output
 
@@ -500,11 +531,11 @@ class VirtualEnvironment(object):
         #
         # Pip and the interpreter will be set up when the virtualenv is created
         #
-        self.interpreter = os.path.join(
-            self._bin_directory, "python" + self._bin_extension
+        self.interpreter = safe_short_path(
+            os.path.join(self._bin_directory, "python" + self._bin_extension)
         )
-        self.pip_executable = os.path.join(
-            self._bin_directory, "pip" + self._bin_extension
+        self.pip_executable = safe_short_path(
+            os.path.join(self._bin_directory, "pip" + self._bin_extension)
         )
         self.reset_pip()
         logger.debug(
@@ -679,6 +710,8 @@ class VirtualEnvironment(object):
                 if n < n_tries:
                     self.relocate(self._generate_dirpath())
                     try_to_create = True
+                    if isinstance(exc, VirtualEnvironmentTimeoutError):
+                        self.pip.timeout = exc.timeout * 2
                     n += 1
                 else:
                     raise

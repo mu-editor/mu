@@ -408,7 +408,7 @@ class DebugMode(BaseMode):
 
     def debug_on_restart(self):
         """
-        Handle when the debugger restarts. Currenty an unimplemented extra
+        Handle when the debugger restarts. Currently an unimplemented extra
         feature.
         """
         pass
