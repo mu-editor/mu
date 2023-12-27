@@ -483,11 +483,10 @@ def test_Window_connect_zoom():
     w._zoom_out = mock.MagicMock()
     w._zoom_out.connect = mock.MagicMock()
     widget = mock.MagicMock()
-    widget.zoomIn = mock.MagicMock()
-    widget.zoomOut = mock.MagicMock()
+    widget.set_zoom = mock.MagicMock()
     w.connect_zoom(widget)
-    assert w._zoom_in.connect.called_once_with(widget.zoomIn)
-    assert w._zoom_out.connect.called_once_with(widget.zoomOut)
+    w._zoom_in.connect.assert_called_once_with(widget.set_zoom)
+    w._zoom_out.connect.assert_called_once_with(widget.set_zoom)
 
 
 def test_Window_current_tab():
