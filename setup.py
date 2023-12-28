@@ -25,11 +25,11 @@ install_requires = [
     # The core 'install_requires' should only be things
     # which are needed for the main editor to function.
     #
-    "PyQt5==5.13.2"
+    "PyQt6==6.3.1"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
-    "QScintilla==2.11.3"
+    "PyQt6-QScintilla==2.13.3"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
-    "PyQtChart==5.13.1"
+    "PyQt6-Charts==6.3.1"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
     # FIXME: jupyter-client added for Py3.5 compatibility, to be dropped after
     # Mu v1.1 release. So, qtconsole < 5 and jupyter-client < 6.2 (issue #1444)
@@ -128,7 +128,7 @@ setup(
         "mu.modes.api",
         "mu.wheels",
     ],
-    python_requires=">=3.5,<3.9",
+    python_requires=">=3.7,<3.12",
     install_requires=install_requires,
     extras_require=extras_require,
     package_data={"mu.wheels": ["*.whl", "*.zip"]},
@@ -147,10 +147,11 @@ setup(
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Education",
         "Topic :: Games/Entertainment",
         "Topic :: Software Development",

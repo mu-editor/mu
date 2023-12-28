@@ -22,15 +22,15 @@ import re
 import logging
 import os.path
 from collections import defaultdict
-from PyQt5.Qsci import (
+from PyQt6.Qsci import (
     QsciScintilla,
     QsciLexerPython,
     QsciLexerHTML,
     QsciAPIs,
     QsciLexerCSS,
 )
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtWidgets import QApplication
 from mu.interface.themes import Font, DayTheme
 from mu.logic import NEWLINE
 
@@ -192,12 +192,14 @@ class EditorPane(QsciScintilla):
         self.setEdgeColumn(79)
         self.setMarginLineNumbers(0, True)
         self.setMarginWidth(0, 50)
-        self.setBraceMatching(QsciScintilla.SloppyBraceMatch)
+        self.setBraceMatching(QsciScintilla.BraceMatch.SloppyBraceMatch)
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
         self.set_theme()
         # Markers and indicators
         self.setMarginSensitivity(0, True)
-        self.markerDefine(self.Circle, self.BREAKPOINT_MARKER)
+        self.markerDefine(
+            QsciScintilla.MarkerSymbol.Circle, self.BREAKPOINT_MARKER
+        )
         self.setMarginSensitivity(1, True)
         # Additional dummy margin to prevent accidental breakpoint toggles when
         # trying to position the edit cursor to the left of the first column,
@@ -211,14 +213,20 @@ class EditorPane(QsciScintilla):
         self.setIndicatorDrawUnder(True)
         for type_ in self.check_indicators:
             self.indicatorDefine(
-                self.SquiggleIndicator, self.check_indicators[type_]["id"]
+                QsciScintilla.IndicatorStyle.SquiggleIndicator,
+                self.check_indicators[type_]["id"],
             )
         for type_ in self.search_indicators:
             self.indicatorDefine(
-                self.StraightBoxIndicator, self.search_indicators[type_]["id"]
+                QsciScintilla.IndicatorStyle.StraightBoxIndicator,
+                self.search_indicators[type_]["id"],
             )
-        self.indicatorDefine(self.FullBoxIndicator, self.DEBUG_INDICATOR)
-        self.setAnnotationDisplay(self.AnnotationBoxed)
+        self.indicatorDefine(
+            QsciScintilla.IndicatorStyle.FullBoxIndicator, self.DEBUG_INDICATOR
+        )
+        self.setAnnotationDisplay(
+            QsciScintilla.AnnotationDisplay.AnnotationBoxed
+        )
         self.selectionChanged.connect(self.selection_change_listener)
         self.set_zoom()
 
@@ -259,7 +267,7 @@ class EditorPane(QsciScintilla):
             theme.BreakpointMarker, self.BREAKPOINT_MARKER
         )
         self.setAutoCompletionThreshold(2)
-        self.setAutoCompletionSource(QsciScintilla.AcsAll)
+        self.setAutoCompletionSource(QsciScintilla.AutoCompletionSource.AcsAll)
         self.setLexer(self.lexer)
         self.setMarginsBackgroundColor(theme.Margin)
         self.setMarginsForegroundColor(theme.Caret)

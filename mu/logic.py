@@ -30,9 +30,9 @@ import locale
 import shutil
 
 import platformdirs
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5 import QtCore
+from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6 import QtCore
 from pyflakes.api import check
 from pycodestyle import StyleGuide, Checker
 

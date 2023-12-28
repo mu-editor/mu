@@ -14,7 +14,7 @@ try:
 except ImportError:
     pass
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     QObject,
     QProcess,
     pyqtSignal,
@@ -88,8 +88,8 @@ class Process(QObject):
 
     eg::
         import sys
-        from PyQt5.QtCore import *
-        from PyQt5.QtWidgets import *
+        from PyQt6.QtCore import *
+        from PyQt6.QtWidgets import *
 
         class Example(QMainWindow):
 
@@ -109,7 +109,7 @@ class Process(QObject):
         def main():
             app = QApplication(sys.argv)
             ex = Example()
-            sys.exit(app.exec_())
+            sys.exit(app.exec())
     """
 
     started = pyqtSignal()

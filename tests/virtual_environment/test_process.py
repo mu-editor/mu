@@ -9,7 +9,7 @@ import uuid
 
 import pytest
 
-from PyQt5.QtCore import QTimer, QProcess
+from PyQt6.QtCore import QTimer, QProcess
 
 from mu import virtual_environment
 

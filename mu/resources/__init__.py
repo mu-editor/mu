@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from pkg_resources import resource_filename, resource_string
-from PyQt5.QtGui import QPixmap, QIcon, QMovie
-from PyQt5.QtCore import QDir
+from PyQt6.QtGui import QPixmap, QIcon, QMovie
+from PyQt6.QtCore import QDir
 import os
 
 

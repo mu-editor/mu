@@ -4,7 +4,7 @@ Tests for the resources sub-module.
 """
 import mu.resources
 from unittest import mock
-from PyQt5.QtGui import QIcon, QPixmap, QMovie
+from PyQt6.QtGui import QIcon, QPixmap, QMovie
 
 
 def test_path():
