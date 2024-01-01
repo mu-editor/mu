@@ -9,6 +9,7 @@ from .web import WebMode
 from .pyboard import PyboardMode
 from .lego import LegoMode
 from .pico import PicoMode
+from .neopia import NeopiaMode
 
 __all__ = [
     "PythonMode",
@@ -22,4 +23,5 @@ __all__ = [
     "PyboardMode",
     "LegoMode",
     "PicoMode",
+    "NeopiaMode",
 ]

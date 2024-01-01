@@ -50,7 +50,9 @@ class ESPMode(MicroPythonMode):
     valid_boards = [
         # VID  , PID,    Manufacturer string, Device name
         (0x1A86, 0x7523, None, "HL-340"),
-        (0x10C4, 0xEA60, None, "CP210x"),
+        # Because the mode detection order is fixed by alphabetical ordering rule
+        # there is no chance to get early device detection of Neopia Mode so that this line is commented.
+        # (0x10C4, 0xEA60, None, "CP210x"),
         (0x0403, 0x6001, "M5STACK Inc.", "M5Stack ESP32 device"),
         (0x0403, 0x6001, None, None),  # FT232/FT245 (XinaBox CW01, CW02)
         (0x0403, 0x6010, None, None),  # FT2232C/D/L/HL/Q (ESP-WROVER-KIT)
