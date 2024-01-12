@@ -25,31 +25,27 @@ install_requires = [
     # The core 'install_requires' should only be things
     # which are needed for the main editor to function.
     #
-    "PyQt5-sip<=12.13.0"
-    + ';"arm" not in platform_machine and "aarch" not in platform_machine',
-    "PyQt5==5.13.2"
-    + ';"arm" not in platform_machine and "aarch" not in platform_machine',
-    "QScintilla==2.11.3"
-    + ';"arm" not in platform_machine and "aarch" not in platform_machine',
-    "PyQtChart==5.13.1"
-    + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+    "PyQt5==5.15.10"
+    + '; sys_platform != "linux" '
+    + 'or ("arm" not in platform_machine and "aarch" not in platform_machine)',
+    "QScintilla==2.14.1"
+    + '; sys_platform != "linux" '
+    + 'or ("arm" not in platform_machine and "aarch" not in platform_machine)',
+    "PyQtChart==5.15.6"
+    + '; sys_platform != "linux" '
+    + 'or ("arm" not in platform_machine and "aarch" not in platform_machine)',
     # FIXME: Needed for qtconsole, this is the latest wheel in armv7l for
     # Python 3.7 (Buster), otherwise it tries to build from source and fails.
     "pyzmq<=26.0.3",
-    # FIXME: jupyter-client added for Py3.5 compatibility, to be dropped after
-    # Mu v1.1 release. So, qtconsole < 5 and jupyter-client < 6.2 (issue #1444)
-    "jupyter-client>=4.1,<6.2",
-    # FIXME: ipykernel max added for macOS 10.13 compatibility, min taken from
-    # qtconsole 4.7.7. Full line can be removed after Mu v1.1 release.
-    # Dependency mirrored for user venv in mu/wheels/__init__.py
-    "ipykernel>=4.1,<6",
-    # FIXME: ipykernel<6 depends on ipython_genutils, but it isn't explicitly
-    # declared as a dependency. It also depends on traitlets, which
-    # incidentally brought ipython_genutils, but in v5.1 it was dropped, so as
-    # a workaround we need to manually specify it here.
-    "ipython_genutils>=0.2.0",
-    "qtconsole==4.7.7",
-    #
+    # ipykernel has to be < v6 for macOS 10.13 compatibility (v6 depends on
+    # debugpy package), v5.5.6 resolves issue ipython/ipykernel#759.
+    # Full line can be removed after Mu v1.3 release as PyQt6 drops old macOS.
+    # ipykernel version has to be mirrored in mu/wheels/__init__.py
+    "ipykernel>=5.5.6,<6",
+    "qtconsole~=5.4",
+    # In Python 3.12 the deprecated 'imp' module was removed from the stdlib.
+    # ipykernel only moved to importlib in v6.10, so this is a "forward-port"
+    "zombie_imp>=0.0.2;python_version>='3.12'",
     # adafruit-board-toolkit is used to find serial ports and help identify
     # CircuitPython boards in the CircuitPython mode.
     "adafruit-board-toolkit~=1.1",
@@ -63,7 +59,7 @@ install_requires = [
     "flake8 >= 3.8.3",
     # Clamp click max version to workaround incompatibility with black<22.1.0
     "click<=8.0.4",
-    "black>=19.10b0,<22.1.0;python_version>'3.5'",
+    "black>=19.10b0,<22.1.0",
     "platformdirs>=2.0.0,<3.0.0",
     "semver>=2.8.0",
     # virtualenv vendors pip, we need at least pip v19.3 to install some
@@ -80,6 +76,9 @@ install_requires = [
     # Needed to resolve an issue with paths in the user virtual environment
     #
     "pywin32; sys_platform=='win32'",
+    # pkg_resources has been removed in Python 3.12, until we move to importlib
+    # we need it via setuptools: https://github.com/mu-editor/mu/issues/2485
+    "setuptools",
 ]
 
 
@@ -133,7 +132,7 @@ setup(
         "mu.modes.api",
         "mu.wheels",
     ],
-    python_requires=">=3.5,<3.9",
+    python_requires=">=3.7,<3.14",
     install_requires=install_requires,
     extras_require=extras_require,
     package_data={"mu.wheels": ["*.whl", "*.zip"]},
@@ -152,10 +151,13 @@ setup(
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Topic :: Education",
         "Topic :: Games/Entertainment",
         "Topic :: Software Development",
