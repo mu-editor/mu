@@ -12,13 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, ubuntu-latest, macos-11, macos-latest, windows-2019, windows-latest]
-        python-version: ['3.5', '3.6', '3.7', '3.8']
-        exclude:
-          # Python 3.5 and 3.6 not available in the latest Ubuntu runners
-          - os: ubuntu-latest
-            python-version: '3.5'
-          - os: ubuntu-latest
-            python-version: '3.6'
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: Test Py ${{ matrix.python-version }} - ${{ matrix.os }}
@@ -37,11 +31,6 @@ jobs:
           pip --version
           pip config list
           pip freeze
-      - name: Prepare Ubuntu
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libxkbcommon-x11-0 xvfb
       - name: Install Mu dependencies
         run: |
           pip install .[dev]
@@ -49,7 +38,7 @@ jobs:
         timeout-minutes: 10
       - name: Run tests
         if: runner.os == 'Linux'
-        run: xvfb-run make check
+        run: QT_QPA_PLATFORM=offscreen python make.py check
         timeout-minutes: 5
       - name: Run tests
         if: runner.os != 'Linux'
@@ -100,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        docker-tag: ['stretch-2018-03-13', 'buster-2021-05-28', 'buster-legacy-2023-05-03']
+        docker-tag: ['buster-2021-05-28', 'buster-legacy-2023-05-03', 'bullseye-2023-05-03']
       fail-fast: false
     services:
       rpios:
@@ -112,7 +101,7 @@ jobs:
       - name: Wait 2m30s for the docker image to start up QEMU and Raspberry Pi OS
         run: sleep 150
       - name: Clone project & setup it as the bash entry directory
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: rpios
           username: pi
@@ -126,18 +115,8 @@ jobs:
             git checkout --progress FETCH_HEAD
             echo "cd ~/mu" > ~/.bashrc_new && cat ~/.bashrc >> ~/.bashrc_new
             rm ~/.bashrc && mv ~/.bashrc_new ~/.bashrc
-      # As Pi OS stretch is no longer supported the repository URL was moved and is no longer updated
-      - name: Update Stretch sources.list
-        if: ${{ matrix.docker-tag == 'stretch-2018-03-13' }}
-        uses: appleboy/ssh-action@master
-        with:
-          host: rpios
-          username: pi
-          password: raspberry
-          port:  ${{ job.services.rpios.ports[5022] }}
-          script: echo "deb http://legacy.raspbian.org/raspbian/ stretch main contrib non-free rpi" | sudo tee /etc/apt/sources.list
       - name: Install Mu extra apt dependencies
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: rpios
           username: pi
@@ -147,22 +126,24 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y python3-virtualenv
       - name: Create venv and install Python dependencies
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: rpios
           username: pi
           password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
           command_timeout: 20m
+          # Some compiled packages take a while to be built in piwheels, so to
+          # avoid intermittent pip install failures we use `--prefer-binary`
           script: |
             python3 -m virtualenv ~/mu/.venv -v --python=python3 --system-site-packages
             echo "source ~/mu/.venv/bin/activate" > ~/.bashrc_new && cat ~/.bashrc >> ~/.bashrc_new
             rm ~/.bashrc && mv ~/.bashrc_new ~/.bashrc
             source .venv/bin/activate
             python -m pip list
-            python -m pip install ."[dev]"
+            python -m pip install ."[dev]" --prefer-binary
       - name: Environment info
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: rpios
           username: pi
@@ -175,12 +156,11 @@ jobs:
             python3 -m pip --version
             python3 -m pip list
       - name: Run tests
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: rpios
           username: pi
           password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
-          # The time out can be decreased to 30 min when Stretch is dropped
-          command_timeout: 45m
+          command_timeout: 30m
           script: xvfb-run python make.py check
