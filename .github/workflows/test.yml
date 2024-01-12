@@ -100,7 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        docker-tag: ['stretch-2018-03-13', 'buster-2021-05-28', 'buster-legacy-2022-04-07']
+        docker-tag: ['stretch-2018-03-13', 'buster-2021-05-28', 'buster-legacy-2023-05-03']
       fail-fast: false
     services:
       rpios:
