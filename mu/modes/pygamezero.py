@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import logging
 from mu.modes.base import BaseMode
-from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS, PYGAMEZERO_APIS
+from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS, PYGAMEZERO_APIS, NEOPIA_APIS
 from mu.resources import load_icon
 from ..virtual_environment import venv
 
@@ -102,7 +102,7 @@ class PyGameZeroMode(BaseMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return SHARED_APIS + PYTHON3_APIS + PI_APIS + PYGAMEZERO_APIS
+        return SHARED_APIS + PYTHON3_APIS + PI_APIS + PYGAMEZERO_APIS + NEOPIA_APIS
 
     def play_toggle(self, event):
         """

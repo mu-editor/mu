@@ -19,6 +19,7 @@ These include (but are not limited to):
 * Alistair Broomhead
 * Frank Morton
 * Keith Packard
+* Roboticsware
 
 If you have discovered a bug, please see the
 `tutorial on how to report a bug <https://codewith.mu/en/howto/1.1/bugs>`_
