@@ -76,6 +76,13 @@ DEFAULT_IMAGES = [
     "cat3.png",
     "cat4.png",
     "splat.png",
+    "bird0.png",
+    "bird1.png",
+    "bird2.png",
+    "birddead.png",
+    "top.png",
+    "bottom.png",
+    "background.png",
 ]
 # Default sound effects to copy over for use in PyGameZero demo apps.
 DEFAULT_SOUNDS = [
@@ -831,6 +838,9 @@ class Editor(QObject):
             logger.debug("Creating directory: {}".format(wd))
             os.makedirs(wd)
         # Ensure PyGameZero assets are copied over.
+        shutil.copy(
+            path("pgzhelper.py", "pygamezero/"), os.path.join(wd, "pgzhelper.py")
+        )
         images_path = os.path.join(wd, "images")
         fonts_path = os.path.join(wd, "fonts")
         sounds_path = os.path.join(wd, "sounds")
