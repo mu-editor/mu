@@ -1386,6 +1386,31 @@ class Editor(QObject):
         """
         Display browser based help about Mu.
         """
+        from PyQt5.Qsci import QsciScintilla, QsciPrinter
+        from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
+        from PyQt5.QtWidgets import QDialog
+        from PyQt5.QtWidgets import QApplication
+
+        # QScintilla printer class docs, mostly a few additions on top of QPrinter:
+        # https://docs.huihoo.com/pyqt/QScintilla2/classQsciPrinter.html
+        printer = QsciPrinter(mode=QPrinter.ScreenResolution)
+        printer.setFullPage(True)
+        printer.setWrapMode(QsciScintilla.WrapWord)
+        # More generic QPrinter configuration for the page print can go here, this is also an example of a long line wrapping
+
+        printDialog = QPrintDialog(printer, self._view)
+        if printDialog.exec() == QDialog.Accepted:
+            # Dialog was blocking, so let's keep the app responsive
+            QApplication.processEvents()
+            print("DEBUG: PRINTING...")
+            printer.setDocName("IS THIS MY FILE NAME??")
+            code_tab = self._view.current_tab
+            response_success = printer.printRange(code_tab)
+            if response_success:
+                print("DEBUG: PRINTING DONE?????")
+            else:
+                print("DEBUG: PRINTING ERROR?????")
+        return
         major_version = ".".join(__version__.split(".")[:2])
         url = "https://codewith.mu/{}/help/{}".format(
             i18n.language_code[:2], major_version
