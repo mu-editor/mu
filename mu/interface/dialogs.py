@@ -319,6 +319,7 @@ class LocaleWidget(QWidget):
         "tiếng Việt": "vi",
         "中文": "zh_CN",
         "O'zbek": "uz_UZ",
+        "한국어": "ko",
     }
 
     def setup(self, locale):
