@@ -584,7 +584,7 @@ class AdminDialog(QDialog):
         self.log_widget = LogWidget(self)
         self.log_widget.setup(log)
         self.tabs.addTab(self.log_widget, _("Current Log"))
-        if mode.short_name in ["python", "web", "pygamezero"]:
+        if mode.short_name in ["python", "web", "pygamezero", "neobot"]:
             self.envar_widget = EnvironmentVariablesWidget(self)
             self.envar_widget.setup(settings.get("envars", ""))
             self.tabs.addTab(self.envar_widget, _("Python3 Environment"))
@@ -595,7 +595,7 @@ class AdminDialog(QDialog):
                 settings.get("microbit_runtime", ""),
             )
             self.tabs.addTab(self.microbit_widget, _("BBC micro:bit Settings"))
-        if mode.short_name in ["python", "web", "pygamezero"]:
+        if mode.short_name in ["python", "web", "pygamezero", "neobot"]:
             self.package_widget = PackagesWidget(self)
             self.package_widget.setup(packages)
             self.tabs.addTab(self.package_widget, _("Third Party Packages"))

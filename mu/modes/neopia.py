@@ -132,9 +132,9 @@ class NeopiaMode(BaseMode):
     Represents the functionality required by the Neopia mode.
     """
 
-    name = _("Neopia")
-    short_name = "neopia"
-    description = _("Create code on Neobot devices.")
+    name = _("Neobot Python")
+    short_name = "neobot"
+    description = _("Write Python code on Neobot devices. Currently NeoSoco only.")
     icon = "neopia"
     runner = None
     has_debugger = True
