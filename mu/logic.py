@@ -1889,6 +1889,8 @@ class Editor(QObject):
                 "these problems."
             )
             self._view.show_message(message, information)
+            # Re-raise to stop next procedure
+            raise ex
 
     def has_python_extension(self, filename):
         """

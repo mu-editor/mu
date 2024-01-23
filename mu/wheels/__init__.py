@@ -41,7 +41,8 @@ mode_packages = [
     # pygame versions >=2.1.3 have issues in macOS 10.x, so temporarily for
     # Mu release 1.2.1 pin the max version here
     # https://github.com/mu-editor/mu/issues/2423
-    ("pgzero", ("pgzero>=1.2.1", "pygame<2.1.3")),
+    # Add pyinstller to package user your Pygame Zero game
+    ("pgzero", ("pgzero>=1.2.1", "pygame<2.1.3", "pyinstaller")),
     # Lock Werkzeug to < 3.0.0: import flask fails, otherwise.
     ("flask", ("flask==2.0.3", "Werkzeug<3.0.0")),
     # The version of ipykernel here should match to the version used by

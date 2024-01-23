@@ -22,6 +22,7 @@ from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS, PYGAMEZERO_APIS, NEOPIA_APIS
 from mu.resources import load_icon
 from ..virtual_environment import venv
+import re
 
 
 logger = logging.getLogger(__name__)
@@ -94,6 +95,13 @@ class PyGameZeroMode(BaseMode):
                 "description": _("Show the music used by Pygame Zero."),
                 "handler": self.show_music,
                 "shortcut": "Ctrl+Shift+M",
+            },
+            {
+                "name": "package",
+                "display_name": _("Package"),
+                "description": _("Package the game to one-file for distribution."),
+                "handler": self.toggle_package,
+                "shortcut": "F6",
             },
         ]
 
@@ -201,3 +209,94 @@ class PyGameZeroMode(BaseMode):
         new files into the opened folder.
         """
         self.view.open_directory_from_os(self.assets_dir("music"))
+
+    def toggle_package(self, event):
+        """
+        Handles the toggling of the package button to start/stop a packaging.
+        """
+        if self.runner:
+            self.stop_game()
+            package_slot = self.view.button_bar.slots["package"]
+            package_slot.setIcon(load_icon("package"))
+            package_slot.setText(_("package"))
+            package_slot.setToolTip(_("Package the game to one-file for distribution."))
+            self.set_buttons(modes=True)
+        else:
+            self.run_package()
+            if self.runner:
+                package_slot = self.view.button_bar.slots["package"]
+                package_slot.setIcon(load_icon("stop"))
+                package_slot.setText(_("Stop"))
+                package_slot.setToolTip(_("Stop packaging your Pygame Zero game."))
+                self.set_buttons(modes=False)
+
+    def run_package(self):
+        """
+        Package the game to one-file for distribution.
+        """
+         # Grab the Python file.
+        tab = self.view.current_tab
+        if tab is None:
+            logger.debug("There is no active text editor.")
+            self.stop_game()
+            return
+        if tab.path is None:
+            # Unsaved file.
+            self.editor.save()
+        if tab.path:
+            # If needed, save the script.
+            if tab.isModified():
+                self.editor.save_tab_to_file(tab)
+            logger.debug(tab.text())
+
+            # Tidy source code to find error earlier
+            try:
+                self.editor.tidy_code()
+            except Exception:
+                logger.debug("Failed in tiding code")
+                return
+
+            # Add pgzrun to the source
+            source_code = tab.text()
+            source_code = "import pgzrun\n" + source_code
+            source_code += "\npgzrun.go()"
+            tab.SendScintilla(tab.SCI_SETTEXT, source_code.encode("utf-8"))
+
+            # Make agrs
+            cwd = os.path.dirname(tab.path)
+            envars = self.editor.envars
+            cmd_args = ["--collect-all", "pgzero", "--onefile", "--clean"]
+            img_dir = os.path.join(cwd, "images")
+            if os.path.isdir(img_dir) and len(os.listdir(img_dir)) != 0:
+                cmd_args += ["--add-data", "images/*:images"]
+            font_dir = os.path.join(cwd, "fonts")
+            if os.path.isdir(font_dir) and len(os.listdir(font_dir)) != 0:
+                cmd_args += ["--add-data", "fonts/*:fonts"]
+            sound_dir = os.path.join(cwd, "sounds")
+            if os.path.isdir(sound_dir) and len(os.listdir(sound_dir)) != 0:
+                cmd_args += ["--add-data", "sounds/*:sounds"]
+            music_dir = os.path.join(cwd, "music")
+            if os.path.isdir(music_dir) and len(os.listdir(music_dir)) != 0:
+                cmd_args += ["--add-data", "music/*:music"]
+            args = ["-m", "PyInstaller"]
+            self.runner = self.view.add_python3_runner(
+                interpreter=venv.interpreter,
+                script_name=tab.path,
+                working_directory=cwd,
+                interactive=False,
+                envars=envars,
+                python_args=args,
+                command_args=cmd_args
+            )
+            self.runner.process.waitForStarted()
+            self.runner.process.finished.connect(self.finished)
+
+    def finished(self):
+        """
+        Remove pgzrun from the source when the packaging process is finished
+        """
+        tab = self.view.current_tab
+        source_code = tab.text()
+        source_code = re.sub(r"import pgzrun\n", "", source_code, flags = re.DOTALL)
+        source_code = re.sub(r"\npgzrun\.go\(\)", "", source_code, flags = re.DOTALL)
+        tab.SendScintilla(tab.SCI_SETTEXT, source_code.encode("utf-8"))

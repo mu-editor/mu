@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: mu-editor-korean-translation\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2024-01-18 23:35+0500\n"
-"PO-Revision-Date: 2024-01-20 09:51\n"
+"PO-Revision-Date: 2024-01-23 18:52\n"
 "Last-Translator: \n"
 "Language: ko_KR\n"
 "Language-Team: Korean\n"
@@ -189,7 +189,7 @@ msgstr ""
 
 #: mu/interface/editor.py:319 mu/logic.py:1366
 msgid "untitled"
-msgstr ""
+msgstr "제목없음"
 
 #: mu/interface/main.py:104
 msgid "Mode"
@@ -903,7 +903,7 @@ msgstr ""
 
 #: mu/modes/base.py:209
 msgid "# Write your code here :-)"
-msgstr ""
+msgstr "# 자 이제 코딩을 시작하세요 :-)"
 
 #: mu/modes/base.py:332
 msgid "Data Flood Detected!"
@@ -1247,6 +1247,10 @@ msgstr ""
 msgid "micro:bit"
 msgstr ""
 
+#: mu/modes/neopia.py:135
+msgid "Neobot"
+msgstr ""
+
 #: mu/modes/neopia.py:159 mu/modes/neopia.py:208 mu/modes/python3.py:151
 #: mu/modes/python3.py:200
 msgid "Run your Python script."
@@ -1496,11 +1500,19 @@ msgstr ""
 msgid "To deploy your web application, there needs to be a 'templates' directory in the same place as your web application's Python code. Please fix this and try again. (Hint: Mu was expecting the `templates` directory to be here: )"
 msgstr ""
 
-#: mu/modes/neopia.py:135
-msgid "Neobot"
-msgstr ""
-
 #: #: mu/modes/neopia.py:137
 msgid "Write Python code on Neobot devices. Currently NeoSoco only."
 msgstr "네오봇을 위한 파이썬 코딩을 할 수 있습니다. 현재는 네오쏘코 제품만 가능합니다."
+
+#: #: mu/modes/pygamezero.py:101
+msgid "Package"
+msgstr "패키징"
+
+#: #: mu/modes/pygamezero.py:102
+msgid "Package the game to one-file for distribution."
+msgstr "배포를 위해 게임을 1개의 실행파일 형태로 만듭니다."
+
+#: mu/modes/pygamezero.py:230
+msgid "Stop packaging your Pygame Zero game."
+msgstr "게임 패키징을 중단시킵니다."
 

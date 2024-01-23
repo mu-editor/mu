@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: mu-editor\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2023-11-25 00:20+0500\n"
-"PO-Revision-Date: 2024-01-20 09:47\n"
+"PO-Revision-Date: 2024-01-23 18:51\n"
 "Last-Translator: \n"
 "Language: uz\n"
 "Language-Team: Uzbek\n"
@@ -314,11 +314,11 @@ msgstr "{} Plotter"
 
 #: mu/interface/main.py:767
 msgid "Running: {}"
-msgstr "Running: {}"
+msgstr "Ijro etilmoqda: {}"
 
 #: mu/interface/main.py:816
 msgid "Debug Inspector"
-msgstr "Nosozliklarni tuzatish inspektori"
+msgstr "Debug inspektori"
 
 #: mu/interface/main.py:828
 msgid "Name"
@@ -338,7 +338,7 @@ msgstr "({} ta elementdan iborat lug'atlar.)"
 
 #: mu/interface/main.py:1068
 msgid "Mu"
-msgstr "Mu"
+msgstr ""
 
 #: mu/interface/main.py:1375
 msgid "Uploading to PythonAnywhere.\n\n"
@@ -352,7 +352,7 @@ msgstr "<p>Veb-saytingiz muvaffaqiyatli joylashtirildi.</p><p>Uni bu yerda koʻr
 
 #: mu/interface/main.py:1424
 msgid "There was a problem deploying to PythonAnywhere:<br/><br/>"
-msgstr "PythonAnywhere ilovasini o‘rnatishda muammo yuz berdi:<br/><br/>"
+msgstr "PythonAnywhere ga joylashtirishda muammo yuz berdi:<br/><br/>"
 
 #: mu/interface/main.py:1431
 msgid "Please check your PythonAnywhere settings or connection and ensure you're using a recent version of Mu.<br/><br/>Alternatively, <a href='https://github.com/mu-editor/mu/issues/new/choose'>submit a bug report</a>."
@@ -360,7 +360,7 @@ msgstr "Iltimos, PythonAnywhere sozlamalari yoki ulanishingizni tekshiring va Mu
 
 #: mu/interface/main.py:1454
 msgid "Mu's current mode of behaviour."
-msgstr "\"Mu\"ning joriy rejimdagi holati."
+msgstr "\"Mu\"ning joriy rejim"
 
 #: mu/interface/main.py:1509
 msgid "Detected new {} device: {}."
@@ -457,11 +457,11 @@ msgstr "Salom, Dunyo!"
 
 #: mu/logic.py:91
 msgid "This editor is free software written in Python. You can modify it, add features or fix bugs if you like."
-msgstr "Ushbu muharrir Python tilida yozilgan bepul dastur hisoblanadi. Agar xohlasangiz, uni o'zgartirishingiz, funksiyalar qo'shishingiz yoki xatolarni tuzatishingiz mumkin."
+msgstr "Ushbu editor Python tilida yozilgan bepul dastur hisoblanadi. Agar xohlasangiz, uni o'zgartirishingiz, funksiyalar qo'shishingiz yoki xatolarni tuzatishingiz mumkin."
 
 #: mu/logic.py:95
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
-msgstr "Bu muharrir Mu (\"mew\" yoki \"moo\") deb ataladi."
+msgstr "Bu editor Mu (inglizchada \"mew\" yoki \"moo\") deb ataladi."
 
 #: mu/logic.py:96
 msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
@@ -505,7 +505,7 @@ msgstr "Kodlash - bu hamkorlik."
 
 #: mu/logic.py:115
 msgid "Compliment and amplify the good things with code."
-msgstr "Yaxshi narsalarni kod bilan maqtang va kuchaytiring."
+msgstr "Kod bilan yaxshi narsalarni  maqtang va kuchaytiring."
 
 #: mu/logic.py:116
 msgid "In theory, theory and practice are the same. In practice, they're not. ;-)"
@@ -513,7 +513,7 @@ msgstr "Nazariy jihatdan nazariya va amaliyot bir xil. Amalda, ular yo'q. ;-)"
 
 #: mu/logic.py:120
 msgid "Debugging is twice as hard as writing the code in the first place."
-msgstr ""
+msgstr "Nosozliklarni tuzatish kod yozishdan ko'ra ikki baravar qiyin."
 
 #: mu/logic.py:121
 msgid "It's fun to program."
@@ -721,21 +721,21 @@ msgstr "Kodlashdan qo'rqmang, hammamiz xato qilish orqali o'rganamiz!"
 
 #: mu/logic.py:481
 msgid " above this line"
-msgstr "bu chiziq ustida"
+msgstr "bu qatorning ustida"
 
 #: mu/logic.py:529
 msgid "Syntax error. Python cannot understand this line. Check for missing characters!"
-msgstr "Sintaksis xato. Python bu qatorni tushuna olmaydi. Qoldirib ketilgan yoki xato belgilarni tekshiring!"
+msgstr "Sintaksis xato. Python bu qatorni tushuna olmaydi. Qoldirib ketilgan xarflarni tekshiring!"
 
 #: mu/logic.py:596
 msgid "{} compatible"
-msgstr "{} mos"
+msgstr "{} ga mos"
 
 #: mu/logic.py:1027
 msgid "The file contains characters Mu expects to be encoded as {0} or as the computer's default encoding {1}, but which are encoded in some other way.\n\n"
 "If this file was saved in another application, re-save the file via the 'Save as' option and set the encoding to {0}"
 msgstr "Faylda Mu {0} yoki kompyuterning standart kodlashi {1} sifatida kodlanishi kutilgan, ammo boshqa usulda kodlangan belgilar mavjud.\n\n"
-"Agar bu fayl boshqa ilovada saqlangan boʻlsa, faylni “Boshqa saqlash” opsiyasi orqali qayta saqlang va kodlashni {0} ga oʻrnating."
+"Agar bu fayl boshqa ilovada saqlangan boʻlsa, faylni “Boshqa nomidan saqlash” menu orqali {0} kodlash bilan qayta saqlang."
 
 #: mu/logic.py:1055
 msgid "The file \"{}\" is already open."
@@ -789,7 +789,7 @@ msgstr "Faylni saqlab boʻlmadi (kodlash muammosi)"
 
 #: mu/logic.py:1249
 msgid "Unable to convert all the characters. If you have an encoding line at the top of the file, remove it and try again."
-msgstr "Barcha belgilarni o‘zgartirib bo‘lmadi. Agar faylning yuqori qismida kodlash chizig'i bo'lsa, uni olib tashlang va qaytadan urinib ko'ring."
+msgstr "Barcha belgilarni o‘zgartirib bo‘lmadi. Agar faylning yuqorida kodlash haqidagi qator bo'lsa, uni olib tashlang va qaytadan urinib ko'ring."
 
 #: mu/logic.py:1260
 msgid "Saved file: {}"
@@ -829,11 +829,11 @@ msgstr "Saqlanmagan ish bor, ilovadan chiqish uni yo'qotishingizga olib keladi."
 
 #: mu/logic.py:1485
 msgid "Could not find MicroPython runtime."
-msgstr "MicroPython runtime topilmadi."
+msgstr "MicroPython ijro muhiti topilmadi."
 
 #: mu/logic.py:1486
 msgid "The micro:bit runtime you specified ('{}') does not exist. Please try again."
-msgstr "Siz belgilagan micro:bit runtime('{}') mavjud emas. Iltimos, yana bir bor urinib ko'ring."
+msgstr "Siz belgilagan micro:bit ijro muhiti('{}') mavjud emas. Iltimos, yana bir bor urinib ko'ring."
 
 #: mu/logic.py:1621
 msgid "Changed to {} mode."
@@ -865,7 +865,7 @@ msgstr "Fayl nomini o‘zgartirib bo‘lmadi."
 
 #: mu/logic.py:1753
 msgid "A file of that name is already open in Mu."
-msgstr "Bunday nomdagi fayl Mu-da allaqachon ochiq."
+msgstr "Bunday nomdagi fayl Mu-da allaqachon ochilgan."
 
 #: mu/logic.py:1785
 msgid "Replaced \"{}\" with \"{}\"."
@@ -877,7 +877,7 @@ msgstr "“{}” ning {} ta mosligi “{}” bilan almashtirildi."
 
 #: mu/logic.py:1795 mu/logic.py:1802 mu/logic.py:1821
 msgid "Could not find \"{}\"."
-msgstr "{} yuklanmadi"
+msgstr "{} topolmagan."
 
 #: mu/logic.py:1800 mu/logic.py:1819
 msgid "Highlighting matches for \"{}\"."
@@ -889,7 +889,7 @@ msgstr "Siz topish uchun biror narsa taqdim etishingiz kerak."
 
 #: mu/logic.py:1806 mu/logic.py:1825
 msgid "Please try again, this time with something in the find box."
-msgstr "Iltimos, qaytadan urinib ko'ring, bu safar topish qutisidagi biror narsa bilan."
+msgstr "Iltimos, bu safar topish qutisidagi biror narsa bilan qaytadan urinib ko'ring. "
 
 #: mu/logic.py:1869
 msgid "Successfully cleaned the code. Use CTRL-Z to undo."
@@ -901,7 +901,7 @@ msgstr "Sizning kodingizda muammolar mavjud."
 
 #: mu/logic.py:1876
 msgid "These must be fixed before tidying will work. Please use the 'Check' button to highlight these problems."
-msgstr "Tozalash ishlamasdan oldin ularni tuzatish kerak. Ushbu muammolarni ta'kidlash uchun \"Tekshirish\" tugmasidan foydalaning."
+msgstr "Yig'ishtirish ishlamasidan oldin ularni tuzatish kerak. Ushbu muammolarni ta'kidlash uchun \"Tekshirish\" tugmasidan foydalaning."
 
 #: mu/modes/base.py:115
 msgid "Cannot connect to device on port {}"
@@ -921,7 +921,7 @@ msgid "The plotter is flooded with data which will make Mu unresponsive and free
 "To fix this, make sure your code prints small tuples of data between calls to 'sleep' for a very short period of time."
 msgstr "Plotter ma'lumotlar bilan to'lib toshgan, bu esa Muni javobsiz va qotib qolishiga olib keladi. Himoya sifatida, fitnachi to'xtatildi.\n\n"
 "Flooding - 1024 baytdan ortiq ma'lumotlar bo'laklari plotterga qayta-qayta yuborilganda.\n\n"
-"Buni tuzatish uchun kodingiz juda qisqa vaqt davomida \"uyqu\" holatiga qo'ng'iroqlar orasida kichik ma'lumotlar to'plamini chop etishiga ishonch hosil qiling."
+"Buni tuzatish uchun kodingiz orasida juda qisqa vaqt damni kiritib kichik ma'lumotlar to'plamini chop etishiga ishonch hosil qiling."
 
 #: mu/modes/base.py:515 mu/modes/base.py:565 mu/modes/snek.py:518
 msgid "Click on the device's reset button, wait a few seconds and then try again."
@@ -1500,11 +1500,23 @@ msgstr "Mu faqat Python faylida ishlaydi. Iltimos, Mu-dagi joriy tasmali panelid
 msgid "To deploy your web application, there needs to be a 'templates' directory in the same place as your web application's Python code. Please fix this and try again. (Hint: Mu was expecting the `templates` directory to be here: )"
 msgstr "Veb-ilovangizni joylashtirish uchun veb-ilovangizning Python kodi bilan bir joyda \"shablonlar\" folderda bo'lishi kerak. Buni tuzatib, qayta urinib ko‘ring. (Maslahat: Mu \"shablonlar\" folderda bo'lishini kutgan edi:)"
 
+#: mu/modes/neopia.py:137
+msgid "Write Python code on Neobot devices. Currently NeoSoco only."
+msgstr "Neobot qurilmalar uchun Python orqali kod yozish mumkin. Hozircha faqatgina NeoSocoda ishlaydi."
+
 #: #: mu/modes/neopia.py:135
 msgid "Neobot"
 msgstr ""
 
-#: mu/modes/neopia.py:137
-msgid "Write Python code on Neobot devices. Currently NeoSoco only."
-msgstr "Neobot qurilmalar uchun Python orqali kod yozish mumkin. Hozircha faqatgina NeoSocoda ishlaydi."
+#: mu/modes/pygamezero.py:101
+msgid "Package"
+msgstr "EXE fayliga"
+
+#: mu/modes/pygamezero.py:102
+msgid "Package the game to one-file for distribution."
+msgstr "O'yinni tarqatish uchun bitta exe fayliga aylantiradi."
+
+#: mu/modes/pygamezero.py:230
+msgid "Stop packaging your Pygame Zero game."
+msgstr "Bitta fayliga aylantirayotganini to'xtaydi."
 
