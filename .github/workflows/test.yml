@@ -11,8 +11,17 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-latest, macos-11, macos-latest, windows-2019, windows-latest]
+        # macos-13 is the latest release on x86, and macos-14 is arm64
+        os: [ubuntu-20.04, ubuntu-latest, macos-11, macos-13, macos-14, windows-2019, windows-latest]
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
+        exclude:
+          # These Python versions are not available in macOS arm64
+          - os: macos-14
+            python-version: '3.7'
+          - os: macos-14
+            python-version: '3.8'
+          - os: macos-14
+            python-version: '3.9'
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: Test Py ${{ matrix.python-version }} - ${{ matrix.os }}
