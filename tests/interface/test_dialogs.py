@@ -5,6 +5,7 @@ Tests for the user interface elements of Mu.
 import os
 
 import pytest
+import mu.i18n
 import mu.interface.dialogs
 from PyQt5.QtWidgets import QDialog, QWidget, QDialogButtonBox
 from unittest import mock
