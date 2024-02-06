@@ -1,15 +1,37 @@
 import os
-
+import sys
+import tempfile
+from functools import lru_cache
 import platformdirs
 
+
 # The default directory for application data (i.e., configuration).
-DATA_DIR = platformdirs.user_data_dir(appname="mu", appauthor="python")
+@lru_cache()
+def get_data_dir():
+    path = platformdirs.user_data_dir(appname="mu", appauthor="python")
+    if sys.platform == "win32":
+        # Locate the actual path for Windows by making a temporary file
+        # then resolving the real path. Solves a bug in the Windows store
+        # distribution of Python 3.8+
+        # See https://github.com/mu-editor/mu/issues/2293
+        os.makedirs(path, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(dir=path)
+        realpath = os.path.dirname(os.path.realpath(tmp))
+        os.close(fd)
+        os.remove(tmp)
+        return realpath
+    else:
+        return path
+
 
 # The name of the default virtual environment used by Mu.
 VENV_NAME = "mu_venv"
 
+
 # The directory containing default virtual environment.
-VENV_DIR = os.path.join(DATA_DIR, VENV_NAME)
+def get_venv_dir():
+    return os.path.join(get_data_dir(), VENV_NAME)
+
 
 # Maximum line length for using both in Check and Tidy
 MAX_LINE_LENGTH = 88
