@@ -291,9 +291,20 @@ class Pip(object):
         params.extend(args)
 
         if slots.output is None:
-            result = self.process.run_blocking(
-                self.executable, params, wait_for_s=wait_for_s
-            )
+            if command == "install":
+                venv_path = os.path.dirname(os.path.dirname(self.executable))
+                exe = self.executable.replace("pip", "uv")
+                params.remove("--disable-pip-version-check")
+                result = self.process.run_blocking(
+                    exe,
+                    ["pip"] + params,
+                    wait_for_s=wait_for_s,
+                    VIRTUAL_ENV=venv_path,
+                )
+            else:
+                result = self.process.run_blocking(
+                    self.executable, params, wait_for_s=wait_for_s
+                )
             logger.debug("Process output: %s", compact(result.strip()))
             return result
         else:
@@ -886,6 +897,15 @@ class VirtualEnvironment(object):
             ),
         )
         ok, output = self.run_subprocess(*args, env=env)
+        args = filter(
+            None,
+            (
+                os.path.join(self.path, "bin", "pip"),
+                "install",
+                "uv",
+            ),
+        )
+        ok, output = self.run_subprocess(*args, env=env)
         if ok:
             logger.info(
                 "Created virtual environment using %s at %s",
@@ -951,6 +971,7 @@ class VirtualEnvironment(object):
                         os.path.basename(wheel)
                     )
                 )
+                wheel = f"{os.path.basename(wheel).split('-')[0]}@{wheel}"
                 self.pip.install(wheel, deps=False, index=False)
 
     def install_baseline_packages(self):
