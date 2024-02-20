@@ -122,7 +122,7 @@ class PyGameZeroMode(BaseMode):
             play_slot.setIcon(load_icon("play"))
             play_slot.setText(_("Play"))
             play_slot.setToolTip(_("Play your Pygame Zero game."))
-            self.set_buttons(modes=True)
+            self.set_buttons(package=True, modes=True)
         else:
             self.run_game()
             if self.runner:
@@ -130,7 +130,7 @@ class PyGameZeroMode(BaseMode):
                 play_slot.setIcon(load_icon("stop"))
                 play_slot.setText(_("Stop"))
                 play_slot.setToolTip(_("Stop your Pygame Zero game."))
-                self.set_buttons(modes=False)
+                self.set_buttons(package=False, modes=True)
 
     def run_game(self):
         """
