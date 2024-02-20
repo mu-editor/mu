@@ -3,6 +3,7 @@
 Tests for the user interface elements of Mu.
 """
 from unittest import mock
+import mu.i18n
 import mu.interface.editor
 import keyword
 import re
