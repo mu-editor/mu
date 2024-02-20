@@ -133,7 +133,7 @@ class NeopiaMode(BaseMode):
     """
 
     name = _("Neobot Python")
-    short_name = "neobot"
+    short_name = "neopia"
     description = _("Write Python code on Neobot devices. Currently NeoSoco only.")
     icon = "neopia"
     runner = None
@@ -194,7 +194,7 @@ class NeopiaMode(BaseMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return SHARED_APIS + PYTHON3_APIS + PI_APIS + NEOPIA_APIS
+        return SHARED_APIS + PYTHON3_APIS + NEOPIA_APIS
 
     def run_toggle(self, event):
         """

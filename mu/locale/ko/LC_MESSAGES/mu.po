@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: mu-editor-korean-translation\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2024-01-18 23:35+0500\n"
-"PO-Revision-Date: 2024-01-23 18:52\n"
+"PO-Revision-Date: 2024-02-07 05:40\n"
 "Last-Translator: \n"
 "Language: ko_KR\n"
 "Language-Team: Korean\n"
@@ -723,7 +723,7 @@ msgstr ""
 
 #: mu/logic.py:536
 msgid "Syntax error. Python cannot understand this line. Check for missing characters!"
-msgstr ""
+msgstr "문법에러: 파이썬이 이 문장을 이해할 수 없습니다. 빠진 글자가 있는지 확인하세요!"
 
 #: mu/logic.py:603
 msgid "{} compatible"
@@ -799,23 +799,23 @@ msgstr ""
 
 #: mu/logic.py:1382
 msgid "Good job! No problems found."
-msgstr ""
+msgstr "잘했어요! 코드에 문제가 하나도 없어요."
 
 #: mu/logic.py:1383
 msgid "Hurrah! Checker turned up no problems."
-msgstr ""
+msgstr "만세! 검사에서 문제가 전혀없데요."
 
 #: mu/logic.py:1384
 msgid "Nice one! Zero problems detected."
-msgstr ""
+msgstr "멋져요! 코드에 문제가 하나도 없는거로 발견되었어요."
 
 #: mu/logic.py:1385
 msgid "Well done! No problems here."
-msgstr ""
+msgstr "잘했어요! 코드에 문제가 하나도 없어요."
 
 #: mu/logic.py:1386
 msgid "Awesome! Zero problems found."
-msgstr ""
+msgstr "최고! 코드에 문제가 1도 없네요!"
 
 #: mu/logic.py:1412
 msgid "There is un-saved work, exiting the application will cause you to lose it."
@@ -891,7 +891,7 @@ msgstr ""
 
 #: mu/logic.py:1885
 msgid "Your code contains problems."
-msgstr ""
+msgstr "당신에 코드에 문제가 있어요."
 
 #: mu/logic.py:1886
 msgid "These must be fixed before tidying will work. Please use the 'Check' button to highlight these problems."
