@@ -84,6 +84,24 @@ DEFAULT_IMAGES = [
     "bottom.png",
     "background.png",
 ]
+# Images to copy over for use in PyGameZero example apps.
+EXAMPLE_ENTRY_B_IMAGES = [
+    "kuchuk.png",
+    "mushuk.png",
+    "pushti_barg.png",
+    "changyutgich.png",
+    "pol.png",
+    "o'chirg'ich.png",
+    "qalam.png",
+    "bola_1.png",
+    "bola_2.png",
+    "bola_3.png",
+    "cho'l.png",
+    "xazina_sandig'i.png",
+    "dala.png",
+    "ko'rsichqon_1.png",
+    "o'yinchoq_bolg'a.png"
+]
 # Default sound effects to copy over for use in PyGameZero demo apps.
 DEFAULT_SOUNDS = [
     "eep.wav",
@@ -92,6 +110,22 @@ DEFAULT_SOUNDS = [
     "meow3.wav",
     "meow4.wav",
     "splat.wav",
+]
+# Sound effects to copy over for use in PyGameZero example apps.
+EXAMPLE_ENTRY_B_SOUNDS = [
+    "olqish.ogg",
+    "xavf_ogohlantirish.ogg",
+    "toi.ogg"
+]
+# Sources to copy over for use in PyGameZero Entry basic example apps.
+EXAMPLE_ENTRY_BASIC = [
+    "1_ketma-ketlik.py",
+    "2_takrorlash.py",
+    "3_shart.py",
+    "4_hodisa.py",
+    "5_o'zgaruvchi.py",
+    "6_kiritish-chiqarish.py",
+    "7_jamlash.py",
 ]
 MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Hello, World!"),
@@ -845,6 +879,8 @@ class Editor(QObject):
         fonts_path = os.path.join(wd, "fonts")
         sounds_path = os.path.join(wd, "sounds")
         music_path = os.path.join(wd, "music")
+        examples_path = os.path.join(wd, "examples")
+        entry_basic_path = os.path.join(wd, "examples/entry_basic/")
         if not os.path.exists(images_path):
             logger.debug("Creating directory: {}".format(images_path))
             os.makedirs(images_path)
@@ -865,6 +901,33 @@ class Editor(QObject):
         if not os.path.exists(music_path):
             logger.debug("Creating directory: {}".format(music_path))
             os.makedirs(music_path)
+        if not os.path.exists(examples_path):
+            logger.debug("Creating directory: {}".format(examples_path))
+            os.makedirs(examples_path)
+            if not os.path.exists(entry_basic_path):
+                logger.debug("Creating directory: {}".format(entry_basic_path))
+                os.makedirs(entry_basic_path)
+                for sfx in EXAMPLE_ENTRY_BASIC:
+                    shutil.copy(
+                        path(sfx, "pygamezero/"), os.path.join(entry_basic_path, sfx)
+                    )
+                shutil.copy(
+                    path("pgzhelper.py", "pygamezero/"), os.path.join(entry_basic_path, "pgzhelper.py")
+                )
+                if not os.path.exists(entry_basic_path + 'images'):
+                    logger.debug("Creating directory: {}".format('images'))
+                    os.makedirs(entry_basic_path + 'images')
+                    for sfx in EXAMPLE_ENTRY_B_IMAGES:
+                        shutil.copy(
+                            path(sfx, "pygamezero/"), os.path.join(entry_basic_path + 'images', sfx)
+                        )
+                if not os.path.exists(entry_basic_path + 'sounds'):
+                    logger.debug("Creating directory: {}".format('sounds'))
+                    os.makedirs(entry_basic_path + 'sounds')
+                    for sfx in EXAMPLE_ENTRY_B_SOUNDS:
+                        shutil.copy(
+                            path(sfx, "pygamezero/"), os.path.join(entry_basic_path + 'sounds', sfx)
+                        )
         # Ensure Web based assets are copied over.
         template_path = os.path.join(wd, "templates")
         static_path = os.path.join(wd, "static")
