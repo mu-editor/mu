@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Mu Editor
+GenericName=A simple editor for beginner Python programmers
+Exec=/app/python-build-standalone/install/bin/mu-editor
+Terminal=false
+Icon=mu.codewith.Editor
+Type=Application
+Categories=Development;IDE;
+X-Desktop-File-Install-Version=1.1.1
+StartupWMClass=mu-editor
