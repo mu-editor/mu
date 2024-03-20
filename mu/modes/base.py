@@ -213,6 +213,9 @@ class BaseMode(QObject):
         self.view = view
         super().__init__()
 
+    def get_user_locale(self):
+        return self.editor.user_locale
+
     def stop(self):
         """
         Called if/when the editor quits when in this mode. Override in child

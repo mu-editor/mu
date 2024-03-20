@@ -110,7 +110,17 @@ class PyGameZeroMode(BaseMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return SHARED_APIS + PYTHON3_APIS + PI_APIS + PYGAMEZERO_APIS + NEOPIA_APIS
+        user_locale = self.get_user_locale()
+        try:
+            pygamezero_apis = list(PYGAMEZERO_APIS[user_locale])        
+        except KeyError: # In case a translation is not exist
+            pygamezero_apis = list(PYGAMEZERO_APIS['en'])
+        try:
+            neopia_apis = list(NEOPIA_APIS[user_locale])
+        except KeyError: # In case a translation is not exist
+            neopia_apis = list(NEOPIA_APIS['en'])
+
+        return SHARED_APIS + PYTHON3_APIS + PI_APIS + pygamezero_apis + neopia_apis
 
     def play_toggle(self, event):
         """
