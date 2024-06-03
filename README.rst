@@ -5,7 +5,7 @@ Mu - A Simple Python Code Editor
 
 Mu is a simple code editor for beginner programmers based on extensive feedback
 from teachers and learners. Having said that, Mu is for anyone who wants to use
-a simple "no frills" editor.
+a simple "no frills" editor. Most importantly, have fun!
 
 Mu is a modal editor with modes for many different ways to use Python to create
 cool and interesting things.
