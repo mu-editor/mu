@@ -74,7 +74,7 @@ jobs:
           pip list
       - run: mkdir upload
       - name: Build Linux AppImage
-        run: xvfb-run make linux
+        run: QT_QPA_PLATFORM=offscreen make linux
       # GitHub actions upload artifact breaks permissions, workaround using tar
       # https://github.com/actions/upload-artifact/issues/38
       - name: Tar AppImage to maintain permissions
