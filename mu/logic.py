@@ -28,6 +28,7 @@ import webbrowser
 import random
 import locale
 import shutil
+import subprocess
 
 import platformdirs
 from PyQt5.QtWidgets import QMessageBox
@@ -889,6 +890,72 @@ class Editor(QObject):
             for mode in self.modes.values():
                 device_selector.device_changed.connect(mode.device_changed)
 
+    def detect_theme_preference(self):
+        """Detect OS dark/light theme preference.
+        Currently implemented for Mac, Windows, GNOME. For any other
+        operating systems, it will always return "day"
+        """
+        # Implementations inspired by the following Stackoverflow submissions:
+        # https://stackoverflow.com/questions/65294987/detect-os-dark-mode-in-python
+
+        def macos_prefers_dark_theme(self):
+            if sys.platform != "darwin":
+                return False
+            cmd = "defaults read -g AppleInterfaceStyle"
+            result = subprocess.run(cmd.split())
+            return result.return_code == 0
+
+        def windows_prefers_dark_theme(self):
+            if sys.platform != "win32":
+                return False
+            try:
+                import winreg
+            except ImportError:
+                return False
+            registry = winreg.ConnectRegistry(None, winreg.HKEY_CURRENT_USER)
+            reg_keypath = (
+                r"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+            )
+            try:
+                reg_key = winreg.OpenKey(registry, reg_keypath)
+            except FileNotFoundError:
+                return False
+
+            for i in range(1024):
+                try:
+                    value_name, value, _ = winreg.EnumValue(reg_key, i)
+                    if value_name == "AppsUseLightTheme" and value == 0:
+                        return True
+                except OSError:
+                    break
+            return False
+
+        def gnome_prefers_dark_theme(self):
+            if sys.environ.get("XDG_CURRENT_DESKTOP") != "GNOME":
+                return False
+            # Detect dark mode in GNOME
+            cmd = "gsettings get org.gnome.desktop.interface gtk-theme"
+            result = subprocess.run(cmd.split(), capture_output=True)
+            current_theme = result.stdout.decode("utf-8").strip().strip("'")
+            return current_theme.endswith("-dark")
+
+        preferrence_checkers = [
+            macos_prefers_dark_theme,
+            windows_prefers_dark_theme,
+            gnome_prefers_dark_theme,
+        ]
+
+        # Try all preference checkers, if any of the prefers dark
+        # theme, then use dark theme ("night")
+        for checker in preferrence_checkers:
+            try:
+                if checker():
+                    return "night"
+            except Exception:
+                pass
+        # Otherwise use light mode (day)
+        return "day"
+
     def restore_session(self, paths=None):
         """
         Attempts to recreate the tab state from the last time the editor was
@@ -901,6 +968,9 @@ class Editor(QObject):
         logger.debug(old_session)
         if "theme" in old_session:
             self.theme = old_session["theme"]
+        else:
+            self.theme = self.detect_theme_preference()
+
         self._view.set_theme(self.theme)
         if "mode" in old_session:
             old_mode = old_session["mode"]
