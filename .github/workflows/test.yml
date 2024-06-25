@@ -117,7 +117,7 @@ jobs:
       - name: Wait 2m30s for the docker image to start up QEMU and Raspberry Pi OS
         run: sleep 150
       - name: Clone project & setup it as the bash entry directory
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: rpios
           username: pi
@@ -134,7 +134,7 @@ jobs:
       # As Pi OS stretch is no longer supported the repository URL was moved and is no longer updated
       - name: Update Stretch sources.list
         if: ${{ matrix.docker-tag == 'stretch-2018-03-13' }}
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: rpios
           username: pi
@@ -142,7 +142,7 @@ jobs:
           port:  ${{ job.services.rpios.ports[5022] }}
           script: echo "deb http://legacy.raspbian.org/raspbian/ stretch main contrib non-free rpi" | sudo tee /etc/apt/sources.list
       - name: Install Mu extra apt dependencies
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: rpios
           username: pi
@@ -152,22 +152,22 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y python3-virtualenv
       - name: Create venv and install Python dependencies
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: rpios
           username: pi
           password: raspberry
           port:  ${{ job.services.rpios.ports[5022] }}
-          command_timeout: 20m
+          command_timeout: 25m
           script: |
             python3 -m virtualenv ~/mu/.venv -v --python=python3 --system-site-packages
             echo "source ~/mu/.venv/bin/activate" > ~/.bashrc_new && cat ~/.bashrc >> ~/.bashrc_new
             rm ~/.bashrc && mv ~/.bashrc_new ~/.bashrc
             source .venv/bin/activate
             python -m pip list
-            python -m pip install ."[dev]"
+            python -m pip install ".[dev]"
       - name: Environment info
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: rpios
           username: pi
@@ -180,7 +180,7 @@ jobs:
             python3 -m pip --version
             python3 -m pip list
       - name: Run tests
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: rpios
           username: pi
