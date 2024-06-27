@@ -119,7 +119,9 @@ def pipped():
 def workspace_dirpath(tmp_path):
     workspace_dirpath = tmp_path / uuid.uuid1().hex
     workspace_dirpath.mkdir()
-    with mock.patch.object(mu.config, "DATA_DIR", workspace_dirpath):
+    with mock.patch.object(
+        mu.config, "get_data_dir", lambda: workspace_dirpath
+    ):
         yield workspace_dirpath
 
 
