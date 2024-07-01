@@ -17,13 +17,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import time
 import ctypes
 import logging
+from shutil import copyfile
 from subprocess import check_output
 from mu.modes.base import MicroPythonMode
 from mu.modes.api import ADAFRUIT_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
 from mu.logic import Device
+from mu.logic import get_pathname
 from adafruit_board_toolkit import circuitpython_serial
 
 logger = logging.getLogger(__name__)
@@ -138,12 +141,21 @@ class CircuitPythonMode(MicroPythonMode):
         """
         buttons = [
             {
+                "name": "run",
+                "display_name": _("Run"),
+                "description": _(
+                    "Save and run your current file on CIRCUITPY."
+                ),
+                "handler": self.run,
+                "shortcut": "CTRL+Shift+R",
+            },
+            {
                 "name": "serial",
                 "display_name": _("Serial"),
                 "description": _("Open a serial connection to your device."),
                 "handler": self.toggle_repl,
                 "shortcut": "CTRL+Shift+U",
-            }
+            },
         ]
         if CHARTS:
             buttons.append(
@@ -246,11 +258,9 @@ class CircuitPythonMode(MicroPythonMode):
             try:
                 for disk in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
                     path = "{}:\\".format(disk)
-                    if (
-                        os.path.exists(path)
-                        and get_volume_name(path) == "CIRCUITPY"
-                    ):
-                        return path
+                    if os.path.exists(path):
+                        if get_volume_name(path) == "CIRCUITPY":
+                            return path
             finally:
                 ctypes.windll.kernel32.SetErrorMode(old_mode)
         else:
@@ -278,6 +288,68 @@ class CircuitPythonMode(MicroPythonMode):
                 self.view.show_message(m, info.format(wd))
                 self.connected = False
             return wd
+
+    def workspace_dir_cp(self):
+        """
+        Is the file currently being edited located on CIRCUITPY.
+        """
+        return "CIRCUITPY" in str(get_pathname(self))
+
+    def workspace_cp_avail(self):
+        """
+        Is CIRCUITPY available.
+        """
+        return "CIRCUITPY" in str(self.workspace_dir())
+
+    def run_circuitpython_lib_copy(self, pathname, dst_dir):
+        """
+        Optionally copy lib files to CIRCUITPY.
+        """
+        lib_dir = os.path.dirname(pathname) + "/lib"
+        if not os.path.isdir(lib_dir):
+            return
+        replace_cnt = 0
+        for root, dirs, files in os.walk(lib_dir):
+            for filename in files:
+                src_lib = lib_dir + "/" + filename
+                dst_lib_dir = dst_dir + "/lib"
+                dst_lib = dst_lib_dir + "/" + filename
+                if not os.path.exists(dst_lib):
+                    replace_lib = True
+                else:
+                    src_tm = time.ctime(os.path.getmtime(src_lib))
+                    dst_tm = time.ctime(os.path.getmtime(dst_lib))
+                    replace_lib = src_tm > dst_tm
+                if replace_lib:
+                    if replace_cnt == 0:
+                        if not os.path.exists(dst_lib_dir):
+                            os.makedirs(dst_lib_dir)
+                    copyfile(src_lib, dst_lib)
+                    replace_cnt = replace_cnt + 1
+        # let libraries load before copying source main source file
+        if replace_cnt > 0:
+            time.sleep(4)
+
+    def run(self, event):
+        """
+        Save the file and copy to CIRCUITPY if not already there and available.
+        """
+        self.editor.save()
+
+        if not self.workspace_dir_cp() and self.workspace_cp_avail():
+            pathname = get_pathname(self)
+            if pathname:
+                dst_dir = self.workspace_dir()
+                if pathname.find("/lib/") == -1:
+                    dst = dst_dir + "/code.py"
+                else:
+                    dst = dst_dir + "/lib/" + os.path.basename(pathname)
+
+                # copy library files on to device if not working on the device
+                # self.run_circuitpython_lib_copy(pathname, dst_dir)
+
+                # copy edited source file on to device
+                copyfile(pathname, dst)
 
     def compatible_board(self, port):
         """Use adafruit_board_toolkit to find out whether a board is running
