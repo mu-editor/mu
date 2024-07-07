@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 NEOPIA_APIS = {
-    'en': [
+    'en_US': [
         _(
             "get_value(port) \nport: 'in1' ~ 'in3', 'remo', 'bat' \nGet a value from input port."
         ),

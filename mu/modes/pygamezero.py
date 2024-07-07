@@ -114,11 +114,11 @@ class PyGameZeroMode(BaseMode):
         try:
             pygamezero_apis = list(PYGAMEZERO_APIS[user_locale])        
         except KeyError: # In case a translation is not exist
-            pygamezero_apis = list(PYGAMEZERO_APIS['en'])
+            pygamezero_apis = list(PYGAMEZERO_APIS['en_US'])
         try:
             neopia_apis = list(NEOPIA_APIS[user_locale])
         except KeyError: # In case a translation is not exist
-            neopia_apis = list(NEOPIA_APIS['en'])
+            neopia_apis = list(NEOPIA_APIS['en_US'])
 
         return SHARED_APIS + PYTHON3_APIS + PI_APIS + pygamezero_apis + neopia_apis
 

@@ -198,7 +198,7 @@ class NeopiaMode(BaseMode):
         try:
             neopia_apis = list(NEOPIA_APIS[user_locale])
         except KeyError: # In case a translation is not exist
-            neopia_apis = list(NEOPIA_APIS['en'])
+            neopia_apis = list(NEOPIA_APIS['en_US'])
 
         return SHARED_APIS + PYTHON3_APIS + neopia_apis
 
