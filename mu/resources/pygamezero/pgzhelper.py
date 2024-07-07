@@ -1427,10 +1427,15 @@ class Actor(Actor):
     def say(self, text, size: Tuple[int, int], **kwargs):
         ptext.drawbox(text, (self.left - 50, self.top - 50, size[0], size[1]), **kwargs)
 
-    def say_for_sec(self, text, size: Tuple[int, int], seconds, **kwargs):
-        ptext.drawbox(text, (self.left - 50, self.top - 50, size[0], size[1]), **kwargs)
+    def say_for_sec(self, text, seconds, fgcolor='black', bgcolor='white'):
+        tsurf, tpos = ptext.drawbox(text, (self.left, self.top - 60, 120, 50), 
+                                    color=fgcolor, background=bgcolor)
         pygame.display.update()
         game.time.sleep(seconds)
+        tsurf.fill(bgcolor)
+        tsurf.set_alpha(255)
+        game.screen.blit(tsurf, tpos)
+        pygame.display.update()
 
     def pen_init(self, size: Tuple[int, int]):
         self._tp_surf = pygame.Surface((size[0], size[1]), pygame.SRCALPHA)
