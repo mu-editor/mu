@@ -4,7 +4,7 @@ This module is directly copied from
 
     https://github.com/roboticsware/pgzhelper
 
-at revision 9ac8381e5b0f3ea295f7e207eeb331cbb777bd78
+at revision a4b60d00b824c7cea10845966297e34e6df995a5
 and used under CC0.
 
 """
@@ -1424,22 +1424,15 @@ class Actor(Actor):
     def get_rect(self):
         return self._rect
 
-    def say(self, text, size: Tuple[int, int], **kwargs):
-        ptext.drawbox(text, (self.left - 50, self.top - 50, size[0], size[1]), **kwargs)
-
     def say_for_sec(self, text, seconds, fgcolor='black', bgcolor='white'):
-        tsurf, tpos = ptext.drawbox(text, (self.left, self.top - 60, 120, 50), 
+        tsurf, tpos = ptext.drawbox(text, (self.left, self.top - 60, 120, 50),
                                     color=fgcolor, background=bgcolor)
         pygame.display.update()
         game.time.sleep(seconds)
         tsurf.fill(bgcolor)
-        tsurf.set_alpha(255)
+        tsurf.set_alpha(255)  # 255 means opaque
         game.screen.blit(tsurf, tpos)
         pygame.display.update()
-
-    def pen_init(self, size: Tuple[int, int]):
-        self._tp_surf = pygame.Surface((size[0], size[1]), pygame.SRCALPHA)
-        self._tp_surf.fill((255, 255, 255, 0))
 
     def __align_center_to_anchor(self):
         if self.anchor == ('left', 'top'):
@@ -1461,17 +1454,25 @@ class Actor(Actor):
         else:
             return self.center
 
-    def pen_start(self, thick, color='white'):
+    def brush_init(self, size: Tuple[int, int], thick, color='white'):
+        self._tp_surf = pygame.Surface((size[0], size[1]), pygame.SRCALPHA)
+        self._brush_thick = thick
+        self._brush_color = color
+        self._tp_surf.set_alpha(255)
+
+    def brush_draw(self):
         pos = self.__align_center_to_anchor()
         if self._last_pos and self._last_pos != pos:
-            pygame.draw.line(self._tp_surf, color, self._last_pos, pos, thick)
+            pygame.draw.line(self._tp_surf, self._brush_color,
+                             self._last_pos, pos, self._brush_thick)
+        game.screen.blit(self._tp_surf, (0, 0))
         self._last_pos = pos
 
-    def pen_stop(self):
+    def brush_stop(self):
         self._last_pos = None
 
-    def pen_clear(self):
+    def brush_clear(self):
         self._tp_surf.fill((255, 255, 255, 0))
 
-    def pen_update(self):
+    def brush_update(self):
         game.screen.blit(self._tp_surf, (0, 0))

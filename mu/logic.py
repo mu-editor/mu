@@ -113,19 +113,23 @@ DEFAULT_SOUNDS = [
 ]
 # Sound effects to copy over for use in PyGameZero example apps.
 EXAMPLE_ENTRY_B_SOUNDS = [
-    "olqish.ogg",
-    "xavf_ogohlantirish.ogg",
+    "cheer.ogg",
+    "warning.ogg",
     "toi.ogg"
+]
+# Sound effects to copy over for use in PyGameZero example apps.
+EXAMPLE_ENTRY_B_FONTS = [
+    "nanum_square.ttf"
 ]
 # Sources to copy over for use in PyGameZero Entry basic example apps.
 EXAMPLE_ENTRY_BASIC = [
-    "1_ketma-ketlik.py",
-    "2_takrorlash.py",
-    "3_shart.py",
-    "4_hodisa.py",
-    "5_o'zgaruvchi.py",
-    "6_kiritish-chiqarish.py",
-    "7_jamlash.py",
+    "1_dog-cat.py",
+    "2_make_flower.py",
+    "3_robot_cleaner.py",
+    "4_drawing_board.py",
+    "5_count_boy.py",
+    "6_treasure_box.py",
+    "7_mole_game.py",
 ]
 MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Hello, World!"),
@@ -927,6 +931,13 @@ class Editor(QObject):
                     for sfx in EXAMPLE_ENTRY_B_SOUNDS:
                         shutil.copy(
                             path(sfx, "pygamezero/"), os.path.join(entry_basic_path + 'sounds', sfx)
+                        )
+                if not os.path.exists(entry_basic_path + 'fonts'):
+                    logger.debug("Creating directory: {}".format('fonts'))
+                    os.makedirs(entry_basic_path + 'fonts')
+                    for sfx in EXAMPLE_ENTRY_B_FONTS:
+                        shutil.copy(
+                            path(sfx, "pygamezero/"), os.path.join(entry_basic_path + 'fonts', sfx)
                         )
         # Ensure Web based assets are copied over.
         template_path = os.path.join(wd, "templates")
@@ -1910,6 +1921,12 @@ class Editor(QObject):
     def toggle_comments(self):
         """
         Ensure all highlighted lines are toggled between comments/uncommented.
+        """
+        self._view.toggle_comments()
+
+    def delete_complete_line(self):
+        """
+        Handle a shortcut for deleting a complete line on the current cursor.
         """
         self._view.toggle_comments()
 
