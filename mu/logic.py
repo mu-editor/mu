@@ -90,7 +90,7 @@ EXAMPLE_ENTRY_B_IMAGES = [
     "cat.png",
     "pink_leaf.png",
     "cleaner.png",
-    "pol.png",
+    "floor.png",
     "eraser.png",
     "pencil.png",
     "boy_1.png",
