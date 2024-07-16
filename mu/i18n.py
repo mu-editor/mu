@@ -6,8 +6,8 @@ from PyQt5.QtCore import QLocale
 # DEBUG/TRANSLATE: override the language code here (e.g. to Chinese).
 # language_code = 'zh'
 language_code = QLocale.system().name()
-if language_code != 'ko':
-    language_code = 'uz_UZ' # default lang
+if language_code == 'ru_RU':
+    language_code = 'uz_UZ' # If RU, make default lang UZ
 
 # Configure locale and language
 # Define where the translation assets are to be found.
