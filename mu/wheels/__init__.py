@@ -56,7 +56,7 @@ mode_packages = [
     # a workaround we need to manually specify it here
     ("ipython_genutils", ("ipython_genutils>=0.2.0",)),
     # For Neopia mode
-    ("neopia", ("neopia>=0.2.3",)),
+    ("neopia", ("neopia>=0.3.0",)),
 ]
 
 
