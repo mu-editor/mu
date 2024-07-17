@@ -1424,9 +1424,9 @@ class Actor(Actor):
     def get_rect(self):
         return self._rect
 
-    def say_for_sec(self, text, seconds, fgcolor='black', bgcolor='white'):
+    def say_for_sec(self, text, seconds, fgcolor='black', bgcolor='white', **kwargs):
         tsurf, tpos = ptext.drawbox(text, (self.left, self.top - 60, 120, 50),
-                                    color=fgcolor, background=bgcolor)
+                                    color=fgcolor, background=bgcolor, **kwargs)
         pygame.display.update()
         game.time.sleep(seconds)
         tsurf.fill(bgcolor)
