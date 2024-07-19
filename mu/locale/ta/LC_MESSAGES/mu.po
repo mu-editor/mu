@@ -1,0 +1,1639 @@
+# Translations for the Spanish language.
+# Copyright (c) 2015-2018 Nicholas H.Tollervey and others (see the AUTHORS
+# file).
+# தமிழ்நேரம் <https://TamilNeram.github.io>, 2023.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2021-11-01 21:42+0000\n"
+"PO-Revision-Date: 2018-07-14 22:56+0100\n"
+"Last-Translator: தமிழ்நேரம் <https://TamilNeram.github.io>\n"
+"Language-Team: தமிழ்நேரம் <https://TamilNeram.github.io>\n"
+"Language: ta\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: mu/debugger/client.py:118
+msgid ""
+"Connection timed out. Is your machine slow or busy? Free up some of the "
+"machine's resources and try again."
+msgstr ""
+"இணைப்பின் நேரம் முடிந்தது. உங்கள் இயந்திரம் மெதுவாக அல்லது பிஸியாக "
+"இருக்கிறதா? இயந்திரத்தின் சில வளங்களை விடுவித்து மீண்டும் முயற்சிக்கவும்."
+
+#: mu/debugger/client.py:132
+msgid ""
+"Could not find localhost.\n"
+"Ensure you have '127.0.0.1 localhost' in your /etc/hosts file."
+msgstr ""
+"லோக்கல் ஹோஸ்டைக் கண்டுபிடிக்க முடியவில்லை. \n"
+" உங்கள் /ETC /ஹோஸ்ட் கோப்பில் '127.0.0.1 லோக்கல் ஹோஸ்ட்' இருப்பதை உறுதிசெய்க."
+
+#: mu/interface/dialogs.py:75
+msgid "Select Mode"
+msgstr "பயன்முறையைத் தேர்ந்தெடுக்கவும்"
+
+#: mu/interface/dialogs.py:78
+msgid "Please select the desired mode then click \"OK\". Otherwise, click \"Cancel\"."
+msgstr ""
+"தயவுசெய்து விரும்பிய பயன்முறையைத் தேர்ந்தெடுத்து, \"சரி\" என்பதைக் கிளிக் "
+"செய்க. இல்லையெனில், \"ரத்துசெய்\" என்பதைக் கிளிக் செய்க."
+
+#: mu/interface/dialogs.py:99
+msgid ""
+"Change mode at any time by clicking the \"Mode\" button containing Mu's "
+"logo."
+msgstr ""
+"MU இன் லோகோவைக் கொண்ட \"பயன்முறை\" பொத்தானைக் கிளிக் செய்வதன் மூலம் எந்த "
+"நேரத்திலும் பயன்முறையை மாற்றவும்."
+
+#: mu/interface/dialogs.py:138
+msgid ""
+"When reporting a bug, copy and paste the content of the following log file."
+msgstr ""
+"பிழையைப் புகாரளிக்கும் போது, பின்வரும் பதிவு கோப்பின் உள்ளடக்கத்தை "
+"நகலெடுத்து ஒட்டவும்."
+
+#: mu/interface/dialogs.py:162
+msgid ""
+"The environment variables shown below will be set each time you run a Python 3 script.\n"
+"\n"
+"Each separate enviroment variable should be on a new line and of the form:\n"
+"NAME=VALUE"
+msgstr ""
+"கீழே காட்டப்பட்டுள்ள சுற்றுச்சூழல் மாறிகள் ஒவ்வொரு முறையும் நீங்கள் பைதான் 3 ஸ்கிரிப்டை இயக்கும் போது அமைக்கப்படும். \n"
+"\n"
+" ஒவ்வொரு தனித்தனி சூழலும் ஒரு புதிய வரியிலும் வடிவத்திலும் இருக்க வேண்டும்: \n"
+" பெயர் = மதிப்பு"
+
+#: mu/interface/dialogs.py:188
+msgid "Minify Python code before flashing?"
+msgstr "ஒளிரும் முன் பைதான் குறியீட்டைக் குறைக்கவா?"
+
+#: mu/interface/dialogs.py:192
+msgid ""
+"Override the built-in MicroPython runtime with the following hex file (empty"
+" means use the default):"
+msgstr ""
+"உள்ளமைக்கப்பட்ட மைக்ரோபிதான் இயக்க நேரத்தை பின்வரும் ஹெக்ஸ் கோப்புடன் "
+"மேலெழுதவும் (வெற்று என்றால் இயல்புநிலையைப் பயன்படுத்தவும்):"
+
+#: mu/interface/dialogs.py:218
+msgid ""
+"The packages shown below will be available to import in Python 3 mode. Delete a package from the list to remove its availability.\n"
+"\n"
+"Each separate package name should be on a new line. Packages are installed from PyPI (see: https://pypi.org/)."
+msgstr ""
+"கீழே காட்டப்பட்டுள்ள தொகுப்புகள் பைதான் 3 பயன்முறையில் இறக்குமதி செய்ய கிடைக்கும். பட்டியலிலிருந்து அதன் கிடைக்கும் தன்மையை அகற்ற ஒரு தொகுப்பிலிருந்து நீக்கவும். \n"
+"\n"
+" ஒவ்வொரு தனி தொகுப்பு பெயரும் புதிய வரியில் இருக்க வேண்டும். PYPI இலிருந்து தொகுப்புகள் நிறுவப்பட்டுள்ளன (பார்க்க: https://pypi.org/)."
+
+#: mu/interface/dialogs.py:239
+msgid "Automatically detect"
+msgstr "தானாகவே கண்டறியவும்"
+
+#: mu/interface/dialogs.py:264
+msgid ""
+"Please select the language for Mu's user interface from the choices listed "
+"below. <strong>Restart Mu for these changes to take effect.</strong>"
+msgstr ""
+"கீழே பட்டியலிடப்பட்டுள்ள தேர்வுகளிலிருந்து MU இன் பயனர் இடைமுகத்திற்கான "
+"மொழியைத் தேர்ந்தெடுக்கவும். <strong> இந்த மாற்றங்கள் நடைமுறைக்கு வர MU ஐ "
+"மறுதொடக்கம் செய்யுங்கள். </strong>"
+
+#: mu/interface/dialogs.py:295
+msgid "How to flash MicroPython to your device"
+msgstr "உங்கள் சாதனத்திற்கு மைக்ரோபிதானை எவ்வாறு ஒளிரச் செய்வது"
+
+#: mu/interface/dialogs.py:302
+msgid ""
+"&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. "
+"Download firmware from the <a href=\"https://micropython.org/download\" "
+"style=\"color:#039be5;\">https://micropython.org/download</a><br/>&nbsp;3. "
+"Connect your device<br/>&nbsp;4. Load the .bin file below using the 'Browse'"
+" button<br/>&nbsp;5. Press 'Erase & write firmware'"
+msgstr ""
+"& nbsp; 1. சாதனத்தின் வகையைத் தீர்மானிக்கவும் (ESP8266 அல்லது ESP32) <br /> "
+"& nbsp; 2. <a href=\"https://micropython.org/download\" style\"color:#039be5"
+" ;\"> https://micropython.org/download </a> <br/> & nbsp; 3. உங்கள் சாதனத்தை"
+" இணைக்கவும் <br/> & nbsp; 4. 'உலாவு' பொத்தானைப் பயன்படுத்தி கீழே .bin கோப்பை"
+" ஏற்றவும் <br/> & nbsp; 5. 'அழி, ஃபார்ம்வேரை எழுதுங்கள்' என்பதை அழுத்தவும்"
+
+#: mu/interface/dialogs.py:334 mu/modes/web.py:82
+msgid "Browse"
+msgstr "உலாவு"
+
+#: mu/interface/dialogs.py:335
+msgid "Erase && write firmware"
+msgstr "அழி && ஃபார்ம்வேரை எழுதுங்கள்"
+
+#: mu/interface/dialogs.py:509 mu/interface/main.py:1381
+msgid "Mu Administration"
+msgstr "MU நிர்வாகம்"
+
+#: mu/interface/dialogs.py:523
+msgid "Current Log"
+msgstr "தற்போதைய பதிவு"
+
+#: mu/interface/dialogs.py:527
+msgid "Python3 Environment"
+msgstr "பைதான் 3 சூழல்"
+
+#: mu/interface/dialogs.py:534
+msgid "BBC micro:bit Settings"
+msgstr "பிபிசி மைக்ரோ: பிட் அமைப்புகள்"
+
+#: mu/interface/dialogs.py:538
+msgid "Third Party Packages"
+msgstr "மூன்றாம் தரப்பு தொகுப்புகள்"
+
+#: mu/interface/dialogs.py:542
+msgid "ESP Firmware flasher"
+msgstr "ஈஎஸ்பி ஃபார்ம்வேர் ஃப்ளாஷர்"
+
+#: mu/interface/dialogs.py:547
+msgid "Select Language"
+msgstr "மொழியை தேர்ந்தெடுங்கள்"
+
+#: mu/interface/dialogs.py:585
+msgid "Find / Replace"
+msgstr "கண்டுபிடி / மாற்ற"
+
+#: mu/interface/dialogs.py:589
+msgid "Find:"
+msgstr "கண்டுபிடி:"
+
+#: mu/interface/dialogs.py:596
+msgid "Replace (optional):"
+msgstr "மாற்றவும் (விரும்பினால்):"
+
+#: mu/interface/dialogs.py:602
+msgid "Replace all?"
+msgstr "அனைத்தையும் மாற்று?"
+
+#: mu/interface/dialogs.py:651
+msgid "Third Party Package Status"
+msgstr "மூன்றாம் தரப்பு தொகுப்பு நிலை"
+
+#: mu/interface/editor.py:319 mu/logic.py:1324
+msgid "untitled"
+msgstr "பெயரிடப்படாதது"
+
+#: mu/interface/main.py:99
+msgid "Mode"
+msgstr "பயன்முறை"
+
+#: mu/interface/main.py:100
+msgid "Change Mu's mode of behaviour."
+msgstr "MU இன் நடத்தை முறையை மாற்றவும்."
+
+#: mu/interface/main.py:105
+msgid "New"
+msgstr "புதியது"
+
+#: mu/interface/main.py:106
+msgid "Create a new Python script."
+msgstr "புதிய பைதான் ஸ்கிரிப்டை உருவாக்கவும்."
+
+#: mu/interface/main.py:110
+msgid "Load"
+msgstr "சுமை"
+
+#: mu/interface/main.py:111
+msgid "Load a Python script."
+msgstr "பைதான் ஸ்கிரிப்டை ஏற்றவும்."
+
+#: mu/interface/main.py:115
+msgid "Save"
+msgstr "சேமிக்கவும்"
+
+#: mu/interface/main.py:116
+msgid "Save the current Python script."
+msgstr "தற்போதைய பைதான் ஸ்கிரிப்டை சேமிக்கவும்."
+
+#: mu/interface/main.py:130
+msgid "Zoom-in"
+msgstr "பெரிதாக்க"
+
+#: mu/interface/main.py:131
+msgid "Zoom in (to make the text bigger)."
+msgstr "பெரிதாக்கவும் (உரையை பெரிதாக்க)."
+
+#: mu/interface/main.py:135
+msgid "Zoom-out"
+msgstr "ஜூம்-அவுட்"
+
+#: mu/interface/main.py:136
+msgid "Zoom out (to make the text smaller)."
+msgstr "பெரிதாக்கவும் (உரையை சிறியதாக மாற்ற)."
+
+#: mu/interface/main.py:140
+msgid "Theme"
+msgstr "தீம்"
+
+#: mu/interface/main.py:141
+msgid "Toggle theme between day, night or high contrast."
+msgstr "பகல், இரவு அல்லது அதிக மாறுபாட்டிற்கு இடையில் கருப்பொருளை மாற்றவும்."
+
+#: mu/interface/main.py:148
+msgid "Check"
+msgstr "காசோலை"
+
+#: mu/interface/main.py:149
+msgid "Check your code for mistakes."
+msgstr "தவறுகளுக்கு உங்கள் குறியீட்டை சரிபார்க்கவும்."
+
+#: mu/interface/main.py:154
+msgid "Tidy"
+msgstr "நேர்த்தியான"
+
+#: mu/interface/main.py:155
+msgid "Tidy up the layout of your code."
+msgstr "உங்கள் குறியீட்டின் தளவமைப்பை நேர்த்தியாக."
+
+#: mu/interface/main.py:159
+msgid "Help"
+msgstr "உதவி"
+
+#: mu/interface/main.py:160
+msgid "Show help about Mu in a browser."
+msgstr "உலாவியில் MU பற்றிய உதவியைக் காட்டுங்கள்."
+
+#: mu/interface/main.py:164
+msgid "Quit"
+msgstr "விட்டுவிட"
+
+#: mu/interface/main.py:164
+msgid "Quit Mu."
+msgstr "Mu ஐ விட்டு விடுங்கள்."
+
+#: mu/interface/main.py:275
+msgid "Close file"
+msgstr "கோப்பை மூடு"
+
+#: mu/interface/main.py:316
+msgid "Mu {}"
+msgstr "Mu {}"
+
+#: mu/interface/main.py:554
+msgid "Copy selected text to REPL"
+msgstr "தேர்ந்தெடுக்கப்பட்ட உரையை மாற்றியமைக்க நகலெடுக்கவும்"
+
+#: mu/interface/main.py:617
+msgid "Filesystem on "
+msgstr "கோப்பு முறைமை"
+
+#: mu/interface/main.py:668
+msgid "Python3 data tuple"
+msgstr "பைதான் 3 தரவு டூப்பிள்"
+
+#: mu/interface/main.py:680
+msgid "Python3 (Jupyter)"
+msgstr "பைதான் 3 (ஜூபிட்டர்)"
+
+#: mu/interface/main.py:687
+msgid "{} REPL"
+msgstr "}} Repl"
+
+#: mu/interface/main.py:706
+msgid "{} Plotter"
+msgstr "{} சதித்திட்டம்"
+
+#: mu/interface/main.py:756
+msgid "Running: {}"
+msgstr "ஓடுதல்: {}"
+
+#: mu/interface/main.py:805
+msgid "Debug Inspector"
+msgstr "பிழைத்திருத்த ஆய்வாளர்"
+
+#: mu/interface/main.py:817
+msgid "Name"
+msgstr "பெயர்"
+
+#: mu/interface/main.py:817
+msgid "Value"
+msgstr "மதிப்பு"
+
+#: mu/interface/main.py:855
+msgid "(A list of {} items.)"
+msgstr "(}} உருப்படிகளின் பட்டியல்.)"
+
+#: mu/interface/main.py:874
+msgid "(A dict of {} items.)"
+msgstr "(}} உருப்படிகளின் ஒரு கட்டளை.)"
+
+#: mu/interface/main.py:1057
+msgid "Mu"
+msgstr "மு"
+
+#: mu/interface/main.py:1368
+msgid "Mu's current mode of behaviour."
+msgstr "MU இன் தற்போதைய நடத்தை முறை."
+
+#: mu/interface/main.py:1423
+msgid "Detected new {} device: {}."
+msgstr "புதிய {} சாதனம் கண்டறியப்பட்டது: {}."
+
+#: mu/interface/main.py:1427 mu/logic.py:1616
+msgid "Detected new {} device."
+msgstr "புதிய}} சாதனம் கண்டறியப்பட்டது."
+
+#: mu/interface/panes.py:495
+msgid "File already exists; overwrite it?"
+msgstr "கோப்பு ஏற்கனவே உள்ளது; அதை மேலெழுதவா?"
+
+#: mu/interface/panes.py:496
+msgid "File already exists"
+msgstr "கோப்பு ஏற்கனவே உள்ளது"
+
+#: mu/interface/panes.py:529
+msgid "Copying '{}' to device."
+msgstr "சாதனத்திற்கு '{}' நகலெடுக்கிறது."
+
+#: mu/interface/panes.py:538
+msgid "'{}' successfully copied to device."
+msgstr "'{}' சாதனத்திற்கு வெற்றிகரமாக நகலெடுக்கப்பட்டது."
+
+#: mu/interface/panes.py:547
+msgid "Delete (cannot be undone)"
+msgstr "நீக்கு (செயல்தவிர்க்க முடியாது)"
+
+#: mu/interface/panes.py:553
+msgid "Deleting '{}' from device."
+msgstr "சாதனத்திலிருந்து '{}' நீக்குகிறது."
+
+#: mu/interface/panes.py:562
+msgid "'{}' successfully deleted from device."
+msgstr "'{}' சாதனத்திலிருந்து வெற்றிகரமாக நீக்கப்பட்டது."
+
+#: mu/interface/panes.py:595
+msgid "Getting '{}' from device. Copying to '{}'."
+msgstr "சாதனத்திலிருந்து '{}' பெறுதல். '{}' க்கு நகலெடுக்கும்."
+
+#: mu/interface/panes.py:606
+msgid "Successfully copied '{}' from the device to your computer."
+msgstr "சாதனத்திலிருந்து உங்கள் கணினிக்கு '{}' வெற்றிகரமாக நகலெடுக்கப்பட்டது."
+
+#: mu/interface/panes.py:623
+msgid "Open in Mu"
+msgstr "MU இல் திறந்திருக்கும்"
+
+#: mu/interface/panes.py:626
+msgid "Write to main.py on device"
+msgstr "சாதனத்தில் main.py க்கு எழுதுங்கள்"
+
+#: mu/interface/panes.py:629
+msgid "Open"
+msgstr "திறந்த"
+
+#: mu/interface/panes.py:635
+msgid "Opening '{}'"
+msgstr "'{}'"
+
+#: mu/interface/panes.py:678
+msgid "Files on your device:"
+msgstr "உங்கள் சாதனத்தில் உள்ள கோப்புகள்:"
+
+#: mu/interface/panes.py:680
+msgid "Files on your computer:"
+msgstr "உங்கள் கணினியில் உள்ள கோப்புகள்:"
+
+#: mu/interface/panes.py:752
+msgid ""
+"There was a problem getting the list of files on the device. Please check "
+"Mu's logs for technical information. Alternatively, try unplugging/plugging-"
+"in your device and/or restarting Mu."
+msgstr ""
+"சாதனத்தில் கோப்புகளின் பட்டியலைப் பெறுவதில் சிக்கல் இருந்தது. தொழில்நுட்ப "
+"தகவல்களுக்கு MU இன் பதிவுகளை சரிபார்க்கவும். மாற்றாக, உங்கள் சாதனத்தை "
+"அவிழ்த்து/செருகுவதை முயற்சிக்கவும்/அல்லது MU ஐ மறுதொடக்கம் செய்ய "
+"முயற்சிக்கவும்."
+
+#: mu/interface/panes.py:767
+msgid ""
+"There was a problem copying the file '{}' onto the device. Please check Mu's"
+" logs for more information."
+msgstr ""
+"சாதனத்தில் '{}' கோப்பை நகலெடுப்பதில் சிக்கல் இருந்தது. மேலும் தகவலுக்கு MU "
+"இன் பதிவுகளை சரிபார்க்கவும்."
+
+#: mu/interface/panes.py:779
+msgid ""
+"There was a problem deleting '{}' from the device. Please check Mu's logs "
+"for more information."
+msgstr ""
+"சாதனத்திலிருந்து '{}' நீக்குவதில் சிக்கல் இருந்தது. மேலும் தகவலுக்கு MU இன் "
+"பதிவுகளை சரிபார்க்கவும்."
+
+#: mu/interface/panes.py:791
+msgid ""
+"There was a problem getting '{}' from the device. Please check Mu's logs for"
+" more information."
+msgstr ""
+"சாதனத்திலிருந்து '{}' பெறுவதில் சிக்கல் இருந்தது. மேலும் தகவலுக்கு MU இன் "
+"பதிவுகளை சரிபார்க்கவும்."
+
+#: mu/interface/widgets.py:70 mu/interface/widgets.py:141
+#: mu/interface/widgets.py:154
+msgid "No device connected."
+msgstr "சாதனம் எதுவும் இணைக்கப்படவில்லை."
+
+#: mu/logic.py:90
+msgid "Hello, World!"
+msgstr "வணக்கம், உலகம்!"
+
+#: mu/logic.py:91
+msgid ""
+"This editor is free software written in Python. You can modify it, add "
+"features or fix bugs if you like."
+msgstr ""
+"இந்த ஆசிரியர் பைத்தானில் எழுதப்பட்ட இலவச மென்பொருள். நீங்கள் விரும்பினால் "
+"அதை மாற்றலாம், அம்சங்களைச் சேர்க்கலாம் அல்லது பிழைகள் சரிசெய்யலாம்."
+
+#: mu/logic.py:95
+msgid "This editor is called Mu (you say it 'mew' or 'moo')."
+msgstr ""
+"இந்த ஆசிரியர் MU என்று அழைக்கப்படுகிறார் (நீங்கள் அதை 'மியூ' அல்லது 'மூ' "
+"என்று சொல்கிறீர்கள்)."
+
+#: mu/logic.py:96
+msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
+msgstr ""
+"கூகிள், பேஸ்புக், நாசா, பிக்சர், டிஸ்னி மற்றும் பலரும் பைத்தானைப் "
+"பயன்படுத்துகின்றனர்."
+
+#: mu/logic.py:97
+msgid ""
+"Programming is a form of magic. Learn to cast the right spells with code and"
+" you'll be a wizard."
+msgstr ""
+"நிரலாக்கமானது மந்திரத்தின் ஒரு வடிவம். சரியான மந்திரங்களை குறியீட்டைக் "
+"கொண்டு கற்றுக் கொள்ளுங்கள், நீங்கள் ஒரு மந்திரவாதியாக இருப்பீர்கள்."
+
+#: mu/logic.py:101
+msgid ""
+"REPL stands for read, evaluate, print, loop. It's a fun way to talk to your "
+"computer! :-)"
+msgstr ""
+"REPL என்பது படிக்க, மதிப்பீடு, அச்சிடுதல், லூப் ஆகியவற்றைக் குறிக்கிறது. "
+"உங்கள் கணினியுடன் பேச இது ஒரு வேடிக்கையான வழி! :-)"
+
+#: mu/logic.py:105
+msgid "Be brave, break things, learn and have fun!"
+msgstr ""
+"தைரியமாக இருங்கள், விஷயங்களை உடைக்கவும், கற்றுக்கொள்ளவும், வேடிக்கையாகவும் "
+"இருங்கள்!"
+
+#: mu/logic.py:106
+msgid "Make your software both useful AND fun. Empower your users."
+msgstr ""
+"உங்கள் மென்பொருளை பயனுள்ளதாகவும் வேடிக்கையாகவும் ஆக்குங்கள். உங்கள் "
+"பயனர்களுக்கு அதிகாரம் அளிக்கவும்."
+
+#: mu/logic.py:107
+msgid "For the Zen of Python: import this"
+msgstr "பைத்தானின் ஜென்: இதை இறக்குமதி செய்யுங்கள்"
+
+#: mu/logic.py:108
+msgid "Diversity promotes creativity."
+msgstr "பன்முகத்தன்மை படைப்பாற்றலை ஊக்குவிக்கிறது."
+
+#: mu/logic.py:109
+msgid "An open mind, spirit of adventure and respect for diversity are key."
+msgstr ""
+"ஒரு திறந்த மனம், சாகசத்தின் ஆவி மற்றும் பன்முகத்தன்மைக்கு மரியாதை ஆகியவை "
+"முக்கியம்."
+
+#: mu/logic.py:110
+msgid ""
+"Don't worry if it doesn't work. Learn the lesson, fix it and try again! :-)"
+msgstr ""
+"அது வேலை செய்யவில்லை என்றால் கவலைப்பட வேண்டாம். பாடத்தைக் கற்றுக் "
+"கொள்ளுங்கள், அதை சரிசெய்து மீண்டும் முயற்சிக்கவும்! :-)"
+
+#: mu/logic.py:114
+msgid "Coding is collaboration."
+msgstr "குறியீட்டு முறை ஒத்துழைப்பு."
+
+#: mu/logic.py:115
+msgid "Compliment and amplify the good things with code."
+msgstr "குறியீட்டைக் கொண்டு நல்ல விஷயங்களை பாராட்டவும் பெருக்கவும்."
+
+#: mu/logic.py:116
+msgid ""
+"In theory, theory and practice are the same. In practice, they're not. ;-)"
+msgstr ""
+"கோட்பாட்டில், கோட்பாடு மற்றும் நடைமுறை ஒன்றே. நடைமுறையில், அவர்கள் இல்லை. "
+";-)"
+
+#: mu/logic.py:120
+msgid "Debugging is twice as hard as writing the code in the first place."
+msgstr "பிழைத்திருத்தம் குறியீட்டை முதலில் எழுதுவதை விட இரண்டு மடங்கு கடினம்."
+
+#: mu/logic.py:121
+msgid "It's fun to program."
+msgstr "நிரல் செய்வது வேடிக்கையாக உள்ளது."
+
+#: mu/logic.py:122
+msgid "Programming has more to do with problem solving than writing code."
+msgstr ""
+"குறியீட்டை எழுதுவதை விட சிக்கல் தீர்க்கும் விஷயங்களுடன் நிரலாக்கமானது "
+"அதிகம்."
+
+#: mu/logic.py:123
+msgid "Start with your users' needs."
+msgstr "உங்கள் பயனர்களின் தேவைகளுடன் தொடங்கவும்."
+
+#: mu/logic.py:124
+msgid "Try to see things from your users' point of view."
+msgstr "உங்கள் பயனர்களின் பார்வையில் இருந்து விஷயங்களைக் காண முயற்சிக்கவும்."
+
+#: mu/logic.py:125
+msgid "Put yourself in your users' shoes."
+msgstr "உங்கள் பயனர்களின் காலணிகளில் நீங்களே இருங்கள்."
+
+#: mu/logic.py:126
+msgid ""
+"Explaining a programming problem to a friend often reveals the solution. :-)"
+msgstr ""
+"ஒரு நண்பருக்கு ஒரு நிரலாக்க சிக்கலை விளக்குவது பெரும்பாலும் தீர்வை "
+"வெளிப்படுத்துகிறது. :-)"
+
+#: mu/logic.py:130
+msgid "If you don't know, ask. Nobody to ask? Just look it up."
+msgstr ""
+"உங்களுக்குத் தெரியாவிட்டால், கேளுங்கள். கேட்க யாரும் இல்லை? அதைப் பாருங்கள்."
+
+#: mu/logic.py:131
+msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
+msgstr "சிக்கலானது எதிரி. முத்தம் - அதை எளிமையாக வைத்திருங்கள், முட்டாள்!"
+
+#: mu/logic.py:132
+msgid "Beautiful is better than ugly."
+msgstr "அசிங்கத்தை விட அழகானது சிறந்தது."
+
+#: mu/logic.py:133
+msgid "Explicit is better than implicit."
+msgstr "மறைமுகத்தை விட வெளிப்படையானது சிறந்தது."
+
+#: mu/logic.py:134
+msgid "Simple is better than complex. Complex is better than complicated."
+msgstr ""
+"சிக்கலானதை விட எளிமையானது சிறந்தது. சிக்கலானதை விட சிக்கலானது சிறந்தது."
+
+#: mu/logic.py:135
+msgid "Flat is better than nested."
+msgstr "உள்ளமை விட பிளாட் சிறந்தது."
+
+#: mu/logic.py:136
+msgid "Sparse is better than dense."
+msgstr "அடர்த்தியை விட சிதறல் சிறந்தது."
+
+#: mu/logic.py:137
+msgid "Readability counts."
+msgstr "வாசிப்பு எண்ணிக்கை."
+
+#: mu/logic.py:138
+msgid ""
+"Special cases aren't special enough to break the rules. Although "
+"practicality beats purity."
+msgstr ""
+"சிறப்பு வழக்குகள் விதிகளை மீறுவதற்கு போதுமானதாக இல்லை. நடைமுறை தூய்மையை "
+"அடித்தது என்றாலும்."
+
+#: mu/logic.py:142
+msgid "Errors should never pass silently. Unless explicitly silenced."
+msgstr ""
+"பிழைகள் ஒருபோதும் அமைதியாக கடக்கக்கூடாது. வெளிப்படையாக அமைதியாக "
+"இல்லாவிட்டால்."
+
+#: mu/logic.py:143
+msgid "In the face of ambiguity, refuse the temptation to guess."
+msgstr "தெளிவற்ற தன்மையை எதிர்கொண்டு, யூகிக்க சோதனையை மறுக்கவும்."
+
+#: mu/logic.py:144
+msgid "There should be one-- and preferably only one --obvious way to do it."
+msgstr ""
+"ஒன்று இருக்க வேண்டும்-மற்றும் முன்னுரிமை ஒன்று மட்டுமே-அதைச் செய்வதற்கான "
+"வழி."
+
+#: mu/logic.py:145
+msgid ""
+"Now is better than never. Although never is often better than *right* now."
+msgstr ""
+"இப்போது ஒருபோதும் இல்லாததை விட சிறந்தது. இப்போது * சரியான * ஐ விட ஒருபோதும் "
+"சிறப்பாக இல்லை என்றாலும்."
+
+#: mu/logic.py:149
+msgid "If the implementation is hard to explain, it's a bad idea."
+msgstr "செயல்படுத்தலை விளக்குவது கடினம் என்றால், இது ஒரு மோசமான யோசனை."
+
+#: mu/logic.py:150
+msgid "If the implementation is easy to explain, it may be a good idea."
+msgstr ""
+"செயல்படுத்தல் விளக்க எளிதானது என்றால், அது ஒரு நல்ல யோசனையாக இருக்கலாம்."
+
+#: mu/logic.py:151
+msgid "Namespaces are one honking great idea -- let's do more of those!"
+msgstr "பெயர்வெளிகள் ஒரு சிறந்த யோசனையாகும் - அவற்றில் பலவற்றைச் செய்வோம்!"
+
+#: mu/logic.py:152
+msgid "Mu was created by Nicholas H.Tollervey."
+msgstr "MU ஐ நிக்கோலஸ் எச்.டொல்லர்வி உருவாக்கினார்."
+
+#: mu/logic.py:153
+msgid "To understand what recursion is, you must first understand recursion."
+msgstr ""
+"மறுநிகழ்வு என்றால் என்ன என்பதைப் புரிந்து கொள்ள, நீங்கள் முதலில் "
+"மறுநிகழ்வைப் புரிந்து கொள்ள வேண்டும்."
+
+#: mu/logic.py:154
+msgid ""
+"Algorithm: a word used by programmers when they don't want to explain what "
+"they did."
+msgstr ""
+"அல்காரிதம்: புரோகிராமர்கள் அவர்கள் செய்ததை விளக்க விரும்பாதபோது "
+"பயன்படுத்தும் ஒரு சொல்."
+
+#: mu/logic.py:158
+msgid "Programmers count from zero."
+msgstr "புரோகிராமர்கள் பூஜ்ஜியத்திலிருந்து எண்ணுகிறார்கள்."
+
+#: mu/logic.py:159
+msgid "Simplicity is the ultimate sophistication."
+msgstr "எளிமையே வாழ்க்கையின் உயர்ந்த பண்பு."
+
+#: mu/logic.py:160
+msgid "A good programmer is humble."
+msgstr "ஒரு நல்ல புரோகிராமர் தாழ்மையானவர்."
+
+#: mu/logic.py:161
+msgid "A good programmer is playful."
+msgstr "ஒரு நல்ல புரோகிராமர் விளையாட்டுத்தனமானவர்."
+
+#: mu/logic.py:162
+msgid "A good programmer learns to learn."
+msgstr "ஒரு நல்ல புரோகிராமர் கற்றுக்கொள்ள கற்றுக்கொள்கிறார்."
+
+#: mu/logic.py:163
+msgid "A good programmer thinks beyond the obvious."
+msgstr "ஒரு நல்ல புரோகிராமர் வெளிப்படையானதைத் தாண்டி சிந்திக்கிறார்."
+
+#: mu/logic.py:164
+msgid "A good programmer promotes simplicity."
+msgstr "ஒரு நல்ல புரோகிராமர் எளிமை ஊக்குவிக்கிறார்."
+
+#: mu/logic.py:165
+msgid "A good programmer avoids complexity."
+msgstr "ஒரு நல்ல புரோகிராமர் சிக்கலைத் தவிர்க்கிறார்."
+
+#: mu/logic.py:166
+msgid "A good programmer is patient."
+msgstr "ஒரு நல்ல புரோகிராமர் பொறுமையாக இருக்கிறார்."
+
+#: mu/logic.py:167
+msgid "A good programmer asks questions."
+msgstr "ஒரு நல்ல புரோகிராமர் கேள்விகளைக் கேட்கிறார்."
+
+#: mu/logic.py:168
+msgid "A good programmer is willing to say, 'I don't know'."
+msgstr ""
+"ஒரு நல்ல புரோகிராமர், 'எனக்குத் தெரியாது' என்று சொல்ல தயாராக இருக்கிறார்."
+
+#: mu/logic.py:169
+msgid "Wisest are they that know they know nothing."
+msgstr "அவர்களுக்கு எதுவும் தெரியாது என்று தெரிந்தவர்கள் புத்திசாலிகள்."
+
+#: mu/logic.py:464
+msgid " above this line"
+msgstr "இந்த வரிக்கு மேலே"
+
+#: mu/logic.py:509
+msgid ""
+"Syntax error. Python cannot understand this line. Check for missing "
+"characters!"
+msgstr ""
+"தொடரியல் பிழை. பைத்தானால் இந்த வரியை புரிந்து கொள்ள முடியாது. காணாமல் போன "
+"எழுத்துக்களைச் சரிபார்க்கவும்!"
+
+#: mu/logic.py:576
+msgid " compatible"
+msgstr "இணக்கமான"
+
+#: mu/logic.py:995
+msgid ""
+"The file contains characters Mu expects to be encoded as {0} or as the computer's default encoding {1}, but which are encoded in some other way.\n"
+"\n"
+"If this file was saved in another application, re-save the file via the 'Save as' option and set the encoding to {0}"
+msgstr ""
+"கோப்பில் MU {0} அல்லது கணினியின் இயல்புநிலை குறியாக்கம் {1 as என குறியாக்கம் செய்ய எதிர்பார்க்கும் எழுத்துக்களைக் கொண்டுள்ளது, ஆனால் அவை வேறு வழியில் குறியாக்கம் செய்யப்படுகின்றன. \n"
+"\n"
+" இந்த கோப்பு மற்றொரு பயன்பாட்டில் சேமிக்கப்பட்டிருந்தால், கோப்பை 'சேமி' விருப்பத்தின் வழியாக மீண்டும் சேமித்து குறியாக்கத்தை {0 bet ஆக அமைக்கவும்"
+
+#: mu/logic.py:1023
+msgid "The file \"{}\" is already open."
+msgstr "\"{}\" கோப்பு ஏற்கனவே திறந்திருக்கும்."
+
+#: mu/logic.py:1035
+msgid "Mu cannot read the characters in {}"
+msgstr "Mu {filh இல் எழுத்துக்களைப் படிக்க முடியாது"
+
+#: mu/logic.py:1061
+msgid "Mu was not able to open this file"
+msgstr "MU இந்த கோப்பை திறக்க முடியவில்லை"
+
+#: mu/logic.py:1062
+msgid ""
+"Currently Mu only works with Python source files or hex files created with "
+"embedded MicroPython code."
+msgstr ""
+"தற்போது MU பைதான் மூல கோப்புகள் அல்லது உட்பொதிக்கப்பட்ட மைக்ரோபிதான் "
+"குறியீட்டைக் கொண்டு உருவாக்கப்பட்ட ஹெக்ஸ் கோப்புகளுடன் மட்டுமே "
+"செயல்படுகிறது."
+
+#: mu/logic.py:1070
+msgid "Could not load {}"
+msgstr "ஏற்ற முடியவில்லை {}"
+
+#: mu/logic.py:1072
+msgid ""
+"Does this file exist?\n"
+"If it does, do you have permission to read it?\n"
+"\n"
+"Please check and try again."
+msgstr ""
+"இந்த கோப்பு இருக்கிறதா? \n"
+" அவ்வாறு செய்தால், அதைப் படிக்க உங்களுக்கு அனுமதி உள்ளதா? \n"
+"\n"
+" தயவுசெய்து சரிபார்த்து மீண்டும் முயற்சிக்கவும்."
+
+#: mu/logic.py:1080
+msgid "Is this a {} file?"
+msgstr "இது ஒரு {} கோப்பா?"
+
+#: mu/logic.py:1081
+msgid ""
+"It looks like this could be a {} file.\n"
+"\n"
+"Would you like to change Mu to the {}mode?"
+msgstr ""
+"இது ஒரு {} கோப்பாக இருக்கலாம் என்று தெரிகிறது. \n"
+"\n"
+" MU ஐ {} பயன்முறையில் மாற்ற விரும்புகிறீர்களா?"
+
+#: mu/logic.py:1208
+msgid "Could not save file (disk problem)"
+msgstr "கோப்பைச் சேமிக்க முடியவில்லை (வட்டு சிக்கல்)"
+
+#: mu/logic.py:1209
+msgid ""
+"Error saving file to disk. Ensure you have permission to write the file and "
+"sufficient disk space."
+msgstr ""
+"வட்டில் கோப்பைச் சேமிப்பது பிழை. கோப்பு மற்றும் போதுமான வட்டு இடத்தை எழுத "
+"உங்களுக்கு அனுமதி இருப்பதை உறுதிசெய்க."
+
+#: mu/logic.py:1215
+msgid "Could not save file (encoding problem)"
+msgstr "கோப்பைச் சேமிக்க முடியவில்லை (குறியாக்க சிக்கல்)"
+
+#: mu/logic.py:1217
+msgid ""
+"Unable to convert all the characters. If you have an encoding line at the "
+"top of the file, remove it and try again."
+msgstr ""
+"எல்லா கதாபாத்திரங்களையும் மாற்ற முடியவில்லை. கோப்பின் மேற்புறத்தில் "
+"உங்களிடம் ஒரு குறியாக்க வரி இருந்தால், அதை அகற்றி மீண்டும் முயற்சிக்கவும்."
+
+#: mu/logic.py:1228
+msgid "Saved file: {}"
+msgstr "சேமித்த கோப்பு: {}"
+
+#: mu/logic.py:1260 mu/logic.py:1675
+msgid "You cannot use the filename \"{}\""
+msgstr "\"{}\" என்ற கோப்பு பெயரை நீங்கள் பயன்படுத்த முடியாது"
+
+#: mu/logic.py:1263
+msgid ""
+"This name is already used by another part of Python. If you use this name, "
+"things are likely to break. Please try again with a different filename."
+msgstr ""
+"இந்த பெயர் ஏற்கனவே பைத்தானின் மற்றொரு பகுதியால் பயன்படுத்தப்படுகிறது. "
+"நீங்கள் இந்த பெயரைப் பயன்படுத்தினால், விஷயங்கள் உடைந்து போக வாய்ப்புள்ளது. "
+"வேறு கோப்பு பெயருடன் மீண்டும் முயற்சிக்கவும்."
+
+#: mu/logic.py:1340
+msgid "Good job! No problems found."
+msgstr "நல்ல வேலை! எந்த பிரச்சனையும் கிடைக்கவில்லை."
+
+#: mu/logic.py:1341
+msgid "Hurrah! Checker turned up no problems."
+msgstr "அவசரம்! செக்கர் எந்த பிரச்சனையும் இல்லை."
+
+#: mu/logic.py:1342
+msgid "Nice one! Zero problems detected."
+msgstr "அழகான ஒன்று! பூஜ்ஜிய சிக்கல்கள் கண்டறியப்பட்டன."
+
+#: mu/logic.py:1343
+msgid "Well done! No problems here."
+msgstr "நல்லது! இங்கே எந்த பிரச்சனையும் இல்லை."
+
+#: mu/logic.py:1344
+msgid "Awesome! Zero problems found."
+msgstr "அருமை! பூஜ்ஜிய சிக்கல்கள் காணப்பட்டன."
+
+#: mu/logic.py:1370
+msgid ""
+"There is un-saved work, exiting the application will cause you to lose it."
+msgstr ""
+"சேமிக்கப்படாத வேலை உள்ளது, பயன்பாட்டிலிருந்து வெளியேறுவது அதை இழக்க "
+"நேரிடும்."
+
+#: mu/logic.py:1442
+msgid "Could not find MicroPython runtime."
+msgstr "மைக்ரோபிதான் இயக்க நேரத்தைக் கண்டுபிடிக்க முடியவில்லை."
+
+#: mu/logic.py:1443
+msgid ""
+"The micro:bit runtime you specified ('{}') does not exist. Please try again."
+msgstr ""
+"மைக்ரோ: நீங்கள் குறிப்பிட்ட பிட் இயக்க நேரம் ('{}') இல்லை. தயவு செய்து "
+"மீண்டும் முயற்சிக்கவும்."
+
+#: mu/logic.py:1569
+msgid "Changed to {} mode."
+msgstr "{} பயன்முறையாக மாற்றப்பட்டது."
+
+#: mu/logic.py:1599
+msgid "Would you like to change Mu to the {} mode?"
+msgstr "MU ஐ {} பயன்முறையில் மாற்ற விரும்புகிறீர்களா?"
+
+#: mu/logic.py:1618
+msgid "Device changed to {}."
+msgstr "சாதனம் {to ஆக மாற்றப்பட்டது."
+
+#: mu/logic.py:1654
+msgid "Cannot Set Breakpoint."
+msgstr "பிரேக் பாயிண்ட் அமைக்க முடியாது."
+
+#: mu/logic.py:1655
+msgid ""
+"Lines that are comments or some multi-line statements cannot have "
+"breakpoints."
+msgstr ""
+"கருத்துகள் அல்லது சில மல்டி-லைன் அறிக்கைகள் கொண்ட வரிகள் முறிவு புள்ளிகளைக் "
+"கொண்டிருக்க முடியாது."
+
+#: mu/logic.py:1678
+msgid ""
+"This name is already used by another part of Python. If you use that name, "
+"things are likely to break. Please try again with a different filename."
+msgstr ""
+"இந்த பெயர் ஏற்கனவே பைத்தானின் மற்றொரு பகுதியால் பயன்படுத்தப்படுகிறது. "
+"நீங்கள் அந்த பெயரைப் பயன்படுத்தினால், விஷயங்கள் உடைந்து போக வாய்ப்புள்ளது. "
+"வேறு கோப்பு பெயருடன் மீண்டும் முயற்சிக்கவும்."
+
+#: mu/logic.py:1700
+msgid "Could not rename file."
+msgstr "கோப்பை மறுபெயரிட முடியவில்லை."
+
+#: mu/logic.py:1701
+msgid "A file of that name is already open in Mu."
+msgstr "அந்த பெயரின் கோப்பு ஏற்கனவே MU இல் திறக்கப்பட்டுள்ளது."
+
+#: mu/logic.py:1733
+msgid "Replaced \"{}\" with \"{}\"."
+msgstr "\"{}\" ஐ \"{}\" உடன் மாற்றியது."
+
+#: mu/logic.py:1738
+msgid "Replaced {} matches of \"{}\" with \"{}\"."
+msgstr "\"{}\" இன் {} \"உடன்\" {} \"உடன் மாற்றப்பட்டது."
+
+#: mu/logic.py:1743 mu/logic.py:1750 mu/logic.py:1769
+msgid "Could not find \"{}\"."
+msgstr "கண்டுபிடிக்க முடியவில்லை \"{}\"."
+
+#: mu/logic.py:1748 mu/logic.py:1767
+msgid "Highlighting matches for \"{}\"."
+msgstr "\"{}\" க்கான போட்டிகளை முன்னிலைப்படுத்துகிறது."
+
+#: mu/logic.py:1753 mu/logic.py:1772
+msgid "You must provide something to find."
+msgstr "நீங்கள் கண்டுபிடிக்க ஏதாவது வழங்க வேண்டும்."
+
+#: mu/logic.py:1754 mu/logic.py:1773
+msgid "Please try again, this time with something in the find box."
+msgstr ""
+"தயவுசெய்து மீண்டும் முயற்சிக்கவும், இந்த முறை கண்டுபிடி பெட்டியில் ஏதேனும் "
+"ஒன்றைக் கொண்டு."
+
+#: mu/logic.py:1817
+msgid "Successfully cleaned the code. Use CTRL-Z to undo."
+msgstr ""
+"குறியீட்டை வெற்றிகரமாக சுத்தம் செய்தது. செயல்தவிர்க்க Ctrl-Z ஐப் "
+"பயன்படுத்தவும்."
+
+#: mu/logic.py:1823
+msgid "Your code contains problems."
+msgstr "உங்கள் குறியீட்டில் சிக்கல்கள் உள்ளன."
+
+#: mu/logic.py:1824
+msgid ""
+"These must be fixed before tidying will work. Please use the 'Check' button "
+"to highlight these problems."
+msgstr ""
+"நேர்த்தியாக வேலை செய்யும் முன் இவை சரி செய்யப்பட வேண்டும். இந்த சிக்கல்களை "
+"முன்னிலைப்படுத்த 'செக்' பொத்தானைப் பயன்படுத்தவும்."
+
+#: mu/modes/base.py:115
+msgid "Cannot connect to device on port {}"
+msgstr "போர்ட்டில் சாதனத்துடன் இணைக்க முடியாது {}"
+
+#: mu/modes/base.py:209
+msgid "# Write your code here :-)"
+msgstr "# உங்கள் குறியீட்டை இங்கே எழுதுங்கள் :-)"
+
+#: mu/modes/base.py:332
+msgid "Data Flood Detected!"
+msgstr "தரவு வெள்ளம் கண்டறியப்பட்டது!"
+
+#: mu/modes/base.py:333
+msgid ""
+"The plotter is flooded with data which will make Mu unresponsive and freeze. As a safeguard, the plotter has been stopped.\n"
+"\n"
+"Flooding is when chunks of data of more than 1024 bytes are repeatedly sent to the plotter.\n"
+"\n"
+"To fix this, make sure your code prints small tuples of data between calls to 'sleep' for a very short period of time."
+msgstr ""
+"எம்.யூ.க்கு பதிலளிக்காத மற்றும் முடக்கம் செய்யும் தரவுகளால் சதித்திட்டம் வெள்ளத்தில் மூழ்கியுள்ளது. ஒரு பாதுகாப்பாக, சதித்திட்டம் நிறுத்தப்பட்டுள்ளது. \n"
+"\n"
+" 1024 க்கும் மேற்பட்ட பைட்டுகளின் தரவுகளின் துகள்கள் மீண்டும் மீண்டும் சதித்திட்டத்திற்கு அனுப்பப்படும் போது வெள்ளம் ஆகும். \n"
+"\n"
+" இதை சரிசெய்ய, உங்கள் குறியீடு மிகக் குறுகிய காலத்திற்கு 'தூக்கத்திற்கு' அழைப்புகளுக்கு இடையிலான சிறிய தரவை அச்சிடுவதை உறுதிசெய்க."
+
+#: mu/modes/base.py:508 mu/modes/base.py:558
+msgid ""
+"Click on the device's reset button, wait a few seconds and then try again."
+msgstr ""
+"சாதனத்தின் மீட்டமைப்பு பொத்தானைக் கிளிக் செய்து, சில வினாடிகள் காத்திருந்து "
+"மீண்டும் முயற்சிக்கவும்."
+
+#: mu/modes/base.py:516 mu/modes/base.py:566
+msgid "Could not find an attached device."
+msgstr "இணைக்கப்பட்ட சாதனத்தைக் கண்டுபிடிக்க முடியவில்லை."
+
+#: mu/modes/base.py:517
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it before the REPL will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before trying again."
+msgstr ""
+"இந்த கணினியில் சாதனம் செருகப்பட்டிருப்பதை உறுதிப்படுத்தவும். \n"
+"\n"
+" ரெப் வேலை செய்வதற்கு முன்பு இது மைக்ரோபிதான் (அல்லது சர்க்யூட்ட்பிதான்) பதிப்பைக் கொண்டிருக்க வேண்டும். \n"
+"\n"
+" இறுதியாக, சாதனத்தின் மீட்டமைப்பு பொத்தானை அழுத்தி, மீண்டும் முயற்சிக்கும் முன் சில வினாடிகள் காத்திருங்கள்."
+
+#: mu/modes/base.py:567
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of MicroPython (or CircuitPython) flashed onto it before the Plotter will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before trying again."
+msgstr ""
+"இந்த கணினியில் சாதனம் செருகப்பட்டிருப்பதை உறுதிப்படுத்தவும். \n"
+"\n"
+" இது சதிகாரர் வேலை செய்வதற்கு முன்பு மைக்ரோபிதான் (அல்லது சர்க்யூட்டிபிதான்) பதிப்பைக் கொண்டிருக்க வேண்டும். \n"
+"\n"
+" இறுதியாக, சாதனத்தின் மீட்டமைப்பு பொத்தானை அழுத்தி, மீண்டும் முயற்சிக்கும் முன் சில வினாடிகள் காத்திருங்கள்."
+
+#: mu/modes/circuitpython.py:37
+msgid "CircuitPython"
+msgstr "சர்க்யூதான்"
+
+#: mu/modes/circuitpython.py:39
+msgid "Write code for boards running CircuitPython."
+msgstr "சர்க்யுத்தானை இயக்கும் பலகைகளுக்கான குறியீட்டை எழுதுங்கள்."
+
+#: mu/modes/circuitpython.py:142 mu/modes/pyboard.py:86
+msgid "Serial"
+msgstr "தொடர்"
+
+#: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87
+msgid "Open a serial connection to your device."
+msgstr "உங்கள் சாதனத்திற்கு தொடர் இணைப்பைத் திறக்கவும்."
+
+#: mu/modes/circuitpython.py:152 mu/modes/esp.py:102 mu/modes/microbit.py:164
+#: mu/modes/pyboard.py:96 mu/modes/python3.py:174
+msgid "Plotter"
+msgstr "சதித்திட்டம்"
+
+#: mu/modes/circuitpython.py:153 mu/modes/esp.py:103 mu/modes/microbit.py:165
+#: mu/modes/pyboard.py:97
+msgid "Plot incoming REPL data."
+msgstr "சதி உள்வரும் REPL தரவு."
+
+#: mu/modes/circuitpython.py:189
+msgid "Permission error running mount command"
+msgstr "அனுமதி பிழை மவுண்ட் கட்டளையை இயக்குகிறது"
+
+#: mu/modes/circuitpython.py:190
+msgid ""
+"The mount command (\"{}\") returned an error: {}. Mu will continue as if a "
+"device isn't plugged in."
+msgstr ""
+"மவுண்ட் கட்டளை (\"{}\") ஒரு பிழையை அளித்தது: {}. ஒரு சாதனம் செருகப்படாதது "
+"போல் MU தொடரும்."
+
+#: mu/modes/circuitpython.py:208
+msgid ""
+"If your Circuit Python device is plugged in, you need to \"Share with "
+"Linux\" on the CIRCUITPY drive in the \"Files\" app then restart Mu."
+msgstr ""
+"உங்கள் சர்க்யூட் பைதான் சாதனம் செருகப்பட்டால், நீங்கள் \"கோப்புகள்\" "
+"பயன்பாட்டில் உள்ள சர்க்யூட் டிரைவில் \"லினக்ஸுடன் பகிர வேண்டும்\", பின்னர் "
+"MU ஐ மறுதொடக்கம் செய்ய வேண்டும்."
+
+#: mu/modes/circuitpython.py:269
+msgid "Could not find an attached CircuitPython device."
+msgstr "இணைக்கப்பட்ட சர்க்யூட்ட்பிதான் சாதனத்தைக் கண்டுபிடிக்க முடியவில்லை."
+
+#: mu/modes/circuitpython.py:270
+msgid ""
+"Python files for CircuitPython devices are stored on the device. Therefore, to edit these files you need to have the device plugged in. Until you plug in a device, Mu will use the directory found here:\n"
+"\n"
+" {}\n"
+"\n"
+"...to store your code."
+msgstr ""
+"சர்க்கெபிதான் சாதனங்களுக்கான பைதான் கோப்புகள் சாதனத்தில் சேமிக்கப்படுகின்றன. எனவே, இந்த கோப்புகளைத் திருத்த நீங்கள் சாதனம் செருகப்பட வேண்டும். நீங்கள் ஒரு சாதனத்தை செருகும் வரை, MU இங்கே காணப்படும் கோப்பகத்தைப் பயன்படுத்தும்: \n"
+"\n"
+"  {} \n"
+"\n"
+" ... உங்கள் குறியீட்டை சேமிக்க."
+
+#: mu/modes/debugger.py:39
+msgid "Graphical Debugger"
+msgstr "வரைகலை பிழைத்திருத்தம்"
+
+#: mu/modes/debugger.py:41
+msgid "Debug your Python 3 code."
+msgstr "உங்கள் பைதான் 3 குறியீட்டை பிழைத்திருத்தல்."
+
+#: mu/modes/debugger.py:61 mu/modes/pygamezero.py:123 mu/modes/python3.py:207
+#: mu/modes/web.py:136
+msgid "Stop"
+msgstr "நிறுத்து"
+
+#: mu/modes/debugger.py:62
+msgid "Stop the running code."
+msgstr "இயங்கும் குறியீட்டை நிறுத்துங்கள்."
+
+#: mu/modes/debugger.py:68
+msgid "Continue"
+msgstr "தொடரவும்"
+
+#: mu/modes/debugger.py:69
+msgid "Continue to run your Python script."
+msgstr "உங்கள் பைதான் ஸ்கிரிப்டை இயக்கவும்."
+
+#: mu/modes/debugger.py:75
+msgid "Step Over"
+msgstr "படி"
+
+#: mu/modes/debugger.py:76
+msgid "Step over a line of code."
+msgstr "குறியீட்டின் வரிசையில் அடியெடுத்து வைக்கவும்."
+
+#: mu/modes/debugger.py:82
+msgid "Step In"
+msgstr "உள்ளே வா"
+
+#: mu/modes/debugger.py:83
+msgid "Step into a function."
+msgstr "ஒரு செயல்பாட்டில் அடியெடுத்து வைக்கவும்."
+
+#: mu/modes/debugger.py:89
+msgid "Step Out"
+msgstr "வெளியே செல்லுங்கள்"
+
+#: mu/modes/debugger.py:90
+msgid "Step out of a function."
+msgstr "ஒரு செயல்பாட்டிலிருந்து வெளியேறவும்."
+
+#: mu/modes/debugger.py:161
+msgid "Your script has finished running."
+msgstr "உங்கள் ஸ்கிரிப்ட் இயங்குவதை முடித்துவிட்டது."
+
+#: mu/modes/debugger.py:266
+msgid ""
+"Unable to connect to the Python debugger.\n"
+"\n"
+msgstr "பைதான் பிழைத்திருத்தியுடன் இணைக்க முடியவில்லை."
+
+#: mu/modes/debugger.py:355
+msgid "Debugger info: {}"
+msgstr "பிழைத்திருத்த தகவல்: {}"
+
+#: mu/modes/debugger.py:362
+msgid "Debugger warning: {}"
+msgstr "பிழைத்திருத்த எச்சரிக்கை: {}"
+
+#: mu/modes/debugger.py:370
+msgid "Debugger error: {}"
+msgstr "பிழைத்திருத்த பிழை: {}"
+
+#: mu/modes/esp.py:35
+msgid "ESP MicroPython"
+msgstr "ஈஎஸ்பி மைக்ரோபிதான்"
+
+#: mu/modes/esp.py:38
+msgid "Write MicroPython on ESP8266/ESP32 boards."
+msgstr "ESP8266/ESP32 பலகைகளில் மைக்ரோபிதானை எழுதுங்கள்."
+
+#: mu/modes/esp.py:71 mu/modes/python3.py:150 mu/modes/python3.py:199
+#: mu/modes/web.py:75 mu/modes/web.py:128
+msgid "Run"
+msgstr "ஓடு"
+
+#: mu/modes/esp.py:72
+msgid "Run your code directly on the {board_name} via the REPL."
+msgstr "உங்கள் குறியீட்டை நேரடியாக {board_name at இல் REPL வழியாக இயக்கவும்."
+
+#: mu/modes/esp.py:81 mu/modes/microbit.py:145
+msgid "Files"
+msgstr "கோப்புகள்"
+
+#: mu/modes/esp.py:82
+msgid "Access the file system on {board_name}."
+msgstr "கோப்பு முறைமையை {board_name on இல் அணுகவும்."
+
+#: mu/modes/esp.py:90 mu/modes/microbit.py:152 mu/modes/python3.py:164
+msgid "REPL"
+msgstr "படிஓடுஅச்சுமீண்டும்"
+
+#: mu/modes/esp.py:91
+msgid "Use the REPL to live-code on the {board_name}."
+msgstr "{போர்டு_பெயர் at இல் லைவ்-குறியீட்டிற்கு REPR ஐப் பயன்படுத்தவும்."
+
+#: mu/modes/esp.py:129 mu/modes/microbit.py:519
+msgid "REPL and file system cannot work at the same time."
+msgstr "REPL மற்றும் கோப்பு முறைமை ஒரே நேரத்தில் வேலை செய்ய முடியாது."
+
+#: mu/modes/esp.py:130 mu/modes/microbit.py:520
+msgid ""
+"The REPL and file system both use the same USB serial connection. Only one "
+"can be active at any time. Toggle the file system off and try again."
+msgstr ""
+"REPL மற்றும் கோப்பு முறைமை இரண்டும் ஒரே யூ.எஸ்.பி தொடர் இணைப்பைப் "
+"பயன்படுத்துகின்றன. ஒருவர் மட்டுமே எந்த நேரத்திலும் செயலில் இருக்க முடியும். "
+"கோப்பு முறைமையை மாற்றி மீண்டும் முயற்சிக்கவும்."
+
+#: mu/modes/esp.py:149 mu/modes/microbit.py:539
+msgid "The plotter and file system cannot work at the same time."
+msgstr "சதித்திட்டம் மற்றும் கோப்பு முறைமை ஒரே நேரத்தில் வேலை செய்ய முடியாது."
+
+#: mu/modes/esp.py:152 mu/modes/microbit.py:542
+msgid ""
+"The plotter and file system both use the same USB serial connection. Only "
+"one can be active at any time. Toggle the file system off and try again."
+msgstr ""
+"சதித்திட்டம் மற்றும் கோப்பு முறைமை இரண்டும் ஒரே யூ.எஸ்.பி தொடர் இணைப்பைப் "
+"பயன்படுத்துகின்றன. ஒருவர் மட்டுமே எந்த நேரத்திலும் செயலில் இருக்க முடியும். "
+"கோப்பு முறைமையை மாற்றி மீண்டும் முயற்சிக்கவும்."
+
+#: mu/modes/esp.py:180
+msgid "Cannot run anything without any active editor tabs."
+msgstr ""
+"எந்த செயலில் உள்ள எடிட்டர் தாவல்களும் இல்லாமல் எதையும் இயக்க முடியாது."
+
+#: mu/modes/esp.py:181
+msgid ""
+"Running transfers the content of the current tab onto the device. It seems "
+"like you don't have  any tabs open."
+msgstr ""
+"இயக்குவது தற்போதைய தாவலின் உள்ளடக்கத்தை சாதனத்தில் மாற்றுகிறது. உங்களிடம் "
+"எந்த தாவல்களும் திறக்கப்படவில்லை என்று தெரிகிறது."
+
+#: mu/modes/esp.py:200 mu/modes/microbit.py:556
+msgid "File system cannot work at the same time as the REPL or plotter."
+msgstr ""
+"கோப்பு முறைமை REPL அல்லது சதித்திட்டத்தின் அதே நேரத்தில் வேலை செய்ய "
+"முடியாது."
+
+#: mu/modes/esp.py:204 mu/modes/microbit.py:560
+msgid ""
+"The file system and the REPL and plotter use the same USB serial connection."
+" Toggle the REPL and plotter off and try again."
+msgstr ""
+"கோப்பு முறைமை மற்றும் REPL மற்றும் சதித்திட்டம் ஒரே யூ.எஸ்.பி தொடர் "
+"இணைப்பைப் பயன்படுத்துகின்றன. REPL மற்றும் சதித்திட்டத்தை மாற்றி மீண்டும் "
+"முயற்சிக்கவும்."
+
+#: mu/modes/esp.py:231
+msgid "Could not find an attached {board_name}"
+msgstr "இணைக்கப்பட்ட {போர்டு_பேம்} கண்டுபிடிக்க முடியவில்லை"
+
+#: mu/modes/esp.py:234 mu/modes/microbit.py:585
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"The device must have MicroPython flashed onto it before the file system will work.\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before trying again."
+msgstr ""
+"இந்த கணினியில் சாதனம் செருகப்பட்டிருப்பதை உறுதிப்படுத்தவும். \n"
+"\n"
+" கோப்பு முறைமை வேலை செய்வதற்கு முன்பு சாதனம் மைக்ரோபிதான் அதன் மீது பறக்க வேண்டும். \n"
+"\n"
+" இறுதியாக, சாதனத்தின் மீட்டமைப்பு பொத்தானை அழுத்தி, மீண்டும் முயற்சிக்கும் முன் சில வினாடிகள் காத்திருங்கள்."
+
+#: mu/modes/esp.py:259
+msgid "{board_name} board"
+msgstr "{board_name} பலகை"
+
+#: mu/modes/lego.py:33
+msgid "Lego MicroPython"
+msgstr "லெகோ மைக்ரோபிதான்"
+
+#: mu/modes/lego.py:36
+msgid "Write MicroPython directly on Lego Spike devices."
+msgstr "லெகோ ஸ்பைக் சாதனங்களில் மைக்ரோசிதானை நேரடியாக எழுதுங்கள்."
+
+#: mu/modes/microbit.py:111
+msgid "BBC micro:bit"
+msgstr "பிபிசி மைக்ரோ: பிட்"
+
+#: mu/modes/microbit.py:113
+msgid "Write MicroPython for the BBC micro:bit."
+msgstr "பிபிசி மைக்ரோவுக்கு மைக்ரோபிதான் எழுதுங்கள்: பிட்."
+
+#: mu/modes/microbit.py:138
+msgid "Flash"
+msgstr "ஃபிளாஷ்"
+
+#: mu/modes/microbit.py:139
+msgid "Flash your code onto the micro:bit."
+msgstr "உங்கள் குறியீட்டை மைக்ரோ: பிட் மீது ஒளிரச் செய்யுங்கள்."
+
+#: mu/modes/microbit.py:146
+msgid "Access the file system on the micro:bit."
+msgstr "மைக்ரோ: பிட் இல் கோப்பு முறைமையை அணுகவும்."
+
+#: mu/modes/microbit.py:153
+msgid "Use the REPL to live-code on the micro:bit."
+msgstr "மைக்ரோ: பிட் மீது நேரடி குறியீட்டிற்கு REPR ஐப் பயன்படுத்தவும்."
+
+#: mu/modes/microbit.py:190
+msgid "Your script is too long and code minification is disabled"
+msgstr ""
+"உங்கள் ஸ்கிரிப்ட் மிக நீளமானது மற்றும் குறியீடு குறைப்பு முடக்கப்பட்டுள்ளது"
+
+#: mu/modes/microbit.py:194
+msgid "Your script is too long and the minifier isn't available"
+msgstr "உங்கள் ஸ்கிரிப்ட் மிக நீளமானது மற்றும் மினிஃபயர் கிடைக்கவில்லை"
+
+#: mu/modes/microbit.py:206
+msgid "Problem minifying script"
+msgstr "ஸ்கிரிப்டைக் குறைப்பதில் சிக்கல்"
+
+#: mu/modes/microbit.py:218
+msgid "Our minifier tried but your script is too long!"
+msgstr "எங்கள் குறைத்தல் முயற்சித்தது, ஆனால் உங்கள் ஸ்கிரிப்ட் மிக நீளமானது!"
+
+#: mu/modes/microbit.py:286
+msgid "Unable to flash \"{}\""
+msgstr "\"{}\""
+
+#: mu/modes/microbit.py:307 mu/modes/microbit.py:584
+msgid "Could not find an attached BBC micro:bit."
+msgstr "இணைக்கப்பட்ட பிபிசி மைக்ரோ: பிட் கண்டுபிடிக்க முடியவில்லை."
+
+#: mu/modes/microbit.py:308
+msgid ""
+"Please ensure you leave enough time for the BBC micro:bit to be attached and"
+" configured correctly by your computer. This may take several seconds. "
+"Alternatively, try removing and re-attaching the device or saving your work "
+"and restarting Mu if the device remains unfound."
+msgstr ""
+"பிபிசி மைக்ரோவுக்கு போதுமான நேரத்தை விட்டுவிடுவதை உறுதிசெய்க: பிட் உங்கள் "
+"கணினியால் சரியாக இணைக்கப்பட்டு சரியாக உள்ளமைக்கப்பட வேண்டும். இதற்கு பல "
+"வினாடிகள் ஆகலாம். மாற்றாக, சாதனம் ஆதாரமற்றதாக இருந்தால் சாதனத்தை அகற்றி "
+"மீண்டும் இணைக்க முயற்சிக்கவும் அல்லது உங்கள் வேலையைச் சேமிக்கவும், MU ஐ "
+"மறுதொடக்கம் செய்யவும் முயற்சிக்கவும்."
+
+#: mu/modes/microbit.py:326
+msgid "Cannot save a custom hex file to a local directory."
+msgstr "தனிப்பயன் ஹெக்ஸ் கோப்பை உள்ளூர் கோப்பகத்தில் சேமிக்க முடியாது."
+
+#: mu/modes/microbit.py:327
+msgid ""
+"When a custom hex file is configured in the settings a local directory "
+"cannot be used to saved the final hex file."
+msgstr ""
+"அமைப்புகளில் தனிப்பயன் ஹெக்ஸ் கோப்பு கட்டமைக்கப்படும்போது, இறுதி ஹெக்ஸ் "
+"கோப்பை சேமிக்க உள்ளூர் கோப்பகத்தைப் பயன்படுத்த முடியாது."
+
+#: mu/modes/microbit.py:336
+msgid "Cannot use a custom hex file without micro:bit port."
+msgstr ""
+"மைக்ரோ: பிட் போர்ட் இல்லாமல் தனிப்பயன் ஹெக்ஸ் கோப்பைப் பயன்படுத்த முடியாது."
+
+#: mu/modes/microbit.py:337
+msgid ""
+"Mu was unable to detect the micro:bit serial port. Normally this is okay, as"
+" Mu can inject the Python code into the hex to flash. However, this cannot "
+"be done with a custom hex file."
+msgstr ""
+"மைக் மைக்ரோ: பிட் சீரியல் போர்ட்டைக் கண்டறிய முடியவில்லை. பொதுவாக இது "
+"பரவாயில்லை, ஏனெனில் MU பைதான் குறியீட்டை ஹெக்ஸில் ஃபிளாஷ் செய்ய செலுத்த "
+"முடியும். இருப்பினும், தனிப்பயன் ஹெக்ஸ் கோப்பு மூலம் இதைச் செய்ய முடியாது."
+
+#: mu/modes/microbit.py:390
+msgid "Unsupported BBC micro:bit."
+msgstr "ஆதரிக்கப்படாத பிபிசி மைக்ரோ: பிட்."
+
+#: mu/modes/microbit.py:391
+msgid ""
+"Your device is newer than this version of Mu. Please update Mu to the latest version to support this device.\n"
+"\n"
+"https://codewith.mu/"
+msgstr ""
+"MU இன் இந்த பதிப்பை விட உங்கள் சாதனம் புதியது. இந்த சாதனத்தை ஆதரிக்க MU ஐ சமீபத்திய பதிப்பிற்கு புதுப்பிக்கவும். \n"
+"\n"
+" https://codewith.mu/"
+
+#: mu/modes/microbit.py:425 mu/modes/microbit.py:446
+msgid "Flashing the micro:bit"
+msgstr "மைக்ரோ ஒளிரும்: பிட்"
+
+#: mu/modes/microbit.py:427
+msgid "Runtime"
+msgstr "இயக்க நேரம்"
+
+#: mu/modes/microbit.py:458
+msgid "Finished flashing."
+msgstr "ஒளிரும் முடிந்தது."
+
+#: mu/modes/microbit.py:490
+msgid "Copied code onto micro:bit."
+msgstr "குறியீட்டை மைக்ரோ மீது நகலெடுத்தது: பிட்."
+
+#: mu/modes/microbit.py:498
+msgid "There was a problem flashing the micro:bit."
+msgstr "மைக்ரோ: பிட் ஒளிரும் சிக்கல் இருந்தது."
+
+#: mu/modes/microbit.py:499
+msgid ""
+"Please do not disconnect the device until flashing has completed. Please "
+"check the logs for more information."
+msgstr ""
+"ஒளிரும் வரை சாதனத்தைத் துண்டிக்க வேண்டாம். மேலும் தகவலுக்கு பதிவுகளை "
+"சரிபார்க்கவும்."
+
+#: mu/modes/microbit.py:601
+msgid "micro:bit"
+msgstr "மைக்ரோ: பிட்"
+
+#: mu/modes/pico.py:33
+msgid "RP2040"
+msgstr "RP2040"
+
+#: mu/modes/pico.py:36
+msgid "Write MicroPython directly on a Raspberry Pi Pico."
+msgstr "ராஸ்பெர்ரி பை பைக்கோவில் மைக்ரோபிதானை நேரடியாக எழுதுங்கள்."
+
+#: mu/modes/pyboard.py:32
+msgid "Pyboard MicroPython"
+msgstr "பைபோர்டு மைக்ரோபிதான்"
+
+#: mu/modes/pyboard.py:34
+msgid "Use MicroPython on the Pyboard line of boards"
+msgstr "பலகைகளின் பைபோர்டு வரிசையில் மைக்ரோபிதானைப் பயன்படுத்தவும்"
+
+#: mu/modes/pyboard.py:177
+msgid "Could not find an attached PyBoard device."
+msgstr "இணைக்கப்பட்ட பைபோர்டு சாதனத்தைக் கண்டுபிடிக்க முடியவில்லை."
+
+#: mu/modes/pyboard.py:178
+msgid ""
+"Python files for PyBoard MicroPython devices are stored on the device. Therefore, to edit these files you need to have the device plugged in. Until you plug in a device, Mu will use the directory found here:\n"
+"\n"
+" {}\n"
+"\n"
+"...to store your code."
+msgstr ""
+"பைபோர்டு மைக்ரோபிதான் சாதனங்களுக்கான பைதான் கோப்புகள் சாதனத்தில் சேமிக்கப்படுகின்றன. எனவே, இந்த கோப்புகளைத் திருத்த நீங்கள் சாதனம் செருகப்பட வேண்டும். நீங்கள் ஒரு சாதனத்தை செருகும் வரை, MU இங்கே காணப்படும் கோப்பகத்தைப் பயன்படுத்தும்: \n"
+"\n"
+"  {} \n"
+"\n"
+" ... உங்கள் குறியீட்டை சேமிக்க."
+
+#: mu/modes/pygamezero.py:35
+msgid "Pygame Zero"
+msgstr "பைகேம் பூஜ்ஜியம்"
+
+#: mu/modes/pygamezero.py:37
+msgid "Make games with Pygame Zero."
+msgstr "பைகேம் பூஜ்ஜியத்துடன் விளையாட்டுகளை உருவாக்குங்கள்."
+
+#: mu/modes/pygamezero.py:65 mu/modes/pygamezero.py:115
+msgid "Play"
+msgstr "விளையாடுங்கள்"
+
+#: mu/modes/pygamezero.py:66 mu/modes/pygamezero.py:116
+msgid "Play your Pygame Zero game."
+msgstr "உங்கள் பைகேம் பூஜ்ஜிய விளையாட்டை விளையாடுங்கள்."
+
+#: mu/modes/pygamezero.py:72 mu/modes/web.py:103
+msgid "Images"
+msgstr "படங்கள்"
+
+#: mu/modes/pygamezero.py:73
+msgid "Show the images used by Pygame Zero."
+msgstr "பைகேம் ஜீரோ பயன்படுத்தும் படங்களைக் காட்டு."
+
+#: mu/modes/pygamezero.py:79
+msgid "Fonts"
+msgstr "எழுத்துருக்கள்"
+
+#: mu/modes/pygamezero.py:80
+msgid "Show the fonts used by Pygame Zero."
+msgstr "பைகேம் ஜீரோ பயன்படுத்தும் எழுத்துருக்களைக் காட்டு."
+
+#: mu/modes/pygamezero.py:86
+msgid "Sounds"
+msgstr "ஒலிகள்"
+
+#: mu/modes/pygamezero.py:87
+msgid "Show the sounds used by Pygame Zero."
+msgstr "பைகேம் ஜீரோ பயன்படுத்தும் ஒலிகளைக் காட்டு."
+
+#: mu/modes/pygamezero.py:93
+msgid "Music"
+msgstr "இசை"
+
+#: mu/modes/pygamezero.py:94
+msgid "Show the music used by Pygame Zero."
+msgstr "பைகேம் ஜீரோ பயன்படுத்தும் இசையைக் காட்டு."
+
+#: mu/modes/pygamezero.py:124
+msgid "Stop your Pygame Zero game."
+msgstr "உங்கள் பைகேம் பூஜ்ஜிய விளையாட்டை நிறுத்துங்கள்."
+
+#: mu/modes/python3.py:133
+msgid "Python 3"
+msgstr "பைதான் 3"
+
+#: mu/modes/python3.py:135
+msgid "Create code using standard Python 3."
+msgstr "நிலையான பைதான் 3 ஐப் பயன்படுத்தி குறியீட்டை உருவாக்கவும்."
+
+#: mu/modes/python3.py:151 mu/modes/python3.py:200
+msgid "Run your Python script."
+msgstr "உங்கள் பைதான் ஸ்கிரிப்டை இயக்கவும்."
+
+#: mu/modes/python3.py:157
+msgid "Debug"
+msgstr "பிழைத்திருத்தம்"
+
+#: mu/modes/python3.py:158
+msgid "Debug your Python script."
+msgstr "உங்கள் பைதான் ஸ்கிரிப்டை பிழைத்தேன்."
+
+#: mu/modes/python3.py:165
+msgid "Use the REPL for live coding."
+msgstr "நேரடி குறியீட்டுக்கு REPR ஐப் பயன்படுத்தவும்."
+
+#: mu/modes/python3.py:175
+msgid "Plot data from your script or the REPL."
+msgstr "உங்கள் ஸ்கிரிப்ட் அல்லது REPL இலிருந்து தரவை சதி செய்யுங்கள்."
+
+#: mu/modes/python3.py:208
+msgid "Stop your Python script."
+msgstr "உங்கள் பைதான் ஸ்கிரிப்டை நிறுத்துங்கள்."
+
+#: mu/modes/python3.py:280
+msgid "Starting iPython REPL."
+msgstr "Ipython repl ஐத் தொடங்குகிறது."
+
+#: mu/modes/python3.py:285
+msgid "Stopping iPython REPL (this may take a short amount of time)."
+msgstr "ஐபிதான் ரெப்பை நிறுத்துவது (இதற்கு குறுகிய நேரம் ஆகலாம்)."
+
+#: mu/modes/python3.py:377
+msgid "REPL started."
+msgstr "REPL தொடங்கியது."
+
+#: mu/modes/python3.py:386
+msgid "REPL stopped."
+msgstr "REPLR நிறுத்தப்பட்டது."
+
+#: mu/modes/web.py:58
+msgid "Web"
+msgstr "வலை"
+
+#: mu/modes/web.py:60
+msgid "Build simple websites with the \"Flask\" web framework."
+msgstr "\"பிளாஸ்க்\" வலை கட்டமைப்பைக் கொண்டு எளிய வலைத்தளங்களை உருவாக்குங்கள்."
+
+#: mu/modes/web.py:76 mu/modes/web.py:129
+msgid "Run the web server."
+msgstr "வலை சேவையகத்தை இயக்கவும்."
+
+#: mu/modes/web.py:83
+msgid "Open your website in a browser."
+msgstr "உங்கள் வலைத்தளத்தை உலாவியில் திறக்கவும்."
+
+#: mu/modes/web.py:89
+msgid "Templates"
+msgstr "வார்ப்புருக்கள்"
+
+#: mu/modes/web.py:90
+msgid "Load HTML templates used by your website."
+msgstr "உங்கள் வலைத்தளத்தால் பயன்படுத்தப்படும் HTML வார்ப்புருக்கள் ஏற்றவும்."
+
+#: mu/modes/web.py:96
+msgid "CSS"
+msgstr "CSS"
+
+#: mu/modes/web.py:97
+msgid "Load CSS files used by your website."
+msgstr "உங்கள் வலைத்தளத்தால் பயன்படுத்தப்படும் CSS கோப்புகளை ஏற்றவும்."
+
+#: mu/modes/web.py:104
+msgid "Open the directory containing images used by your website."
+msgstr ""
+"உங்கள் வலைத்தளத்தால் பயன்படுத்தப்படும் படங்களைக் கொண்ட கோப்பகத்தைத் "
+"திறக்கவும்."
+
+#: mu/modes/web.py:137
+msgid "Stop the web server."
+msgstr "வலை சேவையகத்தை நிறுத்துங்கள்."
+
+#: mu/modes/web.py:157
+msgid "This is not a Python file!"
+msgstr "இது பைதான் கோப்பு அல்ல!"
+
+#: mu/modes/web.py:158
+msgid ""
+"Mu is only able to serve a Python file. Please make sure the current tab in "
+"Mu is the one for your web application and then try again."
+msgstr ""
+"MU ஒரு பைதான் கோப்பை மட்டுமே பரிமாற முடியும். MU இல் உள்ள தற்போதைய தாவல் "
+"உங்கள் வலை பயன்பாட்டிற்கு ஒன்றாகும் என்பதை உறுதிப்படுத்தவும், பின்னர் "
+"மீண்டும் முயற்சிக்கவும்."
+
+#: mu/modes/web.py:175
+msgid "Cannot find template directory!"
+msgstr "வார்ப்புரு கோப்பகத்தைக் கண்டுபிடிக்க முடியவில்லை!"
+
+#: mu/modes/web.py:176
+msgid ""
+"To serve your web application, there needs to be a 'templates' directory in "
+"the same place as your web application's Python code. Please fix this and "
+"try again. (Hint: Mu was expecting the `templates` directory to be here: )"
+msgstr ""
+"உங்கள் வலை பயன்பாட்டிற்கு சேவை செய்ய, உங்கள் வலை பயன்பாட்டின் பைதான் "
+"குறியீட்டின் அதே இடத்தில் ஒரு 'வார்ப்புருக்கள்' அடைவு இருக்க வேண்டும். இதை "
+"சரிசெய்து மீண்டும் முயற்சிக்கவும். (குறிப்பு: `வார்ப்புருக்கள்` அடைவு இங்கே "
+"இருக்கும் என்று மு எதிர்பார்த்தார் :)"
+
+#: mu/modes/web.py:273
+msgid "Cannot Open Website - Server not Running."
+msgstr "வலைத்தளத்தைத் திறக்க முடியாது - சேவையகம் இயங்கவில்லை."
+
+#: mu/modes/web.py:274
+msgid ""
+"You must have the local web server running in order to view your website in "
+"a browser. Click on the 'Run' button to start the server and then try again."
+msgstr ""
+"உங்கள் வலைத்தளத்தை உலாவியில் காண உள்ளூர் வலை சேவையகம் இயங்க வேண்டும். "
+"சேவையகத்தைத் தொடங்க 'ரன்' பொத்தானைக் கிளிக் செய்து மீண்டும் முயற்சிக்கவும்."
+
+#~ msgid "Logging to {}"
+#~ msgstr ""
+
+#~ msgid "Debugger requires a Python script filename to run."
+#~ msgstr ""
+
+#~ msgid "Files on your micro:bit:"
+#~ msgstr ""
+
+#~ msgid "{} [{}:{}]"
+#~ msgstr "{} [{}: {}]"
+
+#~ msgid "Your script is too long!"
+#~ msgstr ""
+
+#~ msgid " Runtime: {}"
+#~ msgstr " "
