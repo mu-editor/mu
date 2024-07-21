@@ -20,7 +20,7 @@ import sys
 import os
 import logging
 from mu.modes.base import BaseMode
-from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS, NEOPIA_APIS
+from mu.modes.api import PYTHON3_APIS, SHARED_APIS, NEOPIA_APIS
 from mu.resources import load_icon
 from mu.interface.panes import CHARTS
 from ..virtual_environment import venv
@@ -196,7 +196,7 @@ class NeopiaMode(BaseMode):
         """
         user_locale = self.get_user_locale()
         try:
-            neopia_apis = list(NEOPIA_APIS[user_locale])
+            neopia_apis = self.merge_apis(list(NEOPIA_APIS['en_US']), list(NEOPIA_APIS[user_locale]))
         except KeyError: # In case a translation is not exist
             neopia_apis = list(NEOPIA_APIS['en_US'])
 

@@ -19,5 +19,5 @@ if __name__ == "__main__":
         name = i["name"]
         args = ", ".join(i["args"]) if i["args"] else ""
         description = i["description"].replace("\u2013", "--")
-        content = repr("{}({}) \n{}".format(name, args, description))
+        content = repr("{}({}) \n\n{}".format(name, args, description))
         print("    _({}),".format(content))

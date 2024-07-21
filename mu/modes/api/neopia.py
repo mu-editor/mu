@@ -2,7 +2,7 @@
 Contains definitions for the Neopia related APIs so they can be
 used in the editor for autocomplete and call tips.
 
-Copyright (c) 2015-2017 Nicholas H.Tollervey and others (see the AUTHORS file).
+Copyright (c) 2024- Roboticsware and others (see the AUTHORS file).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ NEOPIA_APIS = {
             "get_value(port) \n\nport: 'in1' ~ 'in3', 'remo', 'bat' \nGet a value from input port."
         ),
         _(
-            "set_value(port, value) \n\nport: 'out1' ~ 'out3', 'all' \value to set: 0 ~ 255 \nSet a value to output port."
+            "set_value(port, value) \n\nport: 'out1' ~ 'out3', 'all' \nvalue to set: 0 ~ 255 \nSet a value to output port."
         ),
         _(
             "convert_scale(port, 0, 255, 0, 100) \n\nport: 'in1' ~ 'in3' \nparam2, param3 - min and max value of original scale: 0 ~ 255 \nparam3, param4 - min and max value of scale to be converted \nConvert a range of values from input port to another."
@@ -83,7 +83,7 @@ NEOPIA_APIS = {
             "get_value(port) \n\nport: 'in1' ~ 'in3', 'remo', 'bat' \nGet a value from input port."
         ),
         _(
-            "set_value(port, value) \n\nport: 'out1' ~ 'out3', 'all' \value to set: 0 ~ 255 \nSet a value to output port."
+            "set_value(port, value) \n\nport: 'out1' ~ 'out3', 'all' \nvalue to set: 0 ~ 255 \nSet a value to output port."
         ),
         _(
             "convert_scale(port, 0, 255, 0, 100) \n\nport: 'in1' ~ 'in3' \nparam2, param3 - min and max value of original scale: 0 ~ 255 \nparam3, param4 - min and max value of scale to be converted \nConvert a range of values from input port to another."

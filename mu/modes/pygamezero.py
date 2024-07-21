@@ -112,15 +112,18 @@ class PyGameZeroMode(BaseMode):
         """
         user_locale = self.get_user_locale()
         try:
-            pygamezero_apis = list(PYGAMEZERO_APIS[user_locale])        
+            # en_US is fallback if no translated api in the locale
+            pgz_apis = self.merge_apis(list(PYGAMEZERO_APIS['en_US']), list(PYGAMEZERO_APIS[user_locale]))
         except KeyError: # In case a translation is not exist
-            pygamezero_apis = list(PYGAMEZERO_APIS['en_US'])
+            pgz_apis = list(PYGAMEZERO_APIS['en_US'])
+
         try:
-            neopia_apis = list(NEOPIA_APIS[user_locale])
+            # en_US is fallback if no translated api in the locale
+            neopia_apis = self.merge_apis(list(NEOPIA_APIS['en_US']), list(NEOPIA_APIS[user_locale]))
         except KeyError: # In case a translation is not exist
             neopia_apis = list(NEOPIA_APIS['en_US'])
 
-        return SHARED_APIS + PYTHON3_APIS + PI_APIS + pygamezero_apis + neopia_apis
+        return SHARED_APIS + PYTHON3_APIS + PI_APIS + pgz_apis + neopia_apis
 
     def play_toggle(self, event):
         """
