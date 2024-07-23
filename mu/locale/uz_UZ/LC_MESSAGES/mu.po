@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: mu-editor\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2023-11-25 00:20+0500\n"
-"PO-Revision-Date: 2024-01-23 18:51\n"
+"PO-Revision-Date: 2024-07-23 11:05\n"
 "Last-Translator: \n"
 "Language: uz\n"
 "Language-Team: Uzbek\n"
@@ -294,7 +294,7 @@ msgstr "Tanlangan matnni REPL ga nusxalash"
 
 #: mu/interface/main.py:618
 msgid "Filesystem on "
-msgstr "Fayl tizimi yoqilgan"
+msgstr "Fayl boshqaruv: "
 
 #: mu/interface/main.py:679
 msgid "Python3 data tuple"
@@ -412,11 +412,11 @@ msgstr "\"Mu\"da ochish"
 
 #: mu/interface/panes.py:825
 msgid "Write to main.py on device"
-msgstr "Qurilmadagi main.py ga yozing"
+msgstr "Qurilmadagi main.py ga yozish"
 
 #: mu/interface/panes.py:828
 msgid "Open"
-msgstr "Ochish"
+msgstr "Boshqa editorda ochish"
 
 #: mu/interface/panes.py:834
 msgid "Opening '{}'"
@@ -513,7 +513,7 @@ msgstr "Nazariy jihatdan nazariya va amaliyot bir xil. Amalda, ular yo'q. ;-)"
 
 #: mu/logic.py:120
 msgid "Debugging is twice as hard as writing the code in the first place."
-msgstr "Nosozliklarni tuzatish kod yozishdan ko'ra ikki baravar qiyin."
+msgstr "Xatolarni topib tuzatish birinchi navbatda kod yozishdan ikki baravar qiyin."
 
 #: mu/logic.py:121
 msgid "It's fun to program."
@@ -929,7 +929,7 @@ msgstr ""
 
 #: mu/modes/base.py:523 mu/modes/base.py:573 mu/modes/snek.py:526
 msgid "Could not find an attached device."
-msgstr ""
+msgstr "Ulangan qurilmani topolmadi."
 
 #: mu/modes/base.py:524
 msgid "Please make sure the device is plugged into this computer.\n\n"
@@ -1079,7 +1079,7 @@ msgstr ""
 
 #: mu/modes/esp.py:87 mu/modes/microbit.py:145
 msgid "Files"
-msgstr ""
+msgstr "Fayllar"
 
 #: mu/modes/esp.py:88
 msgid "Access the file system on {board_name}."
