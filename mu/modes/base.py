@@ -382,9 +382,9 @@ class BaseMode(QObject):
     def merge_apis(self, fallback_apis, locale_apis):
         for locale_api in locale_apis:
             func_name =  locale_api.split('(')[0]
-            for data in enumerate(fallback_apis):
-                if func_name in data[1]:
-                    fallback_apis[data[0]] = locale_api
+            for idx, data in enumerate(fallback_apis):
+                if func_name in data:
+                    fallback_apis[idx] = locale_api
                     break
             if data[0] == len(fallback_apis) - 1: # new api
                 fallback_apis.append(locale_api)

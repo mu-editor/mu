@@ -196,6 +196,7 @@ class NeopiaMode(BaseMode):
         """
         user_locale = self.get_user_locale()
         try:
+            # en_US is fallback if no translated api in the locale
             neopia_apis = self.merge_apis(list(NEOPIA_APIS['en_US']), list(NEOPIA_APIS[user_locale]))
         except KeyError: # In case a translation is not exist
             neopia_apis = list(NEOPIA_APIS['en_US'])
