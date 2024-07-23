@@ -22,6 +22,7 @@ from mu.modes.api import ESP_APIS, SHARED_APIS
 from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QThread
 import os
+from mu.resources import load_icon
 
 
 logger = logging.getLogger(__name__)
@@ -38,6 +39,7 @@ class ESPMode(MicroPythonMode):
     description = _("Write MicroPython on ESP8266/ESP32 boards.")
     icon = "esp"
     fs = None
+    running = False
 
     # The below list defines the supported devices, however, many
     # devices are using the exact same FTDI USB-interface, with vendor
@@ -181,23 +183,35 @@ class ESPMode(MicroPythonMode):
             return
         """
         logger.info("Running script.")
-        # Grab the Python script.
-        tab = self.view.current_tab
-        if tab is None:
-            # There is no active text editor.
-            message = _("Cannot run anything without any active editor tabs.")
-            information = _(
-                "Running transfers the content of the current tab"
-                " onto the device. It seems like you don't have "
-                " any tabs open."
-            )
-            self.view.show_message(message, information)
-            return
-        python_script = tab.text().split("\n")
-        if not self.repl:
-            self.toggle_repl(None)
-        if self.repl and self.connection:
-            self.connection.send_commands(python_script)
+        run_slot = self.view.button_bar.slots["run"]
+        if not self.running:
+            # Grab the Python script.
+            tab = self.view.current_tab
+            if tab is None:
+                # There is no active text editor.
+                message = _("Cannot run anything without any active editor tabs.")
+                information = _(
+                    "Running transfers the content of the current tab"
+                    " onto the device. It seems like you don't have "
+                    " any tabs open."
+                )
+                self.view.show_message(message, information)
+                return
+            run_slot.setIcon(load_icon("stop"))
+            run_slot.setText(_("Stop"))
+            python_script = tab.text().split("\n")
+            if not self.repl:
+                self.toggle_repl(None)
+            if self.repl and self.connection:
+                self.connection.send_commands(python_script)
+            self.running =  True
+        else:
+            run_slot.setIcon(load_icon("run"))
+            run_slot.setText(_("Run"))
+            # Rest REPL
+            self.toggle_repl(None) # Off
+            self.toggle_repl(None) # On
+            self.running = False
 
     def toggle_files(self, event):
         """
