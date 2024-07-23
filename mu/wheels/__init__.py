@@ -74,7 +74,7 @@ def os_compatibility_flags():
     if sys.platform == "darwin":
         extra_flags.extend(
             [
-                "--platform=macosx_10_12_x86_64",
+                "--platform=macosx_10_13_x86_64",
                 "--only-binary=:all:",
             ]
         )
