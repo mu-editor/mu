@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
 from mu.modes.esp import ESPMode
-from mu.modes.api import SHARED_APIS  # TODO: Work out Pico APIs
+from mu.modes.api import SHARED_APIS, PICO_APIS
 
 
 logger = logging.getLogger(__name__)
@@ -47,4 +47,11 @@ class PicoMode(ESPMode):
         Return a list of API specifications to be used by auto-suggest and call
         tips.
         """
-        return SHARED_APIS
+        user_locale = self.get_user_locale()
+        try:
+            # en_US is fallback if no translated api in the locale
+            pico_apis = self.merge_apis(list(PICO_APIS['en_US']), list(PICO_APIS[user_locale]))
+        except KeyError: # In case a translation is not exist
+            pico_apis = list(PICO_APIS['en_US'])
+
+        return SHARED_APIS + pico_apis

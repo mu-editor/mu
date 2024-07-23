@@ -876,9 +876,13 @@ class Editor(QObject):
         if not os.path.exists(wd):
             logger.debug("Creating directory: {}".format(wd))
             os.makedirs(wd)
-        # Ensure PyGameZero assets are copied over.
+        # Place pgzhelper Lib to root directory
         shutil.copy(
             path("pgzhelper.py", "pygamezero/"), os.path.join(wd, "pgzhelper.py")
+        )
+        # Place pgzhelper Lib to root directory
+        shutil.copy(
+            path("picozero.py", "pico/"), os.path.join(wd, "picozero.py")
         )
         images_path = os.path.join(wd, "images")
         fonts_path = os.path.join(wd, "fonts")

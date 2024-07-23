@@ -1,87 +1,5 @@
 [
   {
-    "name": "draw.circle",
-    "args": [
-      "position",
-      "radius",
-      "(r, g, b)"
-    ],
-    "description": "Draw the outline of a circle."
-  },
-  {
-    "name": "draw.filled_circle",
-    "args": [
-      "position",
-      "radius",
-      "(r, g, b)"
-    ],
-    "description": "Draw a filled circle."
-  },
-  {
-    "name": "draw.filled_rect",
-    "args": [
-      "rect",
-      "(r, g, b)"
-    ],
-    "description": "Draw a filled rectangle. Takes a Rect object. For example, Rect((20, 20), (100, 100))"
-  },
-  {
-    "name": "draw.line",
-    "args": [
-      "start",
-      "end",
-      "(r, g, b)"
-    ],
-    "description": "Draw a line from start to end."
-  },
-  {
-    "name": "draw.rect",
-    "args": [
-      "rect",
-      "(r, g, b)"
-    ],
-    "description": "Draw the outline of a rectangle. Takes a Rect object. For example, Rect((20, 20), (100, 100))"
-  },
-  {
-    "name": "draw.text",
-    "args": [
-      "text",
-      "[pos, ]**kwargs"
-    ],
-    "description": "Draw text. There’s an extremely rich API for positioning and formatting text; see Pygame Zero Text Formatting for full details."
-  },
-  {
-    "name": "draw.textbox",
-    "args": [
-      "text",
-      "rect",
-      "**kwargs"
-    ],
-    "description": "Draw text, sized to fill the given Rect. There’s an extremely rich API for positioning and formatting text; see Pygame Zero Text Formatting for full details."
-  },
-  {
-    "name": "screen.blit",
-    "args": [
-      "image",
-      "(left, top)"
-    ],
-    "description": "Draw the image to the screen at the given position. blit() accepts either a Surface or a string as its image parameter. If image is a str then the named image will be loaded from the images/ directory."
-  },
-  {
-    "name": "screen.clear",
-    "args": [
-      null
-    ],
-    "description": "Reset the screen to black."
-  },
-  {
-    "name": "screen.fill",
-    "args": [
-      "(red, green, blue)"
-    ],
-    "description": "Fill the screen with a solid color."
-  },
-  {
     "name": "screen.Screen",
     "args": [
       "surface"
@@ -189,7 +107,7 @@
   {
     "name": "music.set_volume",
     "args": null,
-    "description": "set_volume(value) -> None\nset the music volume"
+    "description": "set_volume(volume) -> None\nset the music volume"
   },
   {
     "name": "music.stop",
@@ -226,11 +144,16 @@
   {
     "name": "keyboard.re",
     "args": null,
-    "description": "Support for regular expressions (RE).\n\nThis module provides regular expression matching operations similar to\nthose found in Perl.  It supports both 8-bit and Unicode strings; both\nthe pattern and the strings being processed can contain null bytes and\ncharacters outside the US ASCII range.\n\nRegular expressions can contain both special and ordinary characters.\nMost ordinary characters, like \"A\", \"a\", or \"0\", are the simplest\nregular expressions; they simply match themselves.  You can\nconcatenate ordinary characters, so last matches the string 'last'.\n\nThe special characters are:\n    \".\"      Matches any character except a newline.\n    \"^\"      Matches the start of the string.\n    \"$\"      Matches the end of the string or just before the newline at\n             the end of the string.\n    \"*\"      Matches 0 or more (greedy) repetitions of the preceding RE.\n             Greedy means that it will match as many repetitions as possible.\n    \"+\"      Matches 1 or more (greedy) repetitions of the preceding RE.\n    \"?\"      Matches 0 or 1 (greedy) of the preceding RE.\n    *?,+?,?? Non-greedy versions of the previous three special characters.\n    {m,n}    Matches from m to n repetitions of the preceding RE.\n    {m,n}?   Non-greedy version of the above.\n    \"\\\\\"     Either escapes special characters or signals a special sequence.\n    []       Indicates a set of characters.\n             A \"^\" as the first character indicates a complementing set.\n    \"|\"      A|B, creates an RE that will match either A or B.\n    (...)    Matches the RE inside the parentheses.\n             The contents can be retrieved or matched later in the string.\n    (?aiLmsux) Set the A, I, L, M, S, U, or X flag for the RE (see below).\n    (?:...)  Non-grouping version of regular parentheses.\n    (?P<name>...) The substring matched by the group is accessible by name.\n    (?P=name)     Matches the text matched earlier by the group named name.\n    (?#...)  A comment; ignored.\n    (?=...)  Matches if ... matches next, but doesn't consume the string.\n    (?!...)  Matches if ... doesn't match next.\n    (?<=...) Matches if preceded by ... (must be fixed length).\n    (?<!...) Matches if not preceded by ... (must be fixed length).\n    (?(id/name)yes|no) Matches yes pattern if the group with id/name matched,\n                       the (optional) no pattern otherwise.\n\nThe special sequences consist of \"\\\\\" and a character from the list\nbelow.  If the ordinary character is not on the list, then the\nresulting RE will match the second character.\n    \\number  Matches the contents of the group of the same number.\n    \\A       Matches only at the start of the string.\n    \\Z       Matches only at the end of the string.\n    \\b       Matches the empty string, but only at the start or end of a word.\n    \\B       Matches the empty string, but not at the start or end of a word.\n    \\d       Matches any decimal digit; equivalent to the set [0-9] in\n             bytes patterns or string patterns with the ASCII flag.\n             In string patterns without the ASCII flag, it will match the whole\n             range of Unicode digits.\n    \\D       Matches any non-digit character; equivalent to [^\\d].\n    \\s       Matches any whitespace character; equivalent to [ \\t\\n\\r\\f\\v] in\n             bytes patterns or string patterns with the ASCII flag.\n             In string patterns without the ASCII flag, it will match the whole\n             range of Unicode whitespace characters.\n    \\S       Matches any non-whitespace character; equivalent to [^\\s].\n    \\w       Matches any alphanumeric character; equivalent to [a-zA-Z0-9_]\n             in bytes patterns or string patterns with the ASCII flag.\n             In string patterns without the ASCII flag, it will match the\n             range of Unicode alphanumeric characters (letters plus digits\n             plus underscore).\n             With LOCALE, it will match the set [0-9_] plus characters defined\n             as letters for the current locale.\n    \\W       Matches the complement of \\w.\n    \\\\       Matches a literal backslash.\n\nThis module exports the following functions:\n    match     Match a regular expression pattern to the beginning of a string.\n    fullmatch Match a regular expression pattern to all of a string.\n    search    Search a string for the presence of a pattern.\n    sub       Substitute occurrences of a pattern found in a string.\n    subn      Same as sub, but also return the number of substitutions made.\n    split     Split a string by the occurrences of a pattern.\n    findall   Find all occurrences of a pattern in a string.\n    finditer  Return an iterator yielding a match object for each match.\n    compile   Compile a pattern into a RegexObject.\n    purge     Clear the regular expression cache.\n    escape    Backslash all non-alphanumerics in a string.\n\nSome of the functions in this module takes flags as optional parameters:\n    A  ASCII       For string patterns, make \\w, \\W, \\b, \\B, \\d, \\D\n                   match the corresponding ASCII character categories\n                   (rather than the whole Unicode categories, which is the\n                   default).\n                   For bytes patterns, this flag is the only available\n                   behaviour and needn't be specified.\n    I  IGNORECASE  Perform case-insensitive matching.\n    L  LOCALE      Make \\w, \\W, \\b, \\B, dependent on the current locale.\n    M  MULTILINE   \"^\" matches the beginning of lines (after a newline)\n                   as well as the string.\n                   \"$\" matches the end of lines (before a newline) as well\n                   as the end of the string.\n    S  DOTALL      \".\" matches any character at all, including the newline.\n    X  VERBOSE     Ignore whitespace and comments for nicer looking RE's.\n    U  UNICODE     For compatibility only. Ignored for string patterns (it\n                   is the default), and forbidden for bytes patterns.\n\nThis module also defines an exception 'error'."
+    "description": "Support for regular expressions (RE).\n\nThis module provides regular expression matching operations similar to\nthose found in Perl.  It supports both 8-bit and Unicode strings; both\nthe pattern and the strings being processed can contain null bytes and\ncharacters outside the US ASCII range.\n\nRegular expressions can contain both special and ordinary characters.\nMost ordinary characters, like \"A\", \"a\", or \"0\", are the simplest\nregular expressions; they simply match themselves.  You can\nconcatenate ordinary characters, so last matches the string 'last'.\n\nThe special characters are:\n    \".\"      Matches any character except a newline.\n    \"^\"      Matches the start of the string.\n    \"$\"      Matches the end of the string or just before the newline at\n             the end of the string.\n    \"*\"      Matches 0 or more (greedy) repetitions of the preceding RE.\n             Greedy means that it will match as many repetitions as possible.\n    \"+\"      Matches 1 or more (greedy) repetitions of the preceding RE.\n    \"?\"      Matches 0 or 1 (greedy) of the preceding RE.\n    *?,+?,?? Non-greedy versions of the previous three special characters.\n    {m,n}    Matches from m to n repetitions of the preceding RE.\n    {m,n}?   Non-greedy version of the above.\n    \"\\\\\"     Either escapes special characters or signals a special sequence.\n    []       Indicates a set of characters.\n             A \"^\" as the first character indicates a complementing set.\n    \"|\"      A|B, creates an RE that will match either A or B.\n    (...)    Matches the RE inside the parentheses.\n             The contents can be retrieved or matched later in the string.\n    (?aiLmsux) The letters set the corresponding flags defined below.\n    (?:...)  Non-grouping version of regular parentheses.\n    (?P<name>...) The substring matched by the group is accessible by name.\n    (?P=name)     Matches the text matched earlier by the group named name.\n    (?#...)  A comment; ignored.\n    (?=...)  Matches if ... matches next, but doesn't consume the string.\n    (?!...)  Matches if ... doesn't match next.\n    (?<=...) Matches if preceded by ... (must be fixed length).\n    (?<!...) Matches if not preceded by ... (must be fixed length).\n    (?(id/name)yes|no) Matches yes pattern if the group with id/name matched,\n                       the (optional) no pattern otherwise.\n\nThe special sequences consist of \"\\\\\" and a character from the list\nbelow.  If the ordinary character is not on the list, then the\nresulting RE will match the second character.\n    \\number  Matches the contents of the group of the same number.\n    \\A       Matches only at the start of the string.\n    \\Z       Matches only at the end of the string.\n    \\b       Matches the empty string, but only at the start or end of a word.\n    \\B       Matches the empty string, but not at the start or end of a word.\n    \\d       Matches any decimal digit; equivalent to the set [0-9] in\n             bytes patterns or string patterns with the ASCII flag.\n             In string patterns without the ASCII flag, it will match the whole\n             range of Unicode digits.\n    \\D       Matches any non-digit character; equivalent to [^\\d].\n    \\s       Matches any whitespace character; equivalent to [ \\t\\n\\r\\f\\v] in\n             bytes patterns or string patterns with the ASCII flag.\n             In string patterns without the ASCII flag, it will match the whole\n             range of Unicode whitespace characters.\n    \\S       Matches any non-whitespace character; equivalent to [^\\s].\n    \\w       Matches any alphanumeric character; equivalent to [a-zA-Z0-9_]\n             in bytes patterns or string patterns with the ASCII flag.\n             In string patterns without the ASCII flag, it will match the\n             range of Unicode alphanumeric characters (letters plus digits\n             plus underscore).\n             With LOCALE, it will match the set [0-9_] plus characters defined\n             as letters for the current locale.\n    \\W       Matches the complement of \\w.\n    \\\\       Matches a literal backslash.\n\nThis module exports the following functions:\n    match     Match a regular expression pattern to the beginning of a string.\n    fullmatch Match a regular expression pattern to all of a string.\n    search    Search a string for the presence of a pattern.\n    sub       Substitute occurrences of a pattern found in a string.\n    subn      Same as sub, but also return the number of substitutions made.\n    split     Split a string by the occurrences of a pattern.\n    findall   Find all occurrences of a pattern in a string.\n    finditer  Return an iterator yielding a Match object for each match.\n    compile   Compile a pattern into a Pattern object.\n    purge     Clear the regular expression cache.\n    escape    Backslash all non-alphanumerics in a string.\n\nEach function other than purge and escape can take an optional 'flags' argument\nconsisting of one or more of the following module constants, joined by \"|\".\nA, L, and U are mutually exclusive.\n    A  ASCII       For string patterns, make \\w, \\W, \\b, \\B, \\d, \\D\n                   match the corresponding ASCII character categories\n                   (rather than the whole Unicode categories, which is the\n                   default).\n                   For bytes patterns, this flag is the only available\n                   behaviour and needn't be specified.\n    I  IGNORECASE  Perform case-insensitive matching.\n    L  LOCALE      Make \\w, \\W, \\b, \\B, dependent on the current locale.\n    M  MULTILINE   \"^\" matches the beginning of lines (after a newline)\n                   as well as the string.\n                   \"$\" matches the end of lines (before a newline) as well\n                   as the end of the string.\n    S  DOTALL      \".\" matches any character at all, including the newline.\n    X  VERBOSE     Ignore whitespace and comments for nicer looking RE's.\n    U  UNICODE     For compatibility only. Ignored for string patterns (it\n                   is the default), and forbidden for bytes patterns.\n\nThis module also defines an exception 'error'."
   },
   {
     "name": "keyboard.warn",
-    "args": null,
+    "args": [
+      "message",
+      "category=None",
+      "stacklevel=1",
+      "source=None"
+    ],
     "description": "Issue a warning, or maybe ignore it or raise an exception."
   },
   {
@@ -338,13 +261,20 @@
   },
   {
     "name": "animation.pow",
-    "args": null,
-    "description": "pow(x, y)\n\nReturn x**y (x to the power of y)."
+    "args": [
+      "x",
+      "y",
+      "/"
+    ],
+    "description": "Return x**y (x to the power of y)."
   },
   {
     "name": "animation.sin",
-    "args": null,
-    "description": "sin(x)\n\nReturn the sine of x (measured in radians)."
+    "args": [
+      "x",
+      "/"
+    ],
+    "description": "Return the sine of x (measured in radians)."
   },
   {
     "name": "animation.unschedule",
@@ -355,18 +285,28 @@
   },
   {
     "name": "actor.atan2",
-    "args": null,
-    "description": "atan2(y, x)\n\nReturn the arc tangent (measured in radians) of y/x.\nUnlike atan(y/x), the signs of both x and y are considered."
+    "args": [
+      "y",
+      "x",
+      "/"
+    ],
+    "description": "Return the arc tangent (measured in radians) of y/x.\n\nUnlike atan(y/x), the signs of both x and y are considered."
   },
   {
     "name": "actor.cos",
-    "args": null,
-    "description": "cos(x)\n\nReturn the cosine of x (measured in radians)."
+    "args": [
+      "x",
+      "/"
+    ],
+    "description": "Return the cosine of x (measured in radians)."
   },
   {
     "name": "actor.degrees",
-    "args": null,
-    "description": "degrees(x)\n\nConvert angle x from radians to degrees."
+    "args": [
+      "x",
+      "/"
+    ],
+    "description": "Convert angle x from radians to degrees."
   },
   {
     "name": "actor.pygame",
@@ -375,18 +315,27 @@
   },
   {
     "name": "actor.radians",
-    "args": null,
-    "description": "radians(x)\n\nConvert angle x from degrees to radians."
+    "args": [
+      "x",
+      "/"
+    ],
+    "description": "Convert angle x from degrees to radians."
   },
   {
     "name": "actor.sin",
-    "args": null,
-    "description": "sin(x)\n\nReturn the sine of x (measured in radians)."
+    "args": [
+      "x",
+      "/"
+    ],
+    "description": "Return the sine of x (measured in radians)."
   },
   {
     "name": "actor.sqrt",
-    "args": null,
-    "description": "sqrt(x)\n\nReturn the square root of x."
+    "args": [
+      "x",
+      "/"
+    ],
+    "description": "Return the square root of x."
   },
   {
     "name": "actor.transform_anchor",

@@ -2,6 +2,9 @@
 """
 Takes a JSON representation of an API and emits elements to be inserted into a
 Python list such that they conform to Scintilla's API description DSL.
+
+HOWTO:
+python mkapi.py <json file>
 """
 import sys
 import json

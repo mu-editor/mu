@@ -10,6 +10,7 @@ from .flask import FLASK_APIS
 from .pyboard import PYBOARD_APIS
 from .lego import LEGO_APIS
 from .neopia import NEOPIA_APIS
+from .pico import PICO_APIS
 
 __all__ = [
     "ADAFRUIT_APIS",
@@ -24,4 +25,5 @@ __all__ = [
     "PYBOARD_APIS",
     "LEGO_APIS",
     "NEOPIA_APIS",
+    "PICO_APIS",
 ]
