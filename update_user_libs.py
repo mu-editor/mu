@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Update the copy of pgzhelper in Pygame Zero.
+"""Update the copy of user libs(pgzhelper, picozero ...)
 
-pgzhelper is not yet packaged on PyPI; this script exists to mirror it into the
+User libs is not yet packaged on PyPI; this script exists to mirror it into the
 local repository to make it easily installable.
 
 """
@@ -10,12 +10,14 @@ import base64
 import subprocess
 from urllib.parse import urljoin
 from urllib.request import build_opener
+import sys
 
-
-FILE = 'pgzhelper.py'
-DEST = 'mu/resources/pygamezero/pgzhelper.py'
-REPO_URL = 'https://api.github.com/repos/roboticsware/pgzhelper/'
-HEADER = '''"""pgzhelper - Enhance Pygame Zero with additional capabilities.
+DEST = ''
+PGZHELPER_DEST = 'mu/resources/pygamezero/pgzhelper.py'
+PICOZERO_DEST = 'mu/resources/pico/picozero.py'
+PGZHELPER_REPO_URL = 'https://api.github.com/repos/roboticsware/pgzhelper/'
+PICOZERO_REPO_URL = 'https://api.github.com/repos/roboticsware/picozero/'
+HEADER = '''"""
 
 This module is directly copied from
 
@@ -41,10 +43,16 @@ def read_json(url):
     return json.loads(data)
 
 
-def get_tree():
+def get_tree(file):
     """Download the repository tree, returning a decoded JSON structure."""
     print('Downloading repository tree...')
-    url = urljoin(REPO_URL, 'git/trees/HEAD')
+    
+    if file == 'pgzhelper.py':
+        REPO_URL = PGZHELPER_REPO_URL
+    elif file == 'picozero.py':
+        REPO_URL = PICOZERO_REPO_URL
+
+    url = urljoin(REPO_URL, 'git/trees/HEAD?recursive=1')
     return read_json(url)
 
 
@@ -54,12 +62,12 @@ def get_file(file):
     Return a tuple of the current repo version hash and the file's data.
 
     """
-    tree = get_tree()
+    tree = get_tree(file)
     for f in tree['tree']:
-        if f['path'] == file:
+        if file in f['path']:
             break
     else:
-        raise ValueError("Could not find pgzhelper module to download.")
+        raise ValueError("Could not find the module to download.")
 
     url = f['url']
     print('Downloading', file, 'module...')
@@ -74,6 +82,13 @@ def update_local():
     Include a header based on the template HEADER.
 
     """
+    global DEST
+    FILE = sys.argv[1]
+    if FILE == 'pgzhelper.py':
+        DEST = PGZHELPER_DEST
+    elif FILE == 'picozero.py':
+        DEST = PICOZERO_DEST
+    
     sha, data = get_file(FILE)
     header = HEADER.format(sha=sha)
     with open(DEST, 'w', encoding='utf8') as f:
