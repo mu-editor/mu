@@ -15,13 +15,13 @@ password = "1234"
 def draw():
     screen.blit("desert", (0, 0))
     treasure.draw()
+    screen.draw.filled_rect(guide_rect, 'black')
     screen.draw.textbox("Please input a password.", guide_rect)
     screen.draw.filled_rect(input_rect, "pink")
     screen.draw.textbox(input_text, input_rect)
 
     if input_done:
-        screen.blit("desert", (0, 0))
-        treasure.draw()
+        screen.draw.filled_rect(guide_rect, 'black')
 
         if input_text == password:    
             screen.draw.textbox("You got it!", guide_rect)
