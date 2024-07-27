@@ -23,6 +23,7 @@ from mu.interface.panes import CHARTS
 from PyQt5.QtCore import QThread
 import os
 from mu.resources import load_icon
+import time
 
 
 logger = logging.getLogger(__name__)
@@ -129,12 +130,9 @@ class ESPMode(MicroPythonMode):
             if self.repl:
                 # Remove REPL
                 super().toggle_repl(event)
-                self.set_buttons(files=True)
             elif not (self.repl):
                 # Add REPL
                 super().toggle_repl(event)
-                if self.repl:
-                    self.set_buttons(files=False)
         else:
             message = _("REPL and file system cannot work at the same time.")
             information = _(
@@ -153,7 +151,7 @@ class ESPMode(MicroPythonMode):
             super().toggle_plotter(event)
             if self.plotter:
                 self.set_buttons(files=False)
-            elif not (self.repl or self.plotter):
+            elif not self.running:
                 self.set_buttons(files=True)
         else:
             message = _(
@@ -199,18 +197,21 @@ class ESPMode(MicroPythonMode):
                 return
             run_slot.setIcon(load_icon("stop"))
             run_slot.setText(_("Stop"))
+            self.set_buttons(files=False)
+            self.set_buttons(repl=False)
             python_script = tab.text().split("\n")
             if not self.repl:
-                self.toggle_repl(None)
+                self.toggle_repl(None) # On
             if self.repl and self.connection:
                 self.connection.send_commands(python_script)
             self.running =  True
         else:
             run_slot.setIcon(load_icon("run"))
             run_slot.setText(_("Run"))
-            # Rest REPL
+            self.set_buttons(files=True)
+            self.set_buttons(repl=True)
             self.toggle_repl(None) # Off
-            self.toggle_repl(None) # On
+            self.toggle_repl(None) # On - Reset
             self.running = False
 
     def toggle_files(self, event):
@@ -218,7 +219,7 @@ class ESPMode(MicroPythonMode):
         Check for the existence of the REPL or plotter before toggling the file
         system navigator for the MicroPython device on or off.
         """
-        if self.repl:
+        if self.plotter:
             message = _(
                 "File system cannot work at the same time as the "
                 "REPL or plotter."
@@ -230,6 +231,8 @@ class ESPMode(MicroPythonMode):
             )
             self.view.show_message(message, information)
         else:
+            if self.repl:
+                self.toggle_repl(None) # Off
             if self.fs is None:
                 self.add_fs()
                 if self.fs:

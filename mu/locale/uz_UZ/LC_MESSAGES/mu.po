@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: mu-editor\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2023-11-25 00:20+0500\n"
-"PO-Revision-Date: 2024-07-27 07:39\n"
+"PO-Revision-Date: 2024-07-27 13:59\n"
 "Last-Translator: \n"
 "Language: uz\n"
 "Language-Team: Uzbek\n"
@@ -1097,35 +1097,35 @@ msgstr ""
 
 #: mu/modes/esp.py:135 mu/modes/microbit.py:519
 msgid "REPL and file system cannot work at the same time."
-msgstr ""
+msgstr "REPL va fayl tizimi bir vaqtning o'zida ishlay olmaydi."
 
 #: mu/modes/esp.py:136 mu/modes/microbit.py:520
 msgid "The REPL and file system both use the same USB serial connection. Only one can be active at any time. Toggle the file system off and try again."
-msgstr ""
+msgstr "REPL ham, fayl tizimi ham bir xil USB serial ulanishidan foydalanadi. Istalgan vaqtda faqat bitta faol boʻlishi mumkin. Fayl tizimini oʻchirib, qaytadan urinib koʻring."
 
 #: mu/modes/esp.py:155 mu/modes/microbit.py:539
 msgid "The plotter and file system cannot work at the same time."
-msgstr ""
+msgstr "Plotter va fayl tizimi bir vaqtda ishlay olmaydi."
 
 #: mu/modes/esp.py:158 mu/modes/microbit.py:542
 msgid "The plotter and file system both use the same USB serial connection. Only one can be active at any time. Toggle the file system off and try again."
-msgstr ""
+msgstr "Plotter ham, fayl tizimi ham bir xil USB serial ulanishidan foydalanadi. Istalgan vaqtda faqat bitta faol boʻlishi mumkin. Fayl tizimini oʻchirib, qaytadan urinib koʻring."
 
 #: mu/modes/esp.py:186 mu/modes/snek.py:417
 msgid "Cannot run anything without any active editor tabs."
-msgstr ""
+msgstr "Agar faol tab bo'lmasa, hech narsa qilib bo'lmaydi."
 
 #: mu/modes/esp.py:187 mu/modes/snek.py:418
 msgid "Running transfers the content of the current tab onto the device. It seems like you don't have  any tabs open."
-msgstr ""
+msgstr "Ishga tushirishda tabdagi kodlarni qurilmaga o'tkazadi. Sizda hech qanday ochiq tab yo'qga o'xshaydi."
 
 #: mu/modes/esp.py:206 mu/modes/microbit.py:556
 msgid "File system cannot work at the same time as the REPL or plotter."
-msgstr ""
+msgstr "Fayl tizimi REPL yoki plotter bilan bir vaqtda ishlay olmaydi."
 
 #: mu/modes/esp.py:210 mu/modes/microbit.py:560
 msgid "The file system and the REPL and plotter use the same USB serial connection. Toggle the REPL and plotter off and try again."
-msgstr ""
+msgstr "Fayl tizimi va REPL va plotter bir xil USB serial ulanishidan foydalanadi. REPL va plotterni o'chiring va qayta urinib ko'ring."
 
 #: mu/modes/esp.py:237
 msgid "Could not find an attached {board_name}"
