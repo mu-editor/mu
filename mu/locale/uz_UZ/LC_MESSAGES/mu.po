@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: mu-editor\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2023-11-25 00:20+0500\n"
-"PO-Revision-Date: 2024-07-23 11:05\n"
+"PO-Revision-Date: 2024-07-27 07:39\n"
 "Last-Translator: \n"
 "Language: uz\n"
 "Language-Team: Uzbek\n"
@@ -935,7 +935,9 @@ msgstr "Ulangan qurilmani topolmadi."
 msgid "Please make sure the device is plugged into this computer.\n\n"
 "It must have a version of MicroPython (or CircuitPython) flashed onto it before the REPL will work.\n\n"
 "Finally, press the device's reset button and wait a few seconds before trying again."
-msgstr ""
+msgstr "Qurilma ushbu kompyuterga ulanganligiga ishonch hosil qiling.\n\n"
+"REPL ishlashidan oldin qurilmasi MicroPython (yoki CircuitPython) versiyasiga ega bo'lishi kerak.\n\n"
+"Nihoyat, qurilmadagi qayta o'rnatish tugmasini bosing va qayta urinishdan oldin bir necha soniya kuting."
 
 #: mu/modes/base.py:574
 msgid "Please make sure the device is plugged into this computer.\n\n"
@@ -1519,4 +1521,8 @@ msgstr "O'yinni tarqatish uchun bitta exe fayliga aylantiradi."
 #: mu/modes/pygamezero.py:230
 msgid "Stop packaging your Pygame Zero game."
 msgstr "Bitta fayliga aylantirayotganini to'xtaydi."
+
+#: #: mu/main.py:225
+msgid "There is un-saved work, closing the tab will cause you to lose it."
+msgstr "Saqlanmagan ish bor, tabdan chiqish uni yo'qotishingizga olib keladi."
 

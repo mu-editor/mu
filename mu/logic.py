@@ -1938,11 +1938,11 @@ class Editor(QObject):
         """
         self._view.toggle_comments()
 
-    def delete_complete_line(self):
+    def close_tab(self):
         """
-        Handle a shortcut for deleting a complete line on the current cursor.
+        Handle a shortcut for closing the current tab.
         """
-        self._view.toggle_comments()
+        self._view.close_tab()
 
     def tidy_code(self):
         """

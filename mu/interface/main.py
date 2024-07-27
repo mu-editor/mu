@@ -221,9 +221,8 @@ class FileTabs(QTabWidget):
         window = self.nativeParentWidget()
         modified = self.widget(tab_id).isModified()
         if modified:
-            msg = (
-                "There is un-saved work, closing the tab will cause you "
-                "to lose it."
+            msg = _(
+                "There is un-saved work, closing the tab will cause you to lose it."
             )
             if window.show_confirmation(msg) == QMessageBox.Cancel:
                 return
@@ -1352,6 +1351,21 @@ class Window(QMainWindow):
         """
         if self.current_tab:
             self.current_tab.toggle_comments()
+
+    def connect_close_tab(self, handler, shortcut):
+        """
+        Create a keyboard shortcut and associate it with a handler for closing 
+        a current active tab.
+        """
+        self.close_tab_shortcut = QShortcut(QKeySequence(shortcut), self)
+        self.close_tab_shortcut.activated.connect(handler)
+
+    def close_tab(self):
+        """
+        Delete complete line on the cursor in the currently active tab.
+        """
+        if self.current_tab:
+            self.tabs.removeTab(self.widgets.index(self.current_tab))
 
     def show_device_selector(self):
         """
