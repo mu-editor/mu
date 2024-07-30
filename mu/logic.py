@@ -146,6 +146,25 @@ EXAMPLE_PGZ = [
     "flappybird.py",
     "flappybird_neosoco.py",
 ]
+EXAMPLE_NEOPIA = [
+    "01-01_KobiBot.py",
+    "01-02_FutbolBot.py",
+    "01-06_Sehrli_ansanmbl.py",
+    "02-01-01_Barami.py",
+    "02-01-02_Barami.py",
+    "02-02_Neo_Bigl.py",
+    "02-03_Neo_kliner.py",
+    "02-04-01_Aqlli_avtomobil.py",
+    "02-04-02_Aqlli_avtomobil.py",
+    "02-05-01_Chiziq_trekkeri.py",
+    "02-05-02_Chiziq_trekkeri.py",
+    "04-01_Fonar.py",
+    "04-03-01_Aqlli_avtomobil_2.py",
+    "04-03-02_Aqlli_avtomobil_2.py",
+    "04-04_Samosval_avtomobili.py",
+    "04-05_Robot_qol.py",
+    "04-06_Konveyer.py"
+]
 
 MOTD = [  # Candidate phrases for the message of the day (MOTD).
     _("Hello, World!"),
@@ -906,6 +925,7 @@ class Editor(QObject):
         examples_path = os.path.join(wd, "examples")
         example_entry_b_path = os.path.join(wd, "examples/entry_basic/")
         example_pgz_path = os.path.join(wd, "examples/pygame_zero/")
+        example_neopia_path = os.path.join(wd, "examples/neopia/")         
         if not os.path.exists(images_path):
             logger.debug("Creating directory: {}".format(images_path))
             os.makedirs(images_path)
@@ -984,7 +1004,15 @@ class Editor(QObject):
                     for sfx in EXAMPLE_PGZ_IMAGES:
                         shutil.copy(
                             path(sfx, "pygamezero/"), os.path.join(example_pgz_path + 'images', sfx)
-                        )           
+                        )  
+            # Neopia examples
+            if not os.path.exists(example_neopia_path):
+                logger.debug("Creating directory: {}".format(example_neopia_path))
+                os.makedirs(example_neopia_path)
+                for sfx in EXAMPLE_NEOPIA:
+                    shutil.copy(
+                        path(sfx, "neopia/"), os.path.join(example_neopia_path, sfx)
+                    )
         # Ensure Web based assets are copied over.
         template_path = os.path.join(wd, "templates")
         static_path = os.path.join(wd, "static")
