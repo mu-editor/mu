@@ -1,8 +1,7 @@
 from neopia import *
 
 n =  Neosoco()
-while True:
-  key = Keyboard.read()
+def on_press(key): 
   if key == Keyboard.UP:
     n.motor_rotate('both', 'forward', '10')
   elif key == Keyboard.DOWN:
@@ -11,5 +10,9 @@ while True:
     n.motor_rotate('both', 'left', '10')
   elif key == Keyboard.RIGHT:
     n.motor_rotate('both', 'right', '10')
-  elif key == ' ':
+  elif key == Keyboard.SPACE:
     n.motor_stop('both')
+  elif key == Keyboard.ESC:
+    return False
+
+Keyboard.read(on_press)

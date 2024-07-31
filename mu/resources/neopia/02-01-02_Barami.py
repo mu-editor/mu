@@ -2,9 +2,8 @@
 
 from neopia import *
 
-n =  Neosoco()
-while True:
-    key = Keyboard.read()
+n = Neosoco()
+def on_press(key):
     if key == '0':
         n.motor_stop('right')
     elif key == '1':
@@ -13,3 +12,7 @@ while True:
         n.motor_rotate('right', 'forward', '50')
     elif key == '3':
         n.motor_rotate('right', 'forward', '100')
+    elif key == Keyboard.ESC:
+        return False
+
+Keyboard.read(on_press)
