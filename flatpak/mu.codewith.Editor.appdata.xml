@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+	<id>mu.codewith.Editor</id>
+	<metadata_license>CC-BY-SA</metadata_license>
+	<name>Mu Editor</name>
+	<summary>A simple editor for beginner Python programmers</summary>
+	<description>
+        <p>
+            Mu is a simple code editor for beginner programmers based on extensive feedback from teachers and learners.
+            Having said that, Mu is for anyone who wants to use a simple "no frills" editor.
+        </p>
+        <p>Mu is a modal editor with modes for many different ways to use Python to create cool and interesting things.</p>
+        <p>
+            Mu is written in Python and works on Windows, macOS, Linux and Raspberry Pi. The project's public facing website is https://codewith.mu/.
+            We celebrate the work done by users of mu at https://madewith.mu/.
+        </p>
+	</description>
+	<url type="homepage">https://codewith.mu/</url>
+	<url type="bugtracker">https://github.com/mu-editor/mu/issues/</url>
+	<url type="help">https://codewith.mu/en/howto/1.1/</url>
+	<launchable type="desktop-id">mu.codewith.Editor.desktop</launchable>
+	<releases>
+		<release version="1.1.1" date="2022-02-22">
+			<description>
+				<p>
+                    This is the first stable release of the 1.1.* version of Mu.
+                </p>
+			</description>
+		</release>
+	</releases>
+	<project_license>GPL-3.0-or-later</project_license>
+	<developer_name>Nicholas H.Tollervey</developer_name>
+	<screenshots>
+		<screenshot type="default">
+			<image type="source">https://codewith.mu/img/en/tutorials/mu_ui.png</image>
+		</screenshot>
+		<screenshot>
+			<image type="source">https://codewith.mu/img/en/tutorials/mode_selector1-1.png</image>
+		</screenshot>
+	</screenshots>
+	<content_rating type="oars-1.1"/>
+</component>
