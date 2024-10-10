@@ -4,11 +4,41 @@ Tests for the Python3 mode.
 """
 import sys
 import os
-from mu.modes.python3 import PythonMode, KernelRunner
+from jupyter_client import kernelspec
+from mu.modes.python3 import PythonMode, KernelRunner, make_kernel_spec
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from mu.virtual_environment import venv
 
 from unittest import mock
+
+
+def test_make_kernel_spec():
+    """
+    Test the generation of a kernel spec's kernel.json works as intended.
+    """
+    mock_python = "/home/user/bin/python"
+    mock_dir = os.path.join("/home/user/config", "kernel")
+    with mock.patch("builtins.open", mock.mock_open()) as opener:
+        with mock.patch("mu.modes.python3.venv.interpreter", mock_python):
+            with mock.patch("mu.modes.python3.DATA_DIR", mock_dir):
+                with mock.patch("os.mkdir") as mkdir:
+                    with mock.patch("json.dump") as dump:
+                        make_kernel_spec(mock_dir)
+    mkdir.assert_called_with(mock_dir, 511)
+    json_path = os.path.join(mock_dir, "kernel.json")
+    opener.assert_called_once_with(json_path, "w")
+    expected = {
+        "argv": [
+            mock_python,
+            "-m",
+            "ipykernel_launcher",
+            "-f",
+            "{connection_file}",
+        ],
+        "display_name": "Mu's Python 3 Kernel",
+        "language": "python",
+    }
+    dump.assert_called_once_with(expected, opener())
 
 
 def test_kernel_runner_start_kernel():
@@ -34,8 +64,12 @@ def test_kernel_runner_start_kernel():
     mock_kernel_manager_class = mock.MagicMock()
     mock_kernel_manager_class.return_value = mock_kernel_manager
     with mock.patch("mu.modes.python3.os", mock_os), mock.patch(
-        "mu.modes.python3.MuKernelManager", mock_kernel_manager_class
-    ), mock.patch("sys.platform", "darwin"):
+        "mu.modes.python3.QtKernelManager", mock_kernel_manager_class
+    ), mock.patch("sys.platform", "darwin"), mock.patch(
+        "mu.modes.python3.make_kernel_spec"
+    ), mock.patch(
+        "jupyter_client.kernelspec.install_kernel_spec"
+    ):
         kr.start_kernel()
     mock_os.chdir.assert_called_once_with("/a/path/to/mu_code")
     assert mock_os.environ["name"] == "value"
@@ -46,6 +80,27 @@ def test_kernel_runner_start_kernel():
     kr.kernel_started.emit.assert_called_once_with(
         mock_kernel_manager, mock_client
     )
+
+
+def test_kernel_runner_kernel_spec_creation():
+    """
+    Test the creation and use of a sample kernel.
+    """
+    kernel_name = "test_kernel_name"
+    kr = KernelRunner(
+        kernel_name=kernel_name, cwd="/a/path/to/mu_code", envars=[]
+    )
+    try:
+        with mock.patch("mu.modes.python3.os.chdir"):
+            kr.start_kernel()
+        assert kr.kernel_started
+        assert kr.repl_kernel_manager.kernel_name == "test_kernel_name"
+        assert kr.repl_kernel_manager.kernel_spec.argv[0] == venv.interpreter
+    finally:
+        if kernel_name in kernelspec.find_kernel_specs():
+            kr.repl_kernel_manager.kernel_spec_manager.remove_kernel_spec(
+                kernel_name
+            )
 
 
 def test_kernel_runner_stop_kernel():
