@@ -449,6 +449,13 @@ def test_get_settings_path():
         mock_func.assert_called_once_with("settings.json")
 
 
+def test_get_pathname():
+    mock_func = mock.MagicMock(return_value="CIRCUITPY")
+    with mock.patch("mu.logic.get_pathname", mock_func):
+        assert mu.logic.get_pathname() == "CIRCUITPY"
+        mock_func.assert_called_once_with()
+
+
 def test_extract_envars():
     """
     Given a correct textual representation, get the expected list
