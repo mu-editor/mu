@@ -106,6 +106,13 @@ class REPLConnection(QObject):
         else:
             return None
 
+    @baudrate.setter
+    def baudrate(self, value):
+        if value != self._baudrate:
+            self._baudrate = value
+            if self.serial:
+                self.serial.setBaudRate(value)
+
     def open(self):
         """
         Open the serial link
