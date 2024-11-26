@@ -332,10 +332,13 @@ class DebugMode(BaseMode):
         """
         if stack:
             locals_dict = {}
+            globals_dict = {}
             for frame in stack:
                 for k, v in frame[1]["locals"].items():
                     locals_dict[k] = v
-            self.view.update_debug_inspector(locals_dict)
+                for k, v in frame[1]["globals"].items():
+                    globals_dict[k] = v
+            self.view.update_debug_inspector(locals_dict, globals_dict)
 
     def debug_on_postmortem(self, args, kwargs):
         """

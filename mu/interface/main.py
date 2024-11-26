@@ -830,18 +830,21 @@ class Window(QMainWindow):
             for col, width in enumerate(self.debug_widths):
                 self.debug_inspector.setColumnWidth(col, width)
 
-    def update_debug_inspector(self, locals_dict):
+    def update_debug_inspector(self, locals_dict, globals_dict):
         """
-        Given the contents of a dict representation of the locals in the
-        current stack frame, update the debug inspector with the new values.
+        Given the contents of a dict representation of the locals and
+        globals in the current stack frame, update the debug inspector with the
+        new values.
         """
         excluded_names = ["__builtins__", "__debug_code__", "__debug_script__"]
-        names = sorted([x for x in locals_dict if x not in excluded_names])
+        locals_names = sorted([x for x in locals_dict if x not in excluded_names])
+        globals_names = sorted([x for x in globals_dict if x not in excluded_names])
 
         # Remove rows so we keep the same column layouts if manually set
         while self.debug_model.rowCount() > 0:
             self.debug_model.removeRow(0)
-        for name in names:
+        # Add globals to the top.
+        for name in locals_names:
             item_to_expand = None
             try:
                 # DANGER!
