@@ -113,6 +113,8 @@ class MicrobitMode(MicroPythonMode):
     description = _("Write MicroPython for the BBC micro:bit.")
     icon = "microbit"
     fs = None  #: Reference to filesystem navigator.
+    file_manager = None
+    file_manager_thread = None
     flash_thread = None
     file_extensions = ["hex"]
 
@@ -610,6 +612,11 @@ class MicrobitMode(MicroPythonMode):
         """
         self.view.remove_filesystem()
         self.file_manager = None
+        if self.file_manager_thread:
+            self.file_manager_thread.quit()
+            if not self.file_manager_thread.wait(1):
+                self.file_manager_thread.terminate()
+                self.file_manager_thread.wait()
         self.file_manager_thread = None
         self.fs = None
 
@@ -655,3 +662,18 @@ class MicrobitMode(MicroPythonMode):
         if self.fs:
             self.remove_fs()
             self.add_fs()
+
+    def stop(self):
+        """
+        Destructor: Make sure any file manager and flasher threads are
+        closed if necessary
+        """
+        super().stop()
+        # Remove FS closes the file manager thread
+        self.remove_fs()
+        # Close flashing thread
+        if self.flash_thread:
+            self.flash_thread.quit()
+            if not self.flash_thread.wait(1):
+                self.flash_thread.terminate()
+                self.flash_thread.wait()
