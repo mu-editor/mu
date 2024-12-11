@@ -54,14 +54,15 @@ jobs:
   build-linux:
     runs-on: ubuntu-20.04
     container:
-      image: ghcr.io/mu-editor/mu-appimage:2022.05.01
+      image: ghcr.io/mu-editor/mu-appimage:2024.12.02
     name: Build AppImage
     steps:
       - uses: actions/checkout@v4
       - name: Display system info
         run: |
           uname -a
-          cat /etc/lsb-release
+          cat /etc/os-release
+          ldd --version
           python -c "import sys; print(sys.version)"
           python -c "import platform, struct; print(platform.machine(), struct.calcsize('P') * 8)"
           python -c "import sys; print(sys.executable)"
@@ -72,9 +73,8 @@ jobs:
         run: |
           pip install .[tests]
           pip list
-      - run: mkdir upload
       - name: Build Linux AppImage
-        run: xvfb-run make linux
+        run: QT_QPA_PLATFORM=offscreen make linux
       # GitHub actions upload artifact breaks permissions, workaround using tar
       # https://github.com/actions/upload-artifact/issues/38
       - name: Tar AppImage to maintain permissions
