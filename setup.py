@@ -25,12 +25,17 @@ install_requires = [
     # The core 'install_requires' should only be things
     # which are needed for the main editor to function.
     #
+    "PyQt5-sip<=12.13.0"
+    + ';"arm" not in platform_machine and "aarch" not in platform_machine',
     "PyQt5==5.13.2"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
     "QScintilla==2.11.3"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
     "PyQtChart==5.13.1"
     + ';"arm" not in platform_machine and "aarch" not in platform_machine',
+    # FIXME: Needed for qtconsole, this is the latest wheel in armv7l for
+    # Python 3.7 (Buster), otherwise it tries to build from source and fails.
+    "pyzmq<=26.0.3",
     # FIXME: jupyter-client added for Py3.5 compatibility, to be dropped after
     # Mu v1.1 release. So, qtconsole < 5 and jupyter-client < 6.2 (issue #1444)
     "jupyter-client>=4.1,<6.2",
