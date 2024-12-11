@@ -287,7 +287,7 @@ def test_micropython_mode_find_device():
         ), mock.patch("mu.modes.base.os", mock_os), mock.patch(
             "mu.modes.base.sys", mock_sys
         ):
-            assert mm.find_devices() == [device]
+            assert mm.find_devices(force=True) == [device]
 
 
 def test_micropython_mode_find_device_no_ports():
@@ -300,7 +300,7 @@ def test_micropython_mode_find_device_no_ports():
     with mock.patch(
         "mu.modes.base.QSerialPortInfo.availablePorts", return_value=[]
     ):
-        assert mm.find_devices() == []
+        assert mm.find_devices(force=True) == []
 
 
 def test_micropython_mode_find_device_but_no_device():
@@ -318,7 +318,7 @@ def test_micropython_mode_find_device_but_no_device():
         "mu.modes.base.QSerialPortInfo.availablePorts",
         return_value=[mock_port],
     ):
-        assert mm.find_devices() == []
+        assert mm.find_devices(force=True) == []
 
 
 def test_micropython_mode_find_device_darwin_remove_extraneous_devices():
@@ -356,7 +356,7 @@ def test_micropython_mode_find_device_darwin_remove_extraneous_devices():
         "mu.modes.base.QSerialPortInfo.availablePorts",
         return_value=[mock_port, mock_port2],
     ):
-        assert mm.find_devices() == [device]
+        assert mm.find_devices(force=True) == [device]
 
 
 def test_micropython_mode_port_path_posix():

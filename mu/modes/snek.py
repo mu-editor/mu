@@ -60,19 +60,18 @@ class SnekREPLConnection(REPLConnection):
             return
         self.ready = True
         if self.flowcontrol:
-            for self._baudrate in snek_bauds:
-                logger.info("Try baudrate %d" % self._baudrate)
-                self.serial.setBaudRate(self._baudrate)
-                self.serial.write(b"\x14\n")
+            for baudrate in snek_bauds:
+                logger.info("Try baudrate %d" % baudrate)
+                self.baudrate = baudrate
+                self.serial.write(b"\x14")
                 self.serial.waitForReadyRead(250)
                 if self.got_dc4:
                     logger.info("Autobaud response detected")
                     break
                 logger.info("No autobaud response")
             else:
-                self._baudrate = snek_bauds[0]
-                logger.info("Using default baudrate %d" % self._baudrate)
-                self.serial.setBaudRate(self._baudrate)
+                logger.info("Using default baudrate %d" % snek_bauds[0])
+                self.baudrate = snek_bauds[0]
         self.write(self.pending)
         self.pending = b""
 
