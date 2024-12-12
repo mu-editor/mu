@@ -302,7 +302,7 @@ class CircuitPythonMode(MicroPythonMode):
                     manufacturer,
                     self.name,
                     self.short_name,
-                    "CircuitPython board",
+                    port.description(),
                 )
         # No match.
         return None
