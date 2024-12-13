@@ -483,10 +483,9 @@ def test_python_remove_plotter():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
+    pm = PythonMode(editor, view)
+    pm.set_buttons = mock.MagicMock()
     with mock.patch("builtins.super") as mock_super:
-        pm = PythonMode(editor, view)
-        pm.set_buttons = mock.MagicMock()
-        mock_super.reset_mock()
         pm.remove_plotter()
         pm.set_buttons.assert_called_once_with(run=True, repl=True, debug=True)
         mock_super().remove_plotter.assert_called_once_with()
