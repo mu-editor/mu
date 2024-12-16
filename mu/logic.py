@@ -40,7 +40,7 @@ from . import __version__
 from . import i18n
 from .resources import path
 from .debugger.utils import is_breakpoint_line
-from .config import DATA_DIR, VENV_DIR, MAX_LINE_LENGTH
+from .config import get_data_dir, get_venv_dir, MAX_LINE_LENGTH
 from . import settings
 from .virtual_environment import venv
 
@@ -806,11 +806,12 @@ class Editor(QObject):
         self.current_path = ""  # Directory of last loaded file.
         self.global_replace = False
         self.selecting_mode = False  # Flag to stop auto-detection of modes.
-        if not os.path.exists(DATA_DIR):
-            logger.debug("Creating directory: {}".format(DATA_DIR))
-            os.makedirs(DATA_DIR)
+        data_dir = get_data_dir()
+        if not os.path.exists(data_dir):
+            logger.debug("Creating directory: {}".format(data_dir))
+            os.makedirs(data_dir)
         logger.info("Log directory: {}".format(LOG_DIR))
-        logger.info("Data directory: {}".format(DATA_DIR))
+        logger.info("Data directory: {}".format(data_dir))
 
         @view.open_file.connect
         def on_open_file(file):
@@ -1529,7 +1530,7 @@ class Editor(QObject):
         if to_remove or to_add:
             logger.info("To add: {}".format(to_add))
             logger.info("To remove: {}".format(to_remove))
-            logger.info("Virtualenv: {}".format(VENV_DIR))
+            logger.info("Virtualenv: {}".format(get_venv_dir))
             self._view.sync_packages(to_remove, to_add)
 
     def select_mode(self, event=None):
