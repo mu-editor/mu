@@ -431,11 +431,8 @@ def check_pycodestyle(code, config_file=False):
         "E121",
         "E123",
         "E126",
-        "E226",
-        "E203",
-        "E302",
-        "E305",
-        "E24",
+        "E2",
+        "E3",
         "E704",
         "W291",
         "W292",
@@ -477,8 +474,6 @@ def check_pycodestyle(code, config_file=False):
             line_no, col, msg = matcher.groups()
             line_no = int(line_no) - 1
             code, description = msg.split(" ", 1)
-            if code == "E303":
-                description += _(" above this line")
             if line_no not in style_feedback:
                 style_feedback[line_no] = []
             # Capitalise the 1st letter keeping the rest of the str unmodified
