@@ -45,6 +45,38 @@ MODULE_NAMES.add("sys")
 MODULE_NAMES.add("builtins")
 
 
+class SerialPorts:
+    def __init__(self):
+        self.current_ports = []
+        self.current_sequence = 0
+        self.current_time = -1
+
+    def ports(self, force=False):
+        new_time = time.monotonic()
+        if force or new_time - self.current_time > 0.5:
+            self.current_time = new_time
+            available_ports = QSerialPortInfo.availablePorts()
+            if len(self.current_ports) != len(available_ports):
+                self.current_ports = available_ports
+                self.current_sequence += 1
+            else:
+                for i in range(len(available_ports)):
+                    old = self.current_ports[i]
+                    new = available_ports[i]
+                    if (
+                        old.portName() != new.portName()
+                        or old.description() != new.description()
+                        or old.serialNumber() != new.serialNumber()
+                    ):
+                        self.current_ports = available_ports
+                        self.current_sequence += 1
+                        break
+        return (self.current_ports, self.current_sequence)
+
+
+serial_ports = SerialPorts()
+
+
 class REPLConnection(QObject):
     serial = None
     data_received = pyqtSignal(bytes)
@@ -73,6 +105,13 @@ class REPLConnection(QObject):
             return self._baudrate
         else:
             return None
+
+    @baudrate.setter
+    def baudrate(self, value):
+        if value != self._baudrate:
+            self._baudrate = value
+            if self.serial:
+                self.serial.setBaudRate(value)
 
     def open(self):
         """
@@ -379,6 +418,8 @@ class MicroPythonMode(BaseMode):
     connection = None
     baudrate = 115200
     builtins = ["const"]
+    current_devices = []
+    current_sequence = None
 
     def compatible_board(self, port):
         """
@@ -410,13 +451,24 @@ class MicroPythonMode(BaseMode):
                 )
         return None
 
-    def find_devices(self, with_logging=True):
+    def check_devices(self):
+        """
+        Quickly check to see if the set of devices has
+        changed, return True if changed else False
+        """
+        (_, new_sequence) = serial_ports.ports()
+        return new_sequence != self.current_sequence
+
+    def find_devices(self, with_logging=True, force=False):
         """
         Returns the port and serial number, and name for the first
         MicroPython-ish device found connected to the host computer.
         If no device is found, returns the tuple (None, None, None).
         """
-        available_ports = QSerialPortInfo.availablePorts()
+        (available_ports, new_sequence) = serial_ports.ports(force)
+        if new_sequence == self.current_sequence:
+            return self.current_devices
+        self.current_sequence = new_sequence
         devices = []
         for port in available_ports:
             device = self.compatible_board(port)
@@ -448,6 +500,7 @@ class MicroPythonMode(BaseMode):
                     for p in available_ports
                 ]
             )
+        self.current_devices = devices
         return devices
 
     def port_path(self, port_name):
