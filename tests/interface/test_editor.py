@@ -936,6 +936,7 @@ def test_EditorPane_toggle_comments_handle_crlf_newline():
     """
     ep = mu.interface.editor.EditorPane(None, "test\r\nline 2\n")
     ep.hasSelectedText = mock.MagicMock(return_value=False)
+    ep.setCursorPosition(0, 0)
     ep.toggle_comments()
     assert ep.text() == "# test\nline 2\n"
     assert ep.selectedText() == "# test"
