@@ -361,6 +361,13 @@ def read_and_decode(filepath):
     return text, newline
 
 
+def get_pathname(self):
+    """
+    Returns the pathname of the currently edited file
+    """
+    return self.view.current_tab.path
+
+
 def extract_envars(raw):
     """
     Returns a list of environment variables given a string containing
