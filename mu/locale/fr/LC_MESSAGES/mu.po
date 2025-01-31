@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  \n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2021-11-01 21:42+0000\n"
+"POT-Creation-Date: 2022-03-02 20:15+0100\n"
 "PO-Revision-Date: 2018-07-10 11:01+0100\n"
 "Last-Translator: \n"
 "Language: fr_FR\n"
@@ -22,7 +22,7 @@ msgid ""
 "Connection timed out. Is your machine slow or busy? Free up some of the "
 "machine's resources and try again."
 msgstr ""
-"Echec de la connexion. Es-ce que la machine est lente ou très occupée? "
+"Échec de la connexion. Est-ce que la machine est lente ou très occupée? "
 "Libère des ressources sur la machine, puis essaie à nouveau."
 
 #: mu/debugger/client.py:132
@@ -35,7 +35,7 @@ msgstr ""
 
 #: mu/interface/dialogs.py:75
 msgid "Select Mode"
-msgstr "Sélectionner un Mode"
+msgstr "Sélectionner un mode"
 
 #: mu/interface/dialogs.py:78
 msgid ""
@@ -58,8 +58,8 @@ msgid ""
 "When reporting a bug, copy and paste the content of the following log "
 "file."
 msgstr ""
-"Quand vous rapportez un bug, copiez et collez le contenu du fichier de "
-"logs suivant."
+"Quand tu rapportes un bug, copie et colle le contenu du fichier de logs "
+"suivant."
 
 #: mu/interface/dialogs.py:162
 msgid ""
@@ -79,15 +79,15 @@ msgstr ""
 
 #: mu/interface/dialogs.py:188
 msgid "Minify Python code before flashing?"
-msgstr "Compresser le code Python avant le flasher?"
+msgstr "Minifier le code Python avant de le flasher?"
 
 #: mu/interface/dialogs.py:192
 msgid ""
 "Override the built-in MicroPython runtime with the following hex file "
 "(empty means use the default):"
 msgstr ""
-"Remplace l'exécutable MicroPython par le fichier hex suivant (vide "
-"signifie utilise celui par défaut):"
+"Remplace l'exécutable MicroPython par le fichier hex suivant (laisser "
+"vide pour utiliser celui par défaut):"
 
 #: mu/interface/dialogs.py:218
 msgid ""
@@ -97,23 +97,28 @@ msgid ""
 "Each separate package name should be on a new line. Packages are "
 "installed from PyPI (see: https://pypi.org/)."
 msgstr ""
+"Les paquets affichés ci-dessous pourront être importés dans le mode "
+"Python 3. Efface un paquet de la liste pour enlever sa disponibilité.\n"
+"\n"
+"Chaque paquet doit être sur sa propre ligne. Les paquets sont installés "
+"depuis PyPI (voir: https://pypi.org/)."
 
 #: mu/interface/dialogs.py:239
 msgid "Automatically detect"
 msgstr ""
 
-#: mu/interface/dialogs.py:264
+#: mu/interface/dialogs.py:265
 msgid ""
 "Please select the language for Mu's user interface from the choices "
 "listed below. <strong>Restart Mu for these changes to take "
 "effect.</strong>"
 msgstr ""
 
-#: mu/interface/dialogs.py:295
+#: mu/interface/dialogs.py:296
 msgid "How to flash MicroPython to your device"
 msgstr ""
 
-#: mu/interface/dialogs.py:302
+#: mu/interface/dialogs.py:303
 msgid ""
 "&nbsp;1. Determine the type of device (ESP8266 or ESP32)<br />&nbsp;2. "
 "Download firmware from the <a href=\"https://micropython.org/download\" "
@@ -122,335 +127,352 @@ msgid ""
 "'Browse' button<br/>&nbsp;5. Press 'Erase & write firmware'"
 msgstr ""
 
-#: mu/interface/dialogs.py:334 mu/modes/web.py:82
+#: mu/interface/dialogs.py:326
+msgid "Device:"
+msgstr ""
+
+#: mu/interface/dialogs.py:329
+msgid "Choose device type:"
+msgstr ""
+
+#: mu/interface/dialogs.py:333
+msgid "Firmware (.bin):"
+msgstr ""
+
+#: mu/interface/dialogs.py:335 mu/modes/web.py:82
 msgid "Browse"
 msgstr ""
 
-#: mu/interface/dialogs.py:335
+#: mu/interface/dialogs.py:336
 msgid "Erase && write firmware"
 msgstr ""
 
-#: mu/interface/dialogs.py:509 mu/interface/main.py:1381
+#: mu/interface/dialogs.py:375
+msgid "Select MicroPython firmware (.bin)"
+msgstr ""
+
+#: mu/interface/dialogs.py:377
+msgid "Firmware (*.bin)"
+msgstr ""
+
+#: mu/interface/dialogs.py:510 mu/interface/main.py:1387
 msgid "Mu Administration"
 msgstr "Administration de Mu"
 
-#: mu/interface/dialogs.py:523
+#: mu/interface/dialogs.py:524
 msgid "Current Log"
 msgstr "Log courant"
 
-#: mu/interface/dialogs.py:527
+#: mu/interface/dialogs.py:528
 msgid "Python3 Environment"
-msgstr "Environnement Python 3"
+msgstr "Environnement Python3"
 
-#: mu/interface/dialogs.py:534
+#: mu/interface/dialogs.py:535
 msgid "BBC micro:bit Settings"
 msgstr "Configuration BBC micro:bit"
 
-#: mu/interface/dialogs.py:538
+#: mu/interface/dialogs.py:539
 msgid "Third Party Packages"
-msgstr ""
+msgstr "Paquets tiers"
 
-#: mu/interface/dialogs.py:542
+#: mu/interface/dialogs.py:543
 msgid "ESP Firmware flasher"
 msgstr ""
 
-#: mu/interface/dialogs.py:547
+#: mu/interface/dialogs.py:548
 msgid "Select Language"
 msgstr ""
 
-#: mu/interface/dialogs.py:585
+#: mu/interface/dialogs.py:586
 msgid "Find / Replace"
 msgstr "Rechercher / Remplacer"
 
-#: mu/interface/dialogs.py:589
+#: mu/interface/dialogs.py:590
 msgid "Find:"
 msgstr "Recherche:"
 
-#: mu/interface/dialogs.py:596
+#: mu/interface/dialogs.py:597
 msgid "Replace (optional):"
 msgstr "Remplace (optionnel):"
 
-#: mu/interface/dialogs.py:602
+#: mu/interface/dialogs.py:603
 msgid "Replace all?"
 msgstr "Remplacer tout?"
 
-#: mu/interface/dialogs.py:651
+#: mu/interface/dialogs.py:652
 msgid "Third Party Package Status"
-msgstr ""
+msgstr "Statut des paquets tiers"
 
-#: mu/interface/editor.py:319 mu/logic.py:1324
+#: mu/interface/editor.py:319 mu/logic.py:1327
 msgid "untitled"
 msgstr "sans titre"
 
-#: mu/interface/main.py:99
+#: mu/interface/main.py:100
 msgid "Mode"
 msgstr "Mode"
 
-#: mu/interface/main.py:100
+#: mu/interface/main.py:101
 msgid "Change Mu's mode of behaviour."
 msgstr "Change le mode de Mu."
 
-#: mu/interface/main.py:105
+#: mu/interface/main.py:106
 msgid "New"
 msgstr "Nouveau"
 
-#: mu/interface/main.py:106
+#: mu/interface/main.py:107
 msgid "Create a new Python script."
 msgstr "Crée un nouveau script Python."
 
-#: mu/interface/main.py:110
+#: mu/interface/main.py:111
 msgid "Load"
 msgstr "Charger"
 
-#: mu/interface/main.py:111
+#: mu/interface/main.py:112
 msgid "Load a Python script."
 msgstr "Charge un script Python."
 
-#: mu/interface/main.py:115
+#: mu/interface/main.py:116
 msgid "Save"
 msgstr "Enregistrer"
 
-#: mu/interface/main.py:116
+#: mu/interface/main.py:117
 msgid "Save the current Python script."
 msgstr "Enregistre le script Python courant."
 
-#: mu/interface/main.py:130
+#: mu/interface/main.py:131
 msgid "Zoom-in"
 msgstr "Zoomer"
 
-#: mu/interface/main.py:131
+#: mu/interface/main.py:132
 msgid "Zoom in (to make the text bigger)."
 msgstr "Augmente le niveau de zoom (pour rendre le texte plus gros)."
 
-#: mu/interface/main.py:135
+#: mu/interface/main.py:136
 msgid "Zoom-out"
 msgstr "Dé-zoomer"
 
-#: mu/interface/main.py:136
+#: mu/interface/main.py:137
 msgid "Zoom out (to make the text smaller)."
 msgstr "Diminue le niveau de zoom (pour rendre le texte plus petit)."
 
-#: mu/interface/main.py:140
+#: mu/interface/main.py:141
 msgid "Theme"
 msgstr "Thème"
 
-#: mu/interface/main.py:141
+#: mu/interface/main.py:142
 msgid "Toggle theme between day, night or high contrast."
 msgstr "Change de thème entre jour, nuit ou contraste élevé"
 
-#: mu/interface/main.py:148
+#: mu/interface/main.py:149
 msgid "Check"
 msgstr "Vérifier"
 
-#: mu/interface/main.py:149
+#: mu/interface/main.py:150
 msgid "Check your code for mistakes."
 msgstr "Vérifie que le programme ne contient pas d'erreur."
 
-#: mu/interface/main.py:154
-#, fuzzy
-msgid "Tidy"
-msgstr "Vendredi"
-
 #: mu/interface/main.py:155
-msgid "Tidy up the layout of your code."
-msgstr ""
+msgid "Tidy"
+msgstr "Nettoyer"
 
-#: mu/interface/main.py:159
+#: mu/interface/main.py:156
+msgid "Tidy up the layout of your code."
+msgstr "Nettoyer l'arrangement de ton code."
+
+#: mu/interface/main.py:160
 msgid "Help"
 msgstr "Aide"
 
-#: mu/interface/main.py:160
+#: mu/interface/main.py:161
 msgid "Show help about Mu in a browser."
 msgstr "Montre l'aide à propos de Mu dans un navigateur."
 
-#: mu/interface/main.py:164
+#: mu/interface/main.py:165
 msgid "Quit"
 msgstr "Quitter"
 
-#: mu/interface/main.py:164
+#: mu/interface/main.py:165
 msgid "Quit Mu."
 msgstr "Quitte Mu."
 
-#: mu/interface/main.py:275
+#: mu/interface/main.py:271
 msgid "Close file"
-msgstr ""
+msgstr "Ferme le ficher"
 
-#: mu/interface/main.py:316
+#: mu/interface/main.py:312
 msgid "Mu {}"
 msgstr "Mu {}"
 
-#: mu/interface/main.py:554
+#: mu/interface/main.py:550
 msgid "Copy selected text to REPL"
 msgstr ""
 
-#: mu/interface/main.py:617
-#, fuzzy
+#: mu/interface/main.py:613
 msgid "Filesystem on "
-msgstr "Système de fichier micro:bit"
+msgstr "Système de fichier activé"
 
-#: mu/interface/main.py:668
+#: mu/interface/main.py:674
 msgid "Python3 data tuple"
 msgstr "Tuple de données Python 3"
 
-#: mu/interface/main.py:680
+#: mu/interface/main.py:686
 msgid "Python3 (Jupyter)"
-msgstr "Python3 (Jupyter)"
+msgstr "Python 3 (Jupyter)"
 
-#: mu/interface/main.py:687
+#: mu/interface/main.py:693
 msgid "{} REPL"
 msgstr "{} REPL"
 
-#: mu/interface/main.py:706
+#: mu/interface/main.py:712
 msgid "{} Plotter"
 msgstr "Grapher {}"
 
-#: mu/interface/main.py:756
+#: mu/interface/main.py:762
 msgid "Running: {}"
 msgstr "En cours d'exécution: {}"
 
-#: mu/interface/main.py:805
+#: mu/interface/main.py:811
 msgid "Debug Inspector"
 msgstr "Inspecteur pour le débogage"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:823
 msgid "Name"
 msgstr "Nom"
 
-#: mu/interface/main.py:817
+#: mu/interface/main.py:823
 msgid "Value"
 msgstr "Valeur"
 
-#: mu/interface/main.py:855
+#: mu/interface/main.py:861
 msgid "(A list of {} items.)"
 msgstr "(Une liste de {} éléments.)"
 
-#: mu/interface/main.py:874
+#: mu/interface/main.py:880
 msgid "(A dict of {} items.)"
 msgstr "(Un dictionnaire de {} éléments.)"
 
-#: mu/interface/main.py:1057
+#: mu/interface/main.py:1063
 msgid "Mu"
 msgstr "Mu"
 
-#: mu/interface/main.py:1368
+#: mu/interface/main.py:1374
 msgid "Mu's current mode of behaviour."
 msgstr "Mode courant de Mu."
 
-#: mu/interface/main.py:1423
+#: mu/interface/main.py:1429
 #, fuzzy
 msgid "Detected new {} device: {}."
 msgstr "Nouveau périphérique {} détecté"
 
-#: mu/interface/main.py:1427 mu/logic.py:1616
+#: mu/interface/main.py:1433 mu/logic.py:1622
 msgid "Detected new {} device."
 msgstr "Nouveau périphérique {} détecté"
 
-#: mu/interface/panes.py:495
+#: mu/interface/panes.py:657
 msgid "File already exists; overwrite it?"
 msgstr "Le fichier existe déja: faut-il l'écraser?"
 
-#: mu/interface/panes.py:496
+#: mu/interface/panes.py:658
 msgid "File already exists"
 msgstr "Le fichier existe déjà"
 
-#: mu/interface/panes.py:529
+#: mu/interface/panes.py:691
 #, fuzzy
 msgid "Copying '{}' to device."
-msgstr "Copie '{}' sur la micro:bit."
+msgstr "Copie de '{}' sur la micro:bit."
 
-#: mu/interface/panes.py:538
+#: mu/interface/panes.py:700
 #, fuzzy
 msgid "'{}' successfully copied to device."
 msgstr "'{}' copié avec succès sur la micro:bit."
 
-#: mu/interface/panes.py:547
+#: mu/interface/panes.py:709
 msgid "Delete (cannot be undone)"
 msgstr "Supprimer (retour en arrière impossible)"
 
-#: mu/interface/panes.py:553
+#: mu/interface/panes.py:715
 #, fuzzy
 msgid "Deleting '{}' from device."
 msgstr "Supprime '{}' de la micro:bit"
 
-#: mu/interface/panes.py:562
+#: mu/interface/panes.py:724
 #, fuzzy
 msgid "'{}' successfully deleted from device."
 msgstr "'{}' supprimé avec succès de la micro:bit."
 
-#: mu/interface/panes.py:595
+#: mu/interface/panes.py:757
 #, fuzzy
 msgid "Getting '{}' from device. Copying to '{}'."
 msgstr "Récupère '{}' depuis la micro:bit. Copie dans '{}'."
 
-#: mu/interface/panes.py:606
+#: mu/interface/panes.py:768
 #, fuzzy
 msgid "Successfully copied '{}' from the device to your computer."
 msgstr "'{}' copié avec succès de la micro:bit sur l'ordinateur."
 
-#: mu/interface/panes.py:623
+#: mu/interface/panes.py:785
 msgid "Open in Mu"
 msgstr "Ouvrir avec Mu"
 
-#: mu/interface/panes.py:626
+#: mu/interface/panes.py:788
 msgid "Write to main.py on device"
 msgstr ""
 
-#: mu/interface/panes.py:629
+#: mu/interface/panes.py:791
 msgid "Open"
 msgstr "Ouvrir"
 
-#: mu/interface/panes.py:635
+#: mu/interface/panes.py:797
 msgid "Opening '{}'"
 msgstr "Ouverture de '{}'"
 
-#: mu/interface/panes.py:678
-#, fuzzy
+#: mu/interface/panes.py:840
 msgid "Files on your device:"
-msgstr "Fichiers sur ton ordinateur:"
+msgstr "Fichiers sur ton périphérique:"
 
-#: mu/interface/panes.py:680
+#: mu/interface/panes.py:842
 msgid "Files on your computer:"
 msgstr "Fichiers sur ton ordinateur:"
 
-#: mu/interface/panes.py:752
-#, fuzzy
+#: mu/interface/panes.py:914
 msgid ""
 "There was a problem getting the list of files on the device. Please check"
 " Mu's logs for technical information. Alternatively, try unplugging"
 "/plugging-in your device and/or restarting Mu."
 msgstr ""
-"Un problème est survenu pendant le listage des fichiers sur la micro:bit."
-" Merci de vérifier les logs de Mu pour avoir plus d'informations. Sinon, "
-"essaie de débrancher/rebrancher ta micro:bit, ou bien de redémarrer Mu."
+"Un problème est survenu pendant le listage des fichiers sur le "
+"périphérique. Merci de vérifier les logs de Mu pour avoir plus "
+"d'informations. Sinon, essaie de débrancher/rebrancher ton périphérique, "
+"ou bien de redémarrer Mu."
 
-#: mu/interface/panes.py:767
+#: mu/interface/panes.py:929
 #, fuzzy
 msgid ""
 "There was a problem copying the file '{}' onto the device. Please check "
 "Mu's logs for more information."
 msgstr ""
-"Un problème est survenu pendant la copie du fichier '{}' sur la "
-"micro:bit. Merci de vérifier les logs de Mu pour avoir plus "
+"Un problème est survenu pendant la lecture du fichier '{}' depuis le "
+"périphérique. Merci de vérifier les logs de Mu pour avoir plus "
 "d'informations."
 
-#: mu/interface/panes.py:779
+#: mu/interface/panes.py:941
 #, fuzzy
 msgid ""
 "There was a problem deleting '{}' from the device. Please check Mu's logs"
 " for more information."
 msgstr ""
-"Un problème est survenu pendant la suppression du fichier '{}' de la "
-"micro:bit. Merci de vérifier les logs de Mu pour avoir plus "
+"Un problème est survenu pendant la lecture du fichier '{}' depuis le "
+"périphérique. Merci de vérifier les logs de Mu pour avoir plus "
 "d'informations."
 
-#: mu/interface/panes.py:791
+#: mu/interface/panes.py:953
 #, fuzzy
 msgid ""
 "There was a problem getting '{}' from the device. Please check Mu's logs "
 "for more information."
 msgstr ""
-"Un problème est survenu pendant la lecture du fichier '{}' depuis la "
-"micro:bit. Merci de vérifier les logs de Mu pour avoir plus "
+"Un problème est survenu pendant la lecture du fichier '{}' depuis le "
+"périphérique. Merci de vérifier les logs de Mu pour avoir plus "
 "d'informations."
 
 #: mu/interface/widgets.py:70 mu/interface/widgets.py:141
@@ -472,7 +494,7 @@ msgstr ""
 
 #: mu/logic.py:95
 msgid "This editor is called Mu (you say it 'mew' or 'moo')."
-msgstr "Cet éditeur s'appelle Mu (ca se prononce 'miou' ou 'moo')."
+msgstr "Cet éditeur s'appelle Mu (ça se prononce 'mu' ou 'miou')."
 
 #: mu/logic.py:96
 msgid "Google, Facebook, NASA, Pixar, Disney and many more use Python."
@@ -485,8 +507,8 @@ msgid ""
 "Programming is a form of magic. Learn to cast the right spells with code "
 "and you'll be a wizard."
 msgstr ""
-"La programmation est une forme de magie. Apprend à lancer des sorts avec "
-"un programme et tu deviendras un magicien."
+"La programmation est une forme de magie. Apprend à lancer les bons sorts "
+"avec du code et tu deviendras un magicien."
 
 #: mu/logic.py:101
 msgid ""
@@ -502,11 +524,13 @@ msgstr "Soit courageux(se), ose casser des choses, apprend et amuse toi!"
 
 #: mu/logic.py:106
 msgid "Make your software both useful AND fun. Empower your users."
-msgstr "Rend ton programme à la fois utile et amusant."
+msgstr ""
+"Rend ton programme à la fois utile ET amusant. Donne à tes utilisateurs "
+"les moyens de faire ce qu'ils veulent."
 
 #: mu/logic.py:107
 msgid "For the Zen of Python: import this"
-msgstr "Pour rester zen avec Python: importe ça"
+msgstr "Pour lire le Zen de Python: import this"
 
 #: mu/logic.py:108
 msgid "Diversity promotes creativity."
@@ -543,8 +567,8 @@ msgstr ""
 #: mu/logic.py:120
 msgid "Debugging is twice as hard as writing the code in the first place."
 msgstr ""
-"Déboguer un programme est deux fois plus difficile que d'écrire un "
-"premier programme."
+"Déboguer un programme est deux fois plus difficile que d'écrire le "
+"programme en premier lieu."
 
 #: mu/logic.py:121
 msgid "It's fun to program."
@@ -553,32 +577,32 @@ msgstr "C'est amusant de programmer."
 #: mu/logic.py:122
 msgid "Programming has more to do with problem solving than writing code."
 msgstr ""
-"La programmation se rapproche plus de la résolution d'un problème que de "
-"l'écriture d'un programme."
+"En programmation, c'est plus important de savoir résoudre des problèmes "
+"que d'écrire du code."
 
 #: mu/logic.py:123
 msgid "Start with your users' needs."
-msgstr "Commence par répondre au besoins des tes utilisateurs."
+msgstr "Commence avec ce dont tes utilisateurs ont besoin."
 
 #: mu/logic.py:124
 msgid "Try to see things from your users' point of view."
-msgstr "Essaye de voir les choses avec le point de vue de tes utilisateurs."
+msgstr "Essaye de voir les choses du point de vue de tes utilisateurs."
 
 #: mu/logic.py:125
 msgid "Put yourself in your users' shoes."
-msgstr "Met toi dans la peau de tes utilisateurs."
+msgstr "Mets-toi dans la peau de tes utilisateurs."
 
 #: mu/logic.py:126
 msgid ""
 "Explaining a programming problem to a friend often reveals the solution. "
 ":-)"
 msgstr ""
-"Quand on programme, expliquer à un ami le problème que l'on rencontre, "
-"permet souvent de trouver la solution. ;-)"
+"Quand on programme, expliquer à un ami le problème que l'on rencontre "
+"permet souvent de trouver la solution. :-)"
 
 #: mu/logic.py:130
 msgid "If you don't know, ask. Nobody to ask? Just look it up."
-msgstr "Si tu ne sais pas, demande. Si personne ne te répond, cherche!"
+msgstr "Si tu ne sais pas, demande. Personne à qui demander? Fais une recherche."
 
 #: mu/logic.py:131
 msgid "Complexity is the enemy. KISS - keep it simple, stupid!"
@@ -590,7 +614,7 @@ msgstr "Beau est mieux que laid."
 
 #: mu/logic.py:133
 msgid "Explicit is better than implicit."
-msgstr "Explicite est mieux que implicite."
+msgstr "Explicite est mieux qu'implicite."
 
 #: mu/logic.py:134
 msgid "Simple is better than complex. Complex is better than complicated."
@@ -638,13 +662,15 @@ msgstr ""
 
 #: mu/logic.py:149
 msgid "If the implementation is hard to explain, it's a bad idea."
-msgstr "Si l'implémentation est difficile à expliquer, c'est qu'elle est mauvaise."
+msgstr ""
+"Si l'implémentation est difficile à expliquer, c'est que l'idée est "
+"mauvaise."
 
 #: mu/logic.py:150
 msgid "If the implementation is easy to explain, it may be a good idea."
 msgstr ""
 "Si l'implémentation est facile à expliquer,  c'est probablement une bonne"
-" implémentation."
+" idée."
 
 #: mu/logic.py:151
 msgid "Namespaces are one honking great idea -- let's do more of those!"
@@ -659,7 +685,7 @@ msgstr "Mu a été créé par Nicholas H. Tollervey"
 #: mu/logic.py:153
 msgid "To understand what recursion is, you must first understand recursion."
 msgstr ""
-"Pour comprendre ce qu'est la récursivité. Tu dois d'abord comprendre ce "
+"Pour comprendre ce qu'est la récursivité, tu dois d'abord comprendre ce "
 "qu'est la récursivité."
 
 #: mu/logic.py:154
@@ -731,10 +757,10 @@ msgstr ""
 "manque pas de caractères!"
 
 #: mu/logic.py:576
-msgid " compatible"
+msgid "{} compatible"
 msgstr ""
 
-#: mu/logic.py:995
+#: mu/logic.py:998
 msgid ""
 "The file contains characters Mu expects to be encoded as {0} or as the "
 "computer's default encoding {1}, but which are encoded in some other way."
@@ -743,20 +769,26 @@ msgid ""
 "If this file was saved in another application, re-save the file via the "
 "'Save as' option and set the encoding to {0}"
 msgstr ""
+"Le fichier contient des caractères qui devraient être encodés en {0} pour"
+" Mu ou avec l'encodage de caractères par défault de l'ordinateur {1}, "
+"mais qui sont encodés d'une autre façon.\n"
+"\n"
+"Si ce fichier a été sauvegardé par une autre application, sauvegarde-le à"
+" nouveau avec l'option 'Enregistrer sous' et choisis l'encodage {0}"
 
-#: mu/logic.py:1023
+#: mu/logic.py:1026
 msgid "The file \"{}\" is already open."
 msgstr "Le fichier \"{}\" est déjà ouvert."
 
-#: mu/logic.py:1035
+#: mu/logic.py:1038
 msgid "Mu cannot read the characters in {}"
 msgstr "Mu ne peut pas lire les caractères dans {}"
 
-#: mu/logic.py:1061
+#: mu/logic.py:1064
 msgid "Mu was not able to open this file"
 msgstr "Mu ne peut pas ouvrir ce fichier"
 
-#: mu/logic.py:1062
+#: mu/logic.py:1065
 msgid ""
 "Currently Mu only works with Python source files or hex files created "
 "with embedded MicroPython code."
@@ -764,11 +796,11 @@ msgstr ""
 "Actuellement Mu fonctionne seulement avec des scripts Python ou des "
 "fichiers hex créés avec le MicroPython embarqué."
 
-#: mu/logic.py:1070
+#: mu/logic.py:1073
 msgid "Could not load {}"
 msgstr "Impossible de charger{}"
 
-#: mu/logic.py:1072
+#: mu/logic.py:1075
 msgid ""
 "Does this file exist?\n"
 "If it does, do you have permission to read it?\n"
@@ -780,25 +812,25 @@ msgstr ""
 "\n"
 "Merci de vérifier et de ré-essayer."
 
-#: mu/logic.py:1080
+#: mu/logic.py:1083
 msgid "Is this a {} file?"
-msgstr "{} est un fichier?"
+msgstr "Est-ce que c'est un fichier {}?"
 
-#: mu/logic.py:1081
+#: mu/logic.py:1084
 msgid ""
 "It looks like this could be a {} file.\n"
 "\n"
 "Would you like to change Mu to the {}mode?"
 msgstr ""
-"Ca ressemble a un fichier {}.\n"
+"Ça ressemble a un fichier {}.\n"
 "\n"
 "Veux-tu changer le mode de Mu en {}?"
 
-#: mu/logic.py:1208
+#: mu/logic.py:1211
 msgid "Could not save file (disk problem)"
 msgstr "Impossible d'enregistrer le fichier (problème de disque)"
 
-#: mu/logic.py:1209
+#: mu/logic.py:1212
 msgid ""
 "Error saving file to disk. Ensure you have permission to write the file "
 "and sufficient disk space."
@@ -806,11 +838,11 @@ msgstr ""
 "Impossible d'enregistrer le fichier. Vérifie que tu as les droits "
 "d'écrire sur le disque et qu'il y a assez d'espace disque."
 
-#: mu/logic.py:1215
+#: mu/logic.py:1218
 msgid "Could not save file (encoding problem)"
 msgstr "Impossible d'enregistrer le fichier (problème d'encodage)"
 
-#: mu/logic.py:1217
+#: mu/logic.py:1220
 msgid ""
 "Unable to convert all the characters. If you have an encoding line at the"
 " top of the file, remove it and try again."
@@ -818,15 +850,15 @@ msgstr ""
 "Impossible de convertir tous les caractères. S'il y a entête de fichier "
 "pour définir l'encodage, essaye de l'enlever et recommence. "
 
-#: mu/logic.py:1228
+#: mu/logic.py:1231
 msgid "Saved file: {}"
 msgstr "Fichier enregistré: {}"
 
-#: mu/logic.py:1260 mu/logic.py:1675
+#: mu/logic.py:1263 mu/logic.py:1681
 msgid "You cannot use the filename \"{}\""
-msgstr ""
+msgstr "Tu ne peux pas utiliser le nom de fichier \"{}\""
 
-#: mu/logic.py:1263
+#: mu/logic.py:1266
 msgid ""
 "This name is already used by another part of Python. If you use this "
 "name, things are likely to break. Please try again with a different "
@@ -836,60 +868,62 @@ msgstr ""
 "est probable que ça ne fonctionnera plus. Essaie avec un nom de fichier "
 "différent."
 
-#: mu/logic.py:1340
+#: mu/logic.py:1343
 msgid "Good job! No problems found."
 msgstr "Bon travail! Aucun problème trouvé."
 
-#: mu/logic.py:1341
+#: mu/logic.py:1344
 msgid "Hurrah! Checker turned up no problems."
 msgstr "Hourra! Le vérificateur n'a trouvé aucun problème."
 
-#: mu/logic.py:1342
+#: mu/logic.py:1345
 msgid "Nice one! Zero problems detected."
 msgstr "Bravo! Aucun problème détecté."
 
-#: mu/logic.py:1343
+#: mu/logic.py:1346
 msgid "Well done! No problems here."
-msgstr "Bien joué! Pas problème ici."
+msgstr "Bien joué! Pas de problème ici."
 
-#: mu/logic.py:1344
+#: mu/logic.py:1347
 msgid "Awesome! Zero problems found."
 msgstr "Fantastique! Aucun problème découvert."
 
-#: mu/logic.py:1370
+#: mu/logic.py:1373
 msgid "There is un-saved work, exiting the application will cause you to lose it."
 msgstr ""
 "Tout ton travail n'a pas été enregistré. Si tu fermes l'application, il "
 "sera perdu."
 
-#: mu/logic.py:1442
+#: mu/logic.py:1448
 msgid "Could not find MicroPython runtime."
 msgstr "Impossible de trouver l'exécutable MicroPython."
 
-#: mu/logic.py:1443
+#: mu/logic.py:1449
 msgid ""
 "The micro:bit runtime you specified ('{}') does not exist. Please try "
 "again."
 msgstr ""
+"L'exécutable micro:bit que tu as indiqué ('{}') n'existe pas. Merci de "
+"réessayer."
 
-#: mu/logic.py:1569
+#: mu/logic.py:1575
 msgid "Changed to {} mode."
 msgstr "Basculé vers le mode {}"
 
-#: mu/logic.py:1599
+#: mu/logic.py:1605
 msgid "Would you like to change Mu to the {} mode?"
 msgstr "Veux-tu changer le mode de Mu en {}?"
 
-#: mu/logic.py:1618
+#: mu/logic.py:1624
 #, fuzzy
 msgid "Device changed to {}."
 msgstr "Basculé vers le mode {}"
 
-#: mu/logic.py:1654
+#: mu/logic.py:1660
 msgid "Cannot Set Breakpoint."
 msgstr "Impossible de mettre un point d'arrêt."
 
-#: mu/logic.py:1655
+#: mu/logic.py:1661
 msgid ""
 "Lines that are comments or some multi-line statements cannot have "
 "breakpoints."
@@ -897,7 +931,7 @@ msgstr ""
 "Les lignes qui sont des commentaires ou instruction multi-lignes ne "
 "peuvent pas avoir de point d'arrêt."
 
-#: mu/logic.py:1678
+#: mu/logic.py:1684
 msgid ""
 "This name is already used by another part of Python. If you use that "
 "name, things are likely to break. Please try again with a different "
@@ -906,57 +940,59 @@ msgstr ""
 "Ce nom est déjà utilisé ailleurs dans Python. Si tu utilises ce nom, cela"
 " risque de ne pas fonctionner. Essaie avec un nom de fichier différent."
 
-#: mu/logic.py:1700
+#: mu/logic.py:1706
 msgid "Could not rename file."
 msgstr "Impossible de renommer le fichier."
 
-#: mu/logic.py:1701
+#: mu/logic.py:1707
 msgid "A file of that name is already open in Mu."
 msgstr "A fichier avec ce nom est déjà ouvert dans Mu."
 
-#: mu/logic.py:1733
+#: mu/logic.py:1739
 msgid "Replaced \"{}\" with \"{}\"."
 msgstr "\"{}\" remplacé par \"{}\"."
 
-#: mu/logic.py:1738
+#: mu/logic.py:1744
 msgid "Replaced {} matches of \"{}\" with \"{}\"."
 msgstr "{} occurrences de \"{}\" remplacées par \"{}\"."
 
-#: mu/logic.py:1743 mu/logic.py:1750 mu/logic.py:1769
+#: mu/logic.py:1749 mu/logic.py:1756 mu/logic.py:1775
 msgid "Could not find \"{}\"."
 msgstr "Impossible de trouver \"{}\"."
 
-#: mu/logic.py:1748 mu/logic.py:1767
+#: mu/logic.py:1754 mu/logic.py:1773
 msgid "Highlighting matches for \"{}\"."
 msgstr "Occurences de \"{}\" surlignées."
 
-#: mu/logic.py:1753 mu/logic.py:1772
+#: mu/logic.py:1759 mu/logic.py:1778
 msgid "You must provide something to find."
 msgstr "Tu dois fournir quelque chose à chercher."
 
-#: mu/logic.py:1754 mu/logic.py:1773
+#: mu/logic.py:1760 mu/logic.py:1779
 msgid "Please try again, this time with something in the find box."
 msgstr ""
 "Essaie à nouveau, cette fois avec quelque chose dans la boîte de "
 "recherche."
 
-#: mu/logic.py:1817
-msgid "Successfully cleaned the code. Use CTRL-Z to undo."
-msgstr ""
-
 #: mu/logic.py:1823
-msgid "Your code contains problems."
-msgstr ""
+msgid "Successfully cleaned the code. Use CTRL-Z to undo."
+msgstr "Code nettoyé avec succès. Utilise CTRL-Z pour annuler."
 
-#: mu/logic.py:1824
+#: mu/logic.py:1829
+msgid "Your code contains problems."
+msgstr "Ton code contient des problèmes."
+
+#: mu/logic.py:1830
 msgid ""
 "These must be fixed before tidying will work. Please use the 'Check' "
 "button to highlight these problems."
 msgstr ""
+"Ils doivent être corrigés pour pouvoir lancer le nettoyage. Utilise le "
+"bouton 'Vérifier' pour voir ces problèmes."
 
 #: mu/modes/base.py:115
 msgid "Cannot connect to device on port {}"
-msgstr ""
+msgstr "Impossible de se connecter à un périphérique sur le port {}"
 
 #: mu/modes/base.py:209
 msgid "# Write your code here :-)"
@@ -987,13 +1023,13 @@ msgstr ""
 "tuples de données entre les appels à 'sleep' pour une courte période de "
 "temps."
 
-#: mu/modes/base.py:508 mu/modes/base.py:558
+#: mu/modes/base.py:508 mu/modes/base.py:558 mu/modes/snek.py:521
 msgid "Click on the device's reset button, wait a few seconds and then try again."
 msgstr ""
 "Appuie sur le bouton 'reset' du périphérique, attend quelques secondes et"
 " essaie à nouveau."
 
-#: mu/modes/base.py:516 mu/modes/base.py:566
+#: mu/modes/base.py:516 mu/modes/base.py:566 mu/modes/snek.py:529
 msgid "Could not find an attached device."
 msgstr "Impossible de trouver un périphérique connecté."
 
@@ -1034,29 +1070,28 @@ msgstr ""
 "secondes avant de ré-essayer."
 
 #: mu/modes/circuitpython.py:37
-#, fuzzy
 msgid "CircuitPython"
-msgstr "Adafruit CircuitPython"
+msgstr "CircuitPython"
 
 #: mu/modes/circuitpython.py:39
 msgid "Write code for boards running CircuitPython."
-msgstr ""
+msgstr "Écris du code pour les périphériques avec CircuitPython."
 
-#: mu/modes/circuitpython.py:142 mu/modes/pyboard.py:86
+#: mu/modes/circuitpython.py:142 mu/modes/pyboard.py:86 mu/modes/snek.py:379
 msgid "Serial"
 msgstr "Série"
 
-#: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87
+#: mu/modes/circuitpython.py:143 mu/modes/pyboard.py:87 mu/modes/snek.py:380
 msgid "Open a serial connection to your device."
 msgstr "Ouvre une connexion série sur ton périphérique."
 
 #: mu/modes/circuitpython.py:152 mu/modes/esp.py:102 mu/modes/microbit.py:164
-#: mu/modes/pyboard.py:96 mu/modes/python3.py:174
+#: mu/modes/pyboard.py:96 mu/modes/python3.py:174 mu/modes/snek.py:403
 msgid "Plotter"
 msgstr "Graphique"
 
 #: mu/modes/circuitpython.py:153 mu/modes/esp.py:103 mu/modes/microbit.py:165
-#: mu/modes/pyboard.py:97
+#: mu/modes/pyboard.py:97 mu/modes/snek.py:404
 msgid "Plot incoming REPL data."
 msgstr "Déssine graphique avec les données du REPL."
 
@@ -1077,12 +1112,10 @@ msgid ""
 msgstr ""
 
 #: mu/modes/circuitpython.py:269
-#, fuzzy
 msgid "Could not find an attached CircuitPython device."
-msgstr "Impossible de trouvé un périphérique Adafruit CircuitPython."
+msgstr "Impossible de trouver un périphérique CircuitPython."
 
 #: mu/modes/circuitpython.py:270
-#, fuzzy
 msgid ""
 "Python files for CircuitPython devices are stored on the device. "
 "Therefore, to edit these files you need to have the device plugged in. "
@@ -1092,14 +1125,15 @@ msgid ""
 "\n"
 "...to store your code."
 msgstr ""
-"Le fichiers Python pour les périphériques Adafruit CircuitPython sont "
-"stockés directement sur le périphérique.\n"
-"Ainsi, pour pouvoir les modifier il faut avoir un périphérique connecté. "
-"En attendant qu'un périphérique soit connecté, Mu utilisera le dossier:\n"
+"Les fichiers Python pour les périphériques CircuitPython sont stockés "
+"directement sur le périphérique.\n"
+"En conséquence, pour pouvoir les modifier il faut connecter le "
+"périphérique. En attendant qu'un périphérique soit connecté, Mu utilisera"
+" ce répertoire:\n"
 "\n"
 "{}\n"
 "\n"
-"... pour ton stocker ton programme."
+"... pour enregistrer ton code."
 
 #: mu/modes/debugger.py:39
 msgid "Graphical Debugger"
@@ -1158,7 +1192,7 @@ msgstr "Ton programme a fini de s'exécuter."
 msgid ""
 "Unable to connect to the Python debugger.\n"
 "\n"
-msgstr "Impossible de se connecter au déboguer Python.\n"
+msgstr "Impossible de se connecter au débogueur Python.\n"
 
 #: mu/modes/debugger.py:355
 msgid "Debugger info: {}"
@@ -1174,11 +1208,11 @@ msgstr "Erreur débogueur: {}"
 
 #: mu/modes/esp.py:35
 msgid "ESP MicroPython"
-msgstr ""
+msgstr "MicroPython ESP"
 
 #: mu/modes/esp.py:38
 msgid "Write MicroPython on ESP8266/ESP32 boards."
-msgstr ""
+msgstr "Écris du MicroPython pour les périphériques ESP8266/ESP32"
 
 #: mu/modes/esp.py:71 mu/modes/python3.py:150 mu/modes/python3.py:199
 #: mu/modes/web.py:75 mu/modes/web.py:128
@@ -1207,13 +1241,13 @@ msgstr "REPL"
 msgid "Use the REPL to live-code on the {board_name}."
 msgstr "Utilise le REPL pour programmer directement sur la micro:bit"
 
-#: mu/modes/esp.py:129 mu/modes/microbit.py:519
+#: mu/modes/esp.py:129 mu/modes/microbit.py:577
 msgid "REPL and file system cannot work at the same time."
 msgstr ""
 "Le REPL et le système de fichiers ne peuvent pas fonctionner en même "
 "temps."
 
-#: mu/modes/esp.py:130 mu/modes/microbit.py:520
+#: mu/modes/esp.py:130 mu/modes/microbit.py:578
 msgid ""
 "The REPL and file system both use the same USB serial connection. Only "
 "one can be active at any time. Toggle the file system off and try again."
@@ -1222,13 +1256,13 @@ msgstr ""
 "connexion USB série. Un seul des deux peut être actif à la fois. "
 "Désactive le système de fichier et ré-essaie."
 
-#: mu/modes/esp.py:149 mu/modes/microbit.py:539
+#: mu/modes/esp.py:149 mu/modes/microbit.py:597
 msgid "The plotter and file system cannot work at the same time."
 msgstr ""
-"Le grapheur et le systèle de fichiers ne peuvent pas fonctionner en même "
+"Le grapheur et le système de fichiers ne peuvent pas fonctionner en même "
 "temps."
 
-#: mu/modes/esp.py:152 mu/modes/microbit.py:542
+#: mu/modes/esp.py:152 mu/modes/microbit.py:600
 msgid ""
 "The plotter and file system both use the same USB serial connection. Only"
 " one can be active at any time. Toggle the file system off and try again."
@@ -1237,23 +1271,25 @@ msgstr ""
 "série. Un seul des deux peut être active à la fois. Désactive le système "
 "de fichiers et essaie à nouveau."
 
-#: mu/modes/esp.py:180
+#: mu/modes/esp.py:180 mu/modes/snek.py:420
 msgid "Cannot run anything without any active editor tabs."
-msgstr ""
+msgstr "Impossible de lancer quelque chose sans avoir un onglet d'éditeur actif."
 
-#: mu/modes/esp.py:181
+#: mu/modes/esp.py:181 mu/modes/snek.py:421
 msgid ""
 "Running transfers the content of the current tab onto the device. It "
 "seems like you don't have  any tabs open."
 msgstr ""
+"Lancer transfère le contenu de l'onglet courant sur le périphérique.On "
+"dirait que tu n'as aucun onglet ouvert."
 
-#: mu/modes/esp.py:200 mu/modes/microbit.py:556
+#: mu/modes/esp.py:200 mu/modes/microbit.py:614
 msgid "File system cannot work at the same time as the REPL or plotter."
 msgstr ""
 "Le système de fichiers ne peut pas fonctionner en même temps que le REPL "
 "ou le grapheur."
 
-#: mu/modes/esp.py:204 mu/modes/microbit.py:560
+#: mu/modes/esp.py:204 mu/modes/microbit.py:618
 msgid ""
 "The file system and the REPL and plotter use the same USB serial "
 "connection. Toggle the REPL and plotter off and try again."
@@ -1267,7 +1303,7 @@ msgstr ""
 msgid "Could not find an attached {board_name}"
 msgstr "Impossible de trouver un périphérique connecté."
 
-#: mu/modes/esp.py:234 mu/modes/microbit.py:585
+#: mu/modes/esp.py:234 mu/modes/microbit.py:643
 msgid ""
 "Please make sure the device is plugged into this computer.\n"
 "\n"
@@ -1326,7 +1362,7 @@ msgstr "Utilise le REPL pour programmer directement sur la micro:bit"
 msgid "Your script is too long and code minification is disabled"
 msgstr "Ton programme est trop long et le compresseur n'est pas disponible."
 
-#: mu/modes/microbit.py:194
+#: mu/modes/microbit.py:194 mu/modes/microbit.py:320
 msgid "Your script is too long and the minifier isn't available"
 msgstr "Ton programme est trop long et le compresseur n'est pas disponible."
 
@@ -1335,19 +1371,31 @@ msgstr "Ton programme est trop long et le compresseur n'est pas disponible."
 msgid "Problem minifying script"
 msgstr "Problème avec le script"
 
-#: mu/modes/microbit.py:218
+#: mu/modes/microbit.py:219 mu/modes/microbit.py:314
 msgid "Our minifier tried but your script is too long!"
 msgstr "On a essayé de le compresser mais ton programme est trop long!"
 
-#: mu/modes/microbit.py:286
+#: mu/modes/microbit.py:289 mu/modes/microbit.py:343
 msgid "Unable to flash \"{}\""
 msgstr "Impossible de flasher \"{}\""
 
-#: mu/modes/microbit.py:307 mu/modes/microbit.py:584
+#: mu/modes/microbit.py:299
+msgid "Problem with script"
+msgstr "Problème avec le script"
+
+#: mu/modes/microbit.py:301
+msgid "{} [{}:{}]"
+msgstr "{} [{}:{}]"
+
+#: mu/modes/microbit.py:327
+msgid "Your script is too long!"
+msgstr "Ton programme est trop long!"
+
+#: mu/modes/microbit.py:364 mu/modes/microbit.py:642
 msgid "Could not find an attached BBC micro:bit."
 msgstr "Impossible de trouver une micro:bit connectée"
 
-#: mu/modes/microbit.py:308
+#: mu/modes/microbit.py:365
 msgid ""
 "Please ensure you leave enough time for the BBC micro:bit to be attached "
 "and configured correctly by your computer. This may take several seconds."
@@ -1359,63 +1407,68 @@ msgstr ""
 "n'apparaît toujours pas, essaye de débrancher/rebrancher le périphérique "
 "ou d'enregistrer ton travail et redémarrer Mu."
 
-#: mu/modes/microbit.py:326
+#: mu/modes/microbit.py:383
 msgid "Cannot save a custom hex file to a local directory."
 msgstr ""
 
-#: mu/modes/microbit.py:327
+#: mu/modes/microbit.py:384
 msgid ""
 "When a custom hex file is configured in the settings a local directory "
-"cannot be used to saved the final hex file."
+"cannot be used to save the final hex file."
 msgstr ""
 
-#: mu/modes/microbit.py:336
+#: mu/modes/microbit.py:393
 msgid "Cannot use a custom hex file without micro:bit port."
 msgstr ""
 
-#: mu/modes/microbit.py:337
+#: mu/modes/microbit.py:394
 msgid ""
 "Mu was unable to detect the micro:bit serial port. Normally this is okay,"
 " as Mu can inject the Python code into the hex to flash. However, this "
 "cannot be done with a custom hex file."
 msgstr ""
 
-#: mu/modes/microbit.py:390
+#: mu/modes/microbit.py:447
 msgid "Unsupported BBC micro:bit."
-msgstr ""
+msgstr "BBC micro:bit non supportée."
 
-#: mu/modes/microbit.py:391
+#: mu/modes/microbit.py:448
 msgid ""
 "Your device is newer than this version of Mu. Please update Mu to the "
 "latest version to support this device.\n"
 "\n"
 "https://codewith.mu/"
 msgstr ""
+"Ton périphérique est plus récent que cette version de Mu. Merci "
+"d'installer la version la plus récente de Mu pour prendre en charge ce "
+"périphérique.\n"
+"\n"
+"https://codewith.mu/"
 
-#: mu/modes/microbit.py:425 mu/modes/microbit.py:446
+#: mu/modes/microbit.py:482 mu/modes/microbit.py:504
 #, fuzzy
 msgid "Flashing the micro:bit"
 msgstr "En train de flasher \"{}\" sur la micro:bit"
 
-#: mu/modes/microbit.py:427
+#: mu/modes/microbit.py:485
 #, fuzzy
 msgid "Runtime"
 msgstr "sans titre"
 
-#: mu/modes/microbit.py:458
+#: mu/modes/microbit.py:516
 msgid "Finished flashing."
 msgstr "Flashage terminé."
 
-#: mu/modes/microbit.py:490
+#: mu/modes/microbit.py:548
 #, fuzzy
 msgid "Copied code onto micro:bit."
-msgstr "Flashe ton programme sur la micro:bit"
+msgstr "Code copié sur la micro:bit."
 
-#: mu/modes/microbit.py:498
+#: mu/modes/microbit.py:556
 msgid "There was a problem flashing the micro:bit."
 msgstr "Un problème est survenu pendant le flashage de la micro:bit."
 
-#: mu/modes/microbit.py:499
+#: mu/modes/microbit.py:557
 msgid ""
 "Please do not disconnect the device until flashing has completed. Please "
 "check the logs for more information."
@@ -1423,10 +1476,9 @@ msgstr ""
 "Ne pas déconnecter le périphériques tant que le flashage n'est pas "
 "terminé. Regarde les logs pour plus d'informations."
 
-#: mu/modes/microbit.py:601
-#, fuzzy
+#: mu/modes/microbit.py:659
 msgid "micro:bit"
-msgstr "BBC micro:bit"
+msgstr "micro:bit"
 
 #: mu/modes/pico.py:33
 msgid "RP2040"
@@ -1442,16 +1494,14 @@ msgstr ""
 
 #: mu/modes/pyboard.py:34
 #, fuzzy
-msgid "Use MicroPython on the Pyboard line of boards"
-msgstr "Utilise CircuitPython avec la gamme de cartes Adafruit."
+msgid "Use MicroPython on the Pyboard line of boards."
+msgstr "Utilise CircuitPython avec la gamme de cartes PyBoard"
 
 #: mu/modes/pyboard.py:177
-#, fuzzy
 msgid "Could not find an attached PyBoard device."
-msgstr "Impossible de trouver un périphérique connecté."
+msgstr "Impossible de trouver un périphérique PyBoard connecté."
 
 #: mu/modes/pyboard.py:178
-#, fuzzy
 msgid ""
 "Python files for PyBoard MicroPython devices are stored on the device. "
 "Therefore, to edit these files you need to have the device plugged in. "
@@ -1461,14 +1511,14 @@ msgid ""
 "\n"
 "...to store your code."
 msgstr ""
-"Le fichiers Python pour les périphériques Adafruit CircuitPython sont "
+"Le fichiers Python pour les périphériques PyBoard MicroPython sont "
 "stockés directement sur le périphérique.\n"
 "Ainsi, pour pouvoir les modifier il faut avoir un périphérique connecté. "
 "En attendant qu'un périphérique soit connecté, Mu utilisera le dossier:\n"
 "\n"
 "{}\n"
 "\n"
-"... pour ton stocker ton programme."
+"... pour stocker ton programme."
 
 #: mu/modes/pygamezero.py:35
 msgid "Pygame Zero"
@@ -1570,56 +1620,110 @@ msgstr "REPL démarré."
 msgid "REPL stopped."
 msgstr "REPL arrêté."
 
+#: mu/modes/snek.py:169
+msgid "Snek"
+msgstr ""
+
+#: mu/modes/snek.py:171
+#, fuzzy
+msgid "Write code for boards running Snek."
+msgstr "Écris du code pour les périphériques avec CircuitPython."
+
+#: mu/modes/snek.py:386
+msgid "Put"
+msgstr ""
+
+#: mu/modes/snek.py:387
+msgid "Put the current program to the device."
+msgstr ""
+
+#: mu/modes/snek.py:393
+msgid "Get"
+msgstr ""
+
+#: mu/modes/snek.py:394
+msgid "Get the current program from the device."
+msgstr ""
+
+#: mu/modes/snek.py:459
+#, fuzzy
+msgid "There is un-saved work, 'get' will cause you to lose it."
+msgstr ""
+"Tout ton travail n'a pas été enregistré. Si tu fermes l'application, il "
+"sera perdu."
+
+#: mu/modes/snek.py:530
+#, fuzzy
+msgid ""
+"Please make sure the device is plugged into this computer.\n"
+"\n"
+"It must have a version of Snek flashed onto it before the REPL will work."
+"\n"
+"\n"
+"Finally, press the device's reset button and wait a few seconds before "
+"trying again."
+msgstr ""
+"Merci de vérifier que le périphérique est connecté à l'ordinateur.\n"
+"\n"
+"Le périphérique doit avoir MicroPython (ou CircuitPython) flashé dessus "
+"pour que le REPL fonctionne.\n"
+"\n"
+"Enfin, appuie sur le bouton 'reset' du périphérique et attend quelques "
+"secondes avant de ré-essayer."
+
 #: mu/modes/web.py:58
 msgid "Web"
-msgstr ""
+msgstr "Web"
 
 #: mu/modes/web.py:60
 msgid "Build simple websites with the \"Flask\" web framework."
-msgstr ""
+msgstr "Construis des sites web simples avec le framework web \"Flask\"."
 
 #: mu/modes/web.py:76 mu/modes/web.py:129
 msgid "Run the web server."
-msgstr ""
+msgstr "Lance the server web."
 
 #: mu/modes/web.py:83
 #, fuzzy
 msgid "Open your website in a browser."
-msgstr "Montre l'aide à propos de Mu dans un navigateur."
+msgstr "Ouvre ton site web dans un navigateur."
 
 #: mu/modes/web.py:89
 msgid "Templates"
-msgstr ""
+msgstr "Gabarits"
 
 #: mu/modes/web.py:90
 msgid "Load HTML templates used by your website."
-msgstr ""
+msgstr "Charge les gabarits HTML utilisés par ton site web."
 
 #: mu/modes/web.py:96
 msgid "CSS"
-msgstr ""
+msgstr "CSS"
 
 #: mu/modes/web.py:97
 msgid "Load CSS files used by your website."
-msgstr ""
+msgstr "Charge les fichiers CSS utilisés par ton site web."
 
 #: mu/modes/web.py:104
 msgid "Open the directory containing images used by your website."
-msgstr ""
+msgstr "Ouvre le répertoire contenant les images utilisées par ton site web."
 
 #: mu/modes/web.py:137
 msgid "Stop the web server."
-msgstr ""
+msgstr "Arrête le serveur web."
 
 #: mu/modes/web.py:157
 msgid "This is not a Python file!"
-msgstr ""
+msgstr "Ce n'est pas un fichier Python!"
 
 #: mu/modes/web.py:158
 msgid ""
 "Mu is only able to serve a Python file. Please make sure the current tab "
 "in Mu is the one for your web application and then try again."
 msgstr ""
+"Mu est seulement capable de servir un fichier Python. Merci de vérifier "
+"que l'onglet courant de Mu est celui de ton application web, puis "
+"ré-essaie."
 
 #: mu/modes/web.py:175
 msgid "Cannot find template directory!"
@@ -1635,7 +1739,7 @@ msgstr ""
 
 #: mu/modes/web.py:273
 msgid "Cannot Open Website - Server not Running."
-msgstr ""
+msgstr "Impossible d'ouvrir le site web - le serveur n'est pas lancé."
 
 #: mu/modes/web.py:274
 msgid ""
@@ -1643,376 +1747,102 @@ msgid ""
 "in a browser. Click on the 'Run' button to start the server and then try "
 "again."
 msgstr ""
-
-#~ msgid "Please do not disconnect the device until flashing has completed."
-#~ msgstr ""
-#~ "Merci de ne pas déconnecté le "
-#~ "périphérique tant que le flashage n'est"
-#~ " pas terminé."
-
-#~ msgid "Builtins"
-#~ msgstr "Intégrations"
-
-#~ msgid "Module level"
-#~ msgstr "Niveau du module"
-
-#~ msgid "%b %d, %Y"
-#~ msgstr "%d %b %Y"
-
-#~ msgid "General Index"
-#~ msgstr "Index Général"
-
-#~ msgid "index"
-#~ msgstr "index"
-
-#~ msgid "next"
-#~ msgstr "suivant"
-
-#~ msgid "previous"
-#~ msgstr "précédent"
-
-#~ msgid " (in "
-#~ msgstr " (dans  "
-
-#~ msgid "Section author: "
-#~ msgstr "Auteur de la section: "
-
-#~ msgid "Module author: "
-#~ msgstr "Auteur du module: "
-
-#~ msgid "Code author: "
-#~ msgstr "Auteur du code: "
-
-#~ msgid "Author: "
-#~ msgstr "Auteur: "
-
-#~ msgid "%s %s"
-#~ msgstr "%s %s"
-
-#~ msgid "%s (C function)"
-#~ msgstr "%s (fonction C)"
-
-#~ msgid "%s (C member)"
-#~ msgstr "%s (membre C)"
-
-#~ msgid "%s (C macro)"
-#~ msgstr "%s (macro C)"
-
-#~ msgid "%s (C type)"
-#~ msgstr "%s (type C)"
-
-#~ msgid "%s (C variable)"
-#~ msgstr "%s (variable C)"
-
-#~ msgid "%s (C++ type)"
-#~ msgstr "%s (type C++)"
-
-#~ msgid "%s (C++ concept)"
-#~ msgstr "%s (concept C++)"
-
-#~ msgid "%s (C++ member)"
-#~ msgstr "%s (membre C++)"
-
-#~ msgid "%s (C++ function)"
-#~ msgstr "%s (fonction C++)"
-
-#~ msgid "%s (C++ class)"
-#~ msgstr "%s (classe C++)"
-
-#~ msgid "%s (C++ enum)"
-#~ msgstr "%s (énum C++)"
-
-#~ msgid "%s (C++ enumerator)"
-#~ msgstr "%s (énumerateur C++)"
-
-#~ msgid "%s() (built-in function)"
-#~ msgstr "%s() (fonction intégrée)"
-
-#~ msgid "%s() (%s method)"
-#~ msgstr "%s() (méthode %s)"
-
-#~ msgid "%s() (class)"
-#~ msgstr "%s() (classe)"
-
-#~ msgid "%s (global variable or constant)"
-#~ msgstr "%s (variable globale ou constante)"
-
-#~ msgid "%s (%s attribute)"
-#~ msgstr "%s ( attribut %s)"
-
-#~ msgid "%s (module)"
-#~ msgstr "%s (module)"
-
-#~ msgid "%s() (in module %s)"
-#~ msgstr "%s() (dans le module %s)"
-
-#~ msgid "%s (built-in variable)"
-#~ msgstr "%s (built-in variable)"
-
-#~ msgid "%s (in module %s)"
-#~ msgstr "%s (dans le module %s)"
-
-#~ msgid "%s (built-in class)"
-#~ msgstr "%s (classe intégrée)"
-
-#~ msgid "%s (class in %s)"
-#~ msgstr "%s (classe dans %s)"
-
-#~ msgid "%s() (%s.%s method)"
-#~ msgstr "%s() (méthode %s.%s)"
-
-#~ msgid "%s() (%s.%s static method)"
-#~ msgstr "%s() (méthode statique %s.%s)"
-
-#~ msgid "%s() (%s static method)"
-#~ msgstr "%s() (méthode statique %s)"
-
-#~ msgid "%s() (%s.%s class method)"
-#~ msgstr "%s() (méthode de classe %s.%s)"
-
-#~ msgid "%s() (%s class method)"
-#~ msgstr "%s() (méthode de classe %s)"
-
-#~ msgid "%s (%s.%s attribute)"
-#~ msgstr "%s (attribut %s.%s)"
-
-#~ msgid "Deprecated"
-#~ msgstr "Obsolète"
-
-#~ msgid " (deprecated)"
-#~ msgstr "(obsolète)"
-
-#~ msgid "%s (directive)"
-#~ msgstr "%s (directive)"
-
-#~ msgid "%s (role)"
-#~ msgstr "%s (role)"
-
-#~ msgid "environment variable; %s"
-#~ msgstr " variable d'environnement; %s"
-
-#~ msgid "%scommand line option; %s"
-#~ msgstr "%s option de la ligne de commande; %s"
-
-#~ msgid "see %s"
-#~ msgstr "voir %s"
-
-#~ msgid "see also %s"
-#~ msgstr "voir aussi %s"
-
-#~ msgid "Symbols"
-#~ msgstr "Symboles"
-
-#~ msgid "Bases: %s"
-#~ msgstr "Bases: %s"
-
-#~ msgid "alias of :class:`%s`"
-#~ msgstr "alias de la :classe:`%s`"
-
-#~ msgid "missing '+' or '-' in '%s' option."
-#~ msgstr "'+' ou '-' manquants dans l'option '%s'."
-
-#~ msgid "'%s' is not a valid option."
-#~ msgstr "'%s' n'est pas une option valide."
-
-#~ msgid "'%s' is not a valid pyversion option"
-#~ msgstr "'%s' n'est pas une option pyversion valide"
-
-#~ msgid "[graph: %s]"
-#~ msgstr "[graphe: %s]"
-
-#~ msgid "[graph]"
-#~ msgstr "[graphe]"
-
-#~ msgid "Permalink to this equation"
-#~ msgstr "Permalien vers cette équation"
-
-#~ msgid "(in %s v%s)"
-#~ msgstr "(dans %s v%s)"
-
-#~ msgid "(in %s)"
-#~ msgstr "(dans %s)"
-
-#~ msgid "[source]"
-#~ msgstr "[source]"
-
-#~ msgid "Todo"
-#~ msgstr "AFaire"
-
-#~ msgid "<<original entry>>"
-#~ msgstr "<<original entry>>"
-
-#~ msgid "(The <<original entry>> is located in %s, line %d.)"
-#~ msgstr "(L' <<original entry>> est située dans %s, ligne %d.)"
-
-#~ msgid "original entry"
-#~ msgstr "entrée originale"
-
-#~ msgid "[docs]"
-#~ msgstr "[docs]"
-
-#~ msgid "Module code"
-#~ msgstr "Code du module"
-
-#~ msgid "<h1>Source code for %s</h1>"
-#~ msgstr "<h1>Code source de %s</h1>"
-
-#~ msgid "Overview: module code"
-#~ msgstr "Généralités: code du module"
-
-#~ msgid "<h1>All modules for which code is available</h1>"
-#~ msgstr "<h1>Tous les modules pour lesquels le code est disponible</h1>"
-
-#~ msgid "Python Enhancement Proposals; PEP %s"
-#~ msgstr "Propositions d'Amélioration de Python; PEP %s"
-
-#~ msgid "Permalink to this definition"
-#~ msgstr "Permalien vers cette définition"
-
-#~ msgid "Permalink to this headline"
-#~ msgstr "Permalien vers cet entête"
-
-#~ msgid "Permalink to this table"
-#~ msgstr "Permalien vers ce tableau"
-
-#~ msgid "Permalink to this code"
-#~ msgstr "Permalien vers ce programme"
-
-#~ msgid "Permalink to this image"
-#~ msgstr "Permalien vers cet image"
-
-#~ msgid "Permalink to this toctree"
-#~ msgstr "Permalien vers ce sommaire"
-
-#~ msgid "Index"
-#~ msgstr "Index"
-
-#~ msgid "Release"
-#~ msgstr "Version"
-
-#~ msgid "continued from previous page"
-#~ msgstr "suite de la page précédente"
-
-#~ msgid "continues on next page"
-#~ msgstr "suite sur le page suivante"
-
-#~ msgid "page"
-#~ msgstr "page"
-
-#~ msgid "Unknown configure key: latex_elements[%r] is ignored."
-#~ msgstr "Clé de configuration inconnue: latex_elements[%r] ignorée."
-
-#~ msgid "Footnotes"
-#~ msgstr "Notes de bas de page"
-
-#~ msgid "[image: %s]"
-#~ msgstr "[image: %s]"
-
-#~ msgid "[image]"
-#~ msgstr "[image]"
-
-#~ msgid "April"
-#~ msgstr "Avril"
-
-#~ msgid "February"
-#~ msgstr "Février"
-
-#~ msgid "January"
-#~ msgstr "Janvier"
-
-#~ msgid "March"
-#~ msgstr "Mars"
-
-#~ msgid "August"
-#~ msgstr "Août"
-
-#~ msgid "July"
-#~ msgstr "Juillet"
-
-#~ msgid "June"
-#~ msgstr "Juin"
-
-#~ msgid "May"
-#~ msgstr "Mai"
-
-#~ msgid "December"
-#~ msgstr "Décembre"
-
-#~ msgid "November"
-#~ msgstr "Novembre"
-
-#~ msgid "October"
-#~ msgstr "Octobre"
-
-#~ msgid "September"
-#~ msgstr "Septembre"
-
-#~ msgid "Monday"
-#~ msgstr "Lundi"
-
-#~ msgid "Thursday"
-#~ msgstr "Jeudi"
-
-#~ msgid "Tuesday"
-#~ msgstr "Mardi"
-
-#~ msgid "Wednesday"
-#~ msgstr "Mercredi"
-
-#~ msgid "Saturday"
-#~ msgstr "Samedi"
-
-#~ msgid "Sunday"
-#~ msgstr "Dimanche"
-
-#~ msgid "%(time)s"
-#~ msgstr "%(time)s"
-
-#~ msgid "yesterday"
-#~ msgstr "hier"
-
-#~ msgid "yesterday at %(time)s"
-#~ msgstr "hier à %(time)s"
-
-#~ msgid "%(weekday)s"
-#~ msgstr "%(weekday)s"
-
-#~ msgid "%(weekday)s at %(time)s"
-#~ msgstr "%(weekday)s à %(time)s"
-
-#~ msgid "%(month_name)s %(day)s"
-#~ msgstr "%(day)s %(month_name)s"
-
-#~ msgid "%(month_name)s %(day)s at %(time)s"
-#~ msgstr "%(day)s %(month_name)s à %(time)s"
-
-#~ msgid "%(month_name)s %(day)s, %(year)s"
-#~ msgstr "%(day)s %(month_name)s %(year)s"
-
-#~ msgid "%(month_name)s %(day)s, %(year)s at %(time)s"
-#~ msgstr "%(day)s %(month_name)s %(year)s à %(time)s"
-
-#~ msgid "%(weekday)s, %(month_name)s %(day)s"
-#~ msgstr "%(weekday)s %(day)s %(month_name)s "
-
-#~ msgid "%(commas)s and %(last)s"
-#~ msgstr "%(commas)s et %(last)s"
-
-#~ msgid "Logging to {}"
-#~ msgstr "Logguer dans {}"
-
-#~ msgid "Debugger requires a Python script filename to run."
-#~ msgstr "Le débogueur a besoin que tu nommes le script Python pour se lancer."
+"Tu dois avoir lancé le serveur web local pour pouvoir consulter ton site "
+"web dans un navigateur. Clique sur le bouton 'Lancer' pour démarrer le "
+"serveur puis ré-essaie."
+
+#~ msgid "Filesystem on micro:bit"
+#~ msgstr "Système de fichier micro:bit"
 
 #~ msgid "Files on your micro:bit:"
 #~ msgstr "Fichiers sur ta micro:bit:"
 
-#~ msgid "{} [{}:{}]"
-#~ msgstr "{} [{}:{}]"
+#~ msgid ""
+#~ "There was a problem getting the "
+#~ "list of files on the micro:bit. "
+#~ "Please check Mu's logs for technical "
+#~ "information. Alternatively, try unplugging"
+#~ "/plugging-in your micro:bit and/or "
+#~ "restarting Mu."
+#~ msgstr ""
+#~ "Un problème est survenu pendant le "
+#~ "listage des fichiers sur la micro:bit."
+#~ " Merci de vérifier les logs de "
+#~ "Mu pour avoir plus d'informations. "
+#~ "Sinon, essaie de débrancher/rebrancher ta "
+#~ "micro:bit, ou bien de redémarrer Mu."
 
-#~ msgid "Your script is too long!"
-#~ msgstr "Ton programme est trop long!"
+#~ msgid ""
+#~ "There was a problem deleting '{}' "
+#~ "from the micro:bit. Please check Mu's"
+#~ " logs  for more information."
+#~ msgstr ""
+#~ "Un problème est survenu pendant la "
+#~ "suppression du fichier '{}' de la "
+#~ "micro:bit. Merci de vérifier les logs"
+#~ " de Mu pour avoir plus "
+#~ "d'informations."
+
+#~ msgid "Adafruit CircuitPython"
+#~ msgstr "Adafruit CircuitPython"
+
+#~ msgid "Use CircuitPython on Adafruit's line of boards."
+#~ msgstr "Utilise CircuitPython avec la gamme de cartes Adafruit."
+
+#~ msgid "Could not find an attached Adafruit CircuitPython device."
+#~ msgstr "Impossible de trouvé un périphérique Adafruit CircuitPython."
+
+#~ msgid ""
+#~ "Python files for Adafruit CircuitPython "
+#~ "devices are stored on the device. "
+#~ "Therefore, to edit these files you "
+#~ "need to have the device plugged "
+#~ "in. Until you plug in a device,"
+#~ " Mu will use the directory found "
+#~ "here:\n"
+#~ "\n"
+#~ " {}\n"
+#~ "\n"
+#~ "...to store your code."
+#~ msgstr ""
+#~ "Les fichiers Python pour les "
+#~ "périphériques Adafruit CircuitPython sont "
+#~ "stockés directement sur le périphérique.\n"
+#~ ""
+#~ "Ainsi, pour pouvoir les modifier il "
+#~ "faut avoir un périphérique connecté. En"
+#~ " attendant qu'un périphérique soit "
+#~ "connecté, Mu utilisera le dossier:\n"
+#~ "\n"
+#~ "{}\n"
+#~ "\n"
+#~ "... pour stocker ton programme."
+
+#~ msgid "Run your code directly on the ESP8266/ESP32 via the REPL."
+#~ msgstr "Lance ton code directement sur l'ESP8266/ESP32 via le REPL."
+
+#~ msgid "Access the file system on ESP8266/ESP32."
+#~ msgstr "Accéder au système de fichiers sur l'ESP8266/ESP32."
+
+#~ msgid "Use the REPL to live-code on the ESP8266/ESP32."
+#~ msgstr "Utilise le REPL pour programmer directement sur l'ESP8266/ESP32."
+
+#~ msgid "Flashing \"{}\" onto the micro:bit."
+#~ msgstr "En train de flasher \"{}\" sur la micro:bit"
 
 #~ msgid " Runtime: {}"
 #~ msgstr "Exécution: {}"
+
+#~ msgid "Could not find an attached ESP8266/ESP32."
+#~ msgstr "Impossible de trouver un périphérique ESP8266/ESP32 connecté."
+
+#~ msgid "ESP board"
+#~ msgstr "Circuit ESP"
+
+#~ msgid ""
+#~ "When a custom hex file is "
+#~ "configured in the settings a local "
+#~ "directory cannot be used to saved "
+#~ "the final hex file."
+#~ msgstr ""
 
