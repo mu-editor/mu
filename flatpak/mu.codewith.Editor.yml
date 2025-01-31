@@ -1,0 +1,74 @@
+# Build using `flatpak-builder --user --install --force-clean build-dir mu.codewith.Editor.yml`.
+# Then run using `flatpak run mu.codewith.Editor`.
+
+app-id: mu.codewith.Editor
+
+runtime: org.freedesktop.Platform
+runtime-version: '21.08'
+sdk: org.freedesktop.Sdk
+
+command: /app/python-build-standalone/install/bin/mu-editor
+
+finish-args:
+  - --filesystem=home
+  # X11/Wayland
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --device=dri
+  - --socket=pulseaudio
+  # Network access for Mu users
+  - --share=network
+  # MicroPython devices connect over USB
+  - --device=all
+
+modules:
+  # Use python-build-standalone since this is what `pup` uses for Windows and macOS.
+  # This should make the builds more homogenous across platforms.
+  - name: python-build-standalone
+    buildsystem: simple
+    build-options:
+      build-args:
+        - --share=network
+    build-commands:
+      - cp -pr . /app/python-build-standalone
+    sources:
+      - type: archive
+        url:  https://github.com/indygreg/python-build-standalone/releases/download/20220630/cpython-3.8.13+20220630-x86_64-unknown-linux-gnu-lto-full.tar.zst
+        sha256: 217fd3deccdc59e074800a2d90ea9176395d1630e1e24f84c062e6d5bf3e03a3
+
+  - name: mu
+    buildsystem: simple
+    build-options:
+      build-args:
+        - --share=network
+    build-commands:
+      - /app/python-build-standalone/install/bin/pip install --upgrade pip
+      - /app/python-build-standalone/install/bin/pip install .
+      - /app/python-build-standalone/install/bin/pip install pyserial
+      # Prefetch wheels used in the user virtual environment.
+      # Changes directory to `cd /tmp` in order to avoid importing `mu.wheels`
+      # from the git repository.
+      - cd /tmp && /app/python-build-standalone/install/bin/python3 -m mu.wheels
+    sources:
+      - type: archive
+        url: https://github.com/mu-editor/mu/archive/refs/tags/v1.1.1.tar.gz
+        sha256: 6ea06d09ba0ed15a2bdd87b62ad1c18a0b1edc7000956209720fcc4ad290458e
+
+  - name: desktop-integration
+    buildsystem: simple
+    build-options:
+      build-args:
+        - --share=network
+    build-commands:
+      - install -Dm644 -t /app/share/applications mu.codewith.Editor.desktop
+      - install -Dm644 -t /app/share/metainfo mu.codewith.Editor.appdata.xml
+      - install -Dm644 -t /app/share/icons/hicolor/scalable/apps mu.codewith.Editor.svg
+    sources:
+      - type: file
+        path: mu.codewith.Editor.desktop
+      - type: file
+        path: mu.codewith.Editor.appdata.xml
+      - type: file
+        path: mu.codewith.Editor.svg
+
