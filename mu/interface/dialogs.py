@@ -305,6 +305,7 @@ class LocaleWidget(QWidget):
     LANGUAGES = {
         _("Automatically detect"): "",
         "English": "en",
+        "Česky": "cs",
         "Deutsch": "de_DE",
         "Español": "es",
         "Français": "fr",
