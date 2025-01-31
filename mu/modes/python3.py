@@ -19,11 +19,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import os
 import logging
+import json
+from mu.config import DATA_DIR
 from mu.modes.base import BaseMode
 from mu.modes.api import PYTHON3_APIS, SHARED_APIS, PI_APIS
 from mu.resources import load_icon
 from mu.interface.panes import CHARTS
 from ..virtual_environment import venv
+from jupyter_client import kernelspec
 from qtconsole.manager import QtKernelManager
 from qtconsole.client import QtKernelClient
 from PyQt5.QtCore import QObject, QThread, pyqtSignal
@@ -32,30 +35,21 @@ from PyQt5.QtCore import QObject, QThread, pyqtSignal
 logger = logging.getLogger(__name__)
 
 
-class MuKernelManager(QtKernelManager):
-    def start_kernel(self, **kw):
-        """Starts a kernel on this host in a separate process.
-
-        Subclassed to allow checking that the kernel uses the same Python as
-        Mu itself.
-        """
-        kernel_cmd, kw = self.pre_start_kernel(**kw)
-        cmd_interpreter = kernel_cmd[0]
-        if cmd_interpreter != venv.interpreter:
-            self.log.debug(
-                "Wrong interpreter selected to run REPL: %s", kernel_cmd
-            )
-            self.log.debug(
-                "Using default interpreter to run REPL instead: %s",
-                cmd_interpreter,
-            )
-            cmd_interpreter = venv.interpreter
-            kernel_cmd[0] = cmd_interpreter
-
-        # launch the kernel subprocess
-        self.log.debug("Starting kernel: %s", kernel_cmd)
-        self.kernel = self._launch_kernel(kernel_cmd, **kw)
-        self.post_start_kernel(**kw)
+def make_kernel_spec(kernel_dir):
+    os.makedirs(kernel_dir, exist_ok=True)
+    spec = {
+        "argv": [
+            venv.interpreter,
+            "-m",
+            "ipykernel_launcher",
+            "-f",
+            "{connection_file}",
+        ],
+        "display_name": "Mu's Python 3 Kernel",
+        "language": "python",
+    }
+    with open(os.path.join(kernel_dir, "kernel.json"), "w") as kernel_json:
+        json.dump(spec, kernel_json)
 
 
 class KernelRunner(QObject):
@@ -85,6 +79,7 @@ class KernelRunner(QObject):
         self.kernel_name = kernel_name
         self.cwd = cwd
         self.envars = dict(envars)
+        self.kernel_dir = os.path.join(DATA_DIR, "kernel")
 
     def start_kernel(self):
         """
@@ -104,9 +99,21 @@ class KernelRunner(QObject):
             if k != "PYTHONPATH":
                 os.environ[k] = v
 
-        self.repl_kernel_manager = MuKernelManager()
+        self.repl_kernel_manager = QtKernelManager()
+        if self.kernel_name not in kernelspec.find_kernel_specs():
+            make_kernel_spec(self.kernel_dir)
+            kernelspec.install_kernel_spec(
+                self.kernel_dir, self.kernel_name, user=True
+            )
         self.repl_kernel_manager.kernel_name = self.kernel_name
         self.repl_kernel_manager.start_kernel()
+
+        if self.repl_kernel_manager.kernel_spec.argv[0] != venv.interpreter:
+            logger.debug(
+                "Wrong interpreter selected to run REPL: %s",
+                self.repl_kernel_manager.kernel_spec.argv[0],
+            )
+
         self.repl_kernel_client = self.repl_kernel_manager.client()
         self.kernel_started.emit(
             self.repl_kernel_manager, self.repl_kernel_client
