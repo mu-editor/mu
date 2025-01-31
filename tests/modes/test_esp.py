@@ -116,14 +116,42 @@ def test_add_fs_no_device(esp_mode):
     assert esp_mode.view.show_message.call_count == 1
 
 
-def test_remove_fs(esp_mode):
+@mock.patch("mu.modes.esp.FileManager")
+def test_remove_fs(fm, esp_mode):
     """
-    Removing the file system results in the expected state.
+    Removing the file system shuts down the file manager thread and
+    results in the expected state.
+
     """
-    esp_mode.fs = True
-    esp_mode.remove_fs()
-    assert esp_mode.view.remove_filesystem.call_count == 1
-    assert esp_mode.fs is None
+    mock_qthread = mock.MagicMock()
+    mock_qthread_class = mock.MagicMock(return_value=mock_qthread)
+
+    with mock.patch("mu.modes.esp.QThread", mock_qthread_class):
+        esp_mode.add_fs()
+        esp_mode.remove_fs()
+        mock_qthread.quit.assert_called_once_with()
+        assert esp_mode.view.remove_filesystem.call_count == 1
+        assert esp_mode.fs is None
+        assert esp_mode.file_manager is None
+        assert esp_mode.file_manager_thread is None
+
+
+@mock.patch("mu.modes.esp.FileManager")
+def test_remove_fs_terminates_thread(fm, esp_mode):
+    """
+    If the file manager thread doesn't quit by itself, we will terminate it
+    """
+    mock_qthread = mock.MagicMock()
+    mock_qthread_class = mock.MagicMock(return_value=mock_qthread)
+
+    mock_qthread.wait = mock.MagicMock(return_value=False)
+
+    with mock.patch("mu.modes.esp.QThread", mock_qthread_class):
+        esp_mode.add_fs()
+        esp_mode.remove_fs()
+        mock_qthread.quit.assert_called_once_with()
+        mock_qthread.terminate.assert_called_once_with()
+        mock_qthread.wait.call_count == 2
 
 
 def test_toggle_repl_on(esp_mode):
@@ -375,3 +403,13 @@ def test_device_changed(esp_mode, sparkfunESP32):
     esp_mode.device_changed(sparkfunESP32)
     esp_mode.remove_fs.assert_called_once_with()
     esp_mode.add_fs.assert_called_once_with()
+
+
+def test_stop(esp_mode):
+    """
+    Check that invoking stop remove the file system pane and thus
+    shutsdown the file manager thread
+    """
+    esp_mode.remove_fs = mock.MagicMock()
+    esp_mode.stop()
+    esp_mode.remove_fs.assert_called_once_with()

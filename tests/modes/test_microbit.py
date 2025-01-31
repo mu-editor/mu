@@ -1042,18 +1042,49 @@ def test_add_fs_no_device():
     assert view.show_message.call_count == 1
 
 
-def test_remove_fs():
+@mock.patch("mu.modes.microbit.FileManager")
+def test_remove_fs(fm):
     """
-    Removing the file system results in the expected state.
+    Removing the file system shuts down the file manager thread and
+    results in the expected state.
+
     """
     view = mock.MagicMock()
-    view.remove_repl = mock.MagicMock()
     editor = mock.MagicMock()
     mm = MicrobitMode(editor, view)
-    mm.fs = True
-    mm.remove_fs()
-    assert view.remove_filesystem.call_count == 1
-    assert mm.fs is None
+
+    mock_qthread = mock.MagicMock()
+    mock_qthread_class = mock.MagicMock(return_value=mock_qthread)
+
+    with mock.patch("mu.modes.microbit.QThread", mock_qthread_class):
+        mm.add_fs()
+        mm.remove_fs()
+        mock_qthread.quit.assert_called_once_with()
+        assert mm.view.remove_filesystem.call_count == 1
+        assert mm.fs is None
+        assert mm.file_manager is None
+        assert mm.file_manager_thread is None
+
+
+@mock.patch("mu.modes.microbit.FileManager")
+def test_remove_fs_terminates_thread(fm):
+    """
+    If the file manager thread doesn't quit by itself, we will terminate it
+    """
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+
+    mock_qthread = mock.MagicMock()
+    mock_qthread_class = mock.MagicMock(return_value=mock_qthread)
+    mock_qthread.wait = mock.MagicMock(return_value=False)
+
+    with mock.patch("mu.modes.microbit.QThread", mock_qthread_class):
+        mm.add_fs()
+        mm.remove_fs()
+        mock_qthread.quit.assert_called_once_with()
+        mock_qthread.terminate.assert_called_once_with()
+        mock_qthread.wait.call_count == 2
 
 
 def test_toggle_files_on():
@@ -1371,3 +1402,46 @@ def test_device_changed(microbit):
     mm.device_changed(microbit)
     mm.remove_fs.assert_called_once_with()
     mm.add_fs.assert_called_once_with()
+
+
+def test_stop(microbit):
+    """
+    Check that invoking stop remove the file system pane and thus
+    shutsdown the file manager thread
+    """
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    mm.remove_fs = mock.MagicMock()
+
+    mock_flash_thread = mock.MagicMock()
+    with mock.patch(
+        "mu.modes.microbit.DeviceFlasher", return_value=mock_flash_thread
+    ):
+        mm.flash_attached("pass", "/path/to/microbit/mount/")
+        mm.stop()
+        mock_flash_thread.quit.assert_called_once_with()
+
+    mm.remove_fs.assert_called_once_with()
+
+
+def test_stop_terminates_thread(microbit):
+    """
+    Check that invoking stop remove the file system pane and thus
+    shutsdown the file manager thread
+    """
+    view = mock.MagicMock()
+    editor = mock.MagicMock()
+    mm = MicrobitMode(editor, view)
+    mm.remove_fs = mock.MagicMock()
+
+    mock_flash_thread = mock.MagicMock()
+    mock_flash_thread.wait = mock.MagicMock(return_value=False)
+    with mock.patch(
+        "mu.modes.microbit.DeviceFlasher", return_value=mock_flash_thread
+    ):
+        mm.flash_attached("pass", "/path/to/microbit/mount/")
+        mm.stop()
+        mock_flash_thread.quit.assert_called_once_with()
+        mock_flash_thread.terminate.assert_called_once_with()
+        mock_flash_thread.wait.call_count == 2

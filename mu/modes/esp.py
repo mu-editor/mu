@@ -38,6 +38,8 @@ class ESPMode(MicroPythonMode):
     description = _("Write MicroPython on ESP8266/ESP32 boards.")
     icon = "esp"
     fs = None
+    file_manager = None
+    file_manager_thread = None
 
     # The below list defines the supported devices, however, many
     # devices are using the exact same FTDI USB-interface, with vendor
@@ -275,6 +277,11 @@ class ESPMode(MicroPythonMode):
         """
         self.view.remove_filesystem()
         self.file_manager = None
+        if self.file_manager_thread:
+            self.file_manager_thread.quit()
+            if not self.file_manager_thread.wait(1):
+                self.file_manager_thread.terminate()
+                self.file_manager_thread.wait()
         self.file_manager_thread = None
         self.fs = None
 
@@ -302,3 +309,10 @@ class ESPMode(MicroPythonMode):
         if self.fs:
             self.remove_fs()
             self.add_fs()
+
+    def stop(self):
+        """
+        Destructor: Make sure any file manager threads are closed if necessary
+        """
+        super().stop()
+        self.remove_fs()
