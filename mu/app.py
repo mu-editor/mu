@@ -44,9 +44,25 @@ from PyQt5.QtWidgets import QApplication, QSplashScreen
 from . import i18n
 from .virtual_environment import venv, logger as vlogger
 from . import __version__
+from .resources import load_icon, load_movie, load_pixmap
+from .interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
+
+# HACK: Ensure that i18n settings are present before any gettext
+# functions are called.
+from . import settings
+#
+# Load settings from known locations and register them for
+# autosave
+#
+settings.init()
+old_session = settings.session
+if "locale" in old_session:
+    user_locale = old_session["locale"].strip()
+    if user_locale:
+        i18n.set_language(user_locale)
+
 from .logic import Editor, LOG_FILE, LOG_DIR, ENCODING
 from .interface import Window
-from .resources import load_icon, load_movie, load_pixmap
 from .modes import (
     PythonMode,
     CircuitPythonMode,
@@ -60,8 +76,6 @@ from .modes import (
     PicoMode,
     SnekMode,
 )
-from .interface.themes import NIGHT_STYLE, DAY_STYLE, CONTRAST_STYLE
-from . import settings
 
 
 class AnimatedSplash(QSplashScreen):
@@ -371,11 +385,8 @@ def run():
     # if Mu is installed from source/PyPI into a virtual environment.
     os.environ.pop("VIRTUAL_ENV", None)
 
-    #
-    # Load settings from known locations and register them for
-    # autosave
-    #
-    settings.init()
+    # Not loading settings here because the same has been done at the top of
+    # the script
 
     # Images (such as toolbar icons) aren't scaled nicely on retina/4k displays
     # unless this flag is set
