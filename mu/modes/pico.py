@@ -32,14 +32,15 @@ class PicoMode(ESPMode):
 
     name = _("RP2040")
     short_name = "pico"
-    board_name = "Raspberry Pi Pico"
-    description = _("Write MicroPython directly on a Raspberry Pi Pico.")
+    board_name = "Raspberry Pi RP2040"
+    description = _("Write MicroPython directly on a Raspberry Pi Pico or other RP2040 board.")
     icon = "pico"
     fs = None
 
     valid_boards = [
         # VID  , PID,    Manufacturer string, Device name
         (0x2E8A, 0x0005, None, "Raspberry Pi Pico"),
+        (0x1FFB, 0x2043, None, "Pololu 3pi+ 2040 Robot"),
     ]
 
     def api(self):
