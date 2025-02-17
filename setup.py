@@ -37,11 +37,13 @@ install_requires = [
     # FIXME: Needed for qtconsole, this is the latest wheel in armv7l for
     # Python 3.7 (Buster), otherwise it tries to build from source and fails.
     "pyzmq<=26.0.3",
-    # ipykernel has to be < v6 for macOS 10.13 compatibility (v6 depends on
-    # debugpy package), v5.5.6 resolves issue ipython/ipykernel#759.
-    # Full line can be removed after Mu v1.3 release as PyQt6 drops old macOS.
+    # We are using an internal method of jupyter_client, that changed in v7
+    # QtKernelManager._launch_kernel() returning a KernelProvisionerBase
+    # https://github.com/jupyter/jupyter_client/commit/516d9df270b2e4603ee0ecd986554cb5fe1c2940
+    "jupyter-client<7",
+    # ipykernel v5.5.6 resolves issue ipython/ipykernel#759.
     # ipykernel version has to be mirrored in mu/wheels/__init__.py
-    "ipykernel>=5.5.6,<6",
+    "ipykernel>=5.5.6",
     "qtconsole~=5.4",
     # In Python 3.12 the deprecated 'imp' module was removed from the stdlib.
     # ipykernel only moved to importlib in v6.10, so this is a "forward-port"
