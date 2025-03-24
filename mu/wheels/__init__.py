@@ -8,6 +8,7 @@ import logging
 import subprocess
 import tempfile
 import zipfile
+import pkg_resources
 
 from .. import __version__ as mu_version
 
@@ -40,9 +41,6 @@ mode_packages = [
     ("pgzero", ("pgzero>=1.2.1",)),
     # Lock Werkzeug to < 3.0.0: import flask fails, otherwise.
     ("flask", ("flask==2.0.3", "Werkzeug<3.0.0")),
-    # The version of ipykernel here should match to the version used by
-    # qtconsole at the version specified in setup.py
-    ("ipykernel", ("ipykernel>=5.5.6",)),
 ]
 
 
@@ -90,7 +88,33 @@ def remove_dist_files(dirpath, logger):
         os.remove(rm_filepath)
 
 
+def get_mu_package_version(package_name):
+    """Get the version of a package in Python environment running Mu."""
+    try:
+        version = pkg_resources.get_distribution(package_name).version
+        return version
+    except pkg_resources.DistributionNotFound:
+        logger.error(
+            "Package {} not found in Mu environment".format(package_name)
+        )
+        raise
+
+
 def pip_download(dirpath, logger, additional_flags=[]):
+    """Download wheels for the packages to be installed in the user venv."""
+    # ipykernel needs to be added to the user venv to launch the iPython REPL
+    # from within that environment.
+    # The ipykernel version must match the version installed in the Mu
+    # environment or the user venv kernel might fail (Kernel died, restarting).
+    ipykernel_version = get_mu_package_version("ipykernel")
+    logger.info("Detecting Mu ipykernel version: {}".format(ipykernel_version))
+    mode_packages.append(
+        (
+            "ipykernel",
+            ("ipykernel=={}".format(ipykernel_version),),
+        )
+    )
+
     for name, pip_identifiers, *extra_flags in mode_packages:
         logger.info(
             "Running pip download for %s / %s / %s / %s",
