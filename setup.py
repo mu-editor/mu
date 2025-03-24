@@ -34,10 +34,10 @@ install_requires = [
     "PyQtChart==5.15.6"
     + '; sys_platform != "linux" '
     + 'or ("arm" not in platform_machine and "aarch" not in platform_machine)',
-    # FIXME: Needed for qtconsole, this is the latest wheel in armv7l for
+    # Needed for qtconsole, this is the latest wheel in armv7l for
     # Python 3.7 (Buster), otherwise it tries to build from source and fails.
     "pyzmq<=26.0.3",
-    # We are using an internal method of jupyter_client, that changed in v7
+    # We are using an internal method of jupyter_client that changed in v7
     # QtKernelManager._launch_kernel() returning a KernelProvisionerBase
     # https://github.com/jupyter/jupyter_client/commit/516d9df270b2e4603ee0ecd986554cb5fe1c2940
     "jupyter-client<7",
