@@ -1,6 +1,8 @@
 Mu - A Simple Python Code Editor 
 ================================
 
+**THIS PROJECT IS NO LONGER MAINTAINED**
+
 .. image:: https://mu.readthedocs.io/en/latest/_images/logo.png
 
 Mu is a simple code editor for beginner programmers based on extensive feedback
