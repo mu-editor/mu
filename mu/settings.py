@@ -119,7 +119,7 @@ class SettingsBase(object):
                 os.path.dirname(os.path.dirname(app_dir))
             )
 
-        return [app_dir, config.DATA_DIR]
+        return [app_dir, config.get_data_dir()]
 
     def register_for_autosave(self):
         """Ensure the settings are saved at least when the Python session finishes"""

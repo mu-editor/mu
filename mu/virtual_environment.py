@@ -481,7 +481,7 @@ class VirtualEnvironment(object):
         construct one which includes the Python version and a timestamp
         """
         return "%s-%s-%s" % (
-            config.VENV_DIR,
+            config.get_venv_dir(),
             "%s%s" % sys.version_info[:2],
             time.strftime("%Y%m%d-%H%M%S"),
         )
